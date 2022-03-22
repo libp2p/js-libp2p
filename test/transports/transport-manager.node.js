@@ -2,7 +2,7 @@
 /* eslint-env mocha */
 
 const { expect } = require('aegir/utils/chai')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const AddressManager = require('../../src/address-manager')
 const TransportManager = require('../../src/transport-manager')
 const PeerStore = require('../../src/peer-store')
@@ -14,12 +14,14 @@ const mockUpgrader = require('../utils/mockUpgrader')
 const sinon = require('sinon')
 const Peers = require('../fixtures/peers')
 const pWaitFor = require('p-wait-for')
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
   new Multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Transport Manager (TCP)', () => {
+  const connectionGater = mockConnectionGater()
   let tm
   let localPeer
 
@@ -33,7 +35,11 @@ describe('Transport Manager (TCP)', () => {
         peerId: localPeer,
         multiaddrs: addrs,
         addressManager: new AddressManager({ listen: addrs }),
-        peerStore: new PeerStore({ peerId: localPeer })
+        peerStore: new PeerStore({
+          peerId: localPeer,
+          datastore: new MemoryDatastore(),
+          addressFilter: connectionGater.filterMultiaddrForPeer
+        })
       },
       upgrader: mockUpgrader,
       onConnection: () => {}
@@ -67,7 +73,7 @@ describe('Transport Manager (TCP)', () => {
   })
 
   it('should create self signed peer record on listen', async () => {
-    let signedPeerRecord = await tm.libp2p.peerStore.addressBook.getPeerRecord(localPeer)
+    let signedPeerRecord = await tm.libp2p.peerStore.addressBook.getRawEnvelope(localPeer)
     expect(signedPeerRecord).to.not.exist()
 
     tm.add(Transport.prototype[Symbol.toStringTag], Transport)

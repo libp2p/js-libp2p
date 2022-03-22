@@ -13,7 +13,7 @@ const { NOISE: Crypto } = require('@chainsafe/libp2p-noise')
 const { Multiaddr } = require('multiaddr')
 const AggregateError = require('aggregate-error')
 const { AbortError } = require('libp2p-interfaces/src/transport/errors')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const { codes: ErrorCodes } = require('../../src/errors')
 const Constants = require('../../src/constants')
 const Dialer = require('../../src/dialer')
@@ -21,6 +21,7 @@ const addressSort = require('libp2p-utils/src/address-sort')
 const PeerStore = require('../../src/peer-store')
 const TransportManager = require('../../src/transport-manager')
 const Libp2p = require('../../src')
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 
 const { MULTIADDRS_WEBSOCKETS } = require('../fixtures/browser')
 const mockUpgrader = require('../utils/mockUpgrader')
@@ -30,13 +31,18 @@ const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1
 const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
 describe('Dialing (direct, WebSockets)', () => {
+  const connectionGater = mockConnectionGater()
   let localTM
   let peerStore
   let peerId
 
   before(async () => {
     [peerId] = await createPeerId()
-    peerStore = new PeerStore({ peerId })
+    peerStore = new PeerStore({
+      peerId,
+      datastore: new MemoryDatastore(),
+      addressFilter: connectionGater.filterMultiaddrForPeer
+    })
     localTM = new TransportManager({
       libp2p: {},
       upgrader: mockUpgrader,
@@ -45,19 +51,27 @@ describe('Dialing (direct, WebSockets)', () => {
     localTM.add(Transport.prototype[Symbol.toStringTag], Transport, { filter: filters.all })
   })
 
-  afterEach(() => {
-    peerStore.delete(peerId)
+  afterEach(async () => {
+    await peerStore.delete(peerId)
     sinon.restore()
   })
 
   it('should have appropriate defaults', () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
     expect(dialer.maxParallelDials).to.equal(Constants.MAX_PARALLEL_DIALS)
     expect(dialer.timeout).to.equal(Constants.DIAL_TIMEOUT)
   })
 
   it('should limit the number of tokens it provides', () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
     const maxPerPeer = Constants.MAX_PER_PEER_DIALS
     expect(dialer.tokens).to.have.length(Constants.MAX_PARALLEL_DIALS)
     const tokens = dialer.getTokens(maxPerPeer + 1)
@@ -66,14 +80,22 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   it('should not return tokens if non are left', () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
     sinon.stub(dialer, 'tokens').value([])
     const tokens = dialer.getTokens(1)
     expect(tokens.length).to.equal(0)
   })
 
   it('should NOT be able to return a token twice', () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
     const tokens = dialer.getTokens(1)
     expect(tokens).to.have.length(1)
     expect(dialer.tokens).to.have.length(Constants.MAX_PARALLEL_DIALS - 1)
@@ -90,7 +112,8 @@ describe('Dialing (direct, WebSockets)', () => {
           add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
-      }
+      },
+      connectionGater
     })
 
     const connection = await dialer.connectToPeer(remoteAddr)
@@ -106,7 +129,8 @@ describe('Dialing (direct, WebSockets)', () => {
           add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
-      }
+      },
+      connectionGater
     })
 
     const connection = await dialer.connectToPeer(remoteAddr.toString())
@@ -115,7 +139,11 @@ describe('Dialing (direct, WebSockets)', () => {
   })
 
   it('should fail to connect to an unsupported multiaddr', async () => {
-    const dialer = new Dialer({ transportManager: localTM, peerStore })
+    const dialer = new Dialer({
+      transportManager: localTM,
+      peerStore,
+      connectionGater
+    })
 
     await expect(dialer.connectToPeer(unsupportedAddr))
       .to.eventually.be.rejectedWith(AggregateError)
@@ -129,7 +157,8 @@ describe('Dialing (direct, WebSockets)', () => {
           add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
-      }
+      },
+      connectionGater
     })
 
     const connection = await dialer.connectToPeer(peerId)
@@ -145,7 +174,8 @@ describe('Dialing (direct, WebSockets)', () => {
           set: () => {},
           getMultiaddrsForPeer: () => [unsupportedAddr]
         }
-      }
+      },
+      connectionGater
     })
 
     await expect(dialer.connectToPeer(peerId))
@@ -161,7 +191,8 @@ describe('Dialing (direct, WebSockets)', () => {
           add: () => {},
           getMultiaddrsForPeer: () => [remoteAddr]
         }
-      }
+      },
+      connectionGater
     })
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
       expect(options.signal).to.exist()
@@ -188,7 +219,8 @@ describe('Dialing (direct, WebSockets)', () => {
           add: () => { },
           getMultiaddrsForPeer: () => Array.from({ length: 11 }, (_, i) => new Multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`))
         }
-      }
+      },
+      connectionGater
     })
 
     await expect(dialer.connectToPeer(remoteAddr))
@@ -211,11 +243,12 @@ describe('Dialing (direct, WebSockets)', () => {
       transportManager: localTM,
       addressSorter: addressSort.publicAddressesFirst,
       maxParallelDials: 3,
-      peerStore
+      peerStore,
+      connectionGater
     })
 
     // Inject data in the AddressBook
-    peerStore.addressBook.add(peerId, peerMultiaddrs)
+    await peerStore.addressBook.add(peerId, peerMultiaddrs)
 
     // Perform 3 multiaddr dials
     await dialer.connectToPeer(peerId)
@@ -237,7 +270,8 @@ describe('Dialing (direct, WebSockets)', () => {
           set: () => {},
           getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
         }
-      }
+      },
+      connectionGater
     })
 
     expect(dialer.tokens).to.have.length(2)
@@ -275,7 +309,8 @@ describe('Dialing (direct, WebSockets)', () => {
           set: () => {},
           getMultiaddrsForPeer: () => [remoteAddr, remoteAddr, remoteAddr]
         }
-      }
+      },
+      connectionGater
     })
 
     expect(dialer.tokens).to.have.length(2)
@@ -317,7 +352,8 @@ describe('Dialing (direct, WebSockets)', () => {
         addressBook: {
           set: () => { }
         }
-      }
+      },
+      connectionGater
     })
 
     sinon.stub(dialer, '_createDialTarget').callsFake(() => {
@@ -362,7 +398,8 @@ describe('Dialing (direct, WebSockets)', () => {
               filter: filters.all
             }
           }
-        }
+        },
+        connectionGater
       })
 
       expect(libp2p.dialer).to.exist()
@@ -422,14 +459,18 @@ describe('Dialing (direct, WebSockets)', () => {
       sinon.spy(libp2p.dialer, 'connectToPeer')
       sinon.spy(libp2p.peerStore.addressBook, 'add')
 
+      await libp2p.start()
+
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
       const { stream, protocol } = await connection.newStream('/echo/1.0.0')
       expect(stream).to.exist()
       expect(protocol).to.equal('/echo/1.0.0')
       await connection.close()
-      expect(libp2p.dialer.connectToPeer.callCount).to.equal(1)
+      expect(libp2p.dialer.connectToPeer.callCount).to.be.at.least(1)
       expect(libp2p.peerStore.addressBook.add.callCount).to.be.at.least(1)
+
+      await libp2p.stop()
     })
 
     it('should run identify automatically after connecting', async () => {
@@ -452,6 +493,8 @@ describe('Dialing (direct, WebSockets)', () => {
       sinon.spy(libp2p.identifyService, 'identify')
       sinon.spy(libp2p.upgrader, 'onConnection')
 
+      await libp2p.start()
+
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
 
@@ -464,6 +507,8 @@ describe('Dialing (direct, WebSockets)', () => {
       await libp2p.identifyService.identify.firstCall.returnValue
 
       expect(libp2p.peerStore.protoBook.set.callCount).to.equal(1)
+
+      await libp2p.stop()
     })
 
     it('should be able to use hangup to close connections', async () => {
@@ -483,11 +528,15 @@ describe('Dialing (direct, WebSockets)', () => {
         }
       })
 
+      await libp2p.start()
+
       const connection = await libp2p.dial(remoteAddr)
       expect(connection).to.exist()
       expect(connection.stat.timeline.close).to.not.exist()
       await libp2p.hangUp(connection.remotePeer)
       expect(connection.stat.timeline.close).to.exist()
+
+      await libp2p.stop()
     })
 
     it('should be able to use hangup when no connection exists', async () => {

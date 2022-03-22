@@ -43,8 +43,8 @@ const node1 = nodes[0]
 const node2 = nodes[1]
 const node3 = nodes[2]
 
-node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
 
 await Promise.all([
   node1.dial(node2.peerId),

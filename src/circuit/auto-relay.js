@@ -8,7 +8,7 @@ const log = Object.assign(debug('libp2p:auto-relay'), {
 const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { Multiaddr } = require('multiaddr')
-const PeerId = require('peer-id')
+const all = require('it-all')
 
 const { relay: multicodec } = require('./multicodec')
 const { canHop } = require('./circuit/hop')
@@ -22,7 +22,8 @@ const {
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
- * @typedef {import('../peer-store/address-book').Address} Address
+ * @typedef {import('../peer-store/types').Address} Address
+ * @typedef {import('peer-id')} PeerId
  */
 
 /**
@@ -91,7 +92,7 @@ class AutoRelay {
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (!hasProtocol && this._listenRelays.has(id)) {
-      this._removeListenRelay(id)
+      await this._removeListenRelay(id)
       return
     } else if (!hasProtocol || this._listenRelays.has(id)) {
       return
@@ -113,7 +114,7 @@ class AutoRelay {
       const supportsHop = await canHop({ connection })
 
       if (supportsHop) {
-        this._peerStore.metadataBook.set(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
+        await this._peerStore.metadataBook.setValue(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
         await this._addListenRelay(connection, id)
       }
     } catch (/** @type {any} */ err) {
@@ -125,7 +126,6 @@ class AutoRelay {
    * Peer disconnects.
    *
    * @param {Connection} connection - connection to the peer
-   * @returns {void}
    */
   _onPeerDisconnected (connection) {
     const peerId = connection.remotePeer
@@ -136,7 +136,9 @@ class AutoRelay {
       return
     }
 
-    this._removeListenRelay(id)
+    this._removeListenRelay(id).catch(err => {
+      log.error(err)
+    })
   }
 
   /**
@@ -148,27 +150,35 @@ class AutoRelay {
    * @returns {Promise<void>}
    */
   async _addListenRelay (connection, id) {
-    // Check if already listening on enough relays
-    if (this._listenRelays.size >= this.maxListeners) {
-      return
-    }
-
-    // Get peer known addresses and sort them per public addresses first
-    const remoteAddrs = this._peerStore.addressBook.getMultiaddrsForPeer(
-      connection.remotePeer, this._addressSorter
-    )
-
-    if (!remoteAddrs || !remoteAddrs.length) {
-      return
-    }
-
-    const listenAddr = `${remoteAddrs[0].toString()}/p2p-circuit`
-    this._listenRelays.add(id)
-
-    // Attempt to listen on relay
     try {
-      await this._transportManager.listen([new Multiaddr(listenAddr)])
-      // Announce multiaddrs will update on listen success by TransportManager event being triggered
+      // Check if already listening on enough relays
+      if (this._listenRelays.size >= this.maxListeners) {
+        return
+      }
+
+      // Get peer known addresses and sort them per public addresses first
+      const remoteAddrs = await this._peerStore.addressBook.getMultiaddrsForPeer(
+        connection.remotePeer, this._addressSorter
+      )
+
+      // Attempt to listen on relay
+      const result = await Promise.all(
+        remoteAddrs.map(async addr => {
+          try {
+            // Announce multiaddrs will update on listen success by TransportManager event being triggered
+            await this._transportManager.listen([new Multiaddr(`${addr.toString()}/p2p-circuit`)])
+            return true
+          } catch (/** @type {any} */ err) {
+            this._onError(err)
+          }
+
+          return false
+        })
+      )
+
+      if (result.includes(true)) {
+        this._listenRelays.add(id)
+      }
     } catch (/** @type {any} */ err) {
       this._onError(err)
       this._listenRelays.delete(id)
@@ -180,12 +190,11 @@ class AutoRelay {
    *
    * @private
    * @param {string} id - peer identifier string.
-   * @returns {void}
    */
-  _removeListenRelay (id) {
+  async _removeListenRelay (id) {
     if (this._listenRelays.delete(id)) {
       // TODO: this should be responsibility of the connMgr
-      this._listenOnAvailableHopRelays([id])
+      await this._listenOnAvailableHopRelays([id])
     }
   }
 
@@ -197,7 +206,6 @@ class AutoRelay {
    * 3. Search the network.
    *
    * @param {string[]} [peersToIgnore]
-   * @returns {Promise<void>}
    */
   async _listenOnAvailableHopRelays (peersToIgnore = []) {
     // TODO: The peer redial issue on disconnect should be handled by connection gating
@@ -207,31 +215,37 @@ class AutoRelay {
     }
 
     const knownHopsToDial = []
+    const peers = await all(this._peerStore.getPeers())
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
-    for (const [id, metadataMap] of this._peerStore.metadataBook.data.entries()) {
+    for await (const { id, metadata } of peers) {
+      const idStr = id.toB58String()
+
       // Continue to next if listening on this or peer to ignore
-      if (this._listenRelays.has(id) || peersToIgnore.includes(id)) {
+      if (this._listenRelays.has(idStr)) {
         continue
       }
 
-      const supportsHop = metadataMap.get(HOP_METADATA_KEY)
+      if (peersToIgnore.includes(idStr)) {
+        continue
+      }
+
+      const supportsHop = metadata.get(HOP_METADATA_KEY)
 
       // Continue to next if it does not support Hop
       if (!supportsHop || uint8ArrayToString(supportsHop) !== HOP_METADATA_VALUE) {
         continue
       }
 
-      const peerId = PeerId.createFromB58String(id)
-      const connection = this._connectionManager.get(peerId)
+      const connection = this._connectionManager.get(id)
 
       // If not connected, store for possible later use.
       if (!connection) {
-        knownHopsToDial.push(peerId)
+        knownHopsToDial.push(id)
         continue
       }
 
-      await this._addListenRelay(connection, id)
+      await this._addListenRelay(connection, idStr)
 
       // Check if already listening on enough relays
       if (this._listenRelays.size >= this.maxListeners) {
@@ -258,7 +272,7 @@ class AutoRelay {
         }
 
         const peerId = provider.id
-        this._peerStore.addressBook.add(peerId, provider.multiaddrs)
+        await this._peerStore.addressBook.add(peerId, provider.multiaddrs)
 
         await this._tryToListenOnRelay(peerId)
 

@@ -106,18 +106,15 @@ console.log(`Node started with id ${node.peerId.toB58String()}`)
 
 const conn = await node.dial(relayAddr)
 
-// Wait for connection and relay to be bind for the example purpose
-await new Promise((resolve) => {
-  node.peerStore.on('change:multiaddrs', ({ peerId }) => {
-    // Updated self multiaddrs?
-    if (peerId.equals(node.peerId)) {
-      resolve()
-    }
-  })
-})
-
 console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`)
-console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
+
+// Wait for connection and relay to be bind for the example purpose
+node.peerStore.on('change:multiaddrs', ({ peerId }) => {
+  // Updated self multiaddrs?
+  if (peerId.equals(node.peerId)) {
+    console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
+  }
+})
 ```
 
 As you can see in the code, we need to provide the relay address, `relayAddr`, as a process argument. This node will dial the provided relay address and automatically bind to it.

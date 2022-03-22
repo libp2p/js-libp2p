@@ -1,6 +1,9 @@
 'use strict'
 
 const debug = require('debug')
+const all = require('it-all')
+const filter = require('it-filter')
+const { pipe } = require('it-pipe')
 const log = Object.assign(debug('libp2p:dialer'), {
   error: debug('libp2p:dialer:err')
 })
@@ -30,15 +33,17 @@ const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('peer-id')} PeerId
- * @typedef {import('../peer-store')} PeerStore
- * @typedef {import('../peer-store/address-book').Address} Address
+ * @typedef {import('../peer-store/types').PeerStore} PeerStore
+ * @typedef {import('../peer-store/types').Address} Address
  * @typedef {import('../transport-manager')} TransportManager
+ * @typedef {import('../types').ConnectionGater} ConnectionGater
  */
 
 /**
  * @typedef {Object} DialerProperties
  * @property {PeerStore} peerStore
  * @property {TransportManager} transportManager
+ * @property {ConnectionGater} connectionGater
  *
  * @typedef {(addr:Multiaddr) => Promise<string[]>} Resolver
  *
@@ -70,6 +75,7 @@ class Dialer {
   constructor ({
     transportManager,
     peerStore,
+    connectionGater,
     addressSorter = publicAddressesFirst,
     maxParallelDials = MAX_PARALLEL_DIALS,
     maxAddrsToDial = MAX_ADDRS_TO_DIAL,
@@ -78,6 +84,7 @@ class Dialer {
     resolvers = {},
     metrics
   }) {
+    this.connectionGater = connectionGater
     this.transportManager = transportManager
     this.peerStore = peerStore
     this.addressSorter = addressSorter
@@ -88,10 +95,18 @@ class Dialer {
     this.tokens = [...new Array(maxParallelDials)].map((_, index) => index)
 
     /** @type {Map<string, PendingDial>} */
-    this._pendingDials = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIALS, metrics)
+    this._pendingDials = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PENDING_DIALS,
+      metrics
+    })
 
     /** @type {Map<string, { resolve: (value: any) => void, reject: (err: Error) => void}>} */
-    this._pendingDialTargets = trackedMap(METRICS_COMPONENT, METRICS_PENDING_DIAL_TARGETS, metrics)
+    this._pendingDialTargets = trackedMap({
+      component: METRICS_COMPONENT,
+      metric: METRICS_PENDING_DIAL_TARGETS,
+      metrics
+    })
 
     for (const [key, value] of Object.entries(resolvers)) {
       Multiaddr.resolvers.set(key, value)
@@ -128,6 +143,12 @@ class Dialer {
    * @returns {Promise<Connection>}
    */
   async connectToPeer (peer, options = {}) {
+    const { id } = getPeer(peer)
+
+    if (await this.connectionGater.denyDialPeer(id)) {
+      throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
+    }
+
     const dialTarget = await this._createCancellableDialTarget(peer)
 
     if (!dialTarget.addrs.length) {
@@ -192,10 +213,16 @@ class Dialer {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs) {
-      this.peerStore.addressBook.add(id, multiaddrs)
+      await this.peerStore.addressBook.add(id, multiaddrs)
     }
 
-    let knownAddrs = this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter) || []
+    let knownAddrs = await pipe(
+      await this.peerStore.addressBook.getMultiaddrsForPeer(id, this.addressSorter),
+      (source) => filter(source, async (multiaddr) => {
+        return !(await this.connectionGater.denyDialMultiaddr(id, multiaddr))
+      }),
+      (source) => all(source)
+    )
 
     // If received a multiaddr to dial, it should be the first to use
     // But, if we know other multiaddrs for the peer, we should try them too.
@@ -215,7 +242,7 @@ class Dialer {
     const supportedAddrs = addrs.filter(a => this.transportManager.transportForMultiaddr(a))
 
     if (supportedAddrs.length > this.maxAddrsToDial) {
-      this.peerStore.delete(id)
+      await this.peerStore.delete(id)
       throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
     }
 
@@ -259,7 +286,10 @@ class Dialer {
 
     // this signal will potentially be used while dialing lots of
     // peers so prevent MaxListenersExceededWarning appearing in the console
-    setMaxListeners && setMaxListeners(Infinity, signal)
+    try {
+      // fails on node < 15.4
+      setMaxListeners && setMaxListeners(Infinity, signal)
+    } catch {}
 
     const pendingDial = {
       dialRequest,

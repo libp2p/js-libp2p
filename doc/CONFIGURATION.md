@@ -23,6 +23,9 @@
     - [Setup with Keychain](#setup-with-keychain)
     - [Configuring Dialing](#configuring-dialing)
     - [Configuring Connection Manager](#configuring-connection-manager)
+    - [Configuring Connection Gater](#configuring-connection-gater)
+      - [Outgoing connections](#outgoing-connections)
+      - [Incoming connections](#incoming-connections)
     - [Configuring Transport Manager](#configuring-transport-manager)
     - [Configuring Metrics](#configuring-metrics)
     - [Configuring PeerStore](#configuring-peerstore)
@@ -497,7 +500,7 @@ const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
 const MPLEX = require('libp2p-mplex')
 const { NOISE } = require('libp2p-noise')
-const LevelDatastore = require('datastore-level')
+const { LevelDatastore } = require('datastore-level')
 
 const datastore = new LevelDatastore('path/to/store')
 await datastore.open()
@@ -590,9 +593,130 @@ const node = await Libp2p.create({
 })
 ```
 
+#### Configuring Connection Gater
+
+The Connection Gater allows us to prevent making incoming and outgoing connections to peers and storing
+multiaddrs in the address book.
+
+The order in which methods are called is as follows:
+
+##### Outgoing connections
+
+1. `connectionGater.denyDialPeer(...)`
+2. `connectionGater.denyDialMultiaddr(...)`
+3. `connectionGater.denyOutboundConnection(...)`
+4. `connectionGater.denyOutboundEncryptedConnection(...)`
+5. `connectionGater.denyOutboundUpgradedConnection(...)`
+
+##### Incoming connections
+
+1. `connectionGater.denyInboundConnection(...)`
+2. `connectionGater.denyInboundEncryptedConnection(...)`
+3. `connectionGater.denyInboundUpgradedConnection(...)`
+
+```js
+const node = await Libp2p.create({
+  // .. other config
+  connectionGater: {
+    /**
+     * denyDialMultiaddr tests whether we're permitted to Dial the
+     * specified peer.
+     *
+     * This is called by the dialer.connectToPeer implementation before
+     * dialling a peer.
+     *
+     * Return true to prevent dialing the passed peer.
+     */
+    denyDialPeer: (peerId: PeerId) => Promise<boolean>
+
+    /**
+     * denyDialMultiaddr tests whether we're permitted to dial the specified
+     * multiaddr for the given peer.
+     *
+     * This is called by the dialer.connectToPeer implementation after it has
+     * resolved the peer's addrs, and prior to dialling each.
+     *
+     * Return true to prevent dialing the passed peer on the passed multiaddr.
+     */
+    denyDialMultiaddr: (peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>
+
+    /**
+     * denyInboundConnection tests whether an incipient inbound connection is allowed.
+     *
+     * This is called by the upgrader, or by the transport directly (e.g. QUIC,
+     * Bluetooth), straight after it has accepted a connection from its socket.
+     *
+     * Return true to deny the incoming passed connection.
+     */
+    denyInboundConnection: (maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundConnection tests whether an incipient outbound connection is allowed.
+     *
+     * This is called by the upgrader, or by the transport directly (e.g. QUIC,
+     * Bluetooth), straight after it has created a connection with its socket.
+     *
+     * Return true to deny the incoming passed connection.
+     */
+    denyOutboundConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyInboundEncryptedConnection tests whether a given connection, now encrypted,
+     * is allowed.
+     *
+     * This is called by the upgrader, after it has performed the security
+     * handshake, and before it negotiates the muxer, or by the directly by the
+     * transport, at the exact same checkpoint.
+     *
+     * Return true to deny the passed secured connection.
+     */
+    denyInboundEncryptedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundEncryptedConnection tests whether a given connection, now encrypted,
+     * is allowed.
+     *
+     * This is called by the upgrader, after it has performed the security
+     * handshake, and before it negotiates the muxer, or by the directly by the
+     * transport, at the exact same checkpoint.
+     *
+     * Return true to deny the passed secured connection.
+     */
+    denyOutboundEncryptedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyInboundUpgradedConnection tests whether a fully capable connection is allowed.
+     *
+     * This is called after encryption has been negotiated and the connection has been
+     * multiplexed, if a multiplexer is configured.
+     *
+     * Return true to deny the passed upgraded connection.
+     */
+    denyInboundUpgradedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundUpgradedConnection tests whether a fully capable connection is allowed.
+     *
+     * This is called after encryption has been negotiated and the connection has been
+     * multiplexed, if a multiplexer is configured.
+     *
+     * Return true to deny the passed upgraded connection.
+     */
+    denyOutboundUpgradedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * Used by the address book to filter passed addresses.
+     *
+     * Return true to allow storing the passed multiaddr for the passed peer.
+     */
+    filterMultiaddrForPeer: (peer: PeerId, multiaddr: Multiaddr) => Promise<boolean>
+  }
+})
+```
+
 #### Configuring Transport Manager
 
-The Transport Manager is responsible for managing the libp2p transports life cycle. This includes starting listeners for the provided listen addresses, closing these listeners and dialing using the provided transports. By default, if a libp2p node has a list of multiaddrs for listenning on and there are no valid transports for those multiaddrs, libp2p will throw an error on startup and shutdown. However, for some applications it is perfectly acceptable for libp2p nodes to start in dial only mode if all the listen multiaddrs failed. This error tolerance can be enabled as follows:
+The Transport Manager is responsible for managing the libp2p transports life cycle. This includes starting listeners for the provided listen addresses, closing these listeners and dialing using the provided transports. By default, if a libp2p node has a list of multiaddrs for listening on and there are no valid transports for those multiaddrs, libp2p will throw an error on startup and shutdown. However, for some applications it is perfectly acceptable for libp2p nodes to start in dial only mode if all the listen multiaddrs failed. This error tolerance can be enabled as follows:
 
 ```js
 const Libp2p = require('libp2p')

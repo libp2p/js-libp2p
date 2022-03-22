@@ -18,7 +18,7 @@ const swarmKeyBuffer = uint8ArrayFromString(require('../fixtures/swarm.key'))
 const Libp2p = require('../../src')
 const Upgrader = require('../../src/upgrader')
 const { codes } = require('../../src/errors')
-
+const { mockConnectionGater } = require('../utils/mock-connection-gater')
 const mockMultiaddrConnPair = require('../utils/mockMultiaddrConn')
 const Peers = require('../fixtures/peers')
 const addrs = [
@@ -31,6 +31,17 @@ describe('Upgrader', () => {
   let remoteUpgrader
   let localPeer
   let remotePeer
+  const connectionGater = mockConnectionGater()
+
+  const mockConnectionManager = {
+    gater: {
+      allowDialPeer: async () => true,
+      allowDialMultiaddr: async () => true,
+      acceptConnection: async () => true,
+      acceptEncryptedConnection: async () => true,
+      acceptUpgradedConnection: async () => true
+    }
+  }
 
   before(async () => {
     ([
@@ -42,10 +53,14 @@ describe('Upgrader', () => {
     ]))
 
     localUpgrader = new Upgrader({
-      localPeer
+      connectionManager: mockConnectionManager,
+      localPeer,
+      connectionGater
     })
     remoteUpgrader = new Upgrader({
-      localPeer: remotePeer
+      connectionManager: mockConnectionManager,
+      localPeer: remotePeer,
+      connectionGater
     })
 
     localUpgrader.protocols.set('/echo/1.0.0', ({ stream }) => pipe(stream, stream))
@@ -321,6 +336,7 @@ describe('Upgrader', () => {
 describe('libp2p.upgrader', () => {
   let peers
   let libp2p
+  const connectionGater = mockConnectionGater()
 
   before(async () => {
     peers = await Promise.all([
@@ -355,7 +371,7 @@ describe('libp2p.upgrader', () => {
     expect(libp2p.upgrader).to.equal(libp2p.transportManager.upgrader)
   })
 
-  it('should be able to register and unregister a handler', () => {
+  it('should be able to register and unregister a handler', async () => {
     libp2p = new Libp2p({
       peerId: peers[0],
       modules: {
@@ -368,11 +384,11 @@ describe('libp2p.upgrader', () => {
     expect(libp2p.upgrader.protocols).to.not.have.any.keys(['/echo/1.0.0', '/echo/1.0.1'])
 
     const echoHandler = () => {}
-    libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
+    await libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(echoHandler)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
 
-    libp2p.unhandle(['/echo/1.0.0'])
+    await libp2p.unhandle(['/echo/1.0.0'])
     expect(libp2p.upgrader.protocols.get('/echo/1.0.0')).to.equal(undefined)
     expect(libp2p.upgrader.protocols.get('/echo/1.0.1')).to.equal(echoHandler)
   })
@@ -387,13 +403,16 @@ describe('libp2p.upgrader', () => {
         connEncryption: [Crypto]
       }
     })
+    await libp2p.start()
     const echoHandler = () => {}
     libp2p.handle(['/echo/1.0.0'], echoHandler)
 
     const remoteUpgrader = new Upgrader({
       localPeer: remotePeer,
+      connectionManager: libp2p.connectionManager,
       muxers: new Map([[Muxer.multicodec, Muxer]]),
-      cryptos: new Map([[Crypto.protocol, Crypto]])
+      cryptos: new Map([[Crypto.protocol, Crypto]]),
+      connectionGater
     })
     remoteUpgrader.protocols.set('/echo/1.0.0', echoHandler)
 
@@ -424,9 +443,13 @@ describe('libp2p.upgrader', () => {
 
     const remoteUpgrader = new Upgrader({
       localPeer: remotePeer,
+      connectionManager: libp2p.connectionManager,
       muxers: new Map([[Muxer.multicodec, Muxer]]),
-      cryptos: new Map([[Crypto.protocol, Crypto]])
+      cryptos: new Map([[Crypto.protocol, Crypto]]),
+      connectionGater
     })
+
+    await libp2p.start()
 
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 

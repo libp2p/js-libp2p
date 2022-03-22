@@ -8,10 +8,10 @@
   ],
   "exclude": [
     "src/circuit/protocol/index.js", // exclude generated file
+    "src/fetch/proto.js", // exclude generated file
     "src/identify/message.js", // exclude generated file
     "src/insecure/proto.js", // exclude generated file
-    "src/peer-store/persistent/pb/address-book.js", // exclude generated file
-    "src/peer-store/persistent/pb/proto-book.js", // exclude generated file
+    "src/peer-store/pb/peer.js", // exclude generated file
     "src/record/peer-record/peer-record.js", // exclude generated file
     "src/record/envelope/envelope.js" // exclude generated file
   ]

@@ -154,7 +154,10 @@ class PeerRouting {
       const controller = new TimeoutController(options.timeout)
       // this controller will potentially be used while dialing lots of
       // peers so prevent MaxListenersExceededWarning appearing in the console
-      setMaxListeners && setMaxListeners(Infinity, controller.signal)
+      try {
+        // fails on node < 15.4
+        setMaxListeners && setMaxListeners(Infinity, controller.signal)
+      } catch {}
 
       options.signal = controller.signal
     }

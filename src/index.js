@@ -9,7 +9,7 @@ const { EventEmitter } = require('events')
 const errCode = require('err-code')
 const PeerId = require('peer-id')
 const { Multiaddr } = require('multiaddr')
-
+const { MemoryDatastore } = require('datastore-core/memory')
 const PeerRouting = require('./peer-routing')
 const ContentRouting = require('./content-routing')
 const getPeer = require('./get-peer')
@@ -28,10 +28,10 @@ const TransportManager = require('./transport-manager')
 const Upgrader = require('./upgrader')
 const PeerStore = require('./peer-store')
 const PubsubAdapter = require('./pubsub-adapter')
-const PersistentPeerStore = require('./peer-store/persistent')
 const Registrar = require('./registrar')
-const ping = require('./ping')
 const IdentifyService = require('./identify')
+const FetchService = require('./fetch')
+const PingService = require('./ping')
 const NatManager = require('./nat-manager')
 const { updateSelfPeerRecord } = require('./record/utils')
 
@@ -48,6 +48,7 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @typedef {import('libp2p-interfaces/src/pubsub').PubsubOptions} PubsubOptions
  * @typedef {import('interface-datastore').Datastore} Datastore
  * @typedef {import('./pnet')} Protector
+ * @typedef {import('./types').ConnectionGater} ConnectionGater
  * @typedef {Object} PersistentPeerStoreOptions
  * @property {number} [threshold]
  */
@@ -106,13 +107,14 @@ const { updateSelfPeerRecord } = require('./record/utils')
  * @property {Libp2pModules} modules libp2p modules to use
  * @property {import('./address-manager').AddressManagerOptions} [addresses]
  * @property {import('./connection-manager').ConnectionManagerOptions} [connectionManager]
+ * @property {Partial<import('./types').ConnectionGater>} [connectionGater]
  * @property {Datastore} [datastore]
  * @property {import('./dialer').DialerOptions} [dialer]
  * @property {import('./identify/index').HostProperties} [host] libp2p host
  * @property {KeychainOptions & import('./keychain/index').KeychainOptions} [keychain]
  * @property {MetricsOptions & import('./metrics').MetricsOptions} [metrics]
  * @property {import('./peer-routing').PeerRoutingOptions} [peerRouting]
- * @property {PeerStoreOptions & PersistentPeerStoreOptions} [peerStore]
+ * @property {PeerStoreOptions} [peerStore]
  * @property {import('./transport-manager').TransportManagerOptions} [transportManager]
  * @property {Libp2pConfig} [config]
  *
@@ -172,13 +174,26 @@ class Libp2p extends EventEmitter {
       this.metrics = metrics
     }
 
-    this.peerStore = (this.datastore && this._options.peerStore.persistence)
-      ? new PersistentPeerStore({
-        peerId: this.peerId,
-        datastore: this.datastore,
-        ...this._options.peerStore
-      })
-      : new PeerStore({ peerId: this.peerId })
+    /** @type {ConnectionGater} */
+    this.connectionGater = {
+      denyDialPeer: async () => Promise.resolve(false),
+      denyDialMultiaddr: async () => Promise.resolve(false),
+      denyInboundConnection: async () => Promise.resolve(false),
+      denyOutboundConnection: async () => Promise.resolve(false),
+      denyInboundEncryptedConnection: async () => Promise.resolve(false),
+      denyOutboundEncryptedConnection: async () => Promise.resolve(false),
+      denyInboundUpgradedConnection: async () => Promise.resolve(false),
+      denyOutboundUpgradedConnection: async () => Promise.resolve(false),
+      filterMultiaddrForPeer: async () => Promise.resolve(true),
+      ...this._options.connectionGater
+    }
+
+    /** @type {import('./peer-store/types').PeerStore} */
+    this.peerStore = new PeerStore({
+      peerId: this.peerId,
+      datastore: (this.datastore && this._options.peerStore.persistence) ? this.datastore : new MemoryDatastore(),
+      addressFilter: this.connectionGater.filterMultiaddrForPeer
+    })
 
     // Addresses {listen, announce, noAnnounce}
     this.addresses = this._options.addresses
@@ -222,6 +237,7 @@ class Libp2p extends EventEmitter {
 
     // Setup the Upgrader
     this.upgrader = new Upgrader({
+      connectionGater: this.connectionGater,
       localPeer: this.peerId,
       metrics: this.metrics,
       onConnection: (connection) => this.connectionManager.onConnect(connection),
@@ -264,6 +280,7 @@ class Libp2p extends EventEmitter {
 
     this.dialer = new Dialer({
       transportManager: this.transportManager,
+      connectionGater: this.connectionGater,
       peerStore: this.peerStore,
       metrics: this.metrics,
       ...this._options.dialer
@@ -290,7 +307,6 @@ class Libp2p extends EventEmitter {
 
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService({ libp2p: this })
-      this.handle(Object.values(IdentifyService.getProtocolStr(this)), this.identifyService.handleMessage)
     }
 
     // Attach private network protector
@@ -323,10 +339,10 @@ class Libp2p extends EventEmitter {
     this.peerRouting = new PeerRouting(this)
     this.contentRouting = new ContentRouting(this)
 
-    // Mount default protocols
-    ping.mount(this)
-
     this._onDiscoveryPeer = this._onDiscoveryPeer.bind(this)
+
+    this.fetchService = new FetchService(this)
+    this.pingService = new PingService(this)
   }
 
   /**
@@ -356,6 +372,18 @@ class Libp2p extends EventEmitter {
   async start () {
     log('libp2p is starting')
 
+    if (this.identifyService) {
+      await this.handle(Object.values(IdentifyService.getProtocolStr(this)), this.identifyService.handleMessage)
+    }
+
+    if (this.fetchService) {
+      await this.handle(FetchService.PROTOCOL, this.fetchService.handleMessage)
+    }
+
+    if (this.pingService) {
+      await this.handle(PingService.getProtocolStr(this), this.pingService.handleMessage)
+    }
+
     try {
       await this._onStarting()
       await this._onDidStart()
@@ -380,9 +408,13 @@ class Libp2p extends EventEmitter {
     try {
       this._isStarted = false
 
+      if (this.identifyService) {
+        await this.identifyService.stop()
+      }
+
       this.relay && this.relay.stop()
       this.peerRouting.stop()
-      this._autodialler.stop()
+      await this._autodialler.stop()
       await (this._dht && this._dht.stop())
 
       for (const service of this._discovery.values()) {
@@ -393,7 +425,6 @@ class Libp2p extends EventEmitter {
 
       this._discovery = new Map()
 
-      await this.peerStore.stop()
       await this.connectionManager.stop()
 
       await Promise.all([
@@ -404,7 +435,9 @@ class Libp2p extends EventEmitter {
       await this.natManager.stop()
       await this.transportManager.close()
 
-      ping.unmount(this)
+      await this.unhandle(FetchService.PROTOCOL)
+      await this.unhandle(PingService.getProtocolStr(this))
+
       this.dialer.destroy()
     } catch (/** @type {any} */ err) {
       if (err) {
@@ -499,7 +532,7 @@ class Libp2p extends EventEmitter {
     if (!connection) {
       connection = await this.dialer.connectToPeer(peer, options)
     } else if (multiaddrs) {
-      this.peerStore.addressBook.add(id, multiaddrs)
+      await this.peerStore.addressBook.add(id, multiaddrs)
     }
 
     return connection
@@ -557,6 +590,17 @@ class Libp2p extends EventEmitter {
   }
 
   /**
+   * Sends a request to fetch the value associated with the given key from the given peer.
+   *
+   * @param {PeerId|Multiaddr} peer
+   * @param {string} key
+   * @returns {Promise<Uint8Array | null>}
+   */
+  fetch (peer, key) {
+    return this.fetchService.fetch(peer, key)
+  }
+
+  /**
    * Pings the given peer in order to obtain the operation latency.
    *
    * @param {PeerId|Multiaddr|string} peer - The peer to ping
@@ -567,10 +611,10 @@ class Libp2p extends EventEmitter {
 
     // If received multiaddr, ping it
     if (multiaddrs) {
-      return ping(this, multiaddrs[0])
+      return this.pingService.ping(multiaddrs[0])
     }
 
-    return ping(this, id)
+    return this.pingService.ping(id)
   }
 
   /**
@@ -579,14 +623,14 @@ class Libp2p extends EventEmitter {
    * @param {string[]|string} protocols
    * @param {(props: HandlerProps) => void} handler
    */
-  handle (protocols, handler) {
+  async handle (protocols, handler) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
     protocols.forEach(protocol => {
       this.upgrader.protocols.set(protocol, handler)
     })
 
     // Add new protocols to self protocols in the Protobook
-    this.peerStore.protoBook.add(this.peerId, protocols)
+    await this.peerStore.protoBook.add(this.peerId, protocols)
   }
 
   /**
@@ -595,14 +639,14 @@ class Libp2p extends EventEmitter {
    *
    * @param {string[]|string} protocols
    */
-  unhandle (protocols) {
+  async unhandle (protocols) {
     protocols = Array.isArray(protocols) ? protocols : [protocols]
     protocols.forEach(protocol => {
       this.upgrader.protocols.delete(protocol)
     })
 
     // Remove protocols from self protocols in the Protobook
-    this.peerStore.protoBook.remove(this.peerId, protocols)
+    await this.peerStore.protoBook.remove(this.peerId, protocols)
   }
 
   async _onStarting () {
@@ -613,11 +657,8 @@ class Libp2p extends EventEmitter {
     // Manage your NATs
     this.natManager.start()
 
-    // Start PeerStore
-    await this.peerStore.start()
-
     if (this._config.pubsub.enabled) {
-      this.pubsub && this.pubsub.start()
+      this.pubsub && await this.pubsub.start()
     }
 
     // DHT subsystem
@@ -631,6 +672,10 @@ class Libp2p extends EventEmitter {
 
     // Start metrics if present
     this.metrics && this.metrics.start()
+
+    if (this.identifyService) {
+      await this.identifyService.start()
+    }
   }
 
   /**
@@ -643,17 +688,19 @@ class Libp2p extends EventEmitter {
 
     this.peerStore.on('peer', peerId => {
       this.emit('peer:discovery', peerId)
-      this._maybeConnect(peerId)
+      this._maybeConnect(peerId).catch(err => {
+        log.error(err)
+      })
     })
 
     // Once we start, emit any peers we may have already discovered
     // TODO: this should be removed, as we already discovered these peers in the past
-    for (const peer of this.peerStore.peers.values()) {
+    for await (const peer of this.peerStore.getPeers()) {
       this.emit('peer:discovery', peer.id)
     }
 
     this.connectionManager.start()
-    this._autodialler.start()
+    await this._autodialler.start()
 
     // Peer discovery
     await this._setupPeerDiscovery()
@@ -677,8 +724,8 @@ class Libp2p extends EventEmitter {
       return
     }
 
-    peer.multiaddrs && this.peerStore.addressBook.add(peer.id, peer.multiaddrs)
-    peer.protocols && this.peerStore.protoBook.set(peer.id, peer.protocols)
+    peer.multiaddrs && this.peerStore.addressBook.add(peer.id, peer.multiaddrs).catch(err => log.error(err))
+    peer.protocols && this.peerStore.protoBook.set(peer.id, peer.protocols).catch(err => log.error(err))
   }
 
   /**

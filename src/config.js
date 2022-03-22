@@ -13,6 +13,7 @@ const { FaultTolerance } = require('./transport-manager')
 
 /**
  * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ * @typedef {import('./types').ConnectionGater} ConnectionGater
  * @typedef {import('.').Libp2pOptions} Libp2pOptions
  * @typedef {import('.').constructorOptions} constructorOptions
  */
@@ -27,6 +28,7 @@ const DefaultConfig = {
   connectionManager: {
     minConnections: 25
   },
+  connectionGater: /** @type {ConnectionGater} */ {},
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
   },

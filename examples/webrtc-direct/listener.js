@@ -40,5 +40,4 @@ const PeerId = require('peer-id')
 
   console.log('Listening on:')
   node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
-
 })()
