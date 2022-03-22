@@ -312,7 +312,7 @@ class Libp2p extends EventEmitter {
     // Attach private network protector
     if (this._modules.connProtector) {
       this.upgrader.protector = this._modules.connProtector
-    } else if (globalThis.process !== undefined && globalThis.process.env && globalThis.process.env.LIBP2P_FORCE_PNET) { // eslint-disable-line no-undef
+    } else if (globalThis.process !== undefined && globalThis.process.env && globalThis.process.env.LIBP2P_FORCE_PNET==='1') { // eslint-disable-line no-undef
       throw new Error('Private network is enforced, but no protector was provided')
     }
 
