@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^5.0.2",
-    "ipfs-core": "^0.13.0",
+    "@chainsafe/libp2p-noise": "^6.0.0",
+    "ipfs-core": "^0.14.1",
     "libp2p": "../../",
     "@libp2p/delegated-content-routing": "^1.0.1",
     "@libp2p/delegated-peer-routing": "^1.0.1",
@@ -12,9 +12,9 @@
     "@libp2p/mplex": "^1.0.2",
     "@libp2p/webrtc-star": "^1.0.6",
     "@libp2p/websockets": "^1.0.3",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-scripts": "2.1.8"
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.0"
   },
   "scripts": {
     "start": "react-scripts start"

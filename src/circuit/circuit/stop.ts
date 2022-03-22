@@ -55,6 +55,7 @@ export async function stop (options: StopOptions) {
     connection,
     request
   } = options
+
   const { stream } = await connection.newStream([RELAY_CODEC])
   log('starting stop request to %p', connection.remotePeer)
   const streamHandler = new StreamHandler({ stream })

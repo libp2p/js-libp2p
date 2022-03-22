@@ -51,7 +51,7 @@ export async function test () {
     output2 += uint8ArrayToString(data)
 
     if (output2.includes('Advertising with a relay address of') && output2.includes('/p2p/')) {
-      autoRelayAddr = output2.trim().split('Advertising with a relay address of ')[1]
+      autoRelayAddr = output2.trim().split('Advertising with a relay address of ')[1].trim()
       proc2Ready.resolve()
     }
   })

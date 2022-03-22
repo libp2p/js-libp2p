@@ -10,8 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "vite"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "@chainsafe/libp2p-noise": "^6.0.0",

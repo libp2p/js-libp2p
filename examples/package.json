@@ -9,8 +9,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@achingbrain/libp2p-gossipsub": "^0.13.3",
-    "@libp2p/pubsub-peer-discovery": "^5.0.0",
+    "@achingbrain/libp2p-gossipsub": "^0.13.4",
+    "@libp2p/pubsub-peer-discovery": "^5.0.1",
     "execa": "^2.1.0",
     "fs-extra": "^8.1.0",
     "libp2p": "../",

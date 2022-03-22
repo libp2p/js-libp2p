@@ -26,7 +26,7 @@ async function testAll () {
       continue
     }
 
-    await waitForOutput('npm info ok', 'npm', ['test', '--', dir], {
+    await waitForOutput('npm info ok', 'npm', ['--loglevel', 'info', 'run', 'test', '--', dir], {
       cwd: __dirname
     })
   }

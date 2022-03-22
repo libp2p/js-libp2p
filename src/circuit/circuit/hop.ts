@@ -70,7 +70,10 @@ export async function handleHop (hopRequest: HopRequest) {
   // TODO: Handle being an active relay
   if (destinationConnection == null) {
     log('did not have connection to remote peer')
-    return
+    return streamHandler.end({
+      type: CircuitPB.Type.STATUS,
+      code: CircuitPB.Status.HOP_NO_CONN_TO_DST
+    })
   }
 
   // Handle the incoming HOP request by performing a STOP request

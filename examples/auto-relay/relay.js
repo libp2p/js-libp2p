@@ -5,6 +5,11 @@ import { Mplex } from '@libp2p/mplex'
 
 async function main () {
   const node = await createLibp2p({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0/ws']
+      // TODO check "What is next?" section
+      // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
+    },
     transports: [
       new WebSockets()
     ],
@@ -14,11 +19,6 @@ async function main () {
     streamMuxers: [
       new Mplex()
     ],
-    addresses: {
-      listen: ['/ip4/0.0.0.0/tcp/0/ws']
-      // TODO check "What is next?" section
-      // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
-    },
     relay: {
       enabled: true,
       hop: {

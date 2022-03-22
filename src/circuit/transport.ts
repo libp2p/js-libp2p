@@ -58,7 +58,7 @@ export class Circuit implements Transport, Initializable {
     const request = await streamHandler.read()
 
     if (request == null) {
-      log('request was invalid')
+      log('request was invalid, could not read from stream')
       streamHandler.write({
         type: CircuitPB.Type.STATUS,
         code: CircuitPB.Status.MALFORMED_MESSAGE
@@ -106,41 +106,25 @@ export class Circuit implements Transport, Initializable {
       }
     }
 
-    if (virtualConnection == null) {
-      log('cound not create virtual connection')
-      streamHandler.write({
-        type: CircuitPB.Type.STATUS,
-        code: CircuitPB.Status.HOP_NO_CONN_TO_DST
+    if (virtualConnection != null) {
+      // @ts-expect-error dst peer will not be undefined
+      const remoteAddr = new Multiaddr(request.dstPeer.addrs[0])
+      // @ts-expect-error dst peer will not be undefined
+      const localAddr = new Multiaddr(request.srcPeer.addrs[0])
+      const maConn = streamToMaConnection({
+        stream: virtualConnection,
+        remoteAddr,
+        localAddr
       })
-      streamHandler.close()
-      return
-    }
+      const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+      log('new %s connection %s', type, maConn.remoteAddr)
 
-    if (request.dstPeer == null || request.dstPeer.addrs == null || request.dstPeer.addrs[0] == null || request.srcPeer == null || request.srcPeer.addrs == null || request.srcPeer.addrs[0] == null) {
-      log('request was invalid')
-      streamHandler.write({
-        type: CircuitPB.Type.STATUS,
-        code: CircuitPB.Status.MALFORMED_MESSAGE
-      })
-      streamHandler.close()
-      return
-    }
+      const conn = await this.components.getUpgrader().upgradeInbound(maConn)
+      log('%s connection %s upgraded', type, maConn.remoteAddr)
 
-    const remoteAddr = new Multiaddr(request.dstPeer.addrs[0])
-    const localAddr = new Multiaddr(request.srcPeer.addrs[0])
-    const maConn = streamToMaConnection({
-      stream: virtualConnection,
-      remoteAddr,
-      localAddr
-    })
-    const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
-    log('new %s connection %s', type, maConn.remoteAddr)
-
-    const conn = await this.components.getUpgrader().upgradeInbound(maConn)
-    log('%s connection %s upgraded', type, maConn.remoteAddr)
-
-    if (this.handler != null) {
-      this.handler(conn)
+      if (this.handler != null) {
+        this.handler(conn)
+      }
     }
   }
 

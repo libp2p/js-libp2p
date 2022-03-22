@@ -35,8 +35,7 @@ export async function test () {
           '#output',
           { timeout: 5000 }
         )
-        await browser.close();
-
+        await browser.close()
       } catch (err) {
         console.error(err)
         process.exit(1)

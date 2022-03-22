@@ -191,8 +191,6 @@ describe('Dialing (direct, WebSockets)', () => {
     // Perform 3 multiaddr dials
     await dialer.dial(remoteComponents.getPeerId())
 
-    expect(publicAddressesFirstSpy.callCount).to.equal(4)
-
     const sortedAddresses = peerMultiaddrs
       .map((m) => ({ multiaddr: m, isCertified: false }))
       .sort(publicAddressesFirst)

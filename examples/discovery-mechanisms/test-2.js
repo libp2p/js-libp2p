@@ -5,10 +5,9 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const discoveredCopy = 'Discovered:'
 
 export async function test () {
-  const discoveredNodes = []
+  let discoveredNodes = 0
 
   process.stdout.write('2.js\n')
 
@@ -19,15 +18,16 @@ export async function test () {
 
   proc.all.on('data', async (data) => {
     process.stdout.write(data)
-    const line = uint8ArrayToString(data)
+    const str = uint8ArrayToString(data)
 
-    if (line.includes(discoveredCopy)) {
-      const id = line.trim().split(discoveredCopy)[1]
-      discoveredNodes.push(id)
-    }
+    str.split('\n').forEach(line => {
+      if (line.includes('Discovered:')) {
+        discoveredNodes++
+      }
+    })
   })
 
-  await pWaitFor(() => discoveredNodes.length === 2)
+  await pWaitFor(() => discoveredNodes > 1)
 
   proc.kill()
 }

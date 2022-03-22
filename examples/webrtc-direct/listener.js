@@ -3,6 +3,7 @@ import { WebRTCDirect } from '@achingbrain/webrtc-direct'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { createFromJSON } from '@libp2p/peer-id-factory'
+import wrtc from 'wrtc'
 
 ;(async () => {
   // hardcoded peer id to avoid copy-pasting of listener's peer id into the dialer's bootstrap list
@@ -17,7 +18,7 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
     addresses: {
       listen: ['/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct']
     },
-    transports: [new WebRTCDirect()],
+    transports: [new WebRTCDirect({ wrtc })],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()]
   })
