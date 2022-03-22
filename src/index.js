@@ -650,6 +650,11 @@ class Libp2p extends EventEmitter {
   }
 
   async _onStarting () {
+    // Start metrics if present
+    this.metrics && this.metrics.start()
+
+    this.connectionManager.start()
+
     // Listen on the provided transports for the provided addresses
     const addrs = this.addressManager.getListenAddrs()
     await this.transportManager.listen(addrs)
@@ -670,9 +675,6 @@ class Libp2p extends EventEmitter {
       this._dht.on('peer', this._onDiscoveryPeer)
     }
 
-    // Start metrics if present
-    this.metrics && this.metrics.start()
-
     if (this.identifyService) {
       await this.identifyService.start()
     }
@@ -684,7 +686,6 @@ class Libp2p extends EventEmitter {
    * @private
    */
   async _onDidStart () {
-    this._isStarted = true
 
     this.peerStore.on('peer', peerId => {
       this.emit('peer:discovery', peerId)
@@ -699,7 +700,6 @@ class Libp2p extends EventEmitter {
       this.emit('peer:discovery', peer.id)
     }
 
-    this.connectionManager.start()
     await this._autodialler.start()
 
     // Peer discovery
@@ -709,6 +709,8 @@ class Libp2p extends EventEmitter {
     this.relay && this.relay.start()
 
     this.peerRouting.start()
+
+    this._isStarted = true
   }
 
   /**
