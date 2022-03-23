@@ -19,7 +19,6 @@ const StreamHandler = require('./stream-handler')
  * @typedef {import('./protocol').IHopMessage} IHopMessage
  * @typedef {import('./protocol').IReservation} IReservation
  * @typedef {import('./protocol').ILimit} ILimit
- * @typedef {import('./stream-handler')} StreamHandler
  * @typedef {import('./interfaces').ReservationStore} ReservationStore
  * @typedef {import('./interfaces').Acl} Acl
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
@@ -67,7 +66,7 @@ module.exports.reserve = async function (connection) {
   let response
   try {
     response = HopMessage.decode(await streamHandler.read())
-  } catch (e) {
+  } catch (/** @type {any} */ e) {
     log.error('error passing reserve message response from %s because', connection.remotePeer.toB58String(), e.message)
     streamHandler.close()
     throw e
