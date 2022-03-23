@@ -1,3 +1,10 @@
+### [1.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.1...v1.0.2) (2022-03-23)
+
+
+### Bug Fixes
+
+* add record validators and selectors ([#304](https://github.com/libp2p/js-libp2p-kad-dht/issues/304)) ([27c3948](https://github.com/libp2p/js-libp2p-kad-dht/commit/27c3948376106ba8bc80e5ac0148e64f5b066cb0))
+
 ### [1.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.0...v1.0.1) (2022-03-16)
 
 
