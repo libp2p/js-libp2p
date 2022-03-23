@@ -22,6 +22,8 @@ import type { CID } from 'multiformats/cid'
 import type { PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 import type { KadDHTInit } from './index.js'
+import { validators as recordValidators } from '@libp2p/record/validators'
+import { selectors as recordSelectors } from '@libp2p/record/selectors'
 
 /**
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
@@ -79,8 +81,14 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
 
     this.providers = new Providers()
 
-    this.validators = validators ?? {}
-    this.selectors = selectors ?? {}
+    this.validators = {
+      ...recordValidators,
+      ...validators
+    }
+    this.selectors = {
+      ...recordSelectors,
+      ...selectors
+    }
     this.network = new Network({
       protocol: this.protocol,
       lan: this.lan
