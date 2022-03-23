@@ -11,7 +11,7 @@ const ipfsHttpClient = require('ipfs-http-client')
 const DelegatedContentRouter = require('libp2p-delegated-content-routing')
 const { Multiaddr } = require('multiaddr')
 const Libp2p = require('../../src')
-const { relayV1: relayMulticodec } = require('../../src/circuit/multicodec')
+const { protocolIDv2Hop } = require('../../src/circuit/multicodec')
 
 const { createPeerId } = require('../utils/creators/peer')
 const baseOptions = require('../utils/base-options')
@@ -34,7 +34,7 @@ async function usingAsRelay (node, relay, opts) {
 async function discoveredRelayConfig (node, relay) {
   await pWaitFor(async () => {
     const protos = await node.peerStore.protoBook.get(relay.peerId)
-    const supportsRelay = protos.includes('/libp2p/circuit/relay/0.1.0')
+    const supportsRelay = protos.includes(protocolIDv2Hop)
 
     const metadata = await node.peerStore.metadataBook.get(relay.peerId)
     const supportsHop = metadata.has('hop_relay')
@@ -43,8 +43,7 @@ async function discoveredRelayConfig (node, relay) {
   })
 }
 
-// TODO: replace with circuit v2 stuff
-describe.skip('auto-relay', () => {
+describe('auto-relay', () => {
   describe('basics', () => {
     let libp2p
     let relayLibp2p
@@ -108,7 +107,7 @@ describe.skip('auto-relay', () => {
 
       // Peer has relay multicodec
       const knownProtocols = await libp2p.peerStore.protoBook.get(relayLibp2p.peerId)
-      expect(knownProtocols).to.include(relayMulticodec)
+      expect(knownProtocols).to.include(protocolIDv2Hop)
     })
   })
 
@@ -179,7 +178,7 @@ describe.skip('auto-relay', () => {
 
       // Peer has relay multicodec
       const knownProtocols = await relayLibp2p1.peerStore.protoBook.get(relayLibp2p2.peerId)
-      expect(knownProtocols).to.include(relayMulticodec)
+      expect(knownProtocols).to.include(protocolIDv2Hop)
     })
 
     it('should be able to dial a peer from its relayed address previously added', async () => {
@@ -208,7 +207,7 @@ describe.skip('auto-relay', () => {
 
       // Relay2 has relay multicodec
       const knownProtocols2 = await relayLibp2p1.peerStore.protoBook.get(relayLibp2p2.peerId)
-      expect(knownProtocols2).to.include(relayMulticodec)
+      expect(knownProtocols2).to.include(protocolIDv2Hop)
 
       // Discover an extra relay and connect
       await relayLibp2p1.peerStore.addressBook.add(relayLibp2p3.peerId, relayLibp2p3.multiaddrs)
@@ -222,7 +221,7 @@ describe.skip('auto-relay', () => {
 
       // Relay2 has relay multicodec
       const knownProtocols3 = await relayLibp2p1.peerStore.protoBook.get(relayLibp2p3.peerId)
-      expect(knownProtocols3).to.include(relayMulticodec)
+      expect(knownProtocols3).to.include(protocolIDv2Hop)
     })
 
     it('should not listen on a relayed address we disconnect from peer', async () => {

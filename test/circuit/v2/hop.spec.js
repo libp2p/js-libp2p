@@ -67,7 +67,7 @@ describe('Circuit v2 - hop protocol', function () {
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.limit).to.be.null()
       expect(response.status).to.be.equal(Status.OK)
-      expect(response.reservation.expire.toNumber()).to.be.equal(expire)
+      expect(response.reservation.expire).to.be.equal(expire)
       expect(response.reservation.voucher).to.not.be.null()
       expect(response.reservation.addrs.length).to.be.greaterThan(0)
     })
@@ -113,7 +113,6 @@ describe('Circuit v2 - hop protocol', function () {
     it('should fail to reserve slot - failed to write response', async function () {
       reservationStore.reserve.resolves({ status: Status.OK, expire: 123 })
       reservationStore.removeReservation.resolves()
-      // TODO: seems like closing stream or connection doesn't trigger error
       const backup = streamHandler.write
       streamHandler.write = function () { throw new Error('connection reset') }
       await handleHopProtocol({

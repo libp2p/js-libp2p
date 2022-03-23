@@ -30,7 +30,7 @@ const getDnsRelayedAddrStub = (peerId) => [
   [`dnsaddr=${relayedAddr(peerId)}`]
 ]
 
-describe('Dialing (resolvable addresses)', () => {
+describe.skip('Dialing (resolvable addresses)', () => {
   let libp2p, remoteLibp2p
 
   beforeEach(async () => {
@@ -44,7 +44,17 @@ describe('Dialing (resolvable addresses)', () => {
         config: {
           ...baseOptions.config,
           peerDiscovery: {
-            autoDial: false
+            autoDial: true
+          },
+          relay: {
+            enabled: true,
+            autorelay: {
+              enabled: true
+            },
+            hop: {
+              enabled: true,
+              active: false
+            }
           }
         }
       },

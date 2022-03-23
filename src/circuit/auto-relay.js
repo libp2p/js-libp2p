@@ -10,8 +10,7 @@ const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
 const { Multiaddr } = require('multiaddr')
 const all = require('it-all')
 
-const { relayV1: multicodec } = require('./multicodec')
-const { canHop } = require('./v1/hop')
+const { protocolIDv2Hop } = require('./multicodec')
 const { namespaceToCid } = require('./utils')
 const {
   CIRCUIT_PROTO_CODE,
@@ -19,10 +18,12 @@ const {
   HOP_METADATA_VALUE,
   RELAY_RENDEZVOUS_NS
 } = require('./constants')
+const { reserve } = require('./v2/hop')
 
 /**
  * @typedef {import('libp2p-interfaces/src/connection').Connection} Connection
  * @typedef {import('../peer-store/types').Address} Address
+ * @typedef {import('./v2/protocol').IReservation} Reservation
  * @typedef {import('peer-id')} PeerId
  */
 
@@ -53,9 +54,11 @@ class AutoRelay {
     this.maxListeners = maxListeners
 
     /**
-     * @type {Set<string>}
+     * id => Reservation
+     *
+     * @type {Map<string, Reservation>}
      */
-    this._listenRelays = new Set()
+    this._listenRelays = new Map()
 
     this._onProtocolChange = this._onProtocolChange.bind(this)
     this._onPeerDisconnected = this._onPeerDisconnected.bind(this)
@@ -88,7 +91,7 @@ class AutoRelay {
     const id = peerId.toB58String()
 
     // Check if it has the protocol
-    const hasProtocol = protocols.find(protocol => protocol === multicodec)
+    const hasProtocol = protocols.find(protocol => protocol === protocolIDv2Hop)
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (!hasProtocol && this._listenRelays.has(id)) {
@@ -107,16 +110,21 @@ class AutoRelay {
 
       // Do not hop on a relayed connection
       if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {
-        log(`relayed connection to ${id} will not be used to hop on`)
+        log(`relayed connection to ${id} will not be used to make reservation on`)
         return
       }
 
-      const supportsHop = await canHop({ connection })
+      await this._peerStore.metadataBook.setValue(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
 
-      if (supportsHop) {
-        await this._peerStore.metadataBook.setValue(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
-        await this._addListenRelay(connection, id)
+      // Check if already listening on enough relays
+      if (this._listenRelays.size >= this.maxListeners) {
+        log('skip reservation as we created max reservations already')
+        return
       }
+      const reservation = await reserve(connection)
+
+      await this._addListenRelay(connection, id, reservation)
+      log('added listen relay %s', connection.remotePeer.toB58String())
     } catch (/** @type {any} */ err) {
       this._onError(err)
     }
@@ -147,15 +155,11 @@ class AutoRelay {
    * @private
    * @param {Connection} connection - connection to the peer
    * @param {string} id - peer identifier string
+   * @param {Reservation} reservation
    * @returns {Promise<void>}
    */
-  async _addListenRelay (connection, id) {
+  async _addListenRelay (connection, id, reservation) {
     try {
-      // Check if already listening on enough relays
-      if (this._listenRelays.size >= this.maxListeners) {
-        return
-      }
-
       // Get peer known addresses and sort them per public addresses first
       const remoteAddrs = await this._peerStore.addressBook.getMultiaddrsForPeer(
         connection.remotePeer, this._addressSorter
@@ -177,7 +181,7 @@ class AutoRelay {
       )
 
       if (result.includes(true)) {
-        this._listenRelays.add(id)
+        this._listenRelays.set(id, reservation)
       }
     } catch (/** @type {any} */ err) {
       this._onError(err)
@@ -245,12 +249,19 @@ class AutoRelay {
         continue
       }
 
-      await this._addListenRelay(connection, idStr)
-
       // Check if already listening on enough relays
       if (this._listenRelays.size >= this.maxListeners) {
         return
       }
+
+      let reservation
+      try {
+        reservation = await reserve(connection)
+      } catch (e) {
+        continue
+      }
+
+      await this._addListenRelay(connection, idStr, reservation)
     }
 
     // Try to listen on known peers that are not connected
@@ -292,9 +303,12 @@ class AutoRelay {
   async _tryToListenOnRelay (peerId) {
     try {
       const connection = await this._libp2p.dial(peerId)
-      await this._addListenRelay(connection, peerId.toB58String())
+
+      const reservation = await reserve(connection)
+
+      await this._addListenRelay(connection, peerId.toB58String(), reservation)
     } catch (/** @type {any} */ err) {
-      this._onError(err, `could not connect and listen on known hop relay ${peerId.toB58String()}`)
+      this._onError(err, `could not connect and make reservation on known hop relay ${peerId.toB58String()}`)
     }
   }
 }

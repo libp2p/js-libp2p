@@ -8,10 +8,12 @@ const log = Object.assign(debug('libp2p:circuitv2:hop'), {
   error: debug('libp2p:circuitv2:hop:err')
 })
 const { HopMessage, Status, StopMessage } = require('./protocol')
+const { protocolIDv2Hop } = require('../multicodec')
 const { stop } = require('./stop')
 const { ReservationVoucherRecord } = require('./reservation-voucher')
 const { validateHopConnectRequest } = require('./validation')
 const { Multiaddr } = require('multiaddr')
+const StreamHandler = require('./stream-handler')
 
 /**
  * @typedef {import('./protocol').IHopMessage} IHopMessage
@@ -47,6 +49,36 @@ module.exports.handleHopProtocol = async function (options) {
       options.streamHandler.close()
     }
   }
+}
+
+/**
+ *
+ * @param {Connection} connection
+ * @returns
+ */
+module.exports.reserve = async function (connection) {
+  log('requesting reservation from %s', connection.remotePeer.toB58String())
+  const { stream } = await connection.newStream([protocolIDv2Hop])
+  const streamHandler = new StreamHandler({ stream })
+  streamHandler.write(HopMessage.encode({
+    type: HopMessage.Type.RESERVE
+  }).finish())
+
+  let response
+  try {
+    response = HopMessage.decode(await streamHandler.read())
+  } catch (e) {
+    log.error('error passing reserve message response from %s because', connection.remotePeer.toB58String(), e.message)
+    streamHandler.close()
+    throw e
+  }
+
+  if (response.status === Status.OK && response.reservation) {
+    return response.reservation
+  }
+  const errMsg = `reservation failed with status ${response.status}`
+  log.error(errMsg)
+  throw new Error(errMsg)
 }
 
 /**
