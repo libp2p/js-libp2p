@@ -311,7 +311,7 @@ describe('Identify', () => {
       }
 
       // ensure sequence number of peer record we are about to create is different
-      await delay(10)
+      await delay(1000)
 
       // make sure we have a peer record to send
       await localPeerRecordUpdater.update()
