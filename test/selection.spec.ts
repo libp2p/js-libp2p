@@ -56,7 +56,7 @@ describe('selection', () => {
   describe('selectors', () => {
     it('public key', () => {
       expect(
-        selection.selectors.publickKey(uint8ArrayFromString('/hello/world'), records)
+        selection.selectors.pk(uint8ArrayFromString('/hello/world'), records)
       ).to.equal(
         0
       )
@@ -64,7 +64,7 @@ describe('selection', () => {
 
     it('returns the first record when there is only one to select', () => {
       expect(
-        selection.selectors.publickKey(uint8ArrayFromString('/hello/world'), [records[0]])
+        selection.selectors.pk(uint8ArrayFromString('/hello/world'), [records[0]])
       ).to.equal(
         0
       )

@@ -99,12 +99,12 @@ describe('validator', () => {
 
   describe('validators', () => {
     it('exports pk', () => {
-      expect(validator.validators).to.have.keys(['publicKey'])
+      expect(validator.validators).to.have.keys(['pk'])
     })
 
     describe('public key', () => {
       it('exports func and sign', () => {
-        const pk = validator.validators.publicKey
+        const pk = validator.validators.pk
 
         expect(pk).to.have.property('func')
         expect(pk).to.have.property('sign', false)
@@ -112,7 +112,7 @@ describe('validator', () => {
 
       it('does not error on valid record', async () => {
         return await Promise.all(cases.valid.publicKey.map(async (k) => {
-          return await validator.validators.publicKey.func(k, key.public.bytes)
+          return await validator.validators.pk.func(k, key.public.bytes)
         }))
       })
 
@@ -120,7 +120,7 @@ describe('validator', () => {
         return await Promise.all(cases.invalid.publicKey.map(async ({ data, code }) => {
           try {
             //
-            await validator.validators.publicKey.func(data, key.public.bytes)
+            await validator.validators.pk.func(data, key.public.bytes)
           } catch (err: any) {
             expect(err.code).to.eql(code)
             return
@@ -137,7 +137,7 @@ describe('validator', () => {
 
       const hash = await pubKey.hash()
       const k = Uint8Array.of(...uint8ArrayFromString('/pk/'), ...hash)
-      return await validator.validators.publicKey.func(k, pubKey.bytes)
+      return await validator.validators.pk.func(k, pubKey.bytes)
     })
   })
 })

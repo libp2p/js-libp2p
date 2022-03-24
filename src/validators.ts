@@ -70,5 +70,5 @@ const publicKey = {
 }
 
 export const validators = {
-  publicKey
+  pk: publicKey
 }

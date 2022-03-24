@@ -46,5 +46,5 @@ function publickKey (k: Uint8Array, records: Uint8Array[]) {
 }
 
 export const selectors = {
-  publickKey
+  pk: publickKey
 }

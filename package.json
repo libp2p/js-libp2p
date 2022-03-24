@@ -167,8 +167,8 @@
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^0.22.7",
-    "@libp2p/interfaces": "^1.3.3",
+    "@libp2p/crypto": "^0.22.9",
+    "@libp2p/interfaces": "^1.3.18",
     "aegir": "^36.1.3"
   }
 }
