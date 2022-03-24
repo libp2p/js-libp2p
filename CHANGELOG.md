@@ -1,3 +1,10 @@
+### [1.0.1](https://github.com/libp2p/js-libp2p-record/compare/v1.0.0...v1.0.1) (2022-03-24)
+
+
+### Bug Fixes
+
+* export selector/validators with the same name as their prefix ([#34](https://github.com/libp2p/js-libp2p-record/issues/34)) ([4913d1f](https://github.com/libp2p/js-libp2p-record/commit/4913d1fec2ed92d4803f3497bef81142bd560a91))
+
 ## [1.0.0](https://github.com/libp2p/js-libp2p-record/compare/v0.10.6...v1.0.0) (2022-02-18)
 
 
