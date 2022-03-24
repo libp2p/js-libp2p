@@ -1,3 +1,10 @@
+### [1.0.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v1.0.1...v1.0.2) (2022-03-24)
+
+
+### Bug Fixes
+
+* update interfaces ([#123](https://github.com/libp2p/js-libp2p-bootstrap/issues/123)) ([4b7a52a](https://github.com/libp2p/js-libp2p-bootstrap/commit/4b7a52a374086c2ee874b1eb5d83d7a391885671))
+
 ### [1.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v1.0.0...v1.0.1) (2022-03-17)
 
 
