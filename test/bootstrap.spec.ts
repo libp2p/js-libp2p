@@ -5,7 +5,7 @@ import { IPFS } from '@multiformats/mafmt'
 import { Bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 import partialValidPeerList from './fixtures/some-invalid-peers.js'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { isPeerId } from '@libp2p/interfaces/peer-id'
 
 describe('bootstrap', () => {
@@ -63,7 +63,7 @@ describe('bootstrap', () => {
       interval
     })
 
-    let emitted: PeerData[] = []
+    let emitted: PeerInfo[] = []
     r.addEventListener('peer', p => emitted.push(p.detail))
 
     // Should fire emit event for each peer in list on start,

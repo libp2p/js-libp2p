@@ -3,7 +3,7 @@ import { P2P } from '@multiformats/mafmt'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
 import { logger } from '@libp2p/logger'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { peerIdFromString } from '@libp2p/peer-id'
 
 const log = logger('libp2p:bootstrap')
@@ -27,7 +27,7 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
   static tag = 'bootstrap'
 
   private timer?: ReturnType<typeof setInterval>
-  private readonly list: PeerData[]
+  private readonly list: PeerInfo[]
   private readonly interval: number
 
   constructor (options: BootstrapOptions = { list: [] }) {
@@ -53,7 +53,7 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
         continue
       }
 
-      const peerData: PeerData = {
+      const peerData: PeerInfo = {
         id: peerIdFromString(peerIdStr),
         multiaddrs: [ma],
         protocols: []
@@ -89,7 +89,7 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
     }
 
     this.list.forEach((peerData) => {
-      this.dispatchEvent(new CustomEvent<PeerData>('peer', { detail: peerData }))
+      this.dispatchEvent(new CustomEvent<PeerInfo>('peer', { detail: peerData }))
     })
   }
 
