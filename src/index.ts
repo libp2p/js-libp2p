@@ -2,7 +2,7 @@ import { toString } from 'uint8arrays/to-string'
 import { PubSubBaseProtocol } from '@libp2p/pubsub'
 import { multicodec } from './config.js'
 import { SimpleTimeCache } from './cache.js'
-import type { PubSub, PubSubEvents, PubSubInit, Message, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
+import type { PubSub, PubSubInit, Message, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { logger } from '@libp2p/logger'
 import { RPC } from './message/rpc.js'
@@ -20,7 +20,7 @@ export interface FloodSubInit extends PubSubInit {
  * delivering an API for Publish/Subscribe, but with no CastTree Forming
  * (it just floods the network).
  */
-export class FloodSub <EventMap extends PubSubEvents = PubSubEvents> extends PubSubBaseProtocol<EventMap> implements PubSub<EventMap & PubSubEvents> {
+export class FloodSub extends PubSubBaseProtocol implements PubSub {
   public seenCache: SimpleTimeCache<boolean>
 
   constructor (init?: FloodSubInit) {

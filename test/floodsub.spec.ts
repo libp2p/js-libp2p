@@ -5,7 +5,7 @@ import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { Message, PubSubEvents, PubSubRPC, StrictNoSign } from '@libp2p/interfaces/pubsub'
+import { Message, PubSubRPC, StrictNoSign } from '@libp2p/interfaces/pubsub'
 import { PeerStreams } from '@libp2p/pubsub/peer-streams'
 import { FloodSub, multicodec } from '../src/index.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -18,12 +18,8 @@ import { PeerSet } from '@libp2p/peer-collections'
 const topic = 'my-topic'
 const message = uint8ArrayFromString('a neat message')
 
-interface EventMap extends PubSubEvents {
-  'my-topic': CustomEvent
-}
-
 describe('floodsub', () => {
-  let floodsub: FloodSub<EventMap>
+  let floodsub: FloodSub
 
   before(async () => {
     expect(multicodec).to.exist()

@@ -145,17 +145,17 @@
     "release": "semantic-release"
   },
   "dependencies": {
-    "@libp2p/interfaces": "^1.3.14",
+    "@libp2p/interfaces": "^1.3.18",
     "@libp2p/logger": "^1.1.2",
-    "@libp2p/pubsub": "^1.2.10",
+    "@libp2p/pubsub": "^1.2.12",
     "protobufjs": "^6.11.2",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^1.1.16",
+    "@libp2p/interface-compliance-tests": "^1.1.19",
     "@libp2p/peer-id": "^1.1.8",
     "@libp2p/peer-id-factory": "^1.0.8",
-    "@multiformats/multiaddr": "^10.1.7",
+    "@multiformats/multiaddr": "^10.1.8",
     "aegir": "^36.1.3",
     "multiformats": "^9.4.5",
     "p-wait-for": "^4.1.0",
