@@ -18,7 +18,7 @@ import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
 import type { ConnectionManager, StreamHandler } from '@libp2p/interfaces/registrar'
 import type { MetricsInit } from '@libp2p/interfaces/metrics'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { DialerInit } from '@libp2p/interfaces/dialer'
 import type { KeyChain } from './keychain/index.js'
 
@@ -142,7 +142,7 @@ export interface Libp2pInit {
 }
 
 export interface Libp2pEvents {
-  'peer:discovery': CustomEvent<PeerData>
+  'peer:discovery': CustomEvent<PeerInfo>
 }
 
 export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {

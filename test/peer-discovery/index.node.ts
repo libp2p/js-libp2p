@@ -14,7 +14,7 @@ import { createPeerId } from '../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { CustomEvent } from '@libp2p/interfaces'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -47,7 +47,7 @@ describe('peer discovery scenarios', () => {
     await libp2p.start()
     const discoverySpy = sinon.spy()
     libp2p.addEventListener('peer:discovery', discoverySpy)
-    libp2p.onDiscoveryPeer(new CustomEvent<PeerData>('peer', {
+    libp2p.onDiscoveryPeer(new CustomEvent<PeerInfo>('peer', {
       detail: {
         id: libp2p.peerId,
         multiaddrs: [],

@@ -139,7 +139,7 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run test:interop -- --bail -- --exit
+      - run: npm run test:interop -- --bail
 
   release:
     runs-on: ubuntu-latest

@@ -20,7 +20,7 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { EventTypes, MessageType } from '@libp2p/interfaces/dht'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { KadDHT } from '@libp2p/kad-dht'
 
 describe('peer-routing', () => {
@@ -488,7 +488,7 @@ describe('peer-routing', () => {
         throw new Error('DHT not configured')
       }
 
-      const defer = pDefer<PeerData>()
+      const defer = pDefer<PeerInfo>()
 
       sinon.stub(node.dht, 'findPeer').callsFake(async function * () {
         yield {
@@ -533,7 +533,7 @@ describe('peer-routing', () => {
         }
       })
       sinon.stub(delegate, 'findPeer').callsFake(async () => {
-        const deferred = pDefer<PeerData>()
+        const deferred = pDefer<PeerInfo>()
 
         return await deferred.promise
       })
@@ -649,7 +649,7 @@ describe('peer-routing', () => {
     })
 
     it('should be enabled and start by default', async () => {
-      const results: PeerData[] = [
+      const results: PeerInfo[] = [
         { id: peerIds[0], multiaddrs: [new Multiaddr('/ip4/30.0.0.1/tcp/2000')], protocols: [] },
         { id: peerIds[1], multiaddrs: [new Multiaddr('/ip4/32.0.0.1/tcp/2000')], protocols: [] }
       ]

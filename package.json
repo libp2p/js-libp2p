@@ -3,13 +3,13 @@
   "version": "0.36.2",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-interfaces.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-interfaces/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "keywords": [
     "IPFS",
@@ -174,7 +174,7 @@
     "test:firefox": "npm run test -- -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:firefox-webworker": "npm run test -- -t webworker -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:examples": "cd examples && npm run test:all",
-    "test:interop": "LIBP2P_JS=$PWD npx aegir test -t node -f ./node_modules/libp2p-interop/test/*",
+    "test:interop": "npm run test -- -t node -f dist/test/interop.js",
     "release": "semantic-release"
   },
   "dependencies": {
@@ -235,14 +235,18 @@
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "^6.0.0",
-    "@libp2p/bootstrap": "^1.0.1",
-    "@libp2p/delegated-content-routing": "^1.0.1",
-    "@libp2p/delegated-peer-routing": "^1.0.1",
-    "@libp2p/floodsub": "^1.0.1",
-    "@libp2p/interface-compliance-tests": "^1.1.17",
-    "@libp2p/kad-dht": "^1.0.1",
-    "@libp2p/mdns": "^1.0.2",
+    "@achingbrain/libp2p-gossipsub": "^0.13.5",
+    "@chainsafe/libp2p-noise": "^6.0.1",
+    "@libp2p/bootstrap": "^1.0.2",
+    "@libp2p/daemon-client": "^0.0.2",
+    "@libp2p/daemon-server": "^0.0.2",
+    "@libp2p/delegated-content-routing": "^1.0.2",
+    "@libp2p/delegated-peer-routing": "^1.0.2",
+    "@libp2p/floodsub": "^1.0.2",
+    "@libp2p/interface-compliance-tests": "^1.1.20",
+    "@libp2p/interop": "^0.0.3",
+    "@libp2p/kad-dht": "^1.0.3",
+    "@libp2p/mdns": "^1.0.3",
     "@libp2p/mplex": "^1.0.1",
     "@libp2p/tcp": "^1.0.6",
     "@libp2p/tracked-map": "^1.0.4",
@@ -258,6 +262,7 @@
     "buffer": "^6.0.3",
     "cborg": "^1.8.1",
     "delay": "^5.0.0",
+    "go-libp2p": "^0.0.4",
     "into-stream": "^7.0.0",
     "ipfs-http-client": "^56.0.1",
     "it-pair": "^2.0.2",

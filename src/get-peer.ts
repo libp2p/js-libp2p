@@ -4,7 +4,7 @@ import errCode from 'err-code'
 import { codes } from './errors.js'
 import { isPeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 function peerIdFromMultiaddr (ma: Multiaddr) {
   const idStr = ma.getPeerId()
@@ -29,7 +29,7 @@ function peerIdFromMultiaddr (ma: Multiaddr) {
 /**
  * Converts the given `peer` to a `Peer` object.
  */
-export function getPeer (peer: PeerId | Multiaddr | string): PeerData {
+export function getPeer (peer: PeerId | Multiaddr | string): PeerInfo {
   if (isPeerId(peer)) {
     return {
       id: peer,

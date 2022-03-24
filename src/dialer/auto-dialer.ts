@@ -1,4 +1,4 @@
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { logger } from '@libp2p/logger'
 import type { Components } from '@libp2p/interfaces/components'
 
@@ -20,7 +20,7 @@ export class AutoDialer {
     this.minConnections = init.minConnections
   }
 
-  public handle (evt: CustomEvent<PeerData>) {
+  public handle (evt: CustomEvent<PeerInfo>) {
     const { detail: peer } = evt
 
     // If auto dialing is on and we have no connection to the peer, check if we should dial

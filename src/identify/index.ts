@@ -249,6 +249,8 @@ export class IdentifyService implements Startable {
             await this.components.getPeerStore().metadataBook.setValue(id, 'ProtocolVersion', uint8ArrayFromString(protocolVersion))
           }
 
+          log('identify completed for peer %p and protocols %o', id, protocols)
+
           return
         }
       } catch (err: any) {
@@ -276,6 +278,8 @@ export class IdentifyService implements Startable {
     if (protocolVersion != null) {
       await this.components.getPeerStore().metadataBook.setValue(id, 'ProtocolVersion', uint8ArrayFromString(protocolVersion))
     }
+
+    log('identify completed for peer %p and protocols %o', id, protocols)
 
     // TODO: Add and score our observed addr
     log('received observed address of %s', cleanObservedAddr?.toString())

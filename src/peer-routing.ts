@@ -22,7 +22,7 @@ import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
 import type { AbortOptions, Startable } from '@libp2p/interfaces'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { Components } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:peer-routing')
@@ -134,7 +134,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
   /**
    * Iterates over all peer routers in parallel to find the given peer
    */
-  async findPeer (id: PeerId, options?: AbortOptions): Promise<PeerData> {
+  async findPeer (id: PeerId, options?: AbortOptions): Promise<PeerInfo> {
     if (this.routers.length === 0) {
       throw errCode(new Error('No peer routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
     }
@@ -168,7 +168,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
   /**
    * Attempt to find the closest peers on the network to the given key
    */
-  async * getClosestPeers (key: Uint8Array, options?: AbortOptions): AsyncIterable<PeerData> {
+  async * getClosestPeers (key: Uint8Array, options?: AbortOptions): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
       throw errCode(new Error('No peer routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
     }

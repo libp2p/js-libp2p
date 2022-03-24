@@ -33,12 +33,16 @@ import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
 import type { ConnectionManager, StreamHandler } from '@libp2p/interfaces/registrar'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
 import { validateConfig } from './config.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerStore } from '@libp2p/interfaces/peer-store'
 import type { DualDHT } from '@libp2p/interfaces/dht'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import errCode from 'err-code'
+import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 
 const log = logger('libp2p')
 
@@ -95,7 +99,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.peerStore.addEventListener('peer', evt => {
       const { detail: peerData } = evt
 
-      this.dispatchEvent(new CustomEvent<PeerData>('peer:discovery', { detail: peerData }))
+      this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peerData }))
     })
 
     // Set up connection protector if configured
@@ -290,7 +294,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       // Once we start, emit any peers we may have already discovered
       // TODO: this should be removed, as we already discovered these peers in the past
       await this.components.getPeerStore().forEach(peer => {
-        this.dispatchEvent(new CustomEvent<PeerData>('peer:discovery', {
+        this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', {
           detail: {
             id: peer.id,
             multiaddrs: peer.addresses.map(addr => addr.multiaddr),
@@ -397,6 +401,41 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     )
   }
 
+  /**
+   * Get the public key for the given peer id
+   */
+  async getPublicKey (peer: PeerId, options: AbortOptions = {}) {
+    log('getPublicKey %p', peer)
+
+    const peerInfo = await this.peerStore.get(peer)
+
+    if (peerInfo.pubKey != null) {
+      return peerInfo.pubKey
+    }
+
+    if (this.dht == null) {
+      throw errCode(new Error('Public key was not in the peer store and the DHT is not enabled'), codes.ERR_NO_ROUTERS_AVAILABLE)
+    }
+
+    const peerKey = uint8ArrayConcat([
+      uint8ArrayFromString('/pk/'),
+      peer.multihash.digest
+    ])
+
+    // search the dht
+    for await (const event of this.dht.get(peerKey, options)) {
+      if (event.name === 'VALUE') {
+        const key = unmarshalPublicKey(event.value)
+
+        await this.peerStore.keyBook.set(peer, event.value)
+
+        return key
+      }
+    }
+
+    throw errCode(new Error(`Node not responding with its public key: ${peer.toString()}`), codes.ERR_INVALID_RECORD)
+  }
+
   async fetch (peer: PeerId | Multiaddr | string, key: string): Promise<Uint8Array | null> {
     const { id, multiaddrs } = getPeer(peer)
 
@@ -429,7 +468,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
    * Called whenever peer discovery services emit `peer` events.
    * Known peers may be emitted.
    */
-  onDiscoveryPeer (evt: CustomEvent<PeerData>) {
+  onDiscoveryPeer (evt: CustomEvent<PeerInfo>) {
     const { detail: peer } = evt
 
     if (peer.id.toString() === this.peerId.toString()) {
@@ -445,7 +484,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       void this.components.getPeerStore().protoBook.set(peer.id, peer.protocols).catch(err => log.error(err))
     }
 
-    this.dispatchEvent(new CustomEvent<PeerData>('peer:discovery', { detail: peer }))
+    this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peer }))
   }
 }
 

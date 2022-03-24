@@ -14,7 +14,7 @@ import { createNode, createPeerId, populateAddressBooks } from '../utils/creator
 import { createBaseOptions } from '../utils/base-options.js'
 import { createRoutingOptions } from './utils.js'
 import type { Libp2p } from '../../src/index.js'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { Libp2pNode } from '../../src/libp2p.js'
 
 describe('content-routing', () => {
@@ -281,7 +281,7 @@ describe('content-routing', () => {
 
     it('should store the multiaddrs of a peer', async () => {
       const providerPeerId = await createPeerId()
-      const result: PeerData = {
+      const result: PeerInfo = {
         id: providerPeerId,
         multiaddrs: [
           new Multiaddr('/ip4/123.123.123.123/tcp/49320')
