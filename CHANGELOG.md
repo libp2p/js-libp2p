@@ -1,3 +1,10 @@
+### [1.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.2...v1.0.3) (2022-03-24)
+
+
+### Bug Fixes
+
+* update interfaces ([#305](https://github.com/libp2p/js-libp2p-kad-dht/issues/305)) ([2def2bd](https://github.com/libp2p/js-libp2p-kad-dht/commit/2def2bdcd2cf60daeb36da94c041361cc2e683cb))
+
 ### [1.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.1...v1.0.2) (2022-03-23)
 
 
