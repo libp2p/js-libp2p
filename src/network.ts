@@ -16,7 +16,7 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { AbortOptions, Startable } from '@libp2p/interfaces'
 import type { Logger } from '@libp2p/logger'
 import type { Duplex } from 'it-stream-types'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 
 export interface NetworkInit {
@@ -25,7 +25,7 @@ export interface NetworkInit {
 }
 
 interface NetworkEvents {
-  'peer': CustomEvent<PeerData>
+  'peer': CustomEvent<PeerInfo>
 }
 
 /**

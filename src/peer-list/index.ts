@@ -24,7 +24,7 @@ export class PeerList {
   }
 
   /**
-   * Check if this PeerData is already in here
+   * Check if this PeerInfo is already in here
    */
   has (peerId: PeerId) {
     const match = this.list.find((i) => i.equals(peerId))

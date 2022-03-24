@@ -2,7 +2,7 @@ import { peerIdFromBytes } from '@libp2p/peer-id'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { Libp2pRecord } from '@libp2p/record'
 import Proto from './dht.js'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 export const MESSAGE_TYPE = Proto.Message.MessageType
 export const CONNECTION_TYPE = Proto.Message.ConnectionType
@@ -23,8 +23,8 @@ export class Message {
   public type: Proto.Message.MessageType
   public key: Uint8Array
   private clusterLevelRaw: number
-  public closerPeers: PeerData[]
-  public providerPeers: PeerData[]
+  public closerPeers: PeerInfo[]
+  public providerPeers: PeerInfo[]
   public record?: Libp2pRecord
 
   constructor (type: Proto.Message.MessageType, key: Uint8Array, level: number) {
@@ -88,7 +88,7 @@ export class Message {
   }
 }
 
-function toPbPeer (peer: PeerData) {
+function toPbPeer (peer: PeerInfo) {
   const output: PBPeer = {
     id: peer.id.toBytes(),
     addrs: (peer.multiaddrs ?? []).map((m) => m.bytes),

@@ -1,6 +1,6 @@
 import { MESSAGE_TYPE_LOOKUP } from '../message/index.js'
 import type { SendingQueryEvent, PeerResponseEvent, MessageType, DialingPeerEvent, AddingPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '@libp2p/interfaces/dht'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Libp2pRecord } from '@libp2p/record'
 
@@ -32,8 +32,8 @@ export function sendingQueryEvent (fields: QueryEventFields): SendingQueryEvent 
 export interface PeerResponseEventField {
   from: PeerId
   messageType: MessageType
-  closer?: PeerData[]
-  providers?: PeerData[]
+  closer?: PeerInfo[]
+  providers?: PeerInfo[]
   record?: Libp2pRecord
 }
 
@@ -51,7 +51,7 @@ export function peerResponseEvent (fields: PeerResponseEventField): PeerResponse
 
 export interface FinalPeerEventFields {
   from: PeerId
-  peer: PeerData
+  peer: PeerInfo
 }
 
 export function finalPeerEvent (fields: FinalPeerEventFields): FinalPeerEvent {
@@ -77,7 +77,7 @@ export function queryErrorEvent (fields: ErrorEventFields): QueryErrorEvent {
 
 export interface ProviderEventFields {
   from: PeerId
-  providers: PeerData[]
+  providers: PeerInfo[]
 }
 
 export function providerEvent (fields: ProviderEventFields): ProviderEvent {

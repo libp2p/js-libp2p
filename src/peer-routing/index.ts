@@ -20,7 +20,7 @@ import type { Network } from '../network.js'
 import type { Logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { QueryFunc } from '../query/types.js'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 
@@ -296,7 +296,7 @@ export class PeerRouting implements Initializable {
   async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId) {
     const id = await utils.convertBuffer(key)
     const ids = this.routingTable.closestPeers(id)
-    const output: PeerData[] = []
+    const output: PeerInfo[] = []
 
     for (const peerId of ids) {
       if (peerId.equals(closerThan)) {

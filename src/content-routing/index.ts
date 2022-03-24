@@ -21,7 +21,7 @@ import type { QueryFunc } from '../query/types.js'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 
 export interface ContentRoutingInit {
@@ -139,7 +139,7 @@ export class ContentRouting implements Initializable {
 
     // yield values if we have some, also slice because maybe we got lucky and already have too many?
     if (provs.length > 0) {
-      const providers: PeerData[] = []
+      const providers: PeerInfo[] = []
 
       for (const peerId of provs.slice(0, toFind)) {
         providers.push({

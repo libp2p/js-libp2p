@@ -10,7 +10,7 @@ import type { DHTMessageHandler } from '../index.js'
 import type { Providers } from '../../providers.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-providers')
@@ -77,7 +77,7 @@ export class GetProvidersHandler implements DHTMessageHandler, Initializable {
   }
 
   async _getPeers (peerIds: PeerId[]) {
-    const output: PeerData[] = []
+    const output: PeerInfo[] = []
     const addrFilter = this.lan ? removePublicAddresses : removePrivateAddresses
 
     for (const peerId of peerIds) {

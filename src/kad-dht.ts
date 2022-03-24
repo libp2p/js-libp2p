@@ -15,7 +15,7 @@ import {
 } from './utils.js'
 import { Logger, logger } from '@libp2p/logger'
 import type { QueryOptions, Validators, Selectors, DHT } from '@libp2p/interfaces/dht'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { CID } from 'multiformats/cid'
@@ -195,7 +195,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
     this.querySelf.init(components)
   }
 
-  async onPeerConnect (peerData: PeerData) {
+  async onPeerConnect (peerData: PeerInfo) {
     this.log('peer %p connected', peerData.id)
 
     if (this.lan) {

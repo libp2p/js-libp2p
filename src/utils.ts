@@ -5,7 +5,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import isPrivateIp from 'private-ip'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { RECORD_KEY_PREFIX } from './constants.js'
@@ -13,7 +13,7 @@ import { RECORD_KEY_PREFIX } from './constants.js'
 // const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
 const PK_PREFIX = uint8ArrayFromString('/pk/')
 
-export function removePrivateAddresses (peer: PeerData): PeerData {
+export function removePrivateAddresses (peer: PeerInfo): PeerInfo {
   return {
     ...peer,
     multiaddrs: peer.multiaddrs.filter(multiaddr => {
@@ -29,7 +29,7 @@ export function removePrivateAddresses (peer: PeerData): PeerData {
   }
 }
 
-export function removePublicAddresses (peer: PeerData): PeerData {
+export function removePublicAddresses (peer: PeerInfo): PeerInfo {
   return {
     ...peer,
     multiaddrs: peer.multiaddrs.filter(multiaddr => {

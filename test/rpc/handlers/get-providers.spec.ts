@@ -14,7 +14,7 @@ import { PeerRouting } from '../../../src/peer-routing/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { Components } from '@libp2p/interfaces/components'
 
 const T = MESSAGE_TYPE.GET_PROVIDERS
@@ -64,7 +64,7 @@ describe('rpc - handlers - GetProviders', () => {
     const v = values[0]
     const msg = new Message(T, v.cid.bytes, 0)
 
-    const closer: PeerData[] = [{
+    const closer: PeerInfo[] = [{
       id: closerPeer,
       multiaddrs: [
         new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
@@ -74,7 +74,7 @@ describe('rpc - handlers - GetProviders', () => {
       protocols: []
     }]
 
-    const provider: PeerData[] = [{
+    const provider: PeerInfo[] = [{
       id: providerPeer,
       multiaddrs: [
         new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
