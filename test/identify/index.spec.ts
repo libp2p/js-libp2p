@@ -396,8 +396,12 @@ describe('Identify', () => {
         return [updatedAddress]
       }
 
-      //
+      // wait until remote peer store notices protocol list update
+      const waitForUpdate = pEvent(remoteComponents.getPeerStore(), 'change:protocols')
+
       await localIdentify.pushToPeerStore()
+
+      await waitForUpdate
 
       // should have new protocol
       const updatedProtocols = await remoteComponents.getPeerStore().protoBook.get(localComponents.getPeerId())
