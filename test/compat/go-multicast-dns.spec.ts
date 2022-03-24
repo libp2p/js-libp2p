@@ -7,7 +7,7 @@ import { GoMulticastDNS } from '../../src/compat/index.js'
 import { Components } from '@libp2p/interfaces/components'
 import { stubInterface } from 'ts-sinon'
 import type { AddressManager } from '@libp2p/interfaces'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 let port = 20000
 
@@ -59,7 +59,7 @@ describe('GoMulticastDNS', () => {
   it('should emit peer data when peer is discovered', async () => {
     const { mdns: mdnsA } = await createGoMulticastDNS()
     const { mdns: mdnsB, components: componentsB } = await createGoMulticastDNS()
-    const defer = pDefer<PeerData>()
+    const defer = pDefer<PeerInfo>()
 
     mdnsA.addEventListener('peer', (evt) => {
       const { id } = evt.detail

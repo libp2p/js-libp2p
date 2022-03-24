@@ -6,7 +6,7 @@ import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer
 import type { ResponsePacket } from 'multicast-dns'
 import type { RemoteInfo } from 'dgram'
 import { Components, Initializable } from '@libp2p/interfaces/components'
-import { findPeerDataInAnswers } from './utils.js'
+import { findPeerInfoInAnswers } from './utils.js'
 
 const log = logger('libp2p:mdns:compat:querier')
 
@@ -86,22 +86,22 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
     log.trace('received mDNS query response')
     const answers = event.answers ?? []
 
-    const peerData = findPeerDataInAnswers(answers, this.components.getPeerId())
+    const peerInfo = findPeerInfoInAnswers(answers, this.components.getPeerId())
 
-    if (peerData == null) {
+    if (peerInfo == null) {
       log('could not read peer data from query response')
       return
     }
 
-    if (peerData.multiaddrs.length === 0) {
+    if (peerInfo.multiaddrs.length === 0) {
       log('could not parse multiaddrs from mDNS response')
       return
     }
 
-    log('discovered peer in mDNS qeury response %p', peerData.id)
+    log('discovered peer in mDNS qeury response %p', peerInfo.id)
 
     this.dispatchEvent(new CustomEvent('peer', {
-      detail: peerData
+      detail: peerInfo
     }))
   }
 

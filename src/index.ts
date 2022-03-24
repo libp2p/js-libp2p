@@ -4,7 +4,7 @@ import { logger } from '@libp2p/logger'
 import * as query from './query.js'
 import { GoMulticastDNS } from './compat/index.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:mdns')
@@ -102,7 +102,7 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
       if (foundPeer != null) {
         log('discovered peer in mDNS qeury response %p', foundPeer.id)
 
-        this.dispatchEvent(new CustomEvent<PeerData>('peer', {
+        this.dispatchEvent(new CustomEvent<PeerInfo>('peer', {
           detail: foundPeer
         }))
       }
@@ -111,12 +111,12 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
     }
   }
 
-  _onPeer (evt: CustomEvent<PeerData>) {
+  _onPeer (evt: CustomEvent<PeerInfo>) {
     if (this.mdns == null) {
       return
     }
 
-    this.dispatchEvent(new CustomEvent<PeerData>('peer', {
+    this.dispatchEvent(new CustomEvent<PeerInfo>('peer', {
       detail: evt.detail
     }))
   }

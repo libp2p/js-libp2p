@@ -1,4 +1,4 @@
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -8,7 +8,7 @@ import { SERVICE_TAG_LOCAL } from './constants.js'
 
 const log = logger('libp2p:mdns:compat:utils')
 
-export function findPeerDataInAnswers (answers: Answer[], ourPeerId: PeerId): PeerData | undefined {
+export function findPeerInfoInAnswers (answers: Answer[], ourPeerId: PeerId): PeerInfo | undefined {
   const ptrRecord = answers.find(a => a.type === 'PTR' && a.name === SERVICE_TAG_LOCAL)
 
   // Only deal with responses for our service tag

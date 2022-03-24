@@ -3,7 +3,7 @@ import { logger } from '@libp2p/logger'
 import { Multiaddr, MultiaddrObject, protocols } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { MulticastDNS, ResponsePacket, QueryPacket } from 'multicast-dns'
 import type { SrvAnswer, StringAnswer, TxtAnswer, Answer } from 'dns-packet'
 
@@ -34,7 +34,7 @@ interface Answers {
   aaaa: StringAnswer[]
 }
 
-export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTag: string): PeerData | undefined {
+export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTag: string): PeerInfo | undefined {
   if (rsp.answers == null) {
     return
   }

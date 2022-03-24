@@ -6,7 +6,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import pWaitFor from 'p-wait-for'
 import { MulticastDNS } from './../src/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { stubInterface } from 'ts-sinon'
 import type { AddressManager } from '@libp2p/interfaces'
 import { Components } from '@libp2p/interfaces/components'
@@ -80,7 +80,7 @@ describe('MulticastDNS', () => {
     await mdnsA.start()
     await mdnsB.start()
 
-    const { detail: { id } } = await new Promise<CustomEvent<PeerData>>((resolve) => mdnsA.addEventListener('peer', resolve, {
+    const { detail: { id } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => mdnsA.addEventListener('peer', resolve, {
       once: true
     }))
 
@@ -116,7 +116,7 @@ describe('MulticastDNS', () => {
     const peers = new Map()
     const expectedPeer = pC.toString()
 
-    const foundPeer = (evt: CustomEvent<PeerData>) => peers.set(evt.detail.id.toString(), evt.detail)
+    const foundPeer = (evt: CustomEvent<PeerInfo>) => peers.set(evt.detail.id.toString(), evt.detail)
     mdnsA.addEventListener('peer', foundPeer)
 
     await pWaitFor(() => peers.has(expectedPeer))
@@ -150,7 +150,7 @@ describe('MulticastDNS', () => {
     await mdnsA.start()
     await mdnsB.start()
 
-    const { detail: { id, multiaddrs } } = await new Promise<CustomEvent<PeerData>>((resolve) => mdnsA.addEventListener('peer', resolve, {
+    const { detail: { id, multiaddrs } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => mdnsA.addEventListener('peer', resolve, {
       once: true
     }))
 

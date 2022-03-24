@@ -12,9 +12,9 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { ResponsePacket } from 'multicast-dns'
 import { Components } from '@libp2p/interfaces/components'
 import { stubInterface } from 'ts-sinon'
-import { findPeerDataInAnswers } from '../../src/compat/utils.js'
+import { findPeerInfoInAnswers } from '../../src/compat/utils.js'
 import type { AddressManager } from '@libp2p/interfaces'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 describe('Responder', () => {
   let responder: Responder
@@ -117,7 +117,7 @@ describe('Responder', () => {
     responder = new Responder()
     responder.init(components)
     await responder.start()
-    const defer = pDefer<PeerData>()
+    const defer = pDefer<PeerInfo>()
 
     mdns = mDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
     mdns.on('response', event => {
@@ -125,13 +125,13 @@ describe('Responder', () => {
         return
       }
 
-      const peerData = findPeerDataInAnswers(event.answers, peerIds[1])
+      const peerInfo = findPeerInfoInAnswers(event.answers, peerIds[1])
 
-      if (peerData == null) {
+      if (peerInfo == null) {
         return defer.reject(new Error('Could not read PeerData from mDNS query response'))
       }
 
-      defer.resolve(peerData)
+      defer.resolve(peerInfo)
     })
 
     mdns.query({
