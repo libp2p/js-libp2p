@@ -72,87 +72,6 @@
       "*.d.ts"
     ]
   },
-  "release": {
-    "branches": [
-      "master"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits",
-          "releaseRules": [
-            {
-              "breaking": true,
-              "release": "major"
-            },
-            {
-              "revert": true,
-              "release": "patch"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "chore",
-              "release": "patch"
-            },
-            {
-              "type": "docs",
-              "release": "patch"
-            },
-            {
-              "type": "test",
-              "release": "patch"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "conventionalcommits",
-          "presetConfig": {
-            "types": [
-              {
-                "type": "feat",
-                "section": "Features"
-              },
-              {
-                "type": "fix",
-                "section": "Bug Fixes"
-              },
-              {
-                "type": "chore",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "docs",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "test",
-                "section": "Tests"
-              }
-            ]
-          }
-        }
-      ],
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      "@semantic-release/git"
-    ]
-  },
   "scripts": {
     "lint": "aegir lint",
     "build": "tsc",
@@ -174,8 +93,7 @@
     "test:firefox": "npm run test -- -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:firefox-webworker": "npm run test -- -t webworker -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:examples": "cd examples && npm run test:all",
-    "test:interop": "npm run test -- -t node -f dist/test/interop.js",
-    "release": "semantic-release"
+    "test:interop": "npm run test -- -t node -f dist/test/interop.js"
   },
   "dependencies": {
     "@achingbrain/nat-port-mapper": "^1.0.0",
