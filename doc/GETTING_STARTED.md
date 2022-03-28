@@ -12,7 +12,6 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
       - [Running Libp2p](#running-libp2p)
     - [Custom setup](#custom-setup)
       - [Peer Discovery](#peer-discovery)
-      - [Pubsub](#pubsub)
   - [What is next](#what-is-next)
 
 ## Install
@@ -46,13 +45,11 @@ npm install libp2p-websockets
 Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
 
 ```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets]
-  }
+const node = await createLibp2p({
+  transports: [new WebSockets()]
 })
 ```
 
@@ -78,15 +75,13 @@ npm install libp2p-noise
 With `libp2p-noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
 
 ```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets],
-    connEncryption: [NOISE]
-  }
+const node = await createLibp2p({
+  transports: [new WebSockets()],
+  connectionEncryption: [new Noise()]
 })
 ```
 
@@ -110,17 +105,15 @@ npm install libp2p-mplex
 ```
 
 ```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets],
-    connEncryption: [NOISE],
-    streamMuxer: [MPLEX]
-  }
+const node = await createLibp2p({
+  transports: [new WebSockets()],
+  connectionEncryption: [new Noise()],
+  streamMuxers: [new Mplex()]
 })
 ```
 
@@ -137,20 +130,18 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
 
 ```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
-const node = await Libp2p.create({
+const node = await createLibp2p({
   addresses: {
     listen: ['/ip4/127.0.0.1/tcp/8000/ws']
   },
-  modules: {
-    transport: [WebSockets],
-    connEncryption: [NOISE],
-    streamMuxer: [MPLEX]
-  }
+  transports: [new WebSockets()],
+  connectionEncryption: [new Noise()],
+  streamMuxers: [new Mplex()]
 })
 
 // start libp2p
@@ -195,12 +186,12 @@ npm install libp2p-bootstrap
 We can provide specific configurations for each protocol within a `config.peerDiscovery` property in the options as shown below.
 
 ```js
-const Libp2p = require('libp2p')
-const WebSockets = require('libp2p-websockets')
-const { NOISE } = require('libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
-const Bootstrap = require('libp2p-bootstrap')
+import { Bootstrap } from '@libp2p/bootstrap'
 
 // Known peers addresses
 const bootstrapMultiaddrs = [
@@ -208,23 +199,25 @@ const bootstrapMultiaddrs = [
   '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
 ]
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebSockets],
-    connEncryption: [NOISE],
-    streamMuxer: [MPLEX],
-    peerDiscovery: [Bootstrap]
-  },
-  config: {
-    peerDiscovery: {
-      autoDial: true, // Auto connect to discovered peers (limited by ConnectionManager minConnections)
-      // The `tag` property will be searched when creating the instance of your Peer Discovery service.
-      // The associated object, will be passed to the service when it is instantiated.
-      [Bootstrap.tag]: {
-        enabled: true,
-        list: bootstrapMultiaddrs // provide array of multiaddrs
-      }
-    }
+const node = await createLibp2p({
+  transports: [
+    new WebSockets()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  peerDiscovery: [
+    new Bootstrap({
+      list: bootstrapMultiaddrs // provide array of multiaddrs
+    })
+  ],
+  connectionManager: {
+    autoDial: true, // Auto connect to discovered peers (limited by ConnectionManager minConnections)
+    // The `tag` property will be searched when creating the instance of your Peer Discovery service.
+    // The associated object, will be passed to the service when it is instantiated.
   }
 })
 

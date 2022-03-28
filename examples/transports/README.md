@@ -21,23 +21,23 @@ Then, in your favorite text editor create a file with the `.js` extension. I've 
 First thing is to create our own libp2p node! Insert:
 
 ```JavaScript
-'use strict'
-
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const { NOISE } = require('@chainsafe/libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [ TCP ],
-      connEncryption: [ NOISE ]
-    }
+    transports: [
+      new TCP()
+    ],
+    connectionEncryption: [
+      new Noise()
+    ]
   })
 
   await node.start()
@@ -80,31 +80,29 @@ Now that we have our `createNode` function, let's create two nodes and make them
 For this step, we will need some more dependencies.
 
 ```bash
-> npm install it-pipe it-concat libp2p-mplex
+> npm install it-pipe it-to-buffer @libp2p/mplex
 ```
 
 And we also need to import the modules on our .js file:
 
 ```js
-const pipe = require('it-pipe')
-const concat = require('it-concat')
-const MPLEX = require('libp2p-mplex')
+import { pipe } from 'it-pipe'
+import toBuffer from 'it-to-buffer'
+import { Mplex } from '@libp2p/mplex'
 ```
 
 We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`.
 ```js
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX] // <--- Add this line
-    }
+    transports: [new TCP()],
+    connectionEncryption: [new Noise()],
+    streamMuxers: [new Mplex()] // <--- Add this line
   })
 
   await node.start()
@@ -135,7 +133,7 @@ Then add,
   node2.handle('/print', async ({ stream }) => {
     const result = await pipe(
       stream,
-      concat
+      toBuffer
     )
     console.log(result.toString())
   })
@@ -186,15 +184,13 @@ const createNode = async (transports, addresses = []) => {
     addresses = [addresses]
   }
 
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: addresses
     },
-    modules: {
-      transport: transports,
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    }
+    transport: transports,
+    connectionEncryption: [new Noise()],
+    streamMuxers: [new Mplex()]
   })
 
   await node.start()
@@ -207,8 +203,8 @@ As a rule, a libp2p node will only be capable of using a transport if: a) it has
 Let's update our flow to create nodes and see how they behave when dialing to each other:
 
 ```JavaScript
-const WebSockets = require('libp2p-websockets')
-const TCP = require('libp2p-tcp')
+import { WebSockets } from '@libp2p/websockets'
+import { TCP } from '@libp2p/tcp'
 
 const [node1, node2, node3] = await Promise.all([
   createNode([TCP], '/ip4/0.0.0.0/tcp/0'),

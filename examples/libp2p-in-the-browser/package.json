@@ -2,31 +2,24 @@
   "name": "libp2p-in-browser",
   "version": "1.0.0",
   "description": "A libp2p node running in the browser",
+  "type": "module",
   "browserslist": [
     "last 2 Chrome versions"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build index.html",
-    "start": "parcel index.html"
+    "start": "vite"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^5.0.2",
-    "libp2p": "../../",
-    "libp2p-bootstrap": "^0.14.0",
-    "libp2p-mplex": "^0.10.4",
-    "libp2p-webrtc-star": "^0.25.0",
-    "libp2p-websockets": "^0.16.1"
+    "@chainsafe/libp2p-noise": "^6.0.1",
+    "@libp2p/bootstrap": "^1.0.1",
+    "@libp2p/mplex": "^1.0.2",
+    "@libp2p/webrtc-star": "^1.0.6",
+    "@libp2p/websockets": "^1.0.3",
+    "libp2p": "../../"
   },
   "devDependencies": {
-    "@babel/cli": "^7.13.10",
-    "@babel/core": "^7.13.0",
-    "babel-plugin-syntax-async-functions": "^6.13.0",
-    "babel-plugin-transform-regenerator": "^6.26.0",
-    "babel-polyfill": "^6.26.0",
-    "parcel": "^2.0.1"
+    "vite": "^2.8.6"
   }
 }

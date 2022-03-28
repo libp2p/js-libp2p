@@ -2,18 +2,18 @@
   "name": "libp2p-examples",
   "version": "1.0.0",
   "description": "Examples of how to use libp2p",
+  "type": "module",
   "scripts": {
     "test": "node ./test.js",
     "test:all": "node ./test-all.js"
   },
   "license": "MIT",
   "dependencies": {
-    "@achingbrain/libp2p-gossipsub": "^0.12.2",
+    "@achingbrain/libp2p-gossipsub": "^0.13.5",
+    "@libp2p/pubsub-peer-discovery": "^5.0.1",
     "execa": "^2.1.0",
     "fs-extra": "^8.1.0",
-    "libp2p": "../src",
-    "libp2p-pubsub-peer-discovery": "^4.0.0",
-    "libp2p-relay-server": "^0.3.0",
+    "libp2p": "../",
     "p-defer": "^3.0.0",
     "uint8arrays": "^3.0.0",
     "which": "^2.0.1"

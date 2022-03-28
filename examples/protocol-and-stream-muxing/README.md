@@ -11,9 +11,9 @@ Let's see _protocol multiplexing_ in action! You will need the following modules
 After creating the nodes, we need to tell libp2p which protocols to handle.
 
 ```JavaScript
-const pipe = require('it-pipe')
-const { map } = require('streaming-iterables')
-const { toBuffer } = require('it-buffer')
+import { pipe } from 'it-pipe'
+const { map } from 'streaming-iterables')
+const { toBuffer } from 'it-buffer')
 
 // ...
 const node1 = nodes[0]
@@ -102,17 +102,19 @@ Stream multiplexing is an old concept, in fact it happens in many of the layers 
 Currently, we have [libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex) and pluging it in is as easy as adding a transport. Let's revisit our libp2p configuration.
 
 ```JavaScript
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
 //...
 
 const createNode = () => {
   return Libp2p.create({
-    modules: {
-      transport: [ TCP ],
-      streamMuxer: [ Mplex ]
-    }
+    transports: [
+      new TCP()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ]
   })
 }
 ```

@@ -1,13 +1,13 @@
-'use strict'
 /* eslint-disable no-console */
 
-const PeerId = require('peer-id')
-const createLibp2p = require('./libp2p.js')
-const { stdinToStream, streamToConsole } = require('./stream')
+import { createLibp2p } from './libp2p.js'
+import { stdinToStream, streamToConsole } from './stream.js'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import peerIdListenerJson from './peer-id-listener.js'
 
 async function run () {
   // Create a new libp2p node with the given multi-address
-  const idListener = await PeerId.createFromJSON(require('./peer-id-listener'))
+  const idListener = await createFromJSON(peerIdListenerJson)
   const nodeListener = await createLibp2p({
     peerId: idListener,
     addresses: {
@@ -16,8 +16,9 @@ async function run () {
   })
 
   // Log a message when a remote peer connects to us
-  nodeListener.connectionManager.on('peer:connect', (connection) => {
-    console.log('connected to: ', connection.remotePeer.toB58String())
+  nodeListener.connectionManager.addEventListener('peer:connect', (evt) => {
+    const connection = evt.detail
+    console.log('connected to: ', connection.remotePeer.toString())
   })
 
   // Handle messages for the protocol
@@ -33,8 +34,8 @@ async function run () {
 
   // Output listen addresses to the console
   console.log('Listener ready, listening on:')
-  nodeListener.multiaddrs.forEach((ma) => {
-    console.log(ma.toString() + '/p2p/' + idListener.toB58String())
+  nodeListener.getMultiaddrs().forEach((ma) => {
+    console.log(ma.toString())
   })
 }
 

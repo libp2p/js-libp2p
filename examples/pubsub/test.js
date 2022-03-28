@@ -1,11 +1,7 @@
-'use strict'
+import { test as test1 } from './test-1.js'
+import { test as testMessageFiltering } from './message-filtering/test.js'
 
-const test1 = require('./test-1')
-const testMessageFiltering = require('./message-filtering/test')
-
-async function test() {
+export async function test() {
   await test1()
   await testMessageFiltering()
 }
-
-module.exports = test

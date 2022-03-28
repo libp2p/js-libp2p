@@ -1,18 +1,21 @@
-'use strict'
 /* eslint-disable no-console */
 
 /*
  * Dialer Node
  */
 
-const PeerId = require('peer-id')
-const createLibp2p = require('./libp2p')
-const pipe = require('it-pipe')
+import { createLibp2p } from './libp2p.js'
+import { pipe } from 'it-pipe'
+import idd from './id-d.js'
+import idl from './id-l.js'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 async function run() {
   const [dialerId, listenerId] = await Promise.all([
-    PeerId.createFromJSON(require('./id-d')),
-    PeerId.createFromJSON(require('./id-l'))
+    createFromJSON(idd),
+    createFromJSON(idl)
   ])
 
   // Dialer
@@ -24,14 +27,13 @@ async function run() {
   })
 
   // Add peer to Dial (the listener) into the PeerStore
-  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/p2p/' + listenerId.toB58String()
+  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/p2p/' + listenerId.toString()
 
   // Start the dialer libp2p node
   await dialerNode.start()
 
   console.log('Dialer ready, listening on:')
-  dialerNode.multiaddrs.forEach((ma) => console.log(ma.toString() +
-        '/p2p/' + dialerId.toB58String()))
+  dialerNode.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 
   // Dial the listener node
   console.log('Dialing to peer:', listenerMultiaddr)
@@ -41,7 +43,7 @@ async function run() {
 
   pipe(
     // Source data
-    ['hey'],
+    [uint8ArrayFromString('hey')],
     // Write to the stream, and pass its output to the next function
     stream,
     // Sink function
@@ -49,7 +51,7 @@ async function run() {
       // For each chunk of data
       for await (const data of source) {
         // Output the data
-        console.log('received echo:', data.toString())
+        console.log('received echo:', uint8ArrayToString(data))
       }
     }
   )

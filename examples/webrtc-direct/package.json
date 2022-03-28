@@ -2,32 +2,25 @@
   "name": "webrtc-direct",
   "version": "0.0.1",
   "private": true,
-  "description": "",
+  "type": "module",
+  "browserslist": [
+    "last 2 Chrome versions"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build index.html",
-    "start": "parcel index.html"
+    "start": "vite"
   },
   "license": "ISC",
-  "devDependencies": {
-    "@babel/cli": "^7.13.10",
-    "@babel/core": "^7.13.10",
-    "@mapbox/node-pre-gyp": "^1.0.8",
-    "babel-plugin-syntax-async-functions": "^6.13.0",
-    "babel-plugin-transform-regenerator": "^6.26.0",
-    "babel-polyfill": "^6.26.0",
-    "parcel": "^2.0.1",
-    "util": "^0.12.3"
-  },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^5.0.2",
+    "@achingbrain/webrtc-direct": "^0.7.2",
+    "@chainsafe/libp2p-noise": "^6.0.1",
+    "@libp2p/bootstrap": "^1.0.1",
+    "@libp2p/mplex": "^1.0.2",
     "libp2p": "../../",
-    "libp2p-bootstrap": "^0.14.0",
-    "libp2p-mplex": "^0.10.4",
-    "libp2p-webrtc-direct": "^0.7.0",
-    "peer-id": "^0.16.0"
+    "wrtc": "^0.4.7"
   },
-  "browser": {
-    "ipfs": "ipfs/dist/index.min.js"
+  "devDependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.8",
+    "vite": "^2.8.6"
   }
 }

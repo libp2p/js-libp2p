@@ -13,25 +13,25 @@ For this demo, we will connect to IPFS default bootstrapper nodes and so, we wil
 First, we create our libp2p node.
 
 ```JavaScript
-const Libp2p = require('libp2p')
-const Bootstrap = require('libp2p-bootstrap')
+import { createLibp2p } from 'libp2p'
+import { Bootstrap } from '@libp2p/bootstrap'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [ TCP ],
-    streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE ],
-    peerDiscovery: [ Bootstrap ]
-  },
-  config: {
-    peerDiscovery: {
-      bootstrap: {
-        interval: 60e3,
-        enabled: true,
-        list: bootstrapers
-      }
-    }
-  }
+const node = await createLibp2p({
+  transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
+  peerDiscovery: [
+    new Bootstrap({
+      interval: 60e3,
+      list: bootstrapers
+    })
+  ]
 })
 ```
 
@@ -51,26 +51,26 @@ const bootstrapers = [
 Now, once we create and start the node, we can listen for events such as `peer:discovery` and `peer:connect`, these events tell us when we found a peer, independently of the discovery mechanism used and when we actually dialed to that peer.
 
 ```JavaScript
-const node = await Libp2p.create({
+const node = await createLibp2p({
   peerId,
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  modules: {
-    transport: [ TCP ],
-    streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE ],
-    peerDiscovery: [ Bootstrap ]
-  },
-  config: {
-    peerDiscovery: {
-      bootstrap: {
-        interval: 60e3,
-        enabled: true,
-        list: bootstrapers
-      }
-    }
-  }
+  transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
+  peerDiscovery: [
+    new Bootstrap({
+      interval: 60e3,
+      list: bootstrapers
+    })
+  ]
 })
 
 node.connectionManager.on('peer:connect', (connection) => {
@@ -110,28 +110,28 @@ For this example, we need `libp2p-mdns`, go ahead and `npm install` it. You can 
 Update your libp2p configuration to include MulticastDNS.
 
 ```JavaScript
-const Libp2p = require('libp2p')
-const MulticastDNS = require('libp2p-mdns')
+import { createLibp2p } from 'libp2p'
+import { MulticastDNS } from '@libp2p/mdns'
 
 const createNode = () => {
   return Libp2p.create({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [ TCP ],
-      streamMuxer: [ Mplex ],
-      connEncryption: [ NOISE ],
-      peerDiscovery: [ MulticastDNS ]
-    },
-    config: {
-      peerDiscovery: {
-        mdns: {
-          interval: 20e3,
-          enabled: true
-        }
-      }
-    }
+    transports: [
+      new TCP()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    connectionEncryption: [
+      new Noise()
+    ],
+    peerDiscovery: [
+      new MulticastDNS({
+        interval: 20e3
+      })
+    ]
   })
 }
 ```
@@ -170,39 +170,37 @@ In the context of this example, we will create and run the `libp2p-relay-server`
 You can create your libp2p nodes as follows:
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const Gossipsub = require('libp2p-gossipsub')
-const Bootstrap = require('libp2p-bootstrap')
-const PubsubPeerDiscovery = require('libp2p-pubsub-peer-discovery')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Gossipsub } from 'libp2p-gossipsub'
+import { Bootstrap } from '@libp2p/bootstrap'
+const PubsubPeerDiscovery from 'libp2p-pubsub-peer-discovery')
 
 const createNode = async (bootstrapers) => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [Mplex],
-      connEncryption: [NOISE],
-      pubsub: Gossipsub,
-      peerDiscovery: [Bootstrap, PubsubPeerDiscovery]
-    },
-    config: {
-      peerDiscovery: {
-        [PubsubPeerDiscovery.tag]: {
-          interval: 1000,
-          enabled: true
-        },
-        [Bootstrap.tag]: {
-          enabled: true,
-          list: bootstrapers
-        }
-      }
-    }
-  })
+    transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
+  peerDiscovery: [
+    new Bootstrap({
+      interval: 60e3,
+      list: bootstrapers
+    }),
+    new PubsubPeerDiscovery({
+      interval: 1000
+    })
+  ])
 
   return node
 }
@@ -212,7 +210,9 @@ We will use the `libp2p-relay-server` as bootstrap nodes for the libp2p nodes, s
 
 ```js
 const relay = await createRelayServer({
-  listenAddresses: ['/ip4/0.0.0.0/tcp/0']
+  addresses: {
+    listen: ['/ip4/0.0.0.0/tcp/0']
+  }
 })
 console.log(`libp2p relay starting with id: ${relay.peerId.toB58String()}`)
 await relay.start()

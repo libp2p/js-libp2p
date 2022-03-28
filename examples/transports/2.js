@@ -1,26 +1,24 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../..')
-const TCP = require('libp2p-tcp')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
-
-const pipe = require('it-pipe')
-const concat = require('it-concat')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { pipe } from 'it-pipe'
+import toBuffer from 'it-to-buffer'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    }
+    transports: [new TCP()],
+    connectionEncryption: [new Noise()],
+    streamMuxers: [new Mplex()]
   })
 
   await node.start()
@@ -29,7 +27,7 @@ const createNode = async () => {
 
 function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
 
 ;(async () => {
@@ -44,16 +42,16 @@ function printAddrs (node, number) {
   node2.handle('/print', async ({ stream }) => {
     const result = await pipe(
       stream,
-      concat
+      toBuffer
     )
-    console.log(result.toString())
+    console.log(uint8ArrayToString(result))
   })
 
-  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
   const { stream } = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(
-    ['Hello', ' ', 'p2p', ' ', 'world', '!'],
+    ['Hello', ' ', 'p2p', ' ', 'world', '!'].map(str => uint8ArrayFromString(str)),
     stream
   )
 })();
