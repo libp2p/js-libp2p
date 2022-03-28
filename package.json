@@ -171,7 +171,7 @@
     "@libp2p/webrtc-star": "^1.0.3",
     "@libp2p/websockets": "^1.0.3",
     "@nodeutils/defaults-deep": "^1.1.0",
-    "@types/node": "^16.11.26",
+    "@types/node": "^17.0.23",
     "@types/node-forge": "^1.0.0",
     "@types/p-fifo": "^1.0.0",
     "@types/varint": "^6.0.0",
