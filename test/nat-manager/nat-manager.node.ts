@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/utils/chai.js'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager, FAULT_TOLERANCE } from '../../src/transport-manager.js'
+import { DefaultTransportManager, FaultTolerance } from '../../src/transport-manager.js'
 import { TCP } from '@libp2p/tcp'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { NatManager } from '../../src/nat-manager.js'
@@ -30,7 +30,7 @@ describe('Nat Manager (TCP)', () => {
     })
     components.setAddressManager(new DefaultAddressManager(components, { listen: addrs }))
     components.setTransportManager(new DefaultTransportManager(components, {
-      faultTolerance: FAULT_TOLERANCE.NO_FATAL
+      faultTolerance: FaultTolerance.NO_FATAL
     }))
 
     const natManager = new NatManager(components, {

@@ -1,7 +1,7 @@
 import { createLibp2pNode } from './libp2p.js'
 import type { AbortOptions, EventEmitter, RecursivePartial, Startable } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { FAULT_TOLERANCE } from './transport-manager.js'
+import type { FaultTolerance } from './transport-manager.js'
 import type { HostProperties } from './identify/index.js'
 import type { DualDHT } from '@libp2p/interfaces/dht'
 import type { Datastore } from 'interface-datastore'
@@ -95,7 +95,7 @@ export interface ConnectionManagerConfig {
 }
 
 export interface TransportManagerConfig {
-  faultTolerance?: FAULT_TOLERANCE
+  faultTolerance?: FaultTolerance
 }
 
 export interface PeerStoreConfig {

@@ -4,7 +4,7 @@ import * as Constants from './constants.js'
 import { AGENT_VERSION } from './identify/consts.js'
 import * as RelayConstants from './circuit/constants.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
-import { FAULT_TOLERANCE } from './transport-manager.js'
+import { FaultTolerance } from './transport-manager.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pInit } from './index.js'
 import { codes, messages } from './errors.js'
@@ -26,7 +26,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
   },
   connectionGater: {},
   transportManager: {
-    faultTolerance: FAULT_TOLERANCE.FATAL_ALL
+    faultTolerance: FaultTolerance.FATAL_ALL
   },
   dialer: {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
