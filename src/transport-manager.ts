@@ -12,14 +12,14 @@ import { trackedMap } from '@libp2p/tracked-map'
 const log = logger('libp2p:transports')
 
 export interface TransportManagerInit {
-  faultTolerance?: FAULT_TOLERANCE
+  faultTolerance?: FaultTolerance
 }
 
 export class DefaultTransportManager extends EventEmitter<TransportManagerEvents> implements TransportManager, Startable {
   private readonly components: Components
   private readonly transports: Map<string, Transport>
   private readonly listeners: Map<string, Listener[]>
-  private readonly faultTolerance: FAULT_TOLERANCE
+  private readonly faultTolerance: FaultTolerance
   private started: boolean
 
   constructor (components: Components, init: TransportManagerInit = {}) {
@@ -33,7 +33,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
       metric: 'listeners',
       metrics: this.components.getMetrics()
     })
-    this.faultTolerance = init.faultTolerance ?? FAULT_TOLERANCE.FATAL_ALL
+    this.faultTolerance = init.faultTolerance ?? FaultTolerance.FATAL_ALL
   }
 
   /**
@@ -215,7 +215,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
       // listening on remote addresses as they may be offline. We could then potentially
       // just wait for any (`p-any`) listener to succeed on each transport before returning
       const isListening = results.find(r => r.isFulfilled)
-      if ((isListening == null) && this.faultTolerance !== FAULT_TOLERANCE.NO_FATAL) {
+      if ((isListening == null) && this.faultTolerance !== FaultTolerance.NO_FATAL) {
         throw errCode(new Error(`Transport (${key}) could not listen on any available address`), codes.ERR_NO_VALID_ADDRESSES)
       }
     }
@@ -224,7 +224,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     // means we were given addresses we do not have transports for
     if (couldNotListen.length === this.transports.size) {
       const message = `no valid addresses were provided for transports [${couldNotListen.join(', ')}]`
-      if (this.faultTolerance === FAULT_TOLERANCE.FATAL_ALL) {
+      if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
         throw errCode(new Error(message), codes.ERR_NO_VALID_ADDRESSES)
       }
       log(`libp2p in dial mode only: ${message}`)
@@ -266,7 +266,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
 /**
  * Enum Transport Manager Fault Tolerance values
  */
-export enum FAULT_TOLERANCE {
+export enum FaultTolerance {
   /**
    * should be used for failing in any listen circumstance
    */

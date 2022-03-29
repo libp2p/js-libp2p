@@ -246,8 +246,8 @@ import { GossipSub } from 'libp2p-gossipsub'
 
 const node = await createLibp2p({
   transports: [
-    TCP,
-    new WS() // It can take instances too!
+    new TCP(),
+    new WS()
   ],
   streamMuxers: [new Mplex()],
   connectionEncryption: [new Noise()],
@@ -697,8 +697,7 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-
-const { FaultTolerance } from 'libp2p/src/transport-manager')
+import { FaultTolerance } from 'libp2p/transport-manager'
 
 const node = await createLibp2p({
   transports: [new TCP()],

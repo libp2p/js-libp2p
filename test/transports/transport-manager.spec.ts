@@ -7,7 +7,7 @@ import { WebSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { NOISE } from '@chainsafe/libp2p-noise'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager, FAULT_TOLERANCE } from '../../src/transport-manager.js'
+import { DefaultTransportManager, FaultTolerance } from '../../src/transport-manager.js'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
@@ -123,7 +123,7 @@ describe('libp2p.transportManager (dial only)', () => {
         listen: ['/ip4/127.0.0.1/tcp/0']
       },
       transportManager: {
-        faultTolerance: FAULT_TOLERANCE.NO_FATAL
+        faultTolerance: FaultTolerance.NO_FATAL
       },
       transports: [
         new WebSockets()
@@ -143,7 +143,7 @@ describe('libp2p.transportManager (dial only)', () => {
         listen: ['/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit']
       },
       transportManager: {
-        faultTolerance: FAULT_TOLERANCE.NO_FATAL
+        faultTolerance: FaultTolerance.NO_FATAL
       },
       transports: [
         new WebSockets()
