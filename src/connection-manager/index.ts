@@ -267,8 +267,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const peerIdStr = peerId.toString()
     const storedConns = this.connections.get(peerIdStr)
 
-    this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
-
     if (storedConns != null) {
       storedConns.push(connection)
     } else {
@@ -284,6 +282,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     await this._checkMaxLimit('maxConnections', this.getConnectionList().length)
+    this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
   }
 
   /**

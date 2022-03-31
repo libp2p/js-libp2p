@@ -34,6 +34,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
+import pDefer from 'p-defer'
 
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -526,9 +527,15 @@ describe('Identify', () => {
 
       const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
       const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-
+      const connectionPromise = pDefer()
+      libp2p.connectionManager.addEventListener('peer:connect', () => {
+        connectionPromise.resolve()
+      }, { once: true })
       const connection = await libp2p.dial(remoteAddr)
+
       expect(connection).to.exist()
+      // Wait for connection event to be emitted
+      await connectionPromise.promise
 
       // Wait for identify to finish
       await identityServiceIdentifySpy.firstCall.returnValue
@@ -590,9 +597,15 @@ describe('Identify', () => {
 
       const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
       const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-
+      const connectionPromise = pDefer()
+      libp2p.connectionManager.addEventListener('peer:connect', () => {
+        connectionPromise.resolve()
+      }, { once: true })
       const connection = await libp2p.dial(remoteAddr)
+
       expect(connection).to.exist()
+      // Wait for connection event to be emitted
+      await connectionPromise.promise
 
       // Wait for identify to finish
       await identityServiceIdentifySpy.firstCall.returnValue

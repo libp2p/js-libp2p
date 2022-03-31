@@ -499,6 +499,13 @@ describe('libp2p.upgrader', () => {
       libp2p.components.getUpgrader().upgradeOutbound(outbound),
       remoteLibp2p.components.getUpgrader().upgradeInbound(inbound)
     ])
+    await new Promise<void>((resolve, reject) => {
+      const t = setTimeout(reject, 1000)
+      libp2p.connectionManager.addEventListener('peer:connect', () => {
+        clearTimeout(t)
+        resolve()
+      }, { once: true })
+    })
     expect(connectionManagerDispatchEventSpy.callCount).to.equal(1)
 
     let [event] = connectionManagerDispatchEventSpy.getCall(0).args

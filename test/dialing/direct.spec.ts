@@ -434,11 +434,9 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await libp2p.start()
 
-    libp2p.components.getUpgrader().addEventListener('connection', () => {
+    libp2p.connectionManager.addEventListener('peer:connect', () => {
       connectionPromise.resolve()
-    }, {
-      once: true
-    })
+    }, { once: true })
 
     const connection = await libp2p.dial(MULTIADDRS_WEBSOCKETS[0])
     expect(connection).to.exist()
