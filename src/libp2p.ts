@@ -32,7 +32,7 @@ import type { Connection } from '@libp2p/interfaces/connection'
 import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
-import type { ConnectionManager, StreamHandler } from '@libp2p/interfaces/registrar'
+import type { ConnectionManager, Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
 import { validateConfig } from './config.js'
@@ -43,6 +43,7 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import errCode from 'err-code'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
+import type { Metrics } from '@libp2p/interfaces/metrics'
 
 const log = logger('libp2p')
 
@@ -59,6 +60,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public peerRouting: PeerRouting
   public keychain: KeyChain
   public connectionManager: ConnectionManager
+  public registrar: Registrar
+  public metrics?: Metrics
 
   private started: boolean
   private readonly services: Startable[]
@@ -78,7 +81,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     // Create Metrics
     if (init.metrics.enabled) {
-      this.components.setMetrics(this.configureComponent(new DefaultMetrics(init.metrics)))
+      this.metrics = this.components.setMetrics(this.configureComponent(new DefaultMetrics(init.metrics)))
     }
 
     this.components.setConnectionGater(this.configureComponent({
@@ -117,7 +120,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.connectionManager = this.components.setConnectionManager(this.configureComponent(new DefaultConnectionManager(this.components, init.connectionManager)))
 
     // Create the Registrar
-    this.components.setRegistrar(this.configureComponent(new DefaultRegistrar(this.components)))
+    this.registrar = this.components.setRegistrar(this.configureComponent(new DefaultRegistrar(this.components)))
 
     // Setup the transport manager
     this.components.setTransportManager(this.configureComponent(new DefaultTransportManager(this.components, init.transportManager)))
@@ -180,6 +183,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     if (this.dht != null) {
       // add dht to routers
       peerRouters.push(this.configureComponent(new DHTPeerRouting(this.dht)))
+
+      // use dht for peer discovery
+      this.dht.addEventListener('peer', (evt) => {
+        this.onDiscoveryPeer(evt)
+      })
     }
 
     this.peerRouting = this.components.setPeerRouting(this.configureComponent(new DefaultPeerRouting(this.components, {
