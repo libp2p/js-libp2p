@@ -1,3 +1,6 @@
+# File managed by web3-bot. DO NOT EDIT.
+# See https://github.com/protocol/.github/ for details.
+
 # Automatically merge pull requests opened by web3-bot, as soon as (and only if) all tests pass.
 # This reduces the friction associated with updating with our workflows.
 
