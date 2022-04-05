@@ -1,3 +1,10 @@
+### [1.0.7](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.6...v1.0.7) (2022-04-05)
+
+
+### Trivial Changes
+
+* update README to the latest changes ([#169](https://github.com/libp2p/js-libp2p-tcp/issues/169)) ([129bf19](https://github.com/libp2p/js-libp2p-tcp/commit/129bf1958be3c2001b1f84646b6a7ccba6e20b52))
+
 ### [1.0.6](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.5...v1.0.6) (2022-03-16)
 
 
