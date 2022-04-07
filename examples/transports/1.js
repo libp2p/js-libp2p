@@ -1,21 +1,24 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../..')
-const TCP = require('libp2p-tcp')
-const { NOISE } = require('@chainsafe/libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
-      listen: ['/ip4/0.0.0.0/tcp/0']
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
     },
-    modules: {
-      transport: [TCP],
-      connEncryption: [NOISE]
-    }
+    transports: [
+      new TCP()
+    ],
+    connectionEncryption: [
+      new Noise()
+    ]
   })
 
   await node.start()
@@ -27,5 +30,5 @@ const createNode = async () => {
 
   console.log('node has started (true/false):', node.isStarted())
   console.log('listening on:')
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 })();

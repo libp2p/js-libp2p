@@ -1,31 +1,30 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../../')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MulticastDNS = require('libp2p-mdns')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { MulticastDNS } from '@libp2p/mdns'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [Mplex],
-      connEncryption: [NOISE],
-      peerDiscovery: [MulticastDNS]
-    },
-    config: {
-      peerDiscovery: {
-        [MulticastDNS.tag]: {
-          interval: 20e3,
-          enabled: true
-        }
-      }
-    }
+    transports: [
+      new TCP()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    connectionEncryption: [
+      new Noise()
+    ],
+    peerDiscovery: [
+      new MulticastDNS({
+        interval: 20e3
+      })
+    ]
   })
 
   return node
@@ -37,8 +36,8 @@ const createNode = async () => {
     createNode()
   ])
 
-  node1.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toB58String()))
-  node2.on('peer:discovery', (peerId) => console.log('Discovered:', peerId.toB58String()))
+  node1.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
+  node2.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
 
   await Promise.all([
     node1.start(),

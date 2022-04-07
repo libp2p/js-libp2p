@@ -1,30 +1,21 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../../')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const KadDHT = require('libp2p-kad-dht')
-
-const delay = require('delay')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { KadDHT } from '@libp2p/kad-dht'
+import delay from 'delay'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [Mplex],
-      connEncryption: [NOISE],
-      dht: KadDHT
-    },
-    config: {
-      dht: {
-        enabled: true
-      }
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()],
+    dht: new KadDHT()
   })
 
   await node.start()
@@ -38,8 +29,8 @@ const createNode = async () => {
     createNode()
   ])
 
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-  node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
 
   await Promise.all([
     node1.dial(node2.peerId),
@@ -52,5 +43,5 @@ const createNode = async () => {
   const peer = await node1.peerRouting.findPeer(node3.peerId)
 
   console.log('Found it, multiaddrs are:')
-  peer.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${peer.id.toB58String()}`))
+  peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
 })();

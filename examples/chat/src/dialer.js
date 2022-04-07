@@ -1,15 +1,16 @@
-'use strict'
 /* eslint-disable no-console */
 
-const PeerId = require('peer-id')
-const { Multiaddr } = require('multiaddr')
-const createLibp2p = require('./libp2p')
-const { stdinToStream, streamToConsole } = require('./stream')
+import { Multiaddr } from '@multiformats/multiaddr'
+import { createLibp2p } from './libp2p.js'
+import { stdinToStream, streamToConsole } from './stream.js'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import peerIdDialerJson from './peer-id-dialer.js'
+import peerIdListenerJson from './peer-id-listener.js'
 
 async function run () {
   const [idDialer, idListener] = await Promise.all([
-    PeerId.createFromJSON(require('./peer-id-dialer')),
-    PeerId.createFromJSON(require('./peer-id-listener'))
+    createFromJSON(peerIdDialerJson),
+    createFromJSON(peerIdListenerJson)
   ])
 
   // Create a new libp2p node on localhost with a randomly chosen port
@@ -25,12 +26,12 @@ async function run () {
 
   // Output this node's address
   console.log('Dialer ready, listening on:')
-  nodeDialer.multiaddrs.forEach((ma) => {
-    console.log(ma.toString() + '/p2p/' + idDialer.toB58String())
+  nodeDialer.getMultiaddrs().forEach((ma) => {
+    console.log(ma.toString())
   })
 
   // Dial to the remote peer (the "listener")
-  const listenerMa = new Multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toB58String()}`)
+  const listenerMa = new Multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toString()}`)
   const { stream } = await nodeDialer.dialProtocol(listenerMa, '/chat/1.0.0')
 
   console.log('Dialer dialed to listener on protocol: /chat/1.0.0')

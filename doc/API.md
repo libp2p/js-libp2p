@@ -3,6 +3,7 @@
 * [Static Functions](#static-functions)
   * [`create`](#create)
 * [Instance Methods](#libp2p-instance-methods)
+  * [`loadkeychain`](#loadkeychain)
   * [`start`](#start)
   * [`stop`](#stop)
   * [`dial`](#dial)
@@ -11,6 +12,9 @@
   * [`handle`](#handle)
   * [`unhandle`](#unhandle)
   * [`ping`](#ping)
+  * [`fetch`](#fetch)
+  * [`fetchService.registerLookupFunction`](#fetchserviceregisterlookupfunction)
+  * [`fetchService.unRegisterLookupFunction`](#fetchserviceunregisterlookupfunction)
   * [`multiaddrs`](#multiaddrs)
   * [`addressManager.getListenAddrs`](#addressmanagergetlistenaddrs)
   * [`addressManager.getAnnounceAddrs`](#addressmanagergetannounceaddrs)
@@ -115,23 +119,21 @@ For Libp2p configurations and modules details read the [Configuration Document](
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 async function main () {
   // specify options
   const options = {
-    modules: {
-      transport: [TCP],
-      streamMuxer: [MPLEX],
-      connEncryption: [NOISE]
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()]
   }
 
   // create libp2p
-  const libp2p = await Libp2p.create(options)
+  const libp2p = await createLibp2p(options)
 }
 
 main()
@@ -145,11 +147,11 @@ As an alternative, it is possible to create a Libp2p instance with the construct
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const PeerId = require('peer-id')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+
 
 async function main () {
   const peerId = await PeerId.create();
@@ -158,11 +160,9 @@ async function main () {
   // peerId is required when Libp2p is instantiated via the constructor
   const options = {
     peerId,
-    modules: {
-      transport: [TCP],
-      streamMuxer: [MPLEX],
-      connEncryption: [NOISE]
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()]
   }
 
   // create libp2p
@@ -196,11 +196,11 @@ Load keychain keys from the datastore, importing the private key as 'self', if n
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
+import { createLibp2p } from 'libp2p'
 
 // ...
 
-const libp2p = await Libp2p.create({
+const libp2p = await createLibp2p({
   // ...
   keychain: {
     pass: '0123456789pass1234567890'
@@ -226,11 +226,11 @@ Starts the libp2p node.
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
+import { createLibp2p } from 'libp2p'
 
 // ...
 
-const libp2p = await Libp2p.create(options)
+const libp2p = await createLibp2p(options)
 
 // start libp2p
 await libp2p.start()
@@ -251,10 +251,10 @@ Stops the libp2p node.
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
+import { createLibp2p } from 'libp2p'
 
 // ...
-const libp2p = await Libp2p.create(options)
+const libp2p = await createLibp2p(options)
 // ...
 
 // stop libp2p
@@ -350,7 +350,7 @@ Dials to another peer in the network and selects a protocol to communicate with 
 
 ```js
 // ...
-const pipe = require('it-pipe')
+import { pipe } from 'it-pipe'
 
 const { stream, protocol } = await libp2p.dialProtocol(remotePeerId, protocols)
 
@@ -452,6 +452,72 @@ Pings a given peer and get the operation's latency.
 ```js
 // ...
 const latency = await libp2p.ping(otherPeerId)
+```
+
+## fetch
+
+Fetch a value from a remote node
+
+`libp2p.fetch(peer, key)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peer | [`PeerId`][peer-id]\|[`Multiaddr`][multiaddr]\|`string` | peer to ping |
+| key | `string` | A key that corresponds to a value on the remote node |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<Uint8Array | null>` | The value for the key or null if it cannot be found |
+
+#### Example
+
+```js
+// ...
+const value = await libp2p.fetch(otherPeerId, '/some/key')
+```
+
+## fetchService.registerLookupFunction
+
+Register a function to look up values requested by remote nodes
+
+`libp2p.fetchService.registerLookupFunction(prefix, lookup)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| prefix | `string` | All queries below this prefix will be passed to the lookup function |
+| lookup | `(key: string) => Promise<Uint8Array | null>` | A function that takes a key and returns a Uint8Array or null |
+
+#### Example
+
+```js
+// ...
+const value = await libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
+```
+
+## fetchService.unregisterLookupFunction
+
+Removes the passed lookup function or any function registered for the passed prefix
+
+`libp2p.fetchService.unregisterLookupFunction(prefix, lookup)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| prefix | `string` | All queries below this prefix will be passed to the lookup function |
+| lookup | `(key: string) => Promise<Uint8Array | null>` | Optional: A function that takes a key and returns a Uint8Array or null |
+
+#### Example
+
+```js
+// ...
+libp2p.fetchService.unregisterLookupFunction('/prefix')
 ```
 
 ## multiaddrs

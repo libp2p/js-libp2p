@@ -1,10 +1,11 @@
-'use strict'
+import path from 'path'
+import execa from 'execa'
+import pDefer from 'p-defer'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { chromium } from 'playwright'
+import { fileURLToPath } from 'url'
 
-const path = require('path')
-const execa = require('execa')
-const pDefer = require('p-defer')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
-const { chromium } = require('playwright');
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function startNode (name, args = []) {
     return execa('node', [path.join(__dirname, name), ...args], {
@@ -13,8 +14,8 @@ function startNode (name, args = []) {
     })
 }
 
-function startBrowser (name, args = []) {
-    return execa('parcel', [path.join(__dirname, name), ...args], {
+function startBrowser () {
+    return execa('vite', [], {
         preferLocal: true,
         localDir: __dirname,
         cwd: __dirname,
@@ -22,7 +23,7 @@ function startBrowser (name, args = []) {
     })
 }
 
-async function test () {
+export async function test () {
     // Step 1, listener process
     const listenerProcReady = pDefer()
     let listenerOutput = ''
@@ -42,20 +43,14 @@ async function test () {
 
     // Step 2, dialer process
     process.stdout.write('dialer.js\n')
-    let dialerUrl = ''
-    const dialerProc = startBrowser('index.html')
+    let dialerUrl = 'http://localhost:3000'
+    const dialerProc = startBrowser()
 
     dialerProc.all.on('data', async (chunk) => {
         /**@type {string} */
         const out = chunk.toString()
 
-        if (out.includes('Server running at')) {
-            dialerUrl = out.split('Server running at ')[1]
-        }
-
-
-        if (out.includes('Built in ')) {
-
+        if (out.includes('ready in')) {
             try {
                 const browser = await chromium.launch();
                 const page = await browser.newPage();
@@ -71,25 +66,14 @@ async function test () {
                   '#output',
                   { timeout: 10000 }
                 )
-                await browser.close();
-            } catch (/** @type {any} */ err) {
+                await browser.close()
+            } catch (err) {
                 console.error(err)
                 process.exit(1)
             } finally {
                 dialerProc.cancel()
-                listenerProc.kill()
+                listenerProc.cancel()
             }
         }
     })
-
-    await Promise.all([
-        listenerProc,
-        dialerProc,
-    ]).catch((err) => {
-        if (err.signal !== 'SIGTERM') {
-            throw err
-        }
-    })
 }
-
-module.exports = test

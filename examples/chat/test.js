@@ -1,9 +1,10 @@
-'use strict'
+import path from 'path'
+import execa from 'execa'
+import pDefer from 'p-defer'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fileURLToPath } from 'url'
 
-const path = require('path')
-const execa = require('execa')
-const pDefer = require('p-defer')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function startProcess(name) {
   return execa('node', [path.join(__dirname, name)], {
@@ -12,7 +13,7 @@ function startProcess(name) {
   })
 }
 
-async function test () {
+export async function test () {
   const message = 'test message'
   let listenerOutput = ''
   let dialerOutput = ''
@@ -73,5 +74,3 @@ async function test () {
     }
   })
 }
-
-module.exports = test

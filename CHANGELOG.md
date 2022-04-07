@@ -1,3 +1,77 @@
+## [0.35.8](https://github.com/libp2p/js-libp2p/compare/v0.35.7...v0.35.8) (2021-12-29)
+
+
+### Bug Fixes
+
+* do not wait for autodial start ([#1089](https://github.com/libp2p/js-libp2p/issues/1089)) ([79b3cfc](https://github.com/libp2p/js-libp2p/commit/79b3cfc6ad02ecc76fe23a3c3ff2d0b32a0ae4a8))
+* increase listeners on any-signal ([#1084](https://github.com/libp2p/js-libp2p/issues/1084)) ([f18fc80](https://github.com/libp2p/js-libp2p/commit/f18fc80b70bf7b6b26fffa70b0a8d0502a6c4801))
+* look for final peer event instead of peer response ([#1092](https://github.com/libp2p/js-libp2p/issues/1092)) ([d2b7ec0](https://github.com/libp2p/js-libp2p/commit/d2b7ec0f6be0ee80f2c963279a8ec2385059a889))
+* record tracked map clears ([#1085](https://github.com/libp2p/js-libp2p/issues/1085)) ([b4b4324](https://github.com/libp2p/js-libp2p/commit/b4b432406ebc08ef2fc3a1922c64cde7c9060cae))
+
+
+
+### [0.36.2](https://www.github.com/libp2p/js-libp2p/compare/v0.36.1...v0.36.2) (2022-01-26)
+
+
+### Bug Fixes
+
+* reject connections when not running ([#1146](https://www.github.com/libp2p/js-libp2p/issues/1146)) ([902f10d](https://www.github.com/libp2p/js-libp2p/commit/902f10d58d1062e812eb27aa0e2256e3fde5d3f6))
+
+### [0.36.1](https://www.github.com/libp2p/js-libp2p/compare/v0.36.0...v0.36.1) (2022-01-25)
+
+
+### Bug Fixes
+
+* await unhandle of protocols ([#1144](https://www.github.com/libp2p/js-libp2p/issues/1144)) ([d44bd90](https://www.github.com/libp2p/js-libp2p/commit/d44bd9094fe9545054eb8eff68f81bc52ece03e7))
+
+## [0.36.0](https://www.github.com/libp2p/js-libp2p/compare/v0.35.8...v0.36.0) (2022-01-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* abort-controller dep is gone from dependency tree
+* `libp2p.handle`, `libp2p.registrar.register` and the peerstore methods have become async
+
+### Features
+
+* add fetch protocol ([#1036](https://www.github.com/libp2p/js-libp2p/issues/1036)) ([d8ceb0b](https://www.github.com/libp2p/js-libp2p/commit/d8ceb0bc66fe225d1335d3f05b9a3a30983c2a57))
+* async peerstore backed by datastores ([#1058](https://www.github.com/libp2p/js-libp2p/issues/1058)) ([978eb36](https://www.github.com/libp2p/js-libp2p/commit/978eb3676fad5d5d50ddb28d1a7868f448cbb20b))
+* connection gater ([#1142](https://www.github.com/libp2p/js-libp2p/issues/1142)) ([ff32eba](https://www.github.com/libp2p/js-libp2p/commit/ff32eba6a0fa222af1a7a46775d5e0346ad6ebdf))
+
+
+### Bug Fixes
+
+* cache build artefacts ([#1091](https://www.github.com/libp2p/js-libp2p/issues/1091)) ([5043cd5](https://www.github.com/libp2p/js-libp2p/commit/5043cd56435a264e83db4fb8388d33e9a0442fff))
+* catch errors during identify ([#1138](https://www.github.com/libp2p/js-libp2p/issues/1138)) ([12f1bb0](https://www.github.com/libp2p/js-libp2p/commit/12f1bb0aeec4b639bd2af05807215f3b4284e379))
+* import uint8arrays package in example ([#1083](https://www.github.com/libp2p/js-libp2p/issues/1083)) ([c3700f5](https://www.github.com/libp2p/js-libp2p/commit/c3700f55d5a0b62182d683ca37258887b24065b9))
+* make tests more reliable ([#1139](https://www.github.com/libp2p/js-libp2p/issues/1139)) ([b7e8706](https://www.github.com/libp2p/js-libp2p/commit/b7e87066a69970f1adca4ba552c7fdf624916a7e))
+* prevent auto-dialer from dialing self ([#1104](https://www.github.com/libp2p/js-libp2p/issues/1104)) ([9b22c6e](https://www.github.com/libp2p/js-libp2p/commit/9b22c6e2f987a20c6639cd07f31fe9c824e24923))
+* remove abort-controller dep ([#1095](https://www.github.com/libp2p/js-libp2p/issues/1095)) ([0a4dc54](https://www.github.com/libp2p/js-libp2p/commit/0a4dc54d084c901df47cce1788bd5922090ee037))
+* try all peer addresses when dialing a relay ([#1140](https://www.github.com/libp2p/js-libp2p/issues/1140)) ([63aa480](https://www.github.com/libp2p/js-libp2p/commit/63aa480800974515f44d3b7e013da9c8ccaae8ad))
+* update any-signal and timeout-abort-controller ([#1128](https://www.github.com/libp2p/js-libp2p/issues/1128)) ([e0354b4](https://www.github.com/libp2p/js-libp2p/commit/e0354b4c6b95bb90656b868849182eb3efddf096))
+* update multistream select ([#1136](https://www.github.com/libp2p/js-libp2p/issues/1136)) ([00e4959](https://www.github.com/libp2p/js-libp2p/commit/00e49592a356e39b20c889d5f40b9bb37d4bf293))
+* update node-forge ([#1133](https://www.github.com/libp2p/js-libp2p/issues/1133)) ([a4bba35](https://www.github.com/libp2p/js-libp2p/commit/a4bba35948e1cd8dbe5147f2c8d6385b1fbb6fae))
+
+## [0.35.7](https://github.com/libp2p/js-libp2p/compare/v0.35.2...v0.35.7) (2021-12-24)
+
+
+### Bug Fixes
+
+* add tracked map ([#1069](https://github.com/libp2p/js-libp2p/issues/1069)) ([b425fa1](https://github.com/libp2p/js-libp2p/commit/b425fa12304def2a007d43a0aa445c28b766ed02))
+* clean up pending dial targets ([#1059](https://github.com/libp2p/js-libp2p/issues/1059)) ([bdc9f16](https://github.com/libp2p/js-libp2p/commit/bdc9f16d0cbe56ccf26822f11068e7795bcef046))
+* fix uncaught promise rejection when finding peers ([#1044](https://github.com/libp2p/js-libp2p/issues/1044)) ([3b683e7](https://github.com/libp2p/js-libp2p/commit/3b683e715686163e229b7b5c3a892327dfd4fc63))
+* increase the maxlisteners for timeout controllers ([#1065](https://github.com/libp2p/js-libp2p/issues/1065)) ([09a0f94](https://github.com/libp2p/js-libp2p/commit/09a0f940df7fdb4ece34604e85693709df5c213e))
+* main ci ([#1079](https://github.com/libp2p/js-libp2p/issues/1079)) ([d1c48dc](https://github.com/libp2p/js-libp2p/commit/d1c48dcbeded828f2dd3044cc9aed3f17f02846d))
+* make error codes consistent ([#1054](https://github.com/libp2p/js-libp2p/issues/1054)) ([b25e0fe](https://github.com/libp2p/js-libp2p/commit/b25e0fe5312db58a06c39500ae84c50fed3a93bd))
+* type definitions for big dialrequest and persistent peerstore ([#1078](https://github.com/libp2p/js-libp2p/issues/1078)) ([cb0d7d6](https://github.com/libp2p/js-libp2p/commit/cb0d7d6c99d179498f04e76df76e70e4f7d41c4c))
+
+
+### Features
+
+* allow per-component metrics to be collected ([#1061](https://github.com/libp2p/js-libp2p/issues/1061)) ([2f0b311](https://github.com/libp2p/js-libp2p/commit/2f0b311df7127aa44512c2008142d4ca30268986)), closes [#1060](https://github.com/libp2p/js-libp2p/issues/1060)
+
+
+
 ## [0.35.6](https://github.com/libp2p/js-libp2p/compare/v0.35.5...v0.35.6) (2021-12-18)
 
 
@@ -1729,6 +1803,3 @@ for subscribe to see how it should be used.
 
 <a name="0.5.5"></a>
 ## [0.5.5](https://github.com/libp2p/js-libp2p/compare/v0.5.4...v0.5.5) (2017-03-21)
-
-
-

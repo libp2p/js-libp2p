@@ -1,30 +1,12 @@
-'use strict'
+import path from 'path'
+import { waitForOutput } from '../utils.js'
+import { fileURLToPath } from 'url'
 
-const path = require('path')
-const execa = require('execa')
-const pDefer = require('p-defer')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-async function test () {
-  const messageReceived = pDefer()
-  process.stdout.write('index.js\n')
-
-  const proc = execa('node', [path.join(__dirname, 'index.js')], {
-    cwd: path.resolve(__dirname),
-    all: true
+export async function test () {
+  await waitForOutput('This message is sent on a private network', 'node', [path.join(__dirname, 'index.js')], {
+    cwd: __dirname
   })
-
-  proc.all.on('data', async (data) => {
-    process.stdout.write(data)
-
-    const s = uint8ArrayToString(data)
-    if (s.includes('This message is sent on a private network')) {
-      messageReceived.resolve()
-    }
-  })
-
-  await messageReceived.promise
-  proc.kill()
 }
 
-module.exports = test

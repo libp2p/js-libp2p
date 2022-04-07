@@ -1,9 +1,10 @@
-'use strict'
+import path from 'path'
+import execa from 'execa'
+import pDefer from 'p-defer'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fileURLToPath } from 'url'
 
-const path = require('path')
-const execa = require('execa')
-const pDefer = require('p-defer')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function startProcess (name, args = []) {
   return execa('node', [path.join(__dirname, name), ...args], {
@@ -12,7 +13,7 @@ function startProcess (name, args = []) {
   })
 }
 
-async function test () {
+export async function test () {
   let output1 = ''
   let output2 = ''
   let output3 = ''
@@ -50,7 +51,7 @@ async function test () {
     output2 += uint8ArrayToString(data)
 
     if (output2.includes('Advertising with a relay address of') && output2.includes('/p2p/')) {
-      autoRelayAddr = output2.trim().split('Advertising with a relay address of ')[1]
+      autoRelayAddr = output2.trim().split('Advertising with a relay address of ')[1].trim()
       proc2Ready.resolve()
     }
   })
@@ -90,5 +91,3 @@ async function test () {
     }
   })
 }
-
-module.exports = test

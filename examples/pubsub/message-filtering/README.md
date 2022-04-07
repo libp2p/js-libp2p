@@ -7,19 +7,23 @@ To prevent undesired data from being propagated on the network, we can apply a f
 First, let's update our libp2p configuration with a pubsub implementation.
 
 ```JavaScript
-const Libp2p = require('libp2p')
-const Gossipsub = require('libp2p-gossipsub')
+import { createLibp2p } from 'libp2p'
+import { Gossipsub } from 'libp2p-gossipsub'
 
-const node = await Libp2p.create({
+const node = await createLibp2p({
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  modules: {
-    transport: [ TCP ],
-    streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE ],
-    pubsub: Gossipsub
-  }
+  transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
+  pubsub: new Gossipsub()
 })
 ```
 
@@ -32,10 +36,10 @@ const [node1, node2, node3] = await Promise.all([
   createNode(),
 ])
 
-node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
 await node1.dial(node2.peerId)
 
-node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
 await node2.dial(node3.peerId)
 ```
 

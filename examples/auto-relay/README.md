@@ -16,31 +16,27 @@ In the first step of this example, we need to configure and run a relay node in 
 The relay node will need to have its relay subsystem enabled, as well as its HOP capability. It can be configured as follows:
 
 ```js
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [Websockets],
-    connEncryption: [NOISE],
-    streamMuxer: [MPLEX]
-  },
+const node = await createLibp2p({
+  transports: [new WebSockets()],
+  connectionEncryption: [new Noise()],
+  streamMuxers: [new Mplex()]
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0/ws']
     // TODO check "What is next?" section
     // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
   },
-  config: {
-    relay: {
+  relay: {
+    enabled: true,
+    hop: {
+      enabled: true
+    },
+    advertise: {
       enabled: true,
-      hop: {
-        enabled: true
-      },
-      advertise: {
-        enabled: true,
-      }
     }
   }
 })
@@ -74,29 +70,25 @@ Listening on:
 One of the typical use cases for Auto Relay is nodes behind a NAT or browser nodes due to their inability to expose a public address. For running a libp2p node that automatically binds itself to connected HOP relays, you can see the following:
 
 ```js
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
 const relayAddr = process.argv[2]
 if (!relayAddr) {
   throw new Error('the relay address needs to be specified as a parameter')
 }
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [Websockets],
-    connEncryption: [NOISE],
-    streamMuxer: [MPLEX]
-  },
-  config: {
-    relay: {
+const node = await createLibp2p({
+  transports: [new WebSockets()],
+  connectionEncryption: [new Noise()],
+  streamMuxers: [new Mplex()],
+  relay: {
+    enabled: true,
+    autoRelay: {
       enabled: true,
-      autoRelay: {
-        enabled: true,
-        maxListeners: 2
-      }
+      maxListeners: 2
     }
   }
 })
@@ -106,18 +98,15 @@ console.log(`Node started with id ${node.peerId.toB58String()}`)
 
 const conn = await node.dial(relayAddr)
 
-// Wait for connection and relay to be bind for the example purpose
-await new Promise((resolve) => {
-  node.peerStore.on('change:multiaddrs', ({ peerId }) => {
-    // Updated self multiaddrs?
-    if (peerId.equals(node.peerId)) {
-      resolve()
-    }
-  })
-})
-
 console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`)
-console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
+
+// Wait for connection and relay to be bind for the example purpose
+node.peerStore.on('change:multiaddrs', ({ peerId }) => {
+  // Updated self multiaddrs?
+  if (peerId.equals(node.peerId)) {
+    console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
+  }
+})
 ```
 
 As you can see in the code, we need to provide the relay address, `relayAddr`, as a process argument. This node will dial the provided relay address and automatically bind to it.
@@ -145,22 +134,20 @@ Instead of dialing this relay manually, you could set up this node with the Boot
 Now that you have a relay node and a node bound to that relay, you can test connecting to the auto relay node via the relay.
 
 ```js
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
 
 const autoRelayNodeAddr = process.argv[2]
 if (!autoRelayNodeAddr) {
   throw new Error('the auto relay node address needs to be specified')
 }
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [Websockets],
-    connEncryption: [NOISE],
-    streamMuxer: [MPLEX]
-  }
+const node = await createLibp2p({
+  transports: [new WebSockets()],
+  connectionEncryption: [new Noise()],
+  streamMuxers: [new Mplex()]
 })
 
 await node.start()
