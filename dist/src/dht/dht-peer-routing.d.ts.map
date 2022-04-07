@@ -1,0 +1,1 @@
+{"version":3,"file":"dht-peer-routing.d.ts","sourceRoot":"","sources":["../../../src/dht/dht-peer-routing.js"],"names":[],"mappings":"qBAMa,OAAO,SAAS,CAAC;gCACjB,OAAO,0CAA0C,EAAE,WAAW;AAF3E;;;GAGG;AAEH;;;;GAIG;AACH;IACE;;OAEG;IACH,iBAFW,OAAO,gBAAgB,EAAE,GAAG,EAItC;IADC,kDAAe;IAGjB;;;OAGG;IACH,iBAHW,MAAM,YACN,GAAG,6DAUb;IAED;;;OAGG;IACH,qBAHW,UAAU,YACV,GAAG,qFAQb;CACF"}

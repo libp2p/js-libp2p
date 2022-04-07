@@ -80,6 +80,7 @@ class DialRequest {
           const signal = dialAbortControllers[i].signal
           conn = await this.dialAction(addr, { ...options, signal: options.signal ? anySignal([signal, options.signal]) : signal })
           // Remove the successful AbortController so it is not aborted
+          // @ts-ignore
           dialAbortControllers[i] = undefined
         } finally {
           completedDials++
