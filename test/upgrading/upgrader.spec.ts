@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Mplex } from '@libp2p/mplex'
 import { Multiaddr } from '@multiformats/multiaddr'

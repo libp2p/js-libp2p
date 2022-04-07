@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import mergeOptions from 'merge-options'
 import pDefer from 'p-defer'
 import delay from 'delay'

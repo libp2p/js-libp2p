@@ -1,21 +1,21 @@
-'use strict'
+import { createLibp2p } from './dist/src/index.js'
+import { MULTIADDRS_WEBSOCKETS } from './dist/test/fixtures/browser.js'
+import Peers from './dist/test/fixtures/peers.js'
+import { WebSockets } from '@libp2p/websockets'
+import { Mplex } from '@libp2p/mplex'
+import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from './dist/src/insecure/index.js'
+import { pipe } from 'it-pipe'
+import { createFromJSON } from '@libp2p/peer-id-factory'
 
 /** @type {import('aegir').PartialOptions} */
-module.exports = {
+export default {
   build: {
-    bundlesizeMax: '253kB'
+    bundlesizeMax: '146kB'
   },
   test: {
     before: async () => {
-      const { createLibp2p } = await import('./dist/src/index.js')
-      const { MULTIADDRS_WEBSOCKETS } = await import('./dist/test/fixtures/browser.js')
-      const { default: Peers } = await import('./dist/test/fixtures/peers.js')
-      const { WebSockets } = await import('@libp2p/websockets')
-      const { Mplex } = await import('@libp2p/mplex')
-      const { NOISE } = await import('@chainsafe/libp2p-noise')
-      const { Plaintext } = await import('./dist/src/insecure/index.js')
-      const { pipe } = await import('it-pipe')
-      const { createFromJSON } = await import('@libp2p/peer-id-factory')
+
 
       // Use the last peer
       const peerId = await createFromJSON(Peers[Peers.length - 1])

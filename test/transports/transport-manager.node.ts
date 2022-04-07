@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
