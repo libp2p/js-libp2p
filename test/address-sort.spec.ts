@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { publicAddressesFirst } from '../src/address-sort.js'
 

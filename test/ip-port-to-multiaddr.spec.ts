@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { ipPortToMultiaddr, Errors } from '../src/ip-port-to-multiaddr.js'
 
 describe('IP and port to Multiaddr', () => {

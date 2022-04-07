@@ -156,18 +156,18 @@
     ]
   },
   "scripts": {
+    "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
-    "build": "tsc",
-    "pretest": "npm run build",
-    "test": "aegir test -f ./dist/test/*.js -f ./dist/test/**/*.js",
-    "test:chrome": "npm run test -- -t browser --cov",
-    "test:chrome-webworker": "npm run test -- -t webworker",
-    "test:firefox": "npm run test -- -t browser -- --browser firefox",
-    "test:firefox-webworker": "npm run test -- -t webworker -- --browser firefox",
-    "test:node": "npm run test -- -t node --cov",
-    "test:electron-main": "npm run test -- -t electron-main",
-    "release": "semantic-release"
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
   },
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
@@ -177,13 +177,16 @@
     "err-code": "^3.0.1",
     "is-loopback-addr": "^2.0.1",
     "it-stream-types": "^1.0.4",
-    "private-ip": "^2.1.1"
+    "private-ip": "^2.1.1",
+    "ts-mocha": "^9.0.2",
+    "ts-node": "^10.7.0"
   },
   "devDependencies": {
     "@libp2p/interfaces": "^1.0.3",
-    "aegir": "^36.1.2",
+    "aegir": "^37.0.4",
     "it-all": "^1.0.6",
     "it-pair": "^2.0.2",
-    "it-pipe": "^2.0.2"
+    "it-pipe": "^2.0.2",
+    "uint8arrays": "^3.0.0"
   }
 }
