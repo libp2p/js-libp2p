@@ -1,38 +1,13 @@
-'use strict'
+import path from 'path'
+import { waitForOutput } from '../utils.js'
+import { fileURLToPath } from 'url'
 
-const path = require('path')
-const execa = require('execa')
-const pDefer = require('p-defer')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-async function test () {
-  const deferStarted = pDefer()
-  const deferListen = pDefer()
-
+export async function test () {
   process.stdout.write('1.js\n')
 
-  const proc = execa('node', [path.join(__dirname, '1.js')], {
-    cwd: path.resolve(__dirname),
-    all: true
+  await waitForOutput('/p2p/', 'node', [path.join(__dirname, '1.js')], {
+    cwd: __dirname
   })
-
-  proc.all.on('data', async (data) => {
-    process.stdout.write(data)
-    const line = uint8ArrayToString(data)
-
-
-    if (line.includes('node has started (true/false): true')) {
-      deferStarted.resolve()
-    } else if (line.includes('p2p')) {
-      deferListen.resolve()
-    }
-  })
-
-  await Promise.all([
-    deferStarted.promise,
-    deferListen.promise
-  ])
-  proc.kill()
 }
-
-module.exports = test

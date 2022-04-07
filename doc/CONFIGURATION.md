@@ -23,6 +23,9 @@
     - [Setup with Keychain](#setup-with-keychain)
     - [Configuring Dialing](#configuring-dialing)
     - [Configuring Connection Manager](#configuring-connection-manager)
+    - [Configuring Connection Gater](#configuring-connection-gater)
+      - [Outgoing connections](#outgoing-connections)
+      - [Incoming connections](#incoming-connections)
     - [Configuring Transport Manager](#configuring-transport-manager)
     - [Configuring Metrics](#configuring-metrics)
     - [Configuring PeerStore](#configuring-peerstore)
@@ -196,9 +199,9 @@ When [creating a libp2p node](./API.md#create), the modules needed should be spe
 
 ```js
 const modules = {
-  transport: [],
-  streamMuxer: [],
-  connEncryption: [],
+  transports: [],
+  streamMuxers: [],
+  connectionEncryption: [],
   contentRouting: [],
   peerRouting: [],
   peerDiscovery: [],
@@ -232,67 +235,59 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 //   dht: kad-dht
 //   pubsub: gossipsub
 
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const WS = require('libp2p-websockets')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const MulticastDNS = require('libp2p-mdns')
-const DHT = require('libp2p-kad-dht')
-const GossipSub = require('libp2p-gossipsub')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { WebSockets } from '@libp2p/websockets'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { MulticastDNS } from '@libp2p/mdns'
+import { KadDHT } from '@libp2p/kad-dht'
+import { GossipSub } from 'libp2p-gossipsub'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [
-      TCP,
-      new WS() // It can take instances too!
-    ],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE],
-    peerDiscovery: [MulticastDNS],
-    dht: DHT,
-    pubsub: GossipSub
-  }
+const node = await createLibp2p({
+  transports: [
+    new TCP(),
+    new WS()
+  ],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
+  peerDiscovery: [MulticastDNS],
+  dht: DHT,
+  pubsub: GossipSub
 })
 ```
 
 #### Customizing Peer Discovery
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const MulticastDNS = require('libp2p-mdns')
-const Bootstrap = require('libp2p-bootstrap')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { MulticastDNS } from '@libp2p/mdns'
+import { Bootstrap } from '@libp2p/bootstrap'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE],
-    peerDiscovery: [MulticastDNS, Bootstrap]
-  },
-  config: {
-    peerDiscovery: {
-      autoDial: true,             // Auto connect to discovered peers (limited by ConnectionManager minConnections)
-      // The `tag` property will be searched when creating the instance of your Peer Discovery service.
-      // The associated object, will be passed to the service when it is instantiated.
-      [MulticastDNS.tag]: {
-        interval: 1000,
-        enabled: true
-      },
-      [Bootstrap.tag]: {
-        list: [ // A list of bootstrap peers to connect to starting up the node
-          "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
-          "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
-          "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
-        ],
-        interval: 2000,
-        enabled: true
-      }
-      // .. other discovery module options.
-    }
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
+  peerDiscovery: [
+    new MulticastDNS({
+      interval: 1000
+    }),
+    new Bootstrap(
+      list: [ // A list of bootstrap peers to connect to starting up the node
+        "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+        "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+        "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
+      ],
+      interval: 2000
+    )
+  ],
+  connectionManager: {
+    autoDial: true             // Auto connect to discovered peers (limited by ConnectionManager minConnections)
+    // The `tag` property will be searched when creating the instance of your Peer Discovery service.
+    // The associated object, will be passed to the service when it is instantiated.
   }
 })
 ```
@@ -300,56 +295,50 @@ const node = await Libp2p.create({
 #### Setup webrtc transport and discovery
 
 ```js
+import { createLibp2p } from 'libp2p'
+import { WebSockets } from '@libp2p/websockets'
+import { WebRTCStar } from '@libp2p/webrtc-star'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const Libp2p = require('libp2p')
-const WS = require('libp2p-websockets')
-const WebRTCStar = require('libp2p-webrtc-star')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-
-const node = await Libp2p.create({
-  modules: {
-    transport: [
-      WS,
-      WebRTCStar
-    ],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE],
-  },
-  config: {
-    peerDiscovery: {
-      [WebRTCStar.tag]: {
-        enabled: true
-      }
-    }
-  }
+const node = await createLibp2p({
+  transports: [
+    new WebSockets(),
+    new WebRTCStar()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ]
 })
 ```
 
 #### Customizing Pubsub
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const GossipSub = require('libp2p-gossipsub')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { GossipSub } from 'libp2p-gossipsub'
+import { SignaturePolicy } from '@libp2p/interfaces/pubsub'
 
-const { SignaturePolicy } = require('libp2p-interfaces/src/pubsub/signature-policy')
-
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE],
-    pubsub: GossipSub
-  },
-  config: {
-    pubsub: {                     // The pubsub options (and defaults) can be found in the pubsub router documentation
-      enabled: true,
+const node = await createLibp2p({
+    transports: [
+      new TCP()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    connectionEncryption: [
+      new Noise()
+    ],
+    pubsub: new GossipSub({
       emitSelf: false,                                  // whether the node should emit to self on publish
       globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
-    }
+    })
   }
 })
 ```
@@ -357,64 +346,66 @@ const node = await Libp2p.create({
 #### Customizing DHT
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const DHT = require('libp2p-kad-dht')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { KadDHT } from '@libp2p/kad-dht'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE],
-    dht: DHT
-  },
-  config: {
-    dht: {                        // The DHT options (and defaults) can be found in its documentation
-      kBucketSize: 20,
-      enabled: true,              // This flag is required for DHT to run (disabled by default)
-      clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
-    }
-  }
+const node = await createLibp2p({
+  transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
+  dht: new KadDHT({
+    kBucketSize: 20,
+    clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
+  })
 })
 ```
 
 #### Setup with Content and Peer Routing
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const ipfsHttpClient = require('ipfs-http-client')
-const DelegatedPeerRouter = require('libp2p-delegated-peer-routing')
-const DelegatedContentRouter = require('libp2p-delegated-content-routing')
-const PeerId = require('peer-id')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { create as ipfsHttpClient } from 'ipfs-http-client'
+import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
+import { DelegatedContentRouting} from '@libp2p/delegated-content-routing'
+
 
 // create a peerId
 const peerId = await PeerId.create()
 
-const delegatedPeerRouting = new DelegatedPeerRouter(ipfsHttpClient.create({
+const delegatedPeerRouting = new DelegatedPeerRouting(ipfsHttpClient.create({
   host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
   protocol: 'https',
   port: 443
 }))
 
-const delegatedContentRouting = new DelegatedContentRouter(peerId, ipfsHttpClient.create({
+const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClient.create({
   host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
   protocol: 'https',
   port: 443
 }))
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE],
-    contentRouting: [delegatedContentRouting],
-    peerRouting: [delegatedPeerRouting],
-  },
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
+  contentRouting: [
+    delegatedContentRouting
+  ],
+  peerRouting: [
+    delegatedPeerRouting
+  ],
   peerId,
   peerRouting: { // Peer routing configuration
     refreshManager: { // Refresh known and connected closest peers
@@ -429,29 +420,25 @@ const node = await Libp2p.create({
 #### Setup with Relay
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
-  config: {
-    relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
-      enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
-      hop: {
-        enabled: true,         // Allows you to be a relay for other peers
-        active: true           // You will attempt to dial destination peers if you are not connected to them
-      },
-      advertise: {
-        bootDelay: 15 * 60 * 1000, // Delay before HOP relay service is advertised on the network
-        enabled: true,          // Allows you to disable the advertise of the Hop service
-        ttl: 30 * 60 * 1000     // Delay Between HOP relay service advertisements on the network
-      }
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
+  relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
+    enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
+    hop: {
+      enabled: true,         // Allows you to be a relay for other peers
+      active: true           // You will attempt to dial destination peers if you are not connected to them
+    },
+    advertise: {
+      bootDelay: 15 * 60 * 1000, // Delay before HOP relay service is advertised on the network
+      enabled: true,          // Allows you to disable the advertise of the Hop service
+      ttl: 30 * 60 * 1000     // Delay Between HOP relay service advertisements on the network
     }
   }
 })
@@ -460,24 +447,20 @@ const node = await Libp2p.create({
 #### Setup with Auto Relay
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
-  config: {
-    relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
-      enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
-      autoRelay: {
-        enabled: true,         // Allows you to bind to relays with HOP enabled for improving node dialability
-        maxListeners: 2         // Configure maximum number of HOP relays to use
-      }
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()]
+  relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
+    enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
+    autoRelay: {
+      enabled: true,         // Allows you to bind to relays with HOP enabled for improving node dialability
+      maxListeners: 2         // Configure maximum number of HOP relays to use
     }
   }
 })
@@ -493,21 +476,19 @@ Libp2p allows you to setup a secure keychain to manage your keys. The keychain c
 | datastore | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) |
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const LevelDatastore = require('datastore-level')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { LevelDatastore } from 'datastore-level'
 
 const datastore = new LevelDatastore('path/to/store')
 await datastore.open()
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
   keychain: {
     pass: 'notsafepassword123456789',
     datastore: dsInstant,
@@ -533,20 +514,18 @@ Dialing in libp2p can be configured to limit the rate of dialing, and how long d
 The below configuration example shows how the dialer should be configured, with the current defaults:
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const { dnsaddrResolver } = require('multiaddr/src/resolvers')
-const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
+import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { publicAddressesFirst } from '@libp2p-utils/address-sort'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
   dialer: {
     maxParallelDials: 100,
     maxAddrsToDial: 25,
@@ -564,17 +543,15 @@ const node = await Libp2p.create({
 The Connection Manager prunes Connections in libp2p whenever certain limits are exceeded. If Metrics are enabled, you can also configure the Connection Manager to monitor the bandwidth of libp2p and prune connections as needed. You can read more about what Connection Manager does at [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md). The configuration values below show the defaults for Connection Manager. See [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md#options) for a full description of the parameters.
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
   connectionManager: {
     maxConnections: Infinity,
     minConnections: 0,
@@ -590,24 +567,142 @@ const node = await Libp2p.create({
 })
 ```
 
-#### Configuring Transport Manager
+#### Configuring Connection Gater
 
-The Transport Manager is responsible for managing the libp2p transports life cycle. This includes starting listeners for the provided listen addresses, closing these listeners and dialing using the provided transports. By default, if a libp2p node has a list of multiaddrs for listenning on and there are no valid transports for those multiaddrs, libp2p will throw an error on startup and shutdown. However, for some applications it is perfectly acceptable for libp2p nodes to start in dial only mode if all the listen multiaddrs failed. This error tolerance can be enabled as follows:
+The Connection Gater allows us to prevent making incoming and outgoing connections to peers and storing
+multiaddrs in the address book.
+
+The order in which methods are called is as follows:
+
+##### Outgoing connections
+
+1. `connectionGater.denyDialPeer(...)`
+2. `connectionGater.denyDialMultiaddr(...)`
+3. `connectionGater.denyOutboundConnection(...)`
+4. `connectionGater.denyOutboundEncryptedConnection(...)`
+5. `connectionGater.denyOutboundUpgradedConnection(...)`
+
+##### Incoming connections
+
+1. `connectionGater.denyInboundConnection(...)`
+2. `connectionGater.denyInboundEncryptedConnection(...)`
+3. `connectionGater.denyInboundUpgradedConnection(...)`
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+const node = await createLibp2p({
+  // .. other config
+  connectionGater: {
+    /**
+     * denyDialMultiaddr tests whether we're permitted to Dial the
+     * specified peer.
+     *
+     * This is called by the dialer.connectToPeer implementation before
+     * dialling a peer.
+     *
+     * Return true to prevent dialing the passed peer.
+     */
+    denyDialPeer: (peerId: PeerId) => Promise<boolean>
 
-const { FaultTolerance } = require('libp2p/src/transport-manager')
+    /**
+     * denyDialMultiaddr tests whether we're permitted to dial the specified
+     * multiaddr for the given peer.
+     *
+     * This is called by the dialer.connectToPeer implementation after it has
+     * resolved the peer's addrs, and prior to dialling each.
+     *
+     * Return true to prevent dialing the passed peer on the passed multiaddr.
+     */
+    denyDialMultiaddr: (peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
+    /**
+     * denyInboundConnection tests whether an incipient inbound connection is allowed.
+     *
+     * This is called by the upgrader, or by the transport directly (e.g. QUIC,
+     * Bluetooth), straight after it has accepted a connection from its socket.
+     *
+     * Return true to deny the incoming passed connection.
+     */
+    denyInboundConnection: (maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundConnection tests whether an incipient outbound connection is allowed.
+     *
+     * This is called by the upgrader, or by the transport directly (e.g. QUIC,
+     * Bluetooth), straight after it has created a connection with its socket.
+     *
+     * Return true to deny the incoming passed connection.
+     */
+    denyOutboundConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyInboundEncryptedConnection tests whether a given connection, now encrypted,
+     * is allowed.
+     *
+     * This is called by the upgrader, after it has performed the security
+     * handshake, and before it negotiates the muxer, or by the directly by the
+     * transport, at the exact same checkpoint.
+     *
+     * Return true to deny the passed secured connection.
+     */
+    denyInboundEncryptedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundEncryptedConnection tests whether a given connection, now encrypted,
+     * is allowed.
+     *
+     * This is called by the upgrader, after it has performed the security
+     * handshake, and before it negotiates the muxer, or by the directly by the
+     * transport, at the exact same checkpoint.
+     *
+     * Return true to deny the passed secured connection.
+     */
+    denyOutboundEncryptedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyInboundUpgradedConnection tests whether a fully capable connection is allowed.
+     *
+     * This is called after encryption has been negotiated and the connection has been
+     * multiplexed, if a multiplexer is configured.
+     *
+     * Return true to deny the passed upgraded connection.
+     */
+    denyInboundUpgradedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * denyOutboundUpgradedConnection tests whether a fully capable connection is allowed.
+     *
+     * This is called after encryption has been negotiated and the connection has been
+     * multiplexed, if a multiplexer is configured.
+     *
+     * Return true to deny the passed upgraded connection.
+     */
+    denyOutboundUpgradedConnection: (peerId: PeerId, maConn: MultiaddrConnection) => Promise<boolean>
+
+    /**
+     * Used by the address book to filter passed addresses.
+     *
+     * Return true to allow storing the passed multiaddr for the passed peer.
+     */
+    filterMultiaddrForPeer: (peer: PeerId, multiaddr: Multiaddr) => Promise<boolean>
+  }
+})
+```
+
+#### Configuring Transport Manager
+
+The Transport Manager is responsible for managing the libp2p transports life cycle. This includes starting listeners for the provided listen addresses, closing these listeners and dialing using the provided transports. By default, if a libp2p node has a list of multiaddrs for listening on and there are no valid transports for those multiaddrs, libp2p will throw an error on startup and shutdown. However, for some applications it is perfectly acceptable for libp2p nodes to start in dial only mode if all the listen multiaddrs failed. This error tolerance can be enabled as follows:
+
+```js
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { FaultTolerance } from 'libp2p/transport-manager'
+
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
   transportManager: {
     faultTolerance: FaultTolerance.NO_FATAL
   }
@@ -629,17 +724,15 @@ Metrics are disabled in libp2p by default. You can enable and configure them as 
 The below configuration example shows how the metrics should be configured. Aside from enabled being `false` by default, the following default configuration options are listed below:
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
+const node = await createLibp2p({
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()]
   metrics: {
     enabled: true,
     computeThrottleMaxQueueSize: 1000,
@@ -668,22 +761,20 @@ The threshold number represents the maximum number of "dirty peers" allowed in t
 The below configuration example shows how the PeerStore should be configured. Aside from persistence being `false` by default, the following default configuration options are listed below:
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const LevelDatastore = require('datastore-level')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { LevelDatastore } from 'datastore-level'
 
 const datastore = new LevelDatastore('path/to/store')
-const dsInstant = await datastore.open()
+await datastore.open() // level database must be ready before node boot
 
-const node = await Libp2p.create({
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
-  datastore: dsInstant,
+const node = await createLibp2p({
+  datastore, // pass the opened datastore
+  transports: [new TCP()],
+  streamMuxers: [new Mplex()],
+  connectionEncryption: [new Noise()],
   peerStore: {
     persistence: true,
     threshold: 5
@@ -696,19 +787,23 @@ const node = await Libp2p.create({
 Some Transports can be passed additional options when they are created. For example, `libp2p-webrtc-star` accepts an optional, custom `wrtc` implementation. In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
 
 ```js
-const Libp2p = require('libp2p')
-const WebRTCStar = require('libp2p-webrtc-star')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const wrtc = require('wrtc')
+import { createLibp2p } from 'libp2p'
+import { WebRTCStar } from '@libp2p/webrtc-star'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import wrtc from 'wrtc'
 
 const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebRTCStar],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
+const node = await createLibp2p({
+  transports: [
+    new WebRTCStar()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
   config: {
     transport: {
       [transportKey]: {
@@ -723,12 +818,16 @@ During Libp2p startup, transport listeners will be created for the configured li
 
 ```js
 const transportKey = WebRTCStar.prototype[Symbol.toStringTag]
-const node = await Libp2p.create({
-  modules: {
-    transport: [WebRTCStar],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
+const node = await createLibp2p({
+  transports: [
+    new WebRTCStar()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connectionEncryption: [
+    new Noise()
+  ],
   addresses: {
     listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star'] // your webrtc dns multiaddr
   },
@@ -755,18 +854,16 @@ Network Address Translation (NAT) is a function performed by your router to enab
 The NAT manager can be configured as follows:
 
 ```js
-const node = await Libp2p.create({
+const node = await createLibp2p({
   config: {
     nat: {
       description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
       enabled: true, // defaults to true
       gateway: '192.168.1.1', // leave unset to auto-discover
       externalIp: '80.1.1.1', // leave unset to auto-discover
+      localAddress: '129.168.1.123', // leave unset to auto-discover
       ttl: 7200, // TTL for port mappings (min 20 minutes)
       keepAlive: true, // Refresh port mapping after TTL expires
-      pmp: {
-        enabled: false, // defaults to false
-      }
     }
   }
 })
@@ -787,10 +884,8 @@ By default under nodejs libp2p will attempt to use [UPnP](https://en.wikipedia.o
 Changing the protocol name prefix can isolate default public network (IPFS) for custom purposes.
 
 ```js
-const node = await Libp2p.create({
-  config: {
-    protocolPrefix: 'ipfs' // default
-  }
+const node = await createLibp2p({
+  protocolPrefix: 'ipfs' // default
 })
 /*
 protocols: [
@@ -801,13 +896,12 @@ protocols: [
 */
 ```
 
-
 ## Configuration examples
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
 
-- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs/src/core/runtime/libp2p-nodejs.js) - libp2p configuration used by js-ipfs when running in Node.js
-- [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs/src/core/runtime/libp2p-browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)
+- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.js) - libp2p configuration used by js-ipfs when running in Node.js
+- [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)
 
 If you have developed a project using `js-libp2p`, please consider submitting your configuration to this list so that it can be found easily by other users.
 

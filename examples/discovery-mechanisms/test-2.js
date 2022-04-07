@@ -1,14 +1,13 @@
-'use strict'
+import path from 'path'
+import execa from 'execa'
+import pWaitFor from 'p-wait-for'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fileURLToPath } from 'url'
 
-const path = require('path')
-const execa = require('execa')
-const pWaitFor = require('p-wait-for')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const discoveredCopy = 'Discovered:'
-
-async function test() {
-  const discoveredNodes = []
+export async function test () {
+  let discoveredNodes = 0
 
   process.stdout.write('2.js\n')
 
@@ -19,17 +18,16 @@ async function test() {
 
   proc.all.on('data', async (data) => {
     process.stdout.write(data)
-    const line = uint8ArrayToString(data)
+    const str = uint8ArrayToString(data)
 
-    if (line.includes(discoveredCopy)) {
-      const id = line.trim().split(discoveredCopy)[1]
-      discoveredNodes.push(id)
-    }
+    str.split('\n').forEach(line => {
+      if (line.includes('Discovered:')) {
+        discoveredNodes++
+      }
+    })
   })
 
-  await pWaitFor(() => discoveredNodes.length === 2)
+  await pWaitFor(() => discoveredNodes > 1)
 
   proc.kill()
 }
-
-module.exports = test

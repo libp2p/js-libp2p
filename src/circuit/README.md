@@ -9,9 +9,9 @@
 ## Table of Contents
 
 - [js-libp2p-circuit](#js-libp2p-circuit)
+  - [Table of Contents](#table-of-contents)
     - [Why?](#why)
     - [libp2p-circuit and IPFS](#libp2p-circuit-and-ipfs)
-  - [Table of Contents](#table-of-contents)
   - [Usage](#usage)
   - [API](#api)
     - [Implementation rational](#implementation-rational)
@@ -37,22 +37,27 @@ Libp2p circuit configuration can be seen at [Setup with Relay](../../doc/CONFIGU
 Once you have a circuit relay node running, you can configure other nodes to use it as a relay as follows:
 
 ```js
-const { Multiaddr } = require('multiaddr')
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { Multiaddr } from '@multiformats/multiaddr'
+import Libp2p from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { NOISE } from '@chainsafe/libp2p-noise'
 
 const relayAddr = ...
 
-const node = await Libp2p.create({
+const node = await createLibp2p({
   addresses: {
     listen: [new Multiaddr(`${relayAddr}/p2p-circuit`)]
   },
-  modules: {
-    transport: [TCP],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
+  transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+    ],
+  connectionEncryption: [
+    NOISE
+  ]
   },
   config: {
     relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)

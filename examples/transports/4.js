@@ -1,17 +1,15 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../..')
-const TCP = require('libp2p-tcp')
-const WebSockets = require('libp2p-websockets')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const MPLEX = require('libp2p-mplex')
-
-const fs = require('fs');
-const https = require('https');
-const pipe = require('it-pipe')
-
-const transportKey = WebSockets.prototype[Symbol.toStringTag];
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { WebSockets } from '@libp2p/websockets'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Mplex } from '@libp2p/mplex'
+import fs from 'fs'
+import https from 'https'
+import { pipe } from 'it-pipe'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 const httpServer = https.createServer({
   cert: fs.readFileSync('./test_certs/cert.pem'),
@@ -23,26 +21,25 @@ const createNode = async (addresses = []) => {
     addresses = [addresses]
   }
 
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: addresses
     },
-    modules: {
-      transport: [WebSockets],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    },
-    config: {
-      peerDiscovery: {
-        // Disable autoDial as it would fail because we are using a self-signed cert.
-        // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
-        autoDial: false
-      },
-      transport: {
-        [transportKey]: {
-          listenerOptions: { server: httpServer },
-        },
-      },
+    transports: [
+      new TCP(),
+      new WebSockets({
+        server: httpServer,
+        websocket: {
+          rejectUnauthorized: false
+        }
+      })
+    ],
+    connectionEncryption: [new Noise()],
+    streamMuxers: [new Mplex()],
+    connectionManager: {
+      // Disable autoDial as it would fail because we are using a self-signed cert.
+      // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
+      autoDial: false
     }
   })
 
@@ -52,7 +49,7 @@ const createNode = async (addresses = []) => {
 
 function printAddrs(node, number) {
   console.log('node %s is listening on:', number)
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
 
 function print ({ stream }) {
@@ -60,7 +57,7 @@ function print ({ stream }) {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg))
       }
     }
   )
@@ -78,12 +75,12 @@ function print ({ stream }) {
   node1.handle('/print', print)
   node2.handle('/print', print)
 
-  const targetAddr = `${node1.multiaddrs[0]}/p2p/${node1.peerId.toB58String()}`;
+  const targetAddr = node1.getMultiaddrs()[0];
 
   // node 2 (Secure WebSockets) dials to node 1 (Secure Websockets)
-  const { stream } = await node2.dialProtocol(targetAddr, '/print',  { websocket: { rejectUnauthorized: false } })
+  const { stream } = await node2.dialProtocol(targetAddr, '/print')
   await pipe(
-    ['node 2 dialed to node 1 successfully'],
+    [uint8ArrayFromString('node 2 dialed to node 1 successfully')],
     stream
   )
 })();

@@ -1,30 +1,14 @@
-'use strict'
 
-const path = require('path')
-const execa = require('execa')
-const pDefer = require('p-defer')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+import path from 'path'
+import { waitForOutput } from '../utils.js'
+import { fileURLToPath } from 'url'
 
-async function test () {
-  const messageReceived = pDefer()
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+export async function test () {
   process.stdout.write('1.js\n')
 
-  const proc = execa('node', [path.join(__dirname, '1.js')], {
-    cwd: path.resolve(__dirname),
-    all: true
+  await waitForOutput('This information is sent out encrypted to the other peer', 'node', [path.join(__dirname, '1.js')], {
+    cwd: __dirname
   })
-
-  proc.all.on('data', async (data) => {
-    process.stdout.write(data)
-
-    const s = uint8ArrayToString(data)
-    if (s.includes('This information is sent out encrypted to the other peer')) {
-      messageReceived.resolve()
-    }
-  })
-
-  await messageReceived.promise
-  proc.kill()
 }
-
-module.exports = test

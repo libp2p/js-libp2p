@@ -13,26 +13,24 @@ This example builds on top of the [Protocol and Stream Muxing](../protocol-and-s
 First, let's update our config to support Peer Routing and Content Routing.
 
 ```JavaScript
-const Libp2p = require('libp2p')
-const KadDHT = require('libp2p-kad-dht')
+import { createLibp2p } from 'libp2p'
+import { KadDHT } from '@libp2p/kad-dht'
 
-const node = await Libp2p.create({
+const node = await createLibp2p({
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  modules: {
-    transport: [ TCP ],
-    streamMuxer: [ Mplex ],
-    connEncryption: [ NOISE ],
-    // we add the DHT module that will enable Peer and Content Routing
-    dht: KadDHT
-  },
-  config: {
-    dht: {
-      // dht must be enabled
-      enabled: true
-    }
-  }
+  transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ],
+  connEncryption: [
+    new Noise()
+  ],
+  // we add the DHT module that will enable Peer and Content Routing
+  dht: KadDHT
 })
 ```
 
@@ -43,8 +41,8 @@ const node1 = nodes[0]
 const node2 = nodes[1]
 const node3 = nodes[2]
 
-node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
 
 await Promise.all([
   node1.dial(node2.peerId),

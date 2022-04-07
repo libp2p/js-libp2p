@@ -1,11 +1,14 @@
-'use strict'
+import execa from 'execa'
+import { chromium } from 'playwright'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const execa = require('execa')
-const { chromium } = require('playwright');
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-async function run() {
-  let url = ''
-  const proc = execa('parcel', ['./index.html'], {
+export async function test () {
+  let url = 'http://localhost:3000'
+
+  const proc = execa('vite', [], {
     preferLocal: true,
     localDir: __dirname,
     cwd: __dirname,
@@ -16,11 +19,7 @@ async function run() {
     /**@type {string} */
     const out = chunk.toString()
 
-    if (out.includes('Server running at')) {
-      url = out.split('Server running at ')[1]
-    }
-
-    if (out.includes('Built in')) {
+    if (out.includes('ready in')) {
       try {
         const browser = await chromium.launch();
         const page = await browser.newPage();
@@ -36,9 +35,8 @@ async function run() {
           '#output',
           { timeout: 5000 }
         )
-        await browser.close();
-
-      } catch (/** @type {any} */ err) {
+        await browser.close()
+      } catch (err) {
         console.error(err)
         process.exit(1)
       } finally {
@@ -46,7 +44,4 @@ async function run() {
       }
     }
   })
-
 }
-
-module.exports = run

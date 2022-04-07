@@ -23,8 +23,8 @@
   <a href="https://david-dm.org/libp2p/js-libp2p"><img src="https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square" /></a>
   <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
   <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D6.0.0-orange.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D12.0.0-orange.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
   <br>
 </p>
 
@@ -39,26 +39,22 @@ If you are looking for the documentation of the latest release, you can view the
 
 **Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
 
-[**`Weekly Core Dev Calls`**](https://github.com/libp2p/team-mgmt/issues/16)
-
-## Lead Maintainer
-
-[Jacob Heun](https://github.com/jacobheun/)
-
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
 - [Background](#background)
 - [Install](#install)
 - [Usage](#usage)
   - [Configuration](#configuration)
   - [API](#api)
-  - [Getting Started](#getting-started)
+  - [Getting started](#getting-started)
   - [Tutorials and Examples](#tutorials-and-examples)
 - [Development](#development)
   - [Tests](#tests)
+    - [Run unit tests](#run-unit-tests)
   - [Packages](#packages)
 - [Contribute](#contribute)
 - [License](#license)
+  - [Contribution](#contribution)
 
 ## Background
 
@@ -123,7 +119,7 @@ You can find multiple examples on the [examples folder](./examples) that will gu
 > npm run test:node
 
 # run just Browser tests (Chrome)
-> npm run test:browser
+> npm run test:chrome
 ```
 
 ### Packages
@@ -183,4 +179,11 @@ The libp2p implementation in JavaScript is a work in progress. As such, there ar
 
 ## License
 
-[MIT](LICENSE) © Protocol Labs
+Licensed under either of
+
+ * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

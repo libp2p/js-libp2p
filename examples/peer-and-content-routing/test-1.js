@@ -1,36 +1,13 @@
-'use strict'
+import path from 'path'
+import { waitForOutput } from '../utils.js'
+import { fileURLToPath } from 'url'
 
-const path = require('path')
-const execa = require('execa')
-const pWaitFor = require('p-wait-for')
-const { toString: uint8ArrayToString } = require('uint8arrays/to-string')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-async function test() {
+export async function test () {
   process.stdout.write('1.js\n')
 
-  const addrs = []
-  let foundIt = false
-  const proc = execa('node', [path.join(__dirname, '1.js')], {
-    cwd: path.resolve(__dirname),
-    all: true
+  await waitForOutput('Found it, multiaddrs are:', 'node', [path.join(__dirname, '1.js')], {
+    cwd: __dirname
   })
-
-  proc.all.on('data', async (data) => {
-    process.stdout.write(data)
-
-    const line = uint8ArrayToString(data)
-
-    // Discovered peer
-    if (!foundIt && line.includes('Found it, multiaddrs are:')) {
-      foundIt = true
-    }
-
-    addrs.push(line)
-  })
-
-  await pWaitFor(() => addrs.length === 2)
-
-  proc.kill()
 }
-
-module.exports = test

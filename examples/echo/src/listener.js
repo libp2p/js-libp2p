@@ -1,16 +1,16 @@
-'use strict'
 /* eslint-disable no-console */
 
 /*
  * Listener Node
  */
 
-const PeerId = require('peer-id')
-const createLibp2p = require('./libp2p')
-const pipe = require('it-pipe')
+import { createLibp2p } from './libp2p.js'
+import { pipe } from 'it-pipe'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import idl from './id-l.js'
 
 async function run() {
-  const listenerId = await PeerId.createFromJSON(require('./id-l'))
+  const listenerId = await createFromJSON(idl)
 
   // Listener libp2p node
   const listenerNode = await createLibp2p({
@@ -21,8 +21,9 @@ async function run() {
   })
 
   // Log a message when we receive a connection
-  listenerNode.connectionManager.on('peer:connect', (connection) => {
-    console.log('received dial to me from:', connection.remotePeer.toB58String())
+  listenerNode.connectionManager.addEventListener('peer:connect', (evt) => {
+    const connection = evt.detail
+    console.log('received dial to me from:', connection.remotePeer.toString())
   })
 
   // Handle incoming connections for the protocol by piping from the stream
@@ -33,8 +34,8 @@ async function run() {
   await listenerNode.start()
 
   console.log('Listener ready, listening on:')
-  listenerNode.multiaddrs.forEach((ma) => {
-    console.log(ma.toString() + '/p2p/' + listenerId.toB58String())
+  listenerNode.getMultiaddrs().forEach((ma) => {
+    console.log(ma.toString())
   })
 }
 

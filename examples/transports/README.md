@@ -1,10 +1,10 @@
 # [Transports](http://libp2p.io/implementations/#transports)
 
-libp2p doesn't make assumptions for you, instead, it enables you as the developer of the application to pick the modules you need to run your application, which can vary depending on the runtime you are executing. A libp2p node can use one or more Transports to dial and listen for Connections. These transports are modules that offer a clean interface for dialing and listening, defined by the [interface-transport](https://github.com/libp2p/js-interfaces/tree/master/src/transport) specification. Some examples of possible transports are: TCP, UTP, WebRTC, QUIC, HTTP, Pigeon and so on.
+libp2p doesn't make assumptions for you, instead, it enables you as the developer of the application to pick the modules you need to run your application, which can vary depending on the runtime you are executing. A libp2p node can use one or more Transports to dial and listen for Connections. These transports are modules that offer a clean interface for dialing and listening, defined by the [interface-transport] specification. Some examples of possible transports are: TCP, UTP, WebRTC, QUIC, HTTP, Pigeon and so on.
 
-A more complete definition of what is a transport can be found on the [interface-transport](https://github.com/libp2p/js-interfaces/tree/master/src/transport) specification. A way to recognize a candidate transport is through the badge:
+A more complete definition of what is a transport can be found on the [interface-transport] specification. A way to recognize a candidate transport is through the badge:
 
-[![](https://raw.githubusercontent.com/diasdavid/interface-transport/master/img/badge.png)](https://raw.githubusercontent.com/diasdavid/interface-transport/master/img/badge.png)
+![][interface-transport badge]
 
 ## 1. Creating a libp2p node with TCP
 
@@ -21,23 +21,23 @@ Then, in your favorite text editor create a file with the `.js` extension. I've 
 First thing is to create our own libp2p node! Insert:
 
 ```JavaScript
-'use strict'
-
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const { NOISE } = require('@chainsafe/libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [ TCP ],
-      connEncryption: [ NOISE ]
-    }
+    transports: [
+      new TCP()
+    ],
+    connectionEncryption: [
+      new Noise()
+    ]
   })
 
   await node.start()
@@ -80,31 +80,29 @@ Now that we have our `createNode` function, let's create two nodes and make them
 For this step, we will need some more dependencies.
 
 ```bash
-> npm install it-pipe it-concat libp2p-mplex
+> npm install it-pipe it-to-buffer @libp2p/mplex
 ```
 
 And we also need to import the modules on our .js file:
 
 ```js
-const pipe = require('it-pipe')
-const concat = require('it-concat')
-const MPLEX = require('libp2p-mplex')
+import { pipe } from 'it-pipe'
+import toBuffer from 'it-to-buffer'
+import { Mplex } from '@libp2p/mplex'
 ```
 
 We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`.
 ```js
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX] // <--- Add this line
-    }
+    transports: [new TCP()],
+    connectionEncryption: [new Noise()],
+    streamMuxers: [new Mplex()] // <--- Add this line
   })
 
   await node.start()
@@ -135,12 +133,12 @@ Then add,
   node2.handle('/print', async ({ stream }) => {
     const result = await pipe(
       stream,
-      concat
+      toBuffer
     )
     console.log(result.toString())
   })
 
-  node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
   const { stream } = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(
@@ -186,15 +184,13 @@ const createNode = async (transports, addresses = []) => {
     addresses = [addresses]
   }
 
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: addresses
     },
-    modules: {
-      transport: transports,
-      connEncryption: [NOISE],
-      streamMuxer: [MPLEX]
-    }
+    transport: transports,
+    connectionEncryption: [new Noise()],
+    streamMuxers: [new Mplex()]
   })
 
   await node.start()
@@ -207,8 +203,8 @@ As a rule, a libp2p node will only be capable of using a transport if: a) it has
 Let's update our flow to create nodes and see how they behave when dialing to each other:
 
 ```JavaScript
-const WebSockets = require('libp2p-websockets')
-const TCP = require('libp2p-tcp')
+import { WebSockets } from '@libp2p/websockets'
+import { TCP } from '@libp2p/tcp'
 
 const [node1, node2, node3] = await Promise.all([
   createNode([TCP], '/ip4/0.0.0.0/tcp/0'),
@@ -224,9 +220,9 @@ node1.handle('/print', print)
 node2.handle('/print', print)
 node3.handle('/print', print)
 
-node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
-node3.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+await node3.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
 
 // node 1 (TCP) dials to node 2 (TCP+WebSockets)
 const { stream } = await node1.dialProtocol(node2.peerId, '/print')
@@ -288,10 +284,15 @@ As expected, we created 3 nodes: node 1 with TCP, node 2 with TCP+WebSockets and
 
 ## 4. How to create a new libp2p transport
 
-Today there are already several transports available and plenty to come. You can find these at [interface-transport implementations](https://github.com/libp2p/js-interfaces/tree/master/src/transport#modules-that-implement-the-interface) list.
+Today there are already several transports available and plenty to come. You can find these at [interface-transport implementations] list.
 
-Adding more transports is done through the same way as you added TCP and WebSockets. Some transports might offer extra functionalities, but as far as libp2p is concerned, if it follows the interface defined in the [spec](https://github.com/libp2p/js-interfaces/tree/master/src/transport#api) it will be able to use it.
+Adding more transports is done through the same way as you added TCP and WebSockets. Some transports might offer extra functionalities, but as far as libp2p is concerned, if it follows the interface defined in the [spec][interface-transport api] it will be able to use it.
 
 If you decide to implement a transport yourself, please consider adding to the list so that others can use it as well.
 
 Hope this tutorial was useful. We are always looking to improve it, so contributions are welcome!
+
+[interface-transport]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport
+[interface-transport badge]: https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/libp2p-interfaces/src/transport/img/badge.png
+[interface-transport implementations]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#modules-that-implement-the-interface
+[interface-transport api]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#api
