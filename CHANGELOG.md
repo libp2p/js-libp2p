@@ -1,3 +1,10 @@
+### [1.0.8](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.7...v1.0.8) (2022-04-07)
+
+
+### Trivial Changes
+
+* update aegir ([#177](https://github.com/libp2p/js-libp2p-tcp/issues/177)) ([f54d6b4](https://github.com/libp2p/js-libp2p-tcp/commit/f54d6b4f631f26b248231330b4b8f512996625b3))
+
 ### [1.0.7](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.6...v1.0.7) (2022-04-05)
 
 
