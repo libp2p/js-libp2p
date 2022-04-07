@@ -80,7 +80,7 @@ class DialRequest {
           const signal = dialAbortControllers[i].signal
           conn = await this.dialAction(addr, { ...options, signal: options.signal ? anySignal([signal, options.signal]) : signal })
           // Remove the successful AbortController so it is not aborted
-          dialAbortControllers.splice(i, 1)
+          dialAbortControllers[i] = undefined
         } finally {
           completedDials++
           // If we have more or equal dials remaining than tokens, recycle the token, otherwise release it
@@ -94,7 +94,11 @@ class DialRequest {
         return conn
       }))
     } finally {
-      dialAbortControllers.map(c => c.abort()) // success/failure happened, abort everything else
+      dialAbortControllers.forEach(c => {
+        if (c !== undefined) {
+          c.abort()
+        }
+      }) // success/failure happened, abort everything else
       tokens.forEach(token => this.dialer.releaseToken(token)) // release tokens back to the dialer
     }
   }
