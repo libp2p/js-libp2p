@@ -1,3 +1,10 @@
+### [1.0.10](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.9...v1.0.10) (2022-04-07)
+
+
+### Trivial Changes
+
+* update aegir ([#39](https://github.com/libp2p/js-libp2p-utils/issues/39)) ([34f1fde](https://github.com/libp2p/js-libp2p-utils/commit/34f1fde4310c6571e90a6d312924146e089b5a9d))
+
 ### [1.0.9](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.8...v1.0.9) (2022-03-15)
 
 
