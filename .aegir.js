@@ -1,8 +1,9 @@
-module.exports = {
+
+export default {
   build: {
     config: {
       platform: 'node'
     },
-    bundlesizeMax: '44KB'
+    bundlesizeMax: '31KB'
   }
 }

@@ -1,4 +1,4 @@
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { TCP } from '../src/index.js'
 import os from 'os'
 import path from 'path'
