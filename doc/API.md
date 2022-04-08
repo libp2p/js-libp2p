@@ -119,23 +119,21 @@ For Libp2p configurations and modules details read the [Configuration Document](
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 async function main () {
   // specify options
   const options = {
-    modules: {
-      transport: [TCP],
-      streamMuxer: [MPLEX],
-      connEncryption: [NOISE]
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()]
   }
 
   // create libp2p
-  const libp2p = await Libp2p.create(options)
+  const libp2p = await createLibp2p(options)
 }
 
 main()
@@ -149,11 +147,11 @@ As an alternative, it is possible to create a Libp2p instance with the construct
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
-const TCP = require('libp2p-tcp')
-const MPLEX = require('libp2p-mplex')
-const { NOISE } = require('libp2p-noise')
-const PeerId = require('peer-id')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+
 
 async function main () {
   const peerId = await PeerId.create();
@@ -162,11 +160,9 @@ async function main () {
   // peerId is required when Libp2p is instantiated via the constructor
   const options = {
     peerId,
-    modules: {
-      transport: [TCP],
-      streamMuxer: [MPLEX],
-      connEncryption: [NOISE]
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()]
   }
 
   // create libp2p
@@ -200,11 +196,11 @@ Load keychain keys from the datastore, importing the private key as 'self', if n
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
+import { createLibp2p } from 'libp2p'
 
 // ...
 
-const libp2p = await Libp2p.create({
+const libp2p = await createLibp2p({
   // ...
   keychain: {
     pass: '0123456789pass1234567890'
@@ -230,11 +226,11 @@ Starts the libp2p node.
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
+import { createLibp2p } from 'libp2p'
 
 // ...
 
-const libp2p = await Libp2p.create(options)
+const libp2p = await createLibp2p(options)
 
 // start libp2p
 await libp2p.start()
@@ -255,10 +251,10 @@ Stops the libp2p node.
 #### Example
 
 ```js
-const Libp2p = require('libp2p')
+import { createLibp2p } from 'libp2p'
 
 // ...
-const libp2p = await Libp2p.create(options)
+const libp2p = await createLibp2p(options)
 // ...
 
 // stop libp2p
@@ -354,7 +350,7 @@ Dials to another peer in the network and selects a protocol to communicate with 
 
 ```js
 // ...
-const pipe = require('it-pipe')
+import { pipe } from 'it-pipe'
 
 const { stream, protocol } = await libp2p.dialProtocol(remotePeerId, protocols)
 

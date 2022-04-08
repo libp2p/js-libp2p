@@ -1,66 +1,78 @@
 /* eslint-disable no-console */
-'use strict'
 
-const Libp2p = require('../../')
-const TCP = require('libp2p-tcp')
-const Mplex = require('libp2p-mplex')
-const { NOISE } = require('@chainsafe/libp2p-noise')
-const Gossipsub = require('@achingbrain/libp2p-gossipsub')
-const Bootstrap = require('libp2p-bootstrap')
-const PubsubPeerDiscovery = require('libp2p-pubsub-peer-discovery')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
+import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
+import { Bootstrap } from '@libp2p/bootstrap'
+import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 
-const createRelayServer = require('libp2p-relay-server')
-
-const createNode = async (bootstrapers) => {
-  const node = await Libp2p.create({
+const createNode = async (bootstrappers) => {
+  const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [Mplex],
-      connEncryption: [NOISE],
-      pubsub: Gossipsub,
-      peerDiscovery: [Bootstrap, PubsubPeerDiscovery]
-    },
-    config: {
-      peerDiscovery: {
-        [PubsubPeerDiscovery.tag]: {
-          interval: 1000,
-          enabled: true
-        },
-        [Bootstrap.tag]: {
-          enabled: true,
-          list: bootstrapers
-        }
-      }
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()],
+    pubsub: new Gossipsub(),
+    peerDiscovery: [
+      new Bootstrap({
+        list: bootstrappers
+      }),
+      new PubSubPeerDiscovery({
+        interval: 1000
+      })
+    ]
   })
 
   return node
 }
 
 ;(async () => {
-  const relay = await createRelayServer({
-    listenAddresses: ['/ip4/0.0.0.0/tcp/0']
+  const relay = await createLibp2p({
+    addresses: {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
+    },
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()],
+    pubsub: new Gossipsub(),
+    peerDiscovery: [
+      new PubSubPeerDiscovery({
+        interval: 1000
+      })
+    ],
+    relay: {
+      enabled: true, // Allows you to dial and accept relayed connections. Does not make you a relay.
+      hop: {
+        enabled: true // Allows you to be a relay for other peers
+      }
+    }
   })
-  console.log(`libp2p relay starting with id: ${relay.peerId.toB58String()}`)
+  console.log(`libp2p relay starting with id: ${relay.peerId.toString()}`)
   await relay.start()
-  const relayMultiaddrs = relay.multiaddrs.map((m) => `${m.toString()}/p2p/${relay.peerId.toB58String()}`)
+
+  const relayMultiaddrs = relay.getMultiaddrs().map((m) => m.toString())
 
   const [node1, node2] = await Promise.all([
     createNode(relayMultiaddrs),
     createNode(relayMultiaddrs)
   ])
 
-  node1.on('peer:discovery', (peerId) => {
-    console.log(`Peer ${node1.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+  node1.addEventListener('peer:discovery', (evt) => {
+    const peer = evt.detail
+    console.log(`Peer ${node1.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
-  node2.on('peer:discovery', (peerId) => {
-    console.log(`Peer ${node2.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+  node2.addEventListener('peer:discovery',(evt) => {
+    const peer = evt.detail
+    console.log(`Peer ${node2.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
 
-  ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toB58String()}`))
+  ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toString()}`))
   await Promise.all([
     node1.start(),
     node2.start()

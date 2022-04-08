@@ -22,8 +22,8 @@
 Sometimes you may need to wrap an existing duplex stream in order to perform incoming and outgoing [transforms](#transform) on data. This type of wrapping is commonly used in stream encryption/decryption. Using [it-pair][it-pair] and [it-pipe][it-pipe], we can do this rather easily, given an existing [duplex iterable](#duplex).
 
 ```js
-const duplexPair = require('it-pair/duplex')
-const pipe = require('it-pipe')
+import { duplexPair } from 'it-pair/duplex'
+import { pipe } from 'it-pipe'
 
 // Wrapper is what we will write and read from
 // This gives us two duplex iterables that are internally connected

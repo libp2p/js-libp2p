@@ -13,17 +13,17 @@ We will build this example on top of example for [Protocol and Stream Multiplexi
 To add them to your libp2p configuration, all you have to do is:
 
 ```JavaScript
-const Libp2p = require('libp2p')
-const { NOISE } = require('@chainsafe/libp2p-noise')
+import { createLibp2p } from 'libp2p'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const createNode = () => {
-  return Libp2p.create({
-    modules: {
-      transport: [ TCP ],
-      streamMuxer: [ Mplex ],
-      // Attach noise as the crypto channel to use
-      connEncryption: [ NOISE ]
-    }
+const createNode = async () => {
+  return await createLibp2p({
+    transports: [ new TCP() ],
+    streamMuxers: [ new Mplex() ],
+    // Attach noise as the crypto channel to use
+    conectionEncrypters: [ new Noise() ]
   })
 }
 ```

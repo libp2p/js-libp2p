@@ -1,6 +1,6 @@
 'use strict'
-const fs = require('fs')
-const path = require('path')
+const fs from 'fs')
+import path from 'path'
 
 /**
  * mkdirp recursively creates needed folders for the given dir path
