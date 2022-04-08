@@ -1,3 +1,10 @@
+### [1.0.3](https://github.com/libp2p/js-libp2p-bootstrap/compare/v1.0.2...v1.0.3) (2022-04-08)
+
+
+### Trivial Changes
+
+* update aegir ([#127](https://github.com/libp2p/js-libp2p-bootstrap/issues/127)) ([c8e4f01](https://github.com/libp2p/js-libp2p-bootstrap/commit/c8e4f01da4fb6c2a19c1ad6bab40e316d23a9258))
+
 ### [1.0.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v1.0.1...v1.0.2) (2022-03-24)
 
 
