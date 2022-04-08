@@ -179,7 +179,7 @@
     "@types/p-fifo": "^1.0.0",
     "@types/varint": "^6.0.0",
     "@types/xsalsa20": "^1.1.0",
-    "aegir": "^36.1.3",
+    "aegir": "^37.0.6",
     "buffer": "^6.0.3",
     "cborg": "^1.8.1",
     "delay": "^5.0.0",
