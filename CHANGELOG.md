@@ -1,3 +1,15 @@
+### [1.0.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.2...v1.0.3) (2022-04-08)
+
+
+### Bug Fixes
+
+* swap protobufjs for protons ([#145](https://github.com/libp2p/js-libp2p-floodsub/issues/145)) ([4be91ec](https://github.com/libp2p/js-libp2p-floodsub/commit/4be91ecd2adc4ed2d239fbdb36269fdddbe27cd1))
+
+
+### Trivial Changes
+
+* fix release command ([d2c2dc0](https://github.com/libp2p/js-libp2p-floodsub/commit/d2c2dc05ec769ac7a655d6eded163030b455f482))
+
 ### [1.0.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.1...v1.0.2) (2022-03-24)
 
 
