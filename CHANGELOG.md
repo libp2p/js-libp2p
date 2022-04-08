@@ -1,3 +1,10 @@
+### [1.0.4](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.3...v1.0.4) (2022-04-08)
+
+
+### Trivial Changes
+
+* update aegir ([#150](https://github.com/libp2p/js-libp2p-websockets/issues/150)) ([6c08294](https://github.com/libp2p/js-libp2p-websockets/commit/6c08294e98807e789b791286931d120cfef679cd))
+
 ### [1.0.3](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.2...v1.0.3) (2022-03-16)
 
 
