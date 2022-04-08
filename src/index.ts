@@ -51,7 +51,7 @@ export class FloodSub extends PubSubBaseProtocol implements PubSub {
    * Encode an RPC object into a Uint8Array
    */
   encodeRpc (rpc: PubSubRPC): Uint8Array {
-    return RPC.encode(rpc).finish()
+    return RPC.encode(rpc)
   }
 
   decodeMessage (bytes: Uint8Array): PubSubRPCMessage {
@@ -59,7 +59,7 @@ export class FloodSub extends PubSubBaseProtocol implements PubSub {
   }
 
   encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
-    return RPC.Message.encode(rpc).finish()
+    return RPC.Message.encode(rpc)
   }
 
   /**
