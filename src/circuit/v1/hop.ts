@@ -1,13 +1,13 @@
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import { validateAddrs } from './utils.js'
-import { StreamHandler } from './stream-handler.js'
-import { CircuitRelay as CircuitPB, ICircuitRelay } from '../pb/index.js'
+import { StreamHandlerV1 } from './stream-handler.js'
+import { CircuitRelay as CircuitPB, ICircuitRelay } from './pb/index.js'
 import { pipe } from 'it-pipe'
 import { codes as Errors } from '../../errors.js'
 import { stop } from './stop.js'
-import { RELAY_CODEC } from '../multicodec.js'
-import type { Connection } from '@libp2p/interfaces/connection'
+import { RELAY_V1_CODEC } from '../multicodec.js'
+import type { Connection, Stream } from '@libp2p/interfaces/connection'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { Duplex } from 'it-stream-types'
 import type { Circuit } from '../transport.js'
@@ -18,7 +18,7 @@ const log = logger('libp2p:circuit:hop')
 export interface HopRequest {
   connection: Connection
   request: ICircuitRelay
-  streamHandler: StreamHandler
+  streamHandler: StreamHandlerV1
   circuit: Circuit
   connectionManager: ConnectionManager
 }
@@ -119,7 +119,7 @@ export async function handleHop (hopRequest: HopRequest) {
 }
 
 export interface HopConfig {
-  connection: Connection
+  stream: Stream
   request: ICircuitRelay
 }
 
@@ -129,14 +129,12 @@ export interface HopConfig {
  */
 export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
   const {
-    connection,
+    stream,
     request
   } = options
 
-  // Create a new stream to the relay
-  const { stream } = await connection.newStream(RELAY_CODEC)
   // Send the HOP request
-  const streamHandler = new StreamHandler({ stream })
+  const streamHandler = new StreamHandlerV1({ stream })
   streamHandler.write(request)
 
   const response = await streamHandler.read()
@@ -169,10 +167,10 @@ export async function canHop (options: CanHopOptions) {
   } = options
 
   // Create a new stream to the relay
-  const { stream } = await connection.newStream(RELAY_CODEC)
+  const { stream } = await connection.newStream(RELAY_V1_CODEC)
 
   // Send the HOP request
-  const streamHandler = new StreamHandler({ stream })
+  const streamHandler = new StreamHandlerV1({ stream })
   streamHandler.write({
     type: CircuitPB.Type.CAN_HOP
   })
@@ -189,7 +187,7 @@ export async function canHop (options: CanHopOptions) {
 
 export interface HandleCanHopOptions {
   connection: Connection
-  streamHandler: StreamHandler
+  streamHandler: StreamHandlerV1
   circuit: Circuit
 }
 

@@ -78,17 +78,17 @@
   "scripts": {
     "lint": "aegir lint",
     "build": "tsc",
-    "postbuild": "mkdirp dist/src/circuit/pb dist/src/fetch/pb dist/src/identify/pb dist/src/insecure/pb && cp src/circuit/pb/*.js src/circuit/pb/*.d.ts dist/src/circuit/pb && cp src/fetch/pb/*.js src/fetch/pb/*.d.ts dist/src/fetch/pb && cp src/identify/pb/*.js src/identify/pb/*.d.ts dist/src/identify/pb && cp src/insecure/pb/*.js src/insecure/pb/*.d.ts dist/src/insecure/pb",
+    "postbuild": "mkdirp dist/src/circuit/v1/pb dist/src/circuit/v2/pb dist/src/fetch/pb dist/src/identify/pb dist/src/insecure/pb && cp src/circuit/v1/pb/*.js src/circuit/v1/pb/*.d.ts dist/src/circuit/v1/pb && cp src/circuit/v2/pb/*.js src/circuit/v2/pb/*.d.ts dist/src/circuit/v2/pb && cp src/fetch/pb/*.js src/fetch/pb/*.d.ts dist/src/fetch/pb && cp src/identify/pb/*.js src/identify/pb/*.d.ts dist/src/identify/pb && cp src/insecure/pb/*.js src/insecure/pb/*.d.ts dist/src/insecure/pb",
     "generate": "run-s generate:proto:* generate:proto-types:*",
-    "generate:proto:circuit": "pbjs -t static-module -w es6 -r libp2p-circuit --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/protocol/index.js ./src/circuit/protocol/index.proto",
-    "generate:proto:fetch": "pbjs -t static-module -w es6 -r libp2p-fetch --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/fetch/proto.js ./src/fetch/proto.proto",
-    "generate:proto:identify": "pbjs -t static-module -w es6 -r libp2p-identify --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/identify/message.js ./src/identify/message.proto",
-    "generate:proto:plaintext": "pbjs -t static-module -w es6 -r libp2p-plaintext --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/insecure/proto.js ./src/insecure/proto.proto",
-    "generate:proto-types:circuit": "pbts -o src/circuit/protocol/index.d.ts src/circuit/protocol/index.js",
-    "generate:proto:circuitv2": "pbjs -t static-module -w es6 -r libp2p-circuit --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/v2/protocol/index.js ./src/circuit/v2/protocol/index.proto && pbts --out src/circuit/v2/protocol/index.d.ts src/circuit/v2/protocol/index.js",
-    "generate:proto-types:fetch": "pbts -o src/fetch/proto.d.ts src/fetch/proto.js",
-    "generate:proto-types:identify": "pbts -o src/identify/message.d.ts src/identify/message.js",
-    "generate:proto-types:plaintext": "pbts -o src/insecure/proto.d.ts src/insecure/proto.js",
+    "generate:proto:fetch": "pbjs -t static-module -w es6 -r libp2p-fetch --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/fetch/pb/proto.js ./src/fetch/pb/proto.proto",
+    "generate:proto:identify": "pbjs -t static-module -w es6 -r libp2p-identify --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/identify/pb/message.js ./src/identify/pb/message.proto",
+    "generate:proto:plaintext": "pbjs -t static-module -w es6 -r libp2p-plaintext --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/insecure/pb/proto.js ./src/insecure/pb/proto.proto",
+    "generate:proto:circuit": "pbjs -t static-module -w es6 -r libp2p-circuit --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/v1/pb/index.js ./src/circuit/v1/pb/index.proto",
+    "generate:proto:circuitv2": "pbjs -t static-module -w es6 -r libp2p-circuitv2 --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/circuit/v2/pb/index.js ./src/circuit/v2/pb/index.proto && pbts --out src/circuit/v2/pb/index.d.ts src/circuit/v2/pb/index.js",
+    "generate:proto-types:circuit": "pbts -o src/circuit/v1/pb/index.d.ts src/circuit/v1/pb/index.js",
+    "generate:proto-types:fetch": "pbts -o src/fetch/pb/proto.d.ts src/fetch/pb/proto.js",
+    "generate:proto-types:identify": "pbts -o src/identify/pb/message.d.ts src/identify/pb/message.js",
+    "generate:proto-types:plaintext": "pbts -o src/insecure/pb/proto.d.ts src/insecure/pb/proto.js",
     "pretest": "npm run build",
     "test": "aegir test",
     "test:node": "npm run test -- -t node -f \"./dist/test/**/*.{node,spec}.js\" --cov",
@@ -197,7 +197,8 @@
     "p-wait-for": "^4.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^13.0.1",
-    "ts-sinon": "^2.0.2"
+    "ts-sinon": "^2.0.2",
+    "typescript": "4"
   },
   "browser": {
     "nat-api": false

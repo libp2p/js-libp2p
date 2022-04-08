@@ -1,26 +1,14 @@
-'use strict'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { Status, StopMessage, IHopMessage, IStopMessage, HopMessage } from './pb/index.js'
+import type { StreamHandlerV2 } from './stream-handler.js'
 
-const { Multiaddr } = require('multiaddr')
-const { Status, StopMessage, HopMessage } = require('./protocol')
-
-/**
- * @typedef {import('./stream-handler')} StreamHandler
- * @typedef {import('./protocol').IStopMessage} IStopMessage
- * @typedef {import('./protocol').IHopMessage} IHopMessage
- */
-
-/**
- *
- * @param {IStopMessage} request
- * @param {StreamHandler} streamHandler
- */
-function validateStopConnectRequest (request, streamHandler) {
+export function validateStopConnectRequest (request: IStopMessage, streamHandler: StreamHandlerV2) {
   if (request.type !== StopMessage.Type.CONNECT) {
     writeStopMessageResponse(streamHandler, Status.UNEXPECTED_MESSAGE)
     throw new Error('Received unexpected stop status msg')
   }
   try {
-    if (request.peer && request.peer.addrs) {
+    if (request.peer?.addrs !== null && request.peer?.addrs !== undefined) {
       request.peer.addrs.forEach((addr) => {
         return new Multiaddr(addr)
       })
@@ -33,16 +21,11 @@ function validateStopConnectRequest (request, streamHandler) {
   }
 }
 
-/**
- *
- * @param {IHopMessage} request
- * @param {StreamHandler} streamHandler
- */
-function validateHopConnectRequest (request, streamHandler) {
+export function validateHopConnectRequest (request: IHopMessage, streamHandler: StreamHandlerV2) {
   // TODO: check if relay connection
 
   try {
-    if (request.peer && request.peer.addrs) {
+    if (request.peer?.addrs !== null && request.peer?.addrs !== undefined) {
       request.peer.addrs.forEach((addr) => {
         return new Multiaddr(addr)
       })
@@ -58,10 +41,8 @@ function validateHopConnectRequest (request, streamHandler) {
 /**
  * Write a response
  *
- * @param {StreamHandler} streamHandler
- * @param {import('./protocol').Status} status
  */
-function writeStopMessageResponse (streamHandler, status) {
+function writeStopMessageResponse (streamHandler: StreamHandlerV2, status: Status) {
   streamHandler.write(StopMessage.encode(
     {
       type: StopMessage.Type.STATUS,
@@ -74,9 +55,9 @@ function writeStopMessageResponse (streamHandler, status) {
  * Write a response
  *
  * @param {StreamHandler} streamHandler
- * @param {import('./protocol').Status} status
+ * @param {import('./pb').Status} status
  */
-function writeHopMessageResponse (streamHandler, status) {
+function writeHopMessageResponse (streamHandler: StreamHandlerV2, status: Status) {
   streamHandler.write(HopMessage.encode(
     {
       type: HopMessage.Type.STATUS,
@@ -84,6 +65,3 @@ function writeHopMessageResponse (streamHandler, status) {
     }
   ).finish())
 }
-
-module.exports.validateStopConnectRequest = validateStopConnectRequest
-module.exports.validateHopConnectRequest = validateHopConnectRequest

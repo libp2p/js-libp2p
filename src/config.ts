@@ -66,6 +66,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
   },
   relay: {
     enabled: true,
+    limit: 15,
     advertise: {
       bootDelay: RelayConstants.ADVERTISE_BOOT_DELAY,
       enabled: false,

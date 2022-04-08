@@ -11,8 +11,8 @@
     "test"
   ],
   "exclude": [
-    "src/circuit/v1/protocol/index.js",
-    "src/circuit/v2/protocol/index.js",
+    "src/circuit/v1/pb/index.js",
+    "src/circuit/v2/pb/index.js",
     "src/fetch/pb/proto.js",
     "src/identify/pb/message.js",
     "src/insecure/pb/proto.js"

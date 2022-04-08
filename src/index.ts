@@ -51,6 +51,7 @@ export interface RelayConfig {
   enabled: boolean
   advertise: RelayAdvertiseConfig
   hop: HopConfig
+  limit: number
   autoRelay: AutoRelayConfig
 }
 

@@ -1,5 +1,4 @@
-/* eslint-env mocha */
-
+import { StreamHandlerV1 } from './../../src/circuit/v1/stream-handler.js'
 import { expect } from 'aegir/utils/chai.js'
 import sinon from 'sinon'
 import { Multiaddr } from '@multiformats/multiaddr'
@@ -9,10 +8,11 @@ import { createNode } from '../utils/creators/peer.js'
 import { codes as Errors } from '../../src/errors.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import all from 'it-all'
-import { RELAY_CODEC } from '../../src/circuit/multicodec.js'
-import { StreamHandler } from '../../src/circuit/circuit/stream-handler.js'
-import { CircuitRelay } from '../../src/circuit/pb/index.js'
+import { RELAY_V1_CODEC } from '../../src/circuit/multicodec.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
+import { CircuitRelay } from '../../src/circuit/v1/pb/index.js'
+
+/* eslint-env mocha */
 
 describe('Dialing (via relay, TCP)', () => {
   let srcLibp2p: Libp2pNode
@@ -156,8 +156,8 @@ describe('Dialing (via relay, TCP)', () => {
 
     // send an invalid relay message from the relay to the destination peer
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
-    const { stream } = await connections[0].newStream(RELAY_CODEC)
-    const streamHandler = new StreamHandler({ stream })
+    const { stream } = await connections[0].newStream(RELAY_V1_CODEC)
+    const streamHandler = new StreamHandlerV1({ stream })
     streamHandler.write({
       type: CircuitRelay.Type.STATUS
     })

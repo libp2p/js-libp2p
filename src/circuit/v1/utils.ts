@@ -1,29 +1,11 @@
-<<<<<<< HEAD:src/circuit/v1/utils.js
-'use strict'
-
-const { Multiaddr } = require('multiaddr')
-const { CircuitRelay } = require('./protocol')
-
-/**
- * @typedef {import('./stream-handler')} StreamHandler
- * @typedef {import('./protocol').ICircuitRelay} ICircuitRelay
- */
-
-/**
- * Write a response
- *
- * @param {StreamHandler} streamHandler
- * @param {import('./protocol').CircuitRelay.Status} status
-=======
 import { Multiaddr } from '@multiformats/multiaddr'
-import { CircuitRelay, ICircuitRelay } from '../pb/index.js'
-import type { StreamHandler } from './stream-handler.js'
+import { CircuitRelay, ICircuitRelay } from './pb/index.js'
+import type { StreamHandlerV1 } from './stream-handler.js'
 
 /**
  * Write a response
->>>>>>> origin/master:src/circuit/v1/utils.ts
  */
-function writeResponse (streamHandler: StreamHandler, status: CircuitRelay.Status) {
+function writeResponse (streamHandler: StreamHandlerV1, status: CircuitRelay.Status) {
   streamHandler.write({
     type: CircuitRelay.Type.STATUS,
     code: status
@@ -33,7 +15,7 @@ function writeResponse (streamHandler: StreamHandler, status: CircuitRelay.Statu
 /**
  * Validate incomming HOP/STOP message
  */
-export function validateAddrs (msg: ICircuitRelay, streamHandler: StreamHandler) {
+export function validateAddrs (msg: ICircuitRelay, streamHandler: StreamHandlerV1) {
   try {
     if (msg.dstPeer?.addrs != null) {
       msg.dstPeer.addrs.forEach((addr) => {

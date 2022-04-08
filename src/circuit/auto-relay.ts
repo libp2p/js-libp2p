@@ -1,8 +1,8 @@
 import { logger } from '@libp2p/logger'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { RELAY_CODEC } from './multicodec.js'
-import { canHop } from './circuit/hop.js'
+import { RELAY_V1_CODEC } from './multicodec.js'
+import { canHop } from './v1/hop.js'
 import { namespaceToCid } from './utils.js'
 import {
   CIRCUIT_PROTO_CODE,
@@ -68,7 +68,7 @@ export class AutoRelay {
     const id = peerId.toString()
 
     // Check if it has the protocol
-    const hasProtocol = protocols.find(protocol => protocol === RELAY_CODEC)
+    const hasProtocol = protocols.find(protocol => protocol === RELAY_V1_CODEC)
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (hasProtocol == null) {

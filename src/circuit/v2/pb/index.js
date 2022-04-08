@@ -1,15 +1,17 @@
 /*eslint-disable*/
-"use strict";
+import $protobuf from "protobufjs/minimal.js";
 
-var $protobuf = require("protobufjs/minimal");
+// @ts-expect-error Explicitly disable long.js support
+$protobuf.util.Long = undefined;
+$protobuf.configure();
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots["libp2p-circuit"] || ($protobuf.roots["libp2p-circuit"] = {});
+const $root = $protobuf.roots["libp2p-circuitv2"] || ($protobuf.roots["libp2p-circuitv2"] = {});
 
-$root.HopMessage = (function() {
+export const HopMessage = $root.HopMessage = (() => {
 
     /**
      * Properties of a HopMessage.
@@ -280,7 +282,7 @@ $root.HopMessage = (function() {
      * @property {number} STATUS=2 STATUS value
      */
     HopMessage.Type = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
+        const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "RESERVE"] = 0;
         values[valuesById[1] = "CONNECT"] = 1;
         values[valuesById[2] = "STATUS"] = 2;
@@ -290,7 +292,7 @@ $root.HopMessage = (function() {
     return HopMessage;
 })();
 
-$root.StopMessage = (function() {
+export const StopMessage = $root.StopMessage = (() => {
 
     /**
      * Properties of a StopMessage.
@@ -533,7 +535,7 @@ $root.StopMessage = (function() {
      * @property {number} STATUS=1 STATUS value
      */
     StopMessage.Type = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
+        const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "CONNECT"] = 0;
         values[valuesById[1] = "STATUS"] = 1;
         return values;
@@ -542,7 +544,7 @@ $root.StopMessage = (function() {
     return StopMessage;
 })();
 
-$root.Peer = (function() {
+export const Peer = $root.Peer = (() => {
 
     /**
      * Properties of a Peer.
@@ -723,7 +725,7 @@ $root.Peer = (function() {
     return Peer;
 })();
 
-$root.Reservation = (function() {
+export const Reservation = $root.Reservation = (() => {
 
     /**
      * Properties of a Reservation.
@@ -939,7 +941,7 @@ $root.Reservation = (function() {
     return Reservation;
 })();
 
-$root.Limit = (function() {
+export const Limit = $root.Limit = (() => {
 
     /**
      * Properties of a Limit.
@@ -1119,8 +1121,8 @@ $root.Limit = (function() {
  * @property {number} MALFORMED_MESSAGE=400 MALFORMED_MESSAGE value
  * @property {number} UNEXPECTED_MESSAGE=401 UNEXPECTED_MESSAGE value
  */
-$root.Status = (function() {
-    var valuesById = {}, values = Object.create(valuesById);
+export const Status = $root.Status = (() => {
+    const valuesById = {}, values = Object.create(valuesById);
     values[valuesById[100] = "OK"] = 100;
     values[valuesById[200] = "RESERVATION_REFUSED"] = 200;
     values[valuesById[201] = "RESOURCE_LIMIT_EXCEEDED"] = 201;
@@ -1132,7 +1134,7 @@ $root.Status = (function() {
     return values;
 })();
 
-$root.ReservationVoucher = (function() {
+export const ReservationVoucher = $root.ReservationVoucher = (() => {
 
     /**
      * Properties of a ReservationVoucher.
@@ -1341,4 +1343,4 @@ $root.ReservationVoucher = (function() {
     return ReservationVoucher;
 })();
 
-module.exports = $root;
+export { $root as default };

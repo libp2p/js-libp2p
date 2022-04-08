@@ -38,7 +38,7 @@ async function discoveredRelayConfig (node: Libp2pNode, relay: Libp2pNode) {
   })
 }
 
-describe('auto-relay', () => {
+describe.skip('auto-relay', () => {
   describe('basics', () => {
     let libp2p: Libp2pNode
     let relayLibp2p: Libp2pNode
