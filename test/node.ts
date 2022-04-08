@@ -3,7 +3,7 @@
 
 import https from 'https'
 import fs from 'fs'
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { goodbye } from 'it-goodbye'
 import { isLoopbackAddr } from 'is-loopback-addr'
