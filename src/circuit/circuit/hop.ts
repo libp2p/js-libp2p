@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import { validateAddrs } from './utils.js'
 import { StreamHandler } from './stream-handler.js'
-import { CircuitRelay as CircuitPB, ICircuitRelay } from '../pb/index.js'
+import { CircuitRelay as CircuitPB } from '../pb/index.js'
 import { pipe } from 'it-pipe'
 import { codes as Errors } from '../../errors.js'
 import { stop } from './stop.js'
@@ -17,7 +17,7 @@ const log = logger('libp2p:circuit:hop')
 
 export interface HopRequest {
   connection: Connection
-  request: ICircuitRelay
+  request: CircuitPB
   streamHandler: StreamHandler
   circuit: Circuit
   connectionManager: ConnectionManager
@@ -120,7 +120,7 @@ export async function handleHop (hopRequest: HopRequest) {
 
 export interface HopConfig {
   connection: Connection
-  request: ICircuitRelay
+  request: CircuitPB
 }
 
 /**

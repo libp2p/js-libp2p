@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { CircuitRelay as CircuitPB, ICircuitRelay } from '../pb/index.js'
+import { CircuitRelay as CircuitPB } from '../pb/index.js'
 import { RELAY_CODEC } from '../multicodec.js'
 import { StreamHandler } from './stream-handler.js'
 import { validateAddrs } from './utils.js'
@@ -10,7 +10,7 @@ const log = logger('libp2p:circuit:stop')
 
 export interface HandleStopOptions {
   connection: Connection
-  request: ICircuitRelay
+  request: CircuitPB
   streamHandler: StreamHandler
 }
 
@@ -44,7 +44,7 @@ export function handleStop (options: HandleStopOptions): Duplex<Uint8Array> | un
 
 export interface StopOptions {
   connection: Connection
-  request: ICircuitRelay
+  request: CircuitPB
 }
 
 /**

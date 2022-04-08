@@ -7,7 +7,7 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
 /** @type {import('aegir').PartialOptions} */
 export default {
   build: {
-    bundlesizeMax: '146kB'
+    bundlesizeMax: '147kB'
   },
   test: {
     before: async () => {

@@ -1,7 +1,7 @@
 import { logger } from '@libp2p/logger'
 import * as lp from 'it-length-prefixed'
 import { Handshake, handshake } from 'it-handshake'
-import { CircuitRelay, ICircuitRelay } from '../pb/index.js'
+import { CircuitRelay } from '../pb/index.js'
 import type { Stream } from '@libp2p/interfaces/connection'
 import type { Source } from 'it-stream-types'
 
@@ -53,10 +53,9 @@ export class StreamHandler {
   /**
    * Encode and write array of buffers
    */
-  write (msg: ICircuitRelay) {
+  write (msg: CircuitRelay) {
     log('write message type %s', msg.type)
-    // @ts-expect-error lp.encode expects type type 'Buffer | BufferList', not 'Uint8Array'
-    this.shake.write(lp.encode.single(CircuitRelay.encode(msg).finish()))
+    this.shake.write(lp.encode.single(CircuitRelay.encode(msg)).slice())
   }
 
   /**
@@ -68,9 +67,9 @@ export class StreamHandler {
   }
 
   /**
-   * @param {ICircuitRelay} msg - An unencoded CircuitRelay protobuf message
+   * @param {CircuitRelay} msg - An unencoded CircuitRelay protobuf message
    */
-  end (msg: ICircuitRelay) {
+  end (msg: CircuitRelay) {
     this.write(msg)
     this.close()
   }

@@ -218,7 +218,7 @@ describe('Identify', () => {
           signedPeerRecord,
           observedAddr: connection.remoteAddr.bytes,
           protocols: []
-        }).finish()
+        })
 
         await pipe(
           [message],
