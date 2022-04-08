@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { IPFS } from '@multiformats/mafmt'
 import { Bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
