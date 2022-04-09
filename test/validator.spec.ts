@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { generateKeyPair, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as validator from '../src/validators.js'
@@ -64,7 +64,7 @@ describe('validator', () => {
   describe('verifyRecord', () => {
     it('calls matching validator', () => {
       const k = uint8ArrayFromString('/hello/you')
-      const rec = new Libp2pRecord(k, uint8ArrayFromString('world'))
+      const rec = new Libp2pRecord(k, uint8ArrayFromString('world'), new Date())
 
       const validators: Validators = {
         hello: {
@@ -79,7 +79,7 @@ describe('validator', () => {
 
     it('calls not matching any validator', () => {
       const k = uint8ArrayFromString('/hallo/you')
-      const rec = new Libp2pRecord(k, uint8ArrayFromString('world'))
+      const rec = new Libp2pRecord(k, uint8ArrayFromString('world'), new Date())
 
       const validators: Validators = {
         hello: {

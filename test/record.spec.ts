@@ -1,16 +1,17 @@
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Libp2pRecord } from '../src/index.js'
 import * as fixture from './fixtures/go-record.js'
 
-const date = new Date(Date.UTC(2012, 1, 25, 10, 10, 10, 10))
+const date = new Date()
 
 describe('record', () => {
   it('new', () => {
     const rec = new Libp2pRecord(
       uint8ArrayFromString('hello'),
-      uint8ArrayFromString('world')
+      uint8ArrayFromString('world'),
+      new Date()
     )
 
     expect(rec).to.have.property('key').eql(uint8ArrayFromString('hello'))
