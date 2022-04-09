@@ -1,3 +1,10 @@
+### [1.0.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.3...v1.0.4) (2022-04-09)
+
+
+### Trivial Changes
+
+* update aegir ([#311](https://github.com/libp2p/js-libp2p-kad-dht/issues/311)) ([fc44105](https://github.com/libp2p/js-libp2p-kad-dht/commit/fc44105e6c2c1ea6714201e5be26fbd7c8b10321))
+
 ### [1.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.2...v1.0.3) (2022-03-24)
 
 
