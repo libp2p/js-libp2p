@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Libp2pRecord } from '@libp2p/record'
 import errcode from 'err-code'
@@ -15,7 +15,7 @@ import filter from 'it-filter'
 import last from 'it-last'
 import * as kadUtils from '../src/utils.js'
 import * as c from '../src/constants.js'
-import { MESSAGE_TYPE, MESSAGE_TYPE_LOOKUP } from '../src/message/index.js'
+import { MESSAGE_TYPE } from '../src/message/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import { createPeerIds } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
@@ -338,10 +338,10 @@ describe('KadDHT', () => {
       expect(dhtASpy.callCount).to.eql(2)
 
       expect(dhtASpy.getCall(0).args[0].equals(dhtB.components.getPeerId())).to.be.true() // query B
-      expect(MESSAGE_TYPE_LOOKUP[dhtASpy.getCall(0).args[1].type]).to.equal('GET_VALUE') // query B
+      expect(dhtASpy.getCall(0).args[1].type).to.equal('GET_VALUE') // query B
 
       expect(dhtASpy.getCall(1).args[0].equals(dhtB.components.getPeerId())).to.be.true() // update B
-      expect(MESSAGE_TYPE_LOOKUP[dhtASpy.getCall(1).args[1].type]).to.equal('PUT_VALUE') // update B
+      expect(dhtASpy.getCall(1).args[1].type).to.equal('PUT_VALUE') // update B
     })
 
     it('layered get', async function () {
@@ -374,7 +374,7 @@ describe('KadDHT', () => {
     it('getMany with nvals=1 goes out to swarm if there is no local value', async () => {
       const key = uint8ArrayFromString('/v/hello')
       const value = uint8ArrayFromString('world')
-      const rec = new Libp2pRecord(key, value)
+      const rec = new Libp2pRecord(key, value, new Date())
       const dht = await tdht.spawn()
 
       // Simulate returning a peer id to query

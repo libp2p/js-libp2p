@@ -23,7 +23,10 @@ export function removePrivateAddresses (peer: PeerInfo): PeerInfo {
         return false
       }
 
-      // @ts-expect-error types are wrong https://github.com/frenchbread/private-ip/issues/18
+      if (addr == null) {
+        return false
+      }
+
       return !isPrivateIp(addr)
     })
   }
@@ -39,7 +42,10 @@ export function removePublicAddresses (peer: PeerInfo): PeerInfo {
         return false
       }
 
-      // @ts-expect-error types are wrong https://github.com/frenchbread/private-ip/issues/18
+      if (addr == null) {
+        return false
+      }
+
       return isPrivateIp(addr)
     })
   }

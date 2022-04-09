@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import random from 'lodash.random'
 import sinon from 'sinon'
 import { RoutingTable } from '../src/routing-table/index.js'

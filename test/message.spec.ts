@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Multiaddr } from '@multiformats/multiaddr'
 import range from 'lodash.range'
 import random from 'lodash.random'
@@ -17,7 +17,7 @@ describe('Message', () => {
     const k = uint8ArrayFromString('hello')
     const msg = new Message(MESSAGE_TYPE.PING, k, 5)
 
-    expect(msg).to.have.property('type', 5)
+    expect(msg).to.have.property('type', 'PING')
     expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
     // TODO: confirm this works as expected
     expect(msg).to.have.property('clusterLevelRaw', 5)
@@ -49,7 +49,7 @@ describe('Message', () => {
     }))
 
     const msg = new Message(MESSAGE_TYPE.GET_VALUE, uint8ArrayFromString('hello'), 5)
-    const record = new Libp2pRecord(uint8ArrayFromString('hello'), uint8ArrayFromString('world'))
+    const record = new Libp2pRecord(uint8ArrayFromString('hello'), uint8ArrayFromString('world'), new Date())
 
     msg.closerPeers = closer
     msg.providerPeers = provider

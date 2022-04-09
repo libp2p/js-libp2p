@@ -1,21 +1,13 @@
 import { MESSAGE_TYPE_LOOKUP } from '../message/index.js'
-import type { SendingQueryEvent, PeerResponseEvent, MessageType, DialingPeerEvent, AddingPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '@libp2p/interfaces/dht'
+import type { Message } from '../message/dht.js'
+import type { SendingQueryEvent, PeerResponseEvent, DialingPeerEvent, AddingPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '@libp2p/interfaces/dht'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Libp2pRecord } from '@libp2p/record'
 
-const MESSAGE_NAMES = [
-  'PUT_VALUE',
-  'GET_VALUE',
-  'ADD_PROVIDER',
-  'GET_PROVIDERS',
-  'FIND_NODE',
-  'PING'
-]
-
 export interface QueryEventFields {
   to: PeerId
-  type: MessageType
+  type: Message.MessageType
 }
 
 export function sendingQueryEvent (fields: QueryEventFields): SendingQueryEvent {
@@ -23,15 +15,14 @@ export function sendingQueryEvent (fields: QueryEventFields): SendingQueryEvent 
     ...fields,
     name: 'SENDING_QUERY',
     type: 0,
-    // @ts-expect-error cannot look up values like this
-    messageName: MESSAGE_TYPE_LOOKUP[fields.type],
-    messageType: fields.type
+    messageName: fields.type,
+    messageType: MESSAGE_TYPE_LOOKUP.indexOf(fields.type.toString())
   }
 }
 
 export interface PeerResponseEventField {
   from: PeerId
-  messageType: MessageType
+  messageType: Message.MessageType
   closer?: PeerInfo[]
   providers?: PeerInfo[]
   record?: Libp2pRecord
@@ -42,8 +33,7 @@ export function peerResponseEvent (fields: PeerResponseEventField): PeerResponse
     ...fields,
     name: 'PEER_RESPONSE',
     type: 1,
-    // @ts-expect-error cannot look up values like this
-    messageName: MESSAGE_NAMES[fields.messageType],
+    messageName: fields.messageType,
     closer: (fields.closer != null) ? fields.closer : [],
     providers: (fields.providers != null) ? fields.providers : []
   }

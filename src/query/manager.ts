@@ -6,10 +6,8 @@ import {
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { queryPath } from './query-path.js'
 import merge from 'it-merge'
-import {
-  // @ts-expect-error only defined in node 15+
-  setMaxListeners
-} from 'events'
+// @ts-expect-error setMaxListeners is missing from the types
+import { setMaxListeners } from 'events'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
 import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interfaces/peer-id'

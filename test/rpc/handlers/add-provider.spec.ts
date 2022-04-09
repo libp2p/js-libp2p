@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
-import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider'
+import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
 import { createPeerIds } from '../../utils/create-peer-id.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { createValues } from '../../utils/create-values.js'
@@ -53,7 +53,7 @@ describe('rpc - handlers - AddProvider', () => {
           await handler.handle(peerIds[0], t.message)
         } catch (err: any) {
           expect(err).to.exist()
-          expect(err.code).to.eql(t.error)
+          expect(err.code).to.equal(t.error)
           return
         }
         throw new Error()
@@ -82,6 +82,6 @@ describe('rpc - handlers - AddProvider', () => {
 
     const provs = await providers.getProviders(cid)
     expect(provs).to.have.length(1)
-    expect(provs[0]).to.eql(peerIds[0])
+    expect(provs[0].toString()).to.equal(peerIds[0].toString())
   })
 })

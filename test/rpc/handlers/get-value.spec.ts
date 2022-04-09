@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { GetValueHandler } from '../../../src/rpc/handlers/get-value.js'
 import * as utils from '../../../src/utils.js'
@@ -15,6 +15,7 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import type { Datastore } from 'interface-datastore'
 import { Components } from '@libp2p/interfaces/components'
+import { Libp2pRecord } from '@libp2p/record'
 
 const T = MESSAGE_TYPE.GET_VALUE
 
@@ -38,14 +39,16 @@ describe('rpc - handlers - GetValue', () => {
 
     const components = new Components({
       peerId,
-      datastore: new MemoryDatastore()
+      datastore
     })
-    components.setPeerStore(new PersistentPeerStore(components))
+    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
 
     handler = new GetValueHandler({
       peerRouting
     })
     handler.init(components)
+
+    keyBook = components.getPeerStore().keyBook
   })
 
   it('errors when missing key', async () => {
@@ -64,10 +67,14 @@ describe('rpc - handlers - GetValue', () => {
   it('responds with a local value', async () => {
     const key = uint8ArrayFromString('hello')
     const value = uint8ArrayFromString('world')
+    const record = new Libp2pRecord(key, value, new Date())
 
-    await datastore.put(utils.bufferToRecordKey(key), value)
+    await datastore.put(utils.bufferToRecordKey(key), record.serialize())
 
     const msg = new Message(T, key, 0)
+
+    peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer).resolves([])
+
     const response = await handler.handle(sourcePeer, msg)
 
     if (response == null) {
@@ -96,7 +103,6 @@ describe('rpc - handlers - GetValue', () => {
       throw new Error('No response received from handler')
     }
 
-    expect(response.record).to.exist()
     expect(response).to.have.nested.property('closerPeers[0].id').that.deep.equals(closerPeer)
   })
 
@@ -123,13 +129,16 @@ describe('rpc - handlers - GetValue', () => {
     it('peer not in peerstore', async () => {
       const key = utils.keyForPublicKey(targetPeer)
       const msg = new Message(T, key, 0)
+
+      peerRouting.getCloserPeersOffline.resolves([])
+
       const response = await handler.handle(sourcePeer, msg)
 
       if (response == null) {
         throw new Error('No response received from handler')
       }
 
-      expect(response).to.not.have.nested.property('record')
+      expect(response.record).to.not.be.ok()
     })
   })
 })

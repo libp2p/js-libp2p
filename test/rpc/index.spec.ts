@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { pipe } from 'it-pipe'
 import * as lp from 'it-length-prefixed'
@@ -42,7 +42,7 @@ describe('rpc', () => {
       datastore
     })
 
-    components.setPeerStore(new PersistentPeerStore(components))
+    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
 
     providers = Sinon.createStubInstance(Providers)
     peerRouting = Sinon.createStubInstance(PeerRouting)
@@ -69,6 +69,8 @@ describe('rpc', () => {
       expect(msg).to.have.property('closerPeers').eql([])
       defer.resolve()
     }
+
+    peerRouting.getCloserPeersOffline.resolves([])
 
     const source = await pipe(
       [msg.serialize()],

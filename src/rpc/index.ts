@@ -3,7 +3,7 @@ import * as lp from 'it-length-prefixed'
 import { Logger, logger } from '@libp2p/logger'
 import type { RoutingTable } from '../routing-table'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { Message, MESSAGE_TYPE, MESSAGE_TYPE_LOOKUP } from '../message/index.js'
+import { Message, MESSAGE_TYPE } from '../message/index.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
 import { FindNodeHandler } from './handlers/find-node.js'
 import { GetProvidersHandler } from './handlers/get-providers.js'
@@ -29,7 +29,7 @@ export interface RPCInit {
 }
 
 export class RPC implements Initializable {
-  private readonly handlers: Record<number, DHTMessageHandler & Initializable>
+  private readonly handlers: Record<string, DHTMessageHandler & Initializable>
   private readonly routingTable: RoutingTable
   private readonly log: Logger
 
@@ -99,7 +99,7 @@ export class RPC implements Initializable {
           for await (const msg of source) {
             // handle the message
             const desMessage = Message.deserialize(msg.slice())
-            self.log('incoming %s from %p', MESSAGE_TYPE_LOOKUP[desMessage.type], peerId)
+            self.log('incoming %s from %p', desMessage.type, peerId)
             const res = await self.handleMessage(peerId, desMessage)
 
             // Not all handlers will return a response

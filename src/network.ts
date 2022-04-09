@@ -3,7 +3,7 @@ import { pipe } from 'it-pipe'
 import * as lp from 'it-length-prefixed'
 import drain from 'it-drain'
 import first from 'it-first'
-import { Message, MESSAGE_TYPE_LOOKUP } from './message/index.js'
+import { Message } from './message/index.js'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
 import {
   dialingPeerEvent,
@@ -86,7 +86,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
       return
     }
 
-    this.log('sending %s to %p', MESSAGE_TYPE_LOOKUP[msg.type], to)
+    this.log('sending %s to %p', msg.type, to)
 
     try {
       yield dialingPeerEvent({ peer: to })
@@ -117,7 +117,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
       return
     }
 
-    this.log('sending %s to %p', MESSAGE_TYPE_LOOKUP[msg.type], to)
+    this.log('sending %s to %p', msg.type, to)
 
     yield dialingPeerEvent({ peer: to })
 

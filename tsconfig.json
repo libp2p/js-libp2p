@@ -1,15 +1,10 @@
 {
   "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "emitDeclarationOnly": false,
-    "module": "ES2020"
+    "outDir": "dist"
   },
   "include": [
     "src",
     "test"
-  ],
-  "exclude": [
-    "src/message/dht.js" // exclude generated file
   ]
 }

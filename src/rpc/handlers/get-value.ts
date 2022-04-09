@@ -63,7 +63,7 @@ export class GetValueHandler implements DHTMessageHandler, Initializable {
 
       if (pubKey != null) {
         log('returning found public key')
-        response.record = new Libp2pRecord(key, pubKey)
+        response.record = new Libp2pRecord(key, pubKey, new Date())
         return response
       }
     }

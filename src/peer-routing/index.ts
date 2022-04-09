@@ -286,6 +286,10 @@ export class PeerRouting implements Initializable {
    * Throws an error if the record is invalid.
    */
   async _verifyRecordOnline (record: DHTRecord) {
+    if (record.timeReceived == null) {
+      throw errcode(new Error('invalid record received'), 'ERR_INVALID_RECORD')
+    }
+
     await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived))
   }
 

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { FindNodeHandler } from '../../../src/rpc/handlers/find-node.js'
 import { Multiaddr } from '@multiformats/multiaddr'
@@ -34,7 +34,19 @@ describe('rpc - handlers - FindNode', () => {
   it('returns self, if asked for self', async () => {
     const msg = new Message(T, peerId.multihash.bytes, 0)
 
-    const response = await handler.handle(peerId, msg)
+    peerRouting.getCloserPeersOffline
+      .withArgs(peerId.multihash.bytes, sourcePeer)
+      .resolves([{
+        id: peerId,
+        multiaddrs: [
+          new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
+          new Multiaddr('/ip4/192.168.1.5/tcp/4002'),
+          new Multiaddr('/ip4/221.4.67.0/tcp/4002')
+        ],
+        protocols: []
+      }])
+
+    const response = await handler.handle(sourcePeer, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
@@ -50,7 +62,7 @@ describe('rpc - handlers - FindNode', () => {
     const msg = new Message(T, targetPeer.multihash.bytes, 0)
 
     peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.multihash.bytes, peerId)
+      .withArgs(targetPeer.multihash.bytes, sourcePeer)
       .resolves([{
         id: targetPeer,
         multiaddrs: [
@@ -76,6 +88,9 @@ describe('rpc - handlers - FindNode', () => {
 
   it('handles no peers found', async () => {
     const msg = new Message(T, targetPeer.multihash.bytes, 0)
+
+    peerRouting.getCloserPeersOffline.resolves([])
+
     const response = await handler.handle(sourcePeer, msg)
 
     expect(response).to.have.property('closerPeers').that.is.empty()
@@ -85,7 +100,7 @@ describe('rpc - handlers - FindNode', () => {
     const msg = new Message(T, targetPeer.multihash.bytes, 0)
 
     peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.multihash.bytes, peerId)
+      .withArgs(targetPeer.multihash.bytes, sourcePeer)
       .resolves([{
         id: targetPeer,
         multiaddrs: [
@@ -119,7 +134,7 @@ describe('rpc - handlers - FindNode', () => {
     const msg = new Message(T, targetPeer.multihash.bytes, 0)
 
     peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.multihash.bytes, peerId)
+      .withArgs(targetPeer.multihash.bytes, sourcePeer)
       .resolves([{
         id: targetPeer,
         multiaddrs: [

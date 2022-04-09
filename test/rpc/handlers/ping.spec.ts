@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { PingHandler } from '../../../src/rpc/handlers/ping.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'

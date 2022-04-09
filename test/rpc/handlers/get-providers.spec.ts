@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { GetProvidersHandler } from '../../../src/rpc/handlers/get-providers.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -44,7 +44,7 @@ describe('rpc - handlers - GetProviders', () => {
       peerId,
       datastore: new MemoryDatastore()
     })
-    components.setPeerStore(new PersistentPeerStore(components))
+    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
 
     handler = new GetProvidersHandler({
       peerRouting,
@@ -52,6 +52,8 @@ describe('rpc - handlers - GetProviders', () => {
       lan: false
     })
     handler.init(components)
+
+    addressBook = components.getPeerStore().addressBook
   })
 
   it('errors with an invalid key ', async () => {
@@ -88,6 +90,7 @@ describe('rpc - handlers - GetProviders', () => {
     peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer).resolves(closer)
 
     await addressBook.set(providerPeer, provider[0].multiaddrs)
+    await addressBook.set(closerPeer, closer[0].multiaddrs)
 
     const response = await handler.handle(sourcePeer, msg)
 
@@ -96,7 +99,9 @@ describe('rpc - handlers - GetProviders', () => {
     }
 
     expect(response.key).to.be.eql(v.cid.bytes)
-    expect(response.providerPeers).to.deep.equal(provider)
-    expect(response.closerPeers).to.deep.equal(closer)
+    expect(response.providerPeers).to.have.lengthOf(1)
+    expect(response.providerPeers[0].id.toString()).to.equal(provider[0].id.toString())
+    expect(response.closerPeers).to.have.lengthOf(1)
+    expect(response.closerPeers[0].id.toString()).to.equal(closer[0].id.toString())
   })
 })

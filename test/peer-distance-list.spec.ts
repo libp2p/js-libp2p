@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { peerIdFromString } from '@libp2p/peer-id'
 import * as kadUtils from '../src/utils.js'
 import { PeerDistanceList } from '../src/peer-list/peer-distance-list.js'

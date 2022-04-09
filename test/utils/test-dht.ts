@@ -32,7 +32,7 @@ export class TestDHT {
       datastore: new MemoryDatastore(),
       registrar: mockRegistrar()
     })
-    components.setPeerStore(new PersistentPeerStore(components))
+    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
 
     const connectToPeer = async (localDHT: DualKadDHT, peerId: PeerId | Multiaddr, protocols: string | string[]) => {
       const protocol = Array.isArray(protocols) ? protocols[0] : protocols

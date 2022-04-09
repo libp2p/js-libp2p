@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Libp2pRecord } from '@libp2p/record'
 import delay from 'delay'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -29,7 +29,7 @@ describe('rpc - handlers - PutValue', () => {
     validators = {}
 
     const components = new Components({
-      datastore: new MemoryDatastore()
+      datastore
     })
 
     handler = new PutValueHandler({
@@ -55,7 +55,8 @@ describe('rpc - handlers - PutValue', () => {
     const msg = new Message(T, uint8ArrayFromString('/val/hello'), 5)
     const record = new Libp2pRecord(
       uint8ArrayFromString('hello'),
-      uint8ArrayFromString('world')
+      uint8ArrayFromString('world'),
+      new Date()
     )
     msg.record = record
     validators.val = {
