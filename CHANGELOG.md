@@ -1,3 +1,10 @@
+### [1.0.4](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.3...v1.0.4) (2022-04-09)
+
+
+### Trivial Changes
+
+* update tsconfig ([#146](https://github.com/libp2p/js-libp2p-floodsub/issues/146)) ([4c89cf6](https://github.com/libp2p/js-libp2p-floodsub/commit/4c89cf6c5ea749d07dedd4a4f0511e042c7d2a6f))
+
 ### [1.0.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.2...v1.0.3) (2022-04-08)
 
 
