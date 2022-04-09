@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { createLibp2p, Libp2p } from '../../../src/index.js'
 import { createSubsystemOptions } from './utils.js'
 

@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "A libp2p node running in the browser",
   "type": "module",
-  "browserslist": [
-    "last 2 Chrome versions"
-  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "vite"

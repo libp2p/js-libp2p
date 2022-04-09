@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import * as lp from 'it-length-prefixed'
 import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interfaces/connection-encrypter/errors'
-import { Exchange, IExchange, KeyType } from './pb/proto.js'
+import { Exchange, KeyType } from './pb/proto.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
@@ -11,8 +11,8 @@ import type { Duplex } from 'it-stream-types'
 const log = logger('libp2p:plaintext')
 const PROTOCOL = '/plaintext/2.0.0'
 
-function lpEncodeExchange (exchange: IExchange) {
-  const pb = Exchange.encode(exchange).finish()
+function lpEncodeExchange (exchange: Exchange) {
+  const pb = Exchange.encode(exchange)
 
   return lp.encode.single(pb)
 }
@@ -37,7 +37,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
       id: localId.toBytes(),
       pubkey: {
         Type: type,
-        Data: localId.publicKey
+        Data: localId.publicKey ?? new Uint8Array(0)
       }
     }).slice()
   )
@@ -52,6 +52,10 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
 
   let peerId
   try {
+    if (id.pubkey == null) {
+      throw new Error('Public key missing')
+    }
+
     if (id.pubkey.Data.length === 0) {
       throw new Error('Public key data too short')
     }

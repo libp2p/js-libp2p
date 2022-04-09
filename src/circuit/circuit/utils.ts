@@ -1,5 +1,5 @@
 import { Multiaddr } from '@multiformats/multiaddr'
-import { CircuitRelay, ICircuitRelay } from '../pb/index.js'
+import { CircuitRelay } from '../pb/index.js'
 import type { StreamHandler } from './stream-handler.js'
 
 /**
@@ -15,7 +15,7 @@ function writeResponse (streamHandler: StreamHandler, status: CircuitRelay.Statu
 /**
  * Validate incomming HOP/STOP message
  */
-export function validateAddrs (msg: ICircuitRelay, streamHandler: StreamHandler) {
+export function validateAddrs (msg: CircuitRelay, streamHandler: StreamHandler) {
   try {
     if (msg.dstPeer?.addrs != null) {
       msg.dstPeer.addrs.forEach((addr) => {

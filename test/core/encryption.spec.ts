@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { WebSockets } from '@libp2p/websockets'
 import { NOISE } from '@chainsafe/libp2p-noise'
 import { createLibp2p, Libp2pOptions } from '../../src/index.js'

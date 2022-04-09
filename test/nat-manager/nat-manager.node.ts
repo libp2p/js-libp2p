@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { DefaultTransportManager, FaultTolerance } from '../../src/transport-manager.js'
 import { TCP } from '@libp2p/tcp'

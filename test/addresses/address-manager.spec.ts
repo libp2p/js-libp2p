@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Multiaddr, protocols } from '@multiformats/multiaddr'
 import { AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
 import { createNode } from '../utils/creators/peer.js'
