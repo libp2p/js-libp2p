@@ -1,3 +1,10 @@
+### [1.0.5](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.4...v1.0.5) (2022-04-09)
+
+
+### Trivial Changes
+
+* update tsconfig ([#151](https://github.com/libp2p/js-libp2p-websockets/issues/151)) ([c54d349](https://github.com/libp2p/js-libp2p-websockets/commit/c54d3495d8bc53eaa1e1f4c99d9da404652f5a8d))
+
 ### [1.0.4](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.3...v1.0.4) (2022-04-08)
 
 
