@@ -119,28 +119,28 @@
     ]
   },
   "scripts": {
+    "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
-    "build": "tsc",
-    "pretest": "npm run build",
-    "test": "aegir test -f ./dist/test/*.js -f ./dist/test/*/*.js",
-    "test:node": "npm run test -- -t node --cov",
-    "test:electron-main": "npm run test -- -t electron-main",
-    "release": "semantic-release"
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test -t node",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/logger": "^1.1.2",
-    "@libp2p/peer-id": "^1.1.8",
+    "@libp2p/logger": "^1.1.3",
+    "@libp2p/peer-id": "^1.1.9",
     "@multiformats/multiaddr": "^10.1.5",
     "multicast-dns": "^7.2.0",
     "multiformats": "^9.6.3"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^1.1.20",
-    "@libp2p/interfaces": "^1.3.18",
-    "@libp2p/peer-id-factory": "^1.0.8",
+    "@libp2p/interface-compliance-tests": "^1.1.21",
+    "@libp2p/interfaces": "^1.3.20",
+    "@libp2p/peer-id-factory": "^1.0.9",
     "@types/multicast-dns": "^7.2.1",
-    "aegir": "^36.1.3",
+    "aegir": "^37.0.8",
     "delay": "^5.0.0",
     "p-defer": "^4.0.0",
     "p-wait-for": "^4.1.0",

@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import MDNS, { QueryPacket } from 'multicast-dns'
 import OS from 'os'
