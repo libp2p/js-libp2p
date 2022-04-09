@@ -153,7 +153,7 @@ export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
   log('hop request failed with code %d, closing stream', response.code)
   streamHandler.close()
 
-  throw errCode(new Error(`HOP request failed with code ${response.code}`), Errors.ERR_HOP_REQUEST_FAILED)
+  throw errCode(new Error(`HOP request failed with code "${response.code ?? 'unknown'}"`), Errors.ERR_HOP_REQUEST_FAILED)
 }
 
 export interface CanHopOptions {

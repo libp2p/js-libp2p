@@ -37,7 +37,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
       id: localId.toBytes(),
       pubkey: {
         Type: type,
-        Data: localId.publicKey || new Uint8Array(0)
+        Data: localId.publicKey ?? new Uint8Array(0)
       }
     }).slice()
   )
