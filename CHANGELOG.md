@@ -1,3 +1,10 @@
+### [1.0.2](https://github.com/libp2p/js-libp2p-record/compare/v1.0.1...v1.0.2) (2022-04-09)
+
+
+### Bug Fixes
+
+* use protons ([#39](https://github.com/libp2p/js-libp2p-record/issues/39)) ([10b4cc2](https://github.com/libp2p/js-libp2p-record/commit/10b4cc2600e8f3bed9a2d646b68b0b2107e1caa4))
+
 ### [1.0.1](https://github.com/libp2p/js-libp2p-record/compare/v1.0.0...v1.0.1) (2022-03-24)
 
 
