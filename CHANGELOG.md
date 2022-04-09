@@ -1,3 +1,10 @@
+### [1.0.3](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.2...v1.0.3) (2022-04-09)
+
+
+### Trivial Changes
+
+* update aegir ([#167](https://github.com/libp2p/js-libp2p-mplex/issues/167)) ([0ef0c36](https://github.com/libp2p/js-libp2p-mplex/commit/0ef0c36f4d84d85ddbc06b725967bd9edac7a1cc))
+
 ### [1.0.2](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.1...v1.0.2) (2022-03-17)
 
 
