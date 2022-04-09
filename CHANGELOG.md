@@ -1,3 +1,10 @@
+### [1.0.4](https://github.com/libp2p/js-libp2p-mdns/compare/v1.0.3...v1.0.4) (2022-04-09)
+
+
+### Trivial Changes
+
+* update aegir ([#122](https://github.com/libp2p/js-libp2p-mdns/issues/122)) ([37b689f](https://github.com/libp2p/js-libp2p-mdns/commit/37b689fb7e22887b050a6177bf05f9fc304563f9))
+
 ### [1.0.3](https://github.com/libp2p/js-libp2p-mdns/compare/v1.0.2...v1.0.3) (2022-03-24)
 
 
