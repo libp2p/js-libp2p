@@ -1,3 +1,10 @@
+### [0.22.10](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.9...v0.22.10) (2022-04-11)
+
+
+### Bug Fixes
+
+* use protons ([#251](https://github.com/libp2p/js-libp2p-crypto/issues/251)) ([54a1424](https://github.com/libp2p/js-libp2p-crypto/commit/54a14249ca5e3b7395c243a762fbe6bb4c96e24f))
+
 ### [0.22.9](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.8...v0.22.9) (2022-03-10)
 
 
