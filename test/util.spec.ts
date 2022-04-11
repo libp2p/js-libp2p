@@ -1,6 +1,6 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import 'node-forge/lib/jsbn.js'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'

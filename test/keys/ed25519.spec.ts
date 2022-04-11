@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as crypto from '../../src/index.js'
 import fixtures from '../fixtures/go-key-ed25519.js'

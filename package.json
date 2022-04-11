@@ -154,21 +154,19 @@
     ]
   },
   "scripts": {
+    "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check dist/src/**/*.js dist/test/**/*.js",
-    "build": "tsc",
-    "pretest": "npm run build",
-    "test": "aegir test -f ./dist/test/**/*.js",
-    "test:chrome": "npm run test -- -t browser",
-    "test:chrome-webworker": "npm run test -- -t webworker",
-    "test:firefox": "npm run test -- -t browser -- --browser firefox",
-    "test:firefox-webworker": "npm run test -- -t webworker -- --browser firefox",
-    "test:node": "npm run test -- -t node --cov",
-    "test:electron-main": "npm run test -- -t electron-main",
-    "release": "semantic-release",
-    "build:proto": "npm run build:proto:js && npm run build:proto:types",
-    "build:proto:js": "pbjs -t static-module -w es6 --es6 -r libp2p-crypto-keys --force-number --no-verify --no-delimited --no-create --no-beautify --no-defaults --lint eslint-disable -o src/keys/keys.js ./src/keys/keys.proto",
-    "build:proto:types": "pbts -o src/keys/keys.d.ts src/keys/keys.js"
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release",
+    "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
     "@noble/ed25519": "^1.6.0",
@@ -177,13 +175,14 @@
     "iso-random-stream": "^2.0.0",
     "multiformats": "^9.4.5",
     "node-forge": "^1.1.0",
-    "protobufjs": "^6.11.2",
+    "protons-runtime": "^1.0.2",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
     "@types/mocha": "^9.0.0",
-    "aegir": "^36.1.2",
+    "aegir": "^37.0.12",
     "benchmark": "^2.1.4",
+    "protons": "^3.0.2",
     "sinon": "^13.0.1",
     "util": "^0.12.3",
     "wherearewe": "^1.0.0"

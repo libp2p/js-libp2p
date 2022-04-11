@@ -73,7 +73,6 @@ export async function generateEphmeralKeyPair (curve: string) {
     return new Uint8Array(buffer, 0, buffer.byteLength)
   }
 
-  // @ts-expect-error jwk is missing from the types
   const publicKey = await webcrypto.get().subtle.exportKey('jwk', pair.publicKey)
 
   const ecdhKey: ECDHKey = {

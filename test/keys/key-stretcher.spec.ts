@@ -1,6 +1,6 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import * as crypto from '../../src/index.js'
 import fixtures from '../fixtures/go-stretch-key.js'
 import type { ECDHKey } from '../../src/keys/interface.js'

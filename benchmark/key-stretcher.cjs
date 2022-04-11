@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const crypto = require('../src')
+const crypto = require('../dist/src/index.js')
 
 const Benchmark = require('benchmark')
 

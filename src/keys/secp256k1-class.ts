@@ -26,7 +26,7 @@ export class Secp256k1PublicKey {
     return keysProtobuf.PublicKey.encode({
       Type: keysProtobuf.KeyType.Secp256k1,
       Data: this.marshal()
-    }).finish()
+    })
   }
 
   equals (key: any) {
@@ -67,7 +67,7 @@ export class Secp256k1PrivateKey {
     return keysProtobuf.PrivateKey.encode({
       Type: keysProtobuf.KeyType.Secp256k1,
       Data: this.marshal()
-    }).finish()
+    })
   }
 
   equals (key: any) {

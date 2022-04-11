@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-disable valid-jsdoc */
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import * as crypto from '../../src/index.js'
 import fixtures from './../fixtures/aes.js'
 import goFixtures from './../fixtures/go-aes.js'

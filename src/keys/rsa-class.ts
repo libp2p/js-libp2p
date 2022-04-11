@@ -29,7 +29,7 @@ export class RsaPublicKey {
     return pbm.PublicKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
-    }).finish()
+    })
   }
 
   encrypt (bytes: Uint8Array) {
@@ -84,7 +84,7 @@ export class RsaPrivateKey {
     return pbm.PrivateKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
-    }).finish()
+    })
   }
 
   equals (key: any) {

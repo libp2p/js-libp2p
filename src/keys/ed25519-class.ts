@@ -26,7 +26,7 @@ export class Ed25519PublicKey {
     return pbm.PublicKey.encode({
       Type: pbm.KeyType.Ed25519,
       Data: this.marshal()
-    }).finish()
+    })
   }
 
   equals (key: any) {
@@ -67,7 +67,7 @@ export class Ed25519PrivateKey {
     return pbm.PrivateKey.encode({
       Type: pbm.KeyType.Ed25519,
       Data: this.marshal()
-    }).finish()
+    })
   }
 
   equals (key: any) {

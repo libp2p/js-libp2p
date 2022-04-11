@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import * as crypto from '../../src/index.js'
 import * as Secp256k1 from '../../src/keys/secp256k1-class.js'
 import * as secp256k1Crypto from '../../src/keys/secp256k1.js'
