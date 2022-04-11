@@ -1,3 +1,10 @@
+### [1.0.6](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.5...v1.0.6) (2022-04-11)
+
+
+### Bug Fixes
+
+* remove entrypoint config ([#152](https://github.com/libp2p/js-libp2p-websockets/issues/152)) ([cf2334e](https://github.com/libp2p/js-libp2p-websockets/commit/cf2334e8f5063dc98d34776b81e3dad13e761e6e))
+
 ### [1.0.5](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.4...v1.0.5) (2022-04-09)
 
 
