@@ -39,8 +39,6 @@ export default {
     }
   },
   build: {
-    config: {
-      entryPoints: ['./dist/src/index.js']
-    }
+    bundlesizeMax: '18kB'
   }
 }
