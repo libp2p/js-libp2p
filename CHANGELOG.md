@@ -1,3 +1,10 @@
+### [1.0.3](https://github.com/libp2p/js-libp2p-record/compare/v1.0.2...v1.0.3) (2022-04-13)
+
+
+### Bug Fixes
+
+* update interfaces ([#40](https://github.com/libp2p/js-libp2p-record/issues/40)) ([e2713a3](https://github.com/libp2p/js-libp2p-record/commit/e2713a3a6b5351e2dc012cf734ff1c945479920b))
+
 ### [1.0.2](https://github.com/libp2p/js-libp2p-record/compare/v1.0.1...v1.0.2) (2022-04-09)
 
 
