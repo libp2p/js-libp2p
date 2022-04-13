@@ -67,11 +67,9 @@ describe('validator', () => {
       const rec = new Libp2pRecord(k, uint8ArrayFromString('world'), new Date())
 
       const validators: Validators = {
-        hello: {
-          async func (key, value) {
-            expect(key).to.eql(k)
-            expect(value).to.eql(uint8ArrayFromString('world'))
-          }
+        async hello (key, value) {
+          expect(key).to.eql(k)
+          expect(value).to.eql(uint8ArrayFromString('world'))
         }
       }
       return validator.verifyRecord(validators, rec)
@@ -82,11 +80,9 @@ describe('validator', () => {
       const rec = new Libp2pRecord(k, uint8ArrayFromString('world'), new Date())
 
       const validators: Validators = {
-        hello: {
-          async func (key, value) {
-            expect(key).to.eql(k)
-            expect(value).to.eql(uint8ArrayFromString('world'))
-          }
+        async hello (key, value) {
+          expect(key).to.eql(k)
+          expect(value).to.eql(uint8ArrayFromString('world'))
         }
       }
       return expect(
@@ -103,16 +99,15 @@ describe('validator', () => {
     })
 
     describe('public key', () => {
-      it('exports func and sign', () => {
+      it('exports func', () => {
         const pk = validator.validators.pk
 
-        expect(pk).to.have.property('func')
-        expect(pk).to.have.property('sign', false)
+        expect(pk).to.be.a('function')
       })
 
       it('does not error on valid record', async () => {
         return await Promise.all(cases.valid.publicKey.map(async (k) => {
-          return await validator.validators.pk.func(k, key.public.bytes)
+          return await validator.validators.pk(k, key.public.bytes)
         }))
       })
 
@@ -120,7 +115,7 @@ describe('validator', () => {
         return await Promise.all(cases.invalid.publicKey.map(async ({ data, code }) => {
           try {
             //
-            await validator.validators.pk.func(data, key.public.bytes)
+            await validator.validators.pk(data, key.public.bytes)
           } catch (err: any) {
             expect(err.code).to.eql(code)
             return
@@ -137,7 +132,7 @@ describe('validator', () => {
 
       const hash = await pubKey.hash()
       const k = Uint8Array.of(...uint8ArrayFromString('/pk/'), ...hash)
-      return await validator.validators.pk.func(k, pubKey.bytes)
+      return await validator.validators.pk(k, pubKey.bytes)
     })
   })
 })

@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import errCode from 'err-code'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Libp2pRecord } from './index.js'
 import type { Validators } from '@libp2p/interfaces/dht'
@@ -25,10 +25,10 @@ export function verifyRecord (validators: Validators, record: Libp2pRecord) {
   if (validator == null) {
     const errMsg = 'Invalid record keytype'
 
-    throw errcode(new Error(errMsg), 'ERR_INVALID_RECORD_KEY_TYPE')
+    throw errCode(new Error(errMsg), 'ERR_INVALID_RECORD_KEY_TYPE')
   }
 
-  return validator.func(key, record.value)
+  return validator(key, record.value)
 }
 
 /**
@@ -42,17 +42,17 @@ export function verifyRecord (validators: Validators, record: Libp2pRecord) {
  */
 const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array) => {
   if (!(key instanceof Uint8Array)) {
-    throw errcode(new Error('"key" must be a Uint8Array'), 'ERR_INVALID_RECORD_KEY_NOT_BUFFER')
+    throw errCode(new Error('"key" must be a Uint8Array'), 'ERR_INVALID_RECORD_KEY_NOT_BUFFER')
   }
 
   if (key.byteLength < 5) {
-    throw errcode(new Error('invalid public key record'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT')
+    throw errCode(new Error('invalid public key record'), 'ERR_INVALID_RECORD_KEY_TOO_SHORT')
   }
 
   const prefix = uint8ArrayToString(key.subarray(0, 4))
 
   if (prefix !== '/pk/') {
-    throw errcode(new Error('key was not prefixed with /pk/'), 'ERR_INVALID_RECORD_KEY_BAD_PREFIX')
+    throw errCode(new Error('key was not prefixed with /pk/'), 'ERR_INVALID_RECORD_KEY_BAD_PREFIX')
   }
 
   const keyhash = key.slice(4)
@@ -60,15 +60,10 @@ const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array) =
   const publicKeyHash = await sha256.digest(publicKey)
 
   if (!uint8ArrayEquals(keyhash, publicKeyHash.bytes)) {
-    throw errcode(new Error('public key does not match passed in key'), 'ERR_INVALID_RECORD_HASH_MISMATCH')
+    throw errCode(new Error('public key does not match passed in key'), 'ERR_INVALID_RECORD_HASH_MISMATCH')
   }
 }
 
-const publicKey = {
-  func: validatePublicKeyRecord,
-  sign: false
-}
-
-export const validators = {
-  pk: publicKey
+export const validators: Validators = {
+  pk: validatePublicKeyRecord
 }

@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
 import { encodeMessage, decodeMessage, message, bytes, string } from 'protons-runtime'
+import type { Codec } from 'protons-runtime'
 
 export interface Record {
   key: Uint8Array
@@ -10,7 +11,7 @@ export interface Record {
 }
 
 export namespace Record {
-  export const codec = () => {
+  export const codec = (): Codec<Record> => {
     return message<Record>({
       1: { name: 'key', codec: bytes },
       2: { name: 'value', codec: bytes },
