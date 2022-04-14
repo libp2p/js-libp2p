@@ -181,36 +181,6 @@ Required keys in the `options` object:
 
 ## Libp2p Instance Methods
 
-### loadKeychain
-
-Load keychain keys from the datastore, importing the private key as 'self', if needed.
-
-`libp2p.loadKeychain()`
-
-#### Returns
-
-| Type | Description |
-|------|-------------|
-| `Promise` | Promise resolves when the keychain is ready |
-
-#### Example
-
-```js
-import { createLibp2p } from 'libp2p'
-
-// ...
-
-const libp2p = await createLibp2p({
-  // ...
-  keychain: {
-    pass: '0123456789pass1234567890'
-  }
-})
-
-// load keychain
-await libp2p.loadKeychain()
-```
-
 ### start
 
 Starts the libp2p node.

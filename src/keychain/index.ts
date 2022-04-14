@@ -14,6 +14,8 @@ import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Components } from '@libp2p/interfaces/components'
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
+import type { KeyChain } from '@libp2p/interfaces/keychain'
+import type { Startable } from '@libp2p/interfaces'
 
 const log = logger('libp2p:keychain')
 
@@ -111,9 +113,10 @@ function DsInfoName (name: string) {
  * - '/pkcs8/*key-name*', contains the PKCS #8 for the key
  *
  */
-export class KeyChain {
+export class DefaultKeyChain implements KeyChain, Startable {
   private readonly components: Components
   private init: KeyChainInit
+  private started: boolean
 
   /**
    * Creates a new instance of a key chain
@@ -146,6 +149,27 @@ export class KeyChain {
       : ''
 
     privates.set(this, { dek })
+    this.started = false
+  }
+
+  isStarted () {
+    return this.started
+  }
+
+  async start () {
+    // Load keychain keys from the datastore.
+    // Imports the private key as 'self', if needed.
+    try {
+      await this.findKeyByName('self')
+    } catch (err: any) {
+      await this.importPeer('self', this.components.getPeerId())
+    }
+
+    this.started = true
+  }
+
+  async stop () {
+    this.started = false
   }
 
   /**

@@ -20,7 +20,7 @@ import type { ConnectionManager, Registrar, StreamHandler } from '@libp2p/interf
 import type { Metrics, MetricsInit } from '@libp2p/interfaces/metrics'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { DialerInit } from '@libp2p/interfaces/dialer'
-import type { KeyChain } from './keychain/index.js'
+import type { KeyChain } from '@libp2p/interfaces/keychain'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
@@ -157,12 +157,6 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
 
   pubsub?: PubSub
   dht?: DualDHT
-
-  /**
-   * Load keychain keys from the datastore.
-   * Imports the private key as 'self', if needed.
-   */
-  loadKeychain: () => Promise<void>
 
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating

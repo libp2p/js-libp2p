@@ -8,7 +8,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { codes } from '../errors.js'
 import { logger } from '@libp2p/logger'
-import type { KeyChain } from './index.js'
+import type { DefaultKeyChain } from './index.js'
 
 const log = logger('libp2p:keychain:cms')
 
@@ -24,12 +24,12 @@ const privates = new WeakMap<object, { dek: string }>()
  * See RFC 5652 for all the details.
  */
 export class CMS {
-  private readonly keychain: KeyChain
+  private readonly keychain: DefaultKeyChain
 
   /**
    * Creates a new instance with a keychain
    */
-  constructor (keychain: KeyChain, dek: string) {
+  constructor (keychain: DefaultKeyChain, dek: string) {
     if (keychain == null) {
       throw errCode(new Error('keychain is required'), codes.ERR_KEYCHAIN_REQUIRED)
     }

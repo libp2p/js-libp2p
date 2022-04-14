@@ -12,7 +12,7 @@ import { AutoDialler } from './connection-manager/auto-dialler.js'
 import { Circuit } from './circuit/transport.js'
 import { Relay } from './circuit/index.js'
 import { DefaultDialer } from './dialer/index.js'
-import { KeyChain } from './keychain/index.js'
+import { DefaultKeyChain } from './keychain/index.js'
 import { DefaultMetrics } from './metrics/index.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
@@ -44,6 +44,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import errCode from 'err-code'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import type { Metrics } from '@libp2p/interfaces/metrics'
+import type { KeyChain } from '@libp2p/interfaces/keychain'
 
 const log = logger('libp2p')
 
@@ -140,8 +141,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     }))
 
     // Create keychain
-    const keychainOpts = KeyChain.generateOptions()
-    this.keychain = this.configureComponent(new KeyChain(this.components, {
+    const keychainOpts = DefaultKeyChain.generateOptions()
+    this.keychain = this.configureComponent(new DefaultKeyChain(this.components, {
       ...keychainOpts,
       ...init.keychain
     }))
@@ -350,22 +351,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     )
 
     log('libp2p has stopped')
-  }
-
-  /**
-   * Load keychain keys from the datastore.
-   * Imports the private key as 'self', if needed.
-   */
-  async loadKeychain () {
-    if (this.keychain == null) {
-      return
-    }
-
-    try {
-      await this.keychain.findKeyByName('self')
-    } catch (err: any) {
-      await this.keychain.importPeer('self', this.peerId)
-    }
   }
 
   isStarted () {

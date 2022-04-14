@@ -5,17 +5,17 @@ import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MemoryDatastore } from 'datastore-core/memory'
-import { KeyChain } from '../../src/keychain/index.js'
+import { DefaultKeyChain } from '../../src/keychain/index.js'
 import { Components } from '@libp2p/interfaces/components'
 
 describe('cms interop', () => {
   const passPhrase = 'this is not a secure phrase'
   const aliceKeyName = 'cms-interop-alice'
-  let ks: KeyChain
+  let ks: DefaultKeyChain
 
   before(() => {
     const datastore = new MemoryDatastore()
-    ks = new KeyChain(new Components({ datastore }), { pass: passPhrase })
+    ks = new DefaultKeyChain(new Components({ datastore }), { pass: passPhrase })
   })
 
   const plainData = uint8ArrayFromString('This is a message from Alice to Bob')
