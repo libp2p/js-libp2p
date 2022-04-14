@@ -412,8 +412,12 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   /**
    * Get the public key for the given peer id
    */
-  async getPublicKey (peer: PeerId, options: AbortOptions = {}) {
+  async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<Uint8Array> {
     log('getPublicKey %p', peer)
+
+    if (peer.publicKey != null) {
+      return peer.publicKey
+    }
 
     const peerInfo = await this.peerStore.get(peer)
 
@@ -437,7 +441,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
         await this.peerStore.keyBook.set(peer, event.value)
 
-        return key
+        return key.bytes
       }
     }
 
