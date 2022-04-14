@@ -1,3 +1,10 @@
+### [1.0.4](https://github.com/libp2p/js-libp2p-record/compare/v1.0.3...v1.0.4) (2022-04-14)
+
+
+### Bug Fixes
+
+* pad ns correctly ([#41](https://github.com/libp2p/js-libp2p-record/issues/41)) ([18030d9](https://github.com/libp2p/js-libp2p-record/commit/18030d9d3832a7d09dee928923909875a5780a2f))
+
 ### [1.0.3](https://github.com/libp2p/js-libp2p-record/compare/v1.0.2...v1.0.3) (2022-04-13)
 
 
