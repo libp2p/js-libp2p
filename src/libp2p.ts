@@ -44,6 +44,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import errCode from 'err-code'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import type { Metrics } from '@libp2p/interfaces/metrics'
+import type { PublicKey } from '@libp2p/interfaces/keys'
 
 const log = logger('libp2p')
 
@@ -412,13 +413,13 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   /**
    * Get the public key for the given peer id
    */
-  async getPublicKey (peer: PeerId, options: AbortOptions = {}) {
+  async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<PublicKey> {
     log('getPublicKey %p', peer)
 
     const peerInfo = await this.peerStore.get(peer)
 
     if (peerInfo.pubKey != null) {
-      return peerInfo.pubKey
+      return unmarshalPublicKey(peerInfo.pubKey)
     }
 
     if (this.dht == null) {

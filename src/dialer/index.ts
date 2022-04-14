@@ -244,9 +244,6 @@ export class DefaultDialer implements Dialer, Startable {
     const addrs: Multiaddr[] = []
     for (const a of knownAddrs) {
       const resolvedAddrs = await this._resolve(a)
-
-      log('resolved %s to %s', a, resolvedAddrs)
-
       resolvedAddrs.forEach(ra => addrs.push(ra))
     }
 
