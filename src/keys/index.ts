@@ -11,6 +11,7 @@ import { importer } from './importer.js'
 import * as RSA from './rsa-class.js'
 import * as Ed25519 from './ed25519-class.js'
 import * as Secp256k1 from './secp256k1-class.js'
+import type { PrivateKey, PublicKey } from '@libp2p/interfaces/keys'
 
 export { keyStretcher }
 export { generateEphemeralKeyPair }
@@ -38,13 +39,13 @@ function typeToKey (type: string) {
 }
 
 // Generates a keypair of the given type and bitsize
-export async function generateKeyPair (type: 'RSA' | 'Ed25519' | 'secp256k1', bits?: number) { // eslint-disable-line require-await
+export async function generateKeyPair (type: 'RSA' | 'Ed25519' | 'secp256k1', bits?: number): Promise<PrivateKey> { // eslint-disable-line require-await
   return await typeToKey(type).generateKeyPair(bits ?? 2048)
 }
 
 // Generates a keypair of the given type and bitsize
 // seed is a 32 byte uint8array
-export async function generateKeyPairFromSeed (type: 'RSA' | 'Ed25519' | 'secp256k1', seed: Uint8Array, bits?: number) { // eslint-disable-line require-await
+export async function generateKeyPairFromSeed (type: 'RSA' | 'Ed25519' | 'secp256k1', seed: Uint8Array, bits?: number): Promise<PrivateKey> { // eslint-disable-line require-await
   if (type.toLowerCase() !== 'ed25519') {
     throw errcode(new Error('Seed key derivation is unimplemented for RSA or secp256k1'), 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
   }
@@ -54,7 +55,7 @@ export async function generateKeyPairFromSeed (type: 'RSA' | 'Ed25519' | 'secp25
 
 // Converts a protobuf serialized public key into its
 // representative object
-export function unmarshalPublicKey (buf: Uint8Array) {
+export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data
 
@@ -71,7 +72,7 @@ export function unmarshalPublicKey (buf: Uint8Array) {
 }
 
 // Converts a public key object into a protobuf serialized public key
-export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string) {
+export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Uint8Array {
   type = (type ?? 'rsa').toLowerCase()
   typeToKey(type) // check type
   return key.bytes
@@ -79,7 +80,7 @@ export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string) {
 
 // Converts a protobuf serialized private key into its
 // representative object
-export async function unmarshalPrivateKey (buf: Uint8Array) { // eslint-disable-line require-await
+export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey> { // eslint-disable-line require-await
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data
 
@@ -96,7 +97,7 @@ export async function unmarshalPrivateKey (buf: Uint8Array) { // eslint-disable-
 }
 
 // Converts a private key object into a protobuf serialized private key
-export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string) {
+export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string): Uint8Array {
   type = (type ?? 'rsa').toLowerCase()
   typeToKey(type) // check type
   return key.bytes
@@ -107,7 +108,7 @@ export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string) {
  * @param {string} encryptedKey
  * @param {string} password
  */
-export async function importKey (encryptedKey: string, password: string) { // eslint-disable-line require-await
+export async function importKey (encryptedKey: string, password: string): Promise<PrivateKey> { // eslint-disable-line require-await
   try {
     const key = await importer(encryptedKey, password)
     return await unmarshalPrivateKey(key)
