@@ -22,7 +22,7 @@ describe('getPublicKey', () => {
       connectionEncryption: [
         NOISE
       ],
-      dht: new KadDHT
+      dht: new KadDHT()
     }
     libp2p = await createLibp2pNode(config)
 
@@ -42,7 +42,7 @@ describe('getPublicKey', () => {
   })
 
   it('should get key from the keystore', async () => {
-    const otherPeer = await createPeerId({ opts: { type: 'rsa' }})
+    const otherPeer = await createPeerId({ opts: { type: 'rsa' } })
 
     if (otherPeer.publicKey == null) {
       throw new Error('Public key was missing')
@@ -56,7 +56,7 @@ describe('getPublicKey', () => {
   })
 
   it('should query the DHT when the key is not in the keystore', async () => {
-    const otherPeer = await createPeerId({ opts: { type: 'rsa' }})
+    const otherPeer = await createPeerId({ opts: { type: 'rsa' } })
 
     if (otherPeer.publicKey == null) {
       throw new Error('Public key was missing')
