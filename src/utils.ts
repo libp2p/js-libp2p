@@ -10,7 +10,7 @@ export function toRFC3339 (time: Date) {
   const minute = String(time.getUTCMinutes()).padStart(2, '0')
   const seconds = String(time.getUTCSeconds()).padStart(2, '0')
   const milliseconds = time.getUTCMilliseconds()
-  const nanoseconds = milliseconds * 1000 * 1000
+  const nanoseconds = String(milliseconds * 1000 * 1000).padStart(9, '0')
 
   return `${year}-${month}-${day}T${hour}:${minute}:${seconds}.${nanoseconds}Z`
 }
