@@ -1,3 +1,10 @@
+### [1.0.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.4...v1.0.5) (2022-04-14)
+
+
+### Trivial Changes
+
+* update deps ([#313](https://github.com/libp2p/js-libp2p-kad-dht/issues/313)) ([347a597](https://github.com/libp2p/js-libp2p-kad-dht/commit/347a5974edc34fb548305929bdc3af10da2a0563))
+
 ### [1.0.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.3...v1.0.4) (2022-04-09)
 
 

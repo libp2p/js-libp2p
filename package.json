@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/kad-dht",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-kad-dht#readme",
