@@ -210,9 +210,7 @@ describe('KadDHT', () => {
         tdht.spawn({
           // Stub verify record
           validators: {
-            v: {
-              func: sinon.stub().rejects(error)
-            }
+            v: sinon.stub().rejects(error)
           }
         })
       ])
@@ -259,9 +257,7 @@ describe('KadDHT', () => {
       const [dhtA, dhtB] = await Promise.all([
         tdht.spawn({
           validators: {
-            ipns: {
-              func: sinon.stub().resolves()
-            }
+            ipns: sinon.stub().resolves()
           },
           selectors: {
             ipns: sinon.stub().returns(0)
@@ -269,9 +265,7 @@ describe('KadDHT', () => {
         }),
         tdht.spawn({
           validators: {
-            ipns: {
-              func: sinon.stub().resolves()
-            }
+            ipns: sinon.stub().resolves()
           },
           selectors: {
             ipns: sinon.stub().returns(0)

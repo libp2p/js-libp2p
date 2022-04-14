@@ -112,15 +112,11 @@ export class TestDHT {
 
     const opts: KadDHTInit = {
       validators: {
-        v: {
-          async func () {
+        async v () {
 
-          }
         },
-        v2: {
-          async func () {
+        async v2 () {
 
-          }
         }
       },
       selectors: {

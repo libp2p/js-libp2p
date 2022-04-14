@@ -59,9 +59,7 @@ describe('rpc - handlers - PutValue', () => {
       new Date()
     )
     msg.record = record
-    validators.val = {
-      func: async () => {}
-    }
+    validators.val = async () => {}
 
     const response = await handler.handle(sourcePeer, msg)
     expect(response).to.deep.equal(msg)
