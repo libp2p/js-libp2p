@@ -89,6 +89,14 @@ export class QueryManager implements Startable, Initializable {
       // don't let queries run forever
       timeoutController = new TimeoutController(DEFAULT_QUERY_TIMEOUT)
       options.signal = timeoutController.signal
+
+      // this signal will get listened to for network requests, etc
+      // so make sure we don't make a lot of noise in the logs
+      try {
+        if (setMaxListeners != null) {
+          setMaxListeners(Infinity, timeoutController.signal)
+        }
+      } catch {} // fails on node < 15.4
     }
 
     // allow us to stop queries on shut down
@@ -106,7 +114,7 @@ export class QueryManager implements Startable, Initializable {
     // so make sure we don't make a lot of noise in the logs
     try {
       if (setMaxListeners != null) {
-        setMaxListeners(0, signal)
+        setMaxListeners(Infinity, signal)
       }
     } catch {} // fails on node < 15.4
 
