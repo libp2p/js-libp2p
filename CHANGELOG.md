@@ -1,3 +1,10 @@
+### [1.0.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.5...v1.0.6) (2022-04-17)
+
+
+### Bug Fixes
+
+* max listeners warning ([#316](https://github.com/libp2p/js-libp2p-kad-dht/issues/316)) ([18ba9c0](https://github.com/libp2p/js-libp2p-kad-dht/commit/18ba9c0b57e6aa51cbbaeea44b36888be88b1df7))
+
 ### [1.0.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.4...v1.0.5) (2022-04-14)
 
 
