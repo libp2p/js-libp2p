@@ -1,3 +1,10 @@
+### [1.0.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.6...v1.0.7) (2022-04-19)
+
+
+### Bug Fixes
+
+* return self when asked for self ([#318](https://github.com/libp2p/js-libp2p-kad-dht/issues/318)) ([c84fa2a](https://github.com/libp2p/js-libp2p-kad-dht/commit/c84fa2a7959e9c1b2f60349b7d9271df7cb992d0))
+
 ### [1.0.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.5...v1.0.6) (2022-04-17)
 
 
