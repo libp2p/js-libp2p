@@ -5,10 +5,14 @@ import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { FindNodeHandler } from '../../../src/rpc/handlers/find-node.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from '../../utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import Sinon, { SinonStubbedInstance } from 'sinon'
+import { Components } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { DHTMessageHandler } from '../../../src/rpc/index.js'
+import type { AddressManager } from '@libp2p/interfaces'
+import { stubInterface } from 'ts-sinon'
+import type { StubbedInstance } from 'ts-sinon'
 
 const T = MESSAGE_TYPE.FIND_NODE
 
@@ -18,33 +22,33 @@ describe('rpc - handlers - FindNode', () => {
   let targetPeer: PeerId
   let handler: DHTMessageHandler
   let peerRouting: SinonStubbedInstance<PeerRouting>
+  let addressManager: StubbedInstance<AddressManager>
 
   beforeEach(async () => {
     peerId = await createPeerId()
     sourcePeer = await createPeerId()
     targetPeer = await createPeerId()
     peerRouting = Sinon.createStubInstance(PeerRouting)
+    addressManager = stubInterface<AddressManager>()
 
     handler = new FindNodeHandler({
       peerRouting,
       lan: false
     })
+    handler.init(new Components({
+      peerId,
+      addressManager
+    }))
   })
 
   it('returns self, if asked for self', async () => {
     const msg = new Message(T, peerId.multihash.bytes, 0)
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(peerId.multihash.bytes, sourcePeer)
-      .resolves([{
-        id: peerId,
-        multiaddrs: [
-          new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
-          new Multiaddr('/ip4/192.168.1.5/tcp/4002'),
-          new Multiaddr('/ip4/221.4.67.0/tcp/4002')
-        ],
-        protocols: []
-      }])
+    addressManager.getAddresses.returns([
+      new Multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${peerId.toString()}`),
+      new Multiaddr(`/ip4/192.168.1.5/tcp/4002/p2p/${peerId.toString()}`),
+      new Multiaddr(`/ip4/221.4.67.0/tcp/4002/p2p/${peerId.toString()}`)
+    ])
 
     const response = await handler.handle(sourcePeer, msg)
 
@@ -115,6 +119,10 @@ describe('rpc - handlers - FindNode', () => {
       peerRouting,
       lan: true
     })
+    handler.init(new Components({
+      peerId,
+      addressManager
+    }))
 
     const response = await handler.handle(sourcePeer, msg)
 

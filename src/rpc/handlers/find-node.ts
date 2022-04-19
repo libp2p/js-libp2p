@@ -4,14 +4,14 @@ import {
   removePrivateAddresses,
   removePublicAddresses
 } from '../../utils.js'
-import { pipe } from 'it-pipe'
+import { equals as uint8ArrayEquals } from 'uint8arrays'
+import { Components } from '@libp2p/interfaces/components'
+import { protocols } from '@multiformats/multiaddr'
+import type { Initializable } from '@libp2p/interfaces/components'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { DHTMessageHandler } from '../index.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import map from 'it-map'
-import filter from 'it-filter'
-import all from 'it-all'
-import type { Initializable } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:find-node')
 
@@ -23,6 +23,7 @@ export interface FindNodeHandlerInit {
 export class FindNodeHandler implements DHTMessageHandler, Initializable {
   private readonly peerRouting: PeerRouting
   private readonly lan: boolean
+  private components = new Components()
 
   constructor (init: FindNodeHandlerInit) {
     const { peerRouting, lan } = init
@@ -30,8 +31,8 @@ export class FindNodeHandler implements DHTMessageHandler, Initializable {
     this.lan = Boolean(lan)
   }
 
-  init (): void {
-
+  init (components: Components): void {
+    this.components = components
   }
 
   /**
@@ -40,14 +41,21 @@ export class FindNodeHandler implements DHTMessageHandler, Initializable {
   async handle (peerId: PeerId, msg: Message) {
     log('incoming request from %p for peers closer to %b', peerId, msg.key)
 
-    const mapper = this.lan ? removePublicAddresses : removePrivateAddresses
+    let closer: PeerInfo[] = []
 
-    const closer = await pipe(
-      await this.peerRouting.getCloserPeersOffline(msg.key, peerId),
-      (source) => map(source, mapper),
-      (source) => filter(source, ({ multiaddrs }) => multiaddrs.length > 0),
-      async (source) => await all(source)
-    )
+    if (uint8ArrayEquals(this.components.getPeerId().toBytes(), msg.key)) {
+      closer = [{
+        id: this.components.getPeerId(),
+        multiaddrs: this.components.getAddressManager().getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code)),
+        protocols: []
+      }]
+    } else {
+      closer = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
+    }
+
+    closer = closer
+      .map(this.lan ? removePublicAddresses : removePrivateAddresses)
+      .filter(({ multiaddrs }) => multiaddrs.length)
 
     const response = new Message(msg.type, new Uint8Array(0), msg.clusterLevel)
 

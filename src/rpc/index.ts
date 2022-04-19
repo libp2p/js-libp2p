@@ -16,7 +16,7 @@ import type { PeerRouting } from '../peer-routing'
 import type { Validators } from '@libp2p/interfaces/dht'
 import type { Components, Initializable } from '@libp2p/interfaces/components'
 
-export interface DHTMessageHandler {
+export interface DHTMessageHandler extends Initializable {
   handle: (peerId: PeerId, msg: Message) => Promise<Message | undefined>
 }
 
@@ -29,7 +29,7 @@ export interface RPCInit {
 }
 
 export class RPC implements Initializable {
-  private readonly handlers: Record<string, DHTMessageHandler & Initializable>
+  private readonly handlers: Record<string, DHTMessageHandler>
   private readonly routingTable: RoutingTable
   private readonly log: Logger
 
