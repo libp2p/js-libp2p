@@ -10,7 +10,6 @@ import { PeerStreams } from '@libp2p/pubsub/peer-streams'
 import { FloodSub, multicodec } from '../src/index.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
-import { CustomEvent } from '@libp2p/interfaces'
 import pWaitFor from 'p-wait-for'
 import { Components } from '@libp2p/interfaces/components'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -63,8 +62,10 @@ describe('floodsub', () => {
     }
 
     floodsub.subscribe(topic)
-    floodsub.addEventListener(topic, () => {
-      callCount++
+    floodsub.addEventListener('message', (evt) => {
+      if (evt.detail.topic === topic) {
+        callCount++
+      }
     })
 
     // the message should not be in the cache
@@ -99,7 +100,7 @@ describe('floodsub', () => {
     }
 
     expect(floodsub.send).to.have.property('callCount', 0)
-    await floodsub.dispatchEvent(new CustomEvent(topic, { detail: message }))
+    floodsub.publish(topic, message)
 
     await pWaitFor(async () => spy.callCount === 1)
 
