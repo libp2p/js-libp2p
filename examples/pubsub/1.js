@@ -7,7 +7,6 @@ import { Noise } from '@chainsafe/libp2p-noise'
 import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { CustomEvent } from '@libp2p/interfaces'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -47,6 +46,6 @@ const createNode = async () => {
 
   // node2 publishes "news" every second
   setInterval(() => {
-    node2.pubsub.dispatchEvent(new CustomEvent(topic, { detail: uint8ArrayFromString('Bird bird bird, bird is the word!') }))
+    node2.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!'))
   }, 1000)
 })()
