@@ -29,6 +29,7 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
+import { pEvent } from 'p-event'
 
 const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999')
 
@@ -430,19 +431,15 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     const identifySpy = sinon.spy(libp2p.identifyService, 'identify')
     const protobookSetSpy = sinon.spy(libp2p.components.getPeerStore().protoBook, 'set')
-    const connectionPromise = pDefer()
+    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
 
     await libp2p.start()
-
-    libp2p.connectionManager.addEventListener('peer:connect', () => {
-      connectionPromise.resolve()
-    }, { once: true })
 
     const connection = await libp2p.dial(MULTIADDRS_WEBSOCKETS[0])
     expect(connection).to.exist()
 
     // Wait for connection event to be emitted
-    await connectionPromise.promise
+    await connectionPromise
 
     expect(identifySpy.callCount).to.equal(1)
     await identifySpy.firstCall.returnValue
