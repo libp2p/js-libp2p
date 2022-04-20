@@ -44,13 +44,15 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import errCode from 'err-code'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import type { Metrics } from '@libp2p/interfaces/metrics'
+import { DummyDHT } from './dht/dummy-dht.js'
+import { DummyPubSub } from './pubsub/dummy-pubsub.js'
 
 const log = logger('libp2p')
 
 export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public peerId: PeerId
-  public dht?: DualDHT
-  public pubsub?: PubSub
+  public dht: DualDHT
+  public pubsub: PubSub
   public identifyService?: IdentifyService
   public fetchService: FetchService
   public pingService: PingService
@@ -168,11 +170,15 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     // dht provided components (peerRouting, contentRouting, dht)
     if (init.dht != null) {
       this.dht = this.components.setDHT(this.configureComponent(init.dht))
+    } else {
+      this.dht = new DummyDHT()
     }
 
     // Create pubsub if provided
     if (init.pubsub != null) {
       this.pubsub = this.components.setPubSub(this.configureComponent(init.pubsub))
+    } else {
+      this.pubsub = new DummyPubSub()
     }
 
     // Attach remaining APIs
@@ -180,7 +186,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     const peerRouters: PeerRouting[] = (init.peerRouters ?? []).map(component => this.configureComponent(component))
 
-    if (this.dht != null) {
+    if (init.dht != null) {
       // add dht to routers
       peerRouters.push(this.configureComponent(new DHTPeerRouting(this.dht)))
 
@@ -197,7 +203,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     const contentRouters: ContentRouting[] = (init.contentRouters ?? []).map(component => this.configureComponent(component))
 
-    if (this.dht != null) {
+    if (init.dht != null) {
       // add dht to routers
       contentRouters.push(this.configureComponent(new DHTContentRouting(this.dht)))
     }
