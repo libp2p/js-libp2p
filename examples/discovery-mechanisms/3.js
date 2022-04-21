@@ -4,7 +4,7 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
+import { FloodSub } from '@libp2p/floodsub'
 import { Bootstrap } from '@libp2p/bootstrap'
 import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 
@@ -16,7 +16,7 @@ const createNode = async (bootstrappers) => {
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()],
-    pubsub: new Gossipsub(),
+    pubsub: new FloodSub(),
     peerDiscovery: [
       new Bootstrap({
         list: bootstrappers

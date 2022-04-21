@@ -4,7 +4,7 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
+import { FloodSub } from '@libp2p/floodsub'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
@@ -16,7 +16,7 @@ const createNode = async () => {
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()],
-    pubsub: new Gossipsub()
+    pubsub: new FloodSub()
   })
 
   await node.start()
