@@ -44,7 +44,7 @@ const createNode = async () => {
     // Will not receive own published messages by default
     console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
-  await node1.pubsub.subscribe(topic)
+  node1.pubsub.subscribe(topic)
 
   node2.pubsub.addEventListener(topic, (evt) => {
     console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)}`)

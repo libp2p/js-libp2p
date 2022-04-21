@@ -35,13 +35,15 @@ const createNode = async () => {
   await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
   await node1.dial(node2.peerId)
 
-  node1.pubsub.addEventListener(topic, (evt) => {
-    console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)}`)
+  node1.pubsub.subscribe(topic)
+  node1.pubsub.addEventListener('message', (evt) => {
+    console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)} on topic ${evt.detail.topic}`)
   })
 
   // Will not receive own published messages by default
-  node2.pubsub.addEventListener(topic, (evt) => {
-    console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)}`)
+  node2.pubsub.subscribe(topic)
+  node2.pubsub.addEventListener('message', (evt) => {
+    console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)} on topic ${evt.detail.topic}`)
   })
 
   // node2 publishes "news" every second

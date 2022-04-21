@@ -40,7 +40,7 @@ const createNode = async (bootstrappers) => {
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()],
-    pubsub: new Gossipsub(),
+    pubsub: new FloodSub(),
     peerDiscovery: [
       new PubSubPeerDiscovery({
         interval: 1000
