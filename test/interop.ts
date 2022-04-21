@@ -17,7 +17,6 @@ import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { FloodSub } from '@libp2p/floodsub'
-import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
 
 // IPFS_LOGGING=debug DEBUG=libp2p*,go-libp2p:* npm run test:interop
 
@@ -122,7 +121,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     if (options.pubsubRouter === 'floodsub') {
       opts.pubsub = new FloodSub()
     } else {
-      opts.pubsub = new Gossipsub()
+      opts.pubsub = new FloodSub()
     }
   }
 

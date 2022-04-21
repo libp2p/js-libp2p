@@ -154,9 +154,8 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   connectionManager: ConnectionManager
   registrar: Registrar
   metrics?: Metrics
-
-  pubsub?: PubSub
-  dht?: DualDHT
+  pubsub: PubSub
+  dht: DualDHT
 
   /**
    * Load keychain keys from the datastore.
