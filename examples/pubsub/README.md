@@ -69,7 +69,9 @@ await node2.pubsub.subscribe(topic)
 
 // node2 publishes "news" every second
 setInterval(() => {
-  node2.pubsub.publish(topic, fromString('Bird bird bird, bird is the word!'))
+  node2.pubsub.publish(topic, fromString('Bird bird bird, bird is the word!')).catch(err => {
+    console.error(err)
+  })
 }, 1000)
 ```
 

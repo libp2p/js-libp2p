@@ -74,7 +74,9 @@ const createNode = async () => {
   // car is not a fruit !
   setInterval(() => {
     console.log('############## fruit ' + myFruits[count] + ' ##############')
-    node1.pubsub.publish(topic, uint8ArrayFromString(myFruits[count]))
+    node1.pubsub.publish(topic, uint8ArrayFromString(myFruits[count])).catch(err => {
+      console.info(err)
+    })
     count++
     if (count == myFruits.length) {
       count = 0

@@ -1,6 +1,6 @@
 import { EventEmitter } from '@libp2p/interfaces'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PubSub, PubSubEvents, StrictNoSign, StrictSign } from '@libp2p/interfaces/pubsub'
+import type { PublishResult, PubSub, PubSubEvents, StrictNoSign, StrictSign } from '@libp2p/interfaces/pubsub'
 import errCode from 'err-code'
 import { messages, codes } from '../errors.js'
 
@@ -45,7 +45,7 @@ export class DummyPubSub extends EventEmitter<PubSubEvents> implements PubSub {
     throw errCode(new Error(messages.PUBSUB_DISABLED), codes.ERR_PUBSUB_DISABLED)
   }
 
-  publish (): void {
+  async publish (): Promise<PublishResult> {
     throw errCode(new Error(messages.PUBSUB_DISABLED), codes.ERR_PUBSUB_DISABLED)
   }
 }
