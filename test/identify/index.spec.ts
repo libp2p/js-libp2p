@@ -496,9 +496,12 @@ describe('Identify', () => {
 
       const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
       const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-
+      const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
       const connection = await libp2p.dial(remoteAddr)
+
       expect(connection).to.exist()
+      // Wait for connection event to be emitted
+      await connectionPromise
 
       // Wait for identify to finish
       await identityServiceIdentifySpy.firstCall.returnValue
@@ -560,9 +563,12 @@ describe('Identify', () => {
 
       const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
       const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-
+      const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
       const connection = await libp2p.dial(remoteAddr)
+
       expect(connection).to.exist()
+      // Wait for connection event to be emitted
+      await connectionPromise
 
       // Wait for identify to finish
       await identityServiceIdentifySpy.firstCall.returnValue

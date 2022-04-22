@@ -26,6 +26,7 @@ import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/i
 import type { Stream } from '@libp2p/interfaces/connection'
 import pDefer from 'p-defer'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
+import { pEvent } from 'p-event'
 
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -495,10 +496,12 @@ describe('libp2p.upgrader', () => {
     const connectionManagerDispatchEventSpy = sinon.spy(libp2p.components.getConnectionManager(), 'dispatchEvent')
 
     // Upgrade and check the connect event
+    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
     const connections = await Promise.all([
       libp2p.components.getUpgrader().upgradeOutbound(outbound),
       remoteLibp2p.components.getUpgrader().upgradeInbound(inbound)
     ])
+    await connectionPromise
     expect(connectionManagerDispatchEventSpy.callCount).to.equal(1)
 
     let [event] = connectionManagerDispatchEventSpy.getCall(0).args
