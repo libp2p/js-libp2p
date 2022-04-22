@@ -45,7 +45,7 @@ export class DummyPubSub extends EventEmitter<PubSubEvents> implements PubSub {
     throw errCode(new Error(messages.PUBSUB_DISABLED), codes.ERR_PUBSUB_DISABLED)
   }
 
-  publish (): Promise<PublishResult> {
+  async publish (): Promise<PublishResult> {
     throw errCode(new Error(messages.PUBSUB_DISABLED), codes.ERR_PUBSUB_DISABLED)
   }
 }
