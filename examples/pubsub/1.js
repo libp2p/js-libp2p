@@ -48,6 +48,8 @@ const createNode = async () => {
 
   // node2 publishes "news" every second
   setInterval(() => {
-    node2.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!'))
+    node2.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
+      console.error(err)
+    })
   }, 1000)
 })()

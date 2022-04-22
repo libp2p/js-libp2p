@@ -114,13 +114,7 @@ describe('Identify', () => {
     await localIdentify.start()
     await remoteIdentify.start()
 
-    const [localToRemote] = connectionPair({
-      peerId: localComponents.getPeerId(),
-      registrar: localComponents.getRegistrar()
-    }, {
-      peerId: remoteComponents.getPeerId(),
-      registrar: remoteComponents.getRegistrar()
-    })
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     const localAddressBookConsumePeerRecordSpy = sinon.spy(localComponents.getPeerStore().addressBook, 'consumePeerRecord')
     const localProtoBookSetSpy = sinon.spy(localComponents.getPeerStore().protoBook, 'set')
@@ -161,13 +155,7 @@ describe('Identify', () => {
     })
     await remoteIdentify.start()
 
-    const [localToRemote] = connectionPair({
-      peerId: localComponents.getPeerId(),
-      registrar: localComponents.getRegistrar()
-    }, {
-      peerId: remoteComponents.getPeerId(),
-      registrar: remoteComponents.getRegistrar()
-    })
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     sinon.stub(localComponents.getPeerStore().addressBook, 'consumePeerRecord').throws()
 
@@ -194,13 +182,7 @@ describe('Identify', () => {
     await localIdentify.start()
     await remoteIdentify.start()
 
-    const [localToRemote] = connectionPair({
-      peerId: localComponents.getPeerId(),
-      registrar: localComponents.getRegistrar()
-    }, {
-      peerId: remoteComponents.getPeerId(),
-      registrar: remoteComponents.getRegistrar()
-    })
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     // send an invalid message
     await remoteComponents.getRegistrar().unhandle(MULTICODEC_IDENTIFY)
@@ -267,13 +249,7 @@ describe('Identify', () => {
       await localIdentify.start()
       await remoteIdentify.start()
 
-      const [localToRemote, remoteToLocal] = connectionPair({
-        peerId: localComponents.getPeerId(),
-        registrar: localComponents.getRegistrar()
-      }, {
-        peerId: remoteComponents.getPeerId(),
-        registrar: remoteComponents.getRegistrar()
-      })
+      const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
       // ensure connections are registered by connection manager
       localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
@@ -353,13 +329,7 @@ describe('Identify', () => {
       await localIdentify.start()
       await remoteIdentify.start()
 
-      const [localToRemote, remoteToLocal] = connectionPair({
-        peerId: localComponents.getPeerId(),
-        registrar: localComponents.getRegistrar()
-      }, {
-        peerId: remoteComponents.getPeerId(),
-        registrar: remoteComponents.getRegistrar()
-      })
+      const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
       // ensure connections are registered by connection manager
       localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {

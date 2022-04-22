@@ -90,12 +90,12 @@ describe('Pubsub subscription handlers adapter', () => {
 
     pubsub.subscribe(topic)
     pubsub.addEventListener('message', handler)
-    pubsub.publish(topic, uint8ArrayFromString('useless-data'))
+    await pubsub.publish(topic, uint8ArrayFromString('useless-data'))
     await defer.promise
 
     pubsub.unsubscribe(topic)
     pubsub.removeEventListener('message', handler)
-    pubsub.publish(topic, uint8ArrayFromString('useless-data'))
+    await pubsub.publish(topic, uint8ArrayFromString('useless-data'))
 
     // wait to guarantee that the handler is not called twice
     await delay(100)
