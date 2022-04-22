@@ -100,7 +100,7 @@ describe('floodsub', () => {
     }
 
     expect(floodsub.send).to.have.property('callCount', 0)
-    floodsub.publish(topic, message)
+    await floodsub.publish(topic, message)
 
     await pWaitFor(async () => spy.callCount === 1)
 

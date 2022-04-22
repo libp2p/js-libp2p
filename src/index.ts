@@ -2,7 +2,7 @@ import { toString } from 'uint8arrays/to-string'
 import { PubSubBaseProtocol } from '@libp2p/pubsub'
 import { multicodec } from './config.js'
 import { SimpleTimeCache } from './cache.js'
-import type { PubSub, PubSubInit, Message, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
+import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult } from '@libp2p/interfaces/pubsub'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { logger } from '@libp2p/logger'
 import { RPC } from './message/rpc.js'
@@ -20,7 +20,7 @@ export interface FloodSubInit extends PubSubInit {
  * delivering an API for Publish/Subscribe, but with no CastTree Forming
  * (it just floods the network).
  */
-export class FloodSub extends PubSubBaseProtocol implements PubSub {
+export class FloodSub extends PubSubBaseProtocol {
   public seenCache: SimpleTimeCache<boolean>
 
   constructor (init?: FloodSubInit) {
@@ -83,12 +83,13 @@ export class FloodSub extends PubSubBaseProtocol implements PubSub {
   /**
    * Publish message created. Forward it to the peers.
    */
-  async publishMessage (from: PeerId, message: Message) {
+  async publishMessage (from: PeerId, message: Message): Promise<PublishResult> {
     const peers = this.getSubscribers(message.topic)
+    const recipients: PeerId[] = []
 
     if (peers == null || peers.length === 0) {
       log('no peers are subscribed to topic %s', message.topic)
-      return
+      return { recipients }
     }
 
     peers.forEach(id => {
@@ -104,7 +105,10 @@ export class FloodSub extends PubSubBaseProtocol implements PubSub {
 
       log('publish msgs on topics %s %p', message.topic, id)
 
+      recipients.push(id)
       this.send(id, { messages: [message] })
     })
+
+    return { recipients }
   }
 }
