@@ -150,7 +150,7 @@
     "retimer": "^3.0.0",
     "sanitize-filename": "^1.6.3",
     "set-delayed-interval": "^1.0.0",
-    "streaming-iterables": "^6.0.0",
+    "streaming-iterables": "^7.0.1",
     "timeout-abort-controller": "^3.0.0",
     "uint8arrays": "^3.0.0",
     "varint": "^6.0.0",
