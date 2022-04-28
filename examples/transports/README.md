@@ -21,23 +21,23 @@ Then, in your favorite text editor create a file with the `.js` extension. I've 
 First thing is to create our own libp2p node! Insert:
 
 ```JavaScript
-import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Noise } from '@chainsafe/libp2p-noise'
+'use strict'
+
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const { NOISE } = require('@chainsafe/libp2p-noise')
 
 const createNode = async () => {
-  const node = await createLibp2p({
+  const node = await Libp2p.create({
     addresses: {
       // To signal the addresses we want to be available, we use
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [
-      new TCP()
-    ],
-    connectionEncryption: [
-      new Noise()
-    ]
+    modules: {
+      transport: [ TCP ],
+      connEncryption: [ NOISE ]
+    }
   })
 
   await node.start()
@@ -45,20 +45,28 @@ const createNode = async () => {
 }
 ```
 
-Now that we have a function to create our own libp2p node, let's create a node with it.
+Now that we have a function to create our own libp2p node, let's create a node with it. Inside of the createNode() async function, before the `return node` and after the `await node.start() ` statement, add in some logging:
 
 ```JavaScript
-const node = await createNode()
+const createNode = async () => {
+...
+  await node.start()
 
-// At this point the node has started
-console.log('node has started (true/false):', node.isStarted())
-// And we can print the now listening addresses.
-// If you are familiar with TCP, you might have noticed
-// that we specified the node to listen in 0.0.0.0 and port
-// 0, which means "listen in any network interface and pick
-// a port for me
-console.log('listening on:')
-node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  console.log('node has started (true/false):', node.isStarted())
+  console.log('listening on:')
+  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+
+  return node
+}
+```
+
+Now, you want to call the `createNode()` function, and you can also add in error handling:
+
+```JavaScript
+createNode().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
 ```
 
 Running this should result in something like:
