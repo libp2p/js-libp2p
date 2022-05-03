@@ -154,9 +154,8 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   connectionManager: ConnectionManager
   registrar: Registrar
   metrics?: Metrics
-
-  pubsub?: PubSub
-  dht?: DualDHT
+  pubsub: PubSub
+  dht: DualDHT
 
   /**
    * Load keychain keys from the datastore.
@@ -223,6 +222,12 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
    * Sends a request to fetch the value associated with the given key from the given peer.
    */
   fetch: (peer: PeerId | Multiaddr | string, key: string) => Promise<Uint8Array | null>
+
+  /**
+   * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
+   * this may mean searching the DHT if the key is not present in the KeyStore.
+   */
+  getPublicKey: (peer: PeerId, options?: AbortOptions) => Promise<Uint8Array>
 }
 
 export type Libp2pOptions = RecursivePartial<Libp2pInit>

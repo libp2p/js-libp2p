@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -114,13 +114,7 @@ describe('Identify', () => {
     await localIdentify.start()
     await remoteIdentify.start()
 
-    const [localToRemote] = connectionPair({
-      peerId: localComponents.getPeerId(),
-      registrar: localComponents.getRegistrar()
-    }, {
-      peerId: remoteComponents.getPeerId(),
-      registrar: remoteComponents.getRegistrar()
-    })
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     const localAddressBookConsumePeerRecordSpy = sinon.spy(localComponents.getPeerStore().addressBook, 'consumePeerRecord')
     const localProtoBookSetSpy = sinon.spy(localComponents.getPeerStore().protoBook, 'set')
@@ -161,13 +155,7 @@ describe('Identify', () => {
     })
     await remoteIdentify.start()
 
-    const [localToRemote] = connectionPair({
-      peerId: localComponents.getPeerId(),
-      registrar: localComponents.getRegistrar()
-    }, {
-      peerId: remoteComponents.getPeerId(),
-      registrar: remoteComponents.getRegistrar()
-    })
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     sinon.stub(localComponents.getPeerStore().addressBook, 'consumePeerRecord').throws()
 
@@ -194,13 +182,7 @@ describe('Identify', () => {
     await localIdentify.start()
     await remoteIdentify.start()
 
-    const [localToRemote] = connectionPair({
-      peerId: localComponents.getPeerId(),
-      registrar: localComponents.getRegistrar()
-    }, {
-      peerId: remoteComponents.getPeerId(),
-      registrar: remoteComponents.getRegistrar()
-    })
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     // send an invalid message
     await remoteComponents.getRegistrar().unhandle(MULTICODEC_IDENTIFY)
@@ -218,7 +200,7 @@ describe('Identify', () => {
           signedPeerRecord,
           observedAddr: connection.remoteAddr.bytes,
           protocols: []
-        }).finish()
+        })
 
         await pipe(
           [message],
@@ -267,13 +249,7 @@ describe('Identify', () => {
       await localIdentify.start()
       await remoteIdentify.start()
 
-      const [localToRemote, remoteToLocal] = connectionPair({
-        peerId: localComponents.getPeerId(),
-        registrar: localComponents.getRegistrar()
-      }, {
-        peerId: remoteComponents.getPeerId(),
-        registrar: remoteComponents.getRegistrar()
-      })
+      const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
       // ensure connections are registered by connection manager
       localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
@@ -353,13 +329,7 @@ describe('Identify', () => {
       await localIdentify.start()
       await remoteIdentify.start()
 
-      const [localToRemote, remoteToLocal] = connectionPair({
-        peerId: localComponents.getPeerId(),
-        registrar: localComponents.getRegistrar()
-      }, {
-        peerId: remoteComponents.getPeerId(),
-        registrar: remoteComponents.getRegistrar()
-      })
+      const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
       // ensure connections are registered by connection manager
       localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
@@ -526,9 +496,12 @@ describe('Identify', () => {
 
       const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
       const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-
+      const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
       const connection = await libp2p.dial(remoteAddr)
+
       expect(connection).to.exist()
+      // Wait for connection event to be emitted
+      await connectionPromise
 
       // Wait for identify to finish
       await identityServiceIdentifySpy.firstCall.returnValue
@@ -590,9 +563,12 @@ describe('Identify', () => {
 
       const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
       const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-
+      const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
       const connection = await libp2p.dial(remoteAddr)
+
       expect(connection).to.exist()
+      // Wait for connection event to be emitted
+      await connectionPromise
 
       // Wait for identify to finish
       await identityServiceIdentifySpy.firstCall.returnValue

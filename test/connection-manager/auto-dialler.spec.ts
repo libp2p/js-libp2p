@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { AutoDialler } from '../../src/connection-manager/auto-dialler.js'
 import pWaitFor from 'p-wait-for'
 import delay from 'delay'

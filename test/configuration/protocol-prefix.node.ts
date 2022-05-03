@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import mergeOptions from 'merge-options'
 import { validateConfig } from '../../src/config.js'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'

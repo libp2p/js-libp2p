@@ -4,10 +4,9 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Gossipsub } from '@achingbrain/libp2p-gossipsub'
+import { FloodSub } from '@libp2p/floodsub'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { CustomEvent } from '@libp2p/interfaces'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -17,7 +16,7 @@ const createNode = async () => {
     transports: [new TCP()],
     streamMuxers: [new Mplex()],
     connectionEncryption: [new Noise()],
-    pubsub: new Gossipsub()
+    pubsub: new FloodSub()
   })
 
   await node.start()
@@ -45,7 +44,7 @@ const createNode = async () => {
     // Will not receive own published messages by default
     console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
-  await node1.pubsub.subscribe(topic)
+  node1.pubsub.subscribe(topic)
 
   node2.pubsub.addEventListener(topic, (evt) => {
     console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)}`)
@@ -75,7 +74,9 @@ const createNode = async () => {
   // car is not a fruit !
   setInterval(() => {
     console.log('############## fruit ' + myFruits[count] + ' ##############')
-    node1.pubsub.dispatchEvent(new CustomEvent<Uint8Array>(topic, { detail: uint8ArrayFromString(myFruits[count]) }))
+    node1.pubsub.publish(topic, uint8ArrayFromString(myFruits[count])).catch(err => {
+      console.info(err)
+    })
     count++
     if (count == myFruits.length) {
       count = 0

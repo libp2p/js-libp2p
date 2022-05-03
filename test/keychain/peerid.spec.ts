@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { base58btc } from 'multiformats/bases/base58'
 import { supportedKeys, unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'

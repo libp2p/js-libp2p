@@ -1,13 +1,12 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import mergeOptions from 'merge-options'
 import pDefer from 'p-defer'
 import delay from 'delay'
 import { createLibp2p, Libp2p } from '../../src/index.js'
 import { baseOptions, pubsubSubsystemOptions } from './utils.js'
 import { createPeerId } from '../utils/creators/peer.js'
-import { CustomEvent } from '@libp2p/interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { FloodSub } from '@libp2p/floodsub'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
@@ -21,14 +20,16 @@ describe('Pubsub subsystem is configurable', () => {
     }
   })
 
-  it('should not exist if no module is provided', async () => {
+  it('should throw if no module is provided', async () => {
     libp2p = await createLibp2p(baseOptions)
-    expect(libp2p.pubsub).to.not.exist()
+    await libp2p.start()
+    expect(() => libp2p.pubsub.getTopics()).to.throw()
   })
 
-  it('should exist if the module is provided', async () => {
+  it('should not throw if the module is provided', async () => {
     libp2p = await createLibp2p(pubsubSubsystemOptions)
-    expect(libp2p.pubsub).to.exist()
+    await libp2p.start()
+    expect(libp2p.pubsub.getTopics()).to.be.empty()
   })
 
   it('should start and stop by default once libp2p starts', async () => {
@@ -39,13 +40,13 @@ describe('Pubsub subsystem is configurable', () => {
     })
 
     libp2p = await createLibp2p(customOptions)
-    expect(libp2p.pubsub?.isStarted()).to.equal(false)
+    expect(libp2p.pubsub.isStarted()).to.equal(false)
 
     await libp2p.start()
-    expect(libp2p.pubsub?.isStarted()).to.equal(true)
+    expect(libp2p.pubsub.isStarted()).to.equal(true)
 
     await libp2p.stop()
-    expect(libp2p.pubsub?.isStarted()).to.equal(false)
+    expect(libp2p.pubsub.isStarted()).to.equal(false)
   })
 })
 
@@ -87,16 +88,14 @@ describe('Pubsub subscription handlers adapter', () => {
       throw new Error('Pubsub was not enabled')
     }
 
-    pubsub.addEventListener(topic, handler)
-    pubsub.dispatchEvent(new CustomEvent<Uint8Array>(topic, {
-      detail: uint8ArrayFromString('useless-data')
-    }))
+    pubsub.subscribe(topic)
+    pubsub.addEventListener('message', handler)
+    await pubsub.publish(topic, uint8ArrayFromString('useless-data'))
     await defer.promise
 
-    pubsub.removeEventListener(topic, handler)
-    pubsub.dispatchEvent(new CustomEvent<Uint8Array>(topic, {
-      detail: uint8ArrayFromString('useless-data')
-    }))
+    pubsub.unsubscribe(topic)
+    pubsub.removeEventListener('message', handler)
+    await pubsub.publish(topic, uint8ArrayFromString('useless-data'))
 
     // wait to guarantee that the handler is not called twice
     await delay(100)

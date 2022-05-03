@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createNode } from '../utils/creators/peer.js'

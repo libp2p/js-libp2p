@@ -75,8 +75,7 @@ export class FetchService implements Startable {
     const shake = handshake(stream)
 
     // send message
-    const request = new FetchRequest({ identifier: key })
-    shake.write(lp.encode.single(FetchRequest.encode(request).finish()).slice())
+    shake.write(lp.encode.single(FetchRequest.encode({ identifier: key })).slice())
 
     // read response
     // @ts-expect-error fromReader returns a Source which has no .next method
@@ -109,21 +108,21 @@ export class FetchService implements Startable {
     // @ts-expect-error fromReader returns a Source which has no .next method
     const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
 
-    let response
+    let response: FetchResponse
     const lookup = this._getLookupFunction(request.identifier)
     if (lookup != null) {
       const data = await lookup(request.identifier)
       if (data != null) {
-        response = new FetchResponse({ status: FetchResponse.StatusCode.OK, data })
+        response = { status: FetchResponse.StatusCode.OK, data }
       } else {
-        response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
+        response = { status: FetchResponse.StatusCode.NOT_FOUND, data: new Uint8Array(0) }
       }
     } else {
       const errmsg = (new TextEncoder()).encode('No lookup function registered for key: ' + request.identifier)
-      response = new FetchResponse({ status: FetchResponse.StatusCode.ERROR, data: errmsg })
+      response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
     }
 
-    shake.write(lp.encode.single(FetchResponse.encode(response).finish()).slice())
+    shake.write(lp.encode.single(FetchResponse.encode(response)).slice())
   }
 
   /**

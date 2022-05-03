@@ -5,7 +5,7 @@ import { WebSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import mergeOptions from 'merge-options'
-import type { Message, PubSubInit, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
+import type { Message, PublishResult, PubSubInit, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
 import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import * as cborg from 'cborg'
@@ -44,11 +44,12 @@ class MockPubSub extends PubSubBaseProtocol {
     return cborg.encode(rpc)
   }
 
-  async publishMessage (from: PeerId, message: Message): Promise<void> {
+  async publishMessage (from: PeerId, message: Message): Promise<PublishResult> {
     const peers = this.getSubscribers(message.topic)
+    const recipients: PeerId[] = []
 
     if (peers == null || peers.length === 0) {
-      return
+      return { recipients }
     }
 
     peers.forEach(id => {
@@ -60,8 +61,11 @@ class MockPubSub extends PubSubBaseProtocol {
         return
       }
 
+      recipients.push(id)
       this.send(id, { messages: [message] })
     })
+
+    return { recipients }
   }
 }
 

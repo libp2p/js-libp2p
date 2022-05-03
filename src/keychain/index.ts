@@ -171,7 +171,7 @@ export class KeyChain {
   /**
    * Generates the options for a keychain.  A random salt is produced.
    *
-   * @returns {Object}
+   * @returns {object}
    */
   static generateOptions (): KeyChainInit {
     const options = Object.assign({}, defaultOptions)
@@ -184,7 +184,7 @@ export class KeyChain {
    * Gets an object that can encrypt/decrypt protected data.
    * The default options for a keychain.
    *
-   * @returns {Object}
+   * @returns {object}
    */
   static get options () {
     return defaultOptions

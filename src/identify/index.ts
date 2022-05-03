@@ -8,7 +8,7 @@ import drain from 'it-drain'
 import first from 'it-first'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Multiaddr, protocols } from '@multiformats/multiaddr'
-import Message from './pb/message.js'
+import { Identify } from './pb/message.js'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import {
   MULTICODEC_IDENTIFY,
@@ -132,11 +132,11 @@ export class IdentifyService implements Startable {
         const { stream } = await connection.newStream([this.identifyPushProtocolStr])
 
         await pipe(
-          [Message.Identify.encode({
+          [Identify.encode({
             listenAddrs,
             signedPeerRecord,
             protocols
-          }).finish()],
+          })],
           lp.encode(),
           stream,
           drain
@@ -194,9 +194,9 @@ export class IdentifyService implements Startable {
       throw errCode(new Error('No data could be retrieved'), codes.ERR_CONNECTION_ENDED)
     }
 
-    let message
+    let message: Identify
     try {
-      message = Message.Identify.decode(data)
+      message = Identify.decode(data)
     } catch (err: any) {
       throw errCode(err, codes.ERR_INVALID_MESSAGE)
     }
@@ -325,7 +325,7 @@ export class IdentifyService implements Startable {
         signedPeerRecord = envelope.marshal()
       }
 
-      const message = Message.Identify.encode({
+      const message = Identify.encode({
         protocolVersion: this.host.protocolVersion,
         agentVersion: this.host.agentVersion,
         publicKey,
@@ -333,7 +333,7 @@ export class IdentifyService implements Startable {
         signedPeerRecord,
         observedAddr: connection.remoteAddr.bytes,
         protocols: peerData.protocols
-      }).finish()
+      })
 
       await pipe(
         [message],
@@ -352,7 +352,7 @@ export class IdentifyService implements Startable {
   async _handlePush (data: IncomingStreamData) {
     const { connection, stream } = data
 
-    let message
+    let message: Identify | undefined
     try {
       const data = await pipe(
         [],
@@ -362,7 +362,7 @@ export class IdentifyService implements Startable {
       )
 
       if (data != null) {
-        message = Message.Identify.decode(data)
+        message = Identify.decode(data)
       }
     } catch (err: any) {
       return log.error('received invalid message', err)
@@ -442,4 +442,4 @@ export const multicodecs = {
   IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH
 }
 
-export { Message }
+export const Message = { Identify }

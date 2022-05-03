@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import pTimes from 'p-times'
 import { pipe } from 'it-pipe'
 import { createNode, populateAddressBooks } from '../utils/creators/peer.js'
