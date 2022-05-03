@@ -196,7 +196,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
   }
 
   async onPeerConnect (peerData: PeerInfo) {
-    this.log('peer %p connected', peerData.id)
+    this.log('peer %p connected with protocols %s', peerData.id, peerData.protocols)
 
     if (this.lan) {
       peerData = removePublicAddresses(peerData)
@@ -242,7 +242,6 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
     } else {
       this.log('enabling server mode')
       this.clientMode = false
-
       await this.components.getRegistrar().handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc))
     }
   }

@@ -98,7 +98,7 @@ export class RPC implements Initializable {
         source => (async function * () {
           for await (const msg of source) {
             // handle the message
-            const desMessage = Message.deserialize(msg.slice())
+            const desMessage = Message.deserialize(msg)
             self.log('incoming %s from %p', desMessage.type, peerId)
             const res = await self.handleMessage(peerId, desMessage)
 

@@ -750,9 +750,13 @@ describe('KadDHT', () => {
         new Array(nDHTs).fill(0).map(async () => await tdht.spawn())
       )
 
+      const connected: Array<Promise<void>> = []
+
       for (let i = 0; i < dhts.length - 1; i++) {
-        await tdht.connect(dhts[i], dhts[(i + 1) % dhts.length])
+        connected.push(tdht.connect(dhts[i], dhts[(i + 1) % dhts.length]))
       }
+
+      await Promise.all(connected)
 
       const res = await all(filter(dhts[1].getClosestPeers(uint8ArrayFromString('foo')), event => event.name === 'FINAL_PEER'))
 
@@ -785,16 +789,16 @@ describe('KadDHT', () => {
         tdht.spawn(),
         tdht.spawn()
       ])
-      const stub = sinon.stub(dhtA.components.getDialer(), 'dialProtocol').rejects(error)
 
       await tdht.connect(dhtA, dhtB)
 
+      const stub = sinon.stub(dhtA.components.getConnectionManager(), 'openConnection').rejects(error)
+
       const errors = await all(filter(dhtA.get(uint8ArrayFromString('/v/hello')), event => event.name === 'QUERY_ERROR'))
 
-      expect(errors).to.have.lengthOf(3)
+      expect(errors).to.have.lengthOf(2)
       expect(errors).to.have.nested.property('[0].error.code', errCode)
-      expect(errors).to.have.nested.property('[1].error.code', errCode)
-      expect(errors).to.have.nested.property('[2].error.code', 'ERR_NOT_FOUND')
+      expect(errors).to.have.nested.property('[1].error.code', 'ERR_NOT_FOUND')
 
       stub.restore()
     })

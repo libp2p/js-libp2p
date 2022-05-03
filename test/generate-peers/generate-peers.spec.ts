@@ -11,9 +11,9 @@ import {
 } from '../../src/utils.js'
 import { Components } from '@libp2p/interfaces/components'
 import { stubInterface } from 'ts-sinon'
-import type { Dialer } from '@libp2p/interfaces/dialer'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -54,7 +54,7 @@ describe.skip('generate peers', function () {
 
     const components = new Components({
       peerId: id,
-      dialer: stubInterface<Dialer>()
+      connectionManager: stubInterface<ConnectionManager>()
     })
     const table = new RoutingTable({
       kBucketSize: 20,

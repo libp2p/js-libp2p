@@ -56,7 +56,7 @@ export class TopologyListener extends EventEmitter<TopologyListenerEvents> imple
     // register protocol with topology
     const topology = createTopology({
       onConnect: (peerId) => {
-        this.log('observed peer %p with protocol %s', this.protocol, peerId)
+        this.log('observed peer %p with protocol %s', peerId, this.protocol)
         this.dispatchEvent(new CustomEvent('peer', {
           detail: peerId
         }))

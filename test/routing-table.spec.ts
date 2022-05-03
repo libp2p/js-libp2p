@@ -9,6 +9,7 @@ import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { PROTOCOL_DHT } from '../src/constants.js'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { Components } from '@libp2p/interfaces/components'
+import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 
 describe('Routing Table', () => {
   let table: RoutingTable
@@ -19,10 +20,7 @@ describe('Routing Table', () => {
 
     components = new Components({
       peerId: await createPeerId(),
-      dialer: {
-        dialProtocol: sinon.stub(),
-        dial: sinon.stub()
-      }
+      connectionManager: mockConnectionManager()
     })
 
     table = new RoutingTable({
@@ -127,8 +125,11 @@ describe('Routing Table', () => {
     table.kb.add(oldPeer)
 
     // simulate connection succeeding
-    const dialProtocolStub = sinon.stub().withArgs(oldPeer.peer, PROTOCOL_DHT).resolves({ stream: { close: sinon.stub() } })
-    components.getDialer().dialProtocol = dialProtocolStub
+    const newStreamStub = sinon.stub().withArgs(PROTOCOL_DHT).resolves({ stream: { close: sinon.stub() } })
+    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves({
+      newStream: newStreamStub
+    })
+    components.getConnectionManager().openConnection = openConnectionStub
 
     if (fn == null) {
       throw new Error('nothing added to queue')
@@ -137,8 +138,11 @@ describe('Routing Table', () => {
     // perform the ping
     await fn()
 
-    expect(dialProtocolStub.callCount).to.equal(1)
-    expect(dialProtocolStub.calledWith(oldPeer.peer)).to.be.true()
+    expect(openConnectionStub.calledOnce).to.be.true()
+    expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()
+
+    expect(newStreamStub.callCount).to.equal(1)
+    expect(newStreamStub.calledWith(PROTOCOL_DHT)).to.be.true()
 
     // did not add the new peer
     expect(table.kb.get(newPeer.id)).to.be.null()
@@ -183,8 +187,8 @@ describe('Routing Table', () => {
     table.kb.add(oldPeer)
 
     // libp2p fails to dial the old peer
-    const dialProtocolStub = sinon.stub().withArgs(oldPeer.peer, PROTOCOL_DHT).rejects(new Error('Could not dial peer'))
-    components.getDialer().dialProtocol = dialProtocolStub
+    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).rejects(new Error('Could not dial peer'))
+    components.getConnectionManager().openConnection = openConnectionStub
 
     if (fn == null) {
       throw new Error('nothing added to queue')
@@ -193,8 +197,8 @@ describe('Routing Table', () => {
     // perform the ping
     await fn()
 
-    expect(dialProtocolStub.callCount).to.equal(1)
-    expect(dialProtocolStub.calledWith(oldPeer.peer)).to.be.true()
+    expect(openConnectionStub.callCount).to.equal(1)
+    expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()
 
     // added the new peer
     expect(table.kb.get(newPeer.id)).to.not.be.null()

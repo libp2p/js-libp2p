@@ -42,9 +42,9 @@ describe('rpc - handlers - GetProviders', () => {
 
     const components = new Components({
       peerId,
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      peerStore: new PersistentPeerStore()
     })
-    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
 
     handler = new GetProvidersHandler({
       peerRouting,

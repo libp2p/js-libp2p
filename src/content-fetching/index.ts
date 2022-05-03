@@ -163,6 +163,7 @@ export class ContentFetching implements Initializable {
           const msg = new Message(MESSAGE_TYPE.PUT_VALUE, key, 0)
           msg.record = Libp2pRecord.deserialize(record)
 
+          this.log('send put to %p', event.peer.id)
           for await (const putEvent of this.network.sendRequest(event.peer.id, msg, options)) {
             events.push(putEvent)
 

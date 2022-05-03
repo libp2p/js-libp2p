@@ -21,6 +21,7 @@ import { RoutingTable } from '../../src/routing-table/index.js'
 import type { Duplex } from 'it-stream-types'
 import { mockStream, mockConnection, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { Components } from '@libp2p/interfaces/components'
+import { start } from '@libp2p/interface-compliance-tests'
 
 describe('rpc', () => {
   let peerId: PeerId
@@ -39,10 +40,11 @@ describe('rpc', () => {
 
     const components = new Components({
       peerId,
-      datastore
+      datastore,
+      peerStore: new PersistentPeerStore()
     })
 
-    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
+    await start(components)
 
     providers = Sinon.createStubInstance(Providers)
     peerRouting = Sinon.createStubInstance(PeerRouting)

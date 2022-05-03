@@ -1,12 +1,9 @@
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import pRetry from 'p-retry'
-import delay from 'delay'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from './create-peer-id.js'
 import { MemoryDatastore } from 'datastore-core/memory'
-import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
-import { mockRegistrar, connectionPair, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
-import type { Dialer } from '@libp2p/interfaces/dialer'
+import { mockRegistrar, mockConnectionGater, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import type { Registrar } from '@libp2p/interfaces/registrar'
 import { KadDHT } from '../../src/kad-dht.js'
 import { DualKadDHT } from '../../src/dual-kad-dht.js'
@@ -15,6 +12,8 @@ import { Components } from '@libp2p/interfaces/components'
 import type { KadDHTInit } from '../../src/index.js'
 import type { AddressManager } from '@libp2p/interfaces'
 import { stubInterface } from 'ts-sinon'
+import { start } from '@libp2p/interface-compliance-tests'
+import delay from 'delay'
 
 const log = logger('libp2p:kad-dht:test-dht')
 
@@ -30,76 +29,14 @@ export class TestDHT {
       peerId: await createPeerId(),
       connectionGater: mockConnectionGater(),
       datastore: new MemoryDatastore(),
-      registrar: mockRegistrar()
+      registrar: mockRegistrar(),
+      peerStore: new PersistentPeerStore(),
+      connectionManager: mockConnectionManager()
     })
-    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
 
-    const connectToPeer = async (localDHT: DualKadDHT, peerId: PeerId | Multiaddr, protocols: string | string[]) => {
-      const protocol = Array.isArray(protocols) ? protocols[0] : protocols
-      const peer = this.peers.get(peerId.toString())
+    await start(components)
 
-      if (!isPeerId(peerId)) {
-        throw new Error('PeerId cannot be Multiaddr')
-      }
-
-      if (peer == null) {
-        throw new Error(`No DHT found for peer ${peerId.toString()}`)
-      }
-
-      const { dht: remoteDht, registrar: remoteRegistrar } = peer
-
-      if (protocol === dht.wan.protocol && (await remoteDht.getMode()) === 'client') {
-        throw new Error(`Cannot connect to remote DHT wan client ${remoteDht.components.getPeerId().toString()} on protocol ${protocol} as it is in client mode`)
-      }
-
-      const localTopology = components.getRegistrar().getTopologies(protocol)[0]
-      const remoteTopology = remoteRegistrar.getTopologies(protocol)[0]
-      const remoteHandler = remoteRegistrar.getHandler(protocol)
-
-      if (localTopology == null) {
-        throw new Error('Local topology not registered with registrar')
-      }
-
-      if (remoteTopology == null) {
-        throw new Error('Remote topology not registered with registrar')
-      }
-
-      if (remoteHandler == null) {
-        throw new Error('Remote handler not registered with registrar')
-      }
-
-      // Notice peers of connection
-      const [peerAtoPeerB, peerBtoPeerA] = await connectionPair({
-        peerId: localDHT.components.getPeerId(),
-        registrar: components.getRegistrar()
-      }, {
-        peerId,
-        registrar: remoteRegistrar
-      })
-
-      // Trigger on connect for servers connecting
-      await localTopology.onConnect(peerId, peerAtoPeerB)
-
-      if ((await localDHT.getMode()) !== 'client') {
-        await remoteTopology.onConnect(peerId, peerBtoPeerA)
-      }
-
-      await remoteHandler({
-        protocol: protocol,
-        stream: (await peerBtoPeerA.newStream([protocol])).stream,
-        connection: peerBtoPeerA
-      })
-
-      return await peerAtoPeerB.newStream([protocol])
-    }
-
-    const dialer: Dialer = {
-      dial: () => {
-        throw new Error('Not implemented')
-      },
-      dialProtocol: async (peer: PeerId | Multiaddr, protocol: string | string[]) => await connectToPeer(dht, peer, protocol)
-    }
-    components.setDialer(dialer)
+    mockNetwork.addNode(components)
 
     const addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([
@@ -168,33 +105,23 @@ export class TestDHT {
   }
 
   async connect (dhtA: DualKadDHT, dhtB: DualKadDHT) {
-    const [peerAtoPeerB, peerBToPeerA] = await connectionPair({
-      peerId: dhtA.components.getPeerId(),
-      registrar: dhtA.components.getRegistrar()
-    }, {
-      peerId: dhtB.components.getPeerId(),
-      registrar: dhtB.components.getRegistrar()
-    })
-
-    // Libp2p dial adds multiaddrs to the addressBook
+    // need addresses in the address book otherwise we won't know whether to add
+    // the peer to the public or private DHT and will do nothing
     await dhtA.components.getPeerStore().addressBook.add(dhtB.components.getPeerId(), dhtB.components.getAddressManager().getAddresses())
     await dhtB.components.getPeerStore().addressBook.add(dhtA.components.getPeerId(), dhtA.components.getAddressManager().getAddresses())
 
-    // Notice peers of connection
-    await connectDHT(dhtA.lan, dhtB.lan)
-    await connectDHT(dhtA.wan, dhtB.wan)
+    await dhtA.components.getConnectionManager().openConnection(dhtB.components.getPeerId())
 
-    async function connectDHT (a: KadDHT, b: KadDHT) {
-      const topologyA = a.components.getRegistrar().getTopologies(a.protocol)[0]
-      const topologyB = b.components.getRegistrar().getTopologies(b.protocol)[0]
+    // wait for peers to appear in each others' routing tables
+    await checkConnected(dhtA.lan, dhtB.lan)
 
-      if (topologyA == null || topologyB == null) {
-        throw new Error(`Topologies were not registered for protocol ${a.protocol}`)
-      }
+    // only wait for WANs to connect if we are in server mode
+    if ((await dhtA.wan.getMode()) === 'server' && (await dhtB.wan.getMode()) === 'server') {
+      await checkConnected(dhtA.wan, dhtB.wan)
+    }
 
+    async function checkConnected (a: KadDHT, b: KadDHT) {
       const routingTableChecks = []
-
-      await topologyA.onConnect(dhtB.components.getPeerId(), peerAtoPeerB)
 
       routingTableChecks.push(async () => {
         const match = await a.routingTable.find(dhtB.components.getPeerId())
@@ -206,8 +133,6 @@ export class TestDHT {
 
         return match
       })
-
-      await topologyB.onConnect(dhtA.components.getPeerId(), peerBToPeerA)
 
       routingTableChecks.push(async () => {
         const match = await b.routingTable.find(dhtA.components.getPeerId())

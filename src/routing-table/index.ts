@@ -128,9 +128,10 @@ export class RoutingTable implements Startable, Initializable {
               timeoutController = new TimeoutController(this.pingTimeout)
 
               this.log('pinging old contact %p', oldContact.peer)
-              const { stream } = await this.components.getDialer().dialProtocol(oldContact.peer, PROTOCOL_DHT, {
+              const connection = await this.components.getConnectionManager().openConnection(oldContact.peer, {
                 signal: timeoutController.signal
               })
+              const { stream } = await connection.newStream(PROTOCOL_DHT)
               await stream.close()
               responded++
             } catch (err: any) {

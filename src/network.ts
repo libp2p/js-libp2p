@@ -18,6 +18,8 @@ import type { Logger } from '@libp2p/logger'
 import type { Duplex } from 'it-stream-types'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { Components, Initializable } from '@libp2p/interfaces/components'
+import type { Stream } from '@libp2p/interfaces/connection'
+import { abortableDuplex } from 'abortable-iterator'
 
 export interface NetworkInit {
   protocol: string
@@ -87,15 +89,17 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
     }
 
     this.log('sending %s to %p', msg.type, to)
+    yield dialingPeerEvent({ peer: to })
+    yield sendingQueryEvent({ to, type: msg.type })
+
+    let stream: Stream | undefined
 
     try {
-      yield dialingPeerEvent({ peer: to })
+      const connection = await this.components.getConnectionManager().openConnection(to, options)
+      const streamData = await connection.newStream(this.protocol)
+      stream = streamData.stream
 
-      const { stream } = await this.components.getDialer().dialProtocol(to, this.protocol, options)
-
-      yield sendingQueryEvent({ to, type: msg.type })
-
-      const response = await this._writeReadMessage(stream, msg.serialize())
+      const response = await this._writeReadMessage(stream, msg.serialize(), options)
 
       yield peerResponseEvent({
         from: to,
@@ -106,6 +110,10 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
       })
     } catch (err: any) {
       yield queryErrorEvent({ from: to, error: err })
+    } finally {
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 
@@ -118,26 +126,36 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
     }
 
     this.log('sending %s to %p', msg.type, to)
-
     yield dialingPeerEvent({ peer: to })
-
-    const { stream } = await this.components.getDialer().dialProtocol(to, this.protocol, options)
-
     yield sendingQueryEvent({ to, type: msg.type })
 
+    let stream: Stream | undefined
+
     try {
-      await this._writeMessage(stream, msg.serialize())
+      const connection = await this.components.getConnectionManager().openConnection(to, options)
+      const data = await connection.newStream(this.protocol)
+      stream = data.stream
+
+      await this._writeMessage(stream, msg.serialize(), options)
 
       yield peerResponseEvent({ from: to, messageType: msg.type })
     } catch (err: any) {
       yield queryErrorEvent({ from: to, error: err })
+    } finally {
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 
   /**
    * Write a message to the given stream
    */
-  async _writeMessage (stream: Duplex<Uint8Array>, msg: Uint8Array) {
+  async _writeMessage (stream: Duplex<Uint8Array>, msg: Uint8Array, options: AbortOptions) {
+    if (options.signal != null) {
+      stream = abortableDuplex(stream, options.signal)
+    }
+
     await pipe(
       [msg],
       lp.encode(),
@@ -151,7 +169,11 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
    * If no response is received after the specified timeout
    * this will error out.
    */
-  async _writeReadMessage (stream: Duplex<Uint8Array>, msg: Uint8Array) {
+  async _writeReadMessage (stream: Duplex<Uint8Array>, msg: Uint8Array, options: AbortOptions) {
+    if (options.signal != null) {
+      stream = abortableDuplex(stream, options.signal)
+    }
+
     const res = await pipe(
       [msg],
       lp.encode(),

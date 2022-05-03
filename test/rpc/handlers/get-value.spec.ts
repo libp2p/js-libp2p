@@ -39,9 +39,9 @@ describe('rpc - handlers - GetValue', () => {
 
     const components = new Components({
       peerId,
-      datastore
+      datastore,
+      peerStore: new PersistentPeerStore()
     })
-    components.setPeerStore(new PersistentPeerStore(components, { addressFilter: async () => true }))
 
     handler = new GetValueHandler({
       peerRouting
