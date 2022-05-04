@@ -1,6 +1,6 @@
 import { Multiaddr } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/mafmt'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
