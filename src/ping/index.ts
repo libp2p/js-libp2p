@@ -63,7 +63,8 @@ export class PingService implements Startable {
   async ping (peer: PeerId): Promise<number> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const { stream } = await this.components.getDialer().dialProtocol(peer, this.protocol)
+    const connection = await this.components.getConnectionManager().openConnection(peer)
+    const { stream } = await connection.newStream([this.protocol])
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
 

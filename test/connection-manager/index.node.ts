@@ -18,6 +18,7 @@ import type { Connection } from '@libp2p/interfaces/connection'
 import delay from 'delay'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { codes } from '../../src/errors.js'
+import { start } from '@libp2p/interface-compliance-tests'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p
@@ -50,9 +51,14 @@ describe('Connection Manager', () => {
     const peerStore = stubInterface<PeerStore>()
     peerStore.keyBook = stubInterface<KeyBook>()
 
-    const connectionManager = new DefaultConnectionManager(new Components({ upgrader, peerStore }))
+    const connectionManager = new DefaultConnectionManager({
+      maxConnections: 1000,
+      minConnections: 50,
+      autoDialInterval: 1000
+    })
+    connectionManager.init(new Components({ upgrader, peerStore }))
 
-    await connectionManager.start()
+    await start(connectionManager)
 
     const conn1 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
     const conn2 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
@@ -80,9 +86,14 @@ describe('Connection Manager', () => {
     const peerStore = stubInterface<PeerStore>()
     peerStore.keyBook = stubInterface<KeyBook>()
 
-    const connectionManager = new DefaultConnectionManager(new Components({ upgrader, peerStore }))
+    const connectionManager = new DefaultConnectionManager({
+      maxConnections: 1000,
+      minConnections: 50,
+      autoDialInterval: 1000
+    })
+    connectionManager.init(new Components({ upgrader, peerStore }))
 
-    await connectionManager.start()
+    await start(connectionManager)
 
     const conn1 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
     const conn2 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
@@ -224,11 +235,11 @@ describe('libp2p.connections', () => {
       await libp2p.start()
 
       // Wait for peer to connect
-      await pWaitFor(() => libp2p.components.getConnectionManager().getConnectionMap().size === minConnections)
+      await pWaitFor(() => libp2p.components.getConnectionManager().getConnections().length === minConnections)
 
       // Wait more time to guarantee no other connection happened
       await delay(200)
-      expect(libp2p.components.getConnectionManager().getConnectionMap().size).to.eql(minConnections)
+      expect(libp2p.components.getConnectionManager().getConnections().length).to.eql(minConnections)
 
       await libp2p.stop()
     })
@@ -257,11 +268,11 @@ describe('libp2p.connections', () => {
       await libp2p.start()
 
       // Wait for peer to connect
-      await pWaitFor(() => libp2p.components.getConnectionManager().getConnectionMap().size === minConnections)
+      await pWaitFor(() => libp2p.components.getConnectionManager().getConnections().length === minConnections)
 
       // Should have connected to the peer with protocols
-      expect(libp2p.components.getConnectionManager().getConnection(nodes[0].peerId)).to.not.exist()
-      expect(libp2p.components.getConnectionManager().getConnection(nodes[1].peerId)).to.exist()
+      expect(libp2p.components.getConnectionManager().getConnections(nodes[0].peerId)).to.be.empty()
+      expect(libp2p.components.getConnectionManager().getConnections(nodes[1].peerId)).to.not.be.empty()
 
       await libp2p.stop()
     })
@@ -287,15 +298,15 @@ describe('libp2p.connections', () => {
 
       // Wait for peer to connect
       const conn = await libp2p.dial(nodes[0].peerId)
-      expect(libp2p.components.getConnectionManager().getConnection(nodes[0].peerId)).to.exist()
+      expect(libp2p.components.getConnectionManager().getConnections(nodes[0].peerId)).to.not.be.empty()
 
       await conn.close()
       // Closed
-      await pWaitFor(() => libp2p.components.getConnectionManager().getConnectionMap().size === 0)
+      await pWaitFor(() => libp2p.components.getConnectionManager().getConnections().length === 0)
       // Connected
-      await pWaitFor(() => libp2p.components.getConnectionManager().getConnectionMap().size === 1)
+      await pWaitFor(() => libp2p.components.getConnectionManager().getConnections().length === 1)
 
-      expect(libp2p.components.getConnectionManager().getConnection(nodes[0].peerId)).to.exist()
+      expect(libp2p.components.getConnectionManager().getConnections(nodes[0].peerId)).to.not.be.empty()
 
       await libp2p.stop()
     })
@@ -321,9 +332,7 @@ describe('libp2p.connections', () => {
       await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
       await libp2p.dial(remoteLibp2p.peerId)
 
-      const totalConns = Array.from(libp2p.components.getConnectionManager().getConnectionMap().values())
-      expect(totalConns.length).to.eql(1)
-      const conns = totalConns[0]
+      const conns = libp2p.components.getConnectionManager().getConnections()
       expect(conns.length).to.eql(1)
       const conn = conns[0]
 
@@ -394,7 +403,7 @@ describe('libp2p.connections', () => {
         })
       })
       await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
-      await libp2p.components.getDialer().dial(remoteLibp2p.peerId)
+      await libp2p.components.getConnectionManager().openConnection(remoteLibp2p.peerId)
 
       for (const multiaddr of remoteLibp2p.getMultiaddrs()) {
         expect(denyDialMultiaddr.calledWith(remoteLibp2p.peerId, multiaddr)).to.be.true()
@@ -418,7 +427,7 @@ describe('libp2p.connections', () => {
 
       const fullMultiaddr = remoteLibp2p.getMultiaddrs()[0]
 
-      await libp2p.components.getDialer().dial(fullMultiaddr)
+      await libp2p.dial(fullMultiaddr)
 
       expect(filterMultiaddrForPeer.callCount).to.equal(2)
 

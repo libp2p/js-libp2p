@@ -14,10 +14,15 @@ import type { DefaultMetrics } from '../../src/metrics/index.js'
 
 describe('libp2p.metrics', () => {
   let libp2p: Libp2pNode
+  let remoteLibp2p: Libp2pNode
 
   afterEach(async () => {
     if (libp2p != null) {
       await libp2p.stop()
+    }
+
+    if (remoteLibp2p != null) {
+      await remoteLibp2p.stop()
     }
   })
 
@@ -56,8 +61,7 @@ describe('libp2p.metrics', () => {
   })
 
   it('should record metrics on connections and streams when enabled', async () => {
-    let remoteLibp2p: Libp2pNode
-    ;[libp2p, remoteLibp2p] = await Promise.all([
+    [libp2p, remoteLibp2p] = await Promise.all([
       createNode({
         config: createBaseOptions({
           metrics: {
@@ -117,8 +121,7 @@ describe('libp2p.metrics', () => {
   })
 
   it('should move disconnected peers to the old peers list', async () => {
-    let remoteLibp2p
-    ;[libp2p, remoteLibp2p] = await Promise.all([
+    [libp2p, remoteLibp2p] = await Promise.all([
       createNode({
         config: createBaseOptions({
           metrics: {

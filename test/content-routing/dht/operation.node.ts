@@ -8,7 +8,7 @@ import { subsystemMulticodecs, createSubsystemOptions } from './utils.js'
 import { createPeerId } from '../../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
-import { isStartable } from '@libp2p/interfaces'
+import { start } from '@libp2p/interface-compliance-tests'
 
 const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8001')
@@ -145,9 +145,7 @@ describe('DHT subsystem operates correctly', () => {
 
       const dht = remoteLibp2p.dht
 
-      if (isStartable(dht)) {
-        await dht.start()
-      }
+      await start(dht)
 
       // should be 0 directly after start - TODO this may be susceptible to timing bugs, we should have
       // the ability to report stats on the DHT routing table instead of reaching into it's heart like this
@@ -164,9 +162,7 @@ describe('DHT subsystem operates correctly', () => {
 
       const dht = remoteLibp2p.dht
 
-      if (isStartable(dht)) {
-        await dht.start()
-      }
+      await start(dht)
 
       await pWaitFor(() => libp2p.dht.lan.routingTable.size === 1)
       await libp2p.components.getContentRouting().put(key, value)

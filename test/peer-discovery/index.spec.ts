@@ -9,6 +9,7 @@ import { createPeerId } from '../utils/creators/peer.js'
 import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import type { Startable } from '@libp2p/interfaces'
 
 describe('peer discovery', () => {
   describe('basic functions', () => {
@@ -42,7 +43,7 @@ describe('peer discovery', () => {
       await libp2p.peerStore.addressBook.set(remotePeerId, [new Multiaddr('/ip4/165.1.1.1/tcp/80')])
 
       const deferred = defer()
-      sinon.stub(libp2p.components.getDialer(), 'dial').callsFake(async (id) => {
+      sinon.stub(libp2p.components.getConnectionManager(), 'openConnection').callsFake(async (id) => {
         if (!isPeerId(id)) {
           throw new Error('Tried to dial something that was not a peer ID')
         }
@@ -69,13 +70,22 @@ describe('peer discovery', () => {
       let started = 0
       let stopped = 0
 
-      class MockDiscovery {
+      class MockDiscovery implements Startable {
         static tag = 'mock'
+
+        started = false
+
+        isStarted () {
+          return this.started
+        }
+
         start () {
+          this.started = true
           started++
         }
 
         stop () {
+          this.started = false
           stopped++
         }
 
