@@ -8,7 +8,7 @@ import type { Listener, ListenerEvents, CreateListenerOptions } from '@libp2p/in
 import type { Server } from 'http'
 import type { WebSocketServer } from 'it-ws/server'
 import type { DuplexWebSocket } from 'it-ws/duplex'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { Connection } from '@libp2p/interfaces/connection'
 
 const log = logger('libp2p:websockets:listener')
