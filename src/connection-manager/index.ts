@@ -37,7 +37,6 @@ const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
 const METRICS_PEER_VALUES = 'peer-values'
 
-
 export interface ConnectionManagerInit {
   /**
    * The maximum number of connections to keep open
