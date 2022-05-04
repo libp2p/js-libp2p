@@ -6,7 +6,7 @@ import {
   getMultiaddrs,
   multiaddrToNetConfig
 } from './utils.js'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { Connection } from '@libp2p/interfaces/connection'
 import type { MultiaddrConnection, Upgrader, Listener } from '@libp2p/interfaces/transport'
 import type { Server } from 'net'
