@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
+import { expect } from 'aegir/utils/chai.js'
 import sinon from 'sinon'
 import { AbortError } from '@libp2p/interfaces/errors'
 import pDefer from 'p-defer'
@@ -214,5 +214,55 @@ describe('Dial Request', () => {
 
     expect(dialerGetTokensSpy.calledWith(addrs.length)).to.equal(true)
     expect(dialerReleaseTokenSpy.callCount).to.equal(2)
+  })
+
+  it.only('should abort other dials', async () => {
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const actions: Record<string, () => Promise<any>> = {
+      '/ip4/127.0.0.1/tcp/1231': async () => {
+        // Successful dial takes longer to establish
+        await delay(1000)
+
+        return connection
+
+      },
+      '/ip4/127.0.0.1/tcp/1232': async () => {
+        // Non-successful dial comes back quickly e.g. because of
+        // socket errors such as EHOSTUNREACH
+        await delay(100)
+
+        throw Error('foo')
+      },
+      '/ip4/127.0.0.1/tcp/1233': async () => {
+        // Dial comes back without any result, e.g. because of
+        // bad implementation of the dial action
+        await delay(100) 
+
+        }
+    }
+  
+    const signals: Record<string, AbortSignal | undefined> = {}
+
+    const dialRequest = new DialRequest({
+      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
+      dialer: new DefaultDialer(new Components(), {
+        maxParallelDials: 3
+      }),
+      dialAction: async (ma, opts) => {
+        console.log(`dialing ${ma.toString()}`)
+        signals[ma.toString()] = opts.signal
+        return await actions[ma.toString()]()
+      }
+    })
+  
+    await dialRequest.run()
+  
+
+
+    console.log(signals)
+
+    expect(signals['/ip4/127.0.0.1/tcp/1231']).to.have.property('aborted', false)
+    expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', true)
+    expect(signals['/ip4/127.0.0.1/tcp/1233']).to.have.property('aborted', true)
   })
 })
