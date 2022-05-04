@@ -1,5 +1,5 @@
 import multicastDNS from 'multicast-dns'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import * as query from './query.js'
 import { GoMulticastDNS } from './compat/index.js'

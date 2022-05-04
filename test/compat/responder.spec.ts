@@ -13,7 +13,7 @@ import type { ResponsePacket } from 'multicast-dns'
 import { Components } from '@libp2p/interfaces/components'
 import { stubInterface } from 'ts-sinon'
 import { findPeerInfoInAnswers } from '../../src/compat/utils.js'
-import type { AddressManager } from '@libp2p/interfaces'
+import type { AddressManager } from '@libp2p/interfaces/address-manager'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 describe('Responder', () => {

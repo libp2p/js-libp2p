@@ -8,7 +8,7 @@ import { MulticastDNS } from './../src/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { stubInterface } from 'ts-sinon'
-import type { AddressManager } from '@libp2p/interfaces'
+import type { AddressManager } from '@libp2p/interfaces/address-manager'
 import { Components } from '@libp2p/interfaces/components'
 
 function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]) {

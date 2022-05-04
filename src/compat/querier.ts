@@ -1,4 +1,4 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import MDNS from 'multicast-dns'
 import { logger } from '@libp2p/logger'
 import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from './constants.js'

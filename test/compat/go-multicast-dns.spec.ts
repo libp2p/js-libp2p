@@ -6,7 +6,7 @@ import pDefer from 'p-defer'
 import { GoMulticastDNS } from '../../src/compat/index.js'
 import { Components } from '@libp2p/interfaces/components'
 import { stubInterface } from 'ts-sinon'
-import type { AddressManager } from '@libp2p/interfaces'
+import type { AddressManager } from '@libp2p/interfaces/address-manager'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 let port = 20000

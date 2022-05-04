@@ -1,5 +1,5 @@
 // Compatibility with Go libp2p MDNS
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { Responder } from './responder.js'
 import { Querier } from './querier.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
