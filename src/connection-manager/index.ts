@@ -11,10 +11,12 @@ import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
 // @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import type { Connection } from '@libp2p/interfaces/connection'
-import type { ConnectionManager, ConnectionManagerInit } from '@libp2p/interfaces/connection-manager'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 import * as STATUS from '@libp2p/interfaces/connection/status'
 import { Dialer } from './dialer/index.js'
+import type { AddressSorter } from '@libp2p/interfaces/peer-store'
+import type { Resolver } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:connection-manager')
 
@@ -34,6 +36,95 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
 const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
 const METRICS_PEER_VALUES = 'peer-values'
+
+
+export interface ConnectionManagerInit {
+  /**
+   * The maximum number of connections to keep open
+   */
+  maxConnections: number
+
+  /**
+   * The minimum number of connections to keep open
+   */
+  minConnections: number
+
+  /**
+   * The max data (in and out), per average interval to allow
+   */
+  maxData?: number
+
+  /**
+   * The max outgoing data, per average interval to allow
+   */
+  maxSentData?: number
+
+  /**
+   * The max incoming data, per average interval to allow
+   */
+  maxReceivedData?: number
+
+  /**
+   * The upper limit the event loop can take to run
+   */
+  maxEventLoopDelay?: number
+
+  /**
+   * How often, in milliseconds, metrics and latency should be checked
+   */
+  pollInterval?: number
+
+  /**
+   * How often, in milliseconds, to compute averages
+   */
+  movingAverageInterval?: number
+
+  /**
+   * The value of the peer
+   */
+  defaultPeerValue?: number
+
+  /**
+   * If true, try to connect to all discovered peers up to the connection manager limit
+   */
+  autoDial?: boolean
+
+  /**
+   * How long to wait between attempting to keep our number of concurrent connections
+   * above minConnections
+   */
+  autoDialInterval: number
+
+  /**
+   * Sort the known addresses of a peer before trying to dial
+   */
+  addressSorter?: AddressSorter
+
+  /**
+   * Number of max concurrent dials
+   */
+  maxParallelDials?: number
+
+  /**
+   * Number of max addresses to dial for a given peer
+   */
+  maxAddrsToDial?: number
+
+  /**
+   * How long a dial attempt is allowed to take
+   */
+  dialTimeout?: number
+
+  /**
+   * Number of max concurrent dials per peer
+   */
+  maxDialsPerPeer?: number
+
+  /**
+   * Multiaddr resolvers to use when dialing
+   */
+  resolvers?: Record<string, Resolver>
+}
 
 export interface ConnectionManagerEvents {
   'peer:connect': CustomEvent<PeerId>

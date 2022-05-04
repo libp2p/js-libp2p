@@ -17,10 +17,11 @@ import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
 import type { Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
-import type { ConnectionManager, ConnectionManagerInit } from '@libp2p/interfaces/connection-manager'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
 import type { Metrics, MetricsInit } from '@libp2p/interfaces/metrics'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { KeyChain } from './keychain/index.js'
+import type { ConnectionManagerInit } from './connection-manager/index.js'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
