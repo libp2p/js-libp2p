@@ -8,7 +8,7 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { CustomEvent } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2pNode

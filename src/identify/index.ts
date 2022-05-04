@@ -22,7 +22,7 @@ import {
 import { codes } from '../errors.js'
 import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
 import type { Connection } from '@libp2p/interfaces/connection'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import type { Components } from '@libp2p/interfaces/components'
 

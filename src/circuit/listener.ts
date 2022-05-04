@@ -1,4 +1,4 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
 import type { PeerStore } from '@libp2p/interfaces/peer-store'
 import type { Listener } from '@libp2p/interfaces/transport'

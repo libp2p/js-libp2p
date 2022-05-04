@@ -8,7 +8,7 @@ import type { Libp2p } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { Components } from '@libp2p/interfaces/components'
-import { CustomEvent } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
 import * as STATUS from '@libp2p/interfaces/connection/status'
 import { stubInterface } from 'ts-sinon'
 import type { KeyBook, PeerStore } from '@libp2p/interfaces/peer-store'
@@ -18,7 +18,7 @@ import type { Connection } from '@libp2p/interfaces/connection'
 import delay from 'delay'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { codes } from '../../src/errors.js'
-import { start } from '@libp2p/interface-compliance-tests'
+import { start } from '@libp2p/interfaces/startable'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p

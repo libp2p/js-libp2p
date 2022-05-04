@@ -8,7 +8,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION } from './constants.js'
 import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:ping')

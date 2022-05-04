@@ -9,7 +9,7 @@ import { createPeerId } from '../utils/creators/peer.js'
 import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 describe('peer discovery', () => {
   describe('basic functions', () => {

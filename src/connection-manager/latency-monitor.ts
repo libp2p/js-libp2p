@@ -2,7 +2,7 @@
  * This code is based on `latency-monitor` (https://github.com/mlucool/latency-monitor) by `mlucool` (https://github.com/mlucool), available under Apache License 2.0 (https://github.com/mlucool/latency-monitor/blob/master/LICENSE)
  */
 
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { VisibilityChangeEmitter } from './visibility-change-emitter.js'
 import { logger } from '@libp2p/logger'
 
