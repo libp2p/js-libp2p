@@ -21,14 +21,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
   connectionManager: {
     maxConnections: 300,
     minConnections: 50,
+    autoDial: true,
     autoDialInterval: 10000,
-    autoDial: true
-  },
-  connectionGater: {},
-  transportManager: {
-    faultTolerance: FaultTolerance.FATAL_ALL
-  },
-  dialer: {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
     dialTimeout: Constants.DIAL_TIMEOUT,
@@ -36,6 +30,10 @@ const DefaultConfig: Partial<Libp2pInit> = {
       dnsaddr: dnsaddrResolver
     },
     addressSorter: publicAddressesFirst
+  },
+  connectionGater: {},
+  transportManager: {
+    faultTolerance: FaultTolerance.FATAL_ALL
   },
   host: {
     agentVersion: AGENT_VERSION

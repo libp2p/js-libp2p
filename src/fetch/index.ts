@@ -70,7 +70,7 @@ export class FetchService implements Startable {
   async fetch (peer: PeerId, key: string): Promise<Uint8Array | null> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.getDialer().dial(peer)
+    const connection = await this.components.getConnectionManager().openConnection(peer)
     const { stream } = await connection.newStream([this.protocol])
     const shake = handshake(stream)
 

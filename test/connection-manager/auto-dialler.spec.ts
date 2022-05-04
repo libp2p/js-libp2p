@@ -7,9 +7,8 @@ import delay from 'delay'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { Components } from '@libp2p/interfaces/components'
 import { stubInterface } from 'ts-sinon'
-import type { ConnectionManager } from '@libp2p/interfaces/registrar'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
 import type { PeerStore, Peer } from '@libp2p/interfaces/peer-store'
-import type { Dialer } from '@libp2p/interfaces/dialer'
 
 describe('Auto-dialler', () => {
   it('should not dial self', async () => {
@@ -36,26 +35,24 @@ describe('Auto-dialler', () => {
     ]))
 
     const connectionManager = stubInterface<ConnectionManager>()
-    connectionManager.getConnectionList.returns([])
-    const dialer = stubInterface<Dialer>()
+    connectionManager.getConnections.returns([])
 
     const autoDialler = new AutoDialler(new Components({
       peerId: self.id,
       peerStore,
-      connectionManager,
-      dialer
+      connectionManager
     }), {
       minConnections: 10
     })
 
     await autoDialler.start()
 
-    await pWaitFor(() => dialer.dial.callCount === 1)
+    await pWaitFor(() => connectionManager.openConnection.callCount === 1)
     await delay(1000)
 
     await autoDialler.stop()
 
-    expect(dialer.dial.callCount).to.equal(1)
-    expect(dialer.dial.calledWith(self.id)).to.be.false()
+    expect(connectionManager.openConnection.callCount).to.equal(1)
+    expect(connectionManager.openConnection.calledWith(self.id)).to.be.false()
   })
 })

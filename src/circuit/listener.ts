@@ -1,11 +1,12 @@
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
-import type { ConnectionManager } from '@libp2p/interfaces/registrar'
-import type { Dialer } from '@libp2p/interfaces/dialer'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
+import type { PeerStore } from '@libp2p/interfaces/peer-store'
 import type { Listener } from '@libp2p/interfaces/transport'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ListenerOptions {
-  dialer: Dialer
+  peerStore: PeerStore
   connectionManager: ConnectionManager
 }
 
@@ -17,7 +18,19 @@ export function createListener (options: ListenerOptions): Listener {
    */
   async function listen (addr: Multiaddr): Promise<void> {
     const addrString = addr.toString().split('/p2p-circuit').find(a => a !== '')
-    const relayConn = await options.dialer.dial(new Multiaddr(addrString))
+    const ma = new Multiaddr(addrString)
+
+    const relayPeerStr = ma.getPeerId()
+
+    if (relayPeerStr == null) {
+      throw new Error('Could not determine relay peer from multiaddr')
+    }
+
+    const relayPeerId = peerIdFromString(relayPeerStr)
+
+    await options.peerStore.addressBook.add(relayPeerId, [ma])
+
+    const relayConn = await options.connectionManager.openConnection(relayPeerId)
     const relayedAddr = relayConn.remoteAddr.encapsulate('/p2p-circuit')
 
     listeningAddrs.set(relayConn.remotePeer.toString(), relayedAddr)

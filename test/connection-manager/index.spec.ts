@@ -79,7 +79,7 @@ describe('Connection Manager', () => {
       const value = Math.random()
       spies.set(value, spy)
       connectionManager.setPeerValue(connection.remotePeer, value)
-      await connectionManager.onConnect(new CustomEvent('connection', { detail: connection }))
+      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
     }))
 
     // get the lowest value
@@ -122,7 +122,7 @@ describe('Connection Manager', () => {
     await Promise.all([...new Array(max + 1)].map(async () => {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       sinon.stub(connection, 'close').callsFake(async () => spy()) // eslint-disable-line
-      await connectionManager.onConnect(new CustomEvent('connection', { detail: connection }))
+      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
     }))
 
     expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(1)

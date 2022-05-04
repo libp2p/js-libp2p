@@ -102,7 +102,7 @@ export class AutoDialler implements Startable {
     const minConnections = this.options.minConnections
 
     // Already has enough connections
-    if (this.components.getConnectionManager().getConnectionList().length >= minConnections) {
+    if (this.components.getConnectionManager().getConnections().length >= minConnections) {
       this.autoDialTimeout = retimer(this._autoDial, this.options.autoDialInterval)
 
       return
@@ -126,7 +126,7 @@ export class AutoDialler implements Startable {
       async (source) => await all(source)
     )
 
-    for (let i = 0; this.running && i < peers.length && this.components.getConnectionManager().getConnectionList().length < minConnections; i++) {
+    for (let i = 0; this.running && i < peers.length && this.components.getConnectionManager().getConnections().length < minConnections; i++) {
       // Connection Manager was stopped during async dial
       if (!this.running) {
         return
@@ -134,10 +134,10 @@ export class AutoDialler implements Startable {
 
       const peer = peers[i]
 
-      if (this.components.getConnectionManager().getConnection(peer.id) == null) {
+      if (this.components.getConnectionManager().getConnections(peer.id).length === 0) {
         log('connecting to a peerStore stored peer %p', peer.id)
         try {
-          await this.components.getDialer().dial(peer.id)
+          await this.components.getConnectionManager().openConnection(peer.id)
         } catch (err: any) {
           log.error('could not connect to peerStore stored peer', err)
         }
