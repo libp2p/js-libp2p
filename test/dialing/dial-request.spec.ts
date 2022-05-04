@@ -216,7 +216,7 @@ describe('Dial Request', () => {
     expect(dialerReleaseTokenSpy.callCount).to.equal(2)
   })
 
-  it.only('should abort other dials', async () => {
+  it('should abort other dials', async () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
     const actions: Record<string, () => Promise<any>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => {
