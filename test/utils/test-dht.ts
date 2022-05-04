@@ -10,9 +10,9 @@ import { DualKadDHT } from '../../src/dual-kad-dht.js'
 import { logger } from '@libp2p/logger'
 import { Components } from '@libp2p/interfaces/components'
 import type { KadDHTInit } from '../../src/index.js'
-import type { AddressManager } from '@libp2p/interfaces'
+import type { AddressManager } from '@libp2p/interfaces/address-manager'
 import { stubInterface } from 'ts-sinon'
-import { start } from '@libp2p/interface-compliance-tests'
+import { start } from '@libp2p/interfaces/startable'
 import delay from 'delay'
 
 const log = logger('libp2p:kad-dht:test-dht')

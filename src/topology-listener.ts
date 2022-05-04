@@ -1,8 +1,8 @@
 import { createTopology } from '@libp2p/topology'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import type { Logger } from '@libp2p/logger'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 

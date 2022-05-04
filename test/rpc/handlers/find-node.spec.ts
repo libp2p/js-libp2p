@@ -10,7 +10,7 @@ import Sinon, { SinonStubbedInstance } from 'sinon'
 import { Components } from '@libp2p/interfaces/components'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import type { AddressManager } from '@libp2p/interfaces'
+import type { AddressManager } from '@libp2p/interfaces/address-manager'
 import { stubInterface } from 'ts-sinon'
 import type { StubbedInstance } from 'ts-sinon'
 

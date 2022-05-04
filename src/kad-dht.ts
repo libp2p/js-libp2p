@@ -16,7 +16,7 @@ import {
 import { Logger, logger } from '@libp2p/logger'
 import type { QueryOptions, Validators, Selectors, DHT } from '@libp2p/interfaces/dht'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { CID } from 'multiformats/cid'
 import type { PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'

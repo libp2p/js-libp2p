@@ -21,7 +21,7 @@ import { RoutingTable } from '../../src/routing-table/index.js'
 import type { Duplex } from 'it-stream-types'
 import { mockStream, mockConnection, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { Components } from '@libp2p/interfaces/components'
-import { start } from '@libp2p/interface-compliance-tests'
+import { start } from '@libp2p/interfaces/startable'
 
 describe('rpc', () => {
   let peerId: PeerId

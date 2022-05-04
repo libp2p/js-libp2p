@@ -6,7 +6,7 @@ import { PROTOCOL_DHT } from '../constants.js'
 import { TimeoutController } from 'timeout-abort-controller'
 import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 

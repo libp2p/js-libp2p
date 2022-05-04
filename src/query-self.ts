@@ -7,7 +7,7 @@ import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
 import { logger, Logger } from '@libp2p/logger'
 import type { PeerRouting } from './peer-routing/index.js'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import { pipe } from 'it-pipe'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 

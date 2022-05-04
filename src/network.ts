@@ -4,7 +4,7 @@ import * as lp from 'it-length-prefixed'
 import drain from 'it-drain'
 import first from 'it-first'
 import { Message } from './message/index.js'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import {
   dialingPeerEvent,
   sendingQueryEvent,
@@ -13,7 +13,8 @@ import {
 } from './query/events.js'
 import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { AbortOptions, Startable } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
 import type { Duplex } from 'it-stream-types'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
