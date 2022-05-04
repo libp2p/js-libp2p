@@ -216,7 +216,7 @@ describe('Dial Request', () => {
     expect(dialerReleaseTokenSpy.callCount).to.equal(2)
   })
 
-  it('should abort other dials', async () => {
+  it('should abort other dials when one succeeds', async () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
     const actions: Record<string, () => Promise<any>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => {
@@ -231,14 +231,13 @@ describe('Dial Request', () => {
         // socket errors such as EHOSTUNREACH
         await delay(100)
 
-        throw Error('foo')
+        throw Error('boom')
       },
       '/ip4/127.0.0.1/tcp/1233': async () => {
         // Dial comes back without any result, e.g. because of
         // bad implementation of the dial action
         await delay(100) 
-
-        }
+      }
     }
   
     const signals: Record<string, AbortSignal | undefined> = {}
@@ -249,18 +248,12 @@ describe('Dial Request', () => {
         maxParallelDials: 3
       }),
       dialAction: async (ma, opts) => {
-        console.log(`dialing ${ma.toString()}`)
         signals[ma.toString()] = opts.signal
         return await actions[ma.toString()]()
       }
     })
   
-    await dialRequest.run()
-  
-
-
-    console.log(signals)
-
+    await expect(dialRequest.run()).to.eventually.equal(connection)  
     expect(signals['/ip4/127.0.0.1/tcp/1231']).to.have.property('aborted', false)
     expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', true)
     expect(signals['/ip4/127.0.0.1/tcp/1233']).to.have.property('aborted', true)
