@@ -13,7 +13,7 @@ import { createBaseOptions } from '../utils/base-options.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
-import { CustomEvent } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')

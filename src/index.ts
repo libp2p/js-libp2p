@@ -1,5 +1,7 @@
 import { createLibp2pNode } from './libp2p.js'
-import type { AbortOptions, EventEmitter, RecursivePartial, Startable } from '@libp2p/interfaces'
+import type { AbortOptions, RecursivePartial } from '@libp2p/interfaces'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { FaultTolerance } from './transport-manager.js'
 import type { HostProperties } from './identify/index.js'

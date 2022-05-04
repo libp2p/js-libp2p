@@ -8,7 +8,7 @@ import { subsystemMulticodecs, createSubsystemOptions } from './utils.js'
 import { createPeerId } from '../../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
-import { start } from '@libp2p/interface-compliance-tests'
+import { start } from '@libp2p/interfaces/startable'
 
 const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8001')

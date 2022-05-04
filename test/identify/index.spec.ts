@@ -27,14 +27,14 @@ import {
 } from '../../src/identify/consts.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { CustomEvent } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
 import delay from 'delay'
 import pWaitFor from 'p-wait-for'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
-import { start, stop } from '@libp2p/interface-compliance-tests'
+import { start, stop } from '@libp2p/interfaces/startable'
 
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 

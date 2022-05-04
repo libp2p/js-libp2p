@@ -20,7 +20,8 @@ import {
   MAX_ADDRS_TO_DIAL
 } from '../../constants.js'
 import type { Connection } from '@libp2p/interfaces/connection'
-import type { AbortOptions, Startable } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'

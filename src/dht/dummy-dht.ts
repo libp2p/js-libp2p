@@ -2,7 +2,7 @@ import type { DualDHT, QueryEvent, SingleDHT } from '@libp2p/interfaces/dht'
 import type { PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import errCode from 'err-code'
 import { messages, codes } from '../errors.js'
-import { EventEmitter } from '@libp2p/interfaces'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 export class DummyDHT extends EventEmitter<PeerDiscoveryEvents> implements DualDHT {
   get wan (): SingleDHT {

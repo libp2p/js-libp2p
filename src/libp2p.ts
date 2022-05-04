@@ -1,5 +1,7 @@
 import { logger } from '@libp2p/logger'
-import { AbortOptions, EventEmitter, Startable, CustomEvent, isStartable } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interfaces'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { Startable, isStartable } from '@libp2p/interfaces/startable'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { DefaultPeerRouting } from './peer-routing.js'

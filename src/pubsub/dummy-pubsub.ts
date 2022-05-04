@@ -1,4 +1,4 @@
-import { EventEmitter } from '@libp2p/interfaces'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PublishResult, PubSub, PubSubEvents, StrictNoSign, StrictSign } from '@libp2p/interfaces/pubsub'
 import errCode from 'err-code'
