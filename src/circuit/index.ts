@@ -11,7 +11,7 @@ import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
 import type { AddressSorter } from '@libp2p/interfaces/peer-store'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:relay')

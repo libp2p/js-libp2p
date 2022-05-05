@@ -1,4 +1,4 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { createMovingAverage } from './moving-average.js'
 // @ts-expect-error no types
 import retimer from 'retimer'

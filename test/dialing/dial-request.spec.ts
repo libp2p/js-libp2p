@@ -5,12 +5,11 @@ import sinon from 'sinon'
 import { AbortError } from '@libp2p/interfaces/errors'
 import pDefer from 'p-defer'
 import delay from 'delay'
-import { DialAction, DialRequest } from '../../src/dialer/dial-request.js'
+import { DialAction, DialRequest } from '../../src/connection-manager/dialer/dial-request.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { DefaultDialer } from '../../src/dialer/index.js'
-import { Components } from '@libp2p/interfaces/components'
+import { Dialer } from '../../src/connection-manager/dialer/index.js'
 const error = new Error('dial failure')
 
 describe('Dial Request', () => {
@@ -24,7 +23,7 @@ describe('Dial Request', () => {
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -54,7 +53,7 @@ describe('Dial Request', () => {
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -97,7 +96,7 @@ describe('Dial Request', () => {
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const addrs = Object.keys(actions)
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -137,7 +136,7 @@ describe('Dial Request', () => {
 
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -183,7 +182,7 @@ describe('Dial Request', () => {
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const addrs = Object.keys(actions)
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')

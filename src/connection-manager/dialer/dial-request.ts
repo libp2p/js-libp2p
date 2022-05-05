@@ -3,12 +3,12 @@ import { anySignal } from 'any-signal'
 import FIFO from 'p-fifo'
 // @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
-import { codes } from '../errors.js'
+import { codes } from '../../errors.js'
 import { logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Connection } from '@libp2p/interfaces/connection'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { DefaultDialer } from './index.js'
+import type { Dialer } from './index.js'
 
 const log = logger('libp2p:dialer:dial-request')
 
@@ -19,12 +19,12 @@ export interface DialAction {
 export interface DialRequestOptions {
   addrs: Multiaddr[]
   dialAction: DialAction
-  dialer: DefaultDialer
+  dialer: Dialer
 }
 
 export class DialRequest {
   private readonly addrs: Multiaddr[]
-  private readonly dialer: DefaultDialer
+  private readonly dialer: Dialer
   private readonly dialAction: DialAction
 
   /**

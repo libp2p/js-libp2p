@@ -5,7 +5,7 @@ import { METRICS as defaultOptions } from '../constants.js'
 import { DefaultStats, StatsInit } from './stats.js'
 import type { ComponentMetricsUpdate, Metrics, Stats, TrackStreamOptions } from '@libp2p/interfaces/metrics'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Duplex } from 'it-stream-types'
 
 const initialCounters: ['dataReceived', 'dataSent'] = [

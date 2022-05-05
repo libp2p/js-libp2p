@@ -192,7 +192,7 @@ export class DefaultRegistrar implements Registrar {
 
     for (const { topology, protocols } of this.topologies.values()) {
       if (supportsProtocol(added, protocols)) {
-        const connection = this.components.getConnectionManager().getConnection(peerId)
+        const connection = this.components.getConnectionManager().getConnections(peerId)[0]
 
         if (connection == null) {
           continue

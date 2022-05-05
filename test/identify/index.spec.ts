@@ -27,13 +27,14 @@ import {
 } from '../../src/identify/consts.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { CustomEvent, Startable } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
 import delay from 'delay'
 import pWaitFor from 'p-wait-for'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
+import { start, stop } from '@libp2p/interfaces/startable'
 
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -46,7 +47,7 @@ const defaultInit = {
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
-async function createComponents (index: number, services: Startable[]) {
+async function createComponents (index: number) {
   const peerId = await createFromJSON(Peers[index])
 
   const components = new Components({
@@ -54,25 +55,22 @@ async function createComponents (index: number, services: Startable[]) {
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
-    connectionGater: mockConnectionGater()
+    connectionGater: mockConnectionGater(),
+    peerStore: new PersistentPeerStore(),
+    connectionManager: new DefaultConnectionManager({
+      minConnections: 50,
+      maxConnections: 1000,
+      autoDialInterval: 1000
+    })
   })
-  const peerStore = new PersistentPeerStore(components, {
-    addressFilter: components.getConnectionGater().filterMultiaddrForPeer
-  })
-  components.setPeerStore(peerStore)
   components.setAddressManager(new DefaultAddressManager(components, {
     announce: listenMaddrs.map(ma => ma.toString())
   }))
 
-  const connectionManager = new DefaultConnectionManager(components)
-  services.push(connectionManager)
-  components.setConnectionManager(connectionManager)
-
   const transportManager = new DefaultTransportManager(components)
-  services.push(transportManager)
   components.setTransportManager(transportManager)
 
-  await peerStore.protoBook.set(peerId, protocols)
+  await components.getPeerStore().protoBook.set(peerId, protocols)
 
   return components
 }
@@ -83,36 +81,35 @@ describe('Identify', () => {
 
   let localPeerRecordUpdater: PeerRecordUpdater
   let remotePeerRecordUpdater: PeerRecordUpdater
-  let services: Startable[]
 
   beforeEach(async () => {
-    services = []
-
-    localComponents = await createComponents(0, services)
-    remoteComponents = await createComponents(1, services)
+    localComponents = await createComponents(0)
+    remoteComponents = await createComponents(1)
 
     localPeerRecordUpdater = new PeerRecordUpdater(localComponents)
     remotePeerRecordUpdater = new PeerRecordUpdater(remoteComponents)
 
-    await Promise.all(
-      services.map(s => s.start())
-    )
+    await Promise.all([
+      start(localComponents),
+      start(remoteComponents)
+    ])
   })
 
   afterEach(async () => {
     sinon.restore()
 
-    await Promise.all(
-      services.map(s => s.stop())
-    )
+    await Promise.all([
+      stop(localComponents),
+      stop(remoteComponents)
+    ])
   })
 
   it('should be able to identify another peer', async () => {
     const localIdentify = new IdentifyService(localComponents, defaultInit)
     const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
 
-    await localIdentify.start()
-    await remoteIdentify.start()
+    await start(localIdentify)
+    await start(remoteIdentify)
 
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
@@ -146,14 +143,14 @@ describe('Identify', () => {
         agentVersion: agentVersion
       }
     })
-    await localIdentify.start()
+    await start(localIdentify)
     const remoteIdentify = new IdentifyService(remoteComponents, {
       protocolPrefix: 'ipfs',
       host: {
         agentVersion: agentVersion
       }
     })
-    await remoteIdentify.start()
+    await start(remoteIdentify)
 
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
@@ -179,8 +176,8 @@ describe('Identify', () => {
     const localIdentify = new IdentifyService(localComponents, defaultInit)
     const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
 
-    await localIdentify.start()
-    await remoteIdentify.start()
+    await start(localIdentify)
+    await start(remoteIdentify)
 
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
@@ -231,14 +228,14 @@ describe('Identify', () => {
     await expect(localComponents.getPeerStore().metadataBook.getValue(localComponents.getPeerId(), 'ProtocolVersion'))
       .to.eventually.be.undefined()
 
-    await localIdentify.start()
+    await start(localIdentify)
 
     await expect(localComponents.getPeerStore().metadataBook.getValue(localComponents.getPeerId(), 'AgentVersion'))
       .to.eventually.deep.equal(uint8ArrayFromString(agentVersion))
     await expect(localComponents.getPeerStore().metadataBook.getValue(localComponents.getPeerId(), 'ProtocolVersion'))
       .to.eventually.be.ok()
 
-    await localIdentify.stop()
+    await stop(localIdentify)
   })
 
   describe('push', () => {
@@ -246,8 +243,8 @@ describe('Identify', () => {
       const localIdentify = new IdentifyService(localComponents, defaultInit)
       const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
 
-      await localIdentify.start()
-      await remoteIdentify.start()
+      await start(localIdentify)
+      await start(remoteIdentify)
 
       const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
@@ -317,8 +314,8 @@ describe('Identify', () => {
         isCertified: true
       }])
 
-      await localIdentify.stop()
-      await remoteIdentify.stop()
+      await stop(localIdentify)
+      await stop(remoteIdentify)
     })
 
     // LEGACY
@@ -326,8 +323,8 @@ describe('Identify', () => {
       const localIdentify = new IdentifyService(localComponents, defaultInit)
       const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
 
-      await localIdentify.start()
-      await remoteIdentify.start()
+      await start(localIdentify)
+      await start(remoteIdentify)
 
       const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
@@ -390,8 +387,8 @@ describe('Identify', () => {
         isCertified: false
       }])
 
-      await localIdentify.stop()
-      await remoteIdentify.stop()
+      await stop(localIdentify)
+      await stop(remoteIdentify)
     })
   })
 

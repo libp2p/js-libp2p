@@ -46,17 +46,15 @@ describe('Dialing (resolvable addresses)', () => {
             listen: [`${relayAddr.toString()}/p2p-circuit`]
           },
           connectionManager: {
-            autoDial: false
+            autoDial: false,
+            resolvers: {
+              dnsaddr: resolver
+            }
           },
           relay: {
             enabled: true,
             hop: {
               enabled: false
-            }
-          },
-          dialer: {
-            resolvers: {
-              dnsaddr: resolver
             }
           }
         }),
@@ -68,17 +66,15 @@ describe('Dialing (resolvable addresses)', () => {
             listen: [`${relayAddr.toString()}/p2p-circuit`]
           },
           connectionManager: {
-            autoDial: false
+            autoDial: false,
+            resolvers: {
+              dnsaddr: resolver
+            }
           },
           relay: {
             enabled: true,
             hop: {
               enabled: false
-            }
-          },
-          dialer: {
-            resolvers: {
-              dnsaddr: resolver
             }
           }
         }),

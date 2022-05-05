@@ -17,7 +17,7 @@ import { Connection, isConnection } from '@libp2p/interfaces/connection'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MemoryDatastore } from 'datastore-core/memory'
-import { DefaultDialer } from '../../src/dialer/index.js'
+import { Dialer } from '../../src/connection-manager/dialer/index.js'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
@@ -25,7 +25,6 @@ import { codes as ErrorCodes } from '../../src/errors.js'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import Peers from '../fixtures/peers.js'
 import { Components } from '@libp2p/interfaces/components'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
@@ -40,7 +39,6 @@ const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1
 describe('Dialing (direct, TCP)', () => {
   let remoteTM: DefaultTransportManager
   let localTM: DefaultTransportManager
-  let peerStore: PeerStore
   let remoteAddr: Multiaddr
   let remoteComponents: Components
   let localComponents: Components
@@ -55,17 +53,14 @@ describe('Dialing (direct, TCP)', () => {
       peerId: remotePeerId,
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader(),
-      connectionGater: mockConnectionGater()
+      connectionGater: mockConnectionGater(),
+      peerStore: new PersistentPeerStore()
     })
     remoteComponents.setAddressManager(new DefaultAddressManager(remoteComponents, {
       listen: [
         listenAddr.toString()
       ]
     }))
-    peerStore = new PersistentPeerStore(remoteComponents, {
-      addressFilter: remoteComponents.getConnectionGater().filterMultiaddrForPeer
-    })
-    remoteComponents.setPeerStore(peerStore)
     remoteTM = new DefaultTransportManager(remoteComponents)
     remoteTM.add(new TCP())
 
@@ -75,10 +70,12 @@ describe('Dialing (direct, TCP)', () => {
       upgrader: mockUpgrader(),
       connectionGater: mockConnectionGater()
     })
-    localComponents.setPeerStore(new PersistentPeerStore(localComponents, {
-      addressFilter: localComponents.getConnectionGater().filterMultiaddrForPeer
+    localComponents.setPeerStore(new PersistentPeerStore())
+    localComponents.setConnectionManager(new DefaultConnectionManager({
+      maxConnections: 100,
+      minConnections: 50,
+      autoDialInterval: 1000
     }))
-    localComponents.setConnectionManager(new DefaultConnectionManager(localComponents))
 
     localTM = new DefaultTransportManager(localComponents)
     localTM.add(new TCP())
@@ -97,7 +94,8 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
-    const dialer = new DefaultDialer(localComponents)
+    const dialer = new Dialer()
+    dialer.init(localComponents)
 
     const connection = await dialer.dial(remoteAddr)
     expect(connection).to.exist()
@@ -105,7 +103,8 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should fail to connect to an unsupported multiaddr', async () => {
-    const dialer = new DefaultDialer(localComponents)
+    const dialer = new Dialer()
+    dialer.init(localComponents)
 
     await expect(dialer.dial(unsupportedAddr))
       .to.eventually.be.rejectedWith(Error)
@@ -113,7 +112,8 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should fail to connect if peer has no known addresses', async () => {
-    const dialer = new DefaultDialer(localComponents)
+    const dialer = new Dialer()
+    dialer.init(localComponents)
     const peerId = await createFromJSON(Peers[1])
 
     await expect(dialer.dial(peerId))
@@ -124,7 +124,8 @@ describe('Dialing (direct, TCP)', () => {
   it('should be able to connect to a given peer id', async () => {
     await localComponents.getPeerStore().addressBook.set(remoteComponents.getPeerId(), remoteTM.getAddrs())
 
-    const dialer = new DefaultDialer(localComponents)
+    const dialer = new Dialer()
+    dialer.init(localComponents)
 
     const connection = await dialer.dial(remoteComponents.getPeerId())
     expect(connection).to.exist()
@@ -134,7 +135,8 @@ describe('Dialing (direct, TCP)', () => {
   it('should fail to connect to a given peer with unsupported addresses', async () => {
     await localComponents.getPeerStore().addressBook.add(remoteComponents.getPeerId(), [unsupportedAddr])
 
-    const dialer = new DefaultDialer(localComponents)
+    const dialer = new Dialer()
+    dialer.init(localComponents)
 
     await expect(dialer.dial(remoteComponents.getPeerId()))
       .to.eventually.be.rejectedWith(Error)
@@ -147,7 +149,8 @@ describe('Dialing (direct, TCP)', () => {
     const peerId = await createFromJSON(Peers[1])
     await localComponents.getPeerStore().addressBook.add(peerId, [...remoteAddrs, unsupportedAddr])
 
-    const dialer = new DefaultDialer(localComponents)
+    const dialer = new Dialer()
+    dialer.init(localComponents)
 
     sinon.spy(localTM, 'dial')
     const connection = await dialer.dial(peerId)
@@ -158,9 +161,10 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should abort dials on queue task timeout', async () => {
-    const dialer = new DefaultDialer(localComponents, {
+    const dialer = new Dialer({
       dialTimeout: 50
     })
+    dialer.init(localComponents)
 
     sinon.stub(localTM, 'dial').callsFake(async (addr, options = {}) => {
       expect(options.signal).to.exist()
@@ -188,9 +192,10 @@ describe('Dialing (direct, TCP)', () => {
 
     await localComponents.getPeerStore().addressBook.add(peerId, addrs)
 
-    const dialer = new DefaultDialer(localComponents, {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
+    dialer.init(localComponents)
 
     expect(dialer.tokens).to.have.lengthOf(2)
 
@@ -300,7 +305,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     await libp2p.start()
 
-    const dialerDialSpy = sinon.spy(libp2p.components.getDialer(), 'dial')
+    const dialerDialSpy = sinon.spy(libp2p.components.getConnectionManager(), 'openConnection')
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
@@ -327,7 +332,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     await libp2p.start()
 
-    const dialerDialSpy = sinon.spy(libp2p.components.getDialer(), 'dial')
+    const dialerDialSpy = sinon.spy(libp2p.components.getConnectionManager(), 'openConnection')
 
     await libp2p.components.getPeerStore().addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
 

@@ -22,8 +22,8 @@ import {
 import { codes } from '../errors.js'
 import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
 import type { Connection } from '@libp2p/interfaces/connection'
-import type { Startable } from '@libp2p/interfaces'
-import { peerIdFromKeys, peerIdFromString } from '@libp2p/peer-id'
+import type { Startable } from '@libp2p/interfaces/startable'
+import { peerIdFromKeys } from '@libp2p/peer-id'
 import type { Components } from '@libp2p/interfaces/components'
 
 const log = logger('libp2p:identify')
@@ -161,15 +161,15 @@ export class IdentifyService implements Startable {
 
     const connections: Connection[] = []
 
-    for (const [peerIdStr, conns] of this.components.getConnectionManager().getConnectionMap().entries()) {
-      const peerId = peerIdFromString(peerIdStr)
+    for (const conn of this.components.getConnectionManager().getConnections()) {
+      const peerId = conn.remotePeer
       const peer = await this.components.getPeerStore().get(peerId)
 
       if (!peer.protocols.includes(this.identifyPushProtocolStr)) {
         continue
       }
 
-      connections.push(...conns)
+      connections.push(conn)
     }
 
     await this.push(connections)

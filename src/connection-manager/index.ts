@@ -4,16 +4,21 @@ import mergeOptions from 'merge-options'
 import { LatencyMonitor, SummaryObject } from './latency-monitor.js'
 // @ts-expect-error retimer does not have types
 import retimer from 'retimer'
-import { CustomEvent, EventEmitter, Startable } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import type { Startable } from '@libp2p/interfaces/startable'
 import { trackedMap } from '@libp2p/tracked-map'
 import { codes } from '../errors.js'
 import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
 // @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import type { Connection } from '@libp2p/interfaces/connection'
-import type { ConnectionManager } from '@libp2p/interfaces/registrar'
-import type { Components } from '@libp2p/interfaces/components'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 import * as STATUS from '@libp2p/interfaces/connection/status'
+import { Dialer } from './dialer/index.js'
+import type { AddressSorter } from '@libp2p/interfaces/peer-store'
+import type { Resolver } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:connection-manager')
 
@@ -34,21 +39,16 @@ const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
 const METRICS_PEER_VALUES = 'peer-values'
 
-export interface ConnectionManagerEvents {
-  'peer:connect': CustomEvent<PeerId>
-  'peer:disconnect': CustomEvent<PeerId>
-}
-
 export interface ConnectionManagerInit {
   /**
-   * The maximum number of connections allowed
+   * The maximum number of connections to keep open
    */
-  maxConnections?: number
+  maxConnections: number
 
   /**
-   * The minimum number of connections to avoid pruning
+   * The minimum number of connections to keep open
    */
-  minConnections?: number
+  minConnections: number
 
   /**
    * The max data (in and out), per average interval to allow
@@ -86,39 +86,75 @@ export interface ConnectionManagerInit {
   defaultPeerValue?: number
 
   /**
-   * Should preemptively guarantee connections are above the low watermark
+   * If true, try to connect to all discovered peers up to the connection manager limit
    */
   autoDial?: boolean
 
   /**
-   * How often, in milliseconds, it should preemptively guarantee connections are above the low watermark
+   * How long to wait between attempting to keep our number of concurrent connections
+   * above minConnections
    */
-  autoDialInterval?: number
+  autoDialInterval: number
+
+  /**
+   * Sort the known addresses of a peer before trying to dial
+   */
+  addressSorter?: AddressSorter
+
+  /**
+   * Number of max concurrent dials
+   */
+  maxParallelDials?: number
+
+  /**
+   * Number of max addresses to dial for a given peer
+   */
+  maxAddrsToDial?: number
+
+  /**
+   * How long a dial attempt is allowed to take
+   */
+  dialTimeout?: number
+
+  /**
+   * Number of max concurrent dials per peer
+   */
+  maxDialsPerPeer?: number
+
+  /**
+   * Multiaddr resolvers to use when dialing
+   */
+  resolvers?: Record<string, Resolver>
+}
+
+export interface ConnectionManagerEvents {
+  'peer:connect': CustomEvent<PeerId>
+  'peer:disconnect': CustomEvent<PeerId>
 }
 
 /**
  * Responsible for managing known connections.
  */
-export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
-  private readonly components: Components
-  private readonly init: Required<ConnectionManagerInit>
+export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable, Initializable {
+  public readonly dialer: Dialer
+  private components = new Components()
+  private readonly opts: Required<ConnectionManagerInit>
   private readonly peerValues: Map<string, number>
   private readonly connections: Map<string, Connection[]>
   private started: boolean
   private timer?: ReturnType<retimer>
   private readonly latencyMonitor: LatencyMonitor
 
-  constructor (components: Components, init: ConnectionManagerInit = {}) {
+  constructor (init: ConnectionManagerInit) {
     super()
 
-    this.components = components
-    this.init = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
+    this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
 
-    if (this.init.maxConnections < this.init.minConnections) {
+    if (this.opts.maxConnections < this.opts.minConnections) {
       throw errCode(new Error('Connection Manager maxConnections must be greater than minConnections'), codes.ERR_INVALID_PARAMETERS)
     }
 
-    log('options: %o', this.init)
+    log('options: %o', this.opts)
 
     /**
      * Map of peer identifiers to their peer value for pruning connections.
@@ -153,12 +189,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       setMaxListeners?.(Infinity, this)
     } catch {}
 
-    this.components.getUpgrader().addEventListener('connection', (evt) => {
-      void this.onConnect(evt).catch(err => {
-        log.error(err)
-      })
-    })
-    this.components.getUpgrader().addEventListener('connectionEnd', this.onDisconnect.bind(this))
+    this.dialer = new Dialer(this.opts)
+
+    this.onConnect = this.onConnect.bind(this)
+    this.onDisconnect = this.onDisconnect.bind(this)
+  }
+
+  init (components: Components): void {
+    this.components = components
+
+    this.dialer.init(components)
   }
 
   isStarted () {
@@ -171,16 +211,27 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   async start () {
     if (this.components.getMetrics() != null) {
-      this.timer = this.timer ?? retimer(this._checkMetrics, this.init.pollInterval)
+      this.timer = this.timer ?? retimer(this._checkMetrics, this.opts.pollInterval)
     }
 
     // latency monitor
     this.latencyMonitor.start()
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
     this.latencyMonitor.addEventListener('data', this._onLatencyMeasure)
+    await this.dialer.start()
 
     this.started = true
     log('started')
+  }
+
+  async afterStart () {
+    this.components.getUpgrader().addEventListener('connection', this.onConnect)
+    this.components.getUpgrader().addEventListener('connectionEnd', this.onDisconnect)
+  }
+
+  async beforeStop () {
+    this.components.getUpgrader().removeEventListener('connection', this.onConnect)
+    this.components.getUpgrader().removeEventListener('connectionEnd', this.onDisconnect)
   }
 
   /**
@@ -191,6 +242,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.latencyMonitor.removeEventListener('data', this._onLatencyMeasure)
     this.latencyMonitor.stop()
+    await this.dialer.stop()
 
     this.started = false
     await this._close()
@@ -238,23 +290,29 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     if (metrics != null) {
       try {
         const movingAverages = metrics.getGlobal().getMovingAverages()
-        const received = movingAverages.dataReceived[this.init.movingAverageInterval].movingAverage
+        const received = movingAverages.dataReceived[this.opts.movingAverageInterval].movingAverage
         await this._checkMaxLimit('maxReceivedData', received)
-        const sent = movingAverages.dataSent[this.init.movingAverageInterval].movingAverage
+        const sent = movingAverages.dataSent[this.opts.movingAverageInterval].movingAverage
         await this._checkMaxLimit('maxSentData', sent)
         const total = received + sent
         await this._checkMaxLimit('maxData', total)
         log('metrics update', total)
       } finally {
-        this.timer = retimer(this._checkMetrics, this.init.pollInterval)
+        this.timer = retimer(this._checkMetrics, this.opts.pollInterval)
       }
     }
+  }
+
+  onConnect (evt: CustomEvent<Connection>) {
+    void this._onConnect(evt).catch(err => {
+      log.error(err)
+    })
   }
 
   /**
    * Tracks the incoming connection and check the connection limit
    */
-  async onConnect (evt: CustomEvent<Connection>) {
+  async _onConnect (evt: CustomEvent<Connection>) {
     const { detail: connection } = evt
 
     if (!this.started) {
@@ -278,10 +336,10 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     if (!this.peerValues.has(peerIdStr)) {
-      this.peerValues.set(peerIdStr, this.init.defaultPeerValue)
+      this.peerValues.set(peerIdStr, this.opts.defaultPeerValue)
     }
 
-    await this._checkMaxLimit('maxConnections', this.getConnectionList().length)
+    await this._checkMaxLimit('maxConnections', this.getConnections().length)
     this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
   }
 
@@ -311,35 +369,64 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
   }
 
-  getConnectionMap (): Map<string, Connection[]> {
-    return this.connections
-  }
-
-  getConnectionList (): Connection[] {
-    let output: Connection[] = []
-
-    for (const connections of this.connections.values()) {
-      output = output.concat(connections)
+  getConnections (peerId?: PeerId): Connection[] {
+    if (peerId != null) {
+      return this.connections.get(peerId.toString()) ?? []
     }
 
-    return output
-  }
+    let conns: Connection[] = []
 
-  getConnections (peerId: PeerId): Connection[] {
-    return this.connections.get(peerId.toString()) ?? []
-  }
-
-  /**
-   * Get a connection with a peer
-   */
-  getConnection (peerId: PeerId): Connection | undefined {
-    const connections = this.getAll(peerId)
-
-    if (connections.length > 0) {
-      return connections[0]
+    for (const c of this.connections.values()) {
+      conns = conns.concat(c)
     }
 
-    return undefined
+    return conns
+  }
+
+  async openConnection (peerId: PeerId, options?: AbortOptions): Promise<Connection> {
+    log('dial to %p', peerId)
+    const existingConnections = this.getConnections(peerId)
+
+    if (existingConnections.length > 0) {
+      log('had an existing connection to %p', peerId)
+
+      return existingConnections[0]
+    }
+
+    const connection = await this.dialer.dial(peerId, options)
+    let peerConnections = this.connections.get(peerId.toString())
+
+    if (peerConnections == null) {
+      peerConnections = []
+      this.connections.set(peerId.toString(), peerConnections)
+    }
+
+    // we get notified of connections via the Upgrader emitting "connection"
+    // events, double check we aren't already tracking this connection before
+    // storing it
+    let trackedConnection = false
+
+    for (const conn of peerConnections) {
+      if (conn.id === connection.id) {
+        trackedConnection = true
+      }
+    }
+
+    if (!trackedConnection) {
+      peerConnections.push(connection)
+    }
+
+    return connection
+  }
+
+  async closeConnections (peerId: PeerId): Promise<void> {
+    const connections = this.connections.get(peerId.toString()) ?? []
+
+    await Promise.all(
+      connections.map(async connection => {
+        return await connection.close()
+      })
+    )
   }
 
   /**
@@ -377,7 +464,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * If the `value` of `name` has exceeded its limit, maybe close a connection
    */
   async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number) {
-    const limit = this.init[name]
+    const limit = this.opts[name]
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
       log('%s: limit exceeded: %p, %d', this.components.getPeerId(), name, value)
@@ -390,7 +477,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * to the lowest valued peer.
    */
   async _maybeDisconnectOne () {
-    if (this.init.minConnections < this.connections.size) {
+    if (this.opts.minConnections < this.connections.size) {
       const peerValues = Array.from(new Map([...this.peerValues.entries()].sort((a, b) => a[1] - b[1])))
 
       log('%p: sorted peer values: %j', this.components.getPeerId(), peerValues)

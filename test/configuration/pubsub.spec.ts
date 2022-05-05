@@ -40,12 +40,15 @@ describe('Pubsub subsystem is configurable', () => {
     })
 
     libp2p = await createLibp2p(customOptions)
+    // @ts-expect-error not part of interface
     expect(libp2p.pubsub.isStarted()).to.equal(false)
 
     await libp2p.start()
+    // @ts-expect-error not part of interface
     expect(libp2p.pubsub.isStarted()).to.equal(true)
 
     await libp2p.stop()
+    // @ts-expect-error not part of interface
     expect(libp2p.pubsub.isStarted()).to.equal(false)
   })
 })
