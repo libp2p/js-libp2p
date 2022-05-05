@@ -83,7 +83,6 @@ export class DialRequest {
 
     try {
       return await Promise.any(this.addrs.map(async (addr, i) => {
-        console.log(`called`)
         const token = await tokenHolder.shift() // get token
         let conn
         try {
