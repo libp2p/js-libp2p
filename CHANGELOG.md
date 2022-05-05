@@ -1,3 +1,10 @@
+### [1.0.5](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.4...v1.0.5) (2022-05-05)
+
+
+### Bug Fixes
+
+* ignore missing stream ([#169](https://github.com/libp2p/js-libp2p-mplex/issues/169)) ([f6d3dd9](https://github.com/libp2p/js-libp2p-mplex/commit/f6d3dd9f55020df93c8e7e116cb2ce1614b3404b))
+
 ### [1.0.4](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.3...v1.0.4) (2022-05-04)
 
 
