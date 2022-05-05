@@ -4,7 +4,7 @@ import { abortableSource } from 'abortable-iterator'
 import { encode } from './encode.js'
 import { decode } from './decode.js'
 import { restrictSize } from './restrict-size.js'
-import { MessageTypes, MessageTypeNames, Message, ReceiverMessageTypes, InitiatorMessageTypes } from './message-types.js'
+import { MessageTypes, MessageTypeNames, Message } from './message-types.js'
 import { createStream } from './stream.js'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { trackedMap } from '@libp2p/tracked-map'
@@ -234,10 +234,6 @@ export class MplexStreamMuxer implements StreamMuxer {
 
     if (stream == null) {
       log('missing stream %s', id)
-
-      // send a reset
-      this._source.push({ id, type: InitiatorMessageTypes.RESET })
-      this._source.push({ id, type: ReceiverMessageTypes.RESET })
 
       return
     }
