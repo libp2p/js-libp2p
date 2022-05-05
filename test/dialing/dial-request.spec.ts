@@ -16,10 +16,11 @@ const error = new Error('dial failure')
 describe('Dial Request', () => {
   it('should end when a single multiaddr dials succeeds', async () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const deferredConn = pDefer<void>()
     const actions: Record<string, () => Promise<any>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(error),
       '/ip4/127.0.0.1/tcp/1232': async () => await Promise.resolve(connection),
-      '/ip4/127.0.0.1/tcp/1233': async () => await Promise.reject(error)
+      '/ip4/127.0.0.1/tcp/1233': async () => deferredConn.promise
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
@@ -33,15 +34,12 @@ describe('Dial Request', () => {
       dialAction
     })
 
-    sinon.spy(actions, '/ip4/127.0.0.1/tcp/1231')
-    sinon.spy(actions, '/ip4/127.0.0.1/tcp/1232')
-    sinon.spy(actions, '/ip4/127.0.0.1/tcp/1233')
+    // Make sure that dial attempt comes back before terminating last dial action
+    expect(await dialRequest.run({ signal: controller.signal })).to.equal(connection)
 
-    const result = await dialRequest.run({ signal: controller.signal })
-    expect(result).to.equal(connection)
-    expect(actions['/ip4/127.0.0.1/tcp/1231']).to.have.property('callCount', 1)
-    expect(actions['/ip4/127.0.0.1/tcp/1232']).to.have.property('callCount', 1)
-    expect(actions['/ip4/127.0.0.1/tcp/1233']).to.have.property('callCount', 0)
+    // End dial attempt
+    deferredConn.reject()
+
     expect(dialerReleaseTokenSpy.callCount).to.equal(2)
   })
 
@@ -220,22 +218,16 @@ describe('Dial Request', () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
     const actions: Record<string, () => Promise<any>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => {
+        await delay(100)
+      },
+      '/ip4/127.0.0.1/tcp/1232': async () => {
         // Successful dial takes longer to establish
         await delay(1000)
 
         return connection
-
       },
-      '/ip4/127.0.0.1/tcp/1232': async () => {
-        // Non-successful dial comes back quickly e.g. because of
-        // socket errors such as EHOSTUNREACH
-        await delay(100)
 
-        throw Error('boom')
-      },
       '/ip4/127.0.0.1/tcp/1233': async () => {
-        // Dial comes back without any result, e.g. because of
-        // bad implementation of the dial action
         await delay(100) 
       }
     }
@@ -253,9 +245,13 @@ describe('Dial Request', () => {
       }
     })
   
-    await expect(dialRequest.run()).to.eventually.equal(connection)  
+    await expect(dialRequest.run()).to.eventually.equal(connection)
+
+    // Dial attempt finished without connection
     expect(signals['/ip4/127.0.0.1/tcp/1231']).to.have.property('aborted', false)
-    expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', true)
-    expect(signals['/ip4/127.0.0.1/tcp/1233']).to.have.property('aborted', true)
+    // Dial attempt led to connection
+    expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', false)
+    // Dial attempt finished without connection
+    expect(signals['/ip4/127.0.0.1/tcp/1233']).to.have.property('aborted', false)
   })
 })

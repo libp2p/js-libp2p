@@ -83,6 +83,7 @@ export class DialRequest {
 
     try {
       return await Promise.any(this.addrs.map(async (addr, i) => {
+        console.log(`called`)
         const token = await tokenHolder.shift() // get token
         let conn
         try {
@@ -100,6 +101,13 @@ export class DialRequest {
           } else {
             this.dialer.releaseToken(tokens.splice(tokens.indexOf(token), 1)[0])
           }
+        }
+
+        if (!conn) {
+          // Notify Promise.any that attempt was not successful
+          // to prevent from returning undefined despite there
+          // were successful dial attempts
+          throw Error('dialAction led to empty object')
         }
 
         return conn
