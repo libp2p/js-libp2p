@@ -4,6 +4,7 @@ import { Responder } from './responder.js'
 import { Querier } from './querier.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import type { Components, Initializable } from '@libp2p/interfaces/components'
+import { symbol } from '@libp2p/interfaces/peer-discovery'
 
 export interface GoMulticastDNSInit {
   queryPeriod?: number
@@ -30,6 +31,14 @@ export class GoMulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements
     this._querier.addEventListener('peer', (evt) => {
       this.dispatchEvent(new CustomEvent('peer', { detail: evt.detail }))
     })
+  }
+
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] () {
+    return '@libp2p/go-mdns'
   }
 
   init (components: Components): void {

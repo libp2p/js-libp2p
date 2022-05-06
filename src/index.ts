@@ -6,6 +6,7 @@ import { GoMulticastDNS } from './compat/index.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { Components, Initializable } from '@libp2p/interfaces/components'
+import { symbol } from '@libp2p/interfaces/peer-discovery'
 
 const log = logger('libp2p:mdns')
 
@@ -20,8 +21,6 @@ export interface MulticastDNSOptions {
 }
 
 export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Initializable {
-  static tag = 'mdns'
-
   public mdns?: multicastDNS.MulticastDNS
 
   private readonly broadcast: boolean
@@ -51,6 +50,14 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
       })
       this._goMdns.addEventListener('peer', this._onPeer)
     }
+  }
+
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] () {
+    return '@libp2p/mdns'
   }
 
   init (components: Components): void {

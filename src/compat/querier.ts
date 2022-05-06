@@ -7,6 +7,7 @@ import type { ResponsePacket } from 'multicast-dns'
 import type { RemoteInfo } from 'dgram'
 import { Components, Initializable } from '@libp2p/interfaces/components'
 import { findPeerInfoInAnswers } from './utils.js'
+import { symbol } from '@libp2p/interfaces/peer-discovery'
 
 const log = logger('libp2p:mdns:compat:querier')
 
@@ -40,6 +41,14 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
       )
     }
     this._onResponse = this._onResponse.bind(this)
+  }
+
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] () {
+    return '@libp2p/go-mdns-querier'
   }
 
   init (components: Components): void {
