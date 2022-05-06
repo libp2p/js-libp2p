@@ -5,6 +5,7 @@ import { logger } from '@libp2p/logger'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { symbol } from '@libp2p/interfaces/peer-discovery'
 
 const log = logger('libp2p:bootstrap')
 
@@ -61,6 +62,14 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
 
       this.list.push(peerData)
     }
+  }
+
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] () {
+    return '@libp2p/bootstrap'
   }
 
   isStarted () {
