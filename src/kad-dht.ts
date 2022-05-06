@@ -24,6 +24,7 @@ import { Components, Initializable } from '@libp2p/interfaces/components'
 import type { KadDHTInit } from './index.js'
 import { validators as recordValidators } from '@libp2p/record/validators'
 import { selectors as recordSelectors } from '@libp2p/record/selectors'
+import { symbol } from '@libp2p/interfaces/peer-discovery'
 
 /**
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
@@ -177,6 +178,14 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
         this.log.error('could not add %p to routing table', peerId, err)
       })
     })
+  }
+
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] () {
+    return '@libp2p/kad-dht'
   }
 
   init (components: Components): void {

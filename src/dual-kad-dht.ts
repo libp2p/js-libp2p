@@ -10,6 +10,7 @@ import type { CID } from 'multiformats'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
 import { Components, Initializable } from '@libp2p/interfaces/components'
+import { symbol } from '@libp2p/interfaces/peer-discovery'
 
 const log = logger('libp2p:kad-dht')
 
@@ -39,6 +40,14 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
         detail: evt.detail
       }))
     })
+  }
+
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] () {
+    return '@libp2p/dual-kad-dht'
   }
 
   init (components: Components): void {
