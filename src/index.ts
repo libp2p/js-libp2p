@@ -23,6 +23,8 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
 }
 
 export class WebSockets implements Transport {
+  static tag = 'WebSockets'
+
   private readonly init?: WebSocketsInit
 
   constructor (init?: WebSocketsInit) {
@@ -30,7 +32,7 @@ export class WebSockets implements Transport {
   }
 
   get [Symbol.toStringTag] () {
-    return this.constructor.name
+    return WebSockets.tag
   }
 
   get [symbol] (): true {
