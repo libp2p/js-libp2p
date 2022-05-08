@@ -47,7 +47,7 @@ describe('Transport Manager (WebSockets)', () => {
     tm.add(transport)
 
     expect(tm.getTransports()).to.have.lengthOf(1)
-    await tm.remove(transport.constructor.name)
+    await tm.remove(transport[Symbol.toStringTag])
     expect(tm.getTransports()).to.have.lengthOf(0)
   })
 
