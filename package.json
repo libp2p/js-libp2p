@@ -176,14 +176,14 @@
     "iso-random-stream": "^2.0.0",
     "multiformats": "^9.4.5",
     "node-forge": "^1.1.0",
-    "protons-runtime": "^1.0.2",
+    "protons-runtime": "^1.0.4",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
     "@types/mocha": "^9.0.0",
     "aegir": "^37.0.12",
     "benchmark": "^2.1.4",
-    "protons": "^3.0.2",
+    "protons": "^3.0.4",
     "sinon": "^13.0.1",
     "util": "^0.12.3",
     "wherearewe": "^1.0.0"

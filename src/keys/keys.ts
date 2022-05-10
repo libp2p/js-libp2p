@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
 import { enumeration, encodeMessage, decodeMessage, message, bytes } from 'protons-runtime'
+import type { Codec } from 'protons-runtime'
 
 export enum KeyType {
   RSA = 'RSA',
@@ -9,19 +10,24 @@ export enum KeyType {
   Secp256k1 = 'Secp256k1'
 }
 
-export namespace KeyType {
-  export const codec = () => {
-    return enumeration<typeof KeyType>(KeyType)
-  }
+enum __KeyTypeValues {
+  RSA = 0,
+  Ed25519 = 1,
+  Secp256k1 = 2
 }
 
+export namespace KeyType {
+  export const codec = () => {
+    return enumeration<typeof KeyType>(__KeyTypeValues)
+  }
+}
 export interface PublicKey {
   Type: KeyType
   Data: Uint8Array
 }
 
 export namespace PublicKey {
-  export const codec = () => {
+  export const codec = (): Codec<PublicKey> => {
     return message<PublicKey>({
       1: { name: 'Type', codec: KeyType.codec() },
       2: { name: 'Data', codec: bytes }
@@ -43,7 +49,7 @@ export interface PrivateKey {
 }
 
 export namespace PrivateKey {
-  export const codec = () => {
+  export const codec = (): Codec<PrivateKey> => {
     return message<PrivateKey>({
       1: { name: 'Type', codec: KeyType.codec() },
       2: { name: 'Data', codec: bytes }
