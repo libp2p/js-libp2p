@@ -296,7 +296,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         await this._checkMaxLimit('maxSentData', sent)
         const total = received + sent
         await this._checkMaxLimit('maxData', total)
-        log('metrics update', total)
+        log.trace('metrics update', total)
       } finally {
         this.timer = retimer(this._checkMetrics, this.opts.pollInterval)
       }

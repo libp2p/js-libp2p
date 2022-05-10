@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
 import { encodeMessage, decodeMessage, message, bytes, enumeration } from 'protons-runtime'
+import type { Codec } from 'protons-runtime'
 
 export interface Exchange {
   id?: Uint8Array
@@ -9,7 +10,7 @@ export interface Exchange {
 }
 
 export namespace Exchange {
-  export const codec = () => {
+  export const codec = (): Codec<Exchange> => {
     return message<Exchange>({
       1: { name: 'id', codec: bytes, optional: true },
       2: { name: 'pubkey', codec: PublicKey.codec(), optional: true }
@@ -32,19 +33,25 @@ export enum KeyType {
   ECDSA = 'ECDSA'
 }
 
-export namespace KeyType {
-  export const codec = () => {
-    return enumeration<typeof KeyType>(KeyType)
-  }
+enum __KeyTypeValues {
+  RSA = 0,
+  Ed25519 = 1,
+  Secp256k1 = 2,
+  ECDSA = 3
 }
 
+export namespace KeyType {
+  export const codec = () => {
+    return enumeration<typeof KeyType>(__KeyTypeValues)
+  }
+}
 export interface PublicKey {
   Type: KeyType
   Data: Uint8Array
 }
 
 export namespace PublicKey {
-  export const codec = () => {
+  export const codec = (): Codec<PublicKey> => {
     return message<PublicKey>({
       1: { name: 'Type', codec: KeyType.codec() },
       2: { name: 'Data', codec: bytes }
