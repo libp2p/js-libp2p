@@ -190,7 +190,7 @@
     "p-wait-for": "^4.1.0",
     "protons": "^3.0.4",
     "rimraf": "^3.0.2",
-    "sinon": "^13.0.1",
+    "sinon": "^14.0.0",
     "ts-sinon": "^2.0.2"
   },
   "browser": {
