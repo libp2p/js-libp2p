@@ -1,3 +1,10 @@
+### [0.22.12](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.11...v0.22.12) (2022-05-10)
+
+
+### Bug Fixes
+
+* encode protobuf enums correctly ([#254](https://github.com/libp2p/js-libp2p-crypto/issues/254)) ([a27dc64](https://github.com/libp2p/js-libp2p-crypto/commit/a27dc64a902d947d58fd87ed7c532a66f81eaedd))
+
 ### [0.22.11](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.10...v0.22.11) (2022-04-14)
 
 
