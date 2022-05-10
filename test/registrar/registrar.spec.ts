@@ -20,6 +20,7 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { Plaintext } from '../../src/insecure/index.js'
 import { WebSockets } from '@libp2p/websockets'
 import { Mplex } from '@libp2p/mplex'
+import type { PeerProtocolsChangeData } from '@libp2p/interfaces/peer-store'
 
 const protocol = '/test/1.0.0'
 
@@ -145,6 +146,15 @@ describe('registrar', () => {
         detail: conn
       }))
 
+      // identify completes
+      await libp2p.components.getPeerStore().dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+        detail: {
+          peerId: conn.remotePeer,
+          protocols: [protocol],
+          oldProtocols: []
+        }
+      }))
+
       // remote peer disconnects
       await conn.close()
       await libp2p.components.getUpgrader().dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
@@ -186,8 +196,18 @@ describe('registrar', () => {
       // Add protocol to peer and update it
       await libp2p.peerStore.protoBook.add(remotePeerId, [protocol])
 
+      // remote peer connects
       await libp2p.components.getUpgrader().dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
+      }))
+
+      // identify completes
+      await libp2p.components.getPeerStore().dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+        detail: {
+          peerId: conn.remotePeer,
+          protocols: [protocol],
+          oldProtocols: []
+        }
       }))
 
       await onConnectDefer.promise
