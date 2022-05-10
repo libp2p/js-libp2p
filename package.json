@@ -132,7 +132,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/crypto": "^0.22.11",
+    "@libp2p/crypto": "^0.22.12",
     "@libp2p/interfaces": "^1.3.32",
     "@libp2p/logger": "^1.1.4",
     "@libp2p/peer-id": "^1.1.10",
@@ -162,7 +162,7 @@
     "p-map": "^5.3.0",
     "p-queue": "^7.2.0",
     "private-ip": "^2.3.3",
-    "protons-runtime": "^1.0.2",
+    "protons-runtime": "^1.0.4",
     "streaming-iterables": "^6.0.0",
     "timeout-abort-controller": "^3.0.0",
     "uint8arrays": "^3.0.0",
@@ -187,7 +187,7 @@
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-retry": "^5.0.0",
-    "protons": "^3.0.2",
+    "protons": "^3.0.4",
     "sinon": "^13.0.1",
     "ts-sinon": "^2.0.2",
     "which": "^2.0.2"

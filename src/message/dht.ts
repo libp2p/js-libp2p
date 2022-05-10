@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
 import { encodeMessage, decodeMessage, message, bytes, string, enumeration, int32 } from 'protons-runtime'
+import type { Codec } from 'protons-runtime'
 
 export interface Record {
   key?: Uint8Array
@@ -12,7 +13,7 @@ export interface Record {
 }
 
 export namespace Record {
-  export const codec = () => {
+  export const codec = (): Codec<Record> => {
     return message<Record>({
       1: { name: 'key', codec: bytes, optional: true },
       2: { name: 'value', codec: bytes, optional: true },
@@ -50,11 +51,21 @@ export namespace Message {
     PING = 'PING'
   }
 
+  enum __MessageTypeValues {
+    PUT_VALUE = 0,
+    GET_VALUE = 1,
+    ADD_PROVIDER = 2,
+    GET_PROVIDERS = 3,
+    FIND_NODE = 4,
+    PING = 5
+  }
+
   export namespace MessageType {
     export const codec = () => {
-      return enumeration<typeof MessageType>(MessageType)
+      return enumeration<typeof MessageType>(__MessageTypeValues)
     }
   }
+
   export enum ConnectionType {
     NOT_CONNECTED = 'NOT_CONNECTED',
     CONNECTED = 'CONNECTED',
@@ -62,11 +73,19 @@ export namespace Message {
     CANNOT_CONNECT = 'CANNOT_CONNECT'
   }
 
+  enum __ConnectionTypeValues {
+    NOT_CONNECTED = 0,
+    CONNECTED = 1,
+    CAN_CONNECT = 2,
+    CANNOT_CONNECT = 3
+  }
+
   export namespace ConnectionType {
     export const codec = () => {
-      return enumeration<typeof ConnectionType>(ConnectionType)
+      return enumeration<typeof ConnectionType>(__ConnectionTypeValues)
     }
   }
+
   export interface Peer {
     id?: Uint8Array
     addrs: Uint8Array[]
@@ -74,7 +93,7 @@ export namespace Message {
   }
 
   export namespace Peer {
-    export const codec = () => {
+    export const codec = (): Codec<Peer> => {
       return message<Peer>({
         1: { name: 'id', codec: bytes, optional: true },
         2: { name: 'addrs', codec: bytes, repeats: true },
@@ -91,7 +110,7 @@ export namespace Message {
     }
   }
 
-  export const codec = () => {
+  export const codec = (): Codec<Message> => {
     return message<Message>({
       1: { name: 'type', codec: Message.MessageType.codec(), optional: true },
       10: { name: 'clusterLevelRaw', codec: int32, optional: true },
