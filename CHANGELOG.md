@@ -1,3 +1,10 @@
+### [0.22.13](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.12...v0.22.13) (2022-05-10)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump sinon from 13.0.2 to 14.0.0 ([#253](https://github.com/libp2p/js-libp2p-crypto/issues/253)) ([f999025](https://github.com/libp2p/js-libp2p-crypto/commit/f999025ef6f9a2a5ad86e60a6ff95cc4bcef9f06))
+
 ### [0.22.12](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.11...v0.22.12) (2022-05-10)
 
 
