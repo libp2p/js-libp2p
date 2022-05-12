@@ -102,6 +102,14 @@ export class DialRequest {
           }
         }
 
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        if (!conn) { // eslint-disable @typescript-eslint/strict-boolean-expressions
+          // Notify Promise.any that attempt was not successful
+          // to prevent from returning undefined despite there
+          // were successful dial attempts
+          throw Error('dialAction led to empty object')
+        }
+
         return conn
       }))
     } finally {
