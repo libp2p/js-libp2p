@@ -235,7 +235,7 @@ describe('Dial Request', () => {
 
     const dialRequest = new DialRequest({
       addrs: Object.keys(actions).map(str => new Multiaddr(str)),
-      dialer: new DefaultDialer(new Components(), {
+      dialer: new Dialer({
         maxParallelDials: 3
       }),
       dialAction: async (ma, opts) => {
