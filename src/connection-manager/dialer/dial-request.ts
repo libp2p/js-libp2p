@@ -86,7 +86,7 @@ export class DialRequest {
         const token = await tokenHolder.shift() // get token
         let conn
         try {
-          const signal = dialAbortControllers[i]!.signal
+          const signal = (dialAbortControllers[i] as AbortController).signal
           conn = await this.dialAction(addr, { ...options, signal: (options.signal != null) ? anySignal([signal, options.signal]) : signal })
           // Remove the successful AbortController so it is not aborted
           dialAbortControllers[i] = undefined
