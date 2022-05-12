@@ -15,11 +15,11 @@ const error = new Error('dial failure')
 describe('Dial Request', () => {
   it('should end when a single multiaddr dials succeeds', async () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
-    const deferredConn = pDefer<void>()
+    const deferredConn = pDefer()
     const actions: Record<string, () => Promise<any>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(error),
       '/ip4/127.0.0.1/tcp/1232': async () => await Promise.resolve(connection),
-      '/ip4/127.0.0.1/tcp/1233': async () => deferredConn.promise
+      '/ip4/127.0.0.1/tcp/1233': async () => await deferredConn.promise
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
@@ -227,10 +227,10 @@ describe('Dial Request', () => {
       },
 
       '/ip4/127.0.0.1/tcp/1233': async () => {
-        await delay(100) 
+        await delay(100)
       }
     }
-  
+
     const signals: Record<string, AbortSignal | undefined> = {}
 
     const dialRequest = new DialRequest({
@@ -243,7 +243,7 @@ describe('Dial Request', () => {
         return await actions[ma.toString()]()
       }
     })
-  
+
     await expect(dialRequest.run()).to.eventually.equal(connection)
 
     // Dial attempt finished without connection

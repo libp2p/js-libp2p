@@ -62,7 +62,7 @@ export class DialRequest {
       })
     }
 
-    const dialAbortControllers: (AbortController | undefined)[] = this.addrs.map(() => {
+    const dialAbortControllers: Array<(AbortController | undefined)> = this.addrs.map(() => {
       const controller = new AbortController()
       try {
         // fails on node < 15.4
@@ -100,13 +100,6 @@ export class DialRequest {
           } else {
             this.dialer.releaseToken(tokens.splice(tokens.indexOf(token), 1)[0])
           }
-        }
-
-        if (!conn) {
-          // Notify Promise.any that attempt was not successful
-          // to prevent from returning undefined despite there
-          // were successful dial attempts
-          throw Error('dialAction led to empty object')
         }
 
         return conn
