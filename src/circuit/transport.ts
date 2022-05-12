@@ -49,7 +49,7 @@ export class Circuit implements Transport, Initializable {
   }
 
   get [Symbol.toStringTag] () {
-    return this.constructor.name
+    return 'libp2p/circuit-relay-v1'
   }
 
   async _onProtocol (data: IncomingStreamData) {

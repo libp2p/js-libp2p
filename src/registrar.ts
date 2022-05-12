@@ -33,11 +33,11 @@ export class DefaultRegistrar implements Registrar {
     this.components = components
 
     this._onDisconnect = this._onDisconnect.bind(this)
-    this._onConnect = this._onConnect.bind(this)
     this._onProtocolChange = this._onProtocolChange.bind(this)
 
     this.components.getConnectionManager().addEventListener('peer:disconnect', this._onDisconnect)
-    this.components.getConnectionManager().addEventListener('peer:connect', this._onConnect)
+
+    // happens after identify
     this.components.getPeerStore().addEventListener('change:protocols', this._onProtocolChange)
   }
 
@@ -151,22 +151,6 @@ export class DefaultRegistrar implements Registrar {
         for (const { topology, protocols } of this.topologies.values()) {
           if (supportsProtocol(peerProtocols, protocols)) {
             topology.onDisconnect(connection.remotePeer)
-          }
-        }
-      })
-      .catch(err => {
-        log.error(err)
-      })
-  }
-
-  _onConnect (evt: CustomEvent<Connection>) {
-    const connection = evt.detail
-
-    void this.components.getPeerStore().protoBook.get(connection.remotePeer)
-      .then(peerProtocols => {
-        for (const { topology, protocols } of this.topologies.values()) {
-          if (supportsProtocol(peerProtocols, protocols)) {
-            topology.onConnect(connection.remotePeer, connection)
           }
         }
       })
