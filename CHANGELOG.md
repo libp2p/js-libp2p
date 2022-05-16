@@ -1,3 +1,10 @@
+### [1.0.12](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.11...v1.0.12) (2022-05-16)
+
+
+### Bug Fixes
+
+* remove p-map dependency ([#335](https://github.com/libp2p/js-libp2p-kad-dht/issues/335)) ([b50039d](https://github.com/libp2p/js-libp2p-kad-dht/commit/b50039d1e0e7fba6ed5c8cc25777302037a0dadb))
+
 ### [1.0.11](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.10...v1.0.11) (2022-05-10)
 
 
