@@ -159,7 +159,6 @@
     "k-bucket": "^5.1.0",
     "multiformats": "^9.6.3",
     "p-defer": "^4.0.0",
-    "p-map": "^5.3.0",
     "p-queue": "^7.2.0",
     "private-ip": "^2.3.3",
     "protons-runtime": "^1.0.4",

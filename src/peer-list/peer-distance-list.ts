@@ -1,5 +1,4 @@
 import * as utils from '../utils.js'
-import pMap from 'p-map'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
@@ -77,7 +76,7 @@ export class PeerDistanceList {
       return true
     }
 
-    const dhtKeys = await pMap(peerIds, async (peerId) => await utils.convertPeerId(peerId))
+    const dhtKeys = await Promise.all(peerIds.map(utils.convertPeerId))
     const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance
 
     for (const dhtKey of dhtKeys) {
