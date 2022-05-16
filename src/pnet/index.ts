@@ -17,6 +17,8 @@ import type { ConnectionProtector } from '@libp2p/interfaces/connection'
 
 const log = logger('libp2p:pnet')
 
+export { generateKey } from './key-generator.js'
+
 export interface ProtectorInit {
   enabled?: boolean
   psk: Uint8Array
