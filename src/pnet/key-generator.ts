@@ -8,7 +8,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
  * @param {Uint8Array} bytes - An object to write the psk into
  * @returns {void}
  */
-export function generate (bytes: Uint8Array) {
+export function generateKey (bytes: Uint8Array) {
   const psk = uint8ArrayToString(randomBytes(KEY_LENGTH), 'base16')
   const key = uint8ArrayFromString('/key/swarm/psk/1.0.0/\n/base16/\n' + psk)
 

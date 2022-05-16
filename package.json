@@ -57,9 +57,6 @@
     "./pnet": {
       "import": "./dist/src/pnet/index.js"
     },
-    "./pnet/generate": {
-      "import": "./dist/src/pnet/key-generator.js"
-    },
     "./transport-manager": {
       "import": "./dist/src/transport-manager.js"
     }
