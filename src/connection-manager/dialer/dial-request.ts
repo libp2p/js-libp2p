@@ -85,14 +85,15 @@ export class DialRequest {
     try {
       return await Promise.any(this.addrs.map(async (addr, i) => {
         const token = await tokenHolder.shift() // get token
+        // End attempt once another attempt succeeded
         if (done) {
           this.dialer.releaseToken(tokens.splice(tokens.indexOf(token), 1)[0])
-          throw errCode(new Error('dialAction led to empty object'), codes.ERR_INVALID_PARAMETERS)
+          throw errCode(new Error('dialAction already succeeded'), codes.ERR_ALREADY_SUCCEEDED)
         }
 
         const controller = dialAbortControllers[i]
         if (controller == null) {
-          throw errCode(new Error('dialAction led to empty object'), codes.ERR_INVALID_PARAMETERS)
+          throw errCode(new Error('dialAction did not come with an AbortController'), codes.ERR_INVALID_PARAMETERS)
         }
         let conn
         try {
@@ -100,8 +101,6 @@ export class DialRequest {
           conn = await this.dialAction(addr, { ...options, signal: (options.signal != null) ? anySignal([signal, options.signal]) : signal })
           // Remove the successful AbortController so it is not aborted
           dialAbortControllers[i] = undefined
-          // This dial succeeded, don't attempt anything else
-          done = true
         } finally {
           completedDials++
           // If we have more or equal dials remaining than tokens, recycle the token, otherwise release it
@@ -119,6 +118,9 @@ export class DialRequest {
           // to prevent from returning undefined despite there
           // were successful dial attempts
           throw errCode(new Error('dialAction led to empty object'), codes.ERR_TRANSPORT_DIAL_FAILED)
+        } else {
+          // This dial succeeded, don't attempt anything else
+          done = true
         }
 
         return conn
