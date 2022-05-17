@@ -11,6 +11,7 @@ export default {
   },
   test: {
     before: async () => {
+      // use dynamic import because we only want to reference these files during the test run, e.g. after building
       const { createLibp2p } = await import('./dist/src/index.js')
       const { MULTIADDRS_WEBSOCKETS } = await import('./dist/test/fixtures/browser.js')
       const { Plaintext } = await import('./dist/src/insecure/index.js')

@@ -2,13 +2,14 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
 import { encodeMessage, decodeMessage, message, string, enumeration, bytes } from 'protons-runtime'
+import type { Codec } from 'protons-runtime'
 
 export interface FetchRequest {
   identifier: string
 }
 
 export namespace FetchRequest {
-  export const codec = () => {
+  export const codec = (): Codec<FetchRequest> => {
     return message<FetchRequest>({
       1: { name: 'identifier', codec: string }
     })
@@ -35,13 +36,19 @@ export namespace FetchResponse {
     ERROR = 'ERROR'
   }
 
+  enum __StatusCodeValues {
+    OK = 0,
+    NOT_FOUND = 1,
+    ERROR = 2
+  }
+
   export namespace StatusCode {
     export const codec = () => {
-      return enumeration<typeof StatusCode>(StatusCode)
+      return enumeration<typeof StatusCode>(__StatusCodeValues)
     }
   }
 
-  export const codec = () => {
+  export const codec = (): Codec<FetchResponse> => {
     return message<FetchResponse>({
       1: { name: 'status', codec: FetchResponse.StatusCode.codec() },
       2: { name: 'data', codec: bytes }

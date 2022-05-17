@@ -8,7 +8,7 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { PeerRecord } from '@libp2p/peer-record'
 import { TCP } from '@libp2p/tcp'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { mockUpgrader, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import sinon from 'sinon'
 import Peers from '../fixtures/peers.js'
 import pWaitFor from 'p-wait-for'
@@ -23,7 +23,6 @@ const addrs = [
 ]
 
 describe('Transport Manager (TCP)', () => {
-  const connectionGater = mockConnectionGater()
   let tm: DefaultTransportManager
   let localPeer: PeerId
   let components: Components
@@ -39,9 +38,7 @@ describe('Transport Manager (TCP)', () => {
       upgrader: mockUpgrader()
     })
     components.setAddressManager(new DefaultAddressManager(components, { listen: addrs.map(addr => addr.toString()) }))
-    components.setPeerStore(new PersistentPeerStore(components, {
-      addressFilter: connectionGater.filterMultiaddrForPeer
-    }))
+    components.setPeerStore(new PersistentPeerStore())
 
     tm = new DefaultTransportManager(components)
 

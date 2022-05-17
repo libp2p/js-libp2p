@@ -263,7 +263,7 @@ describe('auto-relay', () => {
       await relayLibp2p1.hangUp(relayLibp2p3.peerId)
 
       // Stub dial
-      sinon.stub(relayLibp2p1.components.getDialer(), 'dial').callsFake(async () => {
+      sinon.stub(relayLibp2p1.components.getConnectionManager(), 'openConnection').callsFake(async () => {
         deferred.resolve()
         return await Promise.reject(new Error('failed to dial'))
       })

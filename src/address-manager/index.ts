@@ -1,4 +1,5 @@
-import { AddressManagerEvents, CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import type { AddressManagerEvents } from '@libp2p/interfaces/address-manager'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Components } from '@libp2p/interfaces/components'

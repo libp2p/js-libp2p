@@ -11,7 +11,7 @@ import type { Connection } from '@libp2p/interfaces/connection'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { Duplex } from 'it-stream-types'
 import type { Circuit } from '../transport.js'
-import type { ConnectionManager } from '@libp2p/interfaces/registrar'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
 
 const log = logger('libp2p:circuit:hop')
 
@@ -58,8 +58,8 @@ export async function handleHop (hopRequest: HopRequest) {
   // Get the connection to the destination (stop) peer
   const destinationPeer = peerIdFromBytes(request.dstPeer.id)
 
-  const destinationConnection = connectionManager.getConnection(destinationPeer)
-  if (destinationConnection == null && !circuit.hopActive()) {
+  const destinationConnections = connectionManager.getConnections(destinationPeer)
+  if (destinationConnections.length === 0 && !circuit.hopActive()) {
     log('HOP request received but we are not connected to the destination peer')
     return streamHandler.end({
       type: CircuitPB.Type.STATUS,
@@ -68,7 +68,7 @@ export async function handleHop (hopRequest: HopRequest) {
   }
 
   // TODO: Handle being an active relay
-  if (destinationConnection == null) {
+  if (destinationConnections.length === 0) {
     log('did not have connection to remote peer')
     return streamHandler.end({
       type: CircuitPB.Type.STATUS,
@@ -87,7 +87,7 @@ export async function handleHop (hopRequest: HopRequest) {
   try {
     log('performing STOP request')
     const result = await stop({
-      connection: destinationConnection,
+      connection: destinationConnections[0],
       request: stopRequest
     })
 

@@ -21,7 +21,8 @@ import {
 import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
-import type { AbortOptions, Startable } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { Components } from '@libp2p/interfaces/components'
 

@@ -6,7 +6,7 @@ import { FetchRequest, FetchResponse } from './pb/proto.js'
 import { handshake } from 'it-handshake'
 import { PROTOCOL } from './constants.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Stream } from '@libp2p/interfaces/connection'
 import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
 import type { Components } from '@libp2p/interfaces/components'
@@ -70,7 +70,7 @@ export class FetchService implements Startable {
   async fetch (peer: PeerId, key: string): Promise<Uint8Array | null> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.getDialer().dial(peer)
+    const connection = await this.components.getConnectionManager().openConnection(peer)
     const { stream } = await connection.newStream([this.protocol])
     const shake = handshake(stream)
 

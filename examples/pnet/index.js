@@ -1,6 +1,6 @@
 /* eslint no-console: ["off"] */
 
-import { generate } from 'libp2p/pnet/generate'
+import { generateKey } from 'libp2p/pnet'
 import { privateLibp2pNode } from './libp2p-node.js'
 import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -8,11 +8,11 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 // Create a Uint8Array and write the swarm key to it
 const swarmKey = new Uint8Array(95)
-generate(swarmKey)
+generateKey(swarmKey)
 
 // This key is for testing a different key not working
 const otherSwarmKey = new Uint8Array(95)
-generate(otherSwarmKey)
+generateKey(otherSwarmKey)
 
 ;(async () => {
   const node1 = await privateLibp2pNode(swarmKey)

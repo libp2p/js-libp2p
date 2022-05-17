@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
 import { encodeMessage, decodeMessage, message, string, bytes } from 'protons-runtime'
+import type { Codec } from 'protons-runtime'
 
 export interface Identify {
   protocolVersion?: string
@@ -14,7 +15,7 @@ export interface Identify {
 }
 
 export namespace Identify {
-  export const codec = () => {
+  export const codec = (): Codec<Identify> => {
     return message<Identify>({
       5: { name: 'protocolVersion', codec: string, optional: true },
       6: { name: 'agentVersion', codec: string, optional: true },
