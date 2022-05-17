@@ -36,8 +36,8 @@ describe('Dial Request', () => {
     // Make sure that dial attempt comes back before terminating last dial action
     expect(await dialRequest.run({ signal: controller.signal })).to.equal(connection)
 
-    // End dial attempt
-    deferredConn.reject()
+    // End third dial attempt
+    deferredConn.resolve()
 
     expect(dialerReleaseTokenSpy.callCount).to.equal(2)
   })
@@ -71,14 +71,16 @@ describe('Dial Request', () => {
     // Let the first dials run
     await delay(0)
 
-    // Finish the first 2 dials
-    firstDials.reject(error)
-    await delay(0)
-
     // Only 1 dial should remain, so 1 token should have been released
     expect(actions['/ip4/127.0.0.1/tcp/1231']).to.have.property('callCount', 1)
     expect(actions['/ip4/127.0.0.1/tcp/1232']).to.have.property('callCount', 1)
-    expect(actions['/ip4/127.0.0.1/tcp/1233']).to.have.property('callCount', 1)
+    expect(actions['/ip4/127.0.0.1/tcp/1233']).to.have.property('callCount', 0)
+
+    // Finish the first 2 dials
+    firstDials.reject(error)
+
+    await delay(0)
+
     expect(dialerReleaseTokenSpy.callCount).to.equal(1)
 
     // Finish the dial and release the 2nd token
