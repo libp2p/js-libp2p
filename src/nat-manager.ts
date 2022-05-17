@@ -94,10 +94,14 @@ export class NatManager implements Startable {
     return this.started
   }
 
+  start () {}
+
   /**
-   * Starts the NAT manager
+   * Attempt to use uPnP to configure port mapping using the current gateway.
+   *
+   * Run after start to ensure the transport manager has all addresses configured.
    */
-  start () {
+  afterStart () {
     if (isBrowser || !this.enabled || this.started) {
       return
     }
