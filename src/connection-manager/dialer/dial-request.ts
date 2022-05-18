@@ -62,7 +62,7 @@ export class DialRequest {
       })
     }
 
-    const dialAbortControllers = this.addrs.map(() => {
+    const dialAbortControllers: Array<(AbortController | undefined)> = this.addrs.map(() => {
       const controller = new AbortController()
       try {
         // fails on node < 15.4
@@ -80,16 +80,27 @@ export class DialRequest {
     }
 
     let completedDials = 0
+    let done = false
 
     try {
       return await Promise.any(this.addrs.map(async (addr, i) => {
         const token = await tokenHolder.shift() // get token
+        // End attempt once another attempt succeeded
+        if (done) {
+          this.dialer.releaseToken(tokens.splice(tokens.indexOf(token), 1)[0])
+          throw errCode(new Error('dialAction already succeeded'), codes.ERR_ALREADY_SUCCEEDED)
+        }
+
+        const controller = dialAbortControllers[i]
+        if (controller == null) {
+          throw errCode(new Error('dialAction did not come with an AbortController'), codes.ERR_INVALID_PARAMETERS)
+        }
         let conn
         try {
-          const signal = dialAbortControllers[i].signal
+          const signal = controller.signal
           conn = await this.dialAction(addr, { ...options, signal: (options.signal != null) ? anySignal([signal, options.signal]) : signal })
           // Remove the successful AbortController so it is not aborted
-          dialAbortControllers.splice(i, 1)
+          dialAbortControllers[i] = undefined
         } finally {
           completedDials++
           // If we have more or equal dials remaining than tokens, recycle the token, otherwise release it
@@ -102,10 +113,25 @@ export class DialRequest {
           }
         }
 
+        if (conn == null) {
+          // Notify Promise.any that attempt was not successful
+          // to prevent from returning undefined despite there
+          // were successful dial attempts
+          throw errCode(new Error('dialAction led to empty object'), codes.ERR_TRANSPORT_DIAL_FAILED)
+        } else {
+          // This dial succeeded, don't attempt anything else
+          done = true
+        }
+
         return conn
       }))
     } finally {
-      dialAbortControllers.map(c => c.abort()) // success/failure happened, abort everything else
+      // success/failure happened, abort everything else
+      dialAbortControllers.forEach(c => {
+        if (c !== undefined) {
+          c.abort()
+        }
+      })
       tokens.forEach(token => this.dialer.releaseToken(token)) // release tokens back to the dialer
     }
   }
