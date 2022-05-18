@@ -94,10 +94,14 @@ export class NatManager implements Startable {
     return this.started
   }
 
+  start () {}
+
   /**
-   * Starts the NAT manager
+   * Attempt to use uPnP to configure port mapping using the current gateway.
+   *
+   * Run after start to ensure the transport manager has all addresses configured.
    */
-  start () {
+  afterStart () {
     if (isBrowser || !this.enabled || this.started) {
       return
     }
@@ -105,7 +109,7 @@ export class NatManager implements Startable {
     this.started = true
 
     // done async to not slow down startup
-    this._start().catch((err) => {
+    void this._start().catch((err) => {
       // hole punching errors are non-fatal
       log.error(err)
     })
