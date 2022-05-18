@@ -180,9 +180,7 @@ describe('Dialing (direct, TCP)', () => {
       .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
   })
 
-  // The implementation of DialRequest is not capable of preventing more dial attempts
-  // than allowed by `maxParallelDials`
-  it.skip('should dial to the max concurrency', async () => {
+  it('should dial to the max concurrency', async () => {
     const addrs = [
       new Multiaddr('/ip4/0.0.0.0/tcp/8000'),
       new Multiaddr('/ip4/0.0.0.0/tcp/8001'),
