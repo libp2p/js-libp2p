@@ -109,7 +109,7 @@ export class NatManager implements Startable {
     this.started = true
 
     // done async to not slow down startup
-    this._start().catch((err) => {
+    void this._start().catch((err) => {
       // hole punching errors are non-fatal
       log.error(err)
     })

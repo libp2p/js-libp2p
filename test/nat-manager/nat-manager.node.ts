@@ -13,6 +13,7 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
 import { Components } from '@libp2p/interfaces/components'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { start, stop } from '@libp2p/interfaces/startable'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -49,7 +50,7 @@ describe('Nat Manager (TCP)', () => {
     await components.getTransportManager().listen(components.getAddressManager().getListenAddrs())
 
     teardown.push(async () => {
-      await natManager.stop()
+      await stop(natManager)
       await components.getTransportManager().removeAll()
     })
 
@@ -78,7 +79,7 @@ describe('Nat Manager (TCP)', () => {
     let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    await natManager._start()
+    await start(natManager)
 
     observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.not.be.empty()
@@ -127,7 +128,7 @@ describe('Nat Manager (TCP)', () => {
       enabled: false
     })
 
-    natManager.start()
+    await start(natManager)
 
     await delay(100)
 
@@ -146,7 +147,7 @@ describe('Nat Manager (TCP)', () => {
     let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    await natManager._start()
+    await start(natManager)
 
     observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
@@ -163,7 +164,7 @@ describe('Nat Manager (TCP)', () => {
     let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    await natManager._start()
+    await start(natManager)
 
     observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
@@ -180,7 +181,7 @@ describe('Nat Manager (TCP)', () => {
     let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    await natManager._start()
+    await start(natManager)
 
     observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
@@ -197,7 +198,7 @@ describe('Nat Manager (TCP)', () => {
     let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    await natManager._start()
+    await start(natManager)
 
     observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
@@ -214,7 +215,7 @@ describe('Nat Manager (TCP)', () => {
     let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    await natManager._start()
+    await start(natManager)
 
     observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
