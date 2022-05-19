@@ -254,10 +254,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   async _close () {
     // Close all connections we're tracking
-    const tasks = []
+    const tasks: Array<Promise<void>> = []
     for (const connectionList of this.connections.values()) {
       for (const connection of connectionList) {
-        tasks.push(connection.close())
+        tasks.push((async () => {
+          try {
+            await connection.close()
+          } catch (err) {
+            log.error(err)
+          }
+        })())
       }
     }
 

@@ -382,9 +382,11 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       getStreams: () => muxer != null ? muxer.streams : errConnectionNotMultiplexed(),
       close: async () => {
         await maConn.close()
-        // Ensure remaining streams are aborted
+        // Ensure remaining streams are closed
         if (muxer != null) {
-          muxer.streams.map(stream => stream.abort())
+          await Promise.all(muxer.streams.map(async stream => {
+            await stream.close()
+          }))
         }
       }
     })
