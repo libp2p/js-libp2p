@@ -20,7 +20,7 @@ export class TCP implements Transport {
   }
 
   get [Symbol.toStringTag] () {
-    return this.constructor.name
+    return '@libp2p/tcp'
   }
 
   async dial (ma: Multiaddr, options: DialOptions) {
