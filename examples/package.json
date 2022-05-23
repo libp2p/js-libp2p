@@ -11,6 +11,7 @@
   "dependencies": {
     "@libp2p/pubsub-peer-discovery": "^5.0.2",
     "@libp2p/floodsub": "^1.0.6",
+    "@nodeutils/defaults-deep": "^1.1.0",
     "execa": "^2.1.0",
     "fs-extra": "^8.1.0",
     "libp2p": "../",
