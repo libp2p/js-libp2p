@@ -1,3 +1,10 @@
+### [1.0.9](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.8...v1.0.9) (2022-05-23)
+
+
+### Bug Fixes
+
+* update interfaces and use static string for toStringTag ([#157](https://github.com/libp2p/js-libp2p-websockets/issues/157)) ([0c93585](https://github.com/libp2p/js-libp2p-websockets/commit/0c93585d0d5cb67c15ba0046b68aa3b196290e12))
+
 ### [1.0.8](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.7...v1.0.8) (2022-05-06)
 
 
