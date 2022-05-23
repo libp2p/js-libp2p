@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.5...v1.1.0) (2022-05-23)
+
+
+### Features
+
+* close read and write streams ([#170](https://github.com/libp2p/js-libp2p-mplex/issues/170)) ([3917968](https://github.com/libp2p/js-libp2p-mplex/commit/39179686ae033a2cc2821707dbec9e766fb4e099)), closes [#120](https://github.com/libp2p/js-libp2p-mplex/issues/120) [#115](https://github.com/libp2p/js-libp2p-mplex/issues/115)
+
 ### [1.0.5](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.4...v1.0.5) (2022-05-05)
 
 
