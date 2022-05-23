@@ -6,7 +6,6 @@ import {
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { queryPath } from './query-path.js'
 import merge from 'it-merge'
-// @ts-expect-error setMaxListeners is missing from the types
 import { setMaxListeners } from 'events'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'

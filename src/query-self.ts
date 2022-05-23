@@ -1,4 +1,3 @@
-// @ts-expect-error setMaxListeners is missing from the types
 import { setMaxListeners } from 'events'
 import take from 'it-take'
 import length from 'it-length'
