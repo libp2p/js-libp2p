@@ -1,3 +1,15 @@
+### [0.22.14](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.13...v0.22.14) (2022-05-23)
+
+
+### Bug Fixes
+
+* Added .js extension to import in src/keys/jwk2pem.ts ([#257](https://github.com/libp2p/js-libp2p-crypto/issues/257)) ([9e8f376](https://github.com/libp2p/js-libp2p-crypto/commit/9e8f3767f5f051edc09ae7be77c833817fed7279)), closes [#256](https://github.com/libp2p/js-libp2p-crypto/issues/256)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/interfaces from 1.3.32 to 2.0.1 ([#258](https://github.com/libp2p/js-libp2p-crypto/issues/258)) ([f7d30bc](https://github.com/libp2p/js-libp2p-crypto/commit/f7d30bce64a74711e56b962412989164530a45d3))
+
 ### [0.22.13](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.12...v0.22.13) (2022-05-10)
 
 
