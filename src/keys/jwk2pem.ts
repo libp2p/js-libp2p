@@ -1,7 +1,7 @@
 import 'node-forge/lib/rsa.js'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
-import { base64urlToBigInteger } from '../util'
+import { base64urlToBigInteger } from '../util.js'
 
 function convert (key: any, types: string[]) {
   return types.map(t => base64urlToBigInteger(key[t]))
