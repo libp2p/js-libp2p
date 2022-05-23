@@ -152,7 +152,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interfaces": "^1.3.31",
+    "@libp2p/interfaces": "^2.0.1",
     "@libp2p/logger": "^1.1.3",
     "@libp2p/utils": "^1.0.10",
     "@multiformats/mafmt": "^11.0.2",
@@ -166,7 +166,7 @@
     "wherearewe": "^1.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^1.1.32",
+    "@libp2p/interface-compliance-tests": "^2.0.1",
     "@types/ws": "^8.2.2",
     "aegir": "^37.0.12",
     "is-loopback-addr": "^2.0.1",

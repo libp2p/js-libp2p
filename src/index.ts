@@ -23,8 +23,6 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
 }
 
 export class WebSockets implements Transport {
-  static tag = 'WebSockets'
-
   private readonly init?: WebSocketsInit
 
   constructor (init?: WebSocketsInit) {
@@ -32,7 +30,7 @@ export class WebSockets implements Transport {
   }
 
   get [Symbol.toStringTag] () {
-    return WebSockets.tag
+    return '@libp2p/websockets'
   }
 
   get [symbol] (): true {
