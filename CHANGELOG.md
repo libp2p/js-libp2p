@@ -1,3 +1,10 @@
+### [1.0.11](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.10...v1.0.11) (2022-05-23)
+
+
+### Bug Fixes
+
+* update interfaces ([#182](https://github.com/libp2p/js-libp2p-tcp/issues/182)) ([4ce3476](https://github.com/libp2p/js-libp2p-tcp/commit/4ce34767fe29355a5ff0c8069caa33b923ea9966))
+
 ### [1.0.10](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.9...v1.0.10) (2022-05-23)
 
 
