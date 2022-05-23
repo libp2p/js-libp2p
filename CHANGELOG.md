@@ -1,3 +1,10 @@
+### [1.0.10](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.9...v1.0.10) (2022-05-23)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump sinon from 13.0.2 to 14.0.0 ([#179](https://github.com/libp2p/js-libp2p-tcp/issues/179)) ([ed4c6bd](https://github.com/libp2p/js-libp2p-tcp/commit/ed4c6bd4ed8b9b01e86cbb5de0206b77683f1b93))
+
 ### [1.0.9](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.8...v1.0.9) (2022-05-04)
 
 
