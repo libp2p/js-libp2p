@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/floodsub",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-floodsub#readme",

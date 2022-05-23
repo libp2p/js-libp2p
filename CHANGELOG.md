@@ -1,3 +1,10 @@
+### [1.0.7](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.6...v1.0.7) (2022-05-23)
+
+
+### Bug Fixes
+
+* update deps ([#152](https://github.com/libp2p/js-libp2p-floodsub/issues/152)) ([fc2380d](https://github.com/libp2p/js-libp2p-floodsub/commit/fc2380db2882d7a85a49395f92ccb25b210818e2))
+
 ### [1.0.6](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.5...v1.0.6) (2022-04-22)
 
 
