@@ -7,7 +7,6 @@ import { Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
-// @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import { DialAction, DialRequest } from './dial-request.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'

@@ -17,7 +17,6 @@ import {
   clearDelayedInterval
 // @ts-expect-error module with no types
 } from 'set-delayed-interval'
-// @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { PeerRouting } from '@libp2p/interfaces/peer-routing'

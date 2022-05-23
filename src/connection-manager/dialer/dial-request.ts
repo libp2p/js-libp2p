@@ -1,7 +1,6 @@
 import errCode from 'err-code'
 import { anySignal } from 'any-signal'
 import FIFO from 'p-fifo'
-// @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import { codes } from '../../errors.js'
 import { logger } from '@libp2p/logger'

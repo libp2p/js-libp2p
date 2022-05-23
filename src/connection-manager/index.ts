@@ -10,7 +10,6 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import { trackedMap } from '@libp2p/tracked-map'
 import { codes } from '../errors.js'
 import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
-// @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import type { Connection } from '@libp2p/interfaces/connection'
 import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
@@ -254,10 +253,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   async _close () {
     // Close all connections we're tracking
-    const tasks = []
+    const tasks: Array<Promise<void>> = []
     for (const connectionList of this.connections.values()) {
       for (const connection of connectionList) {
-        tasks.push(connection.close())
+        tasks.push((async () => {
+          try {
+            await connection.close()
+          } catch (err) {
+            log.error(err)
+          }
+        })())
       }
     }
 
