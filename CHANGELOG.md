@@ -1,3 +1,10 @@
+### [1.0.7](https://github.com/libp2p/js-libp2p-mdns/compare/v1.0.6...v1.0.7) (2022-05-23)
+
+
+### Bug Fixes
+
+* update deps ([#127](https://github.com/libp2p/js-libp2p-mdns/issues/127)) ([1f8654e](https://github.com/libp2p/js-libp2p-mdns/commit/1f8654e9387e5987714142e79038a16d5a1f94ac))
+
 ### [1.0.6](https://github.com/libp2p/js-libp2p-mdns/compare/v1.0.5...v1.0.6) (2022-05-06)
 
 
