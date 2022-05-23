@@ -9,6 +9,7 @@ import { createStream } from './stream.js'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { trackedMap } from '@libp2p/tracked-map'
 import { logger } from '@libp2p/logger'
+import errCode from 'err-code'
 import type { Components } from '@libp2p/interfaces/components'
 import type { Sink } from 'it-stream-types'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interfaces/stream-muxer'
@@ -130,6 +131,10 @@ export class MplexStreamMuxer implements StreamMuxer {
     }
 
     const send = (msg: Message) => {
+      if (!registry.has(id)) {
+        throw errCode(new Error('the stream is not in the muxer registry, it may have already been closed'), 'ERR_STREAM_DOESNT_EXIST')
+      }
+
       if (log.enabled) {
         log.trace('%s stream %s send', type, id, printMessage(msg))
       }
@@ -196,10 +201,18 @@ export class MplexStreamMuxer implements StreamMuxer {
       const { initiators, receivers } = this._streams
       // Abort all the things!
       for (const s of initiators.values()) {
-        s.abort(err)
+        if (err != null) {
+          s.abort(err)
+        } else {
+          s.close()
+        }
       }
       for (const s of receivers.values()) {
-        s.abort(err)
+        if (err != null) {
+          s.abort(err)
+        } else {
+          s.close()
+        }
       }
     }
     const source = pushableV<Message>({ onEnd })
@@ -241,14 +254,17 @@ export class MplexStreamMuxer implements StreamMuxer {
     switch (type) {
       case MessageTypes.MESSAGE_INITIATOR:
       case MessageTypes.MESSAGE_RECEIVER:
+        // We got data from the remote, push it into our local stream
         stream.source.push(message.data.slice())
         break
       case MessageTypes.CLOSE_INITIATOR:
       case MessageTypes.CLOSE_RECEIVER:
-        stream.close()
+        // We should expect no more data from the remote, stop reading
+        stream.closeRead()
         break
       case MessageTypes.RESET_INITIATOR:
       case MessageTypes.RESET_RECEIVER:
+        // Stop reading and writing to the stream immediately
         stream.reset()
         break
       default:
