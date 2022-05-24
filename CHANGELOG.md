@@ -1,3 +1,10 @@
+### [1.0.14](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.13...v1.0.14) (2022-05-24)
+
+
+### Bug Fixes
+
+* increase ping concurrency ([#341](https://github.com/libp2p/js-libp2p-kad-dht/issues/341)) ([fa7cfc1](https://github.com/libp2p/js-libp2p-kad-dht/commit/fa7cfc15134cd3909f1c12ea222bae3d1cb06360))
+
 ### [1.0.13](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.12...v1.0.13) (2022-05-23)
 
 
