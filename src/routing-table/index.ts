@@ -37,11 +37,14 @@ export interface KBucketTree {
 }
 
 const METRIC_ROUTING_TABLE_SIZE = 'routing-table-size'
+const METRIC_PING_QUEUE_SIZE = 'ping-queue-size'
+const METRIC_PING_RUNNING = 'ping-running'
 
 export interface RoutingTableInit {
   lan: boolean
   kBucketSize?: number
   pingTimeout?: number
+  pingConcurrency?: number
 }
 
 /**
@@ -57,17 +60,37 @@ export class RoutingTable implements Startable, Initializable {
   private components: Components = new Components()
   private readonly lan: boolean
   private readonly pingTimeout: number
+  private readonly pingConcurrency: number
   private running: boolean
 
   constructor (init: RoutingTableInit) {
-    const { kBucketSize, pingTimeout, lan } = init
+    const { kBucketSize, pingTimeout, lan, pingConcurrency } = init
 
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
     this.kBucketSize = kBucketSize ?? 20
     this.pingTimeout = pingTimeout ?? 10000
+    this.pingConcurrency = pingConcurrency ?? 10
     this.lan = lan
-    this.pingQueue = new Queue({ concurrency: 1 })
     this.running = false
+
+    const updatePingQueueSizeMetric = () => {
+      this.components.getMetrics()?.updateComponentMetric({
+        system: 'libp2p',
+        component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
+        metric: METRIC_PING_QUEUE_SIZE,
+        value: this.pingQueue.size
+      })
+      this.components.getMetrics()?.updateComponentMetric({
+        system: 'libp2p',
+        component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
+        metric: METRIC_PING_RUNNING,
+        value: this.pingQueue.pending
+      })
+    }
+
+    this.pingQueue = new Queue({ concurrency: this.pingConcurrency })
+    this.pingQueue.addListener('add', updatePingQueueSizeMetric)
+    this.pingQueue.addListener('next', updatePingQueueSizeMetric)
 
     this._onPing = this._onPing.bind(this)
   }
@@ -127,12 +150,14 @@ export class RoutingTable implements Startable, Initializable {
             try {
               timeoutController = new TimeoutController(this.pingTimeout)
 
-              this.log('pinging old contact %p', oldContact.peer)
-              const connection = await this.components.getConnectionManager().openConnection(oldContact.peer, {
+              const options = {
                 signal: timeoutController.signal
-              })
-              const { stream } = await connection.newStream(PROTOCOL_DHT)
-              await stream.close()
+              }
+
+              this.log('pinging old contact %p', oldContact.peer)
+              const connection = await this.components.getConnectionManager().openConnection(oldContact.peer, options)
+              const { stream } = await connection.newStream(PROTOCOL_DHT, options)
+              stream.close()
               responded++
             } catch (err: any) {
               if (this.running && this.kb != null) {

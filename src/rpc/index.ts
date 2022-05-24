@@ -93,9 +93,9 @@ export class RPC implements Initializable {
       const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
       await pipe(
-        stream.source,
+        stream,
         lp.decode(),
-        source => (async function * () {
+        async function * (source) {
           for await (const msg of source) {
             // handle the message
             const desMessage = Message.deserialize(msg)
@@ -107,9 +107,9 @@ export class RPC implements Initializable {
               yield res.serialize()
             }
           }
-        })(),
+        },
         lp.encode(),
-        stream.sink
+        stream
       )
     })
       .catch(err => {

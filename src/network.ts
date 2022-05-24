@@ -97,7 +97,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
 
     try {
       const connection = await this.components.getConnectionManager().openConnection(to, options)
-      const streamData = await connection.newStream(this.protocol)
+      const streamData = await connection.newStream(this.protocol, options)
       stream = streamData.stream
 
       const response = await this._writeReadMessage(stream, msg.serialize(), options)
@@ -134,7 +134,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
 
     try {
       const connection = await this.components.getConnectionManager().openConnection(to, options)
-      const data = await connection.newStream(this.protocol)
+      const data = await connection.newStream(this.protocol, options)
       stream = data.stream
 
       await this._writeMessage(stream, msg.serialize(), options)

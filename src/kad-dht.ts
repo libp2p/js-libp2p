@@ -26,6 +26,13 @@ import { validators as recordValidators } from '@libp2p/record/validators'
 import { selectors as recordSelectors } from '@libp2p/record/selectors'
 import { symbol } from '@libp2p/interfaces/peer-discovery'
 
+export interface SingleKadDHTInit extends KadDHTInit {
+  /**
+   * Whether to start up in lan or wan mode
+   */
+  lan?: boolean
+}
+
 /**
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
@@ -56,7 +63,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
   /**
    * Create a new KadDHT
    */
-  constructor (init: KadDHTInit) {
+  constructor (init: SingleKadDHTInit) {
     super()
 
     const {
@@ -66,7 +73,9 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
       selectors,
       querySelfInterval,
       lan,
-      protocolPrefix
+      protocolPrefix,
+      pingTimeout,
+      pingConcurrency
     } = init
 
     this.running = false
@@ -77,7 +86,9 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
     this.clientMode = clientMode ?? true
     this.routingTable = new RoutingTable({
       kBucketSize,
-      lan: this.lan
+      lan: this.lan,
+      pingTimeout,
+      pingConcurrency
     })
 
     this.providers = new Providers()
