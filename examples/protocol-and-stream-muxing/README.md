@@ -167,10 +167,105 @@ There is one last trick on _protocol and stream multiplexing_ that libp2p uses t
 
 With the aid of both mechanisms, we can reuse an incomming connection to dial streams out too, this is specially useful when you are behind tricky NAT, firewalls or if you are running in a browser, where you can't have listening addrs, but you can dial out. By dialing out, you enable other peers to talk with you in Protocols that they want, simply by opening a new multiplexed stream.
 
-You can see this working on example [3.js](./3.js). The result should look like the following:
+You can see this working on example [3.js](./3.js). 
+
+As we've seen earlier, we can create our node with this createNode function.
+```js
+const createNode = async () => {
+  const node = await Libp2p.create({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
+    modules: {
+      transport: [TCP],
+      streamMuxer: [MPLEX],
+      connEncryption: [NOISE]
+    }
+  })
+
+  await node.start()
+
+  return node
+}
+```
+
+We can now create our two nodes for this example.
+```js
+const [node1, node2] = await Promise.all([
+  createNode(),
+  createNode()
+])
+```
+
+Since, we want to connect these nodes `node1` & `node2`, we add our `node2` multiaddr in key-value pair in `node1` peer store.
+```js
+await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+```
+
+You may notice that we are only adding `node2` to `node1` peer store. This is because we want to dial up a bidirectional connection between these two nodes.
+
+Finally, let's create protocols for `node1` & `node2` and dial those protocols.
+```js
+node1.handle('/node-1', ({ stream }) => {
+  pipe(
+    stream,
+    async function (source) {
+      for await (const msg of source) {
+        console.log(msg.toString())
+      }
+    }
+  )
+})
+
+node2.handle('/node-2', ({ stream }) => {
+  pipe(
+    stream,
+    async function (source) {
+      for await (const msg of source) {
+        console.log(msg.toString())
+      }
+    }
+  )
+})
+
+// Dialing node2 from node1
+const { stream: stream1 } = await node1.dialProtocol(node2.peerId, ['/node-2'])
+await pipe(
+  ['from 1 to 2'],
+  stream1
+)
+
+// Dialing node1 from node2
+const { stream: stream2 } = await node2.dialProtocol(node1.peerId, ['/node-1'])
+await pipe(
+  ['from 2 to 1'],
+  stream2
+)
+```
+
+If we run this code, the result should look like the following:
 
 ```Bash
 > node 3.js
 from 1 to 2
 from 2 to 1
+```
+
+So, we have successfully set up a bidirectional connection with protocol muxing. But you should be aware that we were able to dial from `node2` to `node1` even we haven't added the `node1` peerId to node2 address book is because we dialed node2 from node1 first. Then, we just dialed back our stream out from `node2` to `node1`. So, if we dial from `node2` to `node1` before dialing from `node1` to `node2` we will get an error.
+
+The code below will result into an error as `the dial address is not valid`.
+```js
+// Dialing from node2 to node1
+const { stream: stream2 } = await node2.dialProtocol(node1.peerId, ['/node-1'])
+await pipe(
+  ['from 2 to 1'],
+  stream2
+)
+
+// Dialing from node1 to node2
+const { stream: stream1 } = await node1.dialProtocol(node2.peerId, ['/node-2'])
+await pipe(
+  ['from 1 to 2'],
+  stream1
+)
 ```
