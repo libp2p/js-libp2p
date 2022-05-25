@@ -71,7 +71,7 @@ describe('ping', () => {
     remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
 
     // Run ping
-    await expect(localPing.ping(remoteComponents.getPeerId())).to.eventually.be.greaterThan(0)
+    await expect(localPing.ping(remoteComponents.getPeerId())).to.eventually.be.gte(0)
   })
 
   it('should time out pinging another peer when waiting for a pong', async () => {
