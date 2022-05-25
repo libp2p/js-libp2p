@@ -71,15 +71,15 @@ async function addDHT(libp2p) {
 Note that you may want to supply your own peer discovery function and datastore
 ### Peer Routing
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/peer-routing/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/peer-routing)
+[![](https://raw.githubusercontent.com/libp2p/interface-peer-routing/master/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/peer-routing)
 
 ### Content Routing
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/content-routing/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/content-routing)
+[![](https://raw.githubusercontent.com/libp2p/interface-content-routing/master/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/content-routing)
 
 ### Peer Discovery
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/src/peer-discovery/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interfaces/src/peer-discovery)
+[![](https://github.com/libp2p/interface-peer-discovery/blob/master/img/badge.png?raw=true)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/peer-discovery)
 
 ## Spec
 
@@ -87,11 +87,11 @@ js-libp2p-kad-dht follows the [libp2p/kad-dht spec](https://github.com/libp2p/sp
 
 ## Contribute
 
-Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-ipfs/issues)!
+Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-kad-dht/issues)!
 
 This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 
-[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/contributing.md)
+[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/CONTRIBUTING.md)
 
 ## License
 
