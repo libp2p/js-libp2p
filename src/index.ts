@@ -4,7 +4,7 @@ import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { FaultTolerance } from './transport-manager.js'
-import type { HostProperties } from './identify/index.js'
+import type { IdentifyServiceInit } from './identify/index.js'
 import type { DualDHT } from '@libp2p/interfaces/dht'
 import type { Datastore } from 'interface-datastore'
 import type { PeerStore, PeerStoreInit } from '@libp2p/interfaces/peer-store'
@@ -24,6 +24,8 @@ import type { Metrics, MetricsInit } from '@libp2p/interfaces/metrics'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { KeyChain } from './keychain/index.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { PingServiceInit } from './ping/index.js'
+import type { FetchServiceInit } from './fetch/index.js'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
@@ -95,7 +97,6 @@ export interface RefreshManagerConfig {
 
 export interface Libp2pInit {
   peerId: PeerId
-  host: HostProperties
   addresses: AddressesConfig
   connectionManager: ConnectionManagerInit
   connectionGater: Partial<ConnectionGater>
@@ -105,9 +106,11 @@ export interface Libp2pInit {
   peerStore: PeerStoreInit
   peerRouting: PeerRoutingConfig
   keychain: KeychainConfig
-  protocolPrefix: string
   nat: NatManagerConfig
   relay: RelayConfig
+  identify: IdentifyServiceInit
+  ping: PingServiceInit
+  fetch: FetchServiceInit
 
   transports: Transport[]
   streamMuxers?: StreamMuxerFactory[]
@@ -195,12 +198,12 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   /**
    * Pings the given peer in order to obtain the operation latency
    */
-  ping: (peer: Multiaddr |PeerId) => Promise<number>
+  ping: (peer: Multiaddr | PeerId, options?: AbortOptions) => Promise<number>
 
   /**
    * Sends a request to fetch the value associated with the given key from the given peer.
    */
-  fetch: (peer: PeerId | Multiaddr | string, key: string) => Promise<Uint8Array | null>
+  fetch: (peer: PeerId | Multiaddr | string, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
