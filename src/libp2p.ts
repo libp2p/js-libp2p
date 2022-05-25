@@ -226,11 +226,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     }
 
     this.fetchService = this.configureComponent(new FetchService(this.components, {
-      protocolPrefix: init.protocolPrefix
+      ...init.fetch
     }))
 
     this.pingService = this.configureComponent(new PingService(this.components, {
-      protocolPrefix: init.protocolPrefix
+      ...init.ping
     }))
 
     const autoDialer = this.configureComponent(new AutoDialer(this.components, {

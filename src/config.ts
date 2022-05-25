@@ -53,7 +53,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
       bootDelay: 10e3
     }
   },
-  protocolPrefix: 'ipfs',
   nat: {
     enabled: true,
     ttl: 7200,
@@ -81,6 +80,12 @@ const DefaultConfig: Partial<Libp2pInit> = {
       agentVersion: AGENT_VERSION
     },
     timeout: 30000
+  },
+  ping: {
+    protocolPrefix: 'ipfs'
+  },
+  fetch: {
+    protocolPrefix: 'libp2p'
   }
 }
 

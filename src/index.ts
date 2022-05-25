@@ -24,6 +24,8 @@ import type { Metrics, MetricsInit } from '@libp2p/interfaces/metrics'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 import type { KeyChain } from './keychain/index.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { PingServiceInit } from './ping/index.js'
+import type { FetchServiceInit } from './fetch/index.js'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
@@ -108,6 +110,8 @@ export interface Libp2pInit {
   nat: NatManagerConfig
   relay: RelayConfig
   identify: IdentifyServiceInit
+  ping: PingServiceInit
+  fetch: FetchServiceInit
 
   transports: Transport[]
   streamMuxers?: StreamMuxerFactory[]

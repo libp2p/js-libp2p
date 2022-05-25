@@ -4,7 +4,7 @@ import { codes } from '../errors.js'
 import * as lp from 'it-length-prefixed'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import { handshake } from 'it-handshake'
-import { PROTOCOL } from './constants.js'
+import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Stream } from '@libp2p/interfaces/connection'
@@ -16,7 +16,7 @@ import { abortableDuplex } from 'abortable-iterator'
 
 const log = logger('libp2p:fetch')
 
-export interface FetchInit {
+export interface FetchServiceInit {
   protocolPrefix: string
 }
 
@@ -41,10 +41,10 @@ export class FetchService implements Startable {
   private readonly lookupFunctions: Map<string, LookupFunction>
   private started: boolean
 
-  constructor (components: Components, init: FetchInit) {
+  constructor (components: Components, init: FetchServiceInit) {
     this.started = false
     this.components = components
-    this.protocol = PROTOCOL
+    this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)
   }
