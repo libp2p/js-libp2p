@@ -1,3 +1,10 @@
+### [1.0.5](https://github.com/libp2p/js-libp2p-record/compare/v1.0.4...v1.0.5) (2022-05-25)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/interfaces from 1.3.32 to 2.0.2 ([#43](https://github.com/libp2p/js-libp2p-record/issues/43)) ([992677b](https://github.com/libp2p/js-libp2p-record/commit/992677bd6bf432b3ce894c53ac7a721e2dd44bf9))
+
 ### [1.0.4](https://github.com/libp2p/js-libp2p-record/compare/v1.0.3...v1.0.4) (2022-04-14)
 
 
