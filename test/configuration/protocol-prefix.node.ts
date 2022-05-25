@@ -18,7 +18,9 @@ describe('Protocol prefix is configurable', () => {
   it('protocolPrefix is provided', async () => {
     const testProtocol = 'test-protocol'
     libp2p = await createLibp2pNode(mergeOptions(baseOptions, {
-      protocolPrefix: testProtocol
+      identify: {
+        protocolPrefix: testProtocol
+      }
     }))
     await libp2p.start()
 
