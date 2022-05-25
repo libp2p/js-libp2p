@@ -106,7 +106,6 @@ export interface Libp2pInit {
   peerStore: PeerStoreInit
   peerRouting: PeerRoutingConfig
   keychain: KeychainConfig
-  protocolPrefix: string
   nat: NatManagerConfig
   relay: RelayConfig
   identify: IdentifyServiceInit
