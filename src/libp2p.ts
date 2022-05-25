@@ -166,10 +166,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     if (init.streamMuxers != null && init.streamMuxers.length > 0) {
       // Add the identify service since we can multiplex
       this.identifyService = new IdentifyService(this.components, {
-        protocolPrefix: init.protocolPrefix,
-        host: {
-          agentVersion: init.host.agentVersion
-        }
+        ...init.identify
       })
       this.configureComponent(this.identifyService)
     }
@@ -419,9 +416,9 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
     }
 
-    const connection = await this.dial(peer)
+    const connection = await this.dial(peer, options)
 
-    return await connection.newStream(protocols)
+    return await connection.newStream(protocols, options)
   }
 
   getMultiaddrs (): Multiaddr[] {
@@ -473,24 +470,24 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     throw errCode(new Error(`Node not responding with its public key: ${peer.toString()}`), codes.ERR_INVALID_RECORD)
   }
 
-  async fetch (peer: PeerId | Multiaddr | string, key: string): Promise<Uint8Array | null> {
+  async fetch (peer: PeerId | Multiaddr | string, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs != null) {
       await this.components.getPeerStore().addressBook.add(id, multiaddrs)
     }
 
-    return await this.fetchService.fetch(id, key)
+    return await this.fetchService.fetch(id, key, options)
   }
 
-  async ping (peer: PeerId | Multiaddr | string): Promise<number> {
+  async ping (peer: PeerId | Multiaddr | string, options: AbortOptions = {}): Promise<number> {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs.length > 0) {
       await this.components.getPeerStore().addressBook.add(id, multiaddrs)
     }
 
-    return await this.pingService.ping(id)
+    return await this.pingService.ping(id, options)
   }
 
   async handle (protocols: string | string[], handler: StreamHandler): Promise<void> {

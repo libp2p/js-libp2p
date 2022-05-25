@@ -10,6 +10,9 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { Stream } from '@libp2p/interfaces/connection'
 import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
 import type { Components } from '@libp2p/interfaces/components'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Duplex } from 'it-stream-types'
+import { abortableDuplex } from 'abortable-iterator'
 
 const log = logger('libp2p:fetch')
 
@@ -33,9 +36,9 @@ export interface LookupFunction {
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
 export class FetchService implements Startable {
+  public readonly protocol: string
   private readonly components: Components
   private readonly lookupFunctions: Map<string, LookupFunction>
-  private readonly protocol: string
   private started: boolean
 
   constructor (components: Components, init: FetchInit) {
@@ -67,12 +70,19 @@ export class FetchService implements Startable {
   /**
    * Sends a request to fetch the value associated with the given key from the given peer
    */
-  async fetch (peer: PeerId, key: string): Promise<Uint8Array | null> {
+  async fetch (peer: PeerId, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.getConnectionManager().openConnection(peer)
-    const { stream } = await connection.newStream([this.protocol])
-    const shake = handshake(stream)
+    const connection = await this.components.getConnectionManager().openConnection(peer, options)
+    const { stream } = await connection.newStream([this.protocol], options)
+    let source: Duplex<Uint8Array> = stream
+
+    // make stream abortable if AbortSignal passed
+    if (options.signal != null) {
+      source = abortableDuplex(stream, options.signal)
+    }
+
+    const shake = handshake(source)
 
     // send message
     shake.write(lp.encode.single(FetchRequest.encode({ identifier: key })).slice())

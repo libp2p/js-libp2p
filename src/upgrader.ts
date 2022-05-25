@@ -15,6 +15,7 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { MultiaddrConnection, Upgrader, UpgraderEvents } from '@libp2p/interfaces/transport'
 import type { Duplex } from 'it-stream-types'
 import type { Components } from '@libp2p/interfaces/components'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:upgrader')
 
@@ -266,7 +267,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     } = opts
 
     let muxer: StreamMuxer | undefined
-    let newStream: ((multicodecs: string[]) => Promise<ProtocolStream>) | undefined
+    let newStream: ((multicodecs: string[], options?: AbortOptions) => Promise<ProtocolStream>) | undefined
     let connection: Connection // eslint-disable-line prefer-const
 
     if (muxerFactory != null) {
@@ -308,7 +309,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         }
       })
 
-      newStream = async (protocols: string[]): Promise<ProtocolStream> => {
+      newStream = async (protocols: string[], options: AbortOptions = {}): Promise<ProtocolStream> => {
         if (muxer == null) {
           throw errCode(new Error('Stream is not multiplexed'), codes.ERR_MUXER_UNAVAILABLE)
         }
@@ -319,7 +320,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         const metrics = this.components.getMetrics()
 
         try {
-          let { stream, protocol } = await mss.select(protocols)
+          let { stream, protocol } = await mss.select(protocols, options)
 
           if (metrics != null) {
             stream = metrics.trackStream({ stream, remotePeer, protocol })
@@ -328,6 +329,11 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           return { stream: { ...muxedStream, ...stream }, protocol }
         } catch (err: any) {
           log.error('could not create new stream', err)
+
+          if (err.code != null) {
+            throw err
+          }
+
           throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
         }
       }

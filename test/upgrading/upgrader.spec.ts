@@ -14,7 +14,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import { codes } from '../../src/errors.js'
-import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import Peers from '../fixtures/peers.js'
 import type { Upgrader } from '@libp2p/interfaces/transport'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
@@ -27,6 +27,9 @@ import type { Stream } from '@libp2p/interfaces/connection'
 import pDefer from 'p-defer'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
+import { TimeoutController } from 'timeout-abort-controller'
+import delay from 'delay'
+import drain from 'it-drain'
 
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -35,6 +38,7 @@ const addrs = [
 
 describe('Upgrader', () => {
   let localUpgrader: Upgrader
+  let localMuxerFactory: StreamMuxerFactory
   let remoteUpgrader: Upgrader
   let localPeer: PeerId
   let remotePeer: PeerId
@@ -55,12 +59,13 @@ describe('Upgrader', () => {
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar()
     })
+    localMuxerFactory = new Mplex()
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
         new Plaintext()
       ],
       muxers: [
-        new Mplex()
+        localMuxerFactory
       ]
     })
 
@@ -365,6 +370,40 @@ describe('Upgrader', () => {
       expect(result).to.have.property('isRejected', true)
       expect(result).to.have.nested.property('reason.code', codes.ERR_UNSUPPORTED_PROTOCOL)
     })
+  })
+
+  it('should abort protocol selection for slow streams', async () => {
+    const createStreamMuxerSpy = sinon.spy(localMuxerFactory, 'createStreamMuxer')
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    // 10 ms timeout
+    const timeoutController = new TimeoutController(10)
+
+    // should have created muxer for connection
+    expect(createStreamMuxerSpy).to.have.property('callCount', 1)
+
+    // create mock muxed stream that never sends data
+    const muxer = createStreamMuxerSpy.getCall(0).returnValue
+    muxer.newStream = () => {
+      return mockStream({
+        source: (async function * () {
+          // longer than the timeout
+          await delay(1000)
+          yield new Uint8Array()
+        }()),
+        sink: drain
+      })
+    }
+
+    await expect(connections[0].newStream('/echo/1.0.0', {
+      signal: timeoutController.signal
+    }))
+      .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
   })
 })
 
