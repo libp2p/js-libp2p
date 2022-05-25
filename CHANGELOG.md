@@ -10,6 +10,16 @@
 
 
 
+### [0.37.1](https://www.github.com/libp2p/js-libp2p/compare/v0.37.0...v0.37.1) (2022-05-25)
+
+
+### Bug Fixes
+
+* do upnp hole punch after startup ([#1217](https://www.github.com/libp2p/js-libp2p/issues/1217)) ([d5386df](https://www.github.com/libp2p/js-libp2p/commit/d5386df68478a71ac269acb2d00d36a7a5c9ebc5))
+* explicitly close streams when connnections close ([#1221](https://www.github.com/libp2p/js-libp2p/issues/1221)) ([b09eb8f](https://www.github.com/libp2p/js-libp2p/commit/b09eb8fc53ec1d8f6280d681c9ca6a467ec259b5))
+* fix unintended aborts in dialer ([#1185](https://www.github.com/libp2p/js-libp2p/issues/1185)) ([35f9c0c](https://www.github.com/libp2p/js-libp2p/commit/35f9c0c79387232465848b450a47cafe841405e7))
+* time out slow reads ([#1227](https://www.github.com/libp2p/js-libp2p/issues/1227)) ([a1220d2](https://www.github.com/libp2p/js-libp2p/commit/a1220d22f5affb64e64dec0cd6a92cd8241b26df))
+
 ## [0.37.0](https://www.github.com/libp2p/js-libp2p/compare/v0.36.2...v0.37.0) (2022-05-16)
 
 
