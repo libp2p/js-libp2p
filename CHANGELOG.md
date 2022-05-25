@@ -1,3 +1,10 @@
+### [1.0.15](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.14...v1.0.15) (2022-05-25)
+
+
+### Trivial Changes
+
+* fix readme.md ([#342](https://github.com/libp2p/js-libp2p-kad-dht/issues/342)) ([ddea70d](https://github.com/libp2p/js-libp2p-kad-dht/commit/ddea70d23faca82b269271be3fa647896cf498e7)), closes [#324](https://github.com/libp2p/js-libp2p-kad-dht/issues/324)
+
 ### [1.0.14](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.13...v1.0.14) (2022-05-24)
 
 
