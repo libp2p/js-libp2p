@@ -10,6 +10,13 @@
 
 
 
+### [0.37.2](https://www.github.com/libp2p/js-libp2p/compare/v0.37.1...v0.37.2) (2022-05-31)
+
+
+### Bug Fixes
+
+* reduce identify message size limit ([#1230](https://www.github.com/libp2p/js-libp2p/issues/1230)) ([824720f](https://www.github.com/libp2p/js-libp2p/commit/824720fb8f21f868ed88e881fbc3ce6b9459600d))
+
 ### [0.37.1](https://www.github.com/libp2p/js-libp2p/compare/v0.37.0...v0.37.1) (2022-05-25)
 
 
