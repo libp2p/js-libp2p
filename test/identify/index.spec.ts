@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint max-nested-callbacks: ["error", 6] */
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
@@ -26,6 +27,8 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import delay from 'delay'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { TimeoutController } from 'timeout-abort-controller'
+import { CustomEvent } from '@libp2p/interfaces/events'
+import pDefer from 'p-defer'
 
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -269,5 +272,106 @@ describe('identify', () => {
     expect(newStreamSpy).to.have.property('callCount', 1)
     const { stream } = await newStreamSpy.getCall(0).returnValue
     expect(stream).to.have.nested.property('timeline.close')
+  })
+
+  it('should limit incoming identify message sizes', async () => {
+    const deferred = pDefer()
+
+    const remoteIdentify = new IdentifyService(remoteComponents, {
+      ...defaultInit,
+      maxIdentifyMessageSize: 100
+    })
+    await start(remoteIdentify)
+
+    const identifySpy = sinon.spy(remoteIdentify, 'identify')
+
+    const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
+
+    // handle incoming identify requests and send too much data
+    await localComponents.getRegistrar().handle('/ipfs/id/1.0.0', ({ stream }) => {
+      const data = new Uint8Array(1024)
+
+      void Promise.resolve().then(async () => {
+        await pipe(
+          [data],
+          lp.encode(),
+          stream,
+          async (source) => await drain(source)
+        )
+
+        deferred.resolve()
+      })
+    })
+
+    // ensure connections are registered by connection manager
+    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+      detail: localToRemote
+    }))
+    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+      detail: remoteToLocal
+    }))
+
+    await deferred.promise
+    await stop(remoteIdentify)
+
+    expect(identifySpy.called).to.be.true()
+
+    await expect(identifySpy.getCall(0).returnValue)
+      .to.eventually.be.rejected.with.property('code', 'ERR_MSG_DATA_TOO_LONG')
+  })
+
+  it('should time out incoming identify messages', async () => {
+    const deferred = pDefer()
+
+    const remoteIdentify = new IdentifyService(remoteComponents, {
+      ...defaultInit,
+      timeout: 100
+    })
+    await start(remoteIdentify)
+
+    const identifySpy = sinon.spy(remoteIdentify, 'identify')
+
+    const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
+
+    // handle incoming identify requests and don't send anything
+    await localComponents.getRegistrar().handle('/ipfs/id/1.0.0', ({ stream }) => {
+      const data = new Uint8Array(1024)
+
+      void Promise.resolve().then(async () => {
+        await pipe(
+          [data],
+          lp.encode(),
+          async (source) => {
+            await stream.sink(async function * () {
+              for await (const buf of source) {
+                // don't send all of the data, remote will expect another message
+                yield buf.slice(0, buf.length - 100)
+
+                // wait for longer than the timeout without sending any more data or closing the stream
+                await delay(500)
+              }
+            }())
+          }
+        )
+
+        deferred.resolve()
+      })
+    })
+
+    // ensure connections are registered by connection manager
+    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+      detail: localToRemote
+    }))
+    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+      detail: remoteToLocal
+    }))
+
+    await deferred.promise
+    await stop(remoteIdentify)
+
+    expect(identifySpy.called).to.be.true()
+
+    await expect(identifySpy.getCall(0).returnValue)
+      .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
   })
 })
