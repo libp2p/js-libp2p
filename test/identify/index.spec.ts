@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint max-nested-callbacks: ["error", 6] */
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
@@ -68,7 +69,7 @@ async function createComponents (index: number) {
   return components
 }
 
-describe.only('identify', () => {
+describe('identify', () => {
   let localComponents: Components
   let remoteComponents: Components
 
@@ -274,7 +275,7 @@ describe.only('identify', () => {
   })
 
   it('should limit incoming identify message sizes', async () => {
-    const deferred = pDefer<void>()
+    const deferred = pDefer()
 
     const remoteIdentify = new IdentifyService(remoteComponents, {
       ...defaultInit,
@@ -287,17 +288,19 @@ describe.only('identify', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // handle incoming identify requests and send too much data
-    localComponents.getRegistrar().handle('/ipfs/id/1.0.0', async ({ stream }) => {
+    await localComponents.getRegistrar().handle('/ipfs/id/1.0.0', ({ stream }) => {
       const data = new Uint8Array(1024)
 
-      await pipe(
-        [data],
-        lp.encode(),
-        stream,
-        (source) => drain(source)
-      )
+      void Promise.resolve().then(async () => {
+        await pipe(
+          [data],
+          lp.encode(),
+          stream,
+          async (source) => await drain(source)
+        )
 
-      deferred.resolve()
+        deferred.resolve()
+      })
     })
 
     // ensure connections are registered by connection manager
@@ -318,7 +321,7 @@ describe.only('identify', () => {
   })
 
   it('should time out incoming identify messages', async () => {
-    const deferred = pDefer<void>()
+    const deferred = pDefer()
 
     const remoteIdentify = new IdentifyService(remoteComponents, {
       ...defaultInit,
@@ -331,26 +334,28 @@ describe.only('identify', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // handle incoming identify requests and don't send anything
-    localComponents.getRegistrar().handle('/ipfs/id/1.0.0', async ({ stream }) => {
+    await localComponents.getRegistrar().handle('/ipfs/id/1.0.0', ({ stream }) => {
       const data = new Uint8Array(1024)
 
-      await pipe(
-        [data],
-        lp.encode(),
-        async (source) => {
-          await stream.sink(async function * () {
-            for await (const buf of source) {
-              // don't send all of the data, remote will expect another message
-              yield buf.slice(0, buf.length - 100)
+      void Promise.resolve().then(async () => {
+        await pipe(
+          [data],
+          lp.encode(),
+          async (source) => {
+            await stream.sink(async function * () {
+              for await (const buf of source) {
+                // don't send all of the data, remote will expect another message
+                yield buf.slice(0, buf.length - 100)
 
-              // wait for longer than the timeout without sending any more data or closing the stream
-              await delay(500)
-            }
-          }())
-        }
-      )
+                // wait for longer than the timeout without sending any more data or closing the stream
+                await delay(500)
+              }
+            }())
+          }
+        )
 
-      deferred.resolve()
+        deferred.resolve()
+      })
     })
 
     // ensure connections are registered by connection manager
