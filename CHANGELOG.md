@@ -1,3 +1,10 @@
+### [1.0.16](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.15...v1.0.16) (2022-06-01)
+
+
+### Bug Fixes
+
+* ping peers with correct protocol ([#344](https://github.com/libp2p/js-libp2p-kad-dht/issues/344)) ([e7ccf13](https://github.com/libp2p/js-libp2p-kad-dht/commit/e7ccf13df07c6a4770fb75307996fd38bfbb54ae))
+
 ### [1.0.15](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.14...v1.0.15) (2022-05-25)
 
 
