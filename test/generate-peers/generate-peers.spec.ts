@@ -58,7 +58,8 @@ describe.skip('generate peers', function () {
     })
     const table = new RoutingTable({
       kBucketSize: 20,
-      lan: false
+      lan: false,
+      protocol: '/ipfs/kad/1.0.0'
     })
     table.init(components)
     refresh = new RoutingTableRefresh({

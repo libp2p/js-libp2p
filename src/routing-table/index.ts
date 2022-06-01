@@ -2,7 +2,6 @@
 import KBuck from 'k-bucket'
 import * as utils from '../utils.js'
 import Queue from 'p-queue'
-import { PROTOCOL_DHT } from '../constants.js'
 import { TimeoutController } from 'timeout-abort-controller'
 import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
@@ -42,6 +41,7 @@ const METRIC_PING_RUNNING = 'ping-running'
 
 export interface RoutingTableInit {
   lan: boolean
+  protocol: string
   kBucketSize?: number
   pingTimeout?: number
   pingConcurrency?: number
@@ -62,9 +62,10 @@ export class RoutingTable implements Startable, Initializable {
   private readonly pingTimeout: number
   private readonly pingConcurrency: number
   private running: boolean
+  private readonly protocol: string
 
   constructor (init: RoutingTableInit) {
-    const { kBucketSize, pingTimeout, lan, pingConcurrency } = init
+    const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol } = init
 
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
     this.kBucketSize = kBucketSize ?? 20
@@ -72,6 +73,7 @@ export class RoutingTable implements Startable, Initializable {
     this.pingConcurrency = pingConcurrency ?? 10
     this.lan = lan
     this.running = false
+    this.protocol = protocol
 
     const updatePingQueueSizeMetric = () => {
       this.components.getMetrics()?.updateComponentMetric({
@@ -156,7 +158,7 @@ export class RoutingTable implements Startable, Initializable {
 
               this.log('pinging old contact %p', oldContact.peer)
               const connection = await this.components.getConnectionManager().openConnection(oldContact.peer, options)
-              const { stream } = await connection.newStream(PROTOCOL_DHT, options)
+              const { stream } = await connection.newStream(this.protocol, options)
               stream.close()
               responded++
             } catch (err: any) {

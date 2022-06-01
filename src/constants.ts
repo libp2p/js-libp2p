@@ -11,6 +11,10 @@ export const hour = 60 * minute
 
 export const MAX_RECORD_AGE = 36 * hour
 
+export const LAN_PREFIX = '/lan'
+
+export const PROTOCOL_PREFIX = '/ipfs'
+
 export const PROTOCOL_DHT = '/kad/1.0.0'
 
 export const RECORD_KEY_PREFIX = '/dht/record'

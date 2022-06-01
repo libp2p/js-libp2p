@@ -24,7 +24,8 @@ describe('Routing Table', () => {
     })
 
     table = new RoutingTable({
-      lan: false
+      lan: false,
+      protocol: PROTOCOL_DHT
     })
     table.init(components)
     await table.start()

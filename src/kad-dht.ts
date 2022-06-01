@@ -25,6 +25,7 @@ import type { KadDHTInit } from './index.js'
 import { validators as recordValidators } from '@libp2p/record/validators'
 import { selectors as recordSelectors } from '@libp2p/record/selectors'
 import { symbol } from '@libp2p/interfaces/peer-discovery'
+import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
 
 export interface SingleKadDHTInit extends KadDHTInit {
   /**
@@ -81,14 +82,15 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
     this.running = false
     this.lan = Boolean(lan)
     this.log = logger(`libp2p:kad-dht:${lan === true ? 'lan' : 'wan'}`)
-    this.protocol = `${protocolPrefix ?? '/ipfs'}${lan === true ? '/lan' : ''}/kad/1.0.0`
+    this.protocol = `${protocolPrefix ?? PROTOCOL_PREFIX}${lan === true ? LAN_PREFIX : ''}${PROTOCOL_DHT}`
     this.kBucketSize = kBucketSize ?? 20
     this.clientMode = clientMode ?? true
     this.routingTable = new RoutingTable({
       kBucketSize,
       lan: this.lan,
       pingTimeout,
-      pingConcurrency
+      pingConcurrency,
+      protocol: this.protocol
     })
 
     this.providers = new Providers()
