@@ -172,7 +172,7 @@
     "execa": "^6.1.0",
     "go-libp2p": "^0.0.6",
     "into-stream": "^7.0.0",
-    "ipfs-http-client": "^56.0.1",
+    "ipfs-http-client": "^57.0.1",
     "it-pushable": "^2.0.1",
     "it-to-buffer": "^2.0.2",
     "nock": "^13.0.3",
