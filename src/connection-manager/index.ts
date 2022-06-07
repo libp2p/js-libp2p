@@ -482,7 +482,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * to the lowest valued peer.
    */
   async _maybeDisconnectOne () {
-    let connections = this.getConnections()
+    const connections = this.getConnections()
 
     if (connections.length <= this.opts.maxConnections) {
       return
