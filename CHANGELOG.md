@@ -1,3 +1,10 @@
+### [1.1.1](https://github.com/libp2p/js-libp2p-mplex/compare/v1.1.0...v1.1.1) (2022-06-08)
+
+
+### Bug Fixes
+
+* re-enable encode from Uint8ArrayList test ([#172](https://github.com/libp2p/js-libp2p-mplex/issues/172)) ([897031f](https://github.com/libp2p/js-libp2p-mplex/commit/897031fa79cf5b8c2a746228341c8d31169c2af9))
+
 ## [1.1.0](https://github.com/libp2p/js-libp2p-mplex/compare/v1.0.5...v1.1.0) (2022-05-23)
 
 
