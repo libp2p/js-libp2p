@@ -344,7 +344,10 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       this.peerValues.set(peerIdStr, this.opts.defaultPeerValue)
     }
 
-    await this._checkMaxLimit('maxConnections', this.getConnections().length)
+    const numConnections = this.getConnections().length
+    const toPrune = numConnections - this.opts.maxConnections
+
+    await this._checkMaxLimit('maxConnections', numConnections, toPrune)
     this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
   }
 
@@ -459,7 +462,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   _onLatencyMeasure (evt: CustomEvent<SummaryObject>) {
     const { detail: summary } = evt
 
-    this._checkMaxLimit('maxEventLoopDelay', summary.avgMs)
+    this._checkMaxLimit('maxEventLoopDelay', summary.avgMs, 1)
       .catch(err => {
         log.error(err)
       })
@@ -468,30 +471,29 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * If the `value` of `name` has exceeded its limit, maybe close a connection
    */
-  async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number) {
+  async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number, toPrune: number = 1) {
     const limit = this.opts[name]
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
-      log('%s: limit exceeded: %p, %d', this.components.getPeerId(), name, value)
-      await this._maybeDisconnectOne()
+      log('%s: limit exceeded: %p, %d, pruning %d connection(s)', this.components.getPeerId(), name, value, toPrune)
+      await this._maybePruneConnections(toPrune)
     }
   }
 
   /**
-   * If we have more connections than our maximum, close a connection
-   * to the lowest valued peer.
+   * If we have more connections than our maximum, select some excess connections
+   * to prune based on peer value
    */
-  async _maybeDisconnectOne () {
+  async _maybePruneConnections (toPrune: number) {
     const connections = this.getConnections()
 
-    if (connections.length <= this.opts.maxConnections) {
+    if (connections.length <= this.opts.minConnections || toPrune < 1) {
       return
     }
 
     const peerValues = Array.from(new Map([...this.peerValues.entries()].sort((a, b) => a[1] - b[1])))
     log.trace('sorted peer values: %j', peerValues)
 
-    const needed = connections.length - this.opts.maxConnections
     const toClose = []
 
     for (const [peerId] of peerValues) {
@@ -502,7 +504,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
           toClose.push(connection)
         }
 
-        if (toClose.length === needed) {
+        if (toClose.length === toPrune) {
           break
         }
       }
