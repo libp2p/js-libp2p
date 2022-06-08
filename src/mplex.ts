@@ -14,8 +14,11 @@ import type { Components } from '@libp2p/interfaces/components'
 import type { Sink } from 'it-stream-types'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interfaces/stream-muxer'
 import type { Stream } from '@libp2p/interfaces/connection'
+import type { MplexInit } from './index.js'
 
 const log = logger('libp2p:mplex')
+
+const MAX_STREAMS_PER_CONNECTION = 1024
 
 function printMessage (msg: Message) {
   const output: any = {
@@ -38,9 +41,7 @@ export interface MplexStream extends Stream {
   source: Pushable<Uint8Array>
 }
 
-export interface MplexInit extends StreamMuxerInit {
-  maxMsgSize?: number
-}
+interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {}
 
 export class MplexStreamMuxer implements StreamMuxer {
   public protocol = '/mplex/6.7.0'
@@ -50,10 +51,10 @@ export class MplexStreamMuxer implements StreamMuxer {
 
   private _streamId: number
   private readonly _streams: { initiators: Map<number, MplexStream>, receivers: Map<number, MplexStream> }
-  private readonly _init: MplexInit
+  private readonly _init: MplexStreamMuxerInit
   private readonly _source: { push: (val: Message) => void, end: (err?: Error) => void }
 
-  constructor (components: Components, init?: MplexInit) {
+  constructor (components: Components, init?: MplexStreamMuxerInit) {
     init = init ?? {}
 
     this._streamId = 0
@@ -122,6 +123,12 @@ export class MplexStreamMuxer implements StreamMuxer {
   }
 
   _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, MplexStream> }) {
+    const maxStreams = this._init.maxStreamsPerConnection ?? MAX_STREAMS_PER_CONNECTION
+
+    if ((this._streams.initiators.size + this._streams.receivers.size) === maxStreams) {
+      throw errCode(new Error('To many streams open'), 'ERR_TOO_MANY_STREAMS')
+    }
+
     const { id, name, type, registry } = options
 
     log('new %s stream %s %s', type, id, name)

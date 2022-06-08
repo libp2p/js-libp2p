@@ -27,7 +27,9 @@ npm install @libp2p/mplex
 import { Mplex } from '@libp2p/mplex'
 import { pipe } from 'it-pipe'
 
-const muxer = new Mplex({
+const factory = new Mplex()
+
+const muxer = factory.createStreamMuxer(components, {
   onStream: stream => { // Receive a duplex stream from the remote
     // ...receive data from the remote and optionally send data back
   },
@@ -46,7 +48,16 @@ pipe([1, 2, 3], stream)
 
 ## API
 
-### `const muxer = new Mplex([options])`
+### `const factory = new Mplex([options])`
+
+Creates a factory that can be used to create new muxers.
+
+`options` is an optional `Object` that may have the following properties:
+
+* `maxMsgSize` - a number that defines how large mplex data messages can be in bytes, if messages are larger than this they will be sent as multiple messages (default: 1048576 - e.g. 1MB)
+* `maxStreamsPerConnection` - a number that defines how many streams are allowed per connection (default: 1024)
+
+### `const muxer = factory.createStreamMuxer(components, [options])`
 
 Create a new _duplex_ stream that can be piped together with a connection in order to allow multiplexed communications.
 
