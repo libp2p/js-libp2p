@@ -66,7 +66,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybeDisconnectOne')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
 
     // Add 1 too many connections
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
@@ -115,7 +115,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybeDisconnectOne')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
 
     // Add 1 too many connections
     const spy = sinon.spy()
