@@ -405,6 +405,29 @@ describe('Upgrader', () => {
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
   })
+
+  it('should close streams when protocol negotiation fails', async () => {
+    await remoteComponents.getRegistrar().unhandle('/echo/1.0.0')
+
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    expect(connections[0].streams).to.have.lengthOf(0)
+    expect(connections[1].streams).to.have.lengthOf(0)
+
+    await expect(connections[0].newStream('/echo/1.0.0'))
+      .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+
+    // wait for remote to close
+    await delay(100)
+
+    expect(connections[0].streams).to.have.lengthOf(0)
+    expect(connections[1].streams).to.have.lengthOf(0)
+  })
 })
 
 describe('libp2p.upgrader', () => {
