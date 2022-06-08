@@ -8,7 +8,8 @@ import { decode } from '../src/decode.js'
 import all from 'it-all'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { messageWithBytes } from './fixtures/utils.js'
-import type { Message } from '../src/message-types.js'
+import type { Message, NewStreamMessage } from '../src/message-types.js'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('coder', () => {
   it('should encode header', async () => {
@@ -40,33 +41,28 @@ describe('coder', () => {
 
     expect(data).to.equalBytes(uint8ArrayFromString('88010231379801023139a801023231', 'base16'))
   })
-  /*
+
   it('should encode from Uint8ArrayList', async () => {
     const source: NewStreamMessage[] = [{
       id: 17,
       type: 0,
-      data: new Uint8ArrayList([
-        // @ts-expect-error types are broken
+      data: new Uint8ArrayList(
         uint8ArrayFromString(Math.random().toString()),
-        // @ts-expect-error types are broken
         uint8ArrayFromString(Math.random().toString())
-      ])
+      )
     }]
 
-    const data = new Uint8ArrayList()
-    for await (const chunk of coder.encode(source)) {
-      chunk.forEach(buf => data.append(buf))
-    }
+    const data = uint8ArrayConcat(await all(encode(source)))
 
-    expect(data.toUint8Array()).to.equalBytes(
+    expect(data).to.equalBytes(
       uint8ArrayConcat([
         uint8ArrayFromString('8801', 'base16'),
         Uint8Array.from([source[0].data.length]),
-        source[0].data instanceof Uint8Array ? source[0].data : source[0].data.toUint8Array()
+        source[0].data instanceof Uint8Array ? source[0].data : source[0].data.slice()
       ])
     )
   })
-*/
+
   it('should decode msgs from buffer', async () => {
     const source = [uint8ArrayFromString('88010231379801023139a801023231', 'base16')]
 
