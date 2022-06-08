@@ -1,3 +1,10 @@
+### [1.1.2](https://github.com/libp2p/js-libp2p-mplex/compare/v1.1.1...v1.1.2) (2022-06-08)
+
+
+### Bug Fixes
+
+* add per-connection stream limit ([#173](https://github.com/libp2p/js-libp2p-mplex/issues/173)) ([21371e7](https://github.com/libp2p/js-libp2p-mplex/commit/21371e7251b1d5523d7e4e09afa9a2ea3daa8079))
+
 ### [1.1.1](https://github.com/libp2p/js-libp2p-mplex/compare/v1.1.0...v1.1.1) (2022-06-08)
 
 
