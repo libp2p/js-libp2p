@@ -1,0 +1,47 @@
+{
+  "name": "js-libp2p-peer-id",
+  "version": "1.0.0",
+  "description": "PeerId implementation and factory in JavaScript",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-peer-id#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-peer-id.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-peer-id/issues"
+  },
+  "keywords": [
+    "interface",
+    "libp2p"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "private": true,
+  "scripts": {
+    "reset": "lerna run clean && rimraf ./node_modules ./package-lock.json packages/*/node_modules packages/*/package-lock.json packages/*/dist",
+    "test": "lerna run --concurrency 1 test -- --",
+    "test:node": "lerna run --concurrency 1 test:node -- --",
+    "test:chrome": "lerna run --concurrency 1 test:chrome -- --",
+    "test:chrome-webworker": "lerna --concurrency 1 run test:chrome-webworker -- --",
+    "test:firefox": "lerna run --concurrency 1 test:firefox -- --",
+    "test:firefox-webworker": "lerna run --concurrency 1 test:firefox-webworker -- --",
+    "test:electron-main": "lerna run --concurrency 1 test:electron-main -- --",
+    "test:electron-renderer": "lerna run --concurrency 1 test:electron-renderer -- --",
+    "clean": "lerna run clean",
+    "generate": "lerna run generate",
+    "build": "lerna run build",
+    "lint": "lerna run lint",
+    "dep-check": "lerna run dep-check",
+    "release": "lerna run --concurrency 1 release -- --"
+  },
+  "dependencies": {
+    "lerna": "^5.0.0",
+    "rimraf": "^3.0.2"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

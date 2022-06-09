@@ -1,0 +1,12 @@
+{
+  "lerna": "4.0.0",
+  "packages": [
+    "packages/*"
+  ],
+  "version": "independent",
+  "command": {
+    "run": {
+      "stream": true
+    }
+  }
+}

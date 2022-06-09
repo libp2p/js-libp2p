@@ -1,0 +1,16 @@
+**/node_modules/
+**/*.log
+
+# Coverage directory used by tools like istanbul
+.nyc_output
+
+build
+dist
+docs
+
+# Dependency directory
+# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
+node_modules
+# Lock files
+package-lock.json
+yarn.lock
