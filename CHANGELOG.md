@@ -1,11 +1,3 @@
-## 1.0.0 (2022-06-09)
-
-
-### Trivial Changes
-
-* add badge ([#1](https://github.com/libp2p/js-libp2p-logger/issues/1)) ([3109e30](https://github.com/libp2p/js-libp2p-logger/commit/3109e30508e32a8e24bd921afcd1b18df57483cd))
-* initial commit [skip ci] ([5e7fe29](https://github.com/libp2p/js-libp2p-logger/commit/5e7fe293a308cd608e72478ca6bbac58068648ad))
-
 ## [@libp2p/logger-v1.1.5](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/logger-v1.1.4...@libp2p/logger-v1.1.5) (2022-05-20)
 
 
