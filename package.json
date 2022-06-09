@@ -3,13 +3,13 @@
   "version": "1.0.7",
   "description": "Allows tracking of statistics while libp2p is running",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-tracked-map#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p-tracked-map#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-interfaces.git"
+    "url": "git+https://github.com/libp2p/js-libp2p-tracked-map.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-interfaces/issues"
+    "url": "https://github.com/libp2p/js-libp2p-tracked-map/issues"
   },
   "keywords": [
     "IPFS"
