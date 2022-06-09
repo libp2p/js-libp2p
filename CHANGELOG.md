@@ -1,3 +1,10 @@
+### [1.1.9](https://github.com/libp2p/js-libp2p-pubsub-topology/compare/v1.1.8...v1.1.9) (2022-06-09)
+
+
+### Trivial Changes
+
+* update readme ([#1](https://github.com/libp2p/js-libp2p-pubsub-topology/issues/1)) ([f1cfdc6](https://github.com/libp2p/js-libp2p-pubsub-topology/commit/f1cfdc67808ae2ec6fa01a54f96d708129b25371))
+
 ## [@libp2p/topology-v1.1.8](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/topology-v1.1.7...@libp2p/topology-v1.1.8) (2022-05-20)
 
 
