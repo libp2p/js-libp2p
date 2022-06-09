@@ -1,8 +1,8 @@
-# libp2p-tracked-map <!-- omit in toc -->
+# js-libp2p-peer-store <!-- omit in toc -->
 
 [![test & maybe release](https://github.com/libp2p/js-libp2p-peer-store/actions/workflows/js-test-and-release.yml/badge.svg)](https://github.com/libp2p/js-libp2p-peer-store/actions/workflows/js-test-and-release.yml)
 
-> allows tracking metrics in libp2p
+> Stores information about peers libp2p knows on the network
 
 ## Table of Contents <!-- omit in toc -->
 
