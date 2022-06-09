@@ -542,6 +542,8 @@ const node = await createLibp2p({
 
 The Connection Manager prunes Connections in libp2p whenever certain limits are exceeded. If Metrics are enabled, you can also configure the Connection Manager to monitor the bandwidth of libp2p and prune connections as needed. You can read more about what Connection Manager does at [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md). The configuration values below show the defaults for Connection Manager. See [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md#options) for a full description of the parameters.
 
+It can also restrict the number of streams that can be opened per protocol for each connection.
+
 ```js
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
@@ -562,7 +564,11 @@ const node = await createLibp2p({
     maxSentData: Infinity,
     maxReceivedData: Infinity,
     maxEventLoopDelay: Infinity,
-    movingAverageInterval: 60000
+    movingAverageInterval: 60000,
+    protocolStreamLimits: {
+      // only allow one stream per connection with the '/my/protcol/1.0.0' protocol to be open at any time
+      '/my/protcol/1.0.0': 1
+    }
   }
 })
 ```

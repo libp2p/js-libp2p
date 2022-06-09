@@ -41,12 +41,18 @@ export interface CryptoResult extends SecuredConnection {
 export interface UpgraderInit {
   connectionEncryption: ConnectionEncrypter[]
   muxers: StreamMuxerFactory[]
+
+  /**
+   * Limit the number of streams for a protocol can be opened concurrently
+   */
+  protocolStreamLimits?: Record<string, number>
 }
 
 export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upgrader {
   private readonly components: Components
   private readonly connectionEncryption: Map<string, ConnectionEncrypter>
   private readonly muxers: Map<string, StreamMuxerFactory>
+  private readonly protocolStreamLimits: Record<string, number>
 
   constructor (components: Components, init: UpgraderInit) {
     super()
@@ -63,6 +69,8 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     init.muxers.forEach(muxer => {
       this.muxers.set(muxer.protocol, muxer)
     })
+
+    this.protocolStreamLimits = init.protocolStreamLimits ?? {}
   }
 
   /**
@@ -284,6 +292,11 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               const mss = new Listener(muxedStream)
               const protocols = this.components.getRegistrar().getProtocols()
               const { stream, protocol } = await mss.handle(protocols)
+
+              if (checkStreamLimit(connection, this.protocolStreamLimits)(protocol)) {
+                throw errCode(new Error('Cannot open more streams for passed protocol(s)'), codes.ERR_TOO_MANY_STREAMS)
+              }
+
               log('%s: incoming stream opened on %s', direction, protocol)
 
               const metrics = this.components.getMetrics()
@@ -316,6 +329,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       newStream = async (protocols: string[], options: AbortOptions = {}): Promise<ProtocolStream> => {
         if (muxer == null) {
           throw errCode(new Error('Stream is not multiplexed'), codes.ERR_MUXER_UNAVAILABLE)
+        }
+
+        if (protocols.some(checkStreamLimit(connection, this.protocolStreamLimits))) {
+          throw errCode(new Error('Cannot open more streams for passed protocol(s)'), codes.ERR_TOO_MANY_STREAMS)
         }
 
         log('%s: starting new stream on %s', direction, protocols)
@@ -511,5 +528,26 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       log.error('error multiplexing inbound stream', err)
       throw errCode(err, codes.ERR_MUXER_UNAVAILABLE)
     }
+  }
+}
+
+function checkStreamLimit (connection: Connection, limits: Record<string, number>) {
+  return (protocol: string) => {
+    // make sure we're not at the stream limit
+    let count = 0
+
+    for (const metadata of connection.registry.values()) {
+      if (metadata.protocol === protocol) {
+        count++
+      }
+    }
+
+    const limit = limits[protocol]
+
+    if (count != null && limit != null && count === limit) {
+      return true
+    }
+
+    return false
   }
 }

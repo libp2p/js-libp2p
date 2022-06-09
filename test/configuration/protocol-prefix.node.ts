@@ -53,4 +53,26 @@ describe('Protocol prefix is configurable', () => {
       '/libp2p/fetch/0.0.1'
     ])
   })
+
+  it('limits stream counts with custom prefixes', () => {
+    const testProtocol = 'test-protocol'
+    const config = validateConfig(mergeOptions(baseOptions, {
+      identify: {
+        protocolPrefix: testProtocol
+      },
+      ping: {
+        protocolPrefix: testProtocol
+      },
+      fetch: {
+        protocolPrefix: testProtocol
+      }
+    }))
+
+    expect(config).to.have.nested.property('connectionManager.protocolStreamLimits').and.to.include.all.keys({
+      '/test-protocol/id/1.0.0': 1,
+      '/test-protocol/id/push/1.0.0': 1,
+      '/test-protocol/ping/1.0.0': 1,
+      '/test-protocol/fetch/1.0.0': 16
+    })
+  })
 })

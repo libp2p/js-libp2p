@@ -11,6 +11,13 @@ import { codes, messages } from './errors.js'
 import errCode from 'err-code'
 import type { RecursivePartial } from '@libp2p/interfaces'
 
+// max streams per connection of the protocols we ship with
+const DEFAULT_ID_STREAMS = 1
+const DEFAULT_ID_PUSH_STREAMS = 1
+const DEFAULT_PING_STREAMS = 1
+const DEFAULT_FETCH_STREAMS = 16
+const DEFAULT_CIRCUIT_RELAY_STREAMS = 16
+
 const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
     listen: [],
@@ -29,7 +36,14 @@ const DefaultConfig: Partial<Libp2pInit> = {
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
-    addressSorter: publicAddressesFirst
+    addressSorter: publicAddressesFirst,
+    protocolStreamLimits: {
+      '/ipfs/id/1.0.0': DEFAULT_ID_STREAMS,
+      '/ipfs/id/push/1.0.0': DEFAULT_ID_PUSH_STREAMS,
+      '/ipfs/ping/1.0.0': DEFAULT_PING_STREAMS,
+      '/libp2p/fetch/0.0.1': DEFAULT_FETCH_STREAMS,
+      '/libp2p/circuit/relay/0.1.0': DEFAULT_CIRCUIT_RELAY_STREAMS
+    }
   },
   connectionGater: {},
   transportManager: {
@@ -103,6 +117,14 @@ export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw errCode(new Error(messages.ERR_PROTECTOR_REQUIRED), codes.ERR_PROTECTOR_REQUIRED)
   }
+
+  // update stream limits based on configured protocol prefixes
+  const protocolStreamLimits = resultingOptions.connectionManager.protocolStreamLimits ?? {}
+  protocolStreamLimits[`/${resultingOptions.identify.protocolPrefix}/id/1.0.0`] = protocolStreamLimits['/ipfs/id/1.0.0'] ?? DEFAULT_ID_STREAMS
+  protocolStreamLimits[`/${resultingOptions.identify.protocolPrefix}/id/push/1.0.0`] = protocolStreamLimits['/ipfs/id/push/1.0.0'] ?? DEFAULT_ID_PUSH_STREAMS
+  protocolStreamLimits[`/${resultingOptions.ping.protocolPrefix}/ping/1.0.0`] = protocolStreamLimits['/ipfs/ping/1.0.0'] ?? DEFAULT_PING_STREAMS
+  protocolStreamLimits[`/${resultingOptions.fetch.protocolPrefix}/fetch/1.0.0`] = protocolStreamLimits['/libp2p/fetch/0.0.1'] ?? DEFAULT_FETCH_STREAMS
+  resultingOptions.connectionManager.protocolStreamLimits = protocolStreamLimits
 
   return resultingOptions
 }

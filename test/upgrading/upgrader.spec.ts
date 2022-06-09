@@ -428,6 +428,91 @@ describe('Upgrader', () => {
     expect(connections[0].streams).to.have.lengthOf(0)
     expect(connections[1].streams).to.have.lengthOf(0)
   })
+
+  it('should restrict the number of outgoing streams that can be opened for a given protocol', async () => {
+    const protocol = '/limited/1.0.0'
+
+    localUpgrader = new DefaultUpgrader(localComponents, {
+      connectionEncryption: [
+        new Plaintext()
+      ],
+      muxers: [
+        localMuxerFactory
+      ],
+      protocolStreamLimits: {
+        [protocol]: 1
+      }
+    })
+
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    expect(connections[0].streams).to.have.lengthOf(0)
+    expect(connections[1].streams).to.have.lengthOf(0)
+
+    await remoteComponents.getRegistrar().handle(protocol, () => {
+      // do not consume stream to leave it open
+    })
+
+    // first stream opens ok
+    await expect(connections[0].newStream(protocol))
+      .to.eventually.be.ok()
+
+    // both connections have one stream
+    expect(connections[0].streams).to.have.lengthOf(1)
+    expect(connections[1].streams).to.have.lengthOf(1)
+
+    // cannot open second stream
+    await expect(connections[0].newStream(protocol))
+      .to.eventually.be.rejected.with.property('code', codes.ERR_TOO_MANY_STREAMS)
+
+    // still only got one stream each
+    expect(connections[0].streams).to.have.lengthOf(1)
+    expect(connections[1].streams).to.have.lengthOf(1)
+  })
+
+  it('should restrict the number of incoming streams that can be opened for a given protocol', async () => {
+    const protocol = '/limited/1.0.0'
+
+    localUpgrader = new DefaultUpgrader(localComponents, {
+      connectionEncryption: [
+        new Plaintext()
+      ],
+      muxers: [
+        localMuxerFactory
+      ],
+      protocolStreamLimits: {
+        // do not accept any streams for this protocol
+        [protocol]: 0
+      }
+    })
+
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    expect(connections[0].streams).to.have.lengthOf(0)
+    expect(connections[1].streams).to.have.lengthOf(0)
+
+    await localComponents.getRegistrar().handle(protocol, () => {
+      // do not consume stream to leave it open
+    })
+
+    // should not be able to open stream from the remote to the local
+    await expect(connections[1].newStream(protocol))
+      .to.eventually.be.rejected.with.property('code', 'ERR_UNDER_READ')
+
+    // both connections should have no streams
+    expect(connections[0].streams).to.have.lengthOf(0)
+    expect(connections[1].streams).to.have.lengthOf(0)
+  })
 })
 
 describe('libp2p.upgrader', () => {

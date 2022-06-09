@@ -124,6 +124,11 @@ export interface ConnectionManagerInit {
    * Multiaddr resolvers to use when dialing
    */
   resolvers?: Record<string, Resolver>
+
+  /**
+   * Limit the number of streams for a protocol can be opened concurrently
+   */
+  protocolStreamLimits?: Record<string, number>
 }
 
 export interface ConnectionManagerEvents {
