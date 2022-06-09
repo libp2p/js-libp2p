@@ -1,0 +1,166 @@
+{
+  "name": "@libp2p/multistream-select",
+  "version": "1.0.6",
+  "description": "JavaScript implementation of multistream-select",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-multistream-select#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-multistream-select.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-multistream-select/issues"
+  },
+  "keywords": [
+    "ipfs",
+    "libp2p",
+    "multistream",
+    "protocol",
+    "stream"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@libp2p/interfaces": "^2.0.0",
+    "@libp2p/logger": "^1.1.0",
+    "abortable-iterator": "^4.0.2",
+    "err-code": "^3.0.1",
+    "it-first": "^1.0.6",
+    "it-handshake": "^3.0.1",
+    "it-length-prefixed": "^7.0.1",
+    "it-pipe": "^2.0.3",
+    "it-pushable": "^2.0.1",
+    "it-reader": "^5.0.0",
+    "it-stream-types": "^1.0.4",
+    "p-defer": "^4.0.0",
+    "uint8arraylist": "^1.5.1",
+    "uint8arrays": "^3.0.0"
+  },
+  "devDependencies": {
+    "aegir": "^37.0.7",
+    "iso-random-stream": "^2.0.2",
+    "it-all": "^1.0.6",
+    "it-map": "^1.0.6",
+    "it-pair": "^2.0.2",
+    "p-timeout": "^5.0.2",
+    "timeout-abort-controller": "^3.0.0",
+    "util": "^0.12.4",
+    "varint": "^6.0.0"
+  }
+}
