@@ -6,15 +6,18 @@
 
 ## Table of contents <!-- omit in toc -->
 
+- [Installation](#installation)
 - [Usage](#usage)
-- [Contribute](#contribute)
 - [License](#license)
+  - [Contribution](#contribution)
 
-## Usage
+## Installation
 
 ```console
-npm i libp2p-connection
+npm i @libp2p/topology
 ```
+
+## Usage
 
 ```javascript
 import { createTopology } from '@libp2p/topology'
@@ -22,14 +25,13 @@ import { createTopology } from '@libp2p/topology'
 const topology = createTopology({ ... })
 ```
 
-## Contribute
-
-The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
-
- - Go through the modules and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
- - **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
- - **Add tests**. There can never be enough tests.
-
 ## License
 
-[Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT) © Protocol Labs
+Licensed under either of
+
+ * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
