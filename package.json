@@ -1,77 +1,204 @@
 {
-  "name": "libp2p-pubsub",
-  "version": "0.6.0",
-  "description": "Pubsub base protocol for libp2p pubsub routers",
-  "leadMaintainer": "Vasco Santos <santos.vasco10@gmail.com>",
-  "main": "src/index.js",
-  "scripts": {
-    "lint": "aegir lint",
-    "test": "aegir test",
-    "test:node": "aegir test -t node",
-    "test:browser": "aegir test -t browser",
-    "build": "aegir build",
-    "docs": "aegir-docs",
-    "release": "aegir release --target node --docs",
-    "release-minor": "aegir release --type minor --docs",
-    "release-major": "aegir release --type major --docs",
-    "coverage": "aegir coverage",
-    "coverage-publish": "aegir coverage --provider coveralls"
-  },
-  "files": [
-    "src",
-    "dist"
-  ],
-  "pre-push": [
-    "lint"
-  ],
+  "name": "@libp2p/pubsub",
+  "version": "1.3.0",
+  "description": "libp2p pubsub base class",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-pubsub#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p-pubsub.git"
   },
-  "keywords": [
-    "IPFS",
-    "libp2p",
-    "pubsub",
-    "gossip",
-    "flood",
-    "flooding"
-  ],
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-pubsub/issues"
   },
-  "homepage": "https://github.com/libp2p/js-libp2p-pubsub#readme",
-  "devDependencies": {
-    "aegir": "^25.0.0",
-    "benchmark": "^2.1.4",
-    "chai": "^4.2.0",
-    "chai-spies": "^1.0.0",
-    "dirty-chai": "^2.0.1",
-    "it-pair": "^1.0.0",
-    "multiaddr": "^8.0.0",
-    "sinon": "^9.0.0"
+  "keywords": [
+    "interface",
+    "libp2p"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    },
+    "./errors": {
+      "import": "./dist/src/errors.js",
+      "types": "./dist/src/errors.d.ts"
+    },
+    "./peer-streams": {
+      "import": "./dist/src/peer-streams.js",
+      "types": "./dist/src/peer-streams.d.ts"
+    },
+    "./signature-policy": {
+      "import": "./dist/src/signature-policy.js",
+      "types": "./dist/src/signature-policy.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/src/utils.js",
+      "types": "./dist/src/utils.d.ts"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "test/message/*.d.ts",
+      "test/message/*.js"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "generate": "protons test/message/rpc.proto",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
   },
   "dependencies": {
-    "debug": "^4.1.1",
-    "err-code": "^2.0.0",
-    "it-length-prefixed": "^3.0.0",
-    "it-pipe": "^1.0.1",
-    "it-pushable": "^1.3.2",
-    "libp2p-crypto": "^0.18.0",
-    "libp2p-interfaces": "^0.4.0",
-    "multibase": "^3.0.0",
-    "peer-id": "^0.14.0",
-    "protons": "^2.0.0",
-    "uint8arrays": "^1.1.0"
+    "@libp2p/crypto": "^0.22.8",
+    "@libp2p/interfaces": "^2.0.0",
+    "@libp2p/logger": "^1.1.0",
+    "@libp2p/peer-collections": "^1.0.0",
+    "@libp2p/peer-id": "^1.1.0",
+    "@libp2p/topology": "^1.1.0",
+    "@multiformats/multiaddr": "^10.1.5",
+    "abortable-iterator": "^4.0.2",
+    "err-code": "^3.0.1",
+    "iso-random-stream": "^2.0.0",
+    "it-length-prefixed": "^7.0.1",
+    "it-pipe": "^2.0.3",
+    "it-pushable": "^2.0.1",
+    "multiformats": "^9.6.3",
+    "p-queue": "^7.2.0",
+    "uint8arrays": "^3.0.0"
   },
-  "contributors": [
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Mikerah <mikerahqc@protonmail.com>",
-    "Cayman <caymannava@gmail.com>",
-    "Topper Bowers <topper@toppingdesign.com>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "Hugo Dias <hugomrdias@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>"
-  ]
+  "devDependencies": {
+    "@libp2p/peer-id-factory": "^1.0.0",
+    "aegir": "^37.0.7",
+    "delay": "^5.0.0",
+    "it-pair": "^2.0.2",
+    "p-defer": "^4.0.0",
+    "p-wait-for": "^4.1.0",
+    "protons": "^3.0.4",
+    "protons-runtime": "^1.0.4",
+    "sinon": "^14.0.0",
+    "util": "^0.12.4"
+  }
 }
