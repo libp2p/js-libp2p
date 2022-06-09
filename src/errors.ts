@@ -1,0 +1,4 @@
+
+export const codes = {
+  ERR_SIGNATURE_NOT_VALID: 'ERR_SIGNATURE_NOT_VALID'
+}
