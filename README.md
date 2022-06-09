@@ -1,5 +1,7 @@
 # libp2p-logger <!-- omit in toc -->
 
+[![test & maybe release](https://github.com/libp2p/js-libp2p-logger/actions/workflows/js-test-and-release.yml/badge.svg)](https://github.com/libp2p/js-libp2p-logger/actions/workflows/js-test-and-release.yml)
+
 > A logging component for use in js-libp2p components
 
 ## Table of Contents <!-- omit in toc -->
