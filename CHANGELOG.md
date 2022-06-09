@@ -1,3 +1,10 @@
+### [1.0.8](https://github.com/libp2p/js-libp2p-tracked-map/compare/v1.0.7...v1.0.8) (2022-06-09)
+
+
+### Trivial Changes
+
+* fix project config ([#1](https://github.com/libp2p/js-libp2p-tracked-map/issues/1)) ([eb3d2ea](https://github.com/libp2p/js-libp2p-tracked-map/commit/eb3d2eaf094d51b4724d040325ac4e7bb3daa74b))
+
 ## [@libp2p/tracked-map-v1.0.7](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/tracked-map-v1.0.6...@libp2p/tracked-map-v1.0.7) (2022-05-20)
 
 
