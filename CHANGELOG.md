@@ -1,3 +1,10 @@
+### [1.0.17](https://github.com/libp2p/js-libp2p-peer-store/compare/v1.0.16...v1.0.17) (2022-06-09)
+
+
+### Trivial Changes
+
+* use correct module name in readme ([#1](https://github.com/libp2p/js-libp2p-peer-store/issues/1)) ([4f8377d](https://github.com/libp2p/js-libp2p-peer-store/commit/4f8377dd0f277e6490eabafe8cc4416e03976c14))
+
 ## [@libp2p/peer-store-v1.0.16](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/peer-store-v1.0.15...@libp2p/peer-store-v1.0.16) (2022-05-20)
 
 
