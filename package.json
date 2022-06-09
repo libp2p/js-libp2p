@@ -1,0 +1,169 @@
+{
+  "name": "@libp2p/peer-store",
+  "version": "1.0.16",
+  "description": "Stores information about peers libp2p knows on the network",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-peer-store#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-peer-store.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-peer-store/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "src/pb/*.d.ts",
+      "src/pb/peer.js"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "chore",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "generate": "protons src/pb/peer.proto",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@libp2p/interfaces": "^2.0.0",
+    "@libp2p/logger": "^1.1.0",
+    "@libp2p/peer-id": "^1.1.0",
+    "@libp2p/peer-record": "^1.0.0",
+    "@multiformats/multiaddr": "^10.1.5",
+    "err-code": "^3.0.1",
+    "interface-datastore": "^6.1.0",
+    "it-all": "^1.0.6",
+    "it-filter": "^1.0.3",
+    "it-foreach": "^0.1.1",
+    "it-map": "^1.0.6",
+    "it-pipe": "^2.0.3",
+    "mortice": "^3.0.0",
+    "multiformats": "^9.6.3",
+    "protons-runtime": "^1.0.4",
+    "uint8arrays": "^3.0.0"
+  },
+  "devDependencies": {
+    "@libp2p/interface-compliance-tests": "^2.0.0",
+    "@libp2p/peer-id-factory": "^1.0.0",
+    "@libp2p/utils": "^1.0.9",
+    "aegir": "^37.0.7",
+    "datastore-core": "^7.0.1",
+    "p-defer": "^4.0.0",
+    "p-wait-for": "^4.1.0",
+    "protons": "^3.0.4",
+    "sinon": "^14.0.0"
+  }
+}
