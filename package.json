@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/logger",
-  "version": "1.1.5",
+  "version": "1.0.0",
   "description": "A logging component for use in js-libp2p modules",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-logger#readme",
