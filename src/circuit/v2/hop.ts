@@ -48,7 +48,7 @@ export async function reserve (connection: Connection) {
     type: HopMessage.Type.RESERVE
   }))
 
-  let response
+  let response: HopMessage|undefined
   try {
     response = HopMessage.decode(await streamHandler.read())
   } catch (e: any) {
@@ -60,7 +60,7 @@ export async function reserve (connection: Connection) {
   if (response.status === Status.OK && response.reservation !== null) {
     return response.reservation
   }
-  const errMsg = `reservation failed with status ${response.status}`
+  const errMsg = `reservation failed with status ${response.status ?? 'undefined'}`
   log.error(errMsg)
   throw new Error(errMsg)
 }
@@ -90,7 +90,8 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
       streamHandler,
       {
         type: HopMessage.Type.STATUS,
-        reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, result.expire ?? 0n),
+        status: Status.OK,
+        reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, result.expire ?? BigInt(0)),
         limit
       })
     log('sent confirmation response to %s', connection.remotePeer)
@@ -118,8 +119,8 @@ async function handleConnect (options: HopConnectOptions) {
     return
   }
 
-  // @ts-expect-error
-  const dstPeer = peerIdFromBytes(request.peer.id)
+  /* eslint-disable @typescript-eslint/no-non-null-assertion */
+  const dstPeer = peerIdFromBytes(request.peer!.id)
 
   if (acl?.allowConnect !== undefined) {
     const status = await acl.allowConnect(connection.remotePeer, connection.remoteAddr, dstPeer)

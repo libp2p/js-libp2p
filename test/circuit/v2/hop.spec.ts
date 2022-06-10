@@ -1,12 +1,13 @@
-import { protocolIDv2Hop } from './../../../src/circuit/multicodec.js'
+
+import { protocolIDv2Stop } from './../../../src/circuit/multicodec.js'
 import { mockDuplex, mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-compliance-tests/mocks'
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import * as peerUtils from '../../utils/creators/peer.js'
 import { handleHopProtocol } from '../../../src/circuit/v2/hop.js'
 import { StreamHandlerV2 } from '../../../src/circuit/v2/stream-handler.js'
 import type { Connection } from '@libp2p/interfaces/connection'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { Status, HopMessage } from '../../../src/circuit/v2/pb/index.js'
+import { Status, StopMessage, HopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
 import sinon from 'sinon'
 import { Circuit } from '../../../src/circuit/transport.js'
@@ -64,10 +65,10 @@ describe('Circuit v2 - hop protocol', function () {
       expect(reserveStub.calledOnceWith(conn.remotePeer, conn.remoteAddr)).to.be.true()
       const response = HopMessage.decode(await streamHandler.read())
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.null()
+      expect(response.limit).to.be.undefined()
       expect(response.status).to.be.equal(Status.OK)
       expect(response.reservation?.expire).to.be.equal(expire)
-      expect(response.reservation?.voucher).to.not.be.null()
+      expect(response.reservation?.voucher).to.not.be.undefined()
       expect(response.reservation?.addrs?.length).to.be.greaterThan(0)
     })
 
@@ -88,7 +89,7 @@ describe('Circuit v2 - hop protocol', function () {
       expect(reserveStub.notCalled).to.be.true()
       const response = HopMessage.decode(await streamHandler.read())
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.null()
+      expect(response.limit).to.be.undefined()
       expect(response.status).to.be.equal(Status.PERMISSION_DENIED)
     })
 
@@ -109,7 +110,7 @@ describe('Circuit v2 - hop protocol', function () {
       expect(reserveStub.calledOnce).to.be.true()
       const response = HopMessage.decode(await streamHandler.read())
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.null()
+      expect(response.limit).to.be.undefined()
       expect(response.status).to.be.equal(Status.RESERVATION_REFUSED)
     })
 
@@ -161,7 +162,13 @@ describe('Circuit v2 - hop protocol', function () {
         mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
       )
       const streamStub = sinon.stub(dstConn, 'newStream')
-      streamStub.resolves({ protocol: protocolIDv2Hop, stream: mockStream(pair<Uint8Array>()) })
+      const dstStream = { protocol: protocolIDv2Stop, stream: mockStream(pair<Uint8Array>()) }
+      streamStub.resolves(dstStream)
+      const dstStreamHandler = new StreamHandlerV2({ stream: dstStream.stream })
+      dstStreamHandler.write(StopMessage.encode({
+        type: StopMessage.Type.STATUS,
+        status: Status.OK
+      }))
       const stub = sinon.stub(circuit, 'getPeerConnection')
       stub.returns(dstConn)
       await handleHopProtocol({

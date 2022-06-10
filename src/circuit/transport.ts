@@ -310,13 +310,13 @@ export class Circuit implements Transport, Initializable {
         type: CircuitV2.HopMessage.Type.CONNECT,
         peer: {
           id: destinationPeer.toBytes(),
-          addrs: [new Multiaddr(destinationAddr).bytes],
+          addrs: [new Multiaddr(destinationAddr).bytes]
         }
       }))
 
       const status = CircuitV2.HopMessage.decode(await streamHandler.read())
       if (status.status !== CircuitV2.Status.OK) {
-        throw createError(new Error('failed to connect via relay with status ' + status?.status?.toString()), codes.ERR_HOP_REQUEST_FAILED)
+        throw createError(new Error(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`), codes.ERR_HOP_REQUEST_FAILED)
       }
 
       // TODO: do something with limit and transient connection

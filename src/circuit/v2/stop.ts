@@ -66,9 +66,9 @@ export async function stop ({
   }
 
   if (response == null) {
-    return streamHandler.close()
+    streamHandler.close()
+    return undefined
   }
-
   if (response.status === Status.OK) {
     log('stop request to %s was successful', connection.remotePeer)
     return streamHandler.rest()
@@ -76,4 +76,5 @@ export async function stop ({
 
   log('stop request failed with code %d', response.status)
   streamHandler.close()
+  return undefined
 }
