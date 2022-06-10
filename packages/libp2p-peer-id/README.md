@@ -1,22 +1,28 @@
-# libp2p-peer-id <!-- omit in toc -->
+# @libp2p/peer-id <!-- omit in toc -->
 
 [![test & maybe release](https://github.com/libp2p/js-libp2p-peer-id/actions/workflows/js-test-and-release.yml/badge.svg)](https://github.com/libp2p/js-libp2p-peer-id/actions/workflows/js-test-and-release.yml)
 
-> peer-ids in JavaScript
+> Implementation of @libp2p/interface-peer-d
 
-## Table of Contents <!-- omit in toc -->
+## Table of contents <!-- omit in toc -->
 
+- [Install](#install)
 - [Description](#description)
 - [Example](#example)
-- [Installation](#installation)
-  - [License](#license)
-    - [Contribution](#contribution)
+- [License](#license)
+  - [Contribution](#contribution)
 
-# Description
+## Install
+
+```console
+$ npm i @libp2p/peer-id
+```
+
+## Description
 
 A basic implementation of a peer id
 
-# Example
+## Example
 
 ```JavaScript
 import { PeerId } from '@libp2p/peer-id'
@@ -26,18 +32,12 @@ const id = new PeerId(...)
 console.log(id.toCid())
 ```
 
-# Installation
-
-```console
-$ npm i libp2p-peer-id
-```
-
 ## License
 
 Licensed under either of
 
- * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
- * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 ### Contribution
 

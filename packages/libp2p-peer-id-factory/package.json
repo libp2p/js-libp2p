@@ -1,7 +1,7 @@
 {
   "name": "@libp2p/peer-id-factory",
   "version": "1.0.11",
-  "description": "IPFS Peer Id implementation in Node.js",
+  "description": "Create PeerId instances",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-peer-id/tree/master/packages/libp2p-peer-id-factory#readme",
   "repository": {
@@ -139,7 +139,8 @@
   },
   "dependencies": {
     "@libp2p/crypto": "^0.22.8",
-    "@libp2p/interfaces": "^2.0.0",
+    "@libp2p/interface-keys": "^0.0.1",
+    "@libp2p/interface-peer-id": "^0.0.1",
     "@libp2p/peer-id": "^1.1.0",
     "multiformats": "^9.6.3",
     "protons-runtime": "^1.0.4",

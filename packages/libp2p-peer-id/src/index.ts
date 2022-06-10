@@ -6,10 +6,10 @@ import { identity } from 'multiformats/hashes/identity'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { sha256 } from 'multiformats/hashes/sha2'
 import errcode from 'err-code'
-import { Ed25519PeerId, RSAPeerId, Secp256k1PeerId, symbol } from '@libp2p/interfaces/peer-id'
+import { Ed25519PeerId, RSAPeerId, Secp256k1PeerId, symbol } from '@libp2p/interface-peer-id'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const baseDecoder = Object
   .values(bases)
