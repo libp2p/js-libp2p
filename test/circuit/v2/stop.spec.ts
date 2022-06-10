@@ -7,7 +7,7 @@ import { createPeerIds } from '../../utils/creators/peer.js'
 import { mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { handleStop, stop } from '../../../src/circuit/v2/stop.js'
 import { Status, StopMessage } from '../../../src/circuit/v2/pb/index.js'
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 
 /* eslint-env mocha */

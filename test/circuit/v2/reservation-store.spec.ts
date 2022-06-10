@@ -1,5 +1,5 @@
 import { Multiaddr } from '@multiformats/multiaddr'
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Status } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
 import { createPeerId } from '../../utils/creators/peer.js'
