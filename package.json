@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.37.2",
+  "version": "0.37.3",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p#readme",
