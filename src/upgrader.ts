@@ -301,6 +301,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             })
             .catch(err => {
               log.error(err)
+
+              if (muxedStream.timeline.close == null) {
+                muxedStream.close()
+              }
             })
         },
         // Run anytime a stream closes
@@ -329,6 +333,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           return { stream: { ...muxedStream, ...stream }, protocol }
         } catch (err: any) {
           log.error('could not create new stream', err)
+
+          if (muxedStream.timeline.close == null) {
+            muxedStream.close()
+          }
 
           if (err.code != null) {
             throw err

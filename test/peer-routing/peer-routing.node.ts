@@ -360,8 +360,8 @@ describe('peer-routing', () => {
         .query(true)
         .reply(200,
           () => intoStream([
-            `{"Extra":"","id":"${closest1}","Responses":[{"ID":"${closest1}","Addrs":["/ip4/127.0.0.1/tcp/63930","/ip4/127.0.0.1/tcp/63930"]}],"Type":1}\n`,
-            `{"Extra":"","id":"${closest2}","Responses":[{"ID":"${closest2}","Addrs":["/ip4/127.0.0.1/tcp/63506","/ip4/127.0.0.1/tcp/63506"]}],"Type":1}\n`,
+            `{"Extra":"","ID":"${closest1}","Responses":[{"ID":"${closest1}","Addrs":["/ip4/127.0.0.1/tcp/63930","/ip4/127.0.0.1/tcp/63930"]}],"Type":1}\n`,
+            `{"Extra":"","ID":"${closest2}","Responses":[{"ID":"${closest2}","Addrs":["/ip4/127.0.0.1/tcp/63506","/ip4/127.0.0.1/tcp/63506"]}],"Type":1}\n`,
             `{"Extra":"","ID":"${closest2}","Responses":[],"Type":2}\n`,
             `{"Extra":"","ID":"${closest1}","Responses":[],"Type":2}\n`
           ]),

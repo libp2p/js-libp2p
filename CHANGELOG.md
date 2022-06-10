@@ -10,6 +10,15 @@
 
 
 
+### [0.37.3](https://www.github.com/libp2p/js-libp2p/compare/v0.37.2...v0.37.3) (2022-06-08)
+
+
+### Bug Fixes
+
+* connection pruning ([#1235](https://www.github.com/libp2p/js-libp2p/issues/1235)) ([f9073ec](https://www.github.com/libp2p/js-libp2p/commit/f9073ecd215e119b7a864e2ad31fe7067322c754))
+* ensure streams are closed when protocol negotiation fails ([#1236](https://www.github.com/libp2p/js-libp2p/issues/1236)) ([eee256d](https://www.github.com/libp2p/js-libp2p/commit/eee256db8ab65cea7228b1683403417edfdb1367))
+* wait for peer stats to be updated during test ([#1238](https://www.github.com/libp2p/js-libp2p/issues/1238)) ([b047268](https://www.github.com/libp2p/js-libp2p/commit/b0472686d29a4f295360d3f15a50c86c981892f7)), closes [#1219](https://www.github.com/libp2p/js-libp2p/issues/1219)
+
 ### [0.37.2](https://www.github.com/libp2p/js-libp2p/compare/v0.37.1...v0.37.2) (2022-05-31)
 
 

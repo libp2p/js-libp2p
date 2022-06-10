@@ -11,6 +11,8 @@ import { createBaseOptions } from '../utils/base-options.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import type { Libp2pOptions } from '../../src/index.js'
 import type { DefaultMetrics } from '../../src/metrics/index.js'
+import pWaitFor from 'p-wait-for'
+import drain from 'it-drain'
 
 describe('libp2p.metrics', () => {
   let libp2p: Libp2pNode
@@ -149,7 +151,7 @@ describe('libp2p.metrics', () => {
     ])
     await populateAddressBooks([libp2p, remoteLibp2p])
 
-    void remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => {
+    await remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => {
       void pipe(stream, stream)
     })
 
@@ -160,7 +162,7 @@ describe('libp2p.metrics', () => {
     await pipe(
       [bytes],
       stream,
-      async (source) => await toBuffer(source)
+      drain
     )
 
     const metrics = libp2p.components.getMetrics()
@@ -168,6 +170,19 @@ describe('libp2p.metrics', () => {
     if (metrics == null) {
       throw new Error('Metrics not configured')
     }
+
+    await pWaitFor(() => {
+      const peerStats = metrics.forPeer(connection.remotePeer)?.getSnapshot()
+      const transferred = parseInt(peerStats?.dataReceived.toString() ?? '0')
+
+      if (transferred < bytes.length) {
+        return false
+      }
+
+      return true
+    }, {
+      interval: 100
+    })
 
     const peerStats = metrics.forPeer(connection.remotePeer)?.getSnapshot()
     expect(parseInt(peerStats?.dataReceived.toString() ?? '0')).to.be.at.least(bytes.length)
