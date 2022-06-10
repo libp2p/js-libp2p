@@ -104,5 +104,25 @@ export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit 
     throw errCode(new Error(messages.ERR_PROTECTOR_REQUIRED), codes.ERR_PROTECTOR_REQUIRED)
   }
 
+  // Append user agent version to default AGENT_VERSION depending on the environment
+  if (resultingOptions.identify.host.agentVersion === AGENT_VERSION) {
+    if (isNode()) {
+      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.process.version}`
+    } else if (isBrowser()) {
+      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.navigator.userAgent}`
+    }
+  }
+
   return resultingOptions
 }
+
+function isBrowser (): boolean {
+   return typeof globalThis.navigator !== 'undefined'
+}
+
+function isNode (): boolean {
+  return typeof globalThis.process !== 'undefined' &&
+  globalThis.process.versions != null &&
+  globalThis.process.versions.node != null
+}
+  
