@@ -3,11 +3,17 @@ import { Mplex } from '@libp2p/mplex'
 import { NOISE } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
 import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createRequire } from 'module'
+
+const {version} = createRequire(import.meta.url)('./package.json')
 
 /** @type {import('aegir').PartialOptions} */
 export default {
   build: {
-    bundlesizeMax: '147kB'
+    bundlesizeMax: '147kB',
+    define: {
+      'process.env.npm_package_version': JSON.stringify(version)
+    }
   },
   test: {
     before: async () => {
