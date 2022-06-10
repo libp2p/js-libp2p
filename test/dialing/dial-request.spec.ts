@@ -1,29 +1,29 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { AbortError } from '@libp2p/interfaces/errors'
 import pDefer from 'p-defer'
 import delay from 'delay'
-import { DialAction, DialRequest } from '../../src/dialer/dial-request.js'
+import { DialAction, DialRequest } from '../../src/connection-manager/dialer/dial-request.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { DefaultDialer } from '../../src/dialer/index.js'
-import { Components } from '@libp2p/interfaces/components'
+import { Dialer } from '../../src/connection-manager/dialer/index.js'
 const error = new Error('dial failure')
 
 describe('Dial Request', () => {
   it('should end when a single multiaddr dials succeeds', async () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const deferredConn = pDefer()
     const actions: Record<string, () => Promise<any>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(error),
       '/ip4/127.0.0.1/tcp/1232': async () => await Promise.resolve(connection),
-      '/ip4/127.0.0.1/tcp/1233': async () => await Promise.reject(error)
+      '/ip4/127.0.0.1/tcp/1233': async () => await deferredConn.promise
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -33,15 +33,12 @@ describe('Dial Request', () => {
       dialAction
     })
 
-    sinon.spy(actions, '/ip4/127.0.0.1/tcp/1231')
-    sinon.spy(actions, '/ip4/127.0.0.1/tcp/1232')
-    sinon.spy(actions, '/ip4/127.0.0.1/tcp/1233')
+    // Make sure that dial attempt comes back before terminating last dial action
+    expect(await dialRequest.run({ signal: controller.signal })).to.equal(connection)
 
-    const result = await dialRequest.run({ signal: controller.signal })
-    expect(result).to.equal(connection)
-    expect(actions['/ip4/127.0.0.1/tcp/1231']).to.have.property('callCount', 1)
-    expect(actions['/ip4/127.0.0.1/tcp/1232']).to.have.property('callCount', 1)
-    expect(actions['/ip4/127.0.0.1/tcp/1233']).to.have.property('callCount', 0)
+    // End third dial attempt
+    deferredConn.resolve()
+
     expect(dialerReleaseTokenSpy.callCount).to.equal(2)
   })
 
@@ -56,7 +53,7 @@ describe('Dial Request', () => {
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -74,14 +71,16 @@ describe('Dial Request', () => {
     // Let the first dials run
     await delay(0)
 
-    // Finish the first 2 dials
-    firstDials.reject(error)
-    await delay(0)
-
     // Only 1 dial should remain, so 1 token should have been released
     expect(actions['/ip4/127.0.0.1/tcp/1231']).to.have.property('callCount', 1)
     expect(actions['/ip4/127.0.0.1/tcp/1232']).to.have.property('callCount', 1)
-    expect(actions['/ip4/127.0.0.1/tcp/1233']).to.have.property('callCount', 1)
+    expect(actions['/ip4/127.0.0.1/tcp/1233']).to.have.property('callCount', 0)
+
+    // Finish the first 2 dials
+    firstDials.reject(error)
+
+    await delay(0)
+
     expect(dialerReleaseTokenSpy.callCount).to.equal(1)
 
     // Finish the dial and release the 2nd token
@@ -99,7 +98,7 @@ describe('Dial Request', () => {
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const addrs = Object.keys(actions)
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -139,7 +138,7 @@ describe('Dial Request', () => {
 
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -185,7 +184,7 @@ describe('Dial Request', () => {
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const addrs = Object.keys(actions)
     const controller = new AbortController()
-    const dialer = new DefaultDialer(new Components(), {
+    const dialer = new Dialer({
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
@@ -214,5 +213,46 @@ describe('Dial Request', () => {
 
     expect(dialerGetTokensSpy.calledWith(addrs.length)).to.equal(true)
     expect(dialerReleaseTokenSpy.callCount).to.equal(2)
+  })
+
+  it('should abort other dials when one succeeds', async () => {
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const actions: Record<string, () => Promise<any>> = {
+      '/ip4/127.0.0.1/tcp/1231': async () => {
+        await delay(100)
+      },
+      '/ip4/127.0.0.1/tcp/1232': async () => {
+        // Successful dial takes longer to establish
+        await delay(1000)
+
+        return connection
+      },
+
+      '/ip4/127.0.0.1/tcp/1233': async () => {
+        await delay(100)
+      }
+    }
+
+    const signals: Record<string, AbortSignal | undefined> = {}
+
+    const dialRequest = new DialRequest({
+      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
+      dialer: new Dialer({
+        maxParallelDials: 3
+      }),
+      dialAction: async (ma, opts) => {
+        signals[ma.toString()] = opts.signal
+        return await actions[ma.toString()]()
+      }
+    })
+
+    await expect(dialRequest.run()).to.eventually.equal(connection)
+
+    // Dial attempt finished without connection
+    expect(signals['/ip4/127.0.0.1/tcp/1231']).to.have.property('aborted', false)
+    // Dial attempt led to connection
+    expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', false)
+    // Dial attempt finished without connection
+    expect(signals['/ip4/127.0.0.1/tcp/1233']).to.have.property('aborted', false)
   })
 })

@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { createTopology } from '@libp2p/topology'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultRegistrar } from '../../src/registrar.js'
-import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createPeerId, createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Registrar } from '@libp2p/interfaces/registrar'
@@ -14,17 +14,17 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { Components } from '@libp2p/interfaces/components'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { CustomEvent } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
 import type { Connection } from '@libp2p/interfaces/connection'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { Plaintext } from '../../src/insecure/index.js'
 import { WebSockets } from '@libp2p/websockets'
 import { Mplex } from '@libp2p/mplex'
+import type { PeerProtocolsChangeData } from '@libp2p/interfaces/peer-store'
 
 const protocol = '/test/1.0.0'
 
 describe('registrar', () => {
-  const connectionGater = mockConnectionGater()
   let components: Components
   let registrar: Registrar
   let peerId: PeerId
@@ -38,12 +38,14 @@ describe('registrar', () => {
       components = new Components({
         peerId,
         datastore: new MemoryDatastore(),
-        upgrader: mockUpgrader()
+        upgrader: mockUpgrader(),
+        peerStore: new PersistentPeerStore(),
+        connectionManager: new DefaultConnectionManager({
+          minConnections: 50,
+          maxConnections: 1000,
+          autoDialInterval: 1000
+        })
       })
-      components.setPeerStore(new PersistentPeerStore(components, {
-        addressFilter: connectionGater.filterMultiaddrForPeer
-      }))
-      components.setConnectionManager(new DefaultConnectionManager(components))
       registrar = new DefaultRegistrar(components)
     })
 
@@ -144,6 +146,15 @@ describe('registrar', () => {
         detail: conn
       }))
 
+      // identify completes
+      await libp2p.components.getPeerStore().dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+        detail: {
+          peerId: conn.remotePeer,
+          protocols: [protocol],
+          oldProtocols: []
+        }
+      }))
+
       // remote peer disconnects
       await conn.close()
       await libp2p.components.getUpgrader().dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
@@ -185,8 +196,18 @@ describe('registrar', () => {
       // Add protocol to peer and update it
       await libp2p.peerStore.protoBook.add(remotePeerId, [protocol])
 
+      // remote peer connects
       await libp2p.components.getUpgrader().dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
+      }))
+
+      // identify completes
+      await libp2p.components.getPeerStore().dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+        detail: {
+          peerId: conn.remotePeer,
+          protocols: [protocol],
+          oldProtocols: []
+        }
       }))
 
       await onConnectDefer.promise

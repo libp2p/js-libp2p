@@ -85,11 +85,13 @@ export class AutoRelay {
 
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
-      const connection = this.components.getConnectionManager().getConnection(peerId)
+      const connections = this.components.getConnectionManager().getConnections(peerId)
 
-      if (connection == null) {
+      if (connections.length === 0) {
         return
       }
+
+      const connection = connections[0]
 
       // Do not hop on a relayed connection
       if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {
@@ -223,15 +225,15 @@ export class AutoRelay {
         continue
       }
 
-      const connection = this.components.getConnectionManager().getConnection(id)
+      const connections = this.components.getConnectionManager().getConnections(id)
 
       // If not connected, store for possible later use.
-      if (connection == null) {
+      if (connections.length === 0) {
         knownHopsToDial.push(id)
         continue
       }
 
-      await this._addListenRelay(connection, idStr)
+      await this._addListenRelay(connections[0], idStr)
 
       // Check if already listening on enough relays
       if (this.listenRelays.size >= this.maxListeners) {
@@ -274,7 +276,7 @@ export class AutoRelay {
 
   async _tryToListenOnRelay (peerId: PeerId) {
     try {
-      const connection = await this.components.getDialer().dial(peerId)
+      const connection = await this.components.getConnectionManager().openConnection(peerId)
       await this._addListenRelay(connection, peerId.toString())
     } catch (err: any) {
       log.error('Could not use %p as relay', peerId, err)

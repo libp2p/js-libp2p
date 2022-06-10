@@ -1,8 +1,8 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { createMovingAverage } from './moving-average.js'
 // @ts-expect-error no types
 import retimer from 'retimer'
-import type { MovingAverages, Stats } from '@libp2p/interfaces/metrics'
+import type { MovingAverages, Stats, TransferStats } from '@libp2p/interfaces/metrics'
 
 export interface StatsEvents {
   'update': CustomEvent<TransferStats>
@@ -14,11 +14,6 @@ export interface StatsInit {
   movingAverageIntervals: number[]
   computeThrottleMaxQueueSize: number
   computeThrottleTimeout: number
-}
-
-export interface TransferStats {
-  dataReceived: BigInt
-  dataSent: BigInt
 }
 
 export class DefaultStats extends EventEmitter<StatsEvents> implements Stats {

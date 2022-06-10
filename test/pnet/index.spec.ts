@@ -1,10 +1,9 @@
 /* eslint-env mocha */
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { PreSharedKeyConnectionProtector } from '../../src/pnet/index.js'
-import { generate } from '../../src/pnet/key-generator.js'
+import { PreSharedKeyConnectionProtector, generateKey } from '../../src/pnet/index.js'
 import { INVALID_PSK } from '../../src/pnet/errors.js'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { Multiaddr } from '@multiformats/multiaddr'
@@ -14,8 +13,8 @@ const swarmKeyBuffer = new Uint8Array(95)
 const wrongSwarmKeyBuffer = new Uint8Array(95)
 
 // Write new psk files to the buffers
-generate(swarmKeyBuffer)
-generate(wrongSwarmKeyBuffer)
+generateKey(swarmKeyBuffer)
+generateKey(wrongSwarmKeyBuffer)
 
 describe('private network', () => {
   it('should accept a valid psk buffer', () => {

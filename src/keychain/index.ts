@@ -9,7 +9,6 @@ import errCode from 'err-code'
 import { codes } from '../errors.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import 'node-forge/lib/sha512.js'
 import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Components } from '@libp2p/interfaces/components'
@@ -171,7 +170,7 @@ export class KeyChain {
   /**
    * Generates the options for a keychain.  A random salt is produced.
    *
-   * @returns {Object}
+   * @returns {object}
    */
   static generateOptions (): KeyChainInit {
     const options = Object.assign({}, defaultOptions)
@@ -184,7 +183,7 @@ export class KeyChain {
    * Gets an object that can encrypt/decrypt protected data.
    * The default options for a keychain.
    *
-   * @returns {Object}
+   * @returns {object}
    */
   static get options () {
     return defaultOptions

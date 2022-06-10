@@ -1,6 +1,7 @@
 export enum messages {
   NOT_STARTED_YET = 'The libp2p node is not started yet',
   DHT_DISABLED = 'DHT is not available',
+  PUBSUB_DISABLED = 'PubSub is not available',
   CONN_ENCRYPTION_REQUIRED = 'At least one connection encryption module is required',
   ERR_TRANSPORTS_REQUIRED = 'At least one transport module is required',
   ERR_PROTECTOR_REQUIRED = 'Private network is enforced, but no protector was provided',
@@ -9,6 +10,7 @@ export enum messages {
 
 export enum codes {
   DHT_DISABLED = 'ERR_DHT_DISABLED',
+  ERR_PUBSUB_DISABLED = 'ERR_PUBSUB_DISABLED',
   PUBSUB_NOT_STARTED = 'ERR_PUBSUB_NOT_STARTED',
   DHT_NOT_STARTED = 'ERR_DHT_NOT_STARTED',
   CONN_ENCRYPTION_REQUIRED = 'ERR_CONN_ENCRYPTION_REQUIRED',
@@ -67,5 +69,6 @@ export enum codes {
   ERR_INVALID_PASS_LENGTH = 'ERR_INVALID_PASS_LENGTH',
   ERR_NOT_IMPLEMENTED = 'ERR_NOT_IMPLEMENTED',
   ERR_WRONG_PING_ACK = 'ERR_WRONG_PING_ACK',
-  ERR_INVALID_RECORD = 'ERR_INVALID_RECORD'
+  ERR_INVALID_RECORD = 'ERR_INVALID_RECORD',
+  ERR_ALREADY_SUCCEEDED = 'ERR_ALREADY_SUCCEEDED'
 }

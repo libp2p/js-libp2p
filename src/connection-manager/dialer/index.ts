@@ -3,31 +3,31 @@ import all from 'it-all'
 import filter from 'it-filter'
 import { pipe } from 'it-pipe'
 import errCode from 'err-code'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
-// @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import { DialAction, DialRequest } from './dial-request.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { trackedMap } from '@libp2p/tracked-map'
-import { codes } from '../errors.js'
+import { codes } from '../../errors.js'
 import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
   MAX_PER_PEER_DIALS,
   MAX_ADDRS_TO_DIAL
-} from '../constants.js'
+} from '../../constants.js'
 import type { Connection } from '@libp2p/interfaces/connection'
-import type { AbortOptions, Startable } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { getPeer } from '../get-peer.js'
+import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'
-import type { Components } from '@libp2p/interfaces/components'
-import type { Dialer, DialerInit } from '@libp2p/interfaces/dialer'
+import { Components, Initializable } from '@libp2p/interfaces/components'
 import map from 'it-map'
 import type { AddressSorter } from '@libp2p/interfaces/peer-store'
+import type { ComponentMetricsTracker } from '@libp2p/interfaces/metrics'
 
 const log = logger('libp2p:dialer')
 
@@ -52,8 +52,41 @@ export interface PendingDialTarget {
   reject: (err: Error) => void
 }
 
-export class DefaultDialer implements Dialer, Startable {
-  private readonly components: Components
+export interface DialerInit {
+  /**
+   * Sort the known addresses of a peer before trying to dial
+   */
+  addressSorter?: AddressSorter
+
+  /**
+   * Number of max concurrent dials
+   */
+  maxParallelDials?: number
+
+  /**
+   * Number of max addresses to dial for a given peer
+   */
+  maxAddrsToDial?: number
+
+  /**
+   * How long a dial attempt is allowed to take
+   */
+  dialTimeout?: number
+
+  /**
+   * Number of max concurrent dials per peer
+   */
+  maxDialsPerPeer?: number
+
+  /**
+   * Multiaddr resolvers to use when dialing
+   */
+  resolvers?: Record<string, Resolver>
+  metrics?: ComponentMetricsTracker
+}
+
+export class Dialer implements Startable, Initializable {
+  private components: Components = new Components()
   private readonly addressSorter: AddressSorter
   private readonly maxAddrsToDial: number
   private readonly timeout: number
@@ -63,8 +96,7 @@ export class DefaultDialer implements Dialer, Startable {
   public pendingDialTargets: Map<string, PendingDialTarget>
   private started: boolean
 
-  constructor (components: Components, init: DialerInit = {}) {
-    this.components = components
+  constructor (init: DialerInit = {}) {
     this.started = false
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
     this.maxAddrsToDial = init.maxAddrsToDial ?? MAX_ADDRS_TO_DIAL
@@ -85,6 +117,10 @@ export class DefaultDialer implements Dialer, Startable {
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
       Multiaddr.resolvers.set(key, value)
     }
+  }
+
+  init (components: Components): void {
+    this.components = components
   }
 
   isStarted () {
@@ -139,16 +175,6 @@ export class DefaultDialer implements Dialer, Startable {
       throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
     }
 
-    log('dial to %p', id)
-
-    const existingConnection = this.components.getConnectionManager().getConnection(id)
-
-    if (existingConnection != null) {
-      log('had an existing connection to %p', id)
-
-      return existingConnection
-    }
-
     log('creating dial target for %p', id)
 
     const dialTarget = await this._createCancellableDialTarget(id)
@@ -174,22 +200,6 @@ export class DefaultDialer implements Dialer, Startable {
     } finally {
       pendingDial.destroy()
     }
-  }
-
-  async dialProtocol (peer: PeerId | Multiaddr, protocols: string | string[], options: AbortOptions = {}) {
-    if (protocols == null) {
-      throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
-    }
-
-    protocols = Array.isArray(protocols) ? protocols : [protocols]
-
-    if (protocols.length === 0) {
-      throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
-    }
-
-    const connection = await this.dial(peer, options)
-
-    return await connection.newStream(protocols)
   }
 
   /**
@@ -244,9 +254,6 @@ export class DefaultDialer implements Dialer, Startable {
     const addrs: Multiaddr[] = []
     for (const a of knownAddrs) {
       const resolvedAddrs = await this._resolve(a)
-
-      log('resolved %s to %s', a, resolvedAddrs)
-
       resolvedAddrs.forEach(ra => addrs.push(ra))
     }
 

@@ -10,6 +10,58 @@
 
 
 
+### [0.37.3](https://www.github.com/libp2p/js-libp2p/compare/v0.37.2...v0.37.3) (2022-06-08)
+
+
+### Bug Fixes
+
+* connection pruning ([#1235](https://www.github.com/libp2p/js-libp2p/issues/1235)) ([f9073ec](https://www.github.com/libp2p/js-libp2p/commit/f9073ecd215e119b7a864e2ad31fe7067322c754))
+* ensure streams are closed when protocol negotiation fails ([#1236](https://www.github.com/libp2p/js-libp2p/issues/1236)) ([eee256d](https://www.github.com/libp2p/js-libp2p/commit/eee256db8ab65cea7228b1683403417edfdb1367))
+* wait for peer stats to be updated during test ([#1238](https://www.github.com/libp2p/js-libp2p/issues/1238)) ([b047268](https://www.github.com/libp2p/js-libp2p/commit/b0472686d29a4f295360d3f15a50c86c981892f7)), closes [#1219](https://www.github.com/libp2p/js-libp2p/issues/1219)
+
+### [0.37.2](https://www.github.com/libp2p/js-libp2p/compare/v0.37.1...v0.37.2) (2022-05-31)
+
+
+### Bug Fixes
+
+* reduce identify message size limit ([#1230](https://www.github.com/libp2p/js-libp2p/issues/1230)) ([824720f](https://www.github.com/libp2p/js-libp2p/commit/824720fb8f21f868ed88e881fbc3ce6b9459600d))
+
+### [0.37.1](https://www.github.com/libp2p/js-libp2p/compare/v0.37.0...v0.37.1) (2022-05-25)
+
+
+### Bug Fixes
+
+* do upnp hole punch after startup ([#1217](https://www.github.com/libp2p/js-libp2p/issues/1217)) ([d5386df](https://www.github.com/libp2p/js-libp2p/commit/d5386df68478a71ac269acb2d00d36a7a5c9ebc5))
+* explicitly close streams when connnections close ([#1221](https://www.github.com/libp2p/js-libp2p/issues/1221)) ([b09eb8f](https://www.github.com/libp2p/js-libp2p/commit/b09eb8fc53ec1d8f6280d681c9ca6a467ec259b5))
+* fix unintended aborts in dialer ([#1185](https://www.github.com/libp2p/js-libp2p/issues/1185)) ([35f9c0c](https://www.github.com/libp2p/js-libp2p/commit/35f9c0c79387232465848b450a47cafe841405e7))
+* time out slow reads ([#1227](https://www.github.com/libp2p/js-libp2p/issues/1227)) ([a1220d2](https://www.github.com/libp2p/js-libp2p/commit/a1220d22f5affb64e64dec0cd6a92cd8241b26df))
+
+## [0.37.0](https://www.github.com/libp2p/js-libp2p/compare/v0.36.2...v0.37.0) (2022-05-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* types are no longer hand crafted, this module is now ESM only
+
+### Features
+
+* convert to typescript ([#1172](https://www.github.com/libp2p/js-libp2p/issues/1172)) ([199395d](https://www.github.com/libp2p/js-libp2p/commit/199395de4d8139cc77d0b408626f37c9b8520d28))
+
+
+### Bug Fixes
+
+* add transport manager to exports map and fix docs ([#1182](https://www.github.com/libp2p/js-libp2p/issues/1182)) ([cc60cfd](https://www.github.com/libp2p/js-libp2p/commit/cc60cfde1a0907ca68f658f6de5362a708189222))
+* emit peer:connect after all ([#1171](https://www.github.com/libp2p/js-libp2p/issues/1171)) ([d16817c](https://www.github.com/libp2p/js-libp2p/commit/d16817ca443443e88803ee8096d45debb14af91b))
+* encode enums correctly ([#1210](https://www.github.com/libp2p/js-libp2p/issues/1210)) ([4837430](https://www.github.com/libp2p/js-libp2p/commit/4837430d8bcdbee0865eeba6fe694bc71fc6c9bb))
+* expose getPublicKey ([#1188](https://www.github.com/libp2p/js-libp2p/issues/1188)) ([1473044](https://www.github.com/libp2p/js-libp2p/commit/147304449e5f8d3acb8b00bdd9588b56830667c6))
+* expose metrics and registrar, use dht for peer discovery ([#1183](https://www.github.com/libp2p/js-libp2p/issues/1183)) ([64bfcee](https://www.github.com/libp2p/js-libp2p/commit/64bfcee5093b368df0b381f78afc2ddff3d339a9))
+* simplify pnet exports ([#1213](https://www.github.com/libp2p/js-libp2p/issues/1213)) ([3148060](https://www.github.com/libp2p/js-libp2p/commit/31480603f3e17d838d2685573995218a1e678e7a))
+* update deps ([#1181](https://www.github.com/libp2p/js-libp2p/issues/1181)) ([8cca8e4](https://www.github.com/libp2p/js-libp2p/commit/8cca8e4bfc6a339e58b5a5efa8a84fd891aa08ee))
+* update interfaces ([#1207](https://www.github.com/libp2p/js-libp2p/issues/1207)) ([da3d19b](https://www.github.com/libp2p/js-libp2p/commit/da3d19b30977fd2c7e77d92aa8914b13e3179aaa))
+* update pubsub interfaces ([#1194](https://www.github.com/libp2p/js-libp2p/issues/1194)) ([fab4f13](https://www.github.com/libp2p/js-libp2p/commit/fab4f1385cf61b7b16719b9aacdfe03146a3f260))
+* update to new interfaces ([#1206](https://www.github.com/libp2p/js-libp2p/issues/1206)) ([a15254f](https://www.github.com/libp2p/js-libp2p/commit/a15254fdd478a336edf1e1196b721dc56888b2ea))
+* use placeholder dht/pubsub ([#1193](https://www.github.com/libp2p/js-libp2p/issues/1193)) ([5397137](https://www.github.com/libp2p/js-libp2p/commit/5397137c654dfdec431e0c9ba4b1ff9dee19abf1))
+
 ### [0.36.2](https://www.github.com/libp2p/js-libp2p/compare/v0.36.1...v0.36.2) (2022-01-26)
 
 

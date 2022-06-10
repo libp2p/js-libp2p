@@ -3,7 +3,7 @@ import { RecordEnvelope } from '@libp2p/peer-record'
 import { logger } from '@libp2p/logger'
 import { pipe } from 'it-pipe'
 import type { Connection } from '@libp2p/interfaces/connection'
-import { HopMessage, IHopMessage, IReservation, ILimit, Status, StopMessage } from './pb/index.js'
+import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
 import { StreamHandlerV2 } from './stream-handler.js'
 import type { Circuit } from '../transport.js'
 import { Multiaddr } from '@multiformats/multiaddr'
@@ -18,12 +18,12 @@ const log = logger('libp2p:circuitv2:hop')
 
 export interface HopProtocolOptions {
   connection: Connection
-  request: IHopMessage
+  request: HopMessage
   streamHandler: StreamHandlerV2
   circuit: Circuit
   relayPeer: PeerId
   relayAddrs: Multiaddr[]
-  limit?: ILimit
+  limit?: Limit
   acl?: Acl
   reservationStore: ReservationStore
 }
@@ -46,7 +46,7 @@ export async function reserve (connection: Connection) {
   const streamHandler = new StreamHandlerV2({ stream })
   streamHandler.write(HopMessage.encode({
     type: HopMessage.Type.RESERVE
-  }).finish())
+  }))
 
   let response
   try {
@@ -90,7 +90,7 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
       streamHandler,
       {
         type: HopMessage.Type.STATUS,
-        reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, result.expire ?? 0),
+        reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, result.expire ?? 0n),
         limit
       })
     log('sent confirmation response to %s', connection.remotePeer)
@@ -178,8 +178,8 @@ async function makeReservation (
   relayAddrs: Multiaddr[],
   relayPeerId: PeerId,
   remotePeer: PeerId,
-  expire: number
-): Promise<IReservation> {
+  expire: bigint
+): Promise<Reservation> {
   const addrs = []
 
   for (const relayAddr of relayAddrs) {
@@ -215,6 +215,6 @@ function writeErrorResponse (streamHandler: StreamHandlerV2, status: Status) {
  * Write a response
  *
  */
-function writeResponse (streamHandler: StreamHandlerV2, msg: IHopMessage) {
-  streamHandler.write(HopMessage.encode(msg).finish())
+function writeResponse (streamHandler: StreamHandlerV2, msg: HopMessage) {
+  streamHandler.write(HopMessage.encode(msg))
 }

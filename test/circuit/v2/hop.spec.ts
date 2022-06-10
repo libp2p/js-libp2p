@@ -47,7 +47,7 @@ describe('Circuit v2 - hop protocol', function () {
     })
 
     it('should reserve slot', async function () {
-      const expire: number = 123
+      const expire: bigint = 123n
       const reserveStub = sinon.stub(reservationStore, 'reserve')
       reserveStub.resolves({ status: Status.OK, expire })
       await handleHopProtocol({
@@ -116,7 +116,7 @@ describe('Circuit v2 - hop protocol', function () {
     it('should fail to reserve slot - failed to write response', async function () {
       const reserveStub = sinon.stub(reservationStore, 'reserve')
       const removeReservationStub = sinon.stub(reservationStore, 'removeReservation')
-      reserveStub.resolves({ status: Status.OK, expire: 123 })
+      reserveStub.resolves({ status: Status.OK, expire: 123n })
       removeReservationStub.resolves()
       const backup = streamHandler.write
       streamHandler.write = function () { throw new Error('connection reset') }

@@ -1,8 +1,8 @@
 import { Multiaddr } from '@multiformats/multiaddr'
-import { Status, StopMessage, IHopMessage, IStopMessage, HopMessage } from './pb/index.js'
+import { Status, StopMessage, HopMessage } from './pb/index.js'
 import type { StreamHandlerV2 } from './stream-handler.js'
 
-export function validateStopConnectRequest (request: IStopMessage, streamHandler: StreamHandlerV2) {
+export function validateStopConnectRequest (request: StopMessage, streamHandler: StreamHandlerV2) {
   if (request.type !== StopMessage.Type.CONNECT) {
     writeStopMessageResponse(streamHandler, Status.UNEXPECTED_MESSAGE)
     throw new Error('Received unexpected stop status msg')
@@ -21,7 +21,7 @@ export function validateStopConnectRequest (request: IStopMessage, streamHandler
   }
 }
 
-export function validateHopConnectRequest (request: IHopMessage, streamHandler: StreamHandlerV2) {
+export function validateHopConnectRequest (request: HopMessage, streamHandler: StreamHandlerV2) {
   // TODO: check if relay connection
 
   try {
@@ -48,7 +48,7 @@ function writeStopMessageResponse (streamHandler: StreamHandlerV2, status: Statu
       type: StopMessage.Type.STATUS,
       status: status
     }
-  ).finish())
+  ))
 }
 
 /**
@@ -63,5 +63,5 @@ function writeHopMessageResponse (streamHandler: StreamHandlerV2, status: Status
       type: HopMessage.Type.STATUS,
       status: status
     }
-  ).finish())
+  ))
 }

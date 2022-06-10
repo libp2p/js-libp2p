@@ -5,7 +5,7 @@ import type { Status } from './pb/index.js'
 export type ReservationStatus = Status.OK | Status.PERMISSION_DENIED | Status.RESERVATION_REFUSED
 
 export interface ReservationStore {
-  reserve: (peer: PeerId, addr: Multiaddr) => Promise<{status: ReservationStatus, expire?: number}>
+  reserve: (peer: PeerId, addr: Multiaddr) => Promise<{status: ReservationStatus, expire?: bigint}>
   removeReservation: (peer: PeerId) => Promise<void>
   hasReservation: (dst: PeerId) => Promise<boolean>
 }

@@ -1,8 +1,10 @@
 import { createLibp2pNode } from './libp2p.js'
-import type { AbortOptions, EventEmitter, RecursivePartial, Startable } from '@libp2p/interfaces'
+import type { AbortOptions, RecursivePartial } from '@libp2p/interfaces'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { FaultTolerance } from './transport-manager.js'
-import type { HostProperties } from './identify/index.js'
+import type { IdentifyServiceInit } from './identify/index.js'
 import type { DualDHT } from '@libp2p/interfaces/dht'
 import type { Datastore } from 'interface-datastore'
 import type { PeerStore, PeerStoreInit } from '@libp2p/interfaces/peer-store'
@@ -16,11 +18,14 @@ import type { ConnectionEncrypter } from '@libp2p/interfaces/connection-encrypte
 import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PubSub } from '@libp2p/interfaces/pubsub'
-import type { ConnectionManager, Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
+import type { Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
+import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
 import type { Metrics, MetricsInit } from '@libp2p/interfaces/metrics'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import type { DialerInit } from '@libp2p/interfaces/dialer'
 import type { KeyChain } from './keychain/index.js'
+import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { PingServiceInit } from './ping/index.js'
+import type { FetchServiceInit } from './fetch/index.js'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
@@ -72,29 +77,6 @@ export interface AddressesConfig {
   announceFilter: (multiaddrs: Multiaddr[]) => Multiaddr[]
 }
 
-export interface ConnectionManagerConfig {
-  /**
-   * If true, try to connect to all discovered peers up to the connection manager limit
-   */
-  autoDial?: boolean
-
-  /**
-   * The maximum number of connections to keep open
-   */
-  maxConnections: number
-
-  /**
-   * The minimum number of connections to keep open
-   */
-  minConnections: number
-
-  /**
-   * How long to wait between attempting to keep our number of concurrent connections
-   * above minConnections
-   */
-  autoDialInterval: number
-}
-
 export interface TransportManagerConfig {
   faultTolerance?: FaultTolerance
 }
@@ -116,20 +98,20 @@ export interface RefreshManagerConfig {
 
 export interface Libp2pInit {
   peerId: PeerId
-  host: HostProperties
   addresses: AddressesConfig
-  connectionManager: ConnectionManagerConfig
+  connectionManager: ConnectionManagerInit
   connectionGater: Partial<ConnectionGater>
   transportManager: TransportManagerConfig
   datastore: Datastore
-  dialer: DialerInit
   metrics: MetricsInit
   peerStore: PeerStoreInit
   peerRouting: PeerRoutingConfig
   keychain: KeychainConfig
-  protocolPrefix: string
   nat: NatManagerConfig
   relay: RelayConfig
+  identify: IdentifyServiceInit
+  ping: PingServiceInit
+  fetch: FetchServiceInit
 
   transports: Transport[]
   streamMuxers?: StreamMuxerFactory[]
@@ -155,9 +137,8 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   connectionManager: ConnectionManager
   registrar: Registrar
   metrics?: Metrics
-
-  pubsub?: PubSub
-  dht?: DualDHT
+  pubsub: PubSub
+  dht: DualDHT
 
   /**
    * Load keychain keys from the datastore.
@@ -218,12 +199,18 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   /**
    * Pings the given peer in order to obtain the operation latency
    */
-  ping: (peer: Multiaddr |PeerId) => Promise<number>
+  ping: (peer: Multiaddr | PeerId, options?: AbortOptions) => Promise<number>
 
   /**
    * Sends a request to fetch the value associated with the given key from the given peer.
    */
-  fetch: (peer: PeerId | Multiaddr | string, key: string) => Promise<Uint8Array | null>
+  fetch: (peer: PeerId | Multiaddr | string, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
+
+  /**
+   * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
+   * this may mean searching the DHT if the key is not present in the KeyStore.
+   */
+  getPublicKey: (peer: PeerId, options?: AbortOptions) => Promise<Uint8Array>
 }
 
 export type Libp2pOptions = RecursivePartial<Libp2pInit>

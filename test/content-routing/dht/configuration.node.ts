@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { createLibp2p, Libp2p } from '../../../src/index.js'
 import { createSubsystemOptions } from './utils.js'
 
@@ -13,15 +13,17 @@ describe('DHT subsystem is configurable', () => {
     }
   })
 
-  it('should not exist if no module is provided', async () => {
+  it('should throw if no module is provided', async () => {
     libp2p = await createLibp2p(createSubsystemOptions({
       dht: undefined
     }))
-    expect(libp2p.dht).to.not.exist()
+    await libp2p.start()
+    await expect(libp2p.dht.getMode()).to.eventually.be.rejected()
   })
 
-  it('should exist if the module is provided', async () => {
+  it('should not throw if the module is provided', async () => {
     libp2p = await createLibp2p(createSubsystemOptions())
-    expect(libp2p.dht).to.exist()
+    await libp2p.start()
+    await expect(libp2p.dht.getMode()).to.eventually.equal('client')
   })
 })

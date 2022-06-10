@@ -1,5 +1,5 @@
 
-import { IStopMessage, Status, StopMessage } from './pb/index.js'
+import { Status, StopMessage } from './pb/index.js'
 import type { Connection } from '@libp2p/interfaces/connection'
 
 import { logger } from '@libp2p/logger'
@@ -11,7 +11,7 @@ const log = logger('libp2p:circuitv2:stop')
 
 export interface HandleStopOptions {
   connection: Connection
-  request: IStopMessage
+  request: StopMessage
   streamHandler: StreamHandlerV2
 }
 
@@ -37,13 +37,13 @@ export async function handleStop ({
       type: StopMessage.Type.STATUS,
       status: Status.OK
     }
-  ).finish())
+  ))
   return streamHandler.rest()
 }
 
 export interface StopOptions {
   connection: Connection
-  request: IStopMessage
+  request: StopMessage
 }
 
 /**
@@ -57,7 +57,7 @@ export async function stop ({
   const { stream } = await connection.newStream([protocolIDv2Stop])
   log('starting circuit relay v2 stop request to %s', connection.remotePeer)
   const streamHandler = new StreamHandlerV2({ stream })
-  streamHandler.write(StopMessage.encode(request).finish())
+  streamHandler.write(StopMessage.encode(request))
   let response
   try {
     response = StopMessage.decode(await streamHandler.read())

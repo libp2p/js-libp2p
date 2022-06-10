@@ -97,7 +97,9 @@ Creates an instance of Libp2p.
 | options.modules | [`Array<object>`](./CONFIGURATION.md#modules) | libp2p [modules](./CONFIGURATION.md#modules) to use |
 | [options.addresses] | `{ listen: Array<string>, announce: Array<string>, announceFilter: (ma: Array<multiaddr>) => Array<multiaddr> }` | Addresses for transport listening and to advertise to the network |
 | [options.config] | `object` | libp2p modules configuration and core configuration |
-| [options.host] | `{ agentVersion: string }` | libp2p host options |
+| [options.identify] | `{ protocolPrefix: string, host: { agentVersion: string }, timeout: number, maxIdentifyMessageSize: number }` | libp2p identify protocol options |
+| [options.ping] | `{ protocolPrefix: string }` | libp2p ping protocol options |
+| [options.fetch] | `{ protocolPrefix: string }` | libp2p fetch protocol options |
 | [options.connectionManager] | [`object`](./CONFIGURATION.md#configuring-connection-manager) | libp2p Connection Manager [configuration](./CONFIGURATION.md#configuring-connection-manager) |
 | [options.transportManager] | [`object`](./CONFIGURATION.md#configuring-transport-manager) | libp2p transport manager [configuration](./CONFIGURATION.md#configuring-transport-manager) |
 | [options.datastore] | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) (in memory datastore will be used if not provided) |

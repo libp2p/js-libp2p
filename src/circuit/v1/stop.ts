@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { CircuitRelay as CircuitPB, ICircuitRelay } from './pb/index.js'
+import { CircuitRelay } from './pb/index.js'
 import { RELAY_V1_CODEC } from '../multicodec.js'
 import { StreamHandlerV1 } from './stream-handler.js'
 import { validateAddrs } from './utils.js'
@@ -10,7 +10,7 @@ const log = logger('libp2p:circuit:stop')
 
 export interface HandleStopOptions {
   connection: Connection
-  request: ICircuitRelay
+  request: CircuitRelay
   streamHandler: StreamHandlerV1
 }
 
@@ -35,8 +35,8 @@ export function handleStop (options: HandleStopOptions): Duplex<Uint8Array> | un
   // The request is valid
   log('stop request is valid')
   streamHandler.write({
-    type: CircuitPB.Type.STATUS,
-    code: CircuitPB.Status.SUCCESS
+    type: CircuitRelay.Type.STATUS,
+    code: CircuitRelay.Status.SUCCESS
   })
 
   return streamHandler.rest()
@@ -44,7 +44,7 @@ export function handleStop (options: HandleStopOptions): Duplex<Uint8Array> | un
 
 export interface StopOptions {
   connection: Connection
-  request: ICircuitRelay
+  request: CircuitRelay
 }
 
 /**
@@ -68,7 +68,7 @@ export async function stop (options: StopOptions) {
     return
   }
 
-  if (response.code === CircuitPB.Status.SUCCESS) {
+  if (response.code === CircuitRelay.Status.SUCCESS) {
     log('stop request to %p was successful', connection.remotePeer)
     return streamHandler.rest()
   }

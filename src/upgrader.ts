@@ -6,7 +6,7 @@ import { pipe } from 'it-pipe'
 import mutableProxy from 'mutable-proxy'
 import { codes } from './errors.js'
 import { createConnection } from '@libp2p/connection'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Connection, ProtocolStream, Stream } from '@libp2p/interfaces/connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
@@ -15,6 +15,7 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { MultiaddrConnection, Upgrader, UpgraderEvents } from '@libp2p/interfaces/transport'
 import type { Duplex } from 'it-stream-types'
 import type { Components } from '@libp2p/interfaces/components'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:upgrader')
 
@@ -266,7 +267,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     } = opts
 
     let muxer: StreamMuxer | undefined
-    let newStream: ((multicodecs: string[]) => Promise<ProtocolStream>) | undefined
+    let newStream: ((multicodecs: string[], options?: AbortOptions) => Promise<ProtocolStream>) | undefined
     let connection: Connection // eslint-disable-line prefer-const
 
     if (muxerFactory != null) {
@@ -300,6 +301,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             })
             .catch(err => {
               log.error(err)
+
+              if (muxedStream.timeline.close == null) {
+                muxedStream.close()
+              }
             })
         },
         // Run anytime a stream closes
@@ -308,7 +313,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         }
       })
 
-      newStream = async (protocols: string[]): Promise<ProtocolStream> => {
+      newStream = async (protocols: string[], options: AbortOptions = {}): Promise<ProtocolStream> => {
         if (muxer == null) {
           throw errCode(new Error('Stream is not multiplexed'), codes.ERR_MUXER_UNAVAILABLE)
         }
@@ -319,7 +324,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         const metrics = this.components.getMetrics()
 
         try {
-          let { stream, protocol } = await mss.select(protocols)
+          let { stream, protocol } = await mss.select(protocols, options)
 
           if (metrics != null) {
             stream = metrics.trackStream({ stream, remotePeer, protocol })
@@ -328,6 +333,15 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           return { stream: { ...muxedStream, ...stream }, protocol }
         } catch (err: any) {
           log.error('could not create new stream', err)
+
+          if (muxedStream.timeline.close == null) {
+            muxedStream.close()
+          }
+
+          if (err.code != null) {
+            throw err
+          }
+
           throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
         }
       }
@@ -382,9 +396,11 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       getStreams: () => muxer != null ? muxer.streams : errConnectionNotMultiplexed(),
       close: async () => {
         await maConn.close()
-        // Ensure remaining streams are aborted
+        // Ensure remaining streams are closed
         if (muxer != null) {
-          muxer.streams.map(stream => stream.abort())
+          await Promise.all(muxer.streams.map(async stream => {
+            await stream.close()
+          }))
         }
       }
     })

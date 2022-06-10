@@ -885,7 +885,12 @@ Changing the protocol name prefix can isolate default public network (IPFS) for 
 
 ```js
 const node = await createLibp2p({
-  protocolPrefix: 'ipfs' // default
+  identify: {
+    protocolPrefix: 'ipfs' // default
+  },
+  ping: {
+    protocolPrefix: 'ipfs' // default
+  }
 })
 /*
 protocols: [

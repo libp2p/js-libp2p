@@ -14,13 +14,13 @@ export class ReservationStore implements IReservationStore {
   constructor (private readonly limit = 15) {
   }
 
-  async reserve (peer: PeerId, addr: Multiaddr): Promise<{status: ReservationStatus, expire?: number}> {
+  async reserve (peer: PeerId, addr: Multiaddr): Promise<{status: ReservationStatus, expire?: bigint}> {
     if (this.reservations.size >= this.limit && !this.reservations.has(peer.toString())) {
       return { status: Status.RESERVATION_REFUSED, expire: undefined }
     }
     const expire = new Date()
     this.reservations.set(peer.toString(), { addr, expire })
-    return { status: Status.OK, expire: expire.getTime() }
+    return { status: Status.OK, expire: BigInt(expire.getTime()) }
   }
 
   async removeReservation (peer: PeerId) {

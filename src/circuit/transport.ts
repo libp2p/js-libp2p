@@ -72,11 +72,11 @@ export class Circuit implements Transport, Initializable {
   }
 
   get [Symbol.toStringTag] () {
-    return this.constructor.name
+    return 'libp2p/circuit-relay-v1'
   }
 
-  getPeerConnection (dstPeer: PeerId) {
-    return this.components.getConnectionManager().getConnection(dstPeer)
+  getPeerConnection (dstPeer: PeerId): Connection|undefined {
+    return this.components.getConnectionManager().getConnections(dstPeer)[0] ?? undefined
   }
 
   async _onProtocolV1 (data: IncomingStreamData) {
@@ -223,9 +223,12 @@ export class Circuit implements Transport, Initializable {
     const destinationPeer = peerIdFromString(destinationId)
 
     let disconnectOnFailure = false
-    let relayConnection = this.components.getConnectionManager().getConnection(relayPeer)
+    const relayConnections = this.components.getConnectionManager().getConnections(relayPeer)
+    let relayConnection = relayConnections[0]
+
     if (relayConnection == null) {
-      relayConnection = await this.components.getDialer().dial(relayAddr, options)
+      await this.components.getPeerStore().addressBook.add(relayPeer, [relayAddr])
+      relayConnection = await this.components.getConnectionManager().openConnection(relayPeer, options)
       disconnectOnFailure = true
     }
 
@@ -307,13 +310,13 @@ export class Circuit implements Transport, Initializable {
         type: CircuitV2.HopMessage.Type.CONNECT,
         peer: {
           id: destinationPeer.toBytes(),
-          addrs: [new Multiaddr(destinationAddr).bytes]
+          addrs: [new Multiaddr(destinationAddr).bytes],
         }
-      }).finish())
+      }))
 
       const status = CircuitV2.HopMessage.decode(await streamHandler.read())
       if (status.status !== CircuitV2.Status.OK) {
-        throw createError(new Error('failed to connect via relay with status ' + status.status.toString()), codes.ERR_HOP_REQUEST_FAILED)
+        throw createError(new Error('failed to connect via relay with status ' + status?.status?.toString()), codes.ERR_HOP_REQUEST_FAILED)
       }
 
       // TODO: do something with limit and transient connection
@@ -343,8 +346,8 @@ export class Circuit implements Transport, Initializable {
     this.handler = options.handler
 
     return createListener({
-      dialer: this.components.getDialer(),
-      connectionManager: this.components.getConnectionManager()
+      connectionManager: this.components.getConnectionManager(),
+      peerStore: this.components.getPeerStore()
     })
   }
 

@@ -4,16 +4,19 @@ import { codes } from '../errors.js'
 import * as lp from 'it-length-prefixed'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import { handshake } from 'it-handshake'
-import { PROTOCOL } from './constants.js'
+import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Startable } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Stream } from '@libp2p/interfaces/connection'
 import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
 import type { Components } from '@libp2p/interfaces/components'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Duplex } from 'it-stream-types'
+import { abortableDuplex } from 'abortable-iterator'
 
 const log = logger('libp2p:fetch')
 
-export interface FetchInit {
+export interface FetchServiceInit {
   protocolPrefix: string
 }
 
@@ -33,15 +36,15 @@ export interface LookupFunction {
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
 export class FetchService implements Startable {
+  public readonly protocol: string
   private readonly components: Components
   private readonly lookupFunctions: Map<string, LookupFunction>
-  private readonly protocol: string
   private started: boolean
 
-  constructor (components: Components, init: FetchInit) {
+  constructor (components: Components, init: FetchServiceInit) {
     this.started = false
     this.components = components
-    this.protocol = PROTOCOL
+    this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)
   }
@@ -67,16 +70,22 @@ export class FetchService implements Startable {
   /**
    * Sends a request to fetch the value associated with the given key from the given peer
    */
-  async fetch (peer: PeerId, key: string): Promise<Uint8Array | null> {
+  async fetch (peer: PeerId, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.getDialer().dial(peer)
-    const { stream } = await connection.newStream([this.protocol])
-    const shake = handshake(stream)
+    const connection = await this.components.getConnectionManager().openConnection(peer, options)
+    const { stream } = await connection.newStream([this.protocol], options)
+    let source: Duplex<Uint8Array> = stream
+
+    // make stream abortable if AbortSignal passed
+    if (options.signal != null) {
+      source = abortableDuplex(stream, options.signal)
+    }
+
+    const shake = handshake(source)
 
     // send message
-    const request = new FetchRequest({ identifier: key })
-    shake.write(lp.encode.single(FetchRequest.encode(request).finish()).slice())
+    shake.write(lp.encode.single(FetchRequest.encode({ identifier: key })).slice())
 
     // read response
     // @ts-expect-error fromReader returns a Source which has no .next method
@@ -109,21 +118,21 @@ export class FetchService implements Startable {
     // @ts-expect-error fromReader returns a Source which has no .next method
     const request = FetchRequest.decode((await lp.decode.fromReader(shake.reader).next()).value.slice())
 
-    let response
+    let response: FetchResponse
     const lookup = this._getLookupFunction(request.identifier)
     if (lookup != null) {
       const data = await lookup(request.identifier)
       if (data != null) {
-        response = new FetchResponse({ status: FetchResponse.StatusCode.OK, data })
+        response = { status: FetchResponse.StatusCode.OK, data }
       } else {
-        response = new FetchResponse({ status: FetchResponse.StatusCode.NOT_FOUND })
+        response = { status: FetchResponse.StatusCode.NOT_FOUND, data: new Uint8Array(0) }
       }
     } else {
       const errmsg = (new TextEncoder()).encode('No lookup function registered for key: ' + request.identifier)
-      response = new FetchResponse({ status: FetchResponse.StatusCode.ERROR, data: errmsg })
+      response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
     }
 
-    shake.write(lp.encode.single(FetchResponse.encode(response).finish()).slice())
+    shake.write(lp.encode.single(FetchResponse.encode(response)).slice())
   }
 
   /**

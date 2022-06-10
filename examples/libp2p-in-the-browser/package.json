@@ -3,20 +3,17 @@
   "version": "1.0.0",
   "description": "A libp2p node running in the browser",
   "type": "module",
-  "browserslist": [
-    "last 2 Chrome versions"
-  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "vite"
   },
   "license": "ISC",
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^6.0.1",
-    "@libp2p/bootstrap": "^1.0.1",
-    "@libp2p/mplex": "^1.0.2",
-    "@libp2p/webrtc-star": "^1.0.6",
-    "@libp2p/websockets": "^1.0.3",
+    "@chainsafe/libp2p-noise": "^6.2.0",
+    "@libp2p/bootstrap": "^1.0.4",
+    "@libp2p/mplex": "^1.0.4",
+    "@libp2p/webrtc-star": "^1.0.8",
+    "@libp2p/websockets": "^1.0.7",
     "libp2p": "../../"
   },
   "devDependencies": {

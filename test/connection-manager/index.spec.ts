@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
@@ -8,7 +8,7 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { CustomEvent } from '@libp2p/interfaces'
+import { CustomEvent } from '@libp2p/interfaces/events'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2pNode
@@ -66,7 +66,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybeDisconnectOne')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
 
     // Add 1 too many connections
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
@@ -79,7 +79,7 @@ describe('Connection Manager', () => {
       const value = Math.random()
       spies.set(value, spy)
       connectionManager.setPeerValue(connection.remotePeer, value)
-      await connectionManager.onConnect(new CustomEvent('connection', { detail: connection }))
+      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
     }))
 
     // get the lowest value
@@ -115,14 +115,14 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybeDisconnectOne')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
 
     // Add 1 too many connections
     const spy = sinon.spy()
     await Promise.all([...new Array(max + 1)].map(async () => {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       sinon.stub(connection, 'close').callsFake(async () => spy()) // eslint-disable-line
-      await connectionManager.onConnect(new CustomEvent('connection', { detail: connection }))
+      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
     }))
 
     expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(1)

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { WebSockets } from '@libp2p/websockets'
@@ -47,7 +47,7 @@ describe('Transport Manager (WebSockets)', () => {
     tm.add(transport)
 
     expect(tm.getTransports()).to.have.lengthOf(1)
-    await tm.remove(transport.constructor.name)
+    await tm.remove(transport[Symbol.toStringTag])
     expect(tm.getTransports()).to.have.lengthOf(0)
   })
 

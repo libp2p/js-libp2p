@@ -57,7 +57,7 @@ describe('Circuit v2 - stop protocol', function () {
     streamHandler.write(StopMessage.encode({
       type: StopMessage.Type.STATUS,
       status: Status.OK
-    }).finish())
+    }))
   })
 
   it('send stop - should not fall apart with invalid status response', async function () {

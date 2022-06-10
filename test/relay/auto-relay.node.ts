@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -263,7 +263,7 @@ describe.skip('auto-relay', () => {
       await relayLibp2p1.hangUp(relayLibp2p3.peerId)
 
       // Stub dial
-      sinon.stub(relayLibp2p1.components.getDialer(), 'dial').callsFake(async () => {
+      sinon.stub(relayLibp2p1.components.getConnectionManager(), 'openConnection').callsFake(async () => {
         deferred.resolve()
         return await Promise.reject(new Error('failed to dial'))
       })

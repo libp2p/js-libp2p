@@ -1,5 +1,7 @@
 import { StreamHandlerV1 } from './../../src/circuit/v1/stream-handler.js'
-import { expect } from 'aegir/utils/chai.js'
+/* eslint-env mocha */
+
+import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
@@ -118,8 +120,8 @@ describe('Dialing (via relay, TCP)', () => {
       .and.to.have.nested.property('.errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
     // We should not be connected to the relay, because we weren't before the dial
-    const srcToRelayConn = srcLibp2p.components.getConnectionManager().getConnection(relayLibp2p.peerId)
-    expect(srcToRelayConn).to.not.exist()
+    const srcToRelayConns = srcLibp2p.components.getConnectionManager().getConnections(relayLibp2p.peerId)
+    expect(srcToRelayConns).to.be.empty()
   })
 
   it('dialer should stay connected to an already connected relay on hop failure', async () => {
@@ -135,9 +137,9 @@ describe('Dialing (via relay, TCP)', () => {
       .to.eventually.be.rejected()
       .and.to.have.nested.property('.errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
-    const srcToRelayConn = srcLibp2p.components.getConnectionManager().getConnection(relayLibp2p.peerId)
-    expect(srcToRelayConn).to.exist()
-    expect(srcToRelayConn?.stat.status).to.equal('OPEN')
+    const srcToRelayConn = srcLibp2p.components.getConnectionManager().getConnections(relayLibp2p.peerId)
+    expect(srcToRelayConn).to.have.lengthOf(1)
+    expect(srcToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
   })
 
   it('destination peer should stay connected to an already connected relay on hop failure', async () => {
@@ -166,8 +168,8 @@ describe('Dialing (via relay, TCP)', () => {
     streamHandler.close()
 
     // should still be connected
-    const dstToRelayConn = dstLibp2p.components.getConnectionManager().getConnection(relayLibp2p.peerId)
-    expect(dstToRelayConn).to.exist()
-    expect(dstToRelayConn?.stat.status).to.equal('OPEN')
+    const dstToRelayConn = dstLibp2p.components.getConnectionManager().getConnections(relayLibp2p.peerId)
+    expect(dstToRelayConn).to.have.lengthOf(1)
+    expect(dstToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
   })
 })
