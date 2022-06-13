@@ -219,7 +219,7 @@ export function createStream (options: Options): MplexStream {
       onSinkEnd()
     },
 
-    source: pushable<Uint8Array>({
+    source: pushable({
       onEnd: onSourceEnd
     }),
 

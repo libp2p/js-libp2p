@@ -19,6 +19,7 @@ import type { MplexInit } from './index.js'
 const log = logger('libp2p:mplex')
 
 const MAX_STREAMS_PER_CONNECTION = 1024
+const MAX_STREAM_BUFFER_SIZE = 1024 * 1024 * 4 // 4MB
 
 function printMessage (msg: Message) {
   const output: any = {
@@ -222,7 +223,10 @@ export class MplexStreamMuxer implements StreamMuxer {
         }
       }
     }
-    const source = pushableV<Message>({ onEnd })
+    const source = pushableV<Message>({
+      objectMode: true,
+      onEnd
+    })
 
     return Object.assign(encode(source), {
       push: source.push,
@@ -258,9 +262,25 @@ export class MplexStreamMuxer implements StreamMuxer {
       return
     }
 
+    const maxBufferSize = this._init.maxStreamBufferSize ?? MAX_STREAM_BUFFER_SIZE
+
     switch (type) {
       case MessageTypes.MESSAGE_INITIATOR:
       case MessageTypes.MESSAGE_RECEIVER:
+        if (stream.source.readableLength > maxBufferSize) {
+          // Stream buffer has got too large, reset the stream
+          this._source.push({
+            id: message.id,
+            type: type === MessageTypes.MESSAGE_INITIATOR ? MessageTypes.RESET_RECEIVER : MessageTypes.RESET_INITIATOR
+          })
+
+          // Inform the stream consumer they are not fast enough
+          const error = errCode(new Error('Input buffer full - increase Mplex maxBufferSize to accomodate slow consumers'), 'ERR_STREAM_INPUT_BUFFER_FULL')
+          stream.abort(error)
+
+          return
+        }
+
         // We got data from the remote, push it into our local stream
         stream.source.push(message.data.slice())
         break

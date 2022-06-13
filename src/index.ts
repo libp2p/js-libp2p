@@ -15,6 +15,13 @@ export interface MplexInit {
    * one time. An attempt to open more than this will throw.
    */
   maxStreamsPerConnection?: number
+
+  /**
+   * Incoming stream messages are buffered until processed by the stream
+   * handler. If the buffer reaches this size in bytes the stream will
+   * be reset.
+   */
+  maxStreamBufferSize?: number
 }
 
 export class Mplex implements StreamMuxerFactory {
