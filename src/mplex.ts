@@ -127,7 +127,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     const maxStreams = this._init.maxStreamsPerConnection ?? MAX_STREAMS_PER_CONNECTION
 
     if ((this._streams.initiators.size + this._streams.receivers.size) === maxStreams) {
-      throw errCode(new Error('To many streams open'), 'ERR_TOO_MANY_STREAMS')
+      throw errCode(new Error('Too many streams open'), 'ERR_TOO_MANY_STREAMS')
     }
 
     const { id, name, type, registry } = options
