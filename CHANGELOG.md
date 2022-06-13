@@ -1,3 +1,10 @@
+### [1.2.1](https://github.com/libp2p/js-libp2p-mplex/compare/v1.2.0...v1.2.1) (2022-06-13)
+
+
+### Bug Fixes
+
+* fix typo in error message ([#177](https://github.com/libp2p/js-libp2p-mplex/issues/177)) ([f71119d](https://github.com/libp2p/js-libp2p-mplex/commit/f71119d640ac8f3721ad1a87a5c4ccc8fc4bda1d))
+
 ## [1.2.0](https://github.com/libp2p/js-libp2p-mplex/compare/v1.1.2...v1.2.0) (2022-06-13)
 
 
