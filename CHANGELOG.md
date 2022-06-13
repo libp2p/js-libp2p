@@ -1,3 +1,10 @@
+## [1.2.0](https://github.com/libp2p/js-libp2p-mplex/compare/v1.1.2...v1.2.0) (2022-06-13)
+
+
+### Features
+
+* limit internal message buffer size ([#174](https://github.com/libp2p/js-libp2p-mplex/issues/174)) ([0c8e1b0](https://github.com/libp2p/js-libp2p-mplex/commit/0c8e1b06d31c46b6ef768139c822caac1904789d)), closes [/github.com/libp2p/go-mplex/blob/master/multiplex.go#L26](https://github.com/libp2p//github.com/libp2p/go-mplex/blob/master/multiplex.go/issues/L26)
+
 ### [1.1.2](https://github.com/libp2p/js-libp2p-mplex/compare/v1.1.1...v1.1.2) (2022-06-08)
 
 
