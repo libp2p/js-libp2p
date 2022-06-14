@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-pubsub-topology/compare/v1.1.9...v2.0.0) (2022-06-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update to latest interfaces ([#2](https://github.com/libp2p/js-libp2p-pubsub-topology/issues/2)) ([201ade5](https://github.com/libp2p/js-libp2p-pubsub-topology/commit/201ade5b8ce2b8233d267f71a5ffd685110a4115))
+
 ### [1.1.9](https://github.com/libp2p/js-libp2p-pubsub-topology/compare/v1.1.8...v1.1.9) (2022-06-09)
 
 
