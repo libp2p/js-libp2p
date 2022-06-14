@@ -12,7 +12,7 @@ export default {
   build: {
     bundlesizeMax: '147kB',
     define: {
-      'process.env.npm_package_version': JSON.stringify(version)
+      'globalThis.LIBP2P_VERSION': JSON.stringify(version)
     }
   },
   test: {
