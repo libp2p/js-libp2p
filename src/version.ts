@@ -1,2 +1,1 @@
-export const version = (globalThis as any).LIBP2P_VERSION
-export const name = 'libp2p'
+export const { name, version } = {"version":"0.37.3","name":"libp2p"}
