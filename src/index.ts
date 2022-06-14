@@ -1,7 +1,6 @@
-import { symbol } from '@libp2p/interfaces/topology'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Topology, TopologyInit, onConnectHandler, onDisconnectHandler } from '@libp2p/interfaces/topology'
-import type { Registrar } from '@libp2p/interfaces/registrar'
+import { topologySymbol as symbol } from '@libp2p/interface-registrar'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Topology, TopologyInit, onConnectHandler, onDisconnectHandler, Registrar } from '@libp2p/interface-registrar'
 
 const noop = () => {}
 
