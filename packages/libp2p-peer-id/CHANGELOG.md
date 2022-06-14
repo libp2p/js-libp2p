@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-v1.1.13](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.12...@libp2p/peer-id-v1.1.13) (2022-06-14)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/interface-peer-id from 0.0.1 to 1.0.0 ([#2](https://github.com/libp2p/js-libp2p-peer-id/issues/2)) ([69c0c49](https://github.com/libp2p/js-libp2p-peer-id/commit/69c0c495ab04d5b97de27d3ef20e1ee78d5b0056))
+
 ## [@libp2p/peer-id-v1.1.12](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.11...@libp2p/peer-id-v1.1.12) (2022-06-10)
 
 
