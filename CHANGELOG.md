@@ -1,3 +1,14 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.14...v1.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update to latest libp2p interfaces ([#260](https://github.com/libp2p/js-libp2p-crypto/issues/260)) ([60e0789](https://github.com/libp2p/js-libp2p-crypto/commit/60e078968de7d03a61fde6cfd4ab5a3e378c127f))
+
 ### [0.22.14](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.13...v0.22.14) (2022-05-23)
 
 
