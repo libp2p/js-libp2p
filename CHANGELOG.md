@@ -1,3 +1,16 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v1.3.0...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+Co-authored-by: achingbrain <alex@achingbrain.net>
+
+### Features
+
+* update to latest libp2p interfaces ([#74](https://github.com/libp2p/js-libp2p-pubsub/issues/74)) ([fe38340](https://github.com/libp2p/js-libp2p-pubsub/commit/fe38340715f37f6e976c526bf45e10d649b118dc))
+
 ## [@libp2p/pubsub-v1.3.0](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/pubsub-v1.2.24...@libp2p/pubsub-v1.3.0) (2022-05-23)
 
 
