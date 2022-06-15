@@ -1,6 +1,6 @@
 import errCode from 'err-code'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Selectors } from '@libp2p/interfaces/dht'
+import type { Selectors } from '@libp2p/interface-dht'
 
 /**
  * Select the best record out of the given records

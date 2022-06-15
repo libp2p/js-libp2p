@@ -45,12 +45,15 @@
   ],
   "exports": {
     ".": {
+      "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
     "./selectors": {
+      "types": "./dist/src/selectors.d.ts",
       "import": "./dist/src/selectors.js"
     },
     "./validators": {
+      "types": "./dist/src/validators.d.ts",
       "import": "./dist/src/validators.js"
     }
   },
@@ -159,7 +162,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interfaces": "^2.0.2",
+    "@libp2p/interface-dht": "^1.0.0",
     "err-code": "^3.0.1",
     "multiformats": "^9.4.5",
     "protons-runtime": "^1.0.2",

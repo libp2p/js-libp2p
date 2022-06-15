@@ -1,7 +1,7 @@
 import errCode from 'err-code'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Libp2pRecord } from './index.js'
-import type { Validators } from '@libp2p/interfaces/dht'
+import type { Validators } from '@libp2p/interface-dht'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 

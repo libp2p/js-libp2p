@@ -7,7 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as validator from '../src/validators.js'
 import { Libp2pRecord } from '../src/index.js'
 import * as fixture from './fixtures/go-key-records.js'
-import type { Validators } from '@libp2p/interfaces/dht'
+import type { Validators } from '@libp2p/interface-dht'
 
 interface Cases {
   valid: {

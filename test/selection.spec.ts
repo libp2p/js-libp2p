@@ -4,7 +4,7 @@
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as selection from '../src/selectors.js'
-import type { Selectors } from '@libp2p/interfaces/dht'
+import type { Selectors } from '@libp2p/interface-dht'
 
 const records = [new Uint8Array(), uint8ArrayFromString('hello')]
 
