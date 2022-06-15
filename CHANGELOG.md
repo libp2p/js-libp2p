@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.7...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update libp2p interfaces ([#154](https://github.com/libp2p/js-libp2p-floodsub/issues/154)) ([3195bfd](https://github.com/libp2p/js-libp2p-floodsub/commit/3195bfdfd3b15101f502afc2e14c6463e337ee4e))
+
 ### [1.0.7](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.6...v1.0.7) (2022-05-23)
 
 
