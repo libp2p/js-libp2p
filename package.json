@@ -28,6 +28,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     }
   },
@@ -133,13 +134,13 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interfaces": "^2.0.0",
+    "@libp2p/interface-peer-id": "^1.0.2",
     "debug": "^4.3.3",
     "interface-datastore": "^6.1.0",
     "multiformats": "^9.6.3"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "aegir": "^37.0.7"
+    "aegir": "^37.2.0"
   }
 }

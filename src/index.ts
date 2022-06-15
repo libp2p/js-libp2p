@@ -2,7 +2,7 @@ import debug from 'debug'
 import { base58btc } from 'multiformats/bases/base58'
 import { base32 } from 'multiformats/bases/base32'
 import { base64 } from 'multiformats/bases/base64'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { CID } from 'multiformats/cid'
 import type { Key } from 'interface-datastore'
 
