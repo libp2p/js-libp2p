@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import tests from '@libp2p/interface-compliance-tests/pubsub'
+import tests from '@libp2p/interface-pubsub-compliance-tests'
 import { FloodSub } from '../src/index.js'
 
 describe('interface compliance', () => {
