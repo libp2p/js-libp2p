@@ -1,4 +1,4 @@
-import type { Address } from '@libp2p/interfaces/peer-store'
+import type { Address } from '@libp2p/interface-peer-store'
 import { isPrivate } from './multiaddr/is-private.js'
 
 /**

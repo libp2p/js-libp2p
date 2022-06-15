@@ -1,7 +1,7 @@
 import { abortableSource } from 'abortable-iterator'
 import { logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
+import type { MultiaddrConnection } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:stream:converter')

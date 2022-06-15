@@ -1,18 +1,30 @@
-# js-libp2p-utils
+# @libp2p/utils <!-- omit in toc -->
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
-[![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
-[![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
-[![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-utils.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-utils)
-[![](https://img.shields.io/travis/libp2p/js-libp2p-utils.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-utils)
-[![Dependency Status](https://david-dm.org/libp2p/js-libp2p-utils.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-utils)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-utils.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-utils)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-utils/actions/workflows/js-test-and-release.yml)
 
-> This package serves as a central repository for shared logic and dependencies for all libp2p packages, using `libp2p-utils` helps to easily re-use small scoped blocks of logic across all libp2p modules and also as a dependency proxy (think `aegir` for domain logic dependencies).
+> Package to aggregate shared logic and dependencies for the libp2p ecosystem
 
+## Table of contents <!-- omit in toc -->
+
+- [Install](#install)
+- [Lead Maintainer](#lead-maintainer)
+- [Usage](#usage)
+- [Contribute](#contribute)
+- [License](#license)
+- [Contribution](#contribution)
+
+## Install
+
+```console
+$ npm i @libp2p/utils
+```
 
 The libp2p ecosystem has lots of repos with it comes several problems like:
+
 - Domain logic dedupe - all modules shared a lot of logic like validation, streams handling, etc.
 - Dependencies management - it's really easy with so many repos for dependencies to go out of control, they become outdated, different repos use different modules to do the same thing (like merging defaults options), browser bundles ends up with multiple versions of the same package, bumping versions is cumbersome to do because we need to go through several repos, etc.
 
@@ -22,14 +34,8 @@ These problems are the motivation for this package, having shared logic in this 
 
 [Vasco Santos](https://github.com/vasco-santos)
 
-## Install
-
-
-```bash
-$ npm install --save @libp2p/utils
-```
-
 ## Usage
+
 Each function should be imported directly.
 
 ```js
@@ -48,4 +54,11 @@ Check out our [contributing document](https://github.com/ipfs/community/blob/mas
 
 ## License
 
-[MIT](LICENSE) © Protocol Labs Inc.
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

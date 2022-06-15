@@ -41,31 +41,32 @@
   ],
   "exports": {
     ".": {
+      "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
     "./address-sort": {
-      "import": "./dist/src/address-sort.js",
-      "types": "./dist/src/address-sort.d.ts"
+      "types": "./dist/src/address-sort.d.ts",
+      "import": "./dist/src/address-sort.js"
     },
     "./array-equals": {
-      "import": "./dist/src/array-equals.js",
-      "types": "./dist/src/array-equals.d.ts"
+      "types": "./dist/src/array-equals.d.ts",
+      "import": "./dist/src/array-equals.js"
     },
     "./ip-port-to-multiaddr": {
-      "import": "./dist/src/ip-port-to-multiaddr.js",
-      "types": "./dist/src/ip-port-to-multiaddr.d.ts"
+      "types": "./dist/src/ip-port-to-multiaddr.d.ts",
+      "import": "./dist/src/ip-port-to-multiaddr.js"
     },
     "./multiaddr/is-loopback": {
-      "import": "./dist/src/multiaddr/is-loopback.js",
-      "types": "./dist/src/multiaddr/is-loopback.d.ts"
+      "types": "./dist/src/multiaddr/is-loopback.d.ts",
+      "import": "./dist/src/multiaddr/is-loopback.js"
     },
     "./multiaddr/is-private": {
-      "import": "./dist/src/multiaddr/is-private.js",
-      "types": "./dist/src/multiaddr/is-private.d.ts"
+      "types": "./dist/src/multiaddr/is-private.d.ts",
+      "import": "./dist/src/multiaddr/is-private.js"
     },
     "./stream-to-ma-conn": {
-      "import": "./dist/src/stream-to-ma-conn.js",
-      "types": "./dist/src/stream-to-ma-conn.d.ts"
+      "types": "./dist/src/stream-to-ma-conn.d.ts",
+      "import": "./dist/src/stream-to-ma-conn.js"
     }
   },
   "eslintConfig": {
@@ -171,19 +172,20 @@
   },
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
-    "@libp2p/logger": "^1.0.1",
+    "@libp2p/interface-connection": "^1.0.1",
+    "@libp2p/interface-peer-store": "^1.0.0",
+    "@libp2p/interface-transport": "^1.0.0",
+    "@libp2p/logger": "^2.0.0",
     "@multiformats/multiaddr": "^10.1.1",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "is-loopback-addr": "^2.0.1",
     "it-stream-types": "^1.0.4",
-    "private-ip": "^2.1.1",
-    "ts-mocha": "^9.0.2",
-    "ts-node": "^10.7.0"
+    "private-ip": "^2.1.1"
   },
   "devDependencies": {
     "@libp2p/interfaces": "^1.0.3",
-    "aegir": "^37.0.4",
+    "aegir": "^37.2.0",
     "it-all": "^1.0.6",
     "it-pair": "^2.0.2",
     "it-pipe": "^2.0.2",

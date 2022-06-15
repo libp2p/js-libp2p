@@ -3,17 +3,19 @@
 import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
 import { pipe } from 'it-pipe'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { streamToMaConnection } from '../src/stream-to-ma-conn.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import all from 'it-all'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { Stream } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
 
 function toMuxedStream (stream: Duplex<Uint8Array>) {
   const muxedStream: Stream = {
     ...stream,
     close: () => {},
+    closeRead: () => {},
+    closeWrite: () => {},
     abort: () => {},
     reset: () => {},
     timeline: {
@@ -26,8 +28,8 @@ function toMuxedStream (stream: Duplex<Uint8Array>) {
 }
 
 describe('Convert stream into a multiaddr connection', () => {
-  const localAddr = new Multiaddr('/ip4/101.45.75.219/tcp/6000')
-  const remoteAddr = new Multiaddr('/ip4/100.46.74.201/tcp/6002')
+  const localAddr = multiaddr('/ip4/101.45.75.219/tcp/6000')
+  const remoteAddr = multiaddr('/ip4/100.46.74.201/tcp/6002')
 
   it('converts a stream and adds the provided metadata', async () => {
     const stream = pair<Uint8Array>()
