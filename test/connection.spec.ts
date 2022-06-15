@@ -1,9 +1,9 @@
 import { expect } from 'aegir/chai'
 import { TCP } from '../src/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { Upgrader } from '@libp2p/interfaces/transport'
+import { mockUpgrader } from '@libp2p/interface-mocks'
+import type { Connection } from '@libp2p/interface-connection'
+import type { Upgrader } from '@libp2p/interface-transport'
 
 describe('valid localAddr and remoteAddr', () => {
   let tcp: TCP

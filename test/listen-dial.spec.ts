@@ -5,9 +5,9 @@ import path from 'path'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
-import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { Upgrader } from '@libp2p/interfaces/transport'
+import type { Upgrader } from '@libp2p/interface-transport'
 
 const isCI = process.env.CI
 

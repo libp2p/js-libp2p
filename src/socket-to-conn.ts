@@ -6,7 +6,7 @@ import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multi
 import { CLOSE_TIMEOUT } from './constants.js'
 import type { Socket } from 'net'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
+import type { MultiaddrConnection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:tcp:socket')
 
