@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-multistream-select/compare/v1.0.6...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* updates to single-issue libp2p interfaces and ls has been removed
+
+### Features
+
+* update interfaces, remove ls ([#3](https://github.com/libp2p/js-libp2p-multistream-select/issues/3)) ([1e6f3cd](https://github.com/libp2p/js-libp2p-multistream-select/commit/1e6f3cdffee6683786349142349a50872fa8fd17)), closes [#2](https://github.com/libp2p/js-libp2p-multistream-select/issues/2)
+
 ## [@libp2p/multistream-select-v1.0.6](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/multistream-select-v1.0.5...@libp2p/multistream-select-v1.0.6) (2022-05-24)
 
 
