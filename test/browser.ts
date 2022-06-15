@@ -69,7 +69,7 @@ describe('libp2p-websockets', () => {
     })
 
     it('many writes', async function () {
-      this.timeout(30000)
+      this.timeout(60000)
 
       const count = 20000
       const data = Array(count).fill(0).map(() => uint8ArrayFromString(Math.random().toString()))
