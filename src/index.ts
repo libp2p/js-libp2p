@@ -3,10 +3,10 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import * as query from './query.js'
 import { GoMulticastDNS } from './compat/index.js'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import { Components, Initializable } from '@libp2p/interfaces/components'
-import { symbol } from '@libp2p/interfaces/peer-discovery'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { Components, Initializable } from '@libp2p/components'
+import { symbol } from '@libp2p/interface-peer-discovery'
 
 const log = logger('libp2p:mdns')
 

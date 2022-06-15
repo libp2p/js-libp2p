@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import pDefer from 'p-defer'
 import { GoMulticastDNS } from '../../src/compat/index.js'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
-import type { AddressManager } from '@libp2p/interfaces/address-manager'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 let port = 20000
 
@@ -15,8 +15,8 @@ async function createGoMulticastDNS () {
   const peerId = await createEd25519PeerId()
   const addressManager = stubInterface<AddressManager>()
   addressManager.getAddresses.returns([
-    new Multiaddr(`/ip4/127.0.0.1/tcp/${port++}/p2p/${peerId.toString()}`),
-    new Multiaddr(`/ip4/127.0.0.1/tcp/${port++}/p2p/${peerId.toString()}`)
+    multiaddr(`/ip4/127.0.0.1/tcp/${port++}/p2p/${peerId.toString()}`),
+    multiaddr(`/ip4/127.0.0.1/tcp/${port++}/p2p/${peerId.toString()}`)
   ])
 
   const components = new Components({

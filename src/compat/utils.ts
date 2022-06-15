@@ -1,8 +1,9 @@
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Answer } from 'dns-packet'
 import { SERVICE_TAG_LOCAL } from './constants.js'
 
@@ -64,11 +65,11 @@ export function findPeerInfoInAnswers (answers: Answer[], ourPeerId: PeerId): Pe
   answers.forEach(answer => {
     if (answer.type === 'SRV') {
       if (hosts.A[answer.data.target] != null) {
-        multiaddrs.push(new Multiaddr(`/ip4/${hosts.A[answer.data.target]}/tcp/${answer.data.port}/p2p/${peerId.toString()}`))
+        multiaddrs.push(multiaddr(`/ip4/${hosts.A[answer.data.target]}/tcp/${answer.data.port}/p2p/${peerId.toString()}`))
       } else if (hosts.AAAA[answer.data.target] != null) {
-        multiaddrs.push(new Multiaddr(`/ip6/${hosts.AAAA[answer.data.target]}/tcp/${answer.data.port}/p2p/${peerId.toString()}`))
+        multiaddrs.push(multiaddr(`/ip6/${hosts.AAAA[answer.data.target]}/tcp/${answer.data.port}/p2p/${peerId.toString()}`))
       } else {
-        multiaddrs.push(new Multiaddr(`/dnsaddr/${answer.data.target}/tcp/${answer.data.port}/p2p/${peerId.toString()}`))
+        multiaddrs.push(multiaddr(`/dnsaddr/${answer.data.target}/tcp/${answer.data.port}/p2p/${peerId.toString()}`))
       }
     }
   })

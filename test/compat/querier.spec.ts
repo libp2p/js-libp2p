@@ -6,10 +6,10 @@ import OS from 'os'
 import delay from 'delay'
 import { Querier } from '../../src/compat/querier.js'
 import { SERVICE_TAG_LOCAL } from '../../src/compat/constants.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { RemoteInfo } from 'dgram'
 import type { Answer } from 'dns-packet'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 describe('Querier', () => {
   let querier: Querier

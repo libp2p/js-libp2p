@@ -5,7 +5,7 @@ import { SERVICE_TAG_LOCAL } from './constants.js'
 import { MultiaddrObject, protocols } from '@multiformats/multiaddr'
 import type { RemoteInfo } from 'dgram'
 import type { Answer } from 'dns-packet'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 
 const log = logger('libp2p:mdns:compat:responder')
 

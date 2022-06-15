@@ -2,12 +2,12 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import MDNS from 'multicast-dns'
 import { logger } from '@libp2p/logger'
 import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from './constants.js'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { ResponsePacket } from 'multicast-dns'
 import type { RemoteInfo } from 'dgram'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 import { findPeerInfoInAnswers } from './utils.js'
-import { symbol } from '@libp2p/interfaces/peer-discovery'
+import { symbol } from '@libp2p/interface-peer-discovery'
 
 const log = logger('libp2p:mdns:compat:querier')
 

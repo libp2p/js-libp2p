@@ -1,20 +1,21 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import mDNS from 'multicast-dns'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import { Responder } from '../../src/compat/responder.js'
 import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from '../../src/compat/constants.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { ResponsePacket } from 'multicast-dns'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
 import { findPeerInfoInAnswers } from '../../src/compat/utils.js'
-import type { AddressManager } from '@libp2p/interfaces/address-manager'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 describe('Responder', () => {
   let responder: Responder
@@ -30,8 +31,8 @@ describe('Responder', () => {
     ])
 
     multiadddrs = [
-      new Multiaddr(`/ip4/127.0.0.1/tcp/20001/p2p/${peerIds[0].toString()}`),
-      new Multiaddr(`/ip4/127.0.0.1/tcp/20002/p2p/${peerIds[0].toString()}`)
+      multiaddr(`/ip4/127.0.0.1/tcp/20001/p2p/${peerIds[0].toString()}`),
+      multiaddr(`/ip4/127.0.0.1/tcp/20002/p2p/${peerIds[0].toString()}`)
     ]
 
     const addressManager = stubInterface<AddressManager>()

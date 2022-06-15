@@ -1,15 +1,16 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import pWaitFor from 'p-wait-for'
 import { MulticastDNS } from './../src/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { stubInterface } from 'ts-sinon'
-import type { AddressManager } from '@libp2p/interfaces/address-manager'
-import { Components } from '@libp2p/interfaces/components'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import { Components } from '@libp2p/components'
 
 function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]) {
   const addressManager = stubInterface<AddressManager>()
@@ -39,25 +40,25 @@ describe('MulticastDNS', () => {
     ])
 
     aMultiaddrs = [
-      new Multiaddr('/ip4/127.0.0.1/tcp/20001'),
-      new Multiaddr('/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star'),
-      new Multiaddr('/dns4/discovery.libp2p.io/tcp/8443')
+      multiaddr('/ip4/127.0.0.1/tcp/20001'),
+      multiaddr('/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star'),
+      multiaddr('/dns4/discovery.libp2p.io/tcp/8443')
     ]
 
     bMultiaddrs = [
-      new Multiaddr('/ip4/127.0.0.1/tcp/20002'),
-      new Multiaddr('/ip6/::1/tcp/20002'),
-      new Multiaddr('/dnsaddr/discovery.libp2p.io')
+      multiaddr('/ip4/127.0.0.1/tcp/20002'),
+      multiaddr('/ip6/::1/tcp/20002'),
+      multiaddr('/dnsaddr/discovery.libp2p.io')
     ]
 
     cMultiaddrs = [
-      new Multiaddr('/ip4/127.0.0.1/tcp/20003'),
-      new Multiaddr('/ip4/127.0.0.1/tcp/30003/ws'),
-      new Multiaddr('/dns4/discovery.libp2p.io')
+      multiaddr('/ip4/127.0.0.1/tcp/20003'),
+      multiaddr('/ip4/127.0.0.1/tcp/30003/ws'),
+      multiaddr('/dns4/discovery.libp2p.io')
     ]
 
     dMultiaddrs = [
-      new Multiaddr('/ip4/127.0.0.1/tcp/30003/ws')
+      multiaddr('/ip4/127.0.0.1/tcp/30003/ws')
     ]
   })
 

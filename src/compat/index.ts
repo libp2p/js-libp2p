@@ -2,9 +2,9 @@
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { Responder } from './responder.js'
 import { Querier } from './querier.js'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import type { Components, Initializable } from '@libp2p/interfaces/components'
-import { symbol } from '@libp2p/interfaces/peer-discovery'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import type { Components, Initializable } from '@libp2p/components'
+import { symbol } from '@libp2p/interface-peer-discovery'
 
 export interface GoMulticastDNSInit {
   queryPeriod?: number

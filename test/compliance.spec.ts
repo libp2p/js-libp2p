@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
-import tests from '@libp2p/interface-compliance-tests/peer-discovery'
-import { Multiaddr } from '@multiformats/multiaddr'
+import tests from '@libp2p/interface-peer-discovery-compliance-tests'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { MulticastDNS } from '../src/index.js'
-import type { AddressManager } from '@libp2p/interfaces/address-manager'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 import { CustomEvent } from '@libp2p/interfaces/events'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
 
 let mdns: MulticastDNS
@@ -21,7 +21,7 @@ describe('compliance tests', () => {
 
       const addressManager = stubInterface<AddressManager>()
       addressManager.getAddresses.returns([
-        new Multiaddr(`/ip4/127.0.0.1/tcp/13921/p2p/${peerId1.toString()}`)
+        multiaddr(`/ip4/127.0.0.1/tcp/13921/p2p/${peerId1.toString()}`)
       ])
 
       mdns = new MulticastDNS({
@@ -39,7 +39,7 @@ describe('compliance tests', () => {
       intervalId = setInterval(() => mdns._onPeer(new CustomEvent('peer', {
         detail: {
           id: peerId2,
-          multiaddrs: [new Multiaddr(maStr)],
+          multiaddrs: [multiaddr(maStr)],
           protocols: []
         }
       })), 1000)
