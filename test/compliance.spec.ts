@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import tests from '@libp2p/interface-compliance-tests/peer-discovery'
+import tests from '@libp2p/interface-peer-discovery-compliance-tests'
 import { Bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 

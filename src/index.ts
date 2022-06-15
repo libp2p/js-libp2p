@@ -2,10 +2,10 @@ import { Multiaddr } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/mafmt'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { symbol } from '@libp2p/interfaces/peer-discovery'
+import { symbol } from '@libp2p/interface-peer-discovery'
 
 const log = logger('libp2p:bootstrap')
 

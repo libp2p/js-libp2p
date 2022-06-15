@@ -5,8 +5,8 @@ import { IPFS } from '@multiformats/mafmt'
 import { Bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 import partialValidPeerList from './fixtures/some-invalid-peers.js'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import { isPeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { isPeerId } from '@libp2p/interface-peer-id'
 
 describe('bootstrap', () => {
   it('should throw if no peer list is provided', () => {
