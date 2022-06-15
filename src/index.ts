@@ -1,6 +1,5 @@
 import { select } from './select.js'
 import { handle } from './handle.js'
-import { ls } from './ls.js'
 import { PROTOCOL_ID } from './constants.js'
 import type { Duplex } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -40,14 +39,6 @@ class MultistreamSelect {
 export class Dialer extends MultistreamSelect {
   async select (protocols: string | string[], options?: AbortOptions): Promise<ProtocolStream> {
     return await select(this.stream, protocols, this.shaken ? undefined : PROTOCOL_ID, options)
-  }
-
-  async ls (options?: AbortOptions): Promise<string[]> {
-    await this._handshake(options)
-    const res = await ls(this.stream, options)
-    const { stream, protocols } = res
-    this.stream = stream
-    return protocols
   }
 }
 

@@ -137,15 +137,14 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interfaces": "^2.0.0",
     "@libp2p/logger": "^1.1.0",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-first": "^1.0.6",
-    "it-handshake": "^3.0.1",
+    "it-handshake": "^4.0.0",
     "it-length-prefixed": "^7.0.1",
     "it-pipe": "^2.0.3",
-    "it-pushable": "^2.0.1",
+    "it-pushable": "^3.0.0",
     "it-reader": "^5.0.0",
     "it-stream-types": "^1.0.4",
     "p-defer": "^4.0.0",
@@ -153,7 +152,8 @@
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
-    "aegir": "^37.0.7",
+    "@types/varint": "^6.0.0",
+    "aegir": "^37.2.0",
     "iso-random-stream": "^2.0.2",
     "it-all": "^1.0.6",
     "it-map": "^1.0.6",

@@ -44,11 +44,7 @@ describe('Dialer and Listener integration', () => {
 
     const [listenerSelection, dialerSelection] = await Promise.all([
       listener.handle(selectedProtocol),
-      (async () => {
-        const listenerProtocols = await dialer.ls()
-        expect(listenerProtocols).to.eql([selectedProtocol])
-        return await dialer.select(selectedProtocol)
-      })()
+      (async () => await dialer.select(selectedProtocol))()
     ])
 
     expect(dialerSelection.protocol).to.equal(selectedProtocol)

@@ -43,7 +43,7 @@ describe('Multistream', () => {
   describe('Multistream.write', () => {
     it('should encode and write a multistream-select message', async () => {
       const input = uint8ArrayFromString(`TEST${Date.now()}`)
-      const writer = pushable<Uint8Array>()
+      const writer = pushable()
 
       Multistream.write(writer, input)
 
