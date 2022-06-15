@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-logger/compare/v1.1.6...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update to latest libp2p dependencies ([#4](https://github.com/libp2p/js-libp2p-logger/issues/4)) ([7775b9b](https://github.com/libp2p/js-libp2p-logger/commit/7775b9b2a51be5672bdc2640da85cae0510ef6bd))
+
 ### [1.1.6](https://github.com/libp2p/js-libp2p-logger/compare/v1.1.5...v1.1.6) (2022-06-09)
 
 
