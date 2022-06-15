@@ -6,7 +6,7 @@ import { NOISE } from '@chainsafe/libp2p-noise'
 import { createLibp2p, Libp2pOptions } from '../../src/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createPeerId } from '../utils/creators/peer.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('Connection encryption configuration', () => {
   let peerId: PeerId

@@ -14,9 +14,9 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import * as lp from 'it-length-prefixed'
 import drain from 'it-drain'
 import { pipe } from 'it-pipe'
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 import {
   MULTICODEC_IDENTIFY,

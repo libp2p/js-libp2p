@@ -5,10 +5,10 @@ import { AutoDialler } from '../../src/connection-manager/auto-dialler.js'
 import pWaitFor from 'p-wait-for'
 import delay from 'delay'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
-import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
-import type { PeerStore, Peer } from '@libp2p/interfaces/peer-store'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
 
 describe('Auto-dialler', () => {
   it('should not dial self', async () => {

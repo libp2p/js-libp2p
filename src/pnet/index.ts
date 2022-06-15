@@ -12,8 +12,7 @@ import {
 } from './crypto.js'
 import { handshake } from 'it-handshake'
 import { NONCE_LENGTH } from './key-generator.js'
-import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
-import type { ConnectionProtector } from '@libp2p/interfaces/connection'
+import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:pnet')
 

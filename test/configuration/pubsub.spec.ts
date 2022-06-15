@@ -9,7 +9,7 @@ import { baseOptions, pubsubSubsystemOptions } from './utils.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { FloodSub } from '@libp2p/floodsub'
-import type { PubSub } from '@libp2p/interfaces/pubsub'
+import type { PubSub } from '@libp2p/interface-pubsub'
 
 describe('Pubsub subsystem is configurable', () => {
   let libp2p: Libp2p

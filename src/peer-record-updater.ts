@@ -1,5 +1,5 @@
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
 import { protocols } from '@multiformats/multiaddr'

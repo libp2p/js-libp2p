@@ -6,7 +6,7 @@ import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { subsystemMulticodecs, createSubsystemOptions } from './utils.js'
 import { createPeerId } from '../../utils/creators/peer.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
 import { start } from '@libp2p/interfaces/startable'
 

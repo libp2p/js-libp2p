@@ -7,10 +7,10 @@ import { createNode } from '../utils/creators/peer.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
 import { stubInterface } from 'ts-sinon'
-import type { TransportManager } from '@libp2p/interfaces/transport'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '../../src/index.js'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']

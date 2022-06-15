@@ -13,7 +13,7 @@ import pSettle, { PromiseResult } from 'p-settle'
 import pWaitFor from 'p-wait-for'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
-import { Connection, isConnection } from '@libp2p/interfaces/connection'
+import { Connection, isConnection } from '@libp2p/interface-connection'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -22,11 +22,11 @@ import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
 import Peers from '../fixtures/peers.js'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { PreSharedKeyConnectionProtector } from '../../src/pnet/index.js'
 import swarmKey from '../fixtures/swarm.key.js'
@@ -382,7 +382,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     await libp2p.dialProtocol(remoteLibp2p.peerId, '/stream-count/4')
 
     // Partially write to the echo stream
-    const source = pushable<Uint8Array>()
+    const source = pushable()
     void stream.sink(source)
     source.push(uint8ArrayFromString('hello'))
 

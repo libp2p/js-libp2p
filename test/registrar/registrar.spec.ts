@@ -6,21 +6,21 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import { createTopology } from '@libp2p/topology'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultRegistrar } from '../../src/registrar.js'
-import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
 import { createPeerId, createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
-import type { Registrar } from '@libp2p/interfaces/registrar'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { Components } from '@libp2p/interfaces/components'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { Components } from '@libp2p/components'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { Plaintext } from '../../src/insecure/index.js'
 import { WebSockets } from '@libp2p/websockets'
 import { Mplex } from '@libp2p/mplex'
-import type { PeerProtocolsChangeData } from '@libp2p/interfaces/peer-store'
+import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
 
 const protocol = '/test/1.0.0'
 
@@ -238,12 +238,12 @@ describe('registrar', () => {
 
       const echoHandler = () => {}
       await libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
-      expect(registrar.getHandler('/echo/1.0.0')).to.equal(echoHandler)
-      expect(registrar.getHandler('/echo/1.0.1')).to.equal(echoHandler)
+      expect(registrar.getHandler('/echo/1.0.0')).to.have.property('handler', echoHandler)
+      expect(registrar.getHandler('/echo/1.0.1')).to.have.property('handler', echoHandler)
 
       await libp2p.unhandle(['/echo/1.0.0'])
       expect(registrar.getProtocols()).to.not.have.any.keys(['/echo/1.0.0'])
-      expect(registrar.getHandler('/echo/1.0.1')).to.equal(echoHandler)
+      expect(registrar.getHandler('/echo/1.0.1')).to.have.property('handler', echoHandler)
     })
   })
 })

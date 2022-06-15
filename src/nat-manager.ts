@@ -8,7 +8,7 @@ import errCode from 'err-code'
 import { codes } from './errors.js'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:nat')
 const DEFAULT_TTL = 7200

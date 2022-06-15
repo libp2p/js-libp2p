@@ -18,12 +18,12 @@ import {
 // @ts-expect-error module with no types
 } from 'set-delayed-interval'
 import { setMaxListeners } from 'events'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import type { Components } from '@libp2p/interfaces/components'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:peer-routing')
 

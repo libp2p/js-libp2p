@@ -5,7 +5,7 @@ import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PreSharedKeyConnectionProtector, generateKey } from '../../src/pnet/index.js'
 import { INVALID_PSK } from '../../src/pnet/errors.js'
-import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
+import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
