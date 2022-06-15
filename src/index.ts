@@ -5,9 +5,9 @@ import { PeerStoreKeyBook } from './key-book.js'
 import { PeerStoreMetadataBook } from './metadata-book.js'
 import { PeerStoreProtoBook } from './proto-book.js'
 import { PersistentStore, Store } from './store.js'
-import type { PeerStore, AddressBook, KeyBook, MetadataBook, ProtoBook, PeerStoreEvents, PeerStoreInit, Peer } from '@libp2p/interfaces/peer-store'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import type { PeerStore, AddressBook, KeyBook, MetadataBook, ProtoBook, PeerStoreEvents, PeerStoreInit, Peer } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { Components, Initializable } from '@libp2p/components'
 
 const log = logger('libp2p:peer-store')
 

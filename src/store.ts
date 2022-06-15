@@ -8,9 +8,9 @@ import { Multiaddr } from '@multiformats/multiaddr'
 import { Metadata, Peer as PeerPB } from './pb/peer.js'
 import mortice from 'mortice'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
-import type { Peer } from '@libp2p/interfaces/peer-store'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { Components } from '@libp2p/interfaces/components'
+import type { Peer } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { Components } from '@libp2p/components'
 
 const log = logger('libp2p:peer-store:store')
 

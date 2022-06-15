@@ -4,16 +4,16 @@
 import { expect } from 'aegir/chai'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { arrayEquals } from '@libp2p/utils/array-equals'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import pDefer from 'p-defer'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { PersistentPeerStore } from '../src/index.js'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { codes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { AddressBook } from '@libp2p/interfaces/peer-store'
+import type { AddressBook } from '@libp2p/interface-peer-store'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = new Multiaddr('/ip4/20.0.0.1/tcp/8001')

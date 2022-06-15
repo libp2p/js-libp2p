@@ -4,8 +4,8 @@ import { codes } from './errors.js'
 import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import type { Store } from './store.js'
-import type { Peer, PeerProtocolsChangeData, PeerStore, ProtoBook } from '@libp2p/interfaces/peer-store'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Peer, PeerProtocolsChangeData, PeerStore, ProtoBook } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:peer-store:proto-book')
 

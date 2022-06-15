@@ -6,8 +6,8 @@ import { Multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { Components } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { Components } from '@libp2p/components'
 
 const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = new Multiaddr('/ip4/127.0.0.1/tcp/8001')

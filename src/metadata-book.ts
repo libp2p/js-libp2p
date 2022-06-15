@@ -5,8 +5,8 @@ import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import type { Store } from './store.js'
-import type { PeerStore, MetadataBook, PeerMetadataChangeData, Peer } from '@libp2p/interfaces/peer-store'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerStore, MetadataBook, PeerMetadataChangeData, Peer } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:peer-store:metadata-book')
 

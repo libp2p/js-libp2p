@@ -7,9 +7,9 @@ import { PersistentPeerStore } from '../src/index.js'
 import pDefer from 'p-defer'
 import { codes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { KeyBook } from '@libp2p/interfaces/peer-store'
-import { Components } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { KeyBook } from '@libp2p/interface-peer-store'
+import { Components } from '@libp2p/components'
 
 describe('keyBook', () => {
   let peerId: PeerId
