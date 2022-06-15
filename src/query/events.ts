@@ -1,8 +1,8 @@
 import { MESSAGE_TYPE_LOOKUP } from '../message/index.js'
 import type { Message } from '../message/dht.js'
-import type { SendingQueryEvent, PeerResponseEvent, DialingPeerEvent, AddingPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '@libp2p/interfaces/dht'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { SendingQueryEvent, PeerResponseEvent, DialingPeerEvent, AddingPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '@libp2p/interface-dht'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2pRecord } from '@libp2p/record'
 
 export interface QueryEventFields {

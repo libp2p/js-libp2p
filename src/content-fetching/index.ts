@@ -16,7 +16,7 @@ import {
 } from '../constants.js'
 import { createPutRecord, convertBuffer, bufferToRecordKey } from '../utils.js'
 import { logger } from '@libp2p/logger'
-import type { Validators, Selectors, ValueEvent, QueryOptions } from '@libp2p/interfaces/dht'
+import type { Validators, Selectors, ValueEvent, QueryOptions } from '@libp2p/interface-dht'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { RoutingTable } from '../routing-table/index.js'
@@ -24,7 +24,7 @@ import type { Network } from '../network.js'
 import type { Logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { QueryFunc } from '../query/types.js'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 
 export interface ContentFetchingInit {
   validators: Validators

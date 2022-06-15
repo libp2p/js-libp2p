@@ -5,9 +5,9 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import isPrivateIp from 'private-ip'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { RECORD_KEY_PREFIX } from './constants.js'
 
 // const IPNS_PREFIX = uint8ArrayFromString('/ipns/')

@@ -10,7 +10,7 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import type { RoutingTable } from './index.js'
 import type { Logger } from '@libp2p/logger'
 import type { PeerRouting } from '../peer-routing/index.js'
-import type { Components, Initializable } from '@libp2p/interfaces/components'
+import type { Components, Initializable } from '@libp2p/components'
 
 /**
  * Cannot generate random KadIds longer than this + 1

@@ -2,10 +2,10 @@ import { CID } from 'multiformats/cid'
 import errcode from 'err-code'
 import { logger } from '@libp2p/logger'
 import type { Providers } from '../../providers'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { DHTMessageHandler } from '../index.js'
 import type { Message } from '../../message/index.js'
-import type { Initializable } from '@libp2p/interfaces/components'
+import type { Initializable } from '@libp2p/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:add-provider')
 

@@ -10,7 +10,7 @@ import path from 'path'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { isPeerId } from '@libp2p/interfaces/peer-id'
+import { isPeerId } from '@libp2p/interface-peer-id'
 
 describe('Message', () => {
   it('create', () => {

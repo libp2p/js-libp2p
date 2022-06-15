@@ -3,7 +3,7 @@ import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import { convertPeerId } from '../../src/utils.js'
 import all from 'it-all'
 import map from 'it-map'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 /**
  * Sort peers by distance to the given `kadId`

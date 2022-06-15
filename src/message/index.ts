@@ -2,7 +2,7 @@ import { peerIdFromBytes } from '@libp2p/peer-id'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { Libp2pRecord } from '@libp2p/record'
 import { Message as PBMessage } from './dht.js'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 export const MESSAGE_TYPE = PBMessage.MessageType
 export const CONNECTION_TYPE = PBMessage.ConnectionType

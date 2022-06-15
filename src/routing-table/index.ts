@@ -4,10 +4,10 @@ import * as utils from '../utils.js'
 import Queue from 'p-queue'
 import { TimeoutController } from 'timeout-abort-controller'
 import { logger } from '@libp2p/logger'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 
 export interface KBucketPeer {
   id: Uint8Array

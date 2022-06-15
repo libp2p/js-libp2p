@@ -13,12 +13,12 @@ import {
   valueEvent,
   queryErrorEvent
 } from '../src/query/events.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { EventTypes, QueryEvent } from '@libp2p/interfaces/dht'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { EventTypes, QueryEvent } from '@libp2p/interface-dht'
 import { MESSAGE_TYPE } from '../src/message/index.js'
 import type { QueryFunc } from '../src/query/types.js'
 import { convertBuffer } from '../src/utils.js'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 interface TopologyEntry {
   delay?: number

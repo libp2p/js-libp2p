@@ -3,8 +3,8 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import type { Logger } from '@libp2p/logger'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { Components, Initializable } from '@libp2p/components'
 
 export interface TopologyListenerInit {
   protocol: string

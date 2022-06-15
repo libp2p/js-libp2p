@@ -7,12 +7,12 @@ import { convertPeerId, convertBuffer } from '../utils.js'
 import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
 import { queryErrorEvent } from './events.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { CleanUpEvents } from './manager.js'
 import type { Logger } from '@libp2p/logger'
 import type { QueryFunc } from '../query/types.js'
-import type { QueryEvent } from '@libp2p/interfaces/dht'
+import type { QueryEvent } from '@libp2p/interface-dht'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 

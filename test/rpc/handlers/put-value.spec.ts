@@ -9,11 +9,11 @@ import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Datastore } from 'interface-datastore'
 import { MemoryDatastore } from 'datastore-core'
-import type { Validators } from '@libp2p/interfaces/dht'
-import { Components } from '@libp2p/interfaces/components'
+import type { Validators } from '@libp2p/interface-dht'
+import { Components } from '@libp2p/components'
 
 const T = MESSAGE_TYPE.PUT_VALUE
 

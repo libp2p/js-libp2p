@@ -8,8 +8,8 @@ import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { PROTOCOL_DHT } from '../src/constants.js'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Components } from '@libp2p/interfaces/components'
-import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
+import { Components } from '@libp2p/components'
+import { mockConnectionManager } from '@libp2p/interface-mocks'
 
 describe('Routing Table', () => {
   let table: RoutingTable

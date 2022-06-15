@@ -10,7 +10,7 @@ import {
   providerEvent
 } from '../query/events.js'
 import { logger } from '@libp2p/logger'
-import type { QueryEvent, QueryOptions } from '@libp2p/interfaces/dht'
+import type { QueryEvent, QueryOptions } from '@libp2p/interface-dht'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { RoutingTable } from '../routing-table/index.js'
@@ -21,8 +21,8 @@ import type { QueryFunc } from '../query/types.js'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { Components, Initializable } from '@libp2p/components'
 
 export interface ContentRoutingInit {
   network: Network

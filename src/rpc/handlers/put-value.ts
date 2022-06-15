@@ -3,10 +3,10 @@ import errcode from 'err-code'
 import { verifyRecord } from '@libp2p/record/validators'
 import { Logger, logger } from '@libp2p/logger'
 import type { DHTMessageHandler } from '../index.js'
-import type { Validators } from '@libp2p/interfaces/dht'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Validators } from '@libp2p/interface-dht'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Message } from '../../message/index.js'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 
 export interface PutValueHandlerInit {
   validators: Validators

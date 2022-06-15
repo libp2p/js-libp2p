@@ -8,10 +8,10 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import all from 'it-all'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 import { TestDHT } from './utils/test-dht.js'
-import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { mockStream } from '@libp2p/interface-mocks'
 import type { DualKadDHT } from '../src/dual-kad-dht.js'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Sink } from 'it-stream-types'
 
 describe('Network', () => {

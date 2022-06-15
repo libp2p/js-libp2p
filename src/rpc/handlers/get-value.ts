@@ -7,9 +7,9 @@ import {
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
 import { logger } from '@libp2p/logger'
 import type { DHTMessageHandler } from '../index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerRouting } from '../../peer-routing/index.js'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-value')
 

@@ -6,13 +6,13 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
 import { createPeerIds } from '../../utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createValues } from '../../utils/create-values.js'
 import type { CID } from 'multiformats'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import { Providers } from '../../../src/providers.js'
 import { MemoryDatastore } from 'datastore-core'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 describe('rpc - handlers - AddProvider', () => {
   let peerIds: PeerId[]

@@ -8,14 +8,14 @@ import { Multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import { createValues, Value } from '../../utils/create-values.js'
 import Sinon, { SinonStubbedInstance } from 'sinon'
-import type { AddressBook } from '@libp2p/interfaces/peer-store'
+import type { AddressBook } from '@libp2p/interface-peer-store'
 import { Providers } from '../../../src/providers.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import { Components } from '@libp2p/interfaces/components'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { Components } from '@libp2p/components'
 
 const T = MESSAGE_TYPE.GET_PROVIDERS
 

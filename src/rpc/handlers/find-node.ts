@@ -5,13 +5,13 @@ import {
   removePublicAddresses
 } from '../../utils.js'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { protocols } from '@multiformats/multiaddr'
-import type { Initializable } from '@libp2p/interfaces/components'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { Initializable } from '@libp2p/components'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { DHTMessageHandler } from '../index.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:find-node')
 

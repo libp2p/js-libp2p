@@ -8,7 +8,7 @@ import { logger, Logger } from '@libp2p/logger'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { pipe } from 'it-pipe'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 
 export interface QuerySelfInit {
   lan: boolean

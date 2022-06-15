@@ -1,5 +1,5 @@
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { QueryEvent } from '@libp2p/interfaces/dht'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { QueryEvent } from '@libp2p/interface-dht'
 
 export interface QueryContext {
   // the key we are looking up

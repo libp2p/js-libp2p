@@ -12,14 +12,14 @@ import {
   queryErrorEvent
 } from './query/events.js'
 import { logger } from '@libp2p/logger'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
 import type { Duplex } from 'it-stream-types'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import { Components, Initializable } from '@libp2p/interfaces/components'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { Components, Initializable } from '@libp2p/components'
+import type { Stream } from '@libp2p/interface-connection'
 import { abortableDuplex } from 'abortable-iterator'
 
 export interface NetworkInit {

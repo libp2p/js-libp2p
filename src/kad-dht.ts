@@ -14,17 +14,17 @@ import {
   removePublicAddresses
 } from './utils.js'
 import { Logger, logger } from '@libp2p/logger'
-import type { QueryOptions, Validators, Selectors, DHT } from '@libp2p/interfaces/dht'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { QueryOptions, Validators, Selectors, DHT } from '@libp2p/interface-dht'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { CID } from 'multiformats/cid'
-import type { PeerDiscoveryEvents } from '@libp2p/interfaces/peer-discovery'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import type { PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import { Components, Initializable } from '@libp2p/components'
 import type { KadDHTInit } from './index.js'
 import { validators as recordValidators } from '@libp2p/record/validators'
 import { selectors as recordSelectors } from '@libp2p/record/selectors'
-import { symbol } from '@libp2p/interfaces/peer-discovery'
+import { symbol } from '@libp2p/interface-peer-discovery'
 import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
 
 export interface SingleKadDHTInit extends KadDHTInit {

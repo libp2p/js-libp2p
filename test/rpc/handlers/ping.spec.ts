@@ -6,7 +6,7 @@ import { PingHandler } from '../../../src/rpc/handlers/ping.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const T = MESSAGE_TYPE.PING
 

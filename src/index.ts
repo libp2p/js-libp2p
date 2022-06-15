@@ -1,6 +1,6 @@
 import { KadDHT as SingleKadDHT } from './kad-dht.js'
 import { DualKadDHT } from './dual-kad-dht.js'
-import type { Selectors, Validators } from '@libp2p/interfaces/dht'
+import type { Selectors, Validators } from '@libp2p/interface-dht'
 
 export interface KadDHTInit {
   /**

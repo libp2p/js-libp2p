@@ -11,9 +11,9 @@ import { Providers } from '../src/providers.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createValues } from './utils/create-values.js'
 import { createPeerIds } from './utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import delay from 'delay'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 describe('Providers', () => {
   let peers: PeerId[]
