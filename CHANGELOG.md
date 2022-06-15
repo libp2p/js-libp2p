@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-record/compare/v1.0.5...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update to latest libp2p interfaces ([#45](https://github.com/libp2p/js-libp2p-record/issues/45)) ([b5eb989](https://github.com/libp2p/js-libp2p-record/commit/b5eb9897f23ebf39e2a728672f3727222bc1159f))
+
 ### [1.0.5](https://github.com/libp2p/js-libp2p-record/compare/v1.0.4...v1.0.5) (2022-05-25)
 
 
