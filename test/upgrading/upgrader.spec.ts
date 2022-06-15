@@ -14,16 +14,16 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import { codes } from '../../src/errors.js'
-import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
 import Peers from '../fixtures/peers.js'
-import type { Upgrader } from '@libp2p/interfaces/transport'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Upgrader } from '@libp2p/interface-transport'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { Plaintext } from '../../src/insecure/index.js'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interfaces/stream-muxer'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
+import type { Stream } from '@libp2p/interface-connection'
 import pDefer from 'p-defer'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
@@ -248,7 +248,7 @@ describe('Upgrader', () => {
     class OtherMuxerFactory implements StreamMuxerFactory {
       protocol = '/muxer-local'
 
-      createStreamMuxer (components: Components, init?: StreamMuxerInit): StreamMuxer {
+      createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
         return new OtherMuxer()
       }
     }

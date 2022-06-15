@@ -16,11 +16,11 @@ import { createNode, createPeerId, populateAddressBooks } from '../utils/creator
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createRoutingOptions } from './utils.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { EventTypes, MessageType } from '@libp2p/interfaces/dht'
+import { EventTypes, MessageType } from '@libp2p/interface-dht'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { KadDHT } from '@libp2p/kad-dht'
 
 describe('peer-routing', () => {

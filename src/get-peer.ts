@@ -2,9 +2,9 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { Multiaddr } from '@multiformats/multiaddr'
 import errCode from 'err-code'
 import { codes } from './errors.js'
-import { isPeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import { isPeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 function peerIdFromMultiaddr (ma: Multiaddr) {
   const idStr = ma.getPeerId()

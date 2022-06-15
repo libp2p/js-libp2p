@@ -323,7 +323,7 @@ import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { GossipSub } from 'libp2p-gossipsub'
-import { SignaturePolicy } from '@libp2p/interfaces/pubsub'
+import { SignaturePolicy } from '@libp2p/interface-pubsub'
 
 const node = await createLibp2p({
     transports: [

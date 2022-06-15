@@ -8,13 +8,13 @@ import { codes } from './errors.js'
 import { createConnection } from '@libp2p/connection'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { Connection, ProtocolStream, Stream } from '@libp2p/interfaces/connection'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
-import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interfaces/stream-muxer'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { MultiaddrConnection, Upgrader, UpgraderEvents } from '@libp2p/interfaces/transport'
+import type { MultiaddrConnection, Connection, ProtocolStream, Stream } from '@libp2p/interface-connection'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
+import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Upgrader, UpgraderEvents } from '@libp2p/interface-transport'
 import type { Duplex } from 'it-stream-types'
-import type { Components } from '@libp2p/interfaces/components'
+import { Components, isInitializable } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:upgrader')
@@ -272,7 +272,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
     if (muxerFactory != null) {
       // Create the muxer
-      muxer = muxerFactory.createStreamMuxer(this.components, {
+      muxer = muxerFactory.createStreamMuxer({
         // Run anytime a remote stream is created
         onIncomingStream: muxedStream => {
           if (connection == null) {
@@ -312,6 +312,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           connection?.removeStream(muxedStream.id)
         }
       })
+
+      if (isInitializable(muxer)) {
+        muxer.init(this.components)
+      }
 
       newStream = async (protocols: string[], options: AbortOptions = {}): Promise<ProtocolStream> => {
         if (muxer == null) {
@@ -417,7 +421,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    */
   _onStream (opts: OnStreamOptions): void {
     const { connection, stream, protocol } = opts
-    const handler = this.components.getRegistrar().getHandler(protocol)
+    const { handler } = this.components.getRegistrar().getHandler(protocol)
     handler({ connection, stream, protocol })
   }
 

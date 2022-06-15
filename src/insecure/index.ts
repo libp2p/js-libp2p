@@ -1,11 +1,11 @@
 import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import * as lp from 'it-length-prefixed'
-import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interfaces/connection-encrypter/errors'
+import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface-connection-encrypter/errors'
 import { Exchange, KeyType } from './pb/proto.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:plaintext')

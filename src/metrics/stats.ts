@@ -2,7 +2,7 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { createMovingAverage } from './moving-average.js'
 // @ts-expect-error no types
 import retimer from 'retimer'
-import type { MovingAverages, Stats, TransferStats } from '@libp2p/interfaces/metrics'
+import type { MovingAverages, Stats, TransferStats } from '@libp2p/interface-metrics'
 
 export interface StatsEvents {
   'update': CustomEvent<TransferStats>

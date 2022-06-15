@@ -14,7 +14,7 @@ import { logger } from '@libp2p/logger'
 import { Mplex } from '@libp2p/mplex'
 import fs from 'fs'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { FloodSub } from '@libp2p/floodsub'
 

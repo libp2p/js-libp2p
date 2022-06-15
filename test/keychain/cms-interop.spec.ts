@@ -6,7 +6,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { KeyChain } from '../../src/keychain/index.js'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 describe('cms interop', () => {
   const passPhrase = 'this is not a secure phrase'
