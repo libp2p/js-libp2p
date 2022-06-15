@@ -1,58 +1,54 @@
-# js-libp2p-crypto
+# @libp2p/crypto <!-- omit in toc -->
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
-[![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
-[![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
-[![](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-crypto.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-crypto)
-[![](https://img.shields.io/travis/libp2p/js-libp2p-crypto.svg?style=flat-square)](https://travis-ci.com/libp2p/js-libp2p-crypto)
-[![Dependency Status](https://david-dm.org/libp2p/js-libp2p-crypto.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-crypto)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-crypto.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-crypto)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-crypto/actions/workflows/js-test-and-release.yml)
 
-> Crypto primitives for libp2p in JavaScript
+> Crypto primitives for libp2p
+
+## Table of contents <!-- omit in toc -->
+
+- [Install](#install)
+- [Lead Maintainer](#lead-maintainer)
+- [Usage](#usage)
+  - [Web Crypto API](#web-crypto-api)
+- [API](#api)
+  - [`crypto.aes`](#cryptoaes)
+    - [`crypto.aes.create(key, iv)`](#cryptoaescreatekey-iv)
+      - [`decrypt(data)`](#decryptdata)
+      - [`encrypt(data)`](#encryptdata)
+  - [`crypto.hmac`](#cryptohmac)
+    - [`crypto.hmac.create(hash, secret)`](#cryptohmaccreatehash-secret)
+      - [`digest(data)`](#digestdata)
+  - [`crypto.keys`](#cryptokeys)
+  - [`crypto.keys.generateKeyPair(type, bits)`](#cryptokeysgeneratekeypairtype-bits)
+  - [`crypto.keys.generateEphemeralKeyPair(curve)`](#cryptokeysgenerateephemeralkeypaircurve)
+  - [`crypto.keys.keyStretcher(cipherType, hashType, secret)`](#cryptokeyskeystretcherciphertype-hashtype-secret)
+  - [`crypto.keys.marshalPublicKey(key, [type])`](#cryptokeysmarshalpublickeykey-type)
+  - [`crypto.keys.unmarshalPublicKey(buf)`](#cryptokeysunmarshalpublickeybuf)
+  - [`crypto.keys.marshalPrivateKey(key, [type])`](#cryptokeysmarshalprivatekeykey-type)
+  - [`crypto.keys.unmarshalPrivateKey(buf)`](#cryptokeysunmarshalprivatekeybuf)
+  - [`crypto.keys.import(encryptedKey, password)`](#cryptokeysimportencryptedkey-password)
+  - [`privateKey.export(password, format)`](#privatekeyexportpassword-format)
+  - [`crypto.randomBytes(number)`](#cryptorandombytesnumber)
+  - [`crypto.pbkdf2(password, salt, iterations, keySize, hash)`](#cryptopbkdf2password-salt-iterations-keysize-hash)
+- [Contribute](#contribute)
+- [License](#license)
+- [Contribution](#contribution)
+
+## Install
+
+```console
+$ npm i @libp2p/crypto
+```
 
 This repo contains the JavaScript implementation of the crypto primitives needed for libp2p. This is based on this [go implementation](https://github.com/libp2p/go-libp2p-crypto).
 
 ## Lead Maintainer
 
 [Jacob Heun](https://github.com/jacobheun/)
-
-## Table of Contents
-
-- [js-libp2p-crypto](#js-libp2p-crypto)
-  - [Lead Maintainer](#lead-maintainer)
-  - [Table of Contents](#table-of-contents)
-  - [Install](#install)
-  - [Usage](#usage)
-    - [Web Crypto API](#web-crypto-api)
-  - [API](#api)
-    - [`crypto.aes`](#cryptoaes)
-      - [`crypto.aes.create(key, iv)`](#cryptoaescreatekey-iv)
-        - [`decrypt(data)`](#decryptdata)
-        - [`encrypt(data)`](#encryptdata)
-    - [`crypto.hmac`](#cryptohmac)
-      - [`crypto.hmac.create(hash, secret)`](#cryptohmaccreatehash-secret)
-        - [`digest(data)`](#digestdata)
-    - [`crypto.keys`](#cryptokeys)
-    - [`crypto.keys.generateKeyPair(type, bits)`](#cryptokeysgeneratekeypairtype-bits)
-    - [`crypto.keys.generateEphemeralKeyPair(curve)`](#cryptokeysgenerateephemeralkeypaircurve)
-    - [`crypto.keys.keyStretcher(cipherType, hashType, secret)`](#cryptokeyskeystretcherciphertype-hashtype-secret)
-    - [`crypto.keys.marshalPublicKey(key, [type])`](#cryptokeysmarshalpublickeykey-type)
-    - [`crypto.keys.unmarshalPublicKey(buf)`](#cryptokeysunmarshalpublickeybuf)
-    - [`crypto.keys.marshalPrivateKey(key, [type])`](#cryptokeysmarshalprivatekeykey-type)
-    - [`crypto.keys.unmarshalPrivateKey(buf)`](#cryptokeysunmarshalprivatekeybuf)
-    - [`crypto.keys.import(encryptedKey, password)`](#cryptokeysimportencryptedkey-password)
-    - [`privateKey.export(password, format)`](#privatekeyexportpassword-format)
-    - [`crypto.randomBytes(number)`](#cryptorandombytesnumber)
-    - [`crypto.pbkdf2(password, salt, iterations, keySize, hash)`](#cryptopbkdf2password-salt-iterations-keysize-hash)
-  - [Contribute](#contribute)
-  - [License](#license)
-
-## Install
-
-```sh
-npm install --save libp2p-crypto
-```
 
 ## Usage
 
@@ -311,4 +307,11 @@ This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/c
 
 ## License
 
-[MIT](./LICENSE)
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

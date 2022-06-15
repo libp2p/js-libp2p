@@ -11,7 +11,7 @@ import { importer } from './importer.js'
 import * as RSA from './rsa-class.js'
 import * as Ed25519 from './ed25519-class.js'
 import * as Secp256k1 from './secp256k1-class.js'
-import type { PrivateKey, PublicKey } from '@libp2p/interfaces/keys'
+import type { PrivateKey, PublicKey } from '@libp2p/interface-keys'
 
 export { keyStretcher }
 export { generateEphemeralKeyPair }

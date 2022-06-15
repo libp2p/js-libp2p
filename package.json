@@ -48,18 +48,23 @@
   ],
   "exports": {
     ".": {
+      "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
     "./aes": {
+      "types": "./dist/src/aes/index.d.ts",
       "import": "./dist/src/aes/index.js"
     },
     "./ciphers": {
+      "types": "./dist/src/ciphers/index.d.ts",
       "import": "./dist/src/ciphers/index.js"
     },
     "./hmac": {
+      "types": "./dist/src/hmac/index.d.ts",
       "import": "./dist/src/hmac/index.js"
     },
     "./keys": {
+      "types": "./dist/src/keys/index.d.ts",
       "import": "./dist/src/keys/index.js"
     }
   },
@@ -169,7 +174,7 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interfaces": "^2.0.1",
+    "@libp2p/interface-keys": "^1.0.2",
     "@noble/ed25519": "^1.6.0",
     "@noble/secp256k1": "^1.5.4",
     "err-code": "^3.0.1",
