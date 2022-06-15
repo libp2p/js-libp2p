@@ -1,3 +1,16 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v1.0.17...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+Co-authored-by: Alex Potsides <alex@achingbrain.net>
+
+### Features
+
+* update to latest interfaces ([#4](https://github.com/libp2p/js-libp2p-peer-store/issues/4)) ([8cb4a9a](https://github.com/libp2p/js-libp2p-peer-store/commit/8cb4a9a6f4904197552bf26cde62c1ac2f8172d0))
+
 ### [1.0.17](https://github.com/libp2p/js-libp2p-peer-store/compare/v1.0.16...v1.0.17) (2022-06-09)
 
 
