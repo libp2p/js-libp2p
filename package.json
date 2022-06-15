@@ -160,7 +160,7 @@
     "@libp2p/pubsub": "^1.2.18",
     "@libp2p/tcp": "^1.0.9",
     "@libp2p/topology": "^1.1.7",
-    "@libp2p/webrtc-star": "^1.0.8",
+    "@libp2p/webrtc-star": "^2.0.0",
     "@libp2p/websockets": "^1.0.7",
     "@types/node-forge": "^1.0.0",
     "@types/p-fifo": "^1.0.0",
