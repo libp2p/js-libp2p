@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v1.2.1...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update to latest interfaces ([#181](https://github.com/libp2p/js-libp2p-mplex/issues/181)) ([dcd02d9](https://github.com/libp2p/js-libp2p-mplex/commit/dcd02d9456f223c43062ac031c7a03aa6c635f30))
+
 ### [1.2.1](https://github.com/libp2p/js-libp2p-mplex/compare/v1.2.0...v1.2.1) (2022-06-13)
 
 
