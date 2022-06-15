@@ -4,12 +4,12 @@ import { createServer } from 'it-ws/server'
 import { logger } from '@libp2p/logger'
 import { socketToMaConn } from './socket-to-conn.js'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import type { Listener, ListenerEvents, CreateListenerOptions } from '@libp2p/interfaces/transport'
+import type { Listener, ListenerEvents, CreateListenerOptions } from '@libp2p/interface-transport'
 import type { Server } from 'http'
 import type { WebSocketServer } from 'it-ws/server'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:websockets:listener')
 

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import tests from '@libp2p/interface-compliance-tests/transport'
+import tests from '@libp2p/interface-transport-compliance-tests'
 import { Multiaddr } from '@multiformats/multiaddr'
 import http from 'http'
 import { WebSockets } from '../src/index.js'

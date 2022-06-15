@@ -1,43 +1,40 @@
-# js-libp2p-websockets <!-- omit in toc -->
+# @libp2p/websockets <!-- omit in toc -->
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
-[![Coverage Status](https://coveralls.io/repos/github/libp2p/js-libp2p-websockets/badge.svg?branch=master)](https://coveralls.io/github/libp2p/js-libp2p-websockets?branch=master)
-[![Build Status](https://github.com/libp2p/js-libp2p-websockets/actions/workflows/js-test-and-release.yml/badge.svg?branch=main)](https://github.com/libp2p/js-libp2p-websockets/actions/workflows/js-test-and-release.yml)
-[![Dependency Status](https://david-dm.org/libp2p/js-libp2p-websockets.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-websockets)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
-![](https://img.shields.io/badge/Node.js-%3E%3D14.0.0-orange.svg?style=flat-square)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-websockets.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-websockets)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-websockets/actions/workflows/js-test-and-release.yml)
 
-[![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)](https://github.com/libp2p/interface-transport)
-[![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)](https://github.com/libp2p/interface-connection)
+> JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec
 
-> JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport interface
+## Table of contents <!-- omit in toc -->
 
-## Table of Contents <!-- omit in toc -->
-
+- [Install](#install)
 - [Description](#description)
 - [Usage](#usage)
-- [Install](#install)
-  - [npm](#npm)
   - [Constructor properties](#constructor-properties)
 - [Libp2p Usage Example](#libp2p-usage-example)
 - [API](#api)
   - [Transport](#transport)
   - [Connection](#connection)
 - [License](#license)
-  - [Contribution](#contribution)
+- [Contribution](#contribution)
+
+## Install
+
+```console
+$ npm i @libp2p/websockets
+```
+
+[![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)](https://github.com/libp2p/interface-transport)
+[![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)](https://github.com/libp2p/interface-connection)
 
 ## Description
 
 `libp2p-websockets` is the WebSockets implementation compatible with libp2p.
 
 ## Usage
-
-## Install
-
-### npm
 
 ```sh
 > npm i @libp2p/websockets
@@ -56,10 +53,10 @@ const properties = {
 const ws = new WS(properties)
 ```
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| upgrader | [`Upgrader`](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#upgrader) | connection upgrader object with `upgradeOutbound` and `upgradeInbound` | **REQUIRED** |
-| filter | `(multiaddrs: Array<Multiaddr>) => Array<Multiaddr>` | override transport addresses filter | **Browser:** DNS+WSS multiaddrs / **Node.js:** DNS+{WS, WSS} multiaddrs |
+| Name     | Type                                                                                                                       | Description                                                            | Default                                                                 |
+| -------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| upgrader | [`Upgrader`](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#upgrader) | connection upgrader object with `upgradeOutbound` and `upgradeInbound` | **REQUIRED**                                                            |
+| filter   | `(multiaddrs: Array<Multiaddr>) => Array<Multiaddr>`                                                                       | override transport addresses filter                                    | **Browser:** DNS+WSS multiaddrs / **Node.js:** DNS+{WS, WSS} multiaddrs |
 
 You can create your own address filters for this transports, or rely in the filters [provided](./src/filters.js).
 
@@ -114,9 +111,9 @@ For more information see [libp2p/js-libp2p/doc/CONFIGURATION.md#customizing-tran
 
 Licensed under either of
 
- * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
- * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-### Contribution
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

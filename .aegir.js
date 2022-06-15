@@ -1,5 +1,5 @@
 import { Multiaddr } from '@multiformats/multiaddr'
-import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
 import { pipe }from 'it-pipe'
 
 /** @type {import('aegir/types').PartialOptions} */

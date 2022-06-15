@@ -6,9 +6,9 @@ import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { WebSockets } from '../src/index.js'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { mockUpgrader } from '@libp2p/interface-mocks'
 import env from 'wherearewe'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 
 const protocol = '/echo/1.0.0'
 

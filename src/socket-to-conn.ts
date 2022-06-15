@@ -3,7 +3,7 @@ import { CLOSE_TIMEOUT } from './constants.js'
 import pTimeout from 'p-timeout'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { MultiaddrConnection } from '@libp2p/interfaces/transport'
+import type { MultiaddrConnection } from '@libp2p/interface-connection'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 
