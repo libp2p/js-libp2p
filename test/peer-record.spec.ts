@@ -8,7 +8,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { PeerRecord } from '../src/peer-record/index.js'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('interface-record compliance', () => {
   tests({

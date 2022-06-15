@@ -28,6 +28,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     }
   },
@@ -140,10 +141,11 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/crypto": "^0.22.8",
-    "@libp2p/interfaces": "^2.0.0",
+    "@libp2p/crypto": "^1.0.0",
+    "@libp2p/interface-peer-id": "^1.0.2",
+    "@libp2p/interface-record": "^1.0.1",
     "@libp2p/logger": "^1.1.0",
-    "@libp2p/peer-id": "^1.1.0",
+    "@libp2p/peer-id": "^1.1.13",
     "@libp2p/utils": "^1.0.9",
     "@multiformats/multiaddr": "^10.1.5",
     "err-code": "^3.0.1",

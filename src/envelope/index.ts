@@ -7,8 +7,8 @@ import { equals as uint8arraysEquals } from 'uint8arrays/equals'
 import { codes } from '../errors.js'
 import { Envelope as Protobuf } from './envelope.js'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Record, Envelope } from '@libp2p/interfaces/record'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Record, Envelope } from '@libp2p/interface-record'
 
 export interface EnvelopeInit {
   peerId: PeerId

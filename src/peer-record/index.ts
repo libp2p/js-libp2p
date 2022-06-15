@@ -1,5 +1,5 @@
 import { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { arrayEquals } from '@libp2p/utils/array-equals'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { PeerRecord as Protobuf } from './peer-record.js'

@@ -4,8 +4,8 @@ import { equals as uint8arrayEquals } from 'uint8arrays/equals'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { codes as ErrorCodes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { Record } from '@libp2p/interfaces/record'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Record } from '@libp2p/interface-record'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const domain = 'libp2p-testing'
 const codec = uint8arrayFromString('/libp2p/testdata')
