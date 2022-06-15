@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.10...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update libp2p interfaces ([#47](https://github.com/libp2p/js-libp2p-utils/issues/47)) ([018fbe4](https://github.com/libp2p/js-libp2p-utils/commit/018fbe48f3506c0b90dc88779a3f12a2714ab09c))
+
 ### [1.0.10](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.9...v1.0.10) (2022-04-07)
 
 
