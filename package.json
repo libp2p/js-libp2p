@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/websockets",
-  "version": "1.0.9",
+  "version": "2.0.0",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",

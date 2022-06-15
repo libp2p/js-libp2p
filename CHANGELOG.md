@@ -1,3 +1,19 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.9...v2.0.0) (2022-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* update to latest interfaces ([#159](https://github.com/libp2p/js-libp2p-websockets/issues/159)) ([e140bed](https://github.com/libp2p/js-libp2p-websockets/commit/e140bed0ae98af8ef0f7b3d6ec2388fa6273e590))
+
+
+### Trivial Changes
+
+* increase timeout for firefox ([5098e19](https://github.com/libp2p/js-libp2p-websockets/commit/5098e19796975e29ec91b62f28b52797dc1defde))
+
 ### [1.0.9](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.8...v1.0.9) (2022-05-23)
 
 
