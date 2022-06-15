@@ -10,8 +10,8 @@ import {
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { randomSeqno, toRpcMessage } from '../src/utils.js'
 import { keys } from '@libp2p/crypto'
-import type { Message, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 function encodeMessage (message: PubSubRPCMessage) {
   return RPC.Message.encode(message)

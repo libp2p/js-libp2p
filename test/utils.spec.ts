@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import * as utils from '../src/utils.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { Message, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
+import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 
 describe('utils', () => {

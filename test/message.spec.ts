@@ -7,9 +7,9 @@ import {
   MockRegistrar,
   PubsubImplementation
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Message } from '@libp2p/interfaces/pubsub'
-import { Components } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Message } from '@libp2p/interface-pubsub'
+import { Components } from '@libp2p/components'
 
 describe('pubsub base messages', () => {
   let peerId: PeerId

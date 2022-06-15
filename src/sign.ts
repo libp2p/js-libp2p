@@ -1,9 +1,9 @@
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toRpcMessage } from './utils.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { keys } from '@libp2p/crypto'
-import type { Message, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
+import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')

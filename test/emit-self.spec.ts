@@ -6,7 +6,7 @@ import {
 } from './utils/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import delay from 'delay'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 
 const protocol = '/pubsub/1.0.0'
 const topic = 'foo'

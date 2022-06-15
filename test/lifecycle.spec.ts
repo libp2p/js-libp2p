@@ -8,10 +8,10 @@ import {
   MockRegistrar,
   mockIncomingStreamEvent
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Registrar } from '@libp2p/interfaces/registrar'
-import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
-import { Components } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import { Components } from '@libp2p/components'
 
 class PubsubProtocol extends PubSubBaseProtocol {
   decodeRpc (bytes: Uint8Array): PubSubRPC {
@@ -158,7 +158,7 @@ describe('pubsub base lifecycle', () => {
 
       // Notify peers of connection
       await topologyA.onConnect(peerIdB, c0)
-      await handlerB(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
 
       expect(pubsubA.peers.size).to.be.eql(1)
       expect(pubsubB.peers.size).to.be.eql(1)
@@ -179,7 +179,7 @@ describe('pubsub base lifecycle', () => {
       sinon.spy(c0, 'newStream')
 
       await topologyA.onConnect(peerIdB, c0)
-      await handlerB(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
       expect(c0.newStream).to.have.property('callCount', 1)
 
       // @ts-expect-error _removePeer is a protected method
@@ -219,7 +219,7 @@ describe('pubsub base lifecycle', () => {
       sinon.stub(c0, 'newStream').throws(error)
 
       await topologyA.onConnect(peerIdB, c0)
-      await handlerB(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
 
       expect(c0.newStream).to.have.property('callCount', 1)
     })
@@ -237,7 +237,7 @@ describe('pubsub base lifecycle', () => {
       const [c0, c1] = ConnectionPair()
 
       await topologyA.onConnect(peerIdB, c0)
-      await handlerB(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
 
       // Notice peers of disconnect
       topologyA?.onDisconnect(peerIdB)

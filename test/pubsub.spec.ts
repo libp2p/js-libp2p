@@ -11,12 +11,12 @@ import {
   PubsubImplementation,
   mockIncomingStreamEvent
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { PeerSet } from '@libp2p/peer-collections'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { noSignMsgId } from '../src/utils.js'
-import type { PubSubRPC } from '@libp2p/interfaces/src/pubsub'
+import type { PubSubRPC } from '@libp2p/interface-pubsub'
 import delay from 'delay'
 import pDefer from 'p-defer'
 
@@ -149,7 +149,7 @@ describe('pubsub base implementation', () => {
         const [c0, c1] = ConnectionPair()
 
         await topologyA.onConnect(peerIdB, c0)
-        await handlerB(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
       })
 
       afterEach(async () => {
@@ -259,7 +259,7 @@ describe('pubsub base implementation', () => {
         const [c0, c1] = ConnectionPair()
 
         await topologyA.onConnect(peerIdB, c0)
-        await handlerB(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
       })
 
       afterEach(async () => {

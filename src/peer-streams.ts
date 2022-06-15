@@ -4,10 +4,10 @@ import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import { pipe } from 'it-pipe'
 import { abortableSource } from 'abortable-iterator'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Stream } from '@libp2p/interface-connection'
 import type { Pushable } from 'it-pushable'
-import type { PeerStreamEvents } from '@libp2p/interfaces/pubsub'
+import type { PeerStreamEvents } from '@libp2p/interface-pubsub'
 
 const log = logger('libp2p-pubsub:peer-streams')
 

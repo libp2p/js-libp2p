@@ -2,11 +2,10 @@ import { duplexPair } from 'it-pair/duplex'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { IncomingStreamData, Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
-import type { Topology } from '@libp2p/interfaces/topology'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
+import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord, Topology } from '@libp2p/interface-registrar'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 
 export const createPeerId = async (): Promise<PeerId> => {
   const peerId = await PeerIdFactory.createEd25519PeerId()
@@ -76,14 +75,14 @@ export class MockRegistrar implements Registrar {
     })
   }
 
-  getHandler (protocol: string) {
+  getHandler (protocol: string): StreamHandlerRecord {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
       throw new Error(`No handler registered for protocol ${protocol}`)
     }
 
-    return handler
+    return { handler, options: {} }
   }
 
   async register (protocols: string | string[], topology: Topology) {

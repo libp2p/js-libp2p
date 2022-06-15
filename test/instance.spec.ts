@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import { PubSubBaseProtocol } from '../src/index.js'
-import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interfaces/pubsub'
+import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 
 class PubsubProtocol extends PubSubBaseProtocol {
   decodeRpc (bytes: Uint8Array): PubSubRPC {

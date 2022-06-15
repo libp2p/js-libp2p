@@ -11,12 +11,12 @@ import {
   signMessage,
   verifySignature
 } from './sign.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult } from '@libp2p/interfaces/pubsub'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult } from '@libp2p/interface-pubsub'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 
 const log = logger('libp2p:pubsub')
 
@@ -63,7 +63,7 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
   public multicodecs: string[]
   public components: Components = new Components()
 
-  private _registrarTopologyId: string | undefined
+  private _registrarTopologyIds: string[] | undefined
   protected enabled: boolean
 
   constructor (props: PubSubInit) {
@@ -112,9 +112,10 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
 
     log('starting')
 
+    const registrar = this.components.getRegistrar()
     // Incoming streams
     // Called after a peer dials us
-    await this.components.getRegistrar().handle(this.multicodecs, this._onIncomingStream)
+    await Promise.all(this.multicodecs.map(async multicodec => await registrar.handle(multicodec, this._onIncomingStream)))
 
     // register protocol with topology
     // Topology callbacks called on connection manager changes
@@ -122,7 +123,7 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
       onConnect: this._onPeerConnected,
       onDisconnect: this._onPeerDisconnected
     })
-    this._registrarTopologyId = await this.components.getRegistrar().register(this.multicodecs, topology)
+    this._registrarTopologyIds = await Promise.all(this.multicodecs.map(async multicodec => await registrar.register(multicodec, topology)))
 
     log('started')
     this.started = true
@@ -136,12 +137,14 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
       return
     }
 
+    const registrar = this.components.getRegistrar()
+
     // unregister protocol and handlers
-    if (this._registrarTopologyId != null) {
-      this.components.getRegistrar().unregister(this._registrarTopologyId)
+    if (this._registrarTopologyIds != null) {
+      this._registrarTopologyIds?.map(id => registrar.unregister(id))
     }
 
-    await this.components.getRegistrar().unhandle(this.multicodecs)
+    await Promise.all(this.multicodecs.map(async multicodec => await registrar.unhandle(multicodec)))
 
     log('stopping')
     for (const peerStreams of this.peers.values()) {
@@ -553,7 +556,7 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
   /**
    * Get a list of the peer-ids that are subscribed to one topic.
    */
-  getSubscribers (topic: string) {
+  getSubscribers (topic: string): PeerId[] {
     if (!this.started) {
       throw errcode(new Error('not started yet'), 'ERR_NOT_STARTED_YET')
     }
@@ -676,7 +679,7 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
     return Array.from(this.subscriptions)
   }
 
-  getPeers () {
+  getPeers (): PeerId[] {
     if (!this.started) {
       throw new Error('Pubsub is not started')
     }
