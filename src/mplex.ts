@@ -10,10 +10,10 @@ import { toString as uint8ArrayToString } from 'uint8arrays'
 import { trackedMap } from '@libp2p/tracked-map'
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 import type { Sink } from 'it-stream-types'
-import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interfaces/stream-muxer'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
+import type { Stream } from '@libp2p/interface-connection'
 import type { MplexInit } from './index.js'
 
 const log = logger('libp2p:mplex')
@@ -127,7 +127,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     const maxStreams = this._init.maxStreamsPerConnection ?? MAX_STREAMS_PER_CONNECTION
 
     if ((this._streams.initiators.size + this._streams.receivers.size) === maxStreams) {
-      throw errCode(new Error('Too many streams open'), 'ERR_TOO_MANY_STREAMS')
+      throw errCode(new Error('To many streams open'), 'ERR_TOO_MANY_STREAMS')
     }
 
     const { id, name, type, registry } = options

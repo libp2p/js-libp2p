@@ -8,7 +8,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { logger } from '@libp2p/logger'
 import type { Message } from './message-types.js'
-import type { Timeline } from '@libp2p/interfaces/connection'
+import type { Timeline } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
 import type { MplexStream } from './mplex.js'
 

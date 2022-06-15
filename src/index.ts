@@ -1,5 +1,5 @@
-import type { Components } from '@libp2p/interfaces/components'
-import type { StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interfaces/stream-muxer'
+import { Components, Initializable } from '@libp2p/components'
+import type { StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import { MplexStreamMuxer } from './mplex.js'
 
 export interface MplexInit {
@@ -24,18 +24,23 @@ export interface MplexInit {
   maxStreamBufferSize?: number
 }
 
-export class Mplex implements StreamMuxerFactory {
+export class Mplex implements StreamMuxerFactory, Initializable {
   public protocol = '/mplex/6.7.0'
-  private readonly init: MplexInit
+  private readonly _init: MplexInit
+  private components: Components = new Components()
 
   constructor (init: MplexInit = {}) {
-    this.init = init
+    this._init = init
   }
 
-  createStreamMuxer (components: Components, init: StreamMuxerInit = {}) {
-    return new MplexStreamMuxer(components, {
+  init (components: Components) {
+    this.components = components
+  }
+
+  createStreamMuxer (init: StreamMuxerInit = {}) {
+    return new MplexStreamMuxer(this.components, {
       ...init,
-      ...this.init
+      ...this._init
     })
   }
 }

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import tests from '@libp2p/interface-compliance-tests/stream-muxer'
+import tests from '@libp2p/interface-stream-muxer-compliance-tests'
 import { Mplex } from '../src/index.js'
 
 describe('compliance', () => {

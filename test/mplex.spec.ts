@@ -3,7 +3,6 @@
 
 import { expect } from 'aegir/chai'
 import { Mplex } from '../src/index.js'
-import { Components } from '@libp2p/interfaces/components'
 import { CloseInitiatorMessage, Message, MessageInitiatorMessage, MessageTypes, NewStreamMessage } from '../src/message-types.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -20,8 +19,7 @@ describe('mplex', () => {
     const factory = new Mplex({
       maxStreamsPerConnection
     })
-    const components = new Components()
-    const muxer = factory.createStreamMuxer(components)
+    const muxer = factory.createStreamMuxer()
 
     // max out the streams for this connection
     for (let i = 0; i < maxStreamsPerConnection; i++) {
@@ -37,8 +35,7 @@ describe('mplex', () => {
     const factory = new Mplex({
       maxStreamsPerConnection
     })
-    const components = new Components()
-    const muxer = factory.createStreamMuxer(components)
+    const muxer = factory.createStreamMuxer()
 
     // max out the streams for this connection
     for (let i = 0; i < maxStreamsPerConnection; i++) {
@@ -102,7 +99,7 @@ describe('mplex', () => {
     const factory = new Mplex({
       maxStreamBufferSize
     })
-    const muxer = factory.createStreamMuxer(new Components(), {
+    const muxer = factory.createStreamMuxer({
       onIncomingStream () {
         // do nothing with the stream so the buffer fills up
       },
