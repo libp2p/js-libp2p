@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v2.0.0...v3.0.0) (2022-06-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* update to simpler connection api
+
+### Trivial Changes
+
+* update deps ([#76](https://github.com/libp2p/js-libp2p-pubsub/issues/76)) ([50d1a5f](https://github.com/libp2p/js-libp2p-pubsub/commit/50d1a5fdb487f264f1f9da1facf96f4da6836649))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v1.3.0...v2.0.0) (2022-06-15)
 
 
