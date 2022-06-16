@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v2.0.0...v2.0.1) (2022-06-16)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/logger from 1.1.6 to 2.0.0 ([#186](https://github.com/libp2p/js-libp2p-tcp/issues/186)) ([5de2104](https://github.com/libp2p/js-libp2p-tcp/commit/5de2104f187e9f414b52fe2fee7580b78f2050af))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v1.0.11...v2.0.0) (2022-06-15)
 
 
