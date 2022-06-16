@@ -132,15 +132,19 @@ export const ConnectionPair = (): [Connection, Connection] => {
     {
       // @ts-expect-error incomplete implementation
       newStream: async (protocol: string[]) => await Promise.resolve({
-        protocol: protocol[0],
-        stream: d0
+        ...d0,
+        stat: {
+          protocol: protocol[0]
+        }
       })
     },
     {
       // @ts-expect-error incomplete implementation
       newStream: async (protocol: string[]) => await Promise.resolve({
-        protocol: protocol[0],
-        stream: d1
+        ...d1,
+        stat: {
+          protocol: protocol[0]
+        }
       })
     }
   ]
@@ -148,7 +152,7 @@ export const ConnectionPair = (): [Connection, Connection] => {
 
 export async function mockIncomingStreamEvent (protocol: string, conn: Connection, remotePeer: PeerId): Promise<IncomingStreamData> {
   return {
-    ...await conn.newStream([protocol]),
+    stream: await conn.newStream([protocol]),
     // @ts-expect-error incomplete implementation
     connection: {
       remotePeer

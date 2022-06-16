@@ -165,9 +165,15 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
    * On an inbound stream opened
    */
   protected _onIncomingStream (data: IncomingStreamData) {
-    const { protocol, stream, connection } = data
+    const { stream, connection } = data
     const peerId = connection.remotePeer
-    const peer = this.addPeer(peerId, protocol)
+
+    if (stream.stat.protocol == null) {
+      stream.abort(new Error('Stream was not multiplexed'))
+      return
+    }
+
+    const peer = this.addPeer(peerId, stream.stat.protocol)
     const inboundStream = peer.attachInboundStream(stream)
 
     this.processMessages(peerId, inboundStream, peer)
@@ -182,8 +188,14 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
 
     void Promise.resolve().then(async () => {
       try {
-        const { stream, protocol } = await conn.newStream(this.multicodecs)
-        const peer = this.addPeer(peerId, protocol)
+        const stream = await conn.newStream(this.multicodecs)
+
+        if (stream.stat.protocol == null) {
+          stream.abort(new Error('Stream was not multiplexed'))
+          return
+        }
+
+        const peer = this.addPeer(peerId, stream.stat.protocol)
         await peer.attachOutboundStream(stream)
       } catch (err: any) {
         log.error(err)
