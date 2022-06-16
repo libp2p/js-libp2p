@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-pubsub-topology/compare/v2.0.0...v3.0.0) (2022-06-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* registrar API has changed
+
+### Trivial Changes
+
+* update deps ([#6](https://github.com/libp2p/js-libp2p-pubsub-topology/issues/6)) ([ad2330b](https://github.com/libp2p/js-libp2p-pubsub-topology/commit/ad2330be33f4bf5ba91ef67f92eb23109504fb0a))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-pubsub-topology/compare/v1.1.9...v2.0.0) (2022-06-14)
 
 
