@@ -2,12 +2,16 @@ import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import { codes } from './errors.js'
 import { isTopology, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-registrar'
+import merge from 'merge-options'
 import type { Registrar, StreamHandler, Topology } from '@libp2p/interface-registrar'
 import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:registrar')
+
+const DEFAULT_MAX_INCOMING_STREAMS = 1
+const DEFAULT_MAX_OUTGOING_STREAMS = 1
 
 /**
  * Responsible for notifying registered protocols of events in the network.
@@ -63,10 +67,15 @@ export class DefaultRegistrar implements Registrar {
   /**
    * Registers the `handler` for each protocol
    */
-  async handle (protocol: string, handler: StreamHandler, options: StreamHandlerOptions = { maxConcurrentStreams: 1 }): Promise<void> {
+  async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
     if (this.handlers.has(protocol)) {
       throw errCode(new Error(`Handler already registered for protocol ${protocol}`), codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
     }
+
+    const options = merge({
+      maxIncomingStreams: DEFAULT_MAX_INCOMING_STREAMS,
+      maxOutgoingStreams: DEFAULT_MAX_OUTGOING_STREAMS
+    }, opts)
 
     this.handlers.set(protocol, {
       handler,
