@@ -40,7 +40,6 @@ jobs:
       - run: npm run --if-present test:node
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          directory: ./.nyc_output
           flags: node
 
   test-chrome:
@@ -55,7 +54,6 @@ jobs:
       - run: npm run --if-present test:chrome
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          directory: ./.nyc_output
           flags: chrome
 
   test-chrome-webworker:
@@ -70,7 +68,6 @@ jobs:
       - run: npm run --if-present test:chrome-webworker
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          directory: ./.nyc_output
           flags: chrome-webworker
 
   test-firefox:
@@ -85,7 +82,6 @@ jobs:
       - run: npm run --if-present test:firefox
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          directory: ./.nyc_output
           flags: firefox
 
   test-firefox-webworker:
@@ -100,7 +96,6 @@ jobs:
       - run: npm run --if-present test:firefox-webworker
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          directory: ./.nyc_output
           flags: firefox-webworker
 
   test-electron-main:
@@ -115,7 +110,6 @@ jobs:
       - run: npx xvfb-maybe npm run --if-present test:electron-main
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          directory: ./.nyc_output
           flags: electron-main
 
   test-electron-renderer:
@@ -130,7 +124,6 @@ jobs:
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          directory: ./.nyc_output
           flags: electron-renderer
 
   release:
