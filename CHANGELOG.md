@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v2.0.0...v2.0.1) (2022-06-16)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/utils from 1.0.10 to 2.0.0 ([#161](https://github.com/libp2p/js-libp2p-websockets/issues/161)) ([39980fc](https://github.com/libp2p/js-libp2p-websockets/commit/39980fc7fe994a341fd7f2e8a63738a58cfd1b02))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v1.0.9...v2.0.0) (2022-06-15)
 
 
