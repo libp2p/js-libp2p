@@ -1,3 +1,15 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v2.0.0...v3.0.0) (2022-06-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* registrar API has changed
+
+### Trivial Changes
+
+* update deps ([#10](https://github.com/libp2p/js-libp2p-peer-store/issues/10)) ([9d0c7c0](https://github.com/libp2p/js-libp2p-peer-store/commit/9d0c7c05b6b254de7768cf5966729e9e1a53c715))
+* update readme and package.json ([#11](https://github.com/libp2p/js-libp2p-peer-store/issues/11)) ([be2de56](https://github.com/libp2p/js-libp2p-peer-store/commit/be2de561932c7f6af63ec08b82ace75b5f3b9223))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v1.0.17...v2.0.0) (2022-06-15)
 
 
