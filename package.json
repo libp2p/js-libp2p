@@ -28,6 +28,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     }
   },
@@ -164,7 +165,7 @@
     "@libp2p/interface-compliance-tests": "^3.0.1",
     "@libp2p/peer-id-factory": "^1.0.0",
     "@libp2p/utils": "^2.0.0",
-    "aegir": "^37.0.7",
+    "aegir": "^37.3.0",
     "datastore-core": "^7.0.1",
     "p-defer": "^4.0.0",
     "p-wait-for": "^4.1.0",

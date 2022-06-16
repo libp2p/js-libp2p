@@ -1,11 +1,16 @@
-# js-libp2p-peer-store <!-- omit in toc -->
+# @libp2p/peer-store <!-- omit in toc -->
 
-[![test & maybe release](https://github.com/libp2p/js-libp2p-peer-store/actions/workflows/js-test-and-release.yml/badge.svg)](https://github.com/libp2p/js-libp2p-peer-store/actions/workflows/js-test-and-release.yml)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-peer-store.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-peer-store)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-peer-store/actions/workflows/js-test-and-release.yml)
 
 > Stores information about peers libp2p knows on the network
 
-## Table of Contents <!-- omit in toc -->
+## Table of contents <!-- omit in toc -->
 
+- [Install](#install)
 - [Description](#description)
   - [Submitting records to the PeerStore](#submitting-records-to-the-peerstore)
     - [Identify](#identify)
@@ -26,9 +31,14 @@
   - [Events](#events)
 - [Data Persistence](#data-persistence)
 - [Future Considerations](#future-considerations)
-- [Installation](#installation)
 - [License](#license)
-  - [Contribution](#contribution)
+- [Contribution](#contribution)
+
+## Install
+
+```console
+$ npm i @libp2p/peer-store
+```
 
 ## Description
 
@@ -41,19 +51,23 @@ The PeerStore manages the high level operations on its inner books. Moreover, th
 Several libp2p subsystems will perform operations that might gather relevant information about peers.
 
 #### Identify
+
 - The Identify protocol automatically runs on every connection when multiplexing is enabled. The protocol will put the multiaddrs and protocols provided by the peer to the PeerStore.
 - In the background, the Identify Service is also waiting for protocol change notifications of peers via the IdentifyPush protocol. Peers may leverage the `identify-push` message to communicate protocol changes to all connected peers, so that their PeerStore can be updated with the updated protocols.
 - While it is currently not supported in js-libp2p, future iterations may also support the [IdentifyDelta protocol](https://github.com/libp2p/specs/pull/176).
 - Taking into account that the Identify protocol records are directly from the peer, they should be considered the source of truth and weighted accordingly.
 
 #### Peer Discovery
+
 - Libp2p discovery protocols aim to discover new peers in the network. In a typical discovery protocol, addresses of the peer are discovered along with its peer id. Once this happens, a libp2p discovery protocol should emit a `peer` event with the information of the discovered peer and this information will be added to the PeerStore by libp2p.
 
 #### Dialer
+
 - Libp2p API supports dialing a peer given a `multiaddr`, and no prior knowledge of the peer. If the node is able to establish a connection with the peer, it and its multiaddr is added to the PeerStore.
 - When a connection is being upgraded, more precisely after its encryption, or even in a discovery protocol, a libp2p node can get to know other parties public keys. In this scenario, libp2p will add the peer's public key to its `KeyBook`.
 
 #### DHT
+
 - On some DHT operations, such as finding providers for a given CID, nodes may exchange peer data as part of the query. This passive peer discovery should result in the DHT emitting the `peer` event in the same way [Peer Discovery](#peerdiscovery) does.
 
 ### Retrieving records from the PeerStore
@@ -61,12 +75,15 @@ Several libp2p subsystems will perform operations that might gather relevant inf
 When data in the PeerStore is updated the PeerStore will emit events based on the changes, to allow applications and other subsystems to take action on those changes. Any subsystem interested in these notifications should subscribe the [`PeerStore events`][peer-store-events].
 
 #### Peer
+
 - Each time a new peer is discovered, the PeerStore should emit a [`peer` event][peer-store-events], so that interested parties can leverage this peer and establish a connection with it.
 
 #### Protocols
+
 - When the known protocols of a peer change, the PeerStore emits a [`change:protocols` event][peer-store-events].
 
 #### Multiaddrs
+
 - When the known listening `multiaddrs` of a peer change, the PeerStore emits a [`change:multiaddrs` event][peer-store-events].
 
 ### PeerStore implementation
@@ -173,20 +190,14 @@ Metadata is stored under the following key pattern:
 - When improving libp2p configuration for specific runtimes, we should take into account the PeerStore recommended datastore.
 - When improving libp2p configuration, we should think about a possible way of allowing the configuration of Bootstrap to be influenced by the persisted peers, as a way to decrease the load on Bootstrap nodes.
 
-## Installation
-
-```console
-$ npm i @libp2p/tracked-map
-```
-
 ## License
 
 Licensed under either of
 
- * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
- * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-### Contribution
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
