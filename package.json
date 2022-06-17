@@ -180,7 +180,7 @@
     "@libp2p/mdns": "^2.0.0",
     "@libp2p/mplex": "^2.0.0",
     "@libp2p/pubsub": "^2.0.0",
-    "@libp2p/tcp": "^2.0.0",
+    "@libp2p/tcp": "^3.0.0",
     "@libp2p/topology": "^2.0.0",
     "@libp2p/webrtc-star": "^2.0.0",
     "@libp2p/websockets": "^2.0.0",
