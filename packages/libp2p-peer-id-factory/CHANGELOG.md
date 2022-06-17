@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-factory-v1.0.14](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.13...@libp2p/peer-id-factory-v1.0.14) (2022-06-17)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/crypto from 0.22.14 to 1.0.0 ([#3](https://github.com/libp2p/js-libp2p-peer-id/issues/3)) ([21ff018](https://github.com/libp2p/js-libp2p-peer-id/commit/21ff018a634f58bdd4b9b943e84ae03b1f1ef69d))
+
 ## [@libp2p/peer-id-factory-v1.0.13](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.12...@libp2p/peer-id-factory-v1.0.13) (2022-06-14)
 
 
