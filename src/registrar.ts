@@ -10,8 +10,8 @@ import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:registrar')
 
-const DEFAULT_MAX_INCOMING_STREAMS = 1
-const DEFAULT_MAX_OUTGOING_STREAMS = 1
+export const DEFAULT_MAX_INBOUND_STREAMS = 1
+export const DEFAULT_MAX_OUTBOUND_STREAMS = 1
 
 /**
  * Responsible for notifying registered protocols of events in the network.
@@ -46,7 +46,7 @@ export class DefaultRegistrar implements Registrar {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
-      throw new Error(`No handler registered for protocol ${protocol}`)
+      throw errCode(new Error(`No handler registered for protocol ${protocol}`), codes.ERR_NO_HANDLER_FOR_PROTOCOL)
     }
 
     return handler
@@ -72,9 +72,9 @@ export class DefaultRegistrar implements Registrar {
       throw errCode(new Error(`Handler already registered for protocol ${protocol}`), codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
     }
 
-    const options = merge({
-      maxIncomingStreams: DEFAULT_MAX_INCOMING_STREAMS,
-      maxOutgoingStreams: DEFAULT_MAX_OUTGOING_STREAMS
+    const options = merge.bind({ ignoreUndefined: true })({
+      maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
+      maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
     }, opts)
 
     this.handlers.set(protocol, {

@@ -10,7 +10,7 @@ test/repo-tests*
 logs
 *.log
 
-coverage
+.coverage
 .nyc_output
 
 # Runtime data

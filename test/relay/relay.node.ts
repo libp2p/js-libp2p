@@ -80,7 +80,7 @@ describe('Dialing (via relay, TCP)', () => {
     expect(connection.remotePeer.toBytes()).to.eql(dstLibp2p.peerId.toBytes())
     expect(connection.remoteAddr).to.eql(dialAddr)
 
-    const { stream: echoStream } = await connection.newStream('/echo/1.0.0')
+    const echoStream = await connection.newStream('/echo/1.0.0')
 
     const input = uint8ArrayFromString('hello')
     const [output] = await pipe(
@@ -156,7 +156,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // send an invalid relay message from the relay to the destination peer
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
-    const { stream } = await connections[0].newStream(RELAY_CODEC)
+    const stream = await connections[0].newStream(RELAY_CODEC)
     const streamHandler = new StreamHandler({ stream })
     streamHandler.write({
       type: CircuitRelay.Type.STATUS

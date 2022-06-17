@@ -307,9 +307,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
-    const { stream, protocol } = await connection.newStream(['/echo/1.0.0'])
+    const stream = await connection.newStream(['/echo/1.0.0'])
     expect(stream).to.exist()
-    expect(protocol).to.equal('/echo/1.0.0')
+    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
     expect(dialerDialSpy.callCount).to.be.greaterThan(0)
     await connection.close()
   })
@@ -336,9 +336,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(remotePeerId)
     expect(connection).to.exist()
-    const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(protocol).to.equal('/echo/1.0.0')
+    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
     await connection.close()
     expect(dialerDialSpy.callCount).to.be.greaterThan(0)
   })
@@ -377,7 +377,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     const connection = await libp2p.dial(remotePeerId)
 
     // Create local to remote streams
-    const { stream } = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream('/echo/1.0.0')
     await connection.newStream('/stream-count/3')
     await libp2p.dialProtocol(remoteLibp2p.peerId, '/stream-count/4')
 
@@ -487,9 +487,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
-    const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(protocol).to.equal('/echo/1.0.0')
+    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
     await connection.close()
     expect(protectorProtectSpy.callCount).to.equal(1)
   })

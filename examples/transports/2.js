@@ -48,7 +48,7 @@ function printAddrs (node, number) {
   })
 
   await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
-  const { stream } = await node1.dialProtocol(node2.peerId, '/print')
+  const stream = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(
     ['Hello', ' ', 'p2p', ' ', 'world', '!'].map(str => uint8ArrayFromString(str)),

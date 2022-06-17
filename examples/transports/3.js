@@ -63,14 +63,14 @@ function print ({ stream }) {
   await node3.peerStore.addressBook.set(node1.peerId, node1.getMultiaddrs())
 
   // node 1 (TCP) dials to node 2 (TCP+WebSockets)
-  const { stream } = await node1.dialProtocol(node2.peerId, '/print')
+  const stream = await node1.dialProtocol(node2.peerId, '/print')
   await pipe(
     [uint8ArrayFromString('node 1 dialed to node 2 successfully')],
     stream
   )
 
   // node 2 (TCP+WebSockets) dials to node 2 (WebSockets)
-  const { stream: stream2 } = await node2.dialProtocol(node3.peerId, '/print')
+  const stream2 = await node2.dialProtocol(node3.peerId, '/print')
   await pipe(
     [uint8ArrayFromString('node 2 dialed to node 3 successfully')],
     stream2

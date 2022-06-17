@@ -54,13 +54,13 @@ const createNode = async () => {
     )
   })
 
-  const { stream: stream1 } = await node1.dialProtocol(node2.peerId, ['/node-2'])
+  const stream1 = await node1.dialProtocol(node2.peerId, ['/node-2'])
   await pipe(
     [uint8ArrayFromString('from 1 to 2')],
     stream1
   )
 
-  const { stream: stream2 } = await node2.dialProtocol(node1.peerId, ['/node-1'])
+  const stream2 = await node2.dialProtocol(node1.peerId, ['/node-1'])
   await pipe(
     [uint8ArrayFromString('from 2 to 1')],
     stream2

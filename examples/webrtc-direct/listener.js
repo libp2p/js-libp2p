@@ -1,5 +1,5 @@
 import { createLibp2p } from 'libp2p'
-import { WebRTCDirect } from '@achingbrain/webrtc-direct'
+import { WebRTCDirect } from '@libp2p/webrtc-direct'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { createFromJSON } from '@libp2p/peer-id-factory'
