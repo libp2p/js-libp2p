@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v2.0.0...v3.0.0) (2022-06-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* connection and registrar APIs have changed
+
+### Trivial Changes
+
+* update deps ([#157](https://github.com/libp2p/js-libp2p-floodsub/issues/157)) ([61c95f7](https://github.com/libp2p/js-libp2p-floodsub/commit/61c95f7cddd63efe19a09f650481edf01f4c61e0))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v1.0.7...v2.0.0) (2022-06-15)
 
 
