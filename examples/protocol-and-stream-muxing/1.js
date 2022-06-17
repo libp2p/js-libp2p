@@ -60,14 +60,14 @@ const createNode = async () => {
   })
   */
 
-  const { stream } = await node1.dialProtocol(node2.peerId, ['/your-protocol'])
+  const stream = await node1.dialProtocol(node2.peerId, ['/your-protocol'])
   await pipe(
     [uint8ArrayFromString('my own protocol, wow!')],
     stream
   )
 
   /*
-  const { stream } = node1.dialProtocol(node2.peerId, ['/another-protocol/1.0.0'])
+  const stream = node1.dialProtocol(node2.peerId, ['/another-protocol/1.0.0'])
 
   await pipe(
     ['my own protocol, wow!'],

@@ -73,9 +73,9 @@ describe('DHT subsystem operates correctly', () => {
     })
 
     it('should get notified of connected peers on dial', async () => {
-      const connection = await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
+      const stream = await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
 
-      expect(connection).to.exist()
+      expect(stream).to.exist()
 
       return await Promise.all([
         pWaitFor(() => libp2p.dht.lan.routingTable.size === 1),
