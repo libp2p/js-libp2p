@@ -139,7 +139,7 @@
   },
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",
-    "@libp2p/interface-keys": "^0.0.1",
+    "@libp2p/interface-keys": "^1.0.2",
     "@libp2p/interface-peer-id": "^1.0.0",
     "@libp2p/peer-id": "^1.1.0",
     "multiformats": "^9.6.3",
