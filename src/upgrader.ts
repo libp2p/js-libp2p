@@ -342,7 +342,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               const streamCount = countStreams(protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
-                throw errCode(new Error('Too many incoming protocol streams'), codes.ERR_TOO_MANY_INCOMING_PROTOCOL_STREAMS)
+                throw errCode(new Error('Too many incoming protocol streams'), codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS)
               }
 
               muxedStream.stat.protocol = protocol
@@ -389,7 +389,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           const streamCount = countStreams(protocol, 'outbound', connection)
 
           if (streamCount === outgoingLimit) {
-            throw errCode(new Error('Too many outgoing protocol streams'), codes.ERR_TOO_MANY_OUTGOING_PROTOCOL_STREAMS)
+            throw errCode(new Error('Too many outgoing protocol streams'), codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
           }
 
           muxedStream.stat.protocol = protocol
