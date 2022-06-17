@@ -8,7 +8,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { logger } from '@libp2p/logger'
 import type { Message } from './message-types.js'
-import type { Timeline } from '@libp2p/interface-connection'
+import type { StreamTimeline } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
 import type { MplexStream } from './mplex.js'
 
@@ -41,7 +41,7 @@ export function createStream (options: Options): MplexStream {
   let sinkEnded = false
   let endErr: Error | undefined
 
-  const timeline: Timeline = {
+  const timeline: StreamTimeline = {
     open: Date.now()
   }
 
@@ -58,7 +58,7 @@ export function createStream (options: Options): MplexStream {
     }
 
     if (sinkEnded) {
-      stream.timeline.close = Date.now()
+      stream.stat.timeline.close = Date.now()
 
       if (onEnd != null) {
         onEnd(endErr)
@@ -223,7 +223,12 @@ export function createStream (options: Options): MplexStream {
       onEnd: onSourceEnd
     }),
 
-    timeline,
+    stat: {
+      direction: type === 'initiator' ? 'outbound' : 'inbound',
+      timeline
+    },
+
+    metadata: {},
 
     id: externalId
   }

@@ -1,5 +1,5 @@
 import { Components, Initializable } from '@libp2p/components'
-import type { StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import { MplexStreamMuxer } from './mplex.js'
 
 export interface MplexInit {
@@ -14,7 +14,13 @@ export interface MplexInit {
    * The maximum number of multiplexed streams that can be open at any
    * one time. An attempt to open more than this will throw.
    */
-  maxStreamsPerConnection?: number
+  maxInboundStreams?: number
+
+  /**
+   * The maximum number of multiplexed streams that can be open at any
+   * one time. An attempt to open more than this will throw.
+   */
+  maxOutboundStreams?: number
 
   /**
    * Incoming stream messages are buffered until processed by the stream
@@ -33,11 +39,11 @@ export class Mplex implements StreamMuxerFactory, Initializable {
     this._init = init
   }
 
-  init (components: Components) {
+  init (components: Components): void {
     this.components = components
   }
 
-  createStreamMuxer (init: StreamMuxerInit = {}) {
+  createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
     return new MplexStreamMuxer(this.components, {
       ...init,
       ...this._init

@@ -12,48 +12,60 @@ import type { Source } from 'it-stream-types'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import { decode } from '../src/decode.js'
+import { pushable } from 'it-pushable'
 
 describe('mplex', () => {
   it('should restrict number of initiator streams per connection', async () => {
-    const maxStreamsPerConnection = 10
+    const maxOutboundStreams = 10
     const factory = new Mplex({
-      maxStreamsPerConnection
+      maxOutboundStreams
     })
     const muxer = factory.createStreamMuxer()
 
     // max out the streams for this connection
-    for (let i = 0; i < maxStreamsPerConnection; i++) {
+    for (let i = 0; i < maxOutboundStreams; i++) {
       muxer.newStream()
     }
 
     // open one more
-    expect(() => muxer.newStream()).to.throw().with.property('code', 'ERR_TOO_MANY_STREAMS')
+    expect(() => muxer.newStream()).to.throw().with.property('code', 'ERR_TOO_MANY_OUTBOUND_STREAMS')
   })
 
   it('should restrict number of recipient streams per connection', async () => {
-    const maxStreamsPerConnection = 10
+    const maxInboundStreams = 10
     const factory = new Mplex({
-      maxStreamsPerConnection
+      maxInboundStreams
     })
     const muxer = factory.createStreamMuxer()
+    const stream = pushable()
 
     // max out the streams for this connection
-    for (let i = 0; i < maxStreamsPerConnection; i++) {
-      muxer.newStream()
+    for (let i = 0; i < maxInboundStreams; i++) {
+      const source: NewStreamMessage[] = [{
+        id: i,
+        type: 0,
+        data: uint8ArrayFromString('17')
+      }]
+
+      const data = uint8ArrayConcat(await all(encode(source)))
+
+      stream.push(data)
     }
 
     // simulate a new incoming stream
     const source: NewStreamMessage[] = [{
-      id: 17,
+      id: 11,
       type: 0,
       data: uint8ArrayFromString('17')
     }]
 
     const data = uint8ArrayConcat(await all(encode(source)))
 
-    await muxer.sink([data])
+    stream.push(data)
 
-    await expect(all(muxer.source)).to.eventually.be.rejected.with.property('code', 'ERR_TOO_MANY_STREAMS')
+    await muxer.sink(stream)
+
+    await expect(all(muxer.source)).to.eventually.be.rejected.with.property('code', 'ERR_TOO_MANY_INBOUND_STREAMS')
   })
 
   it('should reset a stream that fills the message buffer', async () => {
