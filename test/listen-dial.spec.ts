@@ -157,7 +157,7 @@ describe('dial', () => {
     const conn = await tcp.dial(ma, {
       upgrader
     })
-    const { stream } = await conn.newStream([protocol])
+    const stream = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
@@ -183,7 +183,7 @@ describe('dial', () => {
     const conn = await tcp.dial(ma, {
       upgrader
     })
-    const { stream } = await conn.newStream([protocol])
+    const stream = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
@@ -206,7 +206,7 @@ describe('dial', () => {
     const conn = await tcp.dial(ma, {
       upgrader
     })
-    const { stream } = await conn.newStream([protocol])
+    const stream = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
@@ -242,7 +242,7 @@ describe('dial', () => {
     const conn = await tcp.dial(addrs[0], {
       upgrader
     })
-    const { stream } = await conn.newStream([protocol])
+    const stream = await conn.newStream([protocol])
     await pipe(stream)
 
     await handledPromise
@@ -288,7 +288,7 @@ describe('dial', () => {
     const conn = await tcp.dial(ma, {
       upgrader
     })
-    const { stream } = await conn.newStream([protocol])
+    const stream = await conn.newStream([protocol])
 
     const values = await pipe(
       [uint8ArrayFromString('hey')],
