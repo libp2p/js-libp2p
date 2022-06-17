@@ -1,3 +1,15 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v2.0.1...v3.0.0) (2022-06-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* the registry API has changed
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/utils from 1.0.10 to 2.0.0 ([#187](https://github.com/libp2p/js-libp2p-tcp/issues/187)) ([fa59390](https://github.com/libp2p/js-libp2p-tcp/commit/fa593907832f19b77f86e9ae45389fee3d6228f8))
+* update deps ([#189](https://github.com/libp2p/js-libp2p-tcp/issues/189)) ([719f3f5](https://github.com/libp2p/js-libp2p-tcp/commit/719f3f55dc932afdf7d83c9d9a2cbf43146002a2))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v2.0.0...v2.0.1) (2022-06-16)
 
 
