@@ -1,3 +1,15 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v2.0.1...v3.0.0) (2022-06-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* the connection API has changed
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/logger from 1.1.6 to 2.0.0 ([#160](https://github.com/libp2p/js-libp2p-websockets/issues/160)) ([9074c4a](https://github.com/libp2p/js-libp2p-websockets/commit/9074c4a6725b750a3f8c602aa2655c095d83973d))
+* update deps ([#164](https://github.com/libp2p/js-libp2p-websockets/issues/164)) ([d474a81](https://github.com/libp2p/js-libp2p-websockets/commit/d474a8184a0eec4c09c2ced5dd5d6314be536fb3))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v2.0.0...v2.0.1) (2022-06-16)
 
 
