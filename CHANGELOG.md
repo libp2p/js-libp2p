@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.0...v3.0.1) (2022-06-17)
+
+
+### Bug Fixes
+
+* limit stream concurrency ([#77](https://github.com/libp2p/js-libp2p-pubsub/issues/77)) ([d4f1779](https://github.com/libp2p/js-libp2p-pubsub/commit/d4f1779b68e658211e7a50ba446ec479bb413d2b))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v2.0.0...v3.0.0) (2022-06-16)
 
 
