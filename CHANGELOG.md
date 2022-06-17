@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v2.0.0...v3.0.0) (2022-06-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Updates to new registrar API
+
+### Features
+
+* specify stream limits ([#348](https://github.com/libp2p/js-libp2p-kad-dht/issues/348)) ([c2a9238](https://github.com/libp2p/js-libp2p-kad-dht/commit/c2a923863c2b4dd1fd95922ffdb21b6bc45f42c8))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v1.0.16...v2.0.0) (2022-06-15)
 
 
