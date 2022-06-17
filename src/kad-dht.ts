@@ -27,6 +27,9 @@ import { selectors as recordSelectors } from '@libp2p/record/selectors'
 import { symbol } from '@libp2p/interface-peer-discovery'
 import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
 
+export const DEFAULT_MAX_INBOUND_STREAMS = 32
+export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
+
 export interface SingleKadDHTInit extends KadDHTInit {
   /**
    * Whether to start up in lan or wan mode
@@ -60,6 +63,8 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
   private readonly rpc: RPC
   private readonly topologyListener: TopologyListener
   private readonly querySelf: QuerySelf
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
 
   /**
    * Create a new KadDHT
@@ -76,7 +81,9 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
       lan,
       protocolPrefix,
       pingTimeout,
-      pingConcurrency
+      pingConcurrency,
+      maxInboundStreams,
+      maxOutboundStreams
     } = init
 
     this.running = false
@@ -85,6 +92,8 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
     this.protocol = `${protocolPrefix ?? PROTOCOL_PREFIX}${lan === true ? LAN_PREFIX : ''}${PROTOCOL_DHT}`
     this.kBucketSize = kBucketSize ?? 20
     this.clientMode = clientMode ?? true
+    this.maxInboundStreams = maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
+    this.maxOutboundStreams = maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
     this.routingTable = new RoutingTable({
       kBucketSize,
       lan: this.lan,
@@ -264,7 +273,10 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT, In
     } else {
       this.log('enabling server mode')
       this.clientMode = false
-      await this.components.getRegistrar().handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc))
+      await this.components.getRegistrar().handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc), {
+        maxInboundStreams: this.maxInboundStreams,
+        maxOutboundStreams: this.maxOutboundStreams
+      })
     }
   }
 

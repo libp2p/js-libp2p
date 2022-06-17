@@ -45,6 +45,16 @@ export interface KadDHTInit {
    * be evicted from the routing table or not (default 10)
    */
   pingConcurrency?: number
+
+  /**
+   * How many parallel incoming streams to allow on the DHT protocol per-connection
+   */
+  maxInboundStreams?: number
+
+  /**
+   * How many parallel outgoing streams to allow on the DHT protocol per-connection
+   */
+  maxOutboundStreams?: number
 }
 
 export class KadDHT extends DualKadDHT {

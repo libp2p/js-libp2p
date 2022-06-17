@@ -93,7 +93,6 @@ describe('rpc', () => {
     }
 
     await rpc.onIncomingStream({
-      protocol: 'protocol',
       stream: mockStream(duplexStream),
       connection: await mockConnection(mockMultiaddrConnection(duplexStream, otherPeerId))
     })

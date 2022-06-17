@@ -126,7 +126,7 @@ describe('Routing Table', () => {
     table.kb.add(oldPeer)
 
     // simulate connection succeeding
-    const newStreamStub = sinon.stub().withArgs(PROTOCOL_DHT).resolves({ stream: { close: sinon.stub() } })
+    const newStreamStub = sinon.stub().withArgs(PROTOCOL_DHT).resolves({ close: sinon.stub() })
     const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves({
       newStream: newStreamStub
     })

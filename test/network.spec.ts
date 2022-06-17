@@ -80,9 +80,14 @@ describe('Network', () => {
               finish()
             }
 
+            const stream = mockStream({ source, sink })
+
             return {
-              protocol,
-              stream: mockStream({ source, sink })
+              ...stream,
+              stat: {
+                ...stream.stat,
+                protocol
+              }
             }
           }
         }

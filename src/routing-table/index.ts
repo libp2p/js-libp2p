@@ -158,7 +158,7 @@ export class RoutingTable implements Startable, Initializable {
 
               this.log('pinging old contact %p', oldContact.peer)
               const connection = await this.components.getConnectionManager().openConnection(oldContact.peer, options)
-              const { stream } = await connection.newStream(this.protocol, options)
+              const stream = await connection.newStream(this.protocol, options)
               stream.close()
               responded++
             } catch (err: any) {
