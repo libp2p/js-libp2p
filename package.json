@@ -161,10 +161,10 @@
     "varint": "^6.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^2.0.0",
+    "@libp2p/interface-record-compliance-tests": "^1.0.0",
     "@libp2p/peer-id-factory": "^1.0.0",
     "@types/varint": "^6.0.0",
-    "aegir": "^37.0.7",
+    "aegir": "^37.3.0",
     "protons": "^3.0.4",
     "sinon": "^14.0.0"
   }
