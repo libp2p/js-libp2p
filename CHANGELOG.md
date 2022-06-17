@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-multistream-select/compare/v2.0.0...v2.0.1) (2022-06-17)
+
+
+### Trivial Changes
+
+* update deps ([#9](https://github.com/libp2p/js-libp2p-multistream-select/issues/9)) ([dc5ddc1](https://github.com/libp2p/js-libp2p-multistream-select/commit/dc5ddc1b93da82a98e5acddc25a8e41c6eb67044))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-multistream-select/compare/v1.0.6...v2.0.0) (2022-06-15)
 
 
