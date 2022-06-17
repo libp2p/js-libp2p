@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/libp2p/js-libp2p-peer-record/compare/v2.0.1...v2.0.2) (2022-06-17)
+
+
+### Trivial Changes
+
+* update test deps ([#9](https://github.com/libp2p/js-libp2p-peer-record/issues/9)) ([6fb04c4](https://github.com/libp2p/js-libp2p-peer-record/commit/6fb04c45d0f9e7c875b3d7e4228b6d6f78180f92))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-peer-record/compare/v2.0.0...v2.0.1) (2022-06-17)
 
 
