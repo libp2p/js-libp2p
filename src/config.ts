@@ -79,13 +79,21 @@ const DefaultConfig: Partial<Libp2pInit> = {
     host: {
       agentVersion: AGENT_VERSION
     },
-    timeout: 30000
+    timeout: 30000,
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1,
+    maxPushIncomingStreams: 1,
+    maxPushOutgoingStreams: 1
   },
   ping: {
-    protocolPrefix: 'ipfs'
+    protocolPrefix: 'ipfs',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1
   },
   fetch: {
-    protocolPrefix: 'libp2p'
+    protocolPrefix: 'libp2p',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1
   }
 }
 

@@ -11,14 +11,14 @@ import type { PeerStore, PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AutoRelayConfig, RelayAdvertiseConfig } from './circuit/index.js'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
-import type { Connection, ConnectionGater, ConnectionProtector, ProtocolStream } from '@libp2p/interface-connection'
+import type { Connection, ConnectionGater, ConnectionProtector, Stream } from '@libp2p/interface-connection'
 import type { Transport } from '@libp2p/interface-transport'
 import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PubSub } from '@libp2p/interface-pubsub'
-import type { Registrar, StreamHandler } from '@libp2p/interface-registrar'
+import type { Registrar, StreamHandler, StreamHandlerOptions } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Metrics, MetricsInit } from '@libp2p/interface-metrics'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -177,7 +177,7 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
    * If successful, the known metadata of the peer will be added to the nodes `peerStore`,
    * and the `MuxedStream` will be returned together with the successful negotiated protocol.
    */
-  dialProtocol: (peer: PeerId | Multiaddr, protocols: string | string[], options?: AbortOptions) => Promise<ProtocolStream>
+  dialProtocol: (peer: PeerId | Multiaddr, protocols: string | string[], options?: AbortOptions) => Promise<Stream>
 
   /**
    * Disconnects all connections to the given `peer`
@@ -187,7 +187,7 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   /**
    * Registers the `handler` for each protocol
    */
-  handle: (protocol: string | string[], handler: StreamHandler) => Promise<void>
+  handle: (protocol: string | string[], handler: StreamHandler, options?: StreamHandlerOptions) => Promise<void>
 
   /**
    * Removes the handler for each protocol. The protocol

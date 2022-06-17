@@ -33,7 +33,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PubSub } from '@libp2p/interface-pubsub'
-import type { Registrar, StreamHandler } from '@libp2p/interface-registrar'
+import type { Registrar, StreamHandler, StreamHandlerOptions } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
@@ -490,14 +490,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return await this.pingService.ping(id, options)
   }
 
-  async handle (protocols: string | string[], handler: StreamHandler): Promise<void> {
+  async handle (protocols: string | string[], handler: StreamHandler, options?: StreamHandlerOptions): Promise<void> {
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
 
     await Promise.all(
       protocols.map(async protocol => {
-        await this.components.getRegistrar().handle(protocol, handler)
+        await this.components.getRegistrar().handle(protocol, handler, options)
       })
     )
   }

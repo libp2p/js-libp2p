@@ -427,9 +427,9 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     const connection = await libp2p.dial(MULTIADDRS_WEBSOCKETS[0])
     expect(connection).to.exist()
-    const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(protocol).to.equal('/echo/1.0.0')
+    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
     await connection.close()
     expect(dialerDialSpy.callCount).to.be.at.least(1)
     expect(addressBookAddSpy.callCount).to.be.at.least(1)

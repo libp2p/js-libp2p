@@ -389,7 +389,7 @@ await libp2p.hangUp(remotePeerId)
 
 Sets up [multistream-select routing](https://github.com/multiformats/multistream-select) of protocols to their application handlers. Whenever a stream is opened on one of the provided protocols, the handler will be called. `handle` must be called in order to register a handler and support for a given protocol. This also informs other peers of the protocols you support.
 
-`libp2p.handle(protocols, handler)`
+`libp2p.handle(protocols, handler, options)`
 
 In the event of a new handler for the same protocol being added, the first one is discarded.
 
@@ -399,6 +399,7 @@ In the event of a new handler for the same protocol being added, the first one i
 |------|------|-------------|
 | protocols | `Array<string>|string` | protocols to register |
 | handler | `function({ connection:*, stream:*, protocol:string })` | handler to call |
+| options | `StreamHandlerOptions` | Options including protocol stream limits |
 
 
 #### Example
@@ -409,7 +410,10 @@ const handler = ({ connection, stream, protocol }) => {
   // use stream or connection according to the needs
 }
 
-libp2p.handle('/echo/1.0.0', handler)
+libp2p.handle('/echo/1.0.0', handler, {
+  maxInboundStreams: 5,
+  maxOutboundStreams: 5
+})
 ```
 
 ### unhandle

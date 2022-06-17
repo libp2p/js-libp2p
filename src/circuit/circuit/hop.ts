@@ -134,7 +134,7 @@ export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
   } = options
 
   // Create a new stream to the relay
-  const { stream } = await connection.newStream(RELAY_CODEC)
+  const stream = await connection.newStream(RELAY_CODEC)
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write(request)
@@ -169,7 +169,7 @@ export async function canHop (options: CanHopOptions) {
   } = options
 
   // Create a new stream to the relay
-  const { stream } = await connection.newStream(RELAY_CODEC)
+  const stream = await connection.newStream(RELAY_CODEC)
 
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
