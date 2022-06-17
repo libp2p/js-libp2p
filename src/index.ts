@@ -65,6 +65,8 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
 
   private _registrarTopologyIds: string[] | undefined
   protected enabled: boolean
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
 
   constructor (props: PubSubInit) {
     super()
@@ -74,7 +76,9 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
       globalSignaturePolicy = 'StrictSign',
       canRelayMessage = false,
       emitSelf = false,
-      messageProcessingConcurrency = 10
+      messageProcessingConcurrency = 10,
+      maxInboundStreams = 1,
+      maxOutboundStreams = 1
     } = props
 
     this.multicodecs = ensureArray(multicodecs)
@@ -88,6 +92,8 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
     this.emitSelf = emitSelf
     this.topicValidators = new Map()
     this.queue = new Queue({ concurrency: messageProcessingConcurrency })
+    this.maxInboundStreams = maxInboundStreams
+    this.maxOutboundStreams = maxOutboundStreams
 
     this._onIncomingStream = this._onIncomingStream.bind(this)
     this._onPeerConnected = this._onPeerConnected.bind(this)
@@ -115,7 +121,10 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
     const registrar = this.components.getRegistrar()
     // Incoming streams
     // Called after a peer dials us
-    await Promise.all(this.multicodecs.map(async multicodec => await registrar.handle(multicodec, this._onIncomingStream)))
+    await Promise.all(this.multicodecs.map(async multicodec => await registrar.handle(multicodec, this._onIncomingStream, {
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
+    })))
 
     // register protocol with topology
     // Topology callbacks called on connection manager changes
