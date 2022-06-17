@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v2.0.0...v3.0.0) (2022-06-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* updates to simplified connection interface
+
+### Bug Fixes
+
+* limit incoming and outgoing streams separately ([#184](https://github.com/libp2p/js-libp2p-mplex/issues/184)) ([cd55d36](https://github.com/libp2p/js-libp2p-mplex/commit/cd55d36d4245868ebb884f0ce69fc6dfa5d8ca4b))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v1.2.1...v2.0.0) (2022-06-15)
 
 
