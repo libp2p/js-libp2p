@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -13,7 +13,7 @@ import type { Connection } from '@libp2p/interface-connection'
 const protocol = '/echo/1.0.0'
 
 describe('libp2p-websockets', () => {
-  const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
   let ws: WebSockets
   let conn: Connection
 
@@ -28,7 +28,7 @@ describe('libp2p-websockets', () => {
 
   it('echo', async () => {
     const data = uint8ArrayFromString('hey')
-    const { stream } = await conn.newStream([protocol])
+    const stream = await conn.newStream([protocol])
 
     const res = await pipe(
       [data],
@@ -40,10 +40,10 @@ describe('libp2p-websockets', () => {
   })
 
   it('should filter out no DNS websocket addresses', function () {
-    const ma1 = new Multiaddr('/ip4/127.0.0.1/tcp/80/ws')
-    const ma2 = new Multiaddr('/ip4/127.0.0.1/tcp/443/wss')
-    const ma3 = new Multiaddr('/ip6/::1/tcp/80/ws')
-    const ma4 = new Multiaddr('/ip6/::1/tcp/443/wss')
+    const ma1 = multiaddr('/ip4/127.0.0.1/tcp/80/ws')
+    const ma2 = multiaddr('/ip4/127.0.0.1/tcp/443/wss')
+    const ma3 = multiaddr('/ip6/::1/tcp/80/ws')
+    const ma4 = multiaddr('/ip6/::1/tcp/443/wss')
 
     const valid = ws.filter([ma1, ma2, ma3, ma4])
 
@@ -57,7 +57,7 @@ describe('libp2p-websockets', () => {
   describe('stress', () => {
     it('one big write', async () => {
       const data = new Uint8Array(1000000).fill(5)
-      const { stream } = await conn.newStream([protocol])
+      const stream = await conn.newStream([protocol])
 
       const res = await pipe(
         [data],
@@ -73,7 +73,7 @@ describe('libp2p-websockets', () => {
 
       const count = 20000
       const data = Array(count).fill(0).map(() => uint8ArrayFromString(Math.random().toString()))
-      const { stream } = await conn.newStream([protocol])
+      const stream = await conn.newStream([protocol])
 
       const res = await pipe(
         data,

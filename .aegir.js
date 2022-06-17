@@ -1,4 +1,4 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
 import { pipe }from 'it-pipe'
 
@@ -21,7 +21,7 @@ export default {
       })
 
       const ws = new WebSockets()
-      const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
       const listener = ws.createListener({
         upgrader
       })

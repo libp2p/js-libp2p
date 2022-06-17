@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import tests from '@libp2p/interface-transport-compliance-tests'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import http from 'http'
 import { WebSockets } from '../src/index.js'
 import * as filters from '../src/filters.js'
@@ -12,10 +12,10 @@ describe('interface-transport compliance', () => {
     async setup () {
       const ws = new WebSockets({ filter: filters.all })
       const addrs = [
-        new Multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
-        new Multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
-        new Multiaddr('/dns4/ipfs.io/tcp/9092/wss')
+        multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
+        multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9092/wss')
       ]
 
       let delayMs = 0

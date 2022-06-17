@@ -1,5 +1,5 @@
 import os from 'os'
-import { Multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { createServer } from 'it-ws/server'
 import { logger } from '@libp2p/logger'
 import { socketToMaConn } from './socket-to-conn.js'
@@ -10,6 +10,7 @@ import type { WebSocketServer } from 'it-ws/server'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { Connection } from '@libp2p/interface-connection'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:websockets:listener')
 
@@ -137,7 +138,7 @@ class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener
 
           niInfos.forEach(ni => {
             if (ni.family === 'IPv4') {
-              multiaddrs.push(new Multiaddr(m.toString().replace('0.0.0.0', ni.address)))
+              multiaddrs.push(multiaddr(m.toString().replace('0.0.0.0', ni.address)))
             }
           })
         })
