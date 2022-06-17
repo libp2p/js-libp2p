@@ -178,7 +178,7 @@
     "@libp2p/interop": "^2.0.0",
     "@libp2p/kad-dht": "^2.0.0",
     "@libp2p/mdns": "^2.0.0",
-    "@libp2p/mplex": "^2.0.0",
+    "@libp2p/mplex": "^3.0.0",
     "@libp2p/pubsub": "^2.0.0",
     "@libp2p/tcp": "^2.0.0",
     "@libp2p/topology": "^2.0.0",
