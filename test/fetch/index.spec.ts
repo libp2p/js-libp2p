@@ -2,11 +2,11 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { FetchService } from '../../src/fetch/index.js'
+import { FetchService, FetchServiceInit } from '../../src/fetch/index.js'
 import Peers from '../fixtures/peers.js'
-import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
+import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { CustomEvent } from '@libp2p/interfaces/events'
@@ -14,8 +14,10 @@ import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 
-const defaultInit = {
-  protocolPrefix: 'ipfs'
+const defaultInit: FetchServiceInit = {
+  protocolPrefix: 'ipfs',
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1
 }
 
 async function createComponents (index: number) {
@@ -127,7 +129,7 @@ describe('fetch', () => {
 
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
-    const { stream } = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('timeline.close')
+    const stream = await newStreamSpy.getCall(0).returnValue
+    expect(stream).to.have.nested.property('stat.timeline.close')
   })
 })

@@ -10,13 +10,13 @@ import { createListener } from './listener.js'
 import { handleCanHop, handleHop, hop } from './circuit/hop.js'
 import { handleStop } from './circuit/stop.js'
 import { StreamHandler } from './circuit/stream-handler.js'
-import { symbol } from '@libp2p/interfaces/transport'
+import { symbol } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
-import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interfaces/transport'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
+import type { Connection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:circuit')
 

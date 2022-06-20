@@ -10,9 +10,9 @@ import { namespaceToCid } from './utils.js'
 import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
-import type { AddressSorter } from '@libp2p/interfaces/peer-store'
+import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:relay')
 

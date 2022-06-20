@@ -78,7 +78,7 @@ function print ({ stream }) {
   const targetAddr = node1.getMultiaddrs()[0];
 
   // node 2 (Secure WebSockets) dials to node 1 (Secure Websockets)
-  const { stream } = await node2.dialProtocol(targetAddr, '/print')
+  const stream = await node2.dialProtocol(targetAddr, '/print')
   await pipe(
     [uint8ArrayFromString('node 2 dialed to node 1 successfully')],
     stream

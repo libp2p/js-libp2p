@@ -14,7 +14,7 @@ import { createPeerId } from '../utils/creators/peer.js'
 import toBuffer from 'it-to-buffer'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('Metrics', () => {
   let peerId: PeerId
@@ -199,7 +199,7 @@ describe('Metrics', () => {
     })
 
     const bytes = randomBytes(1024)
-    const input = pushable<Uint8Array>()
+    const input = pushable()
 
     const deferredPromise = pipe(input, local, drain)
 

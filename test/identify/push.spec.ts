@@ -3,16 +3,16 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Multiaddr } from '@multiformats/multiaddr'
-import { IdentifyService } from '../../src/identify/index.js'
+import { IdentifyService, IdentifyServiceInit } from '../../src/identify/index.js'
 import Peers from '../fixtures/peers.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { MemoryDatastore } from 'datastore-core/memory'
 import drain from 'it-drain'
 import { pipe } from 'it-pipe'
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 import {
   MULTICODEC_IDENTIFY,
@@ -27,11 +27,15 @@ import { start, stop } from '@libp2p/interfaces/startable'
 
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
-const defaultInit = {
+const defaultInit: IdentifyServiceInit = {
   protocolPrefix: 'ipfs',
   host: {
     agentVersion: 'v1.0.0'
-  }
+  },
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1,
+  maxPushIncomingStreams: 1,
+  maxPushOutgoingStreams: 1
 }
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
@@ -213,8 +217,8 @@ describe('identify (push)', () => {
 
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
-    const { stream } = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('timeline.close')
+    const stream = await newStreamSpy.getCall(0).returnValue
+    expect(stream).to.have.nested.property('stat.timeline.close')
 
     // method should have returned before the remote handler completes as we timed
     // out so we ignore the return value

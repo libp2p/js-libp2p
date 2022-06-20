@@ -27,25 +27,25 @@ import { DHTPeerRouting } from './dht/dht-peer-routing.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DHTContentRouting } from './dht/dht-content-routing.js'
 import { AutoDialer } from './connection-manager/dialer/auto-dialer.js'
-import { Initializable, Components, isInitializable } from '@libp2p/interfaces/components'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
-import type { ContentRouting } from '@libp2p/interfaces/content-routing'
-import type { PubSub } from '@libp2p/interfaces/pubsub'
-import type { Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
-import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import { Initializable, Components, isInitializable } from '@libp2p/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { PubSub } from '@libp2p/interface-pubsub'
+import type { Registrar, StreamHandler, StreamHandlerOptions } from '@libp2p/interface-registrar'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
 import { validateConfig } from './config.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
-import type { DualDHT } from '@libp2p/interfaces/dht'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { DualDHT } from '@libp2p/interface-dht'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import errCode from 'err-code'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
-import type { Metrics } from '@libp2p/interfaces/metrics'
+import type { Metrics } from '@libp2p/interface-metrics'
 import { DummyDHT } from './dht/dummy-dht.js'
 import { DummyPubSub } from './pubsub/dummy-pubsub.js'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -490,12 +490,28 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return await this.pingService.ping(id, options)
   }
 
-  async handle (protocols: string | string[], handler: StreamHandler): Promise<void> {
-    return await this.components.getRegistrar().handle(protocols, handler)
+  async handle (protocols: string | string[], handler: StreamHandler, options?: StreamHandlerOptions): Promise<void> {
+    if (!Array.isArray(protocols)) {
+      protocols = [protocols]
+    }
+
+    await Promise.all(
+      protocols.map(async protocol => {
+        await this.components.getRegistrar().handle(protocol, handler, options)
+      })
+    )
   }
 
   async unhandle (protocols: string[] | string): Promise<void> {
-    return await this.components.getRegistrar().unhandle(protocols)
+    if (!Array.isArray(protocols)) {
+      protocols = [protocols]
+    }
+
+    await Promise.all(
+      protocols.map(async protocol => {
+        await this.components.getRegistrar().unhandle(protocol)
+      })
+    )
   }
 
   /**

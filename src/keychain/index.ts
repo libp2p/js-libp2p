@@ -10,8 +10,8 @@ import { codes } from '../errors.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { Components } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Components } from '@libp2p/components'
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 
 const log = logger('libp2p:keychain')

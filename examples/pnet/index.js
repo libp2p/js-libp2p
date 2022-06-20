@@ -43,7 +43,7 @@ generateKey(otherSwarmKey)
     )
   })
 
-  const { stream } = await node1.dialProtocol(node2.peerId, '/private')
+  const stream = await node1.dialProtocol(node2.peerId, '/private')
 
   await pipe(
     [uint8ArrayFromString('This message is sent on a private network')],

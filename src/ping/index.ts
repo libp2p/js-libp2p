@@ -6,10 +6,10 @@ import { pipe } from 'it-pipe'
 import first from 'it-first'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION } from './constants.js'
-import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Duplex } from 'it-stream-types'
 import { abortableDuplex } from 'abortable-iterator'
@@ -18,21 +18,28 @@ const log = logger('libp2p:ping')
 
 export interface PingServiceInit {
   protocolPrefix: string
+  maxInboundStreams: number
+  maxOutboundStreams: number
 }
 
 export class PingService implements Startable {
   public readonly protocol: string
   private readonly components: Components
   private started: boolean
+  private readonly init: PingServiceInit
 
   constructor (components: Components, init: PingServiceInit) {
     this.components = components
     this.started = false
     this.protocol = `/${init.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.init = init
   }
 
   async start () {
-    await this.components.getRegistrar().handle(this.protocol, this.handleMessage)
+    await this.components.getRegistrar().handle(this.protocol, this.handleMessage, {
+      maxInboundStreams: this.init.maxInboundStreams,
+      maxOutboundStreams: this.init.maxOutboundStreams
+    })
     this.started = true
   }
 
@@ -67,7 +74,7 @@ export class PingService implements Startable {
     log('dialing %s to %p', this.protocol, peer)
 
     const connection = await this.components.getConnectionManager().openConnection(peer, options)
-    const { stream } = await connection.newStream([this.protocol], options)
+    const stream = await connection.newStream([this.protocol], options)
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
 

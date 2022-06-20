@@ -14,16 +14,16 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import { codes } from '../../src/errors.js'
-import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
 import Peers from '../fixtures/peers.js'
-import type { Upgrader } from '@libp2p/interfaces/transport'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Upgrader } from '@libp2p/interface-transport'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { Plaintext } from '../../src/insecure/index.js'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interfaces/stream-muxer'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
+import type { Stream } from '@libp2p/interface-connection'
 import pDefer from 'p-defer'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
@@ -85,9 +85,15 @@ describe('Upgrader', () => {
 
     await localComponents.getRegistrar().handle('/echo/1.0.0', ({ stream }) => {
       void pipe(stream, stream)
+    }, {
+      maxInboundStreams: 10,
+      maxOutboundStreams: 10
     })
     await remoteComponents.getRegistrar().handle('/echo/1.0.0', ({ stream }) => {
       void pipe(stream, stream)
+    }, {
+      maxInboundStreams: 10,
+      maxOutboundStreams: 10
     })
   })
 
@@ -105,8 +111,8 @@ describe('Upgrader', () => {
 
     expect(connections).to.have.length(2)
 
-    const { stream, protocol } = await connections[0].newStream('/echo/1.0.0')
-    expect(protocol).to.equal('/echo/1.0.0')
+    const stream = await connections[0].newStream('/echo/1.0.0')
+    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
     const result = await pipe(
@@ -175,8 +181,8 @@ describe('Upgrader', () => {
 
     expect(connections).to.have.length(2)
 
-    const { stream, protocol } = await connections[0].newStream('/echo/1.0.0')
-    expect(protocol).to.equal('/echo/1.0.0')
+    const stream = await connections[0].newStream('/echo/1.0.0')
+    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
     const result = await pipe(
@@ -248,7 +254,7 @@ describe('Upgrader', () => {
     class OtherMuxerFactory implements StreamMuxerFactory {
       protocol = '/muxer-local'
 
-      createStreamMuxer (components: Components, init?: StreamMuxerInit): StreamMuxer {
+      createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
         return new OtherMuxer()
       }
     }
@@ -515,11 +521,11 @@ describe('libp2p.upgrader', () => {
     ])
     const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteLibp2p.components.getUpgrader() as DefaultUpgrader, '_onStream')
 
-    const { stream } = await localConnection.newStream(['/echo/1.0.0'])
-    expect(stream).to.include.keys(['id', 'close', 'reset', 'timeline'])
+    const stream = await localConnection.newStream(['/echo/1.0.0'])
+    expect(stream).to.include.keys(['id', 'close', 'reset', 'stat'])
 
     const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
-    expect(arg0.stream).to.include.keys(['id', 'close', 'reset', 'timeline'])
+    expect(arg0.stream).to.include.keys(['id', 'close', 'reset', 'stat'])
   })
 
   it('should emit connect and disconnect events', async () => {
@@ -578,5 +584,129 @@ describe('libp2p.upgrader', () => {
     expect(event).to.have.property('type', 'peer:disconnect')
     // @ts-expect-error detail is only on CustomEvent type
     expect(remotePeer.equals(event.detail.remotePeer)).to.equal(true)
+  })
+
+  it('should limit the number of incoming streams that can be opened using a protocol', async () => {
+    const protocol = '/a-test-protocol/1.0.0'
+    const remotePeer = peers[1]
+    libp2p = await createLibp2pNode({
+      peerId: peers[0],
+      transports: [
+        new WebSockets()
+      ],
+      streamMuxers: [
+        new Mplex()
+      ],
+      connectionEncryption: [
+        NOISE
+      ]
+    })
+    await libp2p.start()
+
+    remoteLibp2p = await createLibp2pNode({
+      peerId: remotePeer,
+      transports: [
+        new WebSockets()
+      ],
+      streamMuxers: [
+        new Mplex()
+      ],
+      connectionEncryption: [
+        NOISE
+      ]
+    })
+    await remoteLibp2p.start()
+
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const [localToRemote] = await Promise.all([
+      libp2p.components.getUpgrader().upgradeOutbound(outbound),
+      remoteLibp2p.components.getUpgrader().upgradeInbound(inbound)
+    ])
+
+    let streamCount = 0
+
+    await libp2p.handle(protocol, (data) => {}, {
+      maxInboundStreams: 10,
+      maxOutboundStreams: 10
+    })
+
+    await remoteLibp2p.handle(protocol, (data) => {
+      streamCount++
+    }, {
+      maxInboundStreams: 1,
+      maxOutboundStreams: 1
+    })
+
+    expect(streamCount).to.equal(0)
+
+    await localToRemote.newStream(protocol)
+
+    expect(streamCount).to.equal(1)
+
+    await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
+      .with.property('code', 'ERR_UNDER_READ')
+  })
+
+  it('should limit the number of outgoing streams that can be opened using a protocol', async () => {
+    const protocol = '/a-test-protocol/1.0.0'
+    const remotePeer = peers[1]
+    libp2p = await createLibp2pNode({
+      peerId: peers[0],
+      transports: [
+        new WebSockets()
+      ],
+      streamMuxers: [
+        new Mplex()
+      ],
+      connectionEncryption: [
+        NOISE
+      ]
+    })
+    await libp2p.start()
+
+    remoteLibp2p = await createLibp2pNode({
+      peerId: remotePeer,
+      transports: [
+        new WebSockets()
+      ],
+      streamMuxers: [
+        new Mplex()
+      ],
+      connectionEncryption: [
+        NOISE
+      ]
+    })
+    await remoteLibp2p.start()
+
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const [localToRemote] = await Promise.all([
+      libp2p.components.getUpgrader().upgradeOutbound(outbound),
+      remoteLibp2p.components.getUpgrader().upgradeInbound(inbound)
+    ])
+
+    let streamCount = 0
+
+    await libp2p.handle(protocol, (data) => {}, {
+      maxInboundStreams: 1,
+      maxOutboundStreams: 1
+    })
+
+    await remoteLibp2p.handle(protocol, (data) => {
+      streamCount++
+    }, {
+      maxInboundStreams: 10,
+      maxOutboundStreams: 10
+    })
+
+    expect(streamCount).to.equal(0)
+
+    await localToRemote.newStream(protocol)
+
+    expect(streamCount).to.equal(1)
+
+    await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
+      .with.property('code', codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
   })
 })

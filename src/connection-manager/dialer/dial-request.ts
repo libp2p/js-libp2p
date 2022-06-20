@@ -5,7 +5,7 @@ import { setMaxListeners } from 'events'
 import { codes } from '../../errors.js'
 import { logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Dialer } from './index.js'
 

@@ -1,6 +1,6 @@
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { logger } from '@libp2p/logger'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 import { TimeoutController } from 'timeout-abort-controller'
 
 const log = logger('libp2p:dialer:auto-dialer')
