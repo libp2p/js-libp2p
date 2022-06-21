@@ -9,15 +9,14 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { trackedMap } from '@libp2p/tracked-map'
 import { codes } from '../errors.js'
-import { isPeerId, PeerId } from '@libp2p/interfaces/peer-id'
-// @ts-expect-error setMaxListeners is missing from the node 16 types
+import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
-import { Components, Initializable } from '@libp2p/interfaces/components'
-import * as STATUS from '@libp2p/interfaces/connection/status'
+import type { Connection } from '@libp2p/interface-connection'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import { Components, Initializable } from '@libp2p/components'
+import * as STATUS from '@libp2p/interface-connection/status'
 import { Dialer } from './dialer/index.js'
-import type { AddressSorter } from '@libp2p/interfaces/peer-store'
+import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Resolver } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:connection-manager')
@@ -32,7 +31,7 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   pollInterval: 2000,
   autoDialInterval: 10000,
   movingAverageInterval: 60000,
-  defaultPeerValue: 1
+  defaultPeerValue: 0.5
 }
 
 const METRICS_COMPONENT = 'connection-manager'
@@ -254,10 +253,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   async _close () {
     // Close all connections we're tracking
-    const tasks = []
+    const tasks: Array<Promise<void>> = []
     for (const connectionList of this.connections.values()) {
       for (const connection of connectionList) {
-        tasks.push(connection.close())
+        tasks.push((async () => {
+          try {
+            await connection.close()
+          } catch (err) {
+            log.error(err)
+          }
+        })())
       }
     }
 
@@ -339,7 +344,10 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       this.peerValues.set(peerIdStr, this.opts.defaultPeerValue)
     }
 
-    await this._checkMaxLimit('maxConnections', this.getConnections().length)
+    const numConnections = this.getConnections().length
+    const toPrune = numConnections - this.opts.maxConnections
+
+    await this._checkMaxLimit('maxConnections', numConnections, toPrune)
     this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
   }
 
@@ -454,7 +462,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   _onLatencyMeasure (evt: CustomEvent<SummaryObject>) {
     const { detail: summary } = evt
 
-    this._checkMaxLimit('maxEventLoopDelay', summary.avgMs)
+    this._checkMaxLimit('maxEventLoopDelay', summary.avgMs, 1)
       .catch(err => {
         log.error(err)
       })
@@ -463,46 +471,59 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * If the `value` of `name` has exceeded its limit, maybe close a connection
    */
-  async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number) {
+  async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number, toPrune: number = 1) {
     const limit = this.opts[name]
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
-      log('%s: limit exceeded: %p, %d', this.components.getPeerId(), name, value)
-      await this._maybeDisconnectOne()
+      log('%s: limit exceeded: %p, %d, pruning %d connection(s)', this.components.getPeerId(), name, value, toPrune)
+      await this._maybePruneConnections(toPrune)
     }
   }
 
   /**
-   * If we have more connections than our maximum, close a connection
-   * to the lowest valued peer.
+   * If we have more connections than our maximum, select some excess connections
+   * to prune based on peer value
    */
-  async _maybeDisconnectOne () {
-    if (this.opts.minConnections < this.connections.size) {
-      const peerValues = Array.from(new Map([...this.peerValues.entries()].sort((a, b) => a[1] - b[1])))
+  async _maybePruneConnections (toPrune: number) {
+    const connections = this.getConnections()
 
-      log('%p: sorted peer values: %j', this.components.getPeerId(), peerValues)
-      const disconnectPeer = peerValues[0]
+    if (connections.length <= this.opts.minConnections || toPrune < 1) {
+      return
+    }
 
-      if (disconnectPeer != null) {
-        const peerId = disconnectPeer[0]
-        log('%p: lowest value peer is %s', this.components.getPeerId(), peerId)
-        log('%p: closing a connection to %j', this.components.getPeerId(), peerId)
+    const peerValues = Array.from(new Map([...this.peerValues.entries()].sort((a, b) => a[1] - b[1])))
+    log.trace('sorted peer values: %j', peerValues)
 
-        for (const connections of this.connections.values()) {
-          if (connections[0].remotePeer.toString() === peerId) {
-            void connections[0].close()
-              .catch(err => {
-                log.error(err)
-              })
+    const toClose = []
 
-            // TODO: should not need to invoke this manually
-            this.onDisconnect(new CustomEvent<Connection>('connectionEnd', {
-              detail: connections[0]
-            }))
-            break
-          }
+    for (const [peerId] of peerValues) {
+      log('too many connections open - closing a connection to %p', peerId)
+
+      for (const connection of connections) {
+        if (connection.remotePeer.toString() === peerId) {
+          toClose.push(connection)
+        }
+
+        if (toClose.length === toPrune) {
+          break
         }
       }
     }
+
+    // close connections
+    await Promise.all(
+      toClose.map(async connection => {
+        try {
+          await connection.close()
+        } catch (err) {
+          log.error(err)
+        }
+
+        // TODO: should not need to invoke this manually
+        this.onDisconnect(new CustomEvent<Connection>('connectionEnd', {
+          detail: connection
+        }))
+      })
+    )
   }
 }

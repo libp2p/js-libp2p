@@ -17,18 +17,18 @@ import { Dialer, DialTarget } from '../../src/connection-manager/dialer/index.js
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
 import { createPeerId } from '../utils/creators/peer.js'
-import type { TransportManager } from '@libp2p/interfaces/transport'
-import { Components } from '@libp2p/interfaces/components'
+import type { TransportManager } from '@libp2p/interface-transport'
+import { Components } from '@libp2p/components'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
 
 const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999')
@@ -427,9 +427,9 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     const connection = await libp2p.dial(MULTIADDRS_WEBSOCKETS[0])
     expect(connection).to.exist()
-    const { stream, protocol } = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(protocol).to.equal('/echo/1.0.0')
+    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
     await connection.close()
     expect(dialerDialSpy.callCount).to.be.at.least(1)
     expect(addressBookAddSpy.callCount).to.be.at.least(1)

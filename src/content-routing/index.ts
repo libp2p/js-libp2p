@@ -8,11 +8,11 @@ import {
 import drain from 'it-drain'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
-import type { ContentRouting } from '@libp2p/interfaces/content-routing'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { CID } from 'multiformats/cid'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 
 export interface CompoundContentRoutingInit {
   routers: ContentRouting[]

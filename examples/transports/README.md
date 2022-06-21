@@ -147,7 +147,7 @@ Then add,
   })
 
   await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-  const { stream } = await node1.dialProtocol(node2.peerId, '/print')
+  const stream = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(
     ['Hello', ' ', 'p2p', ' ', 'world', '!'],
@@ -233,14 +233,14 @@ await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
 await node3.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
 
 // node 1 (TCP) dials to node 2 (TCP+WebSockets)
-const { stream } = await node1.dialProtocol(node2.peerId, '/print')
+const stream = await node1.dialProtocol(node2.peerId, '/print')
 await pipe(
   ['node 1 dialed to node 2 successfully'],
   stream
 )
 
 // node 2 (TCP+WebSockets) dials to node 2 (WebSockets)
-const { stream: stream2 } = await node2.dialProtocol(node3.peerId, '/print')
+const stream2 = await node2.dialProtocol(node3.peerId, '/print')
 await pipe(
   ['node 2 dialed to node 3 successfully'],
   stream2

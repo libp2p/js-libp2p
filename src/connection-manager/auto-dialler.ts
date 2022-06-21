@@ -7,7 +7,7 @@ import { pipe } from 'it-pipe'
 import filter from 'it-filter'
 import sort from 'it-sort'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:connection-manager:auto-dialler')
 

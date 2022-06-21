@@ -38,22 +38,25 @@ const createNode = async () => {
           console.log(`from: ${protocol}, msg: ${uint8ArrayToString(msg)}`)
         }
       }
-    )
+    ).finally(() => {
+      // clean up resources
+      stream.close()
+    })
   })
 
-  const { stream: stream1 } = await node1.dialProtocol(node2.peerId, ['/a'])
+  const stream1 = await node1.dialProtocol(node2.peerId, ['/a'])
   await pipe(
     [uint8ArrayFromString('protocol (a)')],
     stream1
   )
 
-  const { stream: stream2 } = await node1.dialProtocol(node2.peerId, ['/b'])
+  const stream2 = await node1.dialProtocol(node2.peerId, ['/b'])
   await pipe(
     [uint8ArrayFromString('protocol (b)')],
     stream2
   )
 
-  const { stream: stream3 } = await node1.dialProtocol(node2.peerId, ['/b'])
+  const stream3 = await node1.dialProtocol(node2.peerId, ['/b'])
   await pipe(
     [uint8ArrayFromString('another stream on protocol (b)')],
     stream3

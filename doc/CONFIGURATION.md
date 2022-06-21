@@ -323,7 +323,7 @@ import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { GossipSub } from 'libp2p-gossipsub'
-import { SignaturePolicy } from '@libp2p/interfaces/pubsub'
+import { SignaturePolicy } from '@libp2p/interface-pubsub'
 
 const node = await createLibp2p({
     transports: [
@@ -885,7 +885,12 @@ Changing the protocol name prefix can isolate default public network (IPFS) for 
 
 ```js
 const node = await createLibp2p({
-  protocolPrefix: 'ipfs' // default
+  identify: {
+    protocolPrefix: 'ipfs' // default
+  },
+  ping: {
+    protocolPrefix: 'ipfs' // default
+  }
 })
 /*
 protocols: [

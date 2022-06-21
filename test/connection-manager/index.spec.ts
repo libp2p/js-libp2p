@@ -6,7 +6,7 @@ import { createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
 
@@ -66,7 +66,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybeDisconnectOne')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
 
     // Add 1 too many connections
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
@@ -115,7 +115,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybeDisconnectOne')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
 
     // Add 1 too many connections
     const spy = sinon.spy()

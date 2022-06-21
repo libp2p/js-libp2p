@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { TCP } from '@libp2p/tcp'
 import { NOISE } from '@chainsafe/libp2p-noise'
 import { createPeerId } from '../utils/creators/peer.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 
 const listenAddr = '/ip4/0.0.0.0/tcp/0'

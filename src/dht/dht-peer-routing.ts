@@ -1,8 +1,8 @@
 import errCode from 'err-code'
 import { messages, codes } from '../errors.js'
-import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
-import type { DHT } from '@libp2p/interfaces/dht'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
+import type { DHT } from '@libp2p/interface-dht'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
 
 /**

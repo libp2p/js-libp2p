@@ -14,7 +14,7 @@ import { createNode, createPeerId, populateAddressBooks } from '../utils/creator
 import { createBaseOptions } from '../utils/base-options.js'
 import { createRoutingOptions } from './utils.js'
 import type { Libp2p } from '../../src/index.js'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Libp2pNode } from '../../src/libp2p.js'
 
 describe('content-routing', () => {

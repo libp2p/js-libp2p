@@ -10,6 +10,32 @@
 
 
 
+### [0.37.3](https://www.github.com/libp2p/js-libp2p/compare/v0.37.2...v0.37.3) (2022-06-08)
+
+
+### Bug Fixes
+
+* connection pruning ([#1235](https://www.github.com/libp2p/js-libp2p/issues/1235)) ([f9073ec](https://www.github.com/libp2p/js-libp2p/commit/f9073ecd215e119b7a864e2ad31fe7067322c754))
+* ensure streams are closed when protocol negotiation fails ([#1236](https://www.github.com/libp2p/js-libp2p/issues/1236)) ([eee256d](https://www.github.com/libp2p/js-libp2p/commit/eee256db8ab65cea7228b1683403417edfdb1367))
+* wait for peer stats to be updated during test ([#1238](https://www.github.com/libp2p/js-libp2p/issues/1238)) ([b047268](https://www.github.com/libp2p/js-libp2p/commit/b0472686d29a4f295360d3f15a50c86c981892f7)), closes [#1219](https://www.github.com/libp2p/js-libp2p/issues/1219)
+
+### [0.37.2](https://www.github.com/libp2p/js-libp2p/compare/v0.37.1...v0.37.2) (2022-05-31)
+
+
+### Bug Fixes
+
+* reduce identify message size limit ([#1230](https://www.github.com/libp2p/js-libp2p/issues/1230)) ([824720f](https://www.github.com/libp2p/js-libp2p/commit/824720fb8f21f868ed88e881fbc3ce6b9459600d))
+
+### [0.37.1](https://www.github.com/libp2p/js-libp2p/compare/v0.37.0...v0.37.1) (2022-05-25)
+
+
+### Bug Fixes
+
+* do upnp hole punch after startup ([#1217](https://www.github.com/libp2p/js-libp2p/issues/1217)) ([d5386df](https://www.github.com/libp2p/js-libp2p/commit/d5386df68478a71ac269acb2d00d36a7a5c9ebc5))
+* explicitly close streams when connnections close ([#1221](https://www.github.com/libp2p/js-libp2p/issues/1221)) ([b09eb8f](https://www.github.com/libp2p/js-libp2p/commit/b09eb8fc53ec1d8f6280d681c9ca6a467ec259b5))
+* fix unintended aborts in dialer ([#1185](https://www.github.com/libp2p/js-libp2p/issues/1185)) ([35f9c0c](https://www.github.com/libp2p/js-libp2p/commit/35f9c0c79387232465848b450a47cafe841405e7))
+* time out slow reads ([#1227](https://www.github.com/libp2p/js-libp2p/issues/1227)) ([a1220d2](https://www.github.com/libp2p/js-libp2p/commit/a1220d22f5affb64e64dec0cd6a92cd8241b26df))
+
 ## [0.37.0](https://www.github.com/libp2p/js-libp2p/compare/v0.36.2...v0.37.0) (2022-05-16)
 
 

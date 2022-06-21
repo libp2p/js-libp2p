@@ -7,7 +7,6 @@ import { Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
-// @ts-expect-error setMaxListeners is missing from the node 16 types
 import { setMaxListeners } from 'events'
 import { DialAction, DialRequest } from './dial-request.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
@@ -19,16 +18,16 @@ import {
   MAX_PER_PEER_DIALS,
   MAX_ADDRS_TO_DIAL
 } from '../../constants.js'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 import map from 'it-map'
-import type { AddressSorter } from '@libp2p/interfaces/peer-store'
-import type { ComponentMetricsTracker } from '@libp2p/interfaces/metrics'
+import type { AddressSorter } from '@libp2p/interface-peer-store'
+import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
 
 const log = logger('libp2p:dialer')
 

@@ -35,9 +35,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
   },
-  host: {
-    agentVersion: AGENT_VERSION
-  },
   metrics: {
     enabled: false,
     computeThrottleMaxQueueSize: 1000,
@@ -56,7 +53,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
       bootDelay: 10e3
     }
   },
-  protocolPrefix: 'ipfs',
   nat: {
     enabled: true,
     ttl: 7200,
@@ -77,6 +73,27 @@ const DefaultConfig: Partial<Libp2pInit> = {
       enabled: false,
       maxListeners: 2
     }
+  },
+  identify: {
+    protocolPrefix: 'ipfs',
+    host: {
+      agentVersion: AGENT_VERSION
+    },
+    timeout: 30000,
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1,
+    maxPushIncomingStreams: 1,
+    maxPushOutgoingStreams: 1
+  },
+  ping: {
+    protocolPrefix: 'ipfs',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1
+  },
+  fetch: {
+    protocolPrefix: 'libp2p',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1
   }
 }
 

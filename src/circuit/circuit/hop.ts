@@ -7,11 +7,11 @@ import { pipe } from 'it-pipe'
 import { codes as Errors } from '../../errors.js'
 import { stop } from './stop.js'
 import { RELAY_CODEC } from '../multicodec.js'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { Duplex } from 'it-stream-types'
 import type { Circuit } from '../transport.js'
-import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:circuit:hop')
 
@@ -134,7 +134,7 @@ export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
   } = options
 
   // Create a new stream to the relay
-  const { stream } = await connection.newStream(RELAY_CODEC)
+  const stream = await connection.newStream(RELAY_CODEC)
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write(request)
@@ -169,7 +169,7 @@ export async function canHop (options: CanHopOptions) {
   } = options
 
   // Create a new stream to the relay
-  const { stream } = await connection.newStream(RELAY_CODEC)
+  const stream = await connection.newStream(RELAY_CODEC)
 
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })

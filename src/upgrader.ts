@@ -8,13 +8,16 @@ import { codes } from './errors.js'
 import { createConnection } from '@libp2p/connection'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { Connection, ProtocolStream, Stream } from '@libp2p/interfaces/connection'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interfaces/connection-encrypter'
-import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interfaces/stream-muxer'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { MultiaddrConnection, Upgrader, UpgraderEvents } from '@libp2p/interfaces/transport'
+import type { MultiaddrConnection, Connection, Stream } from '@libp2p/interface-connection'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
+import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Upgrader, UpgraderEvents } from '@libp2p/interface-transport'
 import type { Duplex } from 'it-stream-types'
-import type { Components } from '@libp2p/interfaces/components'
+import { Components, isInitializable } from '@libp2p/components'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Registrar } from '@libp2p/interface-registrar'
+import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
 
 const log = logger('libp2p:upgrader')
 
@@ -40,6 +43,46 @@ export interface CryptoResult extends SecuredConnection {
 export interface UpgraderInit {
   connectionEncryption: ConnectionEncrypter[]
   muxers: StreamMuxerFactory[]
+}
+
+function findIncomingStreamLimit (protocol: string, registrar: Registrar) {
+  try {
+    const { options } = registrar.getHandler(protocol)
+
+    return options.maxInboundStreams
+  } catch (err: any) {
+    if (err.code !== codes.ERR_NO_HANDLER_FOR_PROTOCOL) {
+      throw err
+    }
+  }
+
+  return DEFAULT_MAX_INBOUND_STREAMS
+}
+
+function findOutgoingStreamLimit (protocol: string, registrar: Registrar) {
+  try {
+    const { options } = registrar.getHandler(protocol)
+
+    return options.maxOutboundStreams
+  } catch (err: any) {
+    if (err.code !== codes.ERR_NO_HANDLER_FOR_PROTOCOL) {
+      throw err
+    }
+  }
+
+  return DEFAULT_MAX_OUTBOUND_STREAMS
+}
+
+function countStreams (protocol: string, direction: 'inbound' | 'outbound', connection: Connection) {
+  let streamCount = 0
+
+  connection.streams.forEach(stream => {
+    if (stream.stat.direction === direction && stream.stat.protocol === protocol) {
+      streamCount++
+    }
+  })
+
+  return streamCount
 }
 
 export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upgrader {
@@ -266,12 +309,12 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     } = opts
 
     let muxer: StreamMuxer | undefined
-    let newStream: ((multicodecs: string[]) => Promise<ProtocolStream>) | undefined
+    let newStream: ((multicodecs: string[], options?: AbortOptions) => Promise<Stream>) | undefined
     let connection: Connection // eslint-disable-line prefer-const
 
     if (muxerFactory != null) {
       // Create the muxer
-      muxer = muxerFactory.createStreamMuxer(this.components, {
+      muxer = muxerFactory.createStreamMuxer({
         // Run anytime a remote stream is created
         onIncomingStream: muxedStream => {
           if (connection == null) {
@@ -295,11 +338,24 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
                 return
               }
 
-              connection.addStream(muxedStream, { protocol })
+              const incomingLimit = findIncomingStreamLimit(protocol, this.components.getRegistrar())
+              const streamCount = countStreams(protocol, 'inbound', connection)
+
+              if (streamCount === incomingLimit) {
+                throw errCode(new Error('Too many incoming protocol streams'), codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS)
+              }
+
+              muxedStream.stat.protocol = protocol
+
+              connection.addStream(muxedStream)
               this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
             })
             .catch(err => {
               log.error(err)
+
+              if (muxedStream.stat.timeline.close == null) {
+                muxedStream.close()
+              }
             })
         },
         // Run anytime a stream closes
@@ -308,7 +364,11 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         }
       })
 
-      newStream = async (protocols: string[]): Promise<ProtocolStream> => {
+      if (isInitializable(muxer)) {
+        muxer.init(this.components)
+      }
+
+      newStream = async (protocols: string[], options: AbortOptions = {}): Promise<Stream> => {
         if (muxer == null) {
           throw errCode(new Error('Stream is not multiplexed'), codes.ERR_MUXER_UNAVAILABLE)
         }
@@ -319,15 +379,40 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         const metrics = this.components.getMetrics()
 
         try {
-          let { stream, protocol } = await mss.select(protocols)
+          let { stream, protocol } = await mss.select(protocols, options)
 
           if (metrics != null) {
             stream = metrics.trackStream({ stream, remotePeer, protocol })
           }
 
-          return { stream: { ...muxedStream, ...stream }, protocol }
+          const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.getRegistrar())
+          const streamCount = countStreams(protocol, 'outbound', connection)
+
+          if (streamCount === outgoingLimit) {
+            throw errCode(new Error('Too many outgoing protocol streams'), codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+          }
+
+          muxedStream.stat.protocol = protocol
+
+          return {
+            ...muxedStream,
+            ...stream,
+            stat: {
+              ...muxedStream.stat,
+              protocol
+            }
+          }
         } catch (err: any) {
           log.error('could not create new stream', err)
+
+          if (muxedStream.stat.timeline.close == null) {
+            muxedStream.close()
+          }
+
+          if (err.code != null) {
+            throw err
+          }
+
           throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
         }
       }
@@ -382,9 +467,9 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       getStreams: () => muxer != null ? muxer.streams : errConnectionNotMultiplexed(),
       close: async () => {
         await maConn.close()
-        // Ensure remaining streams are aborted
+        // Ensure remaining streams are closed
         if (muxer != null) {
-          muxer.streams.map(stream => stream.abort())
+          muxer.streams.forEach(s => s.close())
         }
       }
     })
@@ -401,8 +486,9 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    */
   _onStream (opts: OnStreamOptions): void {
     const { connection, stream, protocol } = opts
-    const handler = this.components.getRegistrar().getHandler(protocol)
-    handler({ connection, stream, protocol })
+    const { handler } = this.components.getRegistrar().getHandler(protocol)
+
+    handler({ connection, stream })
   }
 
   /**

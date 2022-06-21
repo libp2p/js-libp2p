@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import pTimes from 'p-times'
 import { pipe } from 'it-pipe'
 import { createNode, populateAddressBooks } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.js'
@@ -41,7 +40,11 @@ describe('ping', () => {
   })
 
   it('ping several times for getting an average', async () => {
-    const latencies = await pTimes(5, async () => await nodes[1].ping(nodes[0].peerId))
+    const latencies = []
+
+    for (let i = 0; i < 5; i++) {
+      latencies.push(await nodes[1].ping(nodes[0].peerId))
+    }
 
     const averageLatency = latencies.reduce((p, c) => p + c, 0) / latencies.length
     expect(averageLatency).to.be.a('Number')

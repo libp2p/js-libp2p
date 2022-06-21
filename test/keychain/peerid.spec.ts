@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { base58btc } from 'multiformats/bases/base58'
 import { supportedKeys, unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
 
 const sample = {

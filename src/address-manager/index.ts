@@ -1,8 +1,8 @@
-import type { AddressManagerEvents } from '@libp2p/interfaces/address-manager'
+import type { AddressManagerEvents } from '@libp2p/interface-address-manager'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 
 export interface AddressManagerInit {
   announceFilter?: AddressFilter

@@ -1,4 +1,4 @@
-import type { MovingAverage } from '@libp2p/interfaces/metrics'
+import type { MovingAverage } from '@libp2p/interface-metrics'
 
 export class DefaultMovingAverage {
   public movingAverage: number

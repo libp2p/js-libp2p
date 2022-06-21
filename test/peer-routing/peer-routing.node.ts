@@ -16,11 +16,11 @@ import { createNode, createPeerId, populateAddressBooks } from '../utils/creator
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createRoutingOptions } from './utils.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { EventTypes, MessageType } from '@libp2p/interfaces/dht'
+import { EventTypes, MessageType } from '@libp2p/interface-dht'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { KadDHT } from '@libp2p/kad-dht'
 
 describe('peer-routing', () => {
@@ -360,8 +360,8 @@ describe('peer-routing', () => {
         .query(true)
         .reply(200,
           () => intoStream([
-            `{"Extra":"","id":"${closest1}","Responses":[{"ID":"${closest1}","Addrs":["/ip4/127.0.0.1/tcp/63930","/ip4/127.0.0.1/tcp/63930"]}],"Type":1}\n`,
-            `{"Extra":"","id":"${closest2}","Responses":[{"ID":"${closest2}","Addrs":["/ip4/127.0.0.1/tcp/63506","/ip4/127.0.0.1/tcp/63506"]}],"Type":1}\n`,
+            `{"Extra":"","ID":"${closest1}","Responses":[{"ID":"${closest1}","Addrs":["/ip4/127.0.0.1/tcp/63930","/ip4/127.0.0.1/tcp/63930"]}],"Type":1}\n`,
+            `{"Extra":"","ID":"${closest2}","Responses":[{"ID":"${closest2}","Addrs":["/ip4/127.0.0.1/tcp/63506","/ip4/127.0.0.1/tcp/63506"]}],"Type":1}\n`,
             `{"Extra":"","ID":"${closest2}","Responses":[],"Type":2}\n`,
             `{"Extra":"","ID":"${closest1}","Responses":[],"Type":2}\n`
           ]),

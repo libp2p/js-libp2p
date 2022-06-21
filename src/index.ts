@@ -4,26 +4,28 @@ import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { FaultTolerance } from './transport-manager.js'
-import type { HostProperties } from './identify/index.js'
-import type { DualDHT } from '@libp2p/interfaces/dht'
+import type { IdentifyServiceInit } from './identify/index.js'
+import type { DualDHT } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
-import type { PeerStore, PeerStoreInit } from '@libp2p/interfaces/peer-store'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerStore, PeerStoreInit } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AutoRelayConfig, RelayAdvertiseConfig } from './circuit/index.js'
-import type { PeerDiscovery } from '@libp2p/interfaces/peer-discovery'
-import type { Connection, ConnectionGater, ConnectionProtector, ProtocolStream } from '@libp2p/interfaces/connection'
-import type { Transport } from '@libp2p/interfaces/transport'
-import type { StreamMuxerFactory } from '@libp2p/interfaces/stream-muxer'
-import type { ConnectionEncrypter } from '@libp2p/interfaces/connection-encrypter'
-import type { PeerRouting } from '@libp2p/interfaces/peer-routing'
-import type { ContentRouting } from '@libp2p/interfaces/content-routing'
-import type { PubSub } from '@libp2p/interfaces/pubsub'
-import type { Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
-import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
-import type { Metrics, MetricsInit } from '@libp2p/interfaces/metrics'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
+import type { Connection, ConnectionGater, ConnectionProtector, Stream } from '@libp2p/interface-connection'
+import type { Transport } from '@libp2p/interface-transport'
+import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
+import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { PubSub } from '@libp2p/interface-pubsub'
+import type { Registrar, StreamHandler, StreamHandlerOptions } from '@libp2p/interface-registrar'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { Metrics, MetricsInit } from '@libp2p/interface-metrics'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { KeyChain } from './keychain/index.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { PingServiceInit } from './ping/index.js'
+import type { FetchServiceInit } from './fetch/index.js'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
@@ -95,7 +97,6 @@ export interface RefreshManagerConfig {
 
 export interface Libp2pInit {
   peerId: PeerId
-  host: HostProperties
   addresses: AddressesConfig
   connectionManager: ConnectionManagerInit
   connectionGater: Partial<ConnectionGater>
@@ -105,9 +106,11 @@ export interface Libp2pInit {
   peerStore: PeerStoreInit
   peerRouting: PeerRoutingConfig
   keychain: KeychainConfig
-  protocolPrefix: string
   nat: NatManagerConfig
   relay: RelayConfig
+  identify: IdentifyServiceInit
+  ping: PingServiceInit
+  fetch: FetchServiceInit
 
   transports: Transport[]
   streamMuxers?: StreamMuxerFactory[]
@@ -174,7 +177,7 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
    * If successful, the known metadata of the peer will be added to the nodes `peerStore`,
    * and the `MuxedStream` will be returned together with the successful negotiated protocol.
    */
-  dialProtocol: (peer: PeerId | Multiaddr, protocols: string | string[], options?: AbortOptions) => Promise<ProtocolStream>
+  dialProtocol: (peer: PeerId | Multiaddr, protocols: string | string[], options?: AbortOptions) => Promise<Stream>
 
   /**
    * Disconnects all connections to the given `peer`
@@ -184,7 +187,7 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   /**
    * Registers the `handler` for each protocol
    */
-  handle: (protocol: string | string[], handler: StreamHandler) => Promise<void>
+  handle: (protocol: string | string[], handler: StreamHandler, options?: StreamHandlerOptions) => Promise<void>
 
   /**
    * Removes the handler for each protocol. The protocol
@@ -195,12 +198,12 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   /**
    * Pings the given peer in order to obtain the operation latency
    */
-  ping: (peer: Multiaddr |PeerId) => Promise<number>
+  ping: (peer: Multiaddr | PeerId, options?: AbortOptions) => Promise<number>
 
   /**
    * Sends a request to fetch the value associated with the given key from the given peer.
    */
-  fetch: (peer: PeerId | Multiaddr | string, key: string) => Promise<Uint8Array | null>
+  fetch: (peer: PeerId | Multiaddr | string, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
