@@ -113,7 +113,7 @@
     "@libp2p/interface-peer-store": "^1.0.0",
     "@libp2p/interface-pubsub": "^1.0.3",
     "@libp2p/interface-registrar": "^2.0.0",
-    "@libp2p/interface-stream-muxer": "^1.0.1",
+    "@libp2p/interface-stream-muxer": "^2.0.0",
     "@libp2p/interface-transport": "^1.0.0",
     "@libp2p/interfaces": "^3.0.2",
     "@libp2p/logger": "^2.0.0",
