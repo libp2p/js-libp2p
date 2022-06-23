@@ -10,3 +10,8 @@ export async function namespaceToCid (namespace: string): Promise<CID> {
 
   return CID.createV0(hash)
 }
+
+/** returns number of ms beween now and expiration time */
+export function getExpiration (expireTime: bigint): number {
+  return Number(expireTime) - new Date().getTime()
+}

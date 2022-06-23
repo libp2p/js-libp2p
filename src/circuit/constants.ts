@@ -16,16 +16,6 @@ export const ADVERTISE_TTL = 30 * minute
 export const CIRCUIT_PROTO_CODE = 290
 
 /**
- * PeerStore metadaBook key for HOP relay service
- */
-export const HOP_METADATA_KEY = 'hop_relay'
-
-/**
- * PeerStore metadaBook value for HOP relay service
- */
-export const HOP_METADATA_VALUE = 'true'
-
-/**
  * Relay HOP relay service namespace for discovery
  */
 export const RELAY_RENDEZVOUS_NS = '/libp2p/relay'

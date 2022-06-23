@@ -7,7 +7,7 @@ import * as mafmt from '@multiformats/mafmt'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { codes } from '../errors.js'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
-import { protocolIDv2Hop, RELAY_V1_CODEC } from './multicodec.js'
+import { relayV2HopCodec, relayV1Codec, relayV2StopCodec } from './multicodec.js'
 import { createListener } from './listener.js'
 import { symbol } from '@libp2p/interfaces/transport'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -49,7 +49,23 @@ export class Circuit implements Transport, Initializable {
   init (components: Components): void {
     this.components = components
 
-    void this.components.getRegistrar().handle(RELAY_V1_CODEC, (data) => {
+    void this.components.getRegistrar().handle(relayV1Codec, (data) => {
+      void this._onProtocolV1(data).catch(err => {
+        log.error(err)
+      })
+    })
+      .catch(err => {
+        log.error(err)
+      })
+    void this.components.getRegistrar().handle(relayV2HopCodec, (data) => {
+      void this._onProtocolV1(data).catch(err => {
+        log.error(err)
+      })
+    })
+      .catch(err => {
+        log.error(err)
+      })
+    void this.components.getRegistrar().handle(relayV2StopCodec, (data) => {
       void this._onProtocolV1(data).catch(err => {
         log.error(err)
       })
@@ -86,69 +102,25 @@ export class Circuit implements Transport, Initializable {
 
     if (request == null) {
       log('request was invalid, could not read from stream')
-      streamHandler.write({
-        type: CircuitV1.CircuitRelay.Type.STATUS,
-        code: CircuitV1.CircuitRelay.Status.MALFORMED_MESSAGE
-      })
-      streamHandler.close()
+      CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.STOP_RELAY_REFUSED)
       return
     }
 
-    let virtualConnection
-
     switch (request.type) {
-      case CircuitV1.CircuitRelay.Type.CAN_HOP: {
-        log('received CAN_HOP request from %p', connection.remotePeer)
-        await CircuitV1Handler.handleCanHop({ circuit: this, connection, streamHandler })
-        break
-      }
+      case CircuitV1.CircuitRelay.Type.CAN_HOP:
       case CircuitV1.CircuitRelay.Type.HOP: {
-        log('received HOP request from %p', connection.remotePeer)
-        virtualConnection = await CircuitV1Handler.handleHop({
-          connection,
-          request,
-          streamHandler,
-          circuit: this,
-          connectionManager: this.components.getConnectionManager()
-        })
+        log('received circuit v1 hop request from %p', connection.remotePeer)
+        CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY)
         break
       }
       case CircuitV1.CircuitRelay.Type.STOP: {
-        log('received STOP request from %p', connection.remotePeer)
-        virtualConnection = await CircuitV1Handler.handleStop({
-          connection,
-          request,
-          streamHandler
-        })
+        log('received circuit v1 stop request from %p', connection.remotePeer)
+        CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.STOP_RELAY_REFUSED)
         break
       }
       default: {
         log('Request of type %s not supported', request.type)
-        streamHandler.write({
-          type: CircuitV1.CircuitRelay.Type.STATUS,
-          code: CircuitV1.CircuitRelay.Status.MALFORMED_MESSAGE
-        })
-        streamHandler.close()
-        return
-      }
-    }
-
-    if (virtualConnection != null) {
-      const remoteAddr = new Multiaddr(request.dstPeer?.addrs?.[0] ?? '')
-      const localAddr = new Multiaddr(request.srcPeer?.addrs?.[0] ?? '')
-      const maConn = streamToMaConnection({
-        stream: virtualConnection,
-        remoteAddr,
-        localAddr
-      })
-      const type = request.type === CircuitV1.CircuitRelay.Type.HOP ? 'relay' : 'inbound'
-      log('new %s connection %s', type, maConn.remoteAddr)
-
-      const conn = await this.components.getUpgrader().upgradeInbound(maConn)
-      log('%s connection %s upgraded', type, maConn.remoteAddr)
-
-      if (this.handler != null) {
-        this.handler(conn)
+        CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.MALFORMED_MESSAGE)
       }
     }
   }
@@ -233,10 +205,10 @@ export class Circuit implements Transport, Initializable {
     }
 
     try {
-      const stream = await relayConnection.newStream([protocolIDv2Hop, RELAY_V1_CODEC])
+      const stream = await relayConnection.newStream([relayV2HopCodec, relayV1Codec])
 
       switch (stream.protocol) {
-        case RELAY_V1_CODEC: return await this.connectV1({
+        case relayV1Codec: return await this.connectV1({
           stream: stream.stream,
           connection: relayConnection,
           destinationPeer,
@@ -245,7 +217,7 @@ export class Circuit implements Transport, Initializable {
           ma,
           disconnectOnFailure
         })
-        case protocolIDv2Hop: return await this.connectV2({
+        case relayV2HopCodec: return await this.connectV2({
           stream: stream.stream,
           connection: relayConnection,
           destinationPeer,
@@ -266,9 +238,8 @@ export class Circuit implements Transport, Initializable {
   }
 
   async connectV1 ({
-    stream, connection, destinationPeer,
-    destinationAddr, relayAddr, ma,
-    disconnectOnFailure
+    stream, destinationPeer,
+    destinationAddr, relayAddr, ma
   }: ConnectOptions
   ) {
     const virtualConnection = await CircuitV1Handler.hop({

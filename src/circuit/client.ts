@@ -1,13 +1,8 @@
 import { logger } from '@libp2p/logger'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { RELAY_V1_CODEC } from './multicodec.js'
-import { canHop } from './v1/hop.js'
-import { namespaceToCid } from './utils.js'
+import { relayV2HopCodec } from './multicodec.js'
+import { getExpiration, namespaceToCid } from './utils.js'
 import {
   CIRCUIT_PROTO_CODE,
-  HOP_METADATA_KEY,
-  HOP_METADATA_VALUE,
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
@@ -18,6 +13,7 @@ import sort from 'it-sort'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { reserve } from './v2/index.js'
 
 const log = logger('libp2p:auto-relay')
 
@@ -25,22 +21,24 @@ const noop = () => {}
 
 export interface AutoRelayInit {
   addressSorter?: AddressSorter
-  maxListeners?: number
+  maxReservations?: number
   onError?: (error: Error, msg?: string) => void
 }
 
-export class AutoRelay {
+export class CircuitClient {
   private readonly components: Components
   private readonly addressSorter: AddressSorter
-  private readonly maxListeners: number
-  private readonly listenRelays: Set<string>
+  private readonly maxReservations: number
+  private readonly relays: Set<string>
+  private readonly reservationMap: Map<PeerId, ReturnType<typeof setTimeout>>
   private readonly onError: (error: Error, msg?: string) => void
 
   constructor (components: Components, init: AutoRelayInit) {
     this.components = components
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
-    this.maxListeners = init.maxListeners ?? 1
-    this.listenRelays = new Set()
+    this.maxReservations = init.maxReservations ?? 1
+    this.relays = new Set()
+    this.reservationMap = new Map()
     this.onError = init.onError ?? noop
 
     this._onProtocolChange = this._onProtocolChange.bind(this)
@@ -68,18 +66,18 @@ export class AutoRelay {
     const id = peerId.toString()
 
     // Check if it has the protocol
-    const hasProtocol = protocols.find(protocol => protocol === RELAY_V1_CODEC)
+    const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (hasProtocol == null) {
-      if (this.listenRelays.has(id)) {
+      if (this.relays.has(id)) {
         await this._removeListenRelay(id)
       }
 
       return
     }
 
-    if (this.listenRelays.has(id)) {
+    if (this.relays.has(id)) {
       return
     }
 
@@ -99,12 +97,7 @@ export class AutoRelay {
         return
       }
 
-      const supportsHop = await canHop({ connection })
-
-      if (supportsHop) {
-        await this.components.getPeerStore().metadataBook.setValue(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
-        await this._addListenRelay(connection, id)
-      }
+      await this._addListenRelay(connection, peerId)
     } catch (err: any) {
       this.onError(err)
     }
@@ -117,9 +110,10 @@ export class AutoRelay {
     const connection = evt.detail
     const peerId = connection.remotePeer
     const id = peerId.toString()
+    this.reservationMap.delete(peerId)
 
     // Not listening on this relay
-    if (!this.listenRelays.has(id)) {
+    if (!this.relays.has(id)) {
       return
     }
 
@@ -131,11 +125,19 @@ export class AutoRelay {
   /**
    * Attempt to listen on the given relay connection
    */
-  async _addListenRelay (connection: Connection, id: string): Promise<void> {
+  async _addListenRelay (connection: Connection, peerId: PeerId): Promise<void> {
+    const id = peerId.toString()
     try {
-      // Check if already listening on enough relays
-      if (this.listenRelays.size >= this.maxListeners) {
+      // Check if already enough relay reservations
+      if (this.relays.size >= this.maxReservations) {
         return
+      }
+
+      const reservation = await reserve(connection)
+      if (reservation != null) {
+        this.reservationMap.set(peerId, setTimeout(() => {
+          // refresh reservation
+        }, Math.min(getExpiration(reservation.expire) - 100, 0)))
       }
 
       // Get peer known addresses and sort them with public addresses first
@@ -170,11 +172,11 @@ export class AutoRelay {
       )
 
       if (result.includes(true)) {
-        this.listenRelays.add(id)
+        this.relays.add(id)
       }
     } catch (err: any) {
       this.onError(err)
-      this.listenRelays.delete(id)
+      this.relays.delete(id)
     }
   }
 
@@ -182,7 +184,7 @@ export class AutoRelay {
    * Remove listen relay
    */
   async _removeListenRelay (id: string) {
-    if (this.listenRelays.delete(id)) {
+    if (this.relays.delete(id)) {
       // TODO: this should be responsibility of the connMgr
       await this._listenOnAvailableHopRelays([id])
     }
@@ -196,9 +198,8 @@ export class AutoRelay {
    * 3. Search the network.
    */
   async _listenOnAvailableHopRelays (peersToIgnore: string[] = []) {
-    // TODO: The peer redial issue on disconnect should be handled by connection gating
     // Check if already listening on enough relays
-    if (this.listenRelays.size >= this.maxListeners) {
+    if (this.relays.size >= this.maxReservations) {
       return
     }
 
@@ -206,11 +207,11 @@ export class AutoRelay {
     const peers = await this.components.getPeerStore().all()
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
-    for (const { id, metadata } of peers) {
+    for (const { id, protocols } of peers) {
       const idStr = id.toString()
 
       // Continue to next if listening on this or peer to ignore
-      if (this.listenRelays.has(idStr)) {
+      if (this.relays.has(idStr)) {
         continue
       }
 
@@ -218,10 +219,10 @@ export class AutoRelay {
         continue
       }
 
-      const supportsHop = metadata.get(HOP_METADATA_KEY)
+      const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
 
       // Continue to next if it does not support Hop
-      if ((supportsHop == null) || uint8ArrayToString(supportsHop) !== HOP_METADATA_VALUE) {
+      if (hasProtocol == null) {
         continue
       }
 
@@ -233,10 +234,10 @@ export class AutoRelay {
         continue
       }
 
-      await this._addListenRelay(connections[0], idStr)
+      await this._addListenRelay(connections[0], id)
 
       // Check if already listening on enough relays
-      if (this.listenRelays.size >= this.maxListeners) {
+      if (this.relays.size >= this.maxReservations) {
         return
       }
     }
@@ -246,7 +247,7 @@ export class AutoRelay {
       await this._tryToListenOnRelay(peerId)
 
       // Check if already listening on enough relays
-      if (this.listenRelays.size >= this.maxListeners) {
+      if (this.relays.size >= this.maxReservations) {
         return
       }
     }
@@ -265,7 +266,7 @@ export class AutoRelay {
         await this._tryToListenOnRelay(peerId)
 
         // Check if already listening on enough relays
-        if (this.listenRelays.size >= this.maxListeners) {
+        if (this.relays.size >= this.maxReservations) {
           return
         }
       }
@@ -277,7 +278,7 @@ export class AutoRelay {
   async _tryToListenOnRelay (peerId: PeerId) {
     try {
       const connection = await this.components.getConnectionManager().openConnection(peerId)
-      await this._addListenRelay(connection, peerId.toString())
+      await this._addListenRelay(connection, peerId)
     } catch (err: any) {
       log.error('Could not use %p as relay', peerId, err)
       this.onError(err, `could not connect and listen on known hop relay ${peerId.toString()}`)

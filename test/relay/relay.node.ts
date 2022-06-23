@@ -10,7 +10,7 @@ import { createNode } from '../utils/creators/peer.js'
 import { codes as Errors } from '../../src/errors.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import all from 'it-all'
-import { RELAY_V1_CODEC } from '../../src/circuit/multicodec.js'
+import { relayV1Codec } from '../../src/circuit/multicodec.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
 import { CircuitRelay } from '../../src/circuit/v1/pb/index.js'
 
@@ -158,7 +158,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // send an invalid relay message from the relay to the destination peer
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
-    const { stream } = await connections[0].newStream(RELAY_V1_CODEC)
+    const { stream } = await connections[0].newStream(relayV1Codec)
     const streamHandler = new StreamHandlerV1({ stream })
     streamHandler.write({
       type: CircuitRelay.Type.STATUS

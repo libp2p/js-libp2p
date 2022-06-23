@@ -8,7 +8,7 @@ import { StreamHandlerV2 } from './stream-handler.js'
 import type { Circuit } from '../transport.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import type { Acl, ReservationStore } from './interfaces.js'
-import { protocolIDv2Hop } from '../multicodec.js'
+import { relayV2HopCodec } from '../multicodec.js'
 import { validateHopConnectRequest } from './validation.js'
 import { stop } from './stop.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
@@ -42,7 +42,7 @@ export async function handleHopProtocol (options: HopProtocolOptions) {
 
 export async function reserve (connection: Connection) {
   log('requesting reservation from %s', connection.remotePeer)
-  const { stream } = await connection.newStream([protocolIDv2Hop])
+  const { stream } = await connection.newStream([relayV2HopCodec])
   const streamHandler = new StreamHandlerV2({ stream })
   streamHandler.write(HopMessage.encode({
     type: HopMessage.Type.RESERVE
