@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.1...v3.0.2) (2022-06-23)
+
+
+### Bug Fixes
+
+* do not unsubscribe after publish ([#78](https://github.com/libp2p/js-libp2p-pubsub/issues/78)) ([760594e](https://github.com/libp2p/js-libp2p-pubsub/commit/760594e57224e38139a560c37747e52f9dd3e593))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.0...v3.0.1) (2022-06-17)
 
 
