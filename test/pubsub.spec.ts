@@ -31,7 +31,8 @@ describe('pubsub base implementation', () => {
     beforeEach(async () => {
       const peerId = await createPeerId()
       pubsub = new PubsubImplementation({
-        multicodecs: [protocol]
+        multicodecs: [protocol],
+        emitSelf: true
       })
       pubsub.init(new Components({
         peerId: peerId,
@@ -74,6 +75,28 @@ describe('pubsub base implementation', () => {
       const signedMessage: Message = pubsub.publishMessage.getCall(0).lastArg
 
       await expect(pubsub.validate(signedMessage)).to.eventually.be.undefined()
+    })
+
+    it('calls publishes messages twice', async () => {
+      let count = 0
+
+      await pubsub.start()
+      pubsub.subscribe(topic)
+
+      pubsub.addEventListener('message', evt => {
+        if (evt.detail.topic === topic) {
+          count++
+        }
+      })
+      await pubsub.publish(topic, message)
+      await pubsub.publish(topic, message)
+
+      // event dispatch is async
+      await pWaitFor(() => {
+        return count === 2
+      })
+
+      expect(count).to.eql(2)
     })
   })
 

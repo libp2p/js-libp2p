@@ -621,10 +621,6 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
         super.dispatchEvent(new CustomEvent<Message>('message', {
           detail: rpcMessage
         }))
-
-        if (this.listenerCount(topic) === 0) {
-          this.unsubscribe(topic)
-        }
       }
     }
 
@@ -655,6 +651,8 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
       throw new Error('Pubsub has not started')
     }
 
+    log('subscribe to topic: %s', topic)
+
     if (!this.subscriptions.has(topic)) {
       this.subscriptions.add(topic)
 
@@ -676,11 +674,10 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
     super.removeEventListener(topic)
 
     const wasSubscribed = this.subscriptions.has(topic)
-    const listeners = this.listenerCount(topic)
 
-    log('unsubscribe from %s - am subscribed %s, listeners %d', topic, wasSubscribed, listeners)
+    log('unsubscribe from %s - am subscribed %s', topic, wasSubscribed)
 
-    if (wasSubscribed && listeners === 0) {
+    if (wasSubscribed) {
       this.subscriptions.delete(topic)
 
       for (const peerId of this.peers.keys()) {
