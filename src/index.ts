@@ -5,9 +5,11 @@ import { PeerStoreKeyBook } from './key-book.js'
 import { PeerStoreMetadataBook } from './metadata-book.js'
 import { PeerStoreProtoBook } from './proto-book.js'
 import { PersistentStore, Store } from './store.js'
-import type { PeerStore, AddressBook, KeyBook, MetadataBook, ProtoBook, PeerStoreEvents, PeerStoreInit, Peer } from '@libp2p/interface-peer-store'
+import type { PeerStore, AddressBook, KeyBook, MetadataBook, ProtoBook, PeerStoreEvents, PeerStoreInit, Peer, TagOptions } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { Components, Initializable } from '@libp2p/components'
+import errCode from 'err-code'
+import { Tag, Tags } from './pb/tags.js'
 
 const log = logger('libp2p:peer-store')
 
@@ -114,5 +116,71 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
       log.trace('has release read lock')
       release()
     }
+  }
+
+  async tagPeer (peerId: PeerId, tag: string, options: TagOptions = {}) {
+    const providedValue = options.value ?? 0
+    const value = Math.round(providedValue)
+    const ttl = options.ttl ?? undefined
+
+    if (value !== providedValue || value < 0 || value > 100) {
+      throw errCode(new Error('Tag value must be between 0-100'), 'ERR_TAG_VALUE_OUT_OF_BOUNDS')
+    }
+
+    const buf = await this.metadataBook.getValue(peerId, 'tags')
+    let tags: Tag[] = []
+
+    if (buf != null) {
+      tags = Tags.decode(buf).tags
+    }
+
+    for (const t of tags) {
+      if (t.name === tag) {
+        throw errCode(new Error('Peer already tagged'), 'ERR_DUPLICATE_TAG')
+      }
+    }
+
+    tags.push({
+      name: tag,
+      value,
+      expiry: ttl == null ? undefined : BigInt(Date.now() + ttl)
+    })
+
+    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }))
+  }
+
+  async unTagPeer (peerId: PeerId, tag: string) {
+    const buf = await this.metadataBook.getValue(peerId, 'tags')
+    let tags: Tag[] = []
+
+    if (buf != null) {
+      tags = Tags.decode(buf).tags
+    }
+
+    tags = tags.filter(t => t.name !== tag)
+
+    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }))
+  }
+
+  async getTags (peerId: PeerId) {
+    const buf = await this.metadataBook.getValue(peerId, 'tags')
+    let tags: Tag[] = []
+
+    if (buf != null) {
+      tags = Tags.decode(buf).tags
+    }
+
+    const now = BigInt(Date.now())
+    const unexpiredTags = tags.filter(tag => tag.expiry == null || tag.expiry > now)
+
+    if (unexpiredTags.length !== tags.length) {
+      // remove any expired tags
+      await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags: unexpiredTags }))
+    }
+
+    return unexpiredTags.map(t => ({
+      name: t.name,
+      value: t.value ?? 0
+    }))
   }
 }

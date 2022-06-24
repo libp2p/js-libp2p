@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message Tags {
+  repeated Tag tags = 1;
+}
+
+message Tag {
+  string name = 1; // e.g. 'priority'
+  optional uint32 value = 2; // tag value 0-100
+  optional uint64 expiry = 3; // ms timestamp after which the tag is no longer valid
+}

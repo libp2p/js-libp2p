@@ -8,6 +8,7 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { Components } from '@libp2p/components'
+import delay from 'delay'
 
 const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = new Multiaddr('/ip4/127.0.0.1/tcp/8001')
@@ -212,6 +213,109 @@ describe('peer-store', () => {
       expect(peerData.protocols).to.have.lengthOf(0)
       expect(peerData.metadata).to.exist()
       expect(peerData.metadata.get(metadataKey)).to.equalBytes(metadataValue)
+    })
+  })
+
+  describe('tags', () => {
+    let peerStore: PersistentPeerStore
+
+    beforeEach(() => {
+      peerStore = new PersistentPeerStore()
+      peerStore.init(new Components({ peerId: peerIds[4], datastore: new MemoryDatastore() }))
+    })
+
+    it('tags a peer', async () => {
+      const name = 'a-tag'
+      await peerStore.tagPeer(peerIds[0], name)
+
+      await expect(peerStore.getTags(peerIds[0]), 'PeerStore did not contain tag for peer')
+        .to.eventually.deep.include.members([{
+          name,
+          value: 0
+        }])
+    })
+
+    it('tags a peer with a value', async () => {
+      const name = 'a-tag'
+      const value = 50
+      await peerStore.tagPeer(peerIds[0], name, {
+        value
+      })
+
+      await expect(peerStore.getTags(peerIds[0]), 'PeerStore did not contain tag for peer with a value')
+        .to.eventually.deep.include.members([{
+          name,
+          value
+        }])
+    })
+
+    it('tags a peer with a valid value', async () => {
+      const name = 'a-tag'
+
+      await expect(peerStore.tagPeer(peerIds[0], name, {
+        value: -1
+      }), 'PeerStore contain tag for peer where value was too small')
+        .to.eventually.be.rejected().with.property('code', 'ERR_TAG_VALUE_OUT_OF_BOUNDS')
+
+      await expect(peerStore.tagPeer(peerIds[0], name, {
+        value: 101
+      }), 'PeerStore contain tag for peer where value was too large')
+        .to.eventually.be.rejected().with.property('code', 'ERR_TAG_VALUE_OUT_OF_BOUNDS')
+
+      await expect(peerStore.tagPeer(peerIds[0], name, {
+        value: 5.5
+      }), 'PeerStore contain tag for peer where value was not an integer')
+        .to.eventually.be.rejected().with.property('code', 'ERR_TAG_VALUE_OUT_OF_BOUNDS')
+    })
+
+    it('tags a peer with an expiring value', async () => {
+      const name = 'a-tag'
+      const value = 50
+      await peerStore.tagPeer(peerIds[0], name, {
+        value,
+        ttl: 50
+      })
+
+      await expect(peerStore.getTags(peerIds[0]))
+        .to.eventually.deep.include.members([{
+          name,
+          value
+        }], 'PeerStore did not contain expiring value')
+
+      await delay(100)
+
+      await expect(peerStore.getTags(peerIds[0]))
+        .to.eventually.not.deep.include.members([{
+          name,
+          value
+        }], 'PeerStore contained expired value')
+    })
+
+    it('does not tag a peer twice', async () => {
+      const name = 'a-tag'
+      await peerStore.tagPeer(peerIds[0], name)
+
+      await expect(peerStore.tagPeer(peerIds[0], name), 'PeerStore allowed duplicate tags')
+        .to.eventually.be.rejected().with.property('code', 'ERR_DUPLICATE_TAG')
+    })
+
+    it('untags a peer', async () => {
+      const name = 'a-tag'
+      await peerStore.tagPeer(peerIds[0], name)
+
+      await expect(peerStore.getTags(peerIds[0]), 'PeerStore did not contain tag')
+        .to.eventually.deep.include.members([{
+          name,
+          value: 0
+        }])
+
+      await peerStore.unTagPeer(peerIds[0], name)
+
+      await expect(peerStore.getTags(peerIds[0]), 'PeerStore contained untagged tag')
+        .to.eventually.not.deep.include.members([{
+          name,
+          value: 0
+        }])
     })
   })
 })
