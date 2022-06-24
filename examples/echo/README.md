@@ -3,7 +3,7 @@
 This example performs a simple echo from the listener to the dialer.
 
 ## Setup
-1. Install the modules from libp2p root, `npm install`.
+1. Install the modules from libp2p root, `npm install` and `npm run build`.
 2. Open 2 terminal windows in the `./src` directory.
 
 ## Running

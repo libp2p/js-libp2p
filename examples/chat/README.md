@@ -3,7 +3,7 @@
 This example creates a simple chat app in your terminal.
 
 ## Setup
-1. Install the modules in the libp2p root directory, `npm install`.
+1. Install the modules in the libp2p root directory, `npm install` and `npm run build`.
 2. Open 2 terminal windows in the `./examples/chat/src` directory.
 
 ## Running
