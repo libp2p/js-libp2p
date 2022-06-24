@@ -8,7 +8,7 @@ Content Routing is the category of modules that offer a way to find where conten
 
 # 1. Using Peer Routing to find other peers
 
-This example builds on top of the [Protocol and Stream Muxing](../protocol-and-stream-muxing). We need to install `libp2p-kad-dht`, go ahead and `npm install libp2p-kad-dht`. If you want to see the final version, open [1.js](./1.js).
+This example builds on top of the [Protocol and Stream Muxing](../protocol-and-stream-muxing). We need to install `@libp2p/kad-dht`, go ahead and `npm install @libp2p/kad-dht`. If you want to see the final version, open [1.js](./1.js).
 
 First, let's update our config to support Peer Routing and Content Routing.
 
