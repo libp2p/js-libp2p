@@ -247,7 +247,7 @@ import { GossipSub } from 'libp2p-gossipsub'
 const node = await createLibp2p({
   transports: [
     new TCP(),
-    new WS()
+    new WebSockets()
   ],
   streamMuxers: [new Mplex()],
   connectionEncryption: [new Noise()],
