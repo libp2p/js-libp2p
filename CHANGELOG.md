@@ -1,3 +1,10 @@
+## [3.1.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.0.0...v3.1.0) (2022-06-24)
+
+
+### Features
+
+* add peer tagging ([#12](https://github.com/libp2p/js-libp2p-peer-store/issues/12)) ([c360e41](https://github.com/libp2p/js-libp2p-peer-store/commit/c360e4151e4c5b78d3cbe4658477163e52acc205))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v2.0.0...v3.0.0) (2022-06-16)
 
 
