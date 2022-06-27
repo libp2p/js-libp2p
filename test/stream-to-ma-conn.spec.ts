@@ -18,9 +18,13 @@ function toMuxedStream (stream: Duplex<Uint8Array>) {
     closeWrite: () => {},
     abort: () => {},
     reset: () => {},
-    timeline: {
-      open: Date.now()
+    stat: {
+      direction: 'outbound',
+      timeline: {
+        open: Date.now()
+      }
     },
+    metadata: {},
     id: `muxed-stream-${Math.random()}`
   }
 
