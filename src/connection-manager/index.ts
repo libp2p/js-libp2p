@@ -31,8 +31,7 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
   autoDialInterval: 10000,
-  movingAverageInterval: 60000,
-  defaultPeerValue: 0.5
+  movingAverageInterval: 60000
 }
 
 const METRICS_COMPONENT = 'connection-manager'
@@ -78,11 +77,6 @@ export interface ConnectionManagerInit {
    * How often, in milliseconds, to compute averages
    */
   movingAverageInterval?: number
-
-  /**
-   * The value of the peer
-   */
-  defaultPeerValue?: number
 
   /**
    * If true, try to connect to all discovered peers up to the connection manager limit
