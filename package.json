@@ -174,7 +174,7 @@
     "@libp2p/floodsub": "^3.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.1",
     "@libp2p/interface-connection-encrypter-compliance-tests": "^1.0.0",
-    "@libp2p/interface-mocks": "^2.0.0",
+    "@libp2p/interface-mocks": "^3.0.0",
     "@libp2p/interop": "^2.0.0",
     "@libp2p/kad-dht": "^3.0.0",
     "@libp2p/mdns": "^2.0.0",
