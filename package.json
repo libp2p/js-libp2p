@@ -138,6 +138,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/peer-id": "^1.1.9",
     "@multiformats/multiaddr": "^10.1.5",
+    "@types/multicast-dns": "^7.2.1",
     "multicast-dns": "^7.2.0",
     "multiformats": "^9.6.3"
   },
@@ -145,7 +146,6 @@
     "@libp2p/interface-address-manager": "^1.0.1",
     "@libp2p/interface-peer-discovery-compliance-tests": "^1.0.0",
     "@libp2p/peer-id-factory": "^1.0.9",
-    "@types/multicast-dns": "^7.2.1",
     "aegir": "^37.2.0",
     "delay": "^5.0.0",
     "p-defer": "^4.0.0",
