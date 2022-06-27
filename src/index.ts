@@ -11,6 +11,7 @@ import { CreateListenerOptions, DialOptions, symbol, Transport } from '@libp2p/i
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Connection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:tcp')
 
@@ -23,7 +24,7 @@ export class TCP implements Transport {
     return '@libp2p/tcp'
   }
 
-  async dial (ma: Multiaddr, options: DialOptions) {
+  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     const socket = await this._connect(ma, options)
 
     // Avoid uncaught errors caused by unstable connections
