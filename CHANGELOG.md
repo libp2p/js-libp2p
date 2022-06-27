@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-utils/compare/v2.0.0...v2.0.1) (2022-06-27)
+
+
+### Trivial Changes
+
+* remove unused deps ([#52](https://github.com/libp2p/js-libp2p-utils/issues/52)) ([8f339c9](https://github.com/libp2p/js-libp2p-utils/commit/8f339c9a50b466d65b41492abfd1bd88ffa0a38c))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-utils/compare/v1.0.10...v2.0.0) (2022-06-15)
 
 
