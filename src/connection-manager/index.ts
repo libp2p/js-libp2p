@@ -18,6 +18,7 @@ import * as STATUS from '@libp2p/interface-connection/status'
 import { Dialer } from './dialer/index.js'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Resolver } from '@multiformats/multiaddr'
+import { PeerMap } from '@libp2p/peer-collections'
 
 const log = logger('libp2p:connection-manager')
 
@@ -36,7 +37,10 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
 
 const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
-const METRICS_PEER_VALUES = 'peer-values'
+
+export const TAGS = {
+  KEEP_ALIVE: 'KEEP_ALIVE'
+}
 
 export interface ConnectionManagerInit {
   /**
@@ -138,7 +142,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   public readonly dialer: Dialer
   private components = new Components()
   private readonly opts: Required<ConnectionManagerInit>
-  private readonly peerValues: Map<string, number>
   private readonly connections: Map<string, Connection[]>
   private started: boolean
   private timer?: ReturnType<retimer>
@@ -154,17 +157,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     log('options: %o', this.opts)
-
-    /**
-     * Map of peer identifiers to their peer value for pruning connections.
-     *
-     * @type {Map<string, number>}
-     */
-    this.peerValues = trackedMap({
-      component: METRICS_COMPONENT,
-      metric: METRICS_PEER_VALUES,
-      metrics: this.components.getMetrics()
-    })
 
     /**
      * Map of connections per peer
@@ -272,18 +264,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   }
 
   /**
-   * Sets the value of the given peer. Peers with lower values
-   * will be disconnected first.
-   */
-  setPeerValue (peerId: PeerId, value: number) {
-    if (value < 0 || value > 1) {
-      throw new Error('value should be a number between 0 and 1')
-    }
-
-    this.peerValues.set(peerId.toString(), value)
-  }
-
-  /**
    * Checks the libp2p metrics to determine if any values have exceeded
    * the configured maximums.
    *
@@ -340,10 +320,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       await this.components.getPeerStore().keyBook.set(peerId, peerId.publicKey)
     }
 
-    if (!this.peerValues.has(peerIdStr)) {
-      this.peerValues.set(peerIdStr, this.opts.defaultPeerValue)
-    }
-
     const numConnections = this.getConnections().length
     const toPrune = numConnections - this.opts.maxConnections
 
@@ -370,7 +346,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       this.connections.set(peerId, storedConn)
     } else if (storedConn != null) {
       this.connections.delete(peerId)
-      this.peerValues.delete(connection.remotePeer.toString())
       this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: connection }))
 
       this.components.getMetrics()?.onPeerDisconnected(connection.remotePeer)
@@ -475,7 +450,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const limit = this.opts[name]
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
-      log('%s: limit exceeded: %p, %d, pruning %d connection(s)', this.components.getPeerId(), name, value, toPrune)
+      log('%s: limit exceeded: %p, %d/%d, pruning %d connection(s)', this.components.getPeerId(), name, value, limit, toPrune)
       await this._maybePruneConnections(toPrune)
     }
   }
@@ -491,22 +466,49 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       return
     }
 
-    const peerValues = Array.from(new Map([...this.peerValues.entries()].sort((a, b) => a[1] - b[1])))
-    log.trace('sorted peer values: %j', peerValues)
+    const peerValues = new PeerMap<number>()
 
+    // work out peer values
+    for (const connection of connections) {
+      const remotePeer = connection.remotePeer
+
+      if (peerValues.has(remotePeer)) {
+        continue
+      }
+
+      const tags = await this.components.getPeerStore().getTags(remotePeer)
+
+      // sum all tag values
+      peerValues.set(remotePeer, tags.reduce((acc, curr) => {
+        return acc + curr.value
+      }, 0))
+    }
+
+    // sort by value, lowest to highest
+    const sortedConnections = connections.sort((a, b) => {
+      const peerAValue = peerValues.get(a.remotePeer) ?? 0
+      const peerBValue = peerValues.get(b.remotePeer) ?? 0
+
+      if (peerAValue > peerBValue) {
+        return 1
+      }
+
+      if (peerAValue < peerBValue) {
+        return -1
+      }
+
+      return 0
+    })
+
+    // close some connections
     const toClose = []
 
-    for (const [peerId] of peerValues) {
-      log('too many connections open - closing a connection to %p', peerId)
+    for (const connection of sortedConnections) {
+      log('too many connections open - closing a connection to %p', connection.remotePeer)
+      toClose.push(connection)
 
-      for (const connection of connections) {
-        if (connection.remotePeer.toString() === peerId) {
-          toClose.push(connection)
-        }
-
-        if (toClose.length === toPrune) {
-          break
-        }
+      if (toClose.length === toPrune) {
+        break
       }
     }
 

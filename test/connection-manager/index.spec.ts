@@ -51,7 +51,7 @@ describe('Connection Manager', () => {
     expect(libp2p.components.getMetrics()).to.exist()
   })
 
-  it('should close lowest value peer connection when the maximum has been reached', async () => {
+  it('should close connections with low tag values first', async () => {
     const max = 5
     libp2p = await createNode({
       config: createBaseOptions({
@@ -67,20 +67,21 @@ describe('Connection Manager', () => {
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
     const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
-
-    // Add 1 too many connections
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
-    await Promise.all([...new Array(max + 1)].map(async (_, index) => {
+
+    // Add 1 connection too many
+    for (let i = 0; i < max + 1; i++) {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       const spy = sinon.spy(connection, 'close')
-      // The connections have the same remote id, give them random ones
-      // so that we can verify the correct connection was closed
-      // sinon.stub(connection.remotePeer, 'toString').returns(index)
-      const value = Math.random()
+
+      const value = Math.round(Math.random() * 100)
       spies.set(value, spy)
-      connectionManager.setPeerValue(connection.remotePeer, value)
+      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
+        value
+      })
+
       await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
-    }))
+    }
 
     // get the lowest value
     const lowest = Array.from(spies.keys()).sort((a, b) => {

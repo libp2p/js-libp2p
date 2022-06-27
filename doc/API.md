@@ -56,7 +56,6 @@
   * [`pubsub.topicValidators.set`](#pubsubtopicvalidatorsset)
   * [`pubsub.topicValidators.delete`](#pubsubtopicvalidatorsdelete)
   * [`connectionManager.get`](#connectionmanagerget)
-  * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
   * [`connectionManager.size`](#connectionmanagersize)
   * [`keychain.createKey`](#keychaincreatekey)
   * [`keychain.renameKey`](#keychainrenamekey)
@@ -1670,32 +1669,6 @@ Get a connection with a given peer, if it exists.
 
 ```js
 libp2p.connectionManager.get(peerId)
-```
-
-### connectionManager.setPeerValue
-
-Enables users to change the value of certain peers in a range of 0 to 1. Peers with the lowest values will have their Connections pruned first, if any Connection Manager limits are exceeded. See [./CONFIGURATION.md#configuring-connection-manager](./CONFIGURATION.md#configuring-connection-manager) for details on how to configure these limits.
-
-`libp2p.connectionManager.setPeerValue(peerId, value)`
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| peerId | [`PeerId`][peer-id] | The peer to set the value for |
-| value | `number` | The value of the peer from 0 to 1 |
-
-#### Returns
-
-| Type | Description |
-|------|-------------|
-| `void` |  |
-
-#### Example
-
-```js
-libp2p.connectionManager.setPeerValue(highPriorityPeerId, 1)
-libp2p.connectionManager.setPeerValue(lowPriorityPeerId, 0)
 ```
 
 ### connectionManager.size
