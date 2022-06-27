@@ -12,13 +12,6 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '../../src/index.js'
 import { Components } from '@libp2p/components'
 
-// @ts-expect-error
-import log from 'why-is-node-running'
-
-setTimeout(() => {
-  log()
-}, 60000).unref()
-
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']
 
