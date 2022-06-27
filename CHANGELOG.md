@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-peer-record/compare/v2.0.2...v3.0.0) (2022-06-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** Bump @libp2p/utils from 2.0.0 to 3.0.0 (#10)
+
+### Trivial Changes
+
+* **deps:** Bump @libp2p/utils from 2.0.0 to 3.0.0 ([#10](https://github.com/libp2p/js-libp2p-peer-record/issues/10)) ([17bca9f](https://github.com/libp2p/js-libp2p-peer-record/commit/17bca9fa8447a501ec473f4732017e102ef01141))
+
 ## [2.0.2](https://github.com/libp2p/js-libp2p-peer-record/compare/v2.0.1...v2.0.2) (2022-06-17)
 
 
