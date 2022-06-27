@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.0...v3.0.1) (2022-06-27)
+
+
+### Bug Fixes
+
+* add explicit return type to dial ([#191](https://github.com/libp2p/js-libp2p-tcp/issues/191)) ([cdb0932](https://github.com/libp2p/js-libp2p-tcp/commit/cdb09323188e77dee06a186ae43ba544faea5f86))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v2.0.1...v3.0.0) (2022-06-17)
 
 
