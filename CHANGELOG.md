@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-utils/compare/v2.0.1...v3.0.0) (2022-06-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** the API of the returned MultiaddrConnection has changed
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/interface-connection from 1.0.1 to 2.1.0 ([#51](https://github.com/libp2p/js-libp2p-utils/issues/51)) ([0f99bf8](https://github.com/libp2p/js-libp2p-utils/commit/0f99bf833f7732d74eac4a06fd2b607555c7f34b))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-utils/compare/v2.0.0...v2.0.1) (2022-06-27)
 
 
