@@ -144,7 +144,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private started: boolean
   private timer?: ReturnType<retimer>
   private readonly latencyMonitor: LatencyMonitor
-  private startupReconnectTimeout: number
+  private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
 
   constructor (init: ConnectionManagerInit) {
