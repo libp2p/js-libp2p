@@ -24,6 +24,9 @@ export function createBaseOptions (overrides?: Libp2pOptions): Libp2pOptions {
       hop: {
         enabled: false
       }
+    },
+    nat: {
+      enabled: false
     }
   }
 

@@ -184,6 +184,8 @@ export class NatManager implements Startable {
    * Stops the NAT manager
    */
   async stop () {
+    clearTimeout(this._t)
+
     if (isBrowser || this.client == null) {
       return
     }

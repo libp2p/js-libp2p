@@ -309,18 +309,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       )
 
       log('libp2p has started')
-
-      // Once we start, emit any peers we may have already discovered
-      // TODO: this should be removed, as we already discovered these peers in the past
-      await this.components.getPeerStore().forEach(peer => {
-        this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', {
-          detail: {
-            id: peer.id,
-            multiaddrs: peer.addresses.map(addr => addr.multiaddr),
-            protocols: peer.protocols
-          }
-        }))
-      })
     } catch (err: any) {
       log.error('An error occurred starting libp2p', err)
       await this.stop()

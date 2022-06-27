@@ -19,6 +19,7 @@ import { Dialer } from './dialer/index.js'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
+import { TimeoutController } from 'timeout-abort-controller'
 
 const log = logger('libp2p:connection-manager')
 
@@ -36,6 +37,7 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
 
 const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
+const STARTUP_RECONNECT_TIMEOUT = 60000
 
 export interface ConnectionManagerInit {
   /**
@@ -118,6 +120,12 @@ export interface ConnectionManagerInit {
    * Multiaddr resolvers to use when dialing
    */
   resolvers?: Record<string, Resolver>
+
+  /**
+   * On startup we try to dial any peer that has previously been
+   * tagged with `keep-alive` up to this timeout in ms. (default: 60000)
+   */
+  startupReconnectTimeout?: number
 }
 
 export interface ConnectionManagerEvents {
@@ -136,6 +144,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private started: boolean
   private timer?: ReturnType<retimer>
   private readonly latencyMonitor: LatencyMonitor
+  private startupReconnectTimeout: number
+  private connectOnStartupController?: TimeoutController
 
   constructor (init: ConnectionManagerInit) {
     super()
@@ -174,6 +184,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.onConnect = this.onConnect.bind(this)
     this.onDisconnect = this.onDisconnect.bind(this)
+
+    this.startupReconnectTimeout = init.startupReconnectTimeout ?? STARTUP_RECONNECT_TIMEOUT
   }
 
   init (components: Components): void {
@@ -208,9 +220,43 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   async afterStart () {
     this.components.getUpgrader().addEventListener('connection', this.onConnect)
     this.components.getUpgrader().addEventListener('connectionEnd', this.onDisconnect)
+
+    // re-connect to any peers with the `keep-alive` tag
+    void Promise.resolve()
+      .then(async () => {
+        const keepAlivePeers: PeerId[] = []
+
+        for (const peer of await this.components.getPeerStore().all()) {
+          const tags = await this.components.getPeerStore().getTags(peer.id)
+          const hasKeepAlive = tags.filter(tag => tag.name === 'keep-alive').length > 0
+
+          if (hasKeepAlive) {
+            keepAlivePeers.push(peer.id)
+          }
+        }
+
+        this.connectOnStartupController?.clear()
+        this.connectOnStartupController = new TimeoutController(this.startupReconnectTimeout)
+
+        await Promise.all(
+          keepAlivePeers.map(async peer => {
+            await this.openConnection(peer, {
+              signal: this.connectOnStartupController?.signal
+            })
+              .catch(err => {
+                log.error(err)
+              })
+          })
+        )
+      })
+      .finally(() => {
+        this.connectOnStartupController?.clear()
+      })
   }
 
   async beforeStop () {
+    // if we are still dialing keep-alive peers, abort those dials
+    this.connectOnStartupController?.abort()
     this.components.getUpgrader().removeEventListener('connection', this.onConnect)
     this.components.getUpgrader().removeEventListener('connectionEnd', this.onDisconnect)
   }

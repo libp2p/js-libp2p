@@ -13,6 +13,8 @@ import { CustomEvent } from '@libp2p/interfaces/events'
 import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core'
 
 const defaultInit: PingServiceInit = {
   protocolPrefix: 'ipfs',
@@ -27,6 +29,8 @@ async function createComponents (index: number) {
     peerId,
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
+    peerStore: new PersistentPeerStore(),
+    datastore: new MemoryDatastore(),
     connectionManager: new DefaultConnectionManager({
       minConnections: 50,
       maxConnections: 1000,
