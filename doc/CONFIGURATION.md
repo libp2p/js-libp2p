@@ -556,7 +556,6 @@ const node = await createLibp2p({
     maxConnections: Infinity,
     minConnections: 0,
     pollInterval: 2000,
-    defaultPeerValue: 1,
     // The below values will only be taken into account when Metrics are enabled
     maxData: Infinity,
     maxSentData: Infinity,

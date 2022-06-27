@@ -46,6 +46,9 @@
   * [`peerStore.delete`](#peerstoredelete)
   * [`peerStore.get`](#peerstoreget)
   * [`peerStore.peers`](#peerstorepeers)
+  * [`peerStore.tagPeer`](#peerstoretagpeer)
+  * [`peerStore.unTagPeer`](#peerstoreuntagpeer)
+  * [`peerStore.getTags`](#peerstoregettags)
   * [`pubsub.getSubscribers`](#pubsubgetsubscribers)
   * [`pubsub.getTopics`](#pubsubgettopics)
   * [`pubsub.publish`](#pubsubpublish)
@@ -56,7 +59,6 @@
   * [`pubsub.topicValidators.set`](#pubsubtopicvalidatorsset)
   * [`pubsub.topicValidators.delete`](#pubsubtopicvalidatorsdelete)
   * [`connectionManager.get`](#connectionmanagerget)
-  * [`connectionManager.setPeerValue`](#connectionmanagersetpeervalue)
   * [`connectionManager.size`](#connectionmanagersize)
   * [`keychain.createKey`](#keychaincreatekey)
   * [`keychain.renameKey`](#keychainrenamekey)
@@ -1399,6 +1401,81 @@ for (let [peerIdString, peer] of peerStore.peers.entries()) {
 }
 ```
 
+### peerStore.tagPeer
+
+Tags a peer with the specified tag and optional value/expiry time
+
+`peerStore.tagPeer(peerId, tag, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to tag |
+| tag | `string` | The name of the tag to add |
+| options | `{ value?: number, ttl?: number }` | An optional value (1-100) and an optional ttl after which the tag will expire (ms) |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<void>` | Promise resolves once the tag is stored |
+
+#### Example
+
+```js
+await peerStore.tagPeer(peerId, 'my-tag', { value: 100, ttl: Date.now() + 60000 })
+```
+
+### peerStore.unTagPeer
+
+Remove the tag from the specified peer
+
+`peerStore.unTagPeer(peerId, tag)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to untag |
+| tag | `string` | The name of the tag to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<void>` | Promise resolves once the tag has been removed |
+
+#### Example
+
+```js
+await peerStore.unTagPeer(peerId, 'my-tag')
+```
+
+### peerStore.getTags
+
+Remove the tag from the specified peer
+
+`peerStore.getTags(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to get the tags for |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<Array<{ name: string, value: number }>>` | The promise resolves to the list of tags for the passed peer |
+
+#### Example
+
+```js
+await peerStore.getTags(peerId)
+```
+
 ### pubsub.getSubscribers
 
 Gets a list of the peer-ids that are subscribed to one topic.
@@ -1670,32 +1747,6 @@ Get a connection with a given peer, if it exists.
 
 ```js
 libp2p.connectionManager.get(peerId)
-```
-
-### connectionManager.setPeerValue
-
-Enables users to change the value of certain peers in a range of 0 to 1. Peers with the lowest values will have their Connections pruned first, if any Connection Manager limits are exceeded. See [./CONFIGURATION.md#configuring-connection-manager](./CONFIGURATION.md#configuring-connection-manager) for details on how to configure these limits.
-
-`libp2p.connectionManager.setPeerValue(peerId, value)`
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| peerId | [`PeerId`][peer-id] | The peer to set the value for |
-| value | `number` | The value of the peer from 0 to 1 |
-
-#### Returns
-
-| Type | Description |
-|------|-------------|
-| `void` |  |
-
-#### Example
-
-```js
-libp2p.connectionManager.setPeerValue(highPriorityPeerId, 1)
-libp2p.connectionManager.setPeerValue(lowPriorityPeerId, 0)
 ```
 
 ### connectionManager.size

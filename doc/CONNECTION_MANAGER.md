@@ -17,4 +17,3 @@ The following is a list of available options for setting limits for the Connecti
 - `maxEventLoopDelay`: sets the maximum event loop delay (measured in milliseconds) this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
 - `pollInterval`: sets the poll interval (in milliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `2000` (2 seconds).
 - `movingAverageInterval`: the interval used to calculate moving averages (in milliseconds). Defaults to `60000` (1 minute). This must be an available interval configured in `Metrics`
-- `defaultPeerValue`: number between 0 and 1. Defaults to 1.
