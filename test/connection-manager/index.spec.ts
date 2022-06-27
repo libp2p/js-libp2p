@@ -101,7 +101,7 @@ describe('Connection Manager', () => {
     expect(lowestSpy).to.have.property('callCount', 1)
   })
 
-  it('should close connection when the maximum has been reached even without peer values', async () => {
+  it('should close connection when the maximum has been reached even without tags', async () => {
     const max = 5
     libp2p = await createNode({
       config: createBaseOptions({
@@ -120,11 +120,11 @@ describe('Connection Manager', () => {
 
     // Add 1 too many connections
     const spy = sinon.spy()
-    await Promise.all([...new Array(max + 1)].map(async () => {
+    for (let i = 0; i < max + 1; i++) {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       sinon.stub(connection, 'close').callsFake(async () => spy()) // eslint-disable-line
       await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
-    }))
+    }
 
     expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(1)
     expect(spy).to.have.property('callCount', 1)
