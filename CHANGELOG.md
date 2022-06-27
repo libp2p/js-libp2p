@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-mdns/compare/v2.0.0...v2.0.1) (2022-06-27)
+
+
+### Bug Fixes
+
+* add @types/multicast-dns as dependency ([#135](https://github.com/libp2p/js-libp2p-mdns/issues/135)) ([8c855a1](https://github.com/libp2p/js-libp2p-mdns/commit/8c855a12336a341d3d53d6c15823c0be4a11b75e))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v1.0.7...v2.0.0) (2022-06-15)
 
 
