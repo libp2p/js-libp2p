@@ -46,6 +46,9 @@
   * [`peerStore.delete`](#peerstoredelete)
   * [`peerStore.get`](#peerstoreget)
   * [`peerStore.peers`](#peerstorepeers)
+  * [`peerStore.tagPeer`](#peerstoretagpeer)
+  * [`peerStore.unTagPeer`](#peerstoreuntagpeer)
+  * [`peerStore.getTags`](#peerstoregettags)
   * [`pubsub.getSubscribers`](#pubsubgetsubscribers)
   * [`pubsub.getTopics`](#pubsubgettopics)
   * [`pubsub.publish`](#pubsubpublish)
@@ -1396,6 +1399,81 @@ Get all the stored information of every peer.
 for (let [peerIdString, peer] of peerStore.peers.entries()) {
   // peer { id, addresses, metadata, protocols }
 }
+```
+
+### peerStore.tagPeer
+
+Tags a peer with the specified tag and optional value/expiry time
+
+`peerStore.tagPeer(peerId, tag, options)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to tag |
+| tag | `string` | The name of the tag to add |
+| options | `{ value?: number, ttl?: number }` | An optional value (1-100) and an optional ttl after which the tag will expire (ms) |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<void>` | Promise resolves once the tag is stored |
+
+#### Example
+
+```js
+await peerStore.tagPeer(peerId, 'my-tag', { value: 100, ttl: Date.now() + 60000 })
+```
+
+### peerStore.unTagPeer
+
+Remove the tag from the specified peer
+
+`peerStore.unTagPeer(peerId, tag)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to untag |
+| tag | `string` | The name of the tag to remove |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<void>` | Promise resolves once the tag has been removed |
+
+#### Example
+
+```js
+await peerStore.unTagPeer(peerId, 'my-tag')
+```
+
+### peerStore.getTags
+
+Remove the tag from the specified peer
+
+`peerStore.getTags(peerId)`
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| peerId | `PeerId` | The peer to get the tags for |
+
+#### Returns
+
+| Type | Description |
+|------|-------------|
+| `Promise<Array<{ name: string, value: number }>>` | The promise resolves to the list of tags for the passed peer |
+
+#### Example
+
+```js
+await peerStore.getTags(peerId)
 ```
 
 ### pubsub.getSubscribers

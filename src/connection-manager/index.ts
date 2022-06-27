@@ -38,10 +38,6 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
 const METRICS_COMPONENT = 'connection-manager'
 const METRICS_PEER_CONNECTIONS = 'peer-connections'
 
-export const TAGS = {
-  KEEP_ALIVE: 'KEEP_ALIVE'
-}
-
 export interface ConnectionManagerInit {
   /**
    * The maximum number of connections to keep open
