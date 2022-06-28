@@ -510,6 +510,7 @@ Dialing in libp2p can be configured to limit the rate of dialing, and how long d
 | dialTimeout | `number` | Second dial timeout per peer in ms. |
 | resolvers | `object` | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs |
 | addressSorter | `(Array<Address>) => Array<Address>` | Sort the known addresses of a peer before trying to dial. |
+| startupReconnectTimeout | `number` | When a node is restarted, we try to connect to any peers marked with the `keep-alive` tag up until to this timeout in ms is reached (default: 60000) |
 
 The below configuration example shows how the dialer should be configured, with the current defaults:
 
