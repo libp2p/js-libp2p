@@ -15,6 +15,7 @@ import type { Sink } from 'it-stream-types'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import type { Stream } from '@libp2p/interface-connection'
 import type { MplexInit } from './index.js'
+import anySignal from 'any-signal'
 
 const log = logger('libp2p:mplex')
 
@@ -55,6 +56,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   private readonly _streams: { initiators: Map<number, MplexStream>, receivers: Map<number, MplexStream> }
   private readonly _init: MplexStreamMuxerInit
   private readonly _source: { push: (val: Message) => void, end: (err?: Error) => void }
+  private readonly closeController: AbortController
 
   constructor (components: Components, init?: MplexStreamMuxerInit) {
     init = init ?? {}
@@ -83,11 +85,14 @@ export class MplexStreamMuxer implements StreamMuxer {
     const source = this._createSource()
     this._source = source
     this.source = source
+
+    /**
+     * Close controller
+     */
+    this.closeController = new AbortController()
   }
 
-  init (components: Components) {
-
-  }
+  init (components: Components) {}
 
   /**
    * Returns a Map of streams and their ids
@@ -109,10 +114,27 @@ export class MplexStreamMuxer implements StreamMuxer {
    * provided, the id of the stream will be used.
    */
   newStream (name?: string): Stream {
+    if (this.closeController.signal.aborted) {
+      throw new Error('Muxer already closed')
+    }
     const id = this._streamId++
     name = name == null ? id.toString() : name.toString()
     const registry = this._streams.initiators
     return this._newStream({ id, name, type: 'initiator', registry })
+  }
+
+  /**
+   * Close or abort all tracked streams and stop the muxer
+   */
+  close (err?: Error | undefined): void {
+    if (this.closeController.signal.aborted) return
+
+    if (err != null) {
+      this.streams.forEach(s => s.abort(err))
+    } else {
+      this.streams.forEach(s => s.close())
+    }
+    this.closeController.abort()
   }
 
   /**
@@ -177,9 +199,12 @@ export class MplexStreamMuxer implements StreamMuxer {
    */
   _createSink () {
     const sink: Sink<Uint8Array> = async source => {
+      // see: https://github.com/jacobheun/any-signal/pull/18
+      const abortSignals = [this.closeController.signal]
       if (this._init.signal != null) {
-        source = abortableSource(source, this._init.signal)
+        abortSignals.push(this._init.signal)
       }
+      source = abortableSource(source, anySignal(abortSignals))
 
       try {
         await pipe(
@@ -209,22 +234,7 @@ export class MplexStreamMuxer implements StreamMuxer {
    */
   _createSource () {
     const onEnd = (err?: Error) => {
-      const { initiators, receivers } = this._streams
-      // Abort all the things!
-      for (const s of initiators.values()) {
-        if (err != null) {
-          s.abort(err)
-        } else {
-          s.close()
-        }
-      }
-      for (const s of receivers.values()) {
-        if (err != null) {
-          s.abort(err)
-        } else {
-          s.close()
-        }
-      }
+      this.close(err)
     }
     const source = pushableV<Message>({
       objectMode: true,
