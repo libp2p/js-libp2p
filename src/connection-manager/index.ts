@@ -20,6 +20,7 @@ import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
+import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 
 const log = logger('libp2p:connection-manager')
 
@@ -123,7 +124,7 @@ export interface ConnectionManagerInit {
 
   /**
    * On startup we try to dial any peer that has previously been
-   * tagged with `keep-alive` up to this timeout in ms. (default: 60000)
+   * tagged with KEEP_ALIVE up to this timeout in ms. (default: 60000)
    */
   startupReconnectTimeout?: number
 }
@@ -221,14 +222,14 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.components.getUpgrader().addEventListener('connection', this.onConnect)
     this.components.getUpgrader().addEventListener('connectionEnd', this.onDisconnect)
 
-    // re-connect to any peers with the `keep-alive` tag
+    // re-connect to any peers with the KEEP_ALIVE tag
     void Promise.resolve()
       .then(async () => {
         const keepAlivePeers: PeerId[] = []
 
         for (const peer of await this.components.getPeerStore().all()) {
           const tags = await this.components.getPeerStore().getTags(peer.id)
-          const hasKeepAlive = tags.filter(tag => tag.name === 'keep-alive').length > 0
+          const hasKeepAlive = tags.filter(tag => tag.name === KEEP_ALIVE).length > 0
 
           if (hasKeepAlive) {
             keepAlivePeers.push(peer.id)
@@ -255,7 +256,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   }
 
   async beforeStop () {
-    // if we are still dialing keep-alive peers, abort those dials
+    // if we are still dialing KEEP_ALIVE peers, abort those dials
     this.connectOnStartupController?.abort()
     this.components.getUpgrader().removeEventListener('connection', this.onConnect)
     this.components.getUpgrader().removeEventListener('connectionEnd', this.onDisconnect)

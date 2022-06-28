@@ -9,6 +9,7 @@ import type { DefaultConnectionManager } from '../../src/connection-manager/inde
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
+import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2pNode
@@ -157,7 +158,7 @@ describe('Connection Manager', () => {
 
     expect(connectionManagerOpenConnectionSpy.called).to.be.false('Attempted to connect to peers')
 
-    await libp2p.peerStore.tagPeer(peerId, 'keep-alive')
+    await libp2p.peerStore.tagPeer(peerId, KEEP_ALIVE)
 
     await libp2p.stop()
     await libp2p.start()
