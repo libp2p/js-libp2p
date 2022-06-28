@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v1.0.3...v2.0.0) (2022-06-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* uses new peer-id interface
+
+### Bug Fixes
+
+* update deps ([#5](https://github.com/libp2p/js-libp2p-peer-collections/issues/5)) ([89e975a](https://github.com/libp2p/js-libp2p-peer-collections/commit/89e975aece4bbe6f9783349b223d6dac3e1d3c78))
+
 ## [@libp2p/peer-collections-v1.0.3](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/peer-collections-v1.0.2...@libp2p/peer-collections-v1.0.3) (2022-05-20)
 
 
