@@ -249,6 +249,7 @@ describe('Upgrader', () => {
 
       source = []
       async sink () {}
+      close () {}
     }
 
     class OtherMuxerFactory implements StreamMuxerFactory {
