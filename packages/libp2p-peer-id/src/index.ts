@@ -21,7 +21,7 @@ const baseDecoder = Object
 const LIBP2P_KEY_CODE = 0x72
 
 const MARSHALLED_ED225519_PUBLIC_KEY_LENGTH = 36
-const MARSHALLED_SECP258K1_PUBLIC_KEY_LENGTH = 37
+const MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH = 37
 
 interface PeerIdInit {
   type: 'RSA' | 'Ed25519' | 'secp256k1'
@@ -195,7 +195,7 @@ export function peerIdFromBytes (buf: Uint8Array) {
     if (multihash.code === identity.code) {
       if (multihash.digest.length === MARSHALLED_ED225519_PUBLIC_KEY_LENGTH) {
         return new Ed25519PeerIdImpl({ multihash })
-      } else if (multihash.digest.length === MARSHALLED_SECP258K1_PUBLIC_KEY_LENGTH) {
+      } else if (multihash.digest.length === MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH) {
         return new Secp256k1PeerIdImpl({ multihash })
       }
     }
@@ -222,7 +222,7 @@ export function peerIdFromCID (cid: CID): PeerId {
   } else if (multihash.code === identity.code) {
     if (multihash.digest.length === MARSHALLED_ED225519_PUBLIC_KEY_LENGTH) {
       return new Ed25519PeerIdImpl({ multihash: cid.multihash })
-    } else if (multihash.digest.length === MARSHALLED_SECP258K1_PUBLIC_KEY_LENGTH) {
+    } else if (multihash.digest.length === MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH) {
       return new Secp256k1PeerIdImpl({ multihash: cid.multihash })
     }
   }
@@ -239,7 +239,7 @@ export async function peerIdFromKeys (publicKey: Uint8Array, privateKey?: Uint8A
     return new Ed25519PeerIdImpl({ multihash: Digest.create(identity.code, publicKey), privateKey })
   }
 
-  if (publicKey.length === MARSHALLED_SECP258K1_PUBLIC_KEY_LENGTH) {
+  if (publicKey.length === MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH) {
     return new Secp256k1PeerIdImpl({ multihash: Digest.create(identity.code, publicKey), privateKey })
   }
 
