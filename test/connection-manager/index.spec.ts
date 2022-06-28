@@ -75,7 +75,7 @@ describe('Connection Manager', () => {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       const spy = sinon.spy(connection, 'close')
 
-      const value = Math.round(Math.random() * 100)
+      const value = i * 10
       spies.set(value, spy)
       await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
         value
