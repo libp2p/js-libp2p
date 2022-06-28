@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v3.0.0...v4.0.0) (2022-06-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to interface-stream-muxer 2.0.0 (#186)
+
+### Bug Fixes
+
+* upgrade to interface-stream-muxer 2.0.0 ([#186](https://github.com/libp2p/js-libp2p-mplex/issues/186)) ([f11f2ce](https://github.com/libp2p/js-libp2p-mplex/commit/f11f2ce88f705d0836414fa3ddda1b08f046437c)), closes [#185](https://github.com/libp2p/js-libp2p-mplex/issues/185)
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v2.0.0...v3.0.0) (2022-06-17)
 
 
