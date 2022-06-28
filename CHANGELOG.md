@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-tracked-map/compare/v1.0.8...v2.0.0) (2022-06-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* accepts a @libp2p/interface-metrics ComponentMetricsTracker
+
+### Bug Fixes
+
+* update deps ([#5](https://github.com/libp2p/js-libp2p-tracked-map/issues/5)) ([a134743](https://github.com/libp2p/js-libp2p-tracked-map/commit/a1347439d95346f5361ec030e159d53e22402914))
+
 ### [1.0.8](https://github.com/libp2p/js-libp2p-tracked-map/compare/v1.0.7...v1.0.8) (2022-06-09)
 
 
