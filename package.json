@@ -133,7 +133,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interfaces": "^2.0.0"
+    "@libp2p/interface-metrics": "^1.0.3"
   },
   "devDependencies": {
     "aegir": "^37.0.7",

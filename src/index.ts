@@ -1,4 +1,4 @@
-import type { ComponentMetricsTracker } from '@libp2p/interfaces/metrics'
+import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
 
 export interface TrackedMapInit {
   metrics: ComponentMetricsTracker

@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import { trackedMap } from '../src/index.js'
 import sinon from 'sinon'
-import type { ComponentMetricsTracker, ComponentMetricsUpdate } from '@libp2p/interfaces/metrics'
+import type { ComponentMetricsTracker, ComponentMetricsUpdate } from '@libp2p/interface-metrics'
 import type { SinonStub } from 'sinon'
 
 describe('tracked-map', () => {
