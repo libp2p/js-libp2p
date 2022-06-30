@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.0...v3.0.1) (2022-06-30)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump @libp2p/interface-mocks from 2.1.0 to 3.0.1 ([#159](https://github.com/libp2p/js-libp2p-floodsub/issues/159)) ([fd391cd](https://github.com/libp2p/js-libp2p-floodsub/commit/fd391cde71e4107a0763724e4bb6afca1ec4a519))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v2.0.0...v3.0.0) (2022-06-17)
 
 
