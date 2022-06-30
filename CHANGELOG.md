@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.2...v3.0.3) (2022-06-30)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/peer-collections from 1.0.3 to 2.0.0 ([#79](https://github.com/libp2p/js-libp2p-pubsub/issues/79)) ([c066676](https://github.com/libp2p/js-libp2p-pubsub/commit/c06667694053e4d6df1607cce7cffdbe9a3c25c0))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.1...v3.0.2) (2022-06-23)
 
 
