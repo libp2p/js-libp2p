@@ -180,7 +180,7 @@
     "@libp2p/interface-registrar": "^2.0.0",
     "@libp2p/interfaces": "^3.0.2",
     "@libp2p/logger": "^2.0.0",
-    "@libp2p/peer-collections": "^1.0.0",
+    "@libp2p/peer-collections": "^2.0.0",
     "@libp2p/peer-id": "^1.1.0",
     "@libp2p/topology": "^3.0.0",
     "@multiformats/multiaddr": "^10.2.0",
