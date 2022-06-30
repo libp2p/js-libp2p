@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.1...v3.0.2) (2022-06-30)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump @libp2p/peer-collections from 1.0.3 to 2.0.0 ([#160](https://github.com/libp2p/js-libp2p-floodsub/issues/160)) ([29026d8](https://github.com/libp2p/js-libp2p-floodsub/commit/29026d8c413fe6d3c7e217ecbc1d99860c1a2025))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.0...v3.0.1) (2022-06-30)
 
 
