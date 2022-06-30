@@ -152,7 +152,7 @@
   },
   "devDependencies": {
     "@libp2p/components": "^2.0.0",
-    "@libp2p/interface-mocks": "^2.0.0",
+    "@libp2p/interface-mocks": "^3.0.1",
     "@libp2p/interface-pubsub-compliance-tests": "^1.0.1",
     "@libp2p/peer-collections": "^1.0.2",
     "@libp2p/peer-id": "^1.1.10",
