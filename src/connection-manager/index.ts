@@ -7,7 +7,6 @@ import retimer from 'retimer'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
-import { trackedMap } from '@libp2p/tracked-map'
 import { codes } from '../errors.js'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
@@ -36,8 +35,8 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   movingAverageInterval: 60000
 }
 
+const METRICS_SYSTEM = 'libp2p'
 const METRICS_COMPONENT = 'connection-manager'
-const METRICS_PEER_CONNECTIONS = 'peer-connections'
 const STARTUP_RECONNECT_TIMEOUT = 60000
 
 export interface ConnectionManagerInit {
@@ -162,11 +161,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     /**
      * Map of connections per peer
      */
-    this.connections = trackedMap({
-      component: METRICS_COMPONENT,
-      metric: METRICS_PEER_CONNECTIONS,
-      metrics: this.components.getMetrics()
-    })
+    this.connections = new Map()
 
     this.started = false
     this._checkMetrics = this._checkMetrics.bind(this)
@@ -193,6 +188,94 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.components = components
 
     this.dialer.init(components)
+
+    // track inbound/outbound connections
+    this.components.getMetrics()?.updateComponentMetric({
+      system: METRICS_SYSTEM,
+      component: METRICS_COMPONENT,
+      metric: 'connections',
+      label: 'direction',
+      value: () => {
+        const metric = {
+          inbound: 0,
+          outbound: 0
+        }
+
+        for (const conns of this.connections.values()) {
+          for (const conn of conns) {
+            if (conn.stat.direction === 'inbound') {
+              metric.inbound++
+            } else {
+              metric.outbound++
+            }
+          }
+        }
+
+        return metric
+      }
+    })
+
+    // track total number of streams per protocol
+    this.components.getMetrics()?.updateComponentMetric({
+      system: METRICS_SYSTEM,
+      component: METRICS_COMPONENT,
+      metric: 'protocol-streams-total',
+      label: 'protocol',
+      value: () => {
+        const metric: Record<string, number> = {}
+
+        for (const conns of this.connections.values()) {
+          for (const conn of conns) {
+            for (const stream of conn.streams) {
+              const key = `${stream.stat.direction} ${stream.stat.protocol ?? 'unnegotiated'}`
+
+              metric[key] = (metric[key] ?? 0) + 1
+            }
+          }
+        }
+
+        return metric
+      }
+    })
+
+     // track 90th percentile of streams per protocol
+     this.components.getMetrics()?.updateComponentMetric({
+      system: METRICS_SYSTEM,
+      component: METRICS_COMPONENT,
+      metric: 'protocol-streams-per-connection-90th-percentile',
+      label: 'protocol',
+      value: () => {
+        const allStreams: Record<string, number[]> = {}
+
+        for (const conns of this.connections.values()) {
+          for (const conn of conns) {
+            const streams: Record<string, number> = {}
+
+            for (const stream of conn.streams) {
+              const key = `${stream.stat.direction} ${stream.stat.protocol ?? 'un-negotiated'}`
+
+              streams[key] = (streams[key] ?? 0) + 1
+            }
+
+            for (const [protocol, count] of Object.entries(streams)) {
+              allStreams[protocol] = allStreams[protocol] ?? []
+              allStreams[protocol].push(count)
+            }
+          }
+        }
+
+        const metric: Record<string, number> = {}
+
+        for (let [protocol, counts] of Object.entries(allStreams)) {
+          counts = counts.sort()
+
+          const index = Math.floor(counts.length * 0.9)
+          metric[protocol] = counts[index]
+        }
+
+        return metric
+      }
+    })
   }
 
   isStarted () {
