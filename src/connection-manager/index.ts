@@ -252,7 +252,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
             const streams: Record<string, number> = {}
 
             for (const stream of conn.streams) {
-              const key = `${stream.stat.direction} ${stream.stat.protocol ?? 'un-negotiated'}`
+              const key = `${stream.stat.direction} ${stream.stat.protocol ?? 'unnegotiated'}`
 
               streams[key] = (streams[key] ?? 0) + 1
             }
