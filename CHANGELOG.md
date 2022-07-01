@@ -1,3 +1,16 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v2.0.1...v3.0.0) (2022-07-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** uses components with single-issue interfaces
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/components from 1.0.0 to 2.0.1 ([#136](https://github.com/libp2p/js-libp2p-mdns/issues/136)) ([5c6d17b](https://github.com/libp2p/js-libp2p-mdns/commit/5c6d17bce713d9f404d01c08d5732e871c2151b1))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-mdns/compare/v2.0.0...v2.0.1) (2022-06-27)
 
 
