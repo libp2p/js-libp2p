@@ -98,7 +98,7 @@
   },
   "dependencies": {
     "@achingbrain/nat-port-mapper": "^1.0.3",
-    "@libp2p/components": "^2.0.0",
+    "@libp2p/components": "^2.0.1",
     "@libp2p/connection": "^4.0.0",
     "@libp2p/crypto": "^1.0.0",
     "@libp2p/interface-address-manager": "^1.0.1",
