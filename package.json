@@ -130,7 +130,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/components": "^1.0.0",
+    "@libp2p/components": "^2.0.1",
     "@libp2p/interface-peer-discovery": "^1.0.0",
     "@libp2p/interface-peer-id": "^1.0.2",
     "@libp2p/interface-peer-info": "^1.0.1",
