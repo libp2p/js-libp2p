@@ -238,8 +238,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       }
     })
 
-     // track 90th percentile of streams per protocol
-     this.components.getMetrics()?.updateComponentMetric({
+    // track 90th percentile of streams per protocol
+    this.components.getMetrics()?.updateComponentMetric({
       system: METRICS_SYSTEM,
       component: METRICS_COMPONENT,
       metric: 'protocol-streams-per-connection-90th-percentile',
@@ -267,7 +267,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         const metric: Record<string, number> = {}
 
         for (let [protocol, counts] of Object.entries(allStreams)) {
-          counts = counts.sort()
+          counts = counts.sort((a, b) => a - b)
 
           const index = Math.floor(counts.length * 0.9)
           metric[protocol] = counts[index]
