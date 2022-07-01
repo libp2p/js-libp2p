@@ -296,6 +296,6 @@ describe('Metrics', () => {
 
     expect(metrics.getComponentMetrics()).to.have.lengthOf(1)
     expect(metrics.getComponentMetrics().get('libp2p')?.get(component)).to.have.lengthOf(1)
-    expect(metrics.getComponentMetrics().get('libp2p')?.get(component)?.get(metric)).to.equal(value)
+    expect(metrics.getComponentMetrics().get('libp2p')?.get(component)?.get(metric)?.calculate()).to.equal(value)
   })
 })
