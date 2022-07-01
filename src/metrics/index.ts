@@ -3,7 +3,7 @@ import each from 'it-foreach'
 import LRU from 'hashlru'
 import { METRICS as defaultOptions } from '../constants.js'
 import { DefaultStats, StatsInit } from './stats.js'
-import type { ComponentMetricsUpdate, Metrics, Stats, TrackStreamOptions } from '@libp2p/interface-metrics'
+import type { ComponentMetricsUpdate, Metrics, Stats, TrackedMetric, TrackStreamOptions } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Duplex } from 'it-stream-types'
@@ -41,7 +41,7 @@ export class DefaultMetrics implements Metrics, Startable {
   private readonly protocolStats: Map<string, DefaultStats>
   private readonly oldPeers: ReturnType<typeof LRU>
   private running: boolean
-  private readonly systems: Map<string, Map<string, Map<string, number>>>
+  private readonly systems: Map<string, Map<string, Map<string, TrackedMetric>>>
   private readonly statsInit: StatsInit
 
   constructor (init: MetricsInit) {
@@ -115,7 +115,7 @@ export class DefaultMetrics implements Metrics, Startable {
   }
 
   updateComponentMetric (update: ComponentMetricsUpdate) {
-    const { system = 'libp2p', component, metric, value } = update
+    const { system = 'libp2p', component, metric, value, label, help } = update
 
     if (!this.systems.has(system)) {
       this.systems.set(system, new Map())
@@ -137,7 +137,11 @@ export class DefaultMetrics implements Metrics, Startable {
       throw new Error('Unknown metric component')
     }
 
-    componentMetrics.set(metric, value)
+    componentMetrics.set(metric, {
+      label,
+      help,
+      calculate: typeof value !== 'function' ? () => value : value
+    })
   }
 
   /**
