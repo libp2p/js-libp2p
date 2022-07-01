@@ -83,7 +83,11 @@ describe('tracked-map', () => {
       expect(data.system).to.equal(system)
       expect(data.component).to.equal(component)
       expect(data.metric).to.equal(metric)
-      value = data.value
+
+      if (typeof data.value === 'number') {
+        value = data.value
+      }
+
       callCount++
     }
 
