@@ -11,7 +11,7 @@ import { path as p2pd } from 'go-libp2p'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
-import { Mplex } from '@libp2p/mplex'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import fs from 'fs'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -93,7 +93,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [new TCP()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [new Yamux()],
     connectionEncryption: [new Noise()]
   }
 

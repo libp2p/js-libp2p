@@ -348,7 +348,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               muxedStream.stat.protocol = protocol
 
               connection.addStream(muxedStream)
-              this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
+              this._onStream({ connection, stream: Object.assign(muxedStream, stream), protocol })
             })
             .catch(err => {
               log.error(err)
@@ -394,14 +394,16 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
           muxedStream.stat.protocol = protocol
 
-          return {
-            ...muxedStream,
-            ...stream,
-            stat: {
-              ...muxedStream.stat,
-              protocol
+          return Object.assign(
+            muxedStream,
+            stream,
+            {
+              stat: {
+                ...muxedStream.stat,
+                protocol
+              }
             }
-          }
+          )
         } catch (err: any) {
           log.error('could not create new stream', err)
 
