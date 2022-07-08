@@ -153,7 +153,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly latencyMonitor: LatencyMonitor
   private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
-  private dialTimeout: number
+  private readonly dialTimeout: number
 
   constructor (init: ConnectionManagerInit) {
     super()
