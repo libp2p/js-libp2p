@@ -160,6 +160,7 @@ export class Circuit implements Transport, Initializable {
 
     try {
       const virtualConnection = await hop({
+        ...options,
         connection: relayConnection,
         request: {
           type: CircuitPB.Type.HOP,
