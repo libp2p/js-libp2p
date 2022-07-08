@@ -19,7 +19,8 @@ import { MemoryDatastore } from 'datastore-core'
 const defaultInit: FetchServiceInit = {
   protocolPrefix: 'ipfs',
   maxInboundStreams: 1,
-  maxOutboundStreams: 1
+  maxOutboundStreams: 1,
+  timeout: 1000
 }
 
 async function createComponents (index: number) {

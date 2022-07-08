@@ -134,10 +134,9 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     const timeoutController = new TimeoutController(this.inboundUpgradeTimeout)
 
     try {
-      maConn = {
-        ...maConn,
-        ...abortableDuplex(maConn, timeoutController.signal)
-      }
+      const abortableStream = abortableDuplex(maConn, timeoutController.signal)
+      maConn.source = abortableStream.source
+      maConn.sink = abortableStream.sink
 
       if (await this.components.getConnectionGater().denyInboundConnection(maConn)) {
         throw errCode(new Error('The multiaddr connection is blocked by gater.acceptConnection'), codes.ERR_CONNECTION_INTERCEPTED)

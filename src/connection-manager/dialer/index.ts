@@ -342,6 +342,15 @@ export class Dialer implements Startable, Initializable {
    * Resolve multiaddr recursively
    */
   async _resolve (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
+    // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
+    // Now only supporting resolve for dnsaddr
+    const resolvableProto = ma.protoNames().includes('dnsaddr')
+
+    // Multiaddr is not resolvable? End recursion!
+    if (!resolvableProto) {
+      return [ma]
+    }
+
     const resolvedMultiaddrs = await this._resolveRecord(ma, options)
     const recursiveMultiaddrs = await Promise.all(resolvedMultiaddrs.map(async (nm) => {
       return await this._resolve(nm, options)
