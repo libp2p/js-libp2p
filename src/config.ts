@@ -26,6 +26,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
     dialTimeout: Constants.DIAL_TIMEOUT,
+    inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
     resolvers: {
       dnsaddr: dnsaddrResolver
     },

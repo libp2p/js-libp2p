@@ -43,7 +43,8 @@ describe('registrar', () => {
         connectionManager: new DefaultConnectionManager({
           minConnections: 50,
           maxConnections: 1000,
-          autoDialInterval: 1000
+          autoDialInterval: 1000,
+          inboundUpgradeTimeout: 1000
         })
       })
       registrar = new DefaultRegistrar(components)

@@ -19,7 +19,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { Registrar } from '@libp2p/interface-registrar'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
 import { TimeoutController } from 'timeout-abort-controller'
-import { abortableDuplex } from 'abortable-iterator/dist/src'
+import { abortableDuplex } from 'abortable-iterator'
 
 const log = logger('libp2p:upgrader')
 

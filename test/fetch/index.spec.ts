@@ -34,7 +34,8 @@ async function createComponents (index: number) {
     connectionManager: new DefaultConnectionManager({
       minConnections: 50,
       maxConnections: 1000,
-      autoDialInterval: 1000
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
     })
   })
 

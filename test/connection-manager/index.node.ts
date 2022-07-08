@@ -54,7 +54,8 @@ describe('Connection Manager', () => {
     const connectionManager = new DefaultConnectionManager({
       maxConnections: 1000,
       minConnections: 50,
-      autoDialInterval: 1000
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
     })
     connectionManager.init(new Components({ upgrader, peerStore }))
 
@@ -89,7 +90,8 @@ describe('Connection Manager', () => {
     const connectionManager = new DefaultConnectionManager({
       maxConnections: 1000,
       minConnections: 50,
-      autoDialInterval: 1000
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
     })
     connectionManager.init(new Components({ upgrader, peerStore }))
 
