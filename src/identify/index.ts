@@ -229,16 +229,20 @@ export class IdentifyService implements Startable {
   }
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
-    const stream = await connection.newStream([this.identifyProtocolStr], options)
-    let source: Duplex<Uint8Array> = stream
-    let timeoutController
     let signal = options.signal
+    let timeoutController
 
     // create a timeout if no abort signal passed
     if (signal == null) {
       timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
       signal = timeoutController.signal
     }
+
+    const stream = await connection.newStream([this.identifyProtocolStr], {
+      ...options,
+      signal
+    })
+    let source: Duplex<Uint8Array> = stream
 
     // make stream abortable if AbortSignal passed
     source = abortableDuplex(stream, signal)
