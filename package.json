@@ -158,7 +158,7 @@
     "@libp2p/interface-transport": "^1.0.0",
     "@libp2p/interfaces": "^3.0.1",
     "@libp2p/logger": "^2.0.0",
-    "@libp2p/utils": "^2.0.0",
+    "@libp2p/utils": "^3.0.0",
     "@multiformats/mafmt": "^11.0.2",
     "@multiformats/multiaddr": "^10.1.5",
     "@multiformats/multiaddr-to-uri": "^9.0.0",
