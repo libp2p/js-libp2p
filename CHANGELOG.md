@@ -1,3 +1,12 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.0...v3.0.1) (2022-07-12)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump @libp2p/interface-mocks from 2.1.0 to 3.0.1 ([#168](https://github.com/libp2p/js-libp2p-websockets/issues/168)) ([8a17ed7](https://github.com/libp2p/js-libp2p-websockets/commit/8a17ed7eb70e7ac90053cd591bb1e6f331915341))
+* **deps:** bump @libp2p/utils from 2.0.1 to 3.0.0 ([#167](https://github.com/libp2p/js-libp2p-websockets/issues/167)) ([53ba721](https://github.com/libp2p/js-libp2p-websockets/commit/53ba7218d19068e2a6b038ecbea65993af7bd745))
+* update websockets import var ([#165](https://github.com/libp2p/js-libp2p-websockets/issues/165)) ([838b69e](https://github.com/libp2p/js-libp2p-websockets/commit/838b69e04d435e55d038e49f2df66322d986a2e3))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v2.0.1...v3.0.0) (2022-06-17)
 
 
