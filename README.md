@@ -43,14 +43,14 @@ $ npm i @libp2p/websockets
 ### Constructor properties
 
 ```js
-import WS from '@libp2p/websockets'
+import { WebSockets } from '@libp2p/websockets'
 
 const properties = {
   upgrader,
   filter
 }
 
-const ws = new WS(properties)
+const ws = new WebSockets(properties)
 ```
 
 | Name     | Type                                                                                                                       | Description                                                            | Default                                                                 |
