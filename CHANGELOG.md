@@ -1,3 +1,11 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.1...v3.0.2) (2022-07-13)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump @libp2p/interface-mocks from 2.1.0 to 3.0.1 ([#193](https://github.com/libp2p/js-libp2p-tcp/issues/193)) ([0571339](https://github.com/libp2p/js-libp2p-tcp/commit/0571339387dad55739fa2d831d39d5165620ecbb))
+* **deps:** bump @libp2p/utils from 2.0.1 to 3.0.0 ([#192](https://github.com/libp2p/js-libp2p-tcp/issues/192)) ([0c757ff](https://github.com/libp2p/js-libp2p-tcp/commit/0c757ff95b13bdf1ffb3285fa4b10d0988e8e42b))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.0...v3.0.1) (2022-06-27)
 
 
