@@ -148,7 +148,7 @@
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^2.0.1",
+    "@libp2p/interface-mocks": "^3.0.1",
     "@libp2p/interface-transport-compliance-tests": "^2.0.0",
     "aegir": "^37.0.4",
     "it-all": "^1.0.6",
