@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -205,6 +206,7 @@ describe('auto-relay', () => {
 
       // Disconnect from peer used for relay
       await relayLibp2p2.stop()
+      await pEvent(relayLibp2p1.connectionManager, 'peer:disconnect', { timeout: 500 })
 
       // Should not be using the relay any more
       await expect(usingAsRelay(relayLibp2p1, relayLibp2p2, {
