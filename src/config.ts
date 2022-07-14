@@ -21,7 +21,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
   connectionManager: {
     maxConnections: 300,
     minConnections: 50,
-    autoDial: false,
+    autoDial: true,
     autoDialInterval: 10000,
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,

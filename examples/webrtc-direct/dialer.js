@@ -31,12 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Listen for new peers
   libp2p.addEventListener('peer:discovery', (evt) => {
     log(`Found peer ${evt.detail.id.toString()}`)
-
-    // Dial the discovered peer
-    libp2p.dial(evt.detail.id)
-      .catch(err => {
-        console.error(err)
-      })
   })
 
   // Listen for new connections to peers
