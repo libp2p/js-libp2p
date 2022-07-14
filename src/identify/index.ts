@@ -30,9 +30,6 @@ import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:identify')
 
-// https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
-const IDENTIFY_TIMEOUT = 60000
-
 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
 const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
 
@@ -54,7 +51,7 @@ export interface IdentifyServiceInit {
   /**
    * How long we should wait for a remote peer to send their identify response
    */
-  timeout?: number
+  timeout: number
 
   /**
    * Identify responses larger than this in bytes will be rejected (default: 8192)
@@ -167,7 +164,7 @@ export class IdentifyService implements Startable {
     const protocols = await this.components.getPeerStore().protoBook.get(this.components.getPeerId())
 
     const pushes = connections.map(async connection => {
-      const timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
+      const timeoutController = new TimeoutController(this.init.timeout)
       let stream: Stream | undefined
 
       try {
@@ -229,19 +226,21 @@ export class IdentifyService implements Startable {
   }
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
-    const stream = await connection.newStream([this.identifyProtocolStr], options)
-    let source: Duplex<Uint8Array> = stream
     let timeoutController
     let signal = options.signal
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
+      timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
     }
 
-    // make stream abortable if AbortSignal passed
-    source = abortableDuplex(stream, signal)
+    const stream = await connection.newStream([this.identifyProtocolStr], {
+      signal
+    })
+
+    // make stream abortable
+    const source = abortableDuplex(stream, signal)
 
     try {
       const data = await pipe(
@@ -370,7 +369,7 @@ export class IdentifyService implements Startable {
    */
   async _handleIdentify (data: IncomingStreamData) {
     const { connection, stream } = data
-    const timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
+    const timeoutController = new TimeoutController(this.init.timeout)
 
     try {
       const publicKey = this.components.getPeerId().publicKey ?? new Uint8Array(0)
@@ -421,7 +420,7 @@ export class IdentifyService implements Startable {
    */
   async _handlePush (data: IncomingStreamData) {
     const { connection, stream } = data
-    const timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
+    const timeoutController = new TimeoutController(this.init.timeout)
 
     let message: Identify | undefined
     try {

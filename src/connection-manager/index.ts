@@ -107,9 +107,16 @@ export interface ConnectionManagerInit {
   maxAddrsToDial?: number
 
   /**
-   * How long a dial attempt is allowed to take
+   * How long a dial attempt is allowed to take, including DNS resolution
+   * of the multiaddr, opening a socket and upgrading it to a Connection.
    */
   dialTimeout?: number
+
+  /**
+   * When a new inbound connection is opened, the upgrade process (e.g. protect,
+   * encrypt, multiplex etc) must complete within this number of ms.
+   */
+  inboundUpgradeTimeout: number
 
   /**
    * Number of max concurrent dials per peer
@@ -146,6 +153,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly latencyMonitor: LatencyMonitor
   private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
+  private readonly dialTimeout: number
 
   constructor (init: ConnectionManagerInit) {
     super()
@@ -182,6 +190,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.onDisconnect = this.onDisconnect.bind(this)
 
     this.startupReconnectTimeout = init.startupReconnectTimeout ?? STARTUP_RECONNECT_TIMEOUT
+    this.dialTimeout = init.dialTimeout ?? 30000
   }
 
   init (components: Components): void {
@@ -486,7 +495,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     return conns
   }
 
-  async openConnection (peerId: PeerId, options?: AbortOptions): Promise<Connection> {
+  async openConnection (peerId: PeerId, options: AbortOptions = {}): Promise<Connection> {
     log('dial to %p', peerId)
     const existingConnections = this.getConnections(peerId)
 
@@ -496,30 +505,43 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       return existingConnections[0]
     }
 
-    const connection = await this.dialer.dial(peerId, options)
-    let peerConnections = this.connections.get(peerId.toString())
+    let timeoutController: TimeoutController | undefined
 
-    if (peerConnections == null) {
-      peerConnections = []
-      this.connections.set(peerId.toString(), peerConnections)
+    if (options?.signal == null) {
+      timeoutController = new TimeoutController(this.dialTimeout)
+      options.signal = timeoutController.signal
     }
 
-    // we get notified of connections via the Upgrader emitting "connection"
-    // events, double check we aren't already tracking this connection before
-    // storing it
-    let trackedConnection = false
+    try {
+      const connection = await this.dialer.dial(peerId, options)
+      let peerConnections = this.connections.get(peerId.toString())
 
-    for (const conn of peerConnections) {
-      if (conn.id === connection.id) {
-        trackedConnection = true
+      if (peerConnections == null) {
+        peerConnections = []
+        this.connections.set(peerId.toString(), peerConnections)
+      }
+
+      // we get notified of connections via the Upgrader emitting "connection"
+      // events, double check we aren't already tracking this connection before
+      // storing it
+      let trackedConnection = false
+
+      for (const conn of peerConnections) {
+        if (conn.id === connection.id) {
+          trackedConnection = true
+        }
+      }
+
+      if (!trackedConnection) {
+        peerConnections.push(connection)
+      }
+
+      return connection
+    } finally {
+      if (timeoutController != null) {
+        timeoutController.clear()
       }
     }
-
-    if (!trackedConnection) {
-      peerConnections.push(connection)
-    }
-
-    return connection
   }
 
   async closeConnections (peerId: PeerId): Promise<void> {

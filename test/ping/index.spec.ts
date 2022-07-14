@@ -19,7 +19,8 @@ import { MemoryDatastore } from 'datastore-core'
 const defaultInit: PingServiceInit = {
   protocolPrefix: 'ipfs',
   maxInboundStreams: 1,
-  maxOutboundStreams: 1
+  maxOutboundStreams: 1,
+  timeout: 1000
 }
 
 async function createComponents (index: number) {
@@ -34,7 +35,8 @@ async function createComponents (index: number) {
     connectionManager: new DefaultConnectionManager({
       minConnections: 50,
       maxConnections: 1000,
-      autoDialInterval: 1000
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
     })
   })
 

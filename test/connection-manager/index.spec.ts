@@ -10,6 +10,7 @@ import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/int
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
+import pWaitFor from 'p-wait-for'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2pNode
@@ -162,6 +163,10 @@ describe('Connection Manager', () => {
 
     await libp2p.stop()
     await libp2p.start()
+
+    await pWaitFor(() => connectionManagerOpenConnectionSpy.called, {
+      interval: 100
+    })
 
     expect(connectionManagerOpenConnectionSpy.called).to.be.true('Did not attempt to connect to important peer')
     expect(connectionManagerOpenConnectionSpy.getCall(0).args[0].toString()).to.equal(peerId.toString(), 'Attempted to connect to the wrong peer')
