@@ -11,8 +11,8 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { Duplex } from 'it-stream-types'
 import { abortableDuplex } from 'abortable-iterator'
+import { TimeoutController } from 'timeout-abort-controller'
 
 const log = logger('libp2p:ping')
 
@@ -20,6 +20,11 @@ export interface PingServiceInit {
   protocolPrefix: string
   maxInboundStreams: number
   maxOutboundStreams: number
+
+  /**
+   * How long we should wait for a ping response
+   */
+  timeout: number
 }
 
 export class PingService implements Startable {
@@ -73,17 +78,24 @@ export class PingService implements Startable {
   async ping (peer: PeerId, options: AbortOptions = {}): Promise<number> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.getConnectionManager().openConnection(peer, options)
-    const stream = await connection.newStream([this.protocol], options)
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
+    const connection = await this.components.getConnectionManager().openConnection(peer, options)
+    let timeoutController
+    let signal = options.signal
 
-    let source: Duplex<Uint8Array> = stream
-
-    // make stream abortable if AbortSignal passed
-    if (options.signal != null) {
-      source = abortableDuplex(stream, options.signal)
+    // create a timeout if no abort signal passed
+    if (signal == null) {
+      timeoutController = new TimeoutController(this.init.timeout)
+      signal = timeoutController.signal
     }
+
+    const stream = await connection.newStream([this.protocol], {
+      signal
+    })
+
+    // make stream abortable
+    const source = abortableDuplex(stream, signal)
 
     try {
       const result = await pipe(
@@ -99,6 +111,10 @@ export class PingService implements Startable {
 
       return end - start
     } finally {
+      if (timeoutController != null) {
+        timeoutController.clear()
+      }
+
       stream.close()
     }
   }

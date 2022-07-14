@@ -74,7 +74,8 @@ describe('Dialing (direct, TCP)', () => {
     localComponents.setConnectionManager(new DefaultConnectionManager({
       maxConnections: 100,
       minConnections: 50,
-      autoDialInterval: 1000
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
     }))
 
     localTM = new DefaultTransportManager(localComponents)
