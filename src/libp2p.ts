@@ -124,7 +124,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     // Set up the Upgrader
     this.components.setUpgrader(new DefaultUpgrader(this.components, {
       connectionEncryption: (init.connectionEncryption ?? []).map(component => this.configureComponent(component)),
-      muxers: (init.streamMuxers ?? []).map(component => this.configureComponent(component))
+      muxers: (init.streamMuxers ?? []).map(component => this.configureComponent(component)),
+      inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
     }))
 
     // Create the Connection Manager

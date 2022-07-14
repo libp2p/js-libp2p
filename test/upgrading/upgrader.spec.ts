@@ -66,7 +66,8 @@ describe('Upgrader', () => {
       ],
       muxers: [
         localMuxerFactory
-      ]
+      ],
+      inboundUpgradeTimeout: 1000
     })
 
     remoteComponents = new Components({
@@ -80,7 +81,8 @@ describe('Upgrader', () => {
       ],
       muxers: [
         new Mplex()
-      ]
+      ],
+      inboundUpgradeTimeout: 1000
     })
 
     await localComponents.getRegistrar().handle('/echo/1.0.0', ({ stream }) => {
@@ -137,13 +139,15 @@ describe('Upgrader', () => {
       connectionEncryption: [
         new Plaintext()
       ],
-      muxers: []
+      muxers: [],
+      inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
         new Plaintext()
       ],
-      muxers: []
+      muxers: [],
+      inboundUpgradeTimeout: 1000
     })
 
     const connections = await Promise.all([
@@ -214,13 +218,15 @@ describe('Upgrader', () => {
       connectionEncryption: [
         new BoomCrypto()
       ],
-      muxers: []
+      muxers: [],
+      inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
         new BoomCrypto()
       ],
-      muxers: []
+      muxers: [],
+      inboundUpgradeTimeout: 1000
     })
 
     // Wait for the results of each side of the connection
@@ -266,7 +272,8 @@ describe('Upgrader', () => {
       ],
       muxers: [
         new OtherMuxerFactory()
-      ]
+      ],
+      inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
@@ -274,7 +281,8 @@ describe('Upgrader', () => {
       ],
       muxers: [
         new Mplex()
-      ]
+      ],
+      inboundUpgradeTimeout: 1000
     })
 
     // Wait for the results of each side of the connection

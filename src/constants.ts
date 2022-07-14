@@ -5,6 +5,11 @@
 export const DIAL_TIMEOUT = 30e3
 
 /**
+ * How long in ms an inbound connection upgrade is allowed to take
+ */
+export const INBOUND_UPGRADE_TIMEOUT = 30e3
+
+/**
  * Maximum allowed concurrent dials
  */
 export const MAX_PARALLEL_DIALS = 100
