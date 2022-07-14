@@ -315,6 +315,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     if (muxerFactory != null) {
       // Create the muxer
       muxer = muxerFactory.createStreamMuxer({
+        direction,
         // Run anytime a remote stream is created
         onIncomingStream: muxedStream => {
           if (connection == null) {
@@ -469,7 +470,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         await maConn.close()
         // Ensure remaining streams are closed
         if (muxer != null) {
-          muxer.streams.forEach(s => s.close())
+          muxer.close()
         }
       }
     })
