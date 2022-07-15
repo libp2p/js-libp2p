@@ -80,7 +80,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
-    "prepublish-only": "node -p \"'export const { name, version } = ' + JSON.stringify({version: require('./package.json').version, name: require('./package.json').name})\" > src/version.ts",
+    "prepublishOnly": "node scripts/update-version.js",
     "build": "aegir build",
     "generate": "run-s generate:proto:*",
     "generate:proto:circuit": "protons ./src/circuit/pb/index.proto",
