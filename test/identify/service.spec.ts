@@ -151,12 +151,13 @@ describe('libp2p.dialer.identifyService', () => {
   it('should append UserAgent information to default AGENT_VERSION', async () => {
     // Stub environment version for testing dynamic AGENT_VERSION
     sinon.stub(process, 'version').value('vTEST')
+
     if (typeof globalThis.navigator !== 'undefined') {
       sinon.stub(navigator, 'userAgent').value('vTEST')
     }
 
     libp2p = await createLibp2pNode(createBaseOptions({
-      peerId,
+      peerId
     }))
 
     await libp2p.start()
