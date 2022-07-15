@@ -121,7 +121,7 @@ function printAddrs (node, number) {
 Then add,
 
 ```js
-;(async () => {
+(async () => {
   const [node1, node2] = await Promise.all([
     createNode(),
     createNode()
@@ -231,7 +231,7 @@ await pipe(
   stream
 )
 
-// node 2 (TCP+WebSockets) dials to node 2 (WebSockets)
+// node 2 (TCP+WebSockets) dials to node 3 (WebSockets)
 const stream2 = await node2.dialProtocol(node3.peerId, '/print')
 await pipe(
   ['node 2 dialed to node 3 successfully'],

@@ -43,7 +43,7 @@ function print ({ stream }) {
   )
 }
 
-;(async () => {
+(async () => {
   const [node1, node2, node3] = await Promise.all([
     createNode([new TCP()], '/ip4/0.0.0.0/tcp/0'),
     createNode([new TCP(), new WebSockets()], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
@@ -69,7 +69,7 @@ function print ({ stream }) {
     stream
   )
 
-  // node 2 (TCP+WebSockets) dials to node 2 (WebSockets)
+  // node 2 (TCP+WebSockets) dials to node 3 (WebSockets)
   const stream2 = await node2.dialProtocol(node3.peerId, '/print')
   await pipe(
     [uint8ArrayFromString('node 2 dialed to node 3 successfully')],
