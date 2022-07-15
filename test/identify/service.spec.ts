@@ -14,6 +14,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
+import { AGENT_VERSION } from '../../src/identify/consts.js'
 
 describe('libp2p.dialer.identifyService', () => {
   let peerId: PeerId
@@ -145,6 +146,29 @@ describe('libp2p.dialer.identifyService', () => {
 
     // Verify the streams close
     await pWaitFor(() => connection.streams.length === 0)
+  })
+
+  it('should append UserAgent information to default AGENT_VERSION', async () => {
+    // Stub environment version for testing dynamic AGENT_VERSION
+    sinon.stub(process, 'version').value('vTEST')
+
+    if (typeof globalThis.navigator !== 'undefined') {
+      sinon.stub(navigator, 'userAgent').value('vTEST')
+    }
+
+    libp2p = await createLibp2pNode(createBaseOptions({
+      peerId
+    }))
+
+    await libp2p.start()
+
+    if (libp2p.identifyService == null) {
+      throw new Error('Identity service was not configured')
+    }
+
+    const storedAgentVersion = await libp2p.peerStore.metadataBook.getValue(peerId, 'AgentVersion')
+
+    expect(AGENT_VERSION + ' UserAgent=vTEST').to.equal(uint8ArrayToString(storedAgentVersion ?? new Uint8Array()))
   })
 
   it('should store host data and protocol version into metadataBook', async () => {

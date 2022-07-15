@@ -80,6 +80,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "prepublishOnly": "node scripts/update-version.js",
     "build": "aegir build",
     "generate": "run-s generate:proto:*",
     "generate:proto:circuit": "protons ./src/circuit/pb/index.proto",
