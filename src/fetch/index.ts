@@ -93,6 +93,7 @@ export class FetchService implements Startable {
     const connection = await this.components.getConnectionManager().openConnection(peer, options)
     let timeoutController
     let signal = options.signal
+    let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
@@ -100,14 +101,14 @@ export class FetchService implements Startable {
       signal = timeoutController.signal
     }
 
-    const stream = await connection.newStream([this.protocol], {
-      signal
-    })
-
-    // make stream abortable
-    const source = abortableDuplex(stream, signal)
-
     try {
+      stream = await connection.newStream([this.protocol], {
+        signal
+      })
+
+      // make stream abortable
+      const source = abortableDuplex(stream, signal)
+
       const result = await pipe(
         [FetchRequest.encode({ identifier: key })],
         lp.encode(),
@@ -146,7 +147,9 @@ export class FetchService implements Startable {
         timeoutController.clear()
       }
 
-      stream.close()
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 

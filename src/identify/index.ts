@@ -228,6 +228,7 @@ export class IdentifyService implements Startable {
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
     let timeoutController
     let signal = options.signal
+    let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
@@ -235,14 +236,14 @@ export class IdentifyService implements Startable {
       signal = timeoutController.signal
     }
 
-    const stream = await connection.newStream([this.identifyProtocolStr], {
-      signal
-    })
-
-    // make stream abortable
-    const source = abortableDuplex(stream, signal)
-
     try {
+      stream = await connection.newStream([this.identifyProtocolStr], {
+        signal
+      })
+
+      // make stream abortable
+      const source = abortableDuplex(stream, signal)
+
       const data = await pipe(
         [],
         source,
@@ -266,7 +267,9 @@ export class IdentifyService implements Startable {
         timeoutController.clear()
       }
 
-      stream.close()
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 
