@@ -105,6 +105,7 @@ You can find multiple examples on the [examples folder](./examples) that will gu
 > git clone https://github.com/libp2p/js-libp2p.git
 > cd js-libp2p
 > npm install
+> npm run build
 ```
 
 ### Tests

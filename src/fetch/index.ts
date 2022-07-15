@@ -10,10 +10,10 @@ import type { Stream } from '@libp2p/interface-connection'
 import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { Components } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { Duplex } from 'it-stream-types'
 import { abortableDuplex } from 'abortable-iterator'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
+import { TimeoutController } from 'timeout-abort-controller'
 
 const log = logger('libp2p:fetch')
 
@@ -21,6 +21,11 @@ export interface FetchServiceInit {
   protocolPrefix: string
   maxInboundStreams: number
   maxOutboundStreams: number
+
+  /**
+   * How long we should wait for a remote peer to send any data
+   */
+  timeout: number
 }
 
 export interface HandleMessageOptions {
@@ -86,13 +91,21 @@ export class FetchService implements Startable {
     log('dialing %s to %p', this.protocol, peer)
 
     const connection = await this.components.getConnectionManager().openConnection(peer, options)
-    const stream = await connection.newStream([this.protocol], options)
-    let source: Duplex<Uint8Array> = stream
+    let timeoutController
+    let signal = options.signal
 
-    // make stream abortable if AbortSignal passed
-    if (options.signal != null) {
-      source = abortableDuplex(stream, options.signal)
+    // create a timeout if no abort signal passed
+    if (signal == null) {
+      timeoutController = new TimeoutController(this.init.timeout)
+      signal = timeoutController.signal
     }
+
+    const stream = await connection.newStream([this.protocol], {
+      signal
+    })
+
+    // make stream abortable
+    const source = abortableDuplex(stream, signal)
 
     try {
       const result = await pipe(
@@ -129,6 +142,10 @@ export class FetchService implements Startable {
 
       return result ?? null
     } finally {
+      if (timeoutController != null) {
+        timeoutController.clear()
+      }
+
       stream.close()
     }
   }

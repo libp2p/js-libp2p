@@ -10,7 +10,7 @@ We've seen many interesting use cases appear with this, here are some highlights
 
 ## 0. Set up the example
 
-Before moving into the examples, you should run `npm install` on the top level `js-libp2p` folder, in order to install all the dependencies needed for this example. In addition, you will need to install the example related dependencies by doing `cd examples && npm install`. Once the install finishes, you should move into the example folder with `cd pubsub`.
+Before moving into the examples, you should run `npm install` and `npm run build` on the top level `js-libp2p` folder, in order to install all the dependencies needed for this example. In addition, you will need to install the example related dependencies by doing `cd examples && npm install`. Once the install finishes, you should move into the example folder with `cd pubsub`.
 
 ## 1. Setting up a simple PubSub network on top of libp2p
 

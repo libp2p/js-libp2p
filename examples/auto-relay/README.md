@@ -5,7 +5,7 @@ While direct connections to nodes are preferable, it's not always possible to do
 
 ## 0. Setup the example
 
-Before moving into the examples, you should run `npm install` on the top level `js-libp2p` folder, in order to install all the dependencies needed for this example. Once the install finishes, you should move into the example folder with `cd examples/auto-relay`.
+Before moving into the examples, you should run `npm install` and `npm run build` on the top level `js-libp2p` folder, in order to install all the dependencies needed for this example. Once the install finishes, you should move into the example folder with `cd examples/auto-relay`.
 
 This example comes with 3 main files. A `relay.js` file to be used in the first step, a `listener.js` file to be used in the second step and a `dialer.js` file to be used on the third step. All of these scripts will run their own libp2p node, which will interact with the previous ones. All nodes must be running in order for you to proceed.
 

@@ -9,6 +9,8 @@ import type { DefaultConnectionManager } from '../../src/connection-manager/inde
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
+import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
+import pWaitFor from 'p-wait-for'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2pNode
@@ -51,7 +53,7 @@ describe('Connection Manager', () => {
     expect(libp2p.components.getMetrics()).to.exist()
   })
 
-  it('should close lowest value peer connection when the maximum has been reached', async () => {
+  it('should close connections with low tag values first', async () => {
     const max = 5
     libp2p = await createNode({
       config: createBaseOptions({
@@ -67,20 +69,21 @@ describe('Connection Manager', () => {
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
     const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
-
-    // Add 1 too many connections
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
-    await Promise.all([...new Array(max + 1)].map(async (_, index) => {
+
+    // Add 1 connection too many
+    for (let i = 0; i < max + 1; i++) {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       const spy = sinon.spy(connection, 'close')
-      // The connections have the same remote id, give them random ones
-      // so that we can verify the correct connection was closed
-      // sinon.stub(connection.remotePeer, 'toString').returns(index)
-      const value = Math.random()
+
+      const value = i * 10
       spies.set(value, spy)
-      connectionManager.setPeerValue(connection.remotePeer, value)
+      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
+        value
+      })
+
       await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
-    }))
+    }
 
     // get the lowest value
     const lowest = Array.from(spies.keys()).sort((a, b) => {
@@ -100,7 +103,7 @@ describe('Connection Manager', () => {
     expect(lowestSpy).to.have.property('callCount', 1)
   })
 
-  it('should close connection when the maximum has been reached even without peer values', async () => {
+  it('should close connection when the maximum has been reached even without tags', async () => {
     const max = 5
     libp2p = await createNode({
       config: createBaseOptions({
@@ -119,11 +122,11 @@ describe('Connection Manager', () => {
 
     // Add 1 too many connections
     const spy = sinon.spy()
-    await Promise.all([...new Array(max + 1)].map(async () => {
+    for (let i = 0; i < max + 1; i++) {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       sinon.stub(connection, 'close').callsFake(async () => spy()) // eslint-disable-line
       await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
-    }))
+    }
 
     expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(1)
     expect(spy).to.have.property('callCount', 1)
@@ -139,5 +142,33 @@ describe('Connection Manager', () => {
       }),
       started: false
     })).to.eventually.rejected('maxConnections must be greater')
+  })
+
+  it('should reconnect to important peers on startup', async () => {
+    const peerId = await createEd25519PeerId()
+
+    libp2p = await createNode({
+      config: createBaseOptions(),
+      started: false
+    })
+
+    const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
+    const connectionManagerOpenConnectionSpy = sinon.spy(connectionManager, 'openConnection')
+
+    await libp2p.start()
+
+    expect(connectionManagerOpenConnectionSpy.called).to.be.false('Attempted to connect to peers')
+
+    await libp2p.peerStore.tagPeer(peerId, KEEP_ALIVE)
+
+    await libp2p.stop()
+    await libp2p.start()
+
+    await pWaitFor(() => connectionManagerOpenConnectionSpy.called, {
+      interval: 100
+    })
+
+    expect(connectionManagerOpenConnectionSpy.called).to.be.true('Did not attempt to connect to important peer')
+    expect(connectionManagerOpenConnectionSpy.getCall(0).args[0].toString()).to.equal(peerId.toString(), 'Attempted to connect to the wrong peer')
   })
 })

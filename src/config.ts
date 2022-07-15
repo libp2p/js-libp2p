@@ -26,6 +26,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
     dialTimeout: Constants.DIAL_TIMEOUT,
+    inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
@@ -79,7 +80,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
     host: {
       agentVersion: AGENT_VERSION
     },
-    timeout: 30000,
+    // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
+    timeout: 60000,
     maxInboundStreams: 1,
     maxOutboundStreams: 1,
     maxPushIncomingStreams: 1,
@@ -88,12 +90,14 @@ const DefaultConfig: Partial<Libp2pInit> = {
   ping: {
     protocolPrefix: 'ipfs',
     maxInboundStreams: 1,
-    maxOutboundStreams: 1
+    maxOutboundStreams: 1,
+    timeout: 10000
   },
   fetch: {
     protocolPrefix: 'libp2p',
     maxInboundStreams: 1,
-    maxOutboundStreams: 1
+    maxOutboundStreams: 1,
+    timeout: 10000
   }
 }
 

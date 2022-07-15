@@ -13,11 +13,14 @@ import { CustomEvent } from '@libp2p/interfaces/events'
 import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core'
 
 const defaultInit: FetchServiceInit = {
   protocolPrefix: 'ipfs',
   maxInboundStreams: 1,
-  maxOutboundStreams: 1
+  maxOutboundStreams: 1,
+  timeout: 1000
 }
 
 async function createComponents (index: number) {
@@ -27,10 +30,13 @@ async function createComponents (index: number) {
     peerId,
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
+    peerStore: new PersistentPeerStore(),
+    datastore: new MemoryDatastore(),
     connectionManager: new DefaultConnectionManager({
       minConnections: 50,
       maxConnections: 1000,
-      autoDialInterval: 1000
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
     })
   })
 

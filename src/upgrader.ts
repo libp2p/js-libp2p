@@ -18,6 +18,8 @@ import { Components, isInitializable } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Registrar } from '@libp2p/interface-registrar'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
+import { TimeoutController } from 'timeout-abort-controller'
+import { abortableDuplex } from 'abortable-iterator'
 
 const log = logger('libp2p:upgrader')
 
@@ -43,6 +45,12 @@ export interface CryptoResult extends SecuredConnection {
 export interface UpgraderInit {
   connectionEncryption: ConnectionEncrypter[]
   muxers: StreamMuxerFactory[]
+
+  /**
+   * An amount of ms by which an inbound connection upgrade
+   * must complete
+   */
+  inboundUpgradeTimeout: number
 }
 
 function findIncomingStreamLimit (protocol: string, registrar: Registrar) {
@@ -89,6 +97,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
   private readonly components: Components
   private readonly connectionEncryption: Map<string, ConnectionEncrypter>
   private readonly muxers: Map<string, StreamMuxerFactory>
+  private readonly inboundUpgradeTimeout: number
 
   constructor (components: Components, init: UpgraderInit) {
     super()
@@ -105,6 +114,8 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     init.muxers.forEach(muxer => {
       this.muxers.set(muxer.protocol, muxer)
     })
+
+    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout
   }
 
   /**
@@ -120,82 +131,92 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     let proxyPeer
     const metrics = this.components.getMetrics()
 
-    if (await this.components.getConnectionGater().denyInboundConnection(maConn)) {
-      throw errCode(new Error('The multiaddr connection is blocked by gater.acceptConnection'), codes.ERR_CONNECTION_INTERCEPTED)
-    }
-
-    if (metrics != null) {
-      ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
-      const idString = `${(Math.random() * 1e9).toString(36)}${Date.now()}`
-      setPeer({ toString: () => idString })
-      maConn = metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
-    }
-
-    log('starting the inbound connection upgrade')
-
-    // Protect
-    let protectedConn = maConn
-    const protector = this.components.getConnectionProtector()
-
-    if (protector != null) {
-      log('protecting the inbound connection')
-      protectedConn = await protector.protect(maConn)
-    }
+    const timeoutController = new TimeoutController(this.inboundUpgradeTimeout)
 
     try {
-      // Encrypt the connection
-      ({
-        conn: encryptedConn,
-        remotePeer,
-        protocol: cryptoProtocol
-      } = await this._encryptInbound(protectedConn))
+      const abortableStream = abortableDuplex(maConn, timeoutController.signal)
+      maConn.source = abortableStream.source
+      maConn.sink = abortableStream.sink
 
-      if (await this.components.getConnectionGater().denyInboundEncryptedConnection(remotePeer, {
+      if (await this.components.getConnectionGater().denyInboundConnection(maConn)) {
+        throw errCode(new Error('The multiaddr connection is blocked by gater.acceptConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      }
+
+      if (metrics != null) {
+        ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
+        const idString = `${(Math.random() * 1e9).toString(36)}${Date.now()}`
+        setPeer({ toString: () => idString })
+        maConn = metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
+      }
+
+      log('starting the inbound connection upgrade')
+
+      // Protect
+      let protectedConn = maConn
+      const protector = this.components.getConnectionProtector()
+
+      if (protector != null) {
+        log('protecting the inbound connection')
+        protectedConn = await protector.protect(maConn)
+      }
+
+      try {
+        // Encrypt the connection
+        ({
+          conn: encryptedConn,
+          remotePeer,
+          protocol: cryptoProtocol
+        } = await this._encryptInbound(protectedConn))
+
+        if (await this.components.getConnectionGater().denyInboundEncryptedConnection(remotePeer, {
+          ...protectedConn,
+          ...encryptedConn
+        })) {
+          throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+        }
+
+        // Multiplex the connection
+        if (this.muxers.size > 0) {
+          const multiplexed = await this._multiplexInbound({
+            ...protectedConn,
+            ...encryptedConn
+          }, this.muxers)
+          muxerFactory = multiplexed.muxerFactory
+          upgradedConn = multiplexed.stream
+        } else {
+          upgradedConn = encryptedConn
+        }
+      } catch (err: any) {
+        log.error('Failed to upgrade inbound connection', err)
+        await maConn.close(err)
+        throw err
+      }
+
+      if (await this.components.getConnectionGater().denyInboundUpgradedConnection(remotePeer, {
         ...protectedConn,
         ...encryptedConn
       })) {
         throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
       }
 
-      // Multiplex the connection
-      if (this.muxers.size > 0) {
-        const multiplexed = await this._multiplexInbound({
-          ...protectedConn,
-          ...encryptedConn
-        }, this.muxers)
-        muxerFactory = multiplexed.muxerFactory
-        upgradedConn = multiplexed.stream
-      } else {
-        upgradedConn = encryptedConn
+      if (metrics != null) {
+        metrics.updatePlaceholder(proxyPeer, remotePeer)
+        setPeer(remotePeer)
       }
-    } catch (err: any) {
-      log.error('Failed to upgrade inbound connection', err)
-      await maConn.close(err)
-      throw err
+
+      log('Successfully upgraded inbound connection')
+
+      return this._createConnection({
+        cryptoProtocol,
+        direction: 'inbound',
+        maConn,
+        upgradedConn,
+        muxerFactory,
+        remotePeer
+      })
+    } finally {
+      timeoutController.clear()
     }
-
-    if (await this.components.getConnectionGater().denyInboundUpgradedConnection(remotePeer, {
-      ...protectedConn,
-      ...encryptedConn
-    })) {
-      throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
-    }
-
-    if (metrics != null) {
-      metrics.updatePlaceholder(proxyPeer, remotePeer)
-      setPeer(remotePeer)
-    }
-
-    log('Successfully upgraded inbound connection')
-
-    return this._createConnection({
-      cryptoProtocol,
-      direction: 'inbound',
-      maConn,
-      upgradedConn,
-      muxerFactory,
-      remotePeer
-    })
   }
 
   /**
@@ -315,6 +336,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     if (muxerFactory != null) {
       // Create the muxer
       muxer = muxerFactory.createStreamMuxer({
+        direction,
         // Run anytime a remote stream is created
         onIncomingStream: muxedStream => {
           if (connection == null) {
@@ -377,8 +399,16 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         const muxedStream = muxer.newStream()
         const mss = new Dialer(muxedStream)
         const metrics = this.components.getMetrics()
+        let controller: TimeoutController | undefined
 
         try {
+          if (options.signal == null) {
+            log('No abort signal was passed while trying to negotiate protocols %s falling back to default timeout', protocols)
+
+            controller = new TimeoutController(30000)
+            options.signal = controller.signal
+          }
+
           let { stream, protocol } = await mss.select(protocols, options)
 
           if (metrics != null) {
@@ -414,6 +444,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           }
 
           throw errCode(err, codes.ERR_UNSUPPORTED_PROTOCOL)
+        } finally {
+          if (controller != null) {
+            controller.clear()
+          }
         }
       }
 
@@ -469,7 +503,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         await maConn.close()
         // Ensure remaining streams are closed
         if (muxer != null) {
-          muxer.streams.forEach(s => s.close())
+          muxer.close()
         }
       }
     })
