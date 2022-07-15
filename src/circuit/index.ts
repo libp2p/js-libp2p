@@ -13,6 +13,7 @@ import {
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '@libp2p/components'
+import type { RelayConfig } from '../index.js'
 
 const log = logger('libp2p:relay')
 
@@ -20,11 +21,6 @@ export interface RelayAdvertiseConfig {
   bootDelay?: number
   enabled?: boolean
   ttl?: number
-}
-
-export interface HopConfig {
-  enabled?: boolean
-  active?: boolean
 }
 
 export interface AutoRelayConfig {
@@ -36,13 +32,8 @@ export interface AutoRelayConfig {
   maxListeners: number
 }
 
-export interface RelayInit {
+export interface RelayInit extends RelayConfig {
   addressSorter?: AddressSorter
-  maxListeners?: number
-  onError?: (error: Error, msg?: string) => void
-  hop: HopConfig
-  advertise: RelayAdvertiseConfig
-  autoRelay: AutoRelayConfig
 }
 
 export class Relay implements Startable {

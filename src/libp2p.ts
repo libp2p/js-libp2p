@@ -218,7 +218,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     })))
 
     if (init.relay.enabled) {
-      this.components.getTransportManager().add(this.configureComponent(new Circuit()))
+      this.components.getTransportManager().add(this.configureComponent(new Circuit(init.relay)))
 
       this.configureComponent(new Relay(this.components, {
         addressSorter: init.connectionManager.addressSorter,

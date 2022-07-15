@@ -69,7 +69,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
     },
     hop: {
       enabled: false,
-      active: false
+      active: false,
+      timeout: 30000
     },
     autoRelay: {
       enabled: false,

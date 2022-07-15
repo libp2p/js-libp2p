@@ -13,6 +13,7 @@ import type { Components } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
+import type { Stream } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:ping')
 
@@ -83,6 +84,7 @@ export class PingService implements Startable {
     const connection = await this.components.getConnectionManager().openConnection(peer, options)
     let timeoutController
     let signal = options.signal
+    let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
@@ -90,14 +92,14 @@ export class PingService implements Startable {
       signal = timeoutController.signal
     }
 
-    const stream = await connection.newStream([this.protocol], {
-      signal
-    })
-
-    // make stream abortable
-    const source = abortableDuplex(stream, signal)
-
     try {
+      stream = await connection.newStream([this.protocol], {
+        signal
+      })
+
+      // make stream abortable
+      const source = abortableDuplex(stream, signal)
+
       const result = await pipe(
         [data],
         source,
@@ -115,7 +117,9 @@ export class PingService implements Startable {
         timeoutController.clear()
       }
 
-      stream.close()
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 }

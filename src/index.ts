@@ -50,6 +50,7 @@ export interface MetricsConfig {
 export interface HopConfig {
   enabled?: boolean
   active?: boolean
+  timeout: number
 }
 
 export interface RelayConfig {
