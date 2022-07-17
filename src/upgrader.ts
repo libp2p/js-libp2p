@@ -20,6 +20,7 @@ import type { Registrar } from '@libp2p/interface-registrar'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
 import { TimeoutController } from 'timeout-abort-controller'
 import { abortableDuplex } from 'abortable-iterator'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:upgrader')
 
@@ -132,6 +133,11 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     const metrics = this.components.getMetrics()
 
     const timeoutController = new TimeoutController(this.inboundUpgradeTimeout)
+
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, timeoutController.signal)
+    } catch {}
 
     try {
       const abortableStream = abortableDuplex(maConn, timeoutController.signal)
@@ -407,6 +413,11 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
             controller = new TimeoutController(30000)
             options.signal = controller.signal
+
+            try {
+              // fails on node < 15.4
+              setMaxListeners?.(Infinity, controller.signal)
+            } catch {}
           }
 
           let { stream, protocol } = await mss.select(protocols, options)

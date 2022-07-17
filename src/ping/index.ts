@@ -14,6 +14,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
 import type { Stream } from '@libp2p/interface-connection'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:ping')
 
@@ -90,6 +91,11 @@ export class PingService implements Startable {
     if (signal == null) {
       timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
+
+      try {
+        // fails on node < 15.4
+        setMaxListeners?.(Infinity, timeoutController.signal)
+      } catch {}
     }
 
     try {

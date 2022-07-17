@@ -20,6 +20,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import type { RelayConfig } from '../index.js'
 import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:circuit')
 
@@ -63,6 +64,11 @@ export class Circuit implements Transport, Initializable {
   async _onProtocol (data: IncomingStreamData) {
     const { connection, stream } = data
     const controller = new TimeoutController(this._init.hop.timeout)
+
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, controller.signal)
+    } catch {}
 
     try {
       const source = abortableDuplex(stream, controller.signal)
