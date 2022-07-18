@@ -13,6 +13,7 @@ import all from 'it-all'
 import { relayV1Codec } from '../../src/circuit/multicodec.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
 import { CircuitRelay } from '../../src/circuit/v1/pb/index.js'
+import { pEvent } from 'p-event'
 
 /* eslint-env mocha */
 
@@ -46,7 +47,7 @@ describe('Dialing (via relay, TCP)', () => {
         config: createNodeOptions({
           relay: {
             autoRelay: {
-              enabled: false
+              enabled: true
             }
           }
         })
@@ -66,15 +67,17 @@ describe('Dialing (via relay, TCP)', () => {
     return await Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => await libp2p.stop()))
   })
 
-  it('should be able to connect to a peer over a relay with active connections', async () => {
+  it('should be able to connect to a peer over a relay', async () => {
     const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toString()
 
+    await dstLibp2p.dial(relayAddr.encapsulate(`/p2p/${relayIdString}`))
+    // make sure we have reservation before trying to dial. Previously relay initiated connection.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await pEvent(dstLibp2p.circuitService!, 'relay:reservation')
     const dialAddr = relayAddr
       .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toString()}`)
-
-    await relayLibp2p.dial(dstLibp2p.getMultiaddrs()[0])
 
     const connection = await srcLibp2p.dial(dialAddr)
 
@@ -92,9 +95,10 @@ describe('Dialing (via relay, TCP)', () => {
     )
 
     expect(output.slice()).to.eql(input)
+    echoStream.close()
   })
 
-  it('should fail to connect to a peer over a relay with inactive connections', async () => {
+  it('should fail to connect to a peer over a relay with no reservation', async () => {
     const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toString()
 

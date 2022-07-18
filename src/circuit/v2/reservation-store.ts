@@ -19,6 +19,7 @@ export class ReservationStore implements IReservationStore {
       return { status: Status.RESERVATION_REFUSED, expire: undefined }
     }
     const expire = new Date()
+    expire.setHours(expire.getHours() + 12)
     this.reservations.set(peer.toString(), { addr, expire })
     return { status: Status.OK, expire: BigInt(expire.getTime()) }
   }

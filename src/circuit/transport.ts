@@ -58,7 +58,7 @@ export class Circuit implements Transport, Initializable {
         log.error(err)
       })
     void this.components.getRegistrar().handle(relayV2HopCodec, (data) => {
-      void this._onProtocolV1(data).catch(err => {
+      void this._onV2ProtocolHop(data).catch(err => {
         log.error(err)
       })
     })
@@ -66,7 +66,7 @@ export class Circuit implements Transport, Initializable {
         log.error(err)
       })
     void this.components.getRegistrar().handle(relayV2StopCodec, (data) => {
-      void this._onProtocolV1(data).catch(err => {
+      void this._onV2ProtocolStop(data).catch(err => {
         log.error(err)
       })
     })
@@ -88,7 +88,7 @@ export class Circuit implements Transport, Initializable {
   }
 
   get [Symbol.toStringTag] () {
-    return 'libp2p/circuit-relay-v1'
+    return 'libp2p/circuit-relay-v2'
   }
 
   getPeerConnection (dstPeer: PeerId): Connection|undefined {

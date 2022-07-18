@@ -10,7 +10,7 @@ import type { PeerId } from '@libp2p/interfaces/peer-id'
 import { Status, StopMessage, HopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
 import sinon from 'sinon'
-import { Circuit } from '../../../src/circuit/transport-backup.js'
+import { Circuit } from '../../../src/circuit/transport.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { pair } from 'it-pair'
 

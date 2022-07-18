@@ -6,7 +6,7 @@ import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { AddressSorter, PeerProtocolsChangeData } from '@libp2p/interfaces/peer-store'
+import type { AddressSorter } from '@libp2p/interfaces/peer-store'
 import type { Connection } from '@libp2p/interfaces/connection'
 import type { Components } from '@libp2p/interfaces/components'
 import sort from 'it-sort'
@@ -14,26 +14,35 @@ import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { reserve } from './v2/index.js'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import type { Startable } from '@libp2p/interfaces/startable'
 
-const log = logger('libp2p:auto-relay')
+const log = logger('libp2p:circuit_client')
 
 const noop = () => {}
 
-export interface AutoRelayInit {
+export interface CircuitServiceInit {
   addressSorter?: AddressSorter
   maxReservations?: number
   onError?: (error: Error, msg?: string) => void
 }
 
-export class CircuitClient {
+export interface CircuitServiceEvents {
+  'relay:reservation': CustomEvent
+}
+
+export class CircuitService extends EventEmitter<CircuitServiceEvents> implements Startable {
   private readonly components: Components
   private readonly addressSorter: AddressSorter
   private readonly maxReservations: number
   private readonly relays: Set<string>
   private readonly reservationMap: Map<PeerId, ReturnType<typeof setTimeout>>
   private readonly onError: (error: Error, msg?: string) => void
+  private started: boolean
 
-  constructor (components: Components, init: AutoRelayInit) {
+  constructor (components: Components, init: CircuitServiceInit) {
+    super()
+    this.started = false
     this.components = components
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
     this.maxReservations = init.maxReservations ?? 1
@@ -45,11 +54,31 @@ export class CircuitClient {
     this._onPeerDisconnected = this._onPeerDisconnected.bind(this)
 
     this.components.getPeerStore().addEventListener('change:protocols', (evt) => {
-      void this._onProtocolChange(evt).catch(err => {
+      void this._onProtocolChange(evt.detail).catch(err => {
         log.error(err)
       })
     })
-    this.components.getConnectionManager().addEventListener('peer:disconnect', this._onPeerDisconnected)
+
+    this.components.getConnectionManager().addEventListener('peer:disconnect', (evt) => {
+      this._onPeerDisconnected(evt)
+    })
+  }
+
+  isStarted () {
+    return this.started
+  }
+
+  start () {
+    void this._listenOnAvailableHopRelays()
+    this.started = true
+  }
+
+  async stop () {
+    for (const timer of this.reservationMap.values()) {
+      clearTimeout(timer)
+    }
+    this.reservationMap.clear()
+    this.relays.clear()
   }
 
   /**
@@ -58,15 +87,12 @@ export class CircuitClient {
    * If the protocol is supported, check if the peer supports **HOP** and add it as a listener if
    * inside the threshold.
    */
-  async _onProtocolChange (evt: CustomEvent<PeerProtocolsChangeData>) {
-    const {
-      peerId,
-      protocols
-    } = evt.detail
+  async _onProtocolChange ({ peerId, protocols }: {peerId: PeerId, protocols: string[]}) {
     const id = peerId.toString()
 
     // Check if it has the protocol
     const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
+    log.trace(`Peer ${peerId.toString()} protocol change`)
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (hasProtocol == null) {
@@ -80,12 +106,63 @@ export class CircuitClient {
     if (this.relays.has(id)) {
       return
     }
+    log.trace(`Peer ${peerId.toString()} adding as relay`)
 
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
       const connections = this.components.getConnectionManager().getConnections(peerId)
 
       if (connections.length === 0) {
+        log.error('no connections to peer')
+        return
+      }
+
+      const connection = connections[0]
+
+      // Do not hop on a relayed connection
+      if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {
+        log(`relayed connection to ${id} will not be used to hop on`)
+        return
+      }
+      await this._addListenRelay(connection, peerId)
+    } catch (err: any) {
+      this.onError(err)
+    }
+  }
+
+  /**
+   * Peer disconnects
+   */
+  async _onPeerConnected (evt: CustomEvent<Connection>) {
+    const connection = evt.detail
+    const peerId = connection.remotePeer
+    const id = peerId.toString()
+    const { protocols } = await this.components.getPeerStore().get(peerId)
+    const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
+    log.trace(`Peer ${peerId.toString()} protocol change`)
+
+    // If no protocol, check if we were keeping the peer before as a listenRelay
+    if (hasProtocol == null) {
+      log.trace(`Peer ${peerId.toString()} doesn't have circuitv2 protocol`)
+      if (this.relays.has(id)) {
+        log.trace('remove listen relay')
+        await this._removeListenRelay(id)
+      }
+      return
+    }
+
+    if (this.relays.has(id)) {
+      log.trace(`Peer ${peerId.toString()} is already registered relay`)
+      return
+    }
+    log.trace('debug1')
+
+    // If protocol, check if can hop, store info in the metadataBook and listen on it
+    try {
+      const connections = this.components.getConnectionManager().getConnections(peerId)
+
+      if (connections.length === 0) {
+        log.error('no connections to peer')
         return
       }
 
@@ -97,6 +174,7 @@ export class CircuitClient {
         return
       }
 
+      log.trace('debugend')
       await this._addListenRelay(connection, peerId)
     } catch (err: any) {
       this.onError(err)
@@ -110,6 +188,7 @@ export class CircuitClient {
     const connection = evt.detail
     const peerId = connection.remotePeer
     const id = peerId.toString()
+    clearTimeout(this.reservationMap.get(peerId))
     this.reservationMap.delete(peerId)
 
     // Not listening on this relay
@@ -127,18 +206,14 @@ export class CircuitClient {
    */
   async _addListenRelay (connection: Connection, peerId: PeerId): Promise<void> {
     const id = peerId.toString()
+    log.trace(`Peer ${peerId.toString()} is being added as relay`)
     try {
       // Check if already enough relay reservations
       if (this.relays.size >= this.maxReservations) {
         return
       }
 
-      const reservation = await reserve(connection)
-      if (reservation != null) {
-        this.reservationMap.set(peerId, setTimeout(() => {
-          // refresh reservation
-        }, Math.min(getExpiration(reservation.expire) - 100, 0)))
-      }
+      await this.createOrRefreshReservation(peerId)
 
       // Get peer known addresses and sort them with public addresses first
       const remoteAddrs = await pipe(
@@ -209,6 +284,7 @@ export class CircuitClient {
     // Check if we have known hop peers to use and attempt to listen on the already connected
     for (const { id, protocols } of peers) {
       const idStr = id.toString()
+      log.trace('Checking if peer relay', idStr, protocols)
 
       // Continue to next if listening on this or peer to ignore
       if (this.relays.has(idStr)) {
@@ -225,6 +301,7 @@ export class CircuitClient {
       if (hasProtocol == null) {
         continue
       }
+      log.trace('Found peer with relay codec', id)
 
       const connections = this.components.getConnectionManager().getConnections(id)
 
@@ -282,6 +359,38 @@ export class CircuitClient {
     } catch (err: any) {
       log.error('Could not use %p as relay', peerId, err)
       this.onError(err, `could not connect and listen on known hop relay ${peerId.toString()}`)
+    }
+  }
+
+  private readonly createOrRefreshReservation = async (peerId: PeerId) => {
+    try {
+      const connections = this.components.getConnectionManager().getConnections(peerId)
+
+      if (connections.length === 0) {
+        throw new Error('No connections to peer')
+      }
+
+      const connection = connections[0]
+
+      const reservation = await reserve(connection)
+
+      const refreshReservation = this.createOrRefreshReservation
+
+      if (reservation != null) {
+        log('new reservation on ', peerId.toString())
+        this.reservationMap.set(
+          peerId,
+          setTimeout(
+            (peerId) => { void refreshReservation(peerId) },
+            Math.max(getExpiration(reservation.expire) - 100, 0),
+            peerId
+          )
+        )
+        this.dispatchEvent(new CustomEvent<any>('relay:reservation'))
+      }
+    } catch (err: any) {
+      log.error(err)
+      await this._removeListenRelay(peerId.toString())
     }
   }
 }

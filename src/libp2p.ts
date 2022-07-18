@@ -1,3 +1,4 @@
+import { CircuitService } from './circuit/client.js'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
@@ -11,7 +12,7 @@ import { codes } from './errors.js'
 import { DefaultAddressManager } from './address-manager/index.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
 import { AutoDialler } from './connection-manager/auto-dialler.js'
-import { Circuit } from './circuit/transport-backup.js'
+import { Circuit } from './circuit/transport.js'
 import { Relay } from './circuit/index.js'
 import { KeyChain } from './keychain/index.js'
 import { DefaultMetrics } from './metrics/index.js'
@@ -57,6 +58,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public dht: DualDHT
   public pubsub: PubSub
   public identifyService?: IdentifyService
+  public circuitService?: CircuitService
   public fetchService: FetchService
   public pingService: PingService
   public components: Components
@@ -171,6 +173,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       this.configureComponent(this.identifyService)
     }
 
+    if (init.relay.autoRelay.enabled === true) {
+      this.circuitService = new CircuitService(this.components, {
+        addressSorter: init.connectionManager.addressSorter,
+        ...init.relay.autoRelay
+      })
+      this.services.push(this.circuitService)
+    }
+
     // dht provided components (peerRouting, contentRouting, dht)
     if (init.dht != null) {
       this.dht = this.components.setDHT(init.dht)
@@ -220,7 +230,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       this.components.getTransportManager().add(this.configureComponent(new Circuit(init.relay)))
 
       this.configureComponent(new Relay(this.components, {
-        addressSorter: init.connectionManager.addressSorter,
         ...init.relay
       }))
     }

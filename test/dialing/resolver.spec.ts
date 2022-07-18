@@ -9,11 +9,13 @@ import { createBaseOptions } from '../utils/base-options.browser.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import { Circuit } from '../../src/circuit/transport-backup.js'
+import { Circuit } from '../../src/circuit/transport.js'
 import pDefer from 'p-defer'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { WebSockets } from '@libp2p/websockets'
+import { pEvent } from 'p-event'
+import { createFromJSON } from '@libp2p/peer-id-factory'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -32,7 +34,7 @@ const getDnsRelayedAddrStub = (peerId: PeerId) => [
   `${relayedAddr(peerId)}`
 ]
 
-describe('Dialing (resolvable addresses)', () => {
+describe.only('Dialing (resolvable addresses)', () => {
   let libp2p: Libp2pNode, remoteLibp2p: Libp2pNode
   let resolver: sinon.SinonStub<[Multiaddr], Promise<string[]>>
 
@@ -53,6 +55,9 @@ describe('Dialing (resolvable addresses)', () => {
           },
           relay: {
             enabled: true,
+            autoRelay: {
+              enabled: true
+            },
             hop: {
               enabled: false
             }
@@ -73,6 +78,9 @@ describe('Dialing (resolvable addresses)', () => {
           },
           relay: {
             enabled: true,
+            autoRelay: {
+              enabled: true
+            },
             hop: {
               enabled: false
             }
@@ -81,6 +89,8 @@ describe('Dialing (resolvable addresses)', () => {
         started: true
       })
     ])
+
+    await Promise.all([libp2p, remoteLibp2p].map(async n => await n.start()))
   })
 
   afterEach(async () => {
@@ -88,7 +98,16 @@ describe('Dialing (resolvable addresses)', () => {
     await Promise.all([libp2p, remoteLibp2p].map(async n => await n.stop()))
   })
 
-  it('resolves dnsaddr to ws local address', async () => {
+  it.only('resolves dnsaddr to ws local address', async () => {
+    const { default: Peers } = await import('../fixtures/peers.js')
+
+    // Use the last peer
+    const peerId = await createFromJSON(Peers[Peers.length - 1])
+    console.log({
+      src: libp2p.peerId.toString(),
+      relay: peerId.toString(),
+      remote: remoteLibp2p.peerId.toString()
+    })
     const remoteId = remoteLibp2p.peerId
     const dialAddr = new Multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = new Multiaddr(relayedAddr(remoteId))
@@ -99,6 +118,13 @@ describe('Dialing (resolvable addresses)', () => {
 
     // Resolver stub
     resolver.onCall(0).returns(Promise.resolve(getDnsRelayedAddrStub(remoteId)))
+
+    // create reservation on relay
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await pEvent(libp2p.circuitService!, 'relay:reservation')
+    // create reservation on relay
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await pEvent(remoteLibp2p.circuitService!, 'relay:reservation')
 
     // Dial with address resolve
     const connection = await libp2p.dial(dialAddr)

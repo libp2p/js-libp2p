@@ -39,7 +39,7 @@ export class StreamHandlerV2 {
   async read () {
     // @ts-expect-error FIXME is a source, needs to be a generator
     const msg = await this.decoder.next()
-    if (msg.value !== null) {
+    if (msg.value != null) {
       return msg.value.slice()
     }
 

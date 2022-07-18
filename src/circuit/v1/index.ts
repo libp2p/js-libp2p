@@ -1,4 +1,4 @@
-import { CircuitRelay } from './pb/index'
+import { CircuitRelay } from './pb/index.js'
 import type { StreamHandlerV1 } from './stream-handler.js'
 export * from './hop.js'
 

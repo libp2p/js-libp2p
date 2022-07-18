@@ -5,12 +5,10 @@ import {
   clearDelayedInterval
 // @ts-expect-error set-delayed-interval does not export types
 } from 'set-delayed-interval'
-import { CircuitClient } from './client.js'
 import { namespaceToCid } from './utils.js'
 import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
-import type { AddressSorter } from '@libp2p/interfaces/peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '@libp2p/interfaces/components'
 
@@ -37,19 +35,15 @@ export interface AutoRelayConfig {
 }
 
 export interface RelayInit {
-  addressSorter?: AddressSorter
   maxListeners?: number
   onError?: (error: Error, msg?: string) => void
   hop: HopConfig
   advertise: RelayAdvertiseConfig
-  autoRelay: AutoRelayConfig
 }
 
 export class Relay implements Startable {
   private readonly components: Components
   private readonly init: RelayInit
-  // @ts-expect-error this field isn't used anywhere?
-  private readonly autoRelay?: CircuitClient
   private timeout?: any
   private started: boolean
 
@@ -58,14 +52,6 @@ export class Relay implements Startable {
    */
   constructor (components: Components, init: RelayInit) {
     this.components = components
-    // Create autoRelay if enabled
-    this.autoRelay = init.autoRelay?.enabled !== false
-      ? new CircuitClient(components, {
-        addressSorter: init.addressSorter,
-        ...init.autoRelay
-      })
-      : undefined
-
     this.started = false
     this.init = init
     this._advertiseService = this._advertiseService.bind(this)
