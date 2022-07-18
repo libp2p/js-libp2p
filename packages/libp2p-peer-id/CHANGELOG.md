@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-v1.1.14](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.13...@libp2p/peer-id-v1.1.14) (2022-07-18)
+
+
+### Bug Fixes
+
+* Typo in constant name ([#7](https://github.com/libp2p/js-libp2p-peer-id/issues/7)) ([9063b65](https://github.com/libp2p/js-libp2p-peer-id/commit/9063b65ee3a29ca834588e915e490b9ec802647c))
+
 ## [@libp2p/peer-id-v1.1.13](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.12...@libp2p/peer-id-v1.1.13) (2022-06-14)
 
 
