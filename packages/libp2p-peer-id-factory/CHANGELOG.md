@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-factory-v1.0.16](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.15...@libp2p/peer-id-factory-v1.0.16) (2022-07-18)
+
+
+### Trivial Changes
+
+* update sibling dependencies [skip ci] ([4ecbbe0](https://github.com/libp2p/js-libp2p-peer-id/commit/4ecbbe0247dd664a172008ff9255f0f79c04ffb9))
+
 ## [@libp2p/peer-id-factory-v1.0.15](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.14...@libp2p/peer-id-factory-v1.0.15) (2022-06-17)
 
 
