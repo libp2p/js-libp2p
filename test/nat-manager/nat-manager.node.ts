@@ -14,6 +14,7 @@ import { Components } from '@libp2p/components'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import { StubbedInstance, stubInterface } from 'ts-sinon'
 import { start, stop } from '@libp2p/interfaces/startable'
+import { multiaddr } from '@multiformats/multiaddr'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -98,6 +99,9 @@ describe('Nat Manager (TCP)', () => {
         protocol: 'TCP'
       })
     })
+
+    // simulate autonat having run
+    components.getAddressManager().confirmObservedAddr(multiaddr('/ip4/82.3.1.5/tcp/4002'))
 
     expect(addressChangedEventFired).to.be.true()
   })
