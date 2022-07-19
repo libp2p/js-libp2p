@@ -406,7 +406,7 @@ export class AutonatService implements Startable {
     const self = this
 
     try {
-      log(`verify multiaddrs %s`, multiaddrs.map(ma => ma.toString()).join(', '))
+      log('verify multiaddrs %s', multiaddrs.map(ma => ma.toString()).join(', '))
 
       const request = Message.encode({
         type: Message.MessageType.DIAL,

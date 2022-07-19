@@ -491,7 +491,7 @@ describe('autonat', () => {
       const slice = await pipe(
         sink,
         lp.decode(),
-        source => all(source)
+        async source => await all(source)
       )
 
       if (slice.length !== 1) {

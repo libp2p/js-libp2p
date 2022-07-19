@@ -121,7 +121,7 @@ describe('Address Manager', () => {
     am.confirmObservedAddr(ma)
     am.confirmObservedAddr(ma)
     am.confirmObservedAddr(ma)
-    am.confirmObservedAddr(multiaddr(`${ma}/p2p/${peerId.toString()}`))
+    am.confirmObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
     expect(eventCount).to.equal(1)
   })
@@ -138,7 +138,7 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs()).to.be.empty()
 
     am.addObservedAddr(ma)
-    am.addObservedAddr(multiaddr(`${ma}/p2p/${peerId.toString()}`))
+    am.addObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
@@ -156,7 +156,7 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs()).to.be.empty()
 
     am.addObservedAddr(ma)
-    am.addObservedAddr(multiaddr(`${ma}/p2p/${peerId.toString()}`))
+    am.addObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())

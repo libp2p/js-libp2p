@@ -128,7 +128,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     })
 
     // only trigger the change:addresses event if our confidence in an address has changed
-    if (startingConfidence === false) {
+    if (!startingConfidence) {
       this.dispatchEvent(new CustomEvent('change:addresses'))
     }
   }
