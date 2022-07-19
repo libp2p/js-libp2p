@@ -83,6 +83,7 @@
     "prepublishOnly": "node scripts/update-version.js",
     "build": "aegir build",
     "generate": "run-s generate:proto:*",
+    "generate:proto:autonat": "protons ./src/autonat/pb/index.proto",
     "generate:proto:circuit": "protons ./src/circuit/pb/index.proto",
     "generate:proto:fetch": "protons ./src/fetch/pb/proto.proto",
     "generate:proto:identify": "protons ./src/identify/pb/message.proto",

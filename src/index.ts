@@ -26,6 +26,7 @@ import type { KeyChain } from './keychain/index.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { PingServiceInit } from './ping/index.js'
 import type { FetchServiceInit } from './fetch/index.js'
+import type { AutonatServiceInit } from './autonat/index.js'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
@@ -112,6 +113,7 @@ export interface Libp2pInit {
   identify: IdentifyServiceInit
   ping: PingServiceInit
   fetch: FetchServiceInit
+  autonat: AutonatServiceInit
 
   transports: Transport[]
   streamMuxers?: StreamMuxerFactory[]

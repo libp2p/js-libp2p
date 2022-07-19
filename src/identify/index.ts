@@ -371,10 +371,15 @@ export class IdentifyService implements Startable {
     }
 
     log('identify completed for peer %p and protocols %o', id, protocols)
+    log('our observed address is %s', cleanObservedAddr)
 
-    // TODO: Add and score our observed addr
-    log('received observed address of %s', cleanObservedAddr?.toString())
-    // this.components.getAddressManager().addObservedAddr(observedAddr)
+    /*
+    if (cleanObservedAddr != null) {
+      // TODO: Add and score our observed addr
+      log('received observed address of %s', cleanObservedAddr?.toString())
+      this.components.getAddressManager().addObservedAddr(cleanObservedAddr)
+    }
+    */
   }
 
   /**

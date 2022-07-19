@@ -100,6 +100,14 @@ const DefaultConfig: Partial<Libp2pInit> = {
     maxInboundStreams: 1,
     maxOutboundStreams: 1,
     timeout: 10000
+  },
+  autonat: {
+    protocolPrefix: 'libp2p',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1,
+    timeout: 30000,
+    startupDelay: 5000,
+    refreshInterval: 60000
   }
 }
 

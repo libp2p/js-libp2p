@@ -157,11 +157,13 @@ export class NatManager implements Startable {
         protocol: transport.toUpperCase() === 'TCP' ? 'TCP' : 'UDP'
       })
 
-      this.components.getAddressManager().addObservedAddr(Multiaddr.fromNodeAddress({
+      const publicAddr = Multiaddr.fromNodeAddress({
         family: 4,
         address: publicIp,
         port: publicPort
-      }, transport))
+      }, transport)
+
+      this.components.getAddressManager().addObservedAddr(publicAddr)
     }
   }
 

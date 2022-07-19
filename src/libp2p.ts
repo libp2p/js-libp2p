@@ -28,6 +28,7 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DHTContentRouting } from './dht/dht-content-routing.js'
 import { AutoDialer } from './connection-manager/dialer/auto-dialer.js'
 import { Initializable, Components, isInitializable } from '@libp2p/components'
+import { AutonatService } from './autonat/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
@@ -59,6 +60,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public identifyService?: IdentifyService
   public fetchService: FetchService
   public pingService: PingService
+  public autonatService: AutonatService
   public components: Components
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -232,6 +234,10 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     this.pingService = this.configureComponent(new PingService(this.components, {
       ...init.ping
+    }))
+
+    this.autonatService = this.configureComponent(new AutonatService(this.components, {
+      ...init.autonat
     }))
 
     const autoDialer = this.configureComponent(new AutoDialer(this.components, {

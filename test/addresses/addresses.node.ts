@@ -165,7 +165,7 @@ describe('libp2p.multiaddrs', () => {
 
     expect(libp2p.components.getAddressManager().getAddresses()).to.have.lengthOf(listenAddresses.length)
 
-    libp2p.components.getAddressManager().addObservedAddr(new Multiaddr(ma))
+    libp2p.components.getAddressManager().confirmObservedAddr(new Multiaddr(ma))
 
     expect(libp2p.components.getAddressManager().getAddresses()).to.have.lengthOf(listenAddresses.length + 1)
     expect(libp2p.components.getAddressManager().getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.include(ma)

@@ -3,6 +3,7 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Components } from '@libp2p/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 export interface AddressManagerInit {
   announceFilter?: AddressFilter
@@ -29,11 +30,31 @@ export interface AddressFilter {
 
 const defaultAddressFilter = (addrs: Multiaddr[]): Multiaddr[] => addrs
 
+interface ObservedAddressMetadata {
+  confident: boolean
+}
+
+function stripPeerId (ma: Multiaddr, peerId: PeerId) {
+  const observedPeerId = ma.getPeerId()
+
+  // strip our peer id if it has been passed
+  if (observedPeerId != null) {
+    const peerId = peerIdFromString(observedPeerId)
+
+    // use same encoding for comparison
+    if (peerId.equals(peerId)) {
+      ma = ma.decapsulate(new Multiaddr(`/p2p/${peerId.toString()}`))
+    }
+  }
+
+  return ma
+}
+
 export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
   private readonly components: Components
   private readonly listen: Set<string>
   private readonly announce: Set<string>
-  private readonly observed: Set<string>
+  private readonly observed: Map<string, ObservedAddressMetadata>
   private readonly announceFilter: AddressFilter
 
   /**
@@ -50,7 +71,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     this.components = components
     this.listen = new Set(listen.map(ma => ma.toString()))
     this.announce = new Set(announce.map(ma => ma.toString()))
-    this.observed = new Set()
+    this.observed = new Map()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
   }
 
@@ -72,35 +93,51 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
    * Get observed multiaddrs
    */
   getObservedAddrs (): Multiaddr[] {
-    return Array.from(this.observed).map((a) => new Multiaddr(a))
+    return Array.from(this.observed)
+      .map(([ma]) => new Multiaddr(ma))
   }
 
   /**
    * Add peer observed addresses
    */
-  addObservedAddr (addr: string | Multiaddr): void {
-    let ma = new Multiaddr(addr)
-    const remotePeer = ma.getPeerId()
+  addObservedAddr (addr: Multiaddr): void {
+    addr = stripPeerId(addr, this.components.getPeerId())
+    const addrString = addr.toString()
 
-    // strip our peer id if it has been passed
-    if (remotePeer != null) {
-      const remotePeerId = peerIdFromString(remotePeer)
-
-      // use same encoding for comparison
-      if (remotePeerId.equals(this.components.getPeerId())) {
-        ma = ma.decapsulate(new Multiaddr(`/p2p/${this.components.getPeerId().toString()}`))
-      }
-    }
-
-    const addrString = ma.toString()
-
-    // do not trigger the change:addresses event if we already know about this address
     if (this.observed.has(addrString)) {
       return
     }
 
-    this.observed.add(addrString)
-    this.dispatchEvent(new CustomEvent('change:addresses'))
+    this.observed.set(addrString, {
+      confident: false
+    })
+  }
+
+  confirmObservedAddr (addr: Multiaddr) {
+    addr = stripPeerId(addr, this.components.getPeerId())
+    const addrString = addr.toString()
+
+    const metadata = this.observed.get(addrString) ?? {
+      confident: false
+    }
+
+    const startingConfidence = metadata.confident
+
+    this.observed.set(addrString, {
+      confident: true
+    })
+
+    // only trigger the change:addresses event if our confidence in an address has changed
+    if (startingConfidence === false) {
+      this.dispatchEvent(new CustomEvent('change:addresses'))
+    }
+  }
+
+  removeObservedAddr (addr: Multiaddr) {
+    addr = stripPeerId(addr, this.components.getPeerId())
+    const addrString = addr.toString()
+
+    this.observed.delete(addrString)
   }
 
   getAddresses (): Multiaddr[] {
@@ -111,7 +148,12 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
       addrs = this.components.getTransportManager().getAddrs().map(ma => ma.toString())
     }
 
-    addrs = addrs.concat(this.getObservedAddrs().map(ma => ma.toString()))
+    // add observed addresses we are confident in
+    addrs = addrs.concat(
+      Array.from(this.observed)
+        .filter(([ma, metadata]) => metadata.confident)
+        .map(([ma]) => ma)
+    )
 
     // dedupe multiaddrs
     const addrSet = new Set(addrs)
