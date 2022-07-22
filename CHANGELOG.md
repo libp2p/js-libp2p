@@ -1,3 +1,11 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.0...v4.0.1) (2022-07-22)
+
+
+### Bug Fixes
+
+* remove need of buffer polyfill config for browser ([#194](https://github.com/libp2p/js-libp2p-mplex/issues/194)) ([7c39830](https://github.com/libp2p/js-libp2p-mplex/commit/7c39830280347dbcf976a921f677e7b0e725b9f7))
+* reset stream when over inbound stream limit ([#193](https://github.com/libp2p/js-libp2p-mplex/issues/193)) ([41fefa4](https://github.com/libp2p/js-libp2p-mplex/commit/41fefa4280e122f553fed72ce5c81805755dcc35))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v3.0.0...v4.0.0) (2022-06-28)
 
 
