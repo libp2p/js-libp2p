@@ -62,10 +62,22 @@ describe('mplex', () => {
     const data = uint8ArrayConcat(await all(encode(source)))
 
     stream.push(data)
+    stream.end()
+
+    const bufs: Uint8Array[] = []
+
+    void Promise.resolve().then(async () => {
+      for await (const buf of muxer.source) {
+        bufs.push(buf)
+      }
+    })
 
     await muxer.sink(stream)
 
-    await expect(all(muxer.source)).to.eventually.be.rejected.with.property('code', 'ERR_TOO_MANY_INBOUND_STREAMS')
+    const messages = await all(decode(bufs))
+
+    expect(messages).to.have.nested.property('[0][0].id', 11, 'Did not specify the correct stream id')
+    expect(messages).to.have.nested.property('[0][0].type', MessageTypes.RESET_RECEIVER, 'Did not reset the stream that tipped us over the inbound stream limit')
   })
 
   it('should reset a stream that fills the message buffer', async () => {

@@ -147,27 +147,19 @@ export class MplexStreamMuxer implements StreamMuxer {
   }
 
   _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, MplexStream> }) {
-    if (this._streams.initiators.size === (this._init.maxOutboundStreams ?? MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION)) {
-      throw errCode(new Error('To many outgoing streams open'), 'ERR_TOO_MANY_OUTBOUND_STREAMS')
-    }
-
-    if (this._streams.receivers.size === (this._init.maxInboundStreams ?? MAX_STREAMS_INBOUND_STREAMS_PER_CONNECTION)) {
-      throw errCode(new Error('To many incoming streams open'), 'ERR_TOO_MANY_INBOUND_STREAMS')
-    }
-
     const { id, name, type, registry } = options
 
     log('new %s stream %s %s', type, id, name)
+
+    if (type === 'initiator' && this._streams.initiators.size === (this._init.maxOutboundStreams ?? MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION)) {
+      throw errCode(new Error('Too many outbound streams open'), 'ERR_TOO_MANY_OUTBOUND_STREAMS')
+    }
 
     if (registry.has(id)) {
       throw new Error(`${type} stream ${id} already exists!`)
     }
 
     const send = (msg: Message) => {
-      if (!registry.has(id)) {
-        throw errCode(new Error('the stream is not in the muxer registry, it may have already been closed'), 'ERR_STREAM_DOESNT_EXIST')
-      }
-
       if (log.enabled) {
         log.trace('%s stream %s send', type, id, printMessage(msg))
       }
@@ -180,7 +172,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     }
 
     const onEnd = () => {
-      log('%s stream %s %s ended', type, id, name)
+      log('%s stream %s ended', type, id, name)
       registry.delete(id)
 
       if (this._init.onStreamEnd != null) {
@@ -257,6 +249,20 @@ export class MplexStreamMuxer implements StreamMuxer {
 
     // Create a new stream?
     if (message.type === MessageTypes.NEW_STREAM) {
+      if (this._streams.receivers.size === (this._init.maxInboundStreams ?? MAX_STREAMS_INBOUND_STREAMS_PER_CONNECTION)) {
+        log.error('Too many inbound streams open')
+
+        // not going to allow this stream, send the reset message manually
+        // instead of setting it up just to tear it down
+
+        this._source.push({
+          id,
+          type: MessageTypes.RESET_RECEIVER
+        })
+
+        return
+      }
+
       const stream = this._newReceiverStream({ id, name: uint8ArrayToString(message.data instanceof Uint8Array ? message.data : message.data.slice()) })
 
       if (this._init.onIncomingStream != null) {
@@ -288,7 +294,7 @@ export class MplexStreamMuxer implements StreamMuxer {
           })
 
           // Inform the stream consumer they are not fast enough
-          const error = errCode(new Error('Input buffer full - increase Mplex maxBufferSize to accomodate slow consumers'), 'ERR_STREAM_INPUT_BUFFER_FULL')
+          const error = errCode(new Error('Input buffer full - increase Mplex maxBufferSize to accommodate slow consumers'), 'ERR_STREAM_INPUT_BUFFER_FULL')
           stream.abort(error)
 
           return
