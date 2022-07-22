@@ -1,16 +1,9 @@
-import varint from 'varint'
-import { Message, MessageTypes } from './message-types.js'
 import type { Source } from 'it-stream-types'
+import varint from 'varint'
+import { allocUnsafe } from './alloc-unsafe.js'
+import { Message, MessageTypes } from './message-types.js'
 
 const POOL_SIZE = 10 * 1024
-
-function allocUnsafe (size: number) {
-  if (globalThis.Buffer != null) {
-    return Buffer.allocUnsafe(size)
-  }
-
-  return new Uint8Array(size)
-}
 
 class Encoder {
   private _pool: Uint8Array

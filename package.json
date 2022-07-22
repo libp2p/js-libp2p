@@ -170,5 +170,8 @@
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0",
     "typescript": "^4.7.4"
+  },
+  "browser": {
+    "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js"
   }
 }
