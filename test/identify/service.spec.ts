@@ -128,11 +128,19 @@ describe('libp2p.dialer.identifyService', () => {
     await identityServiceIdentifySpy.firstCall.returnValue
     sinon.stub(libp2p, 'isStarted').returns(true)
 
+    // Cause supported protocols to change
     await libp2p.handle('/echo/2.0.0', () => {})
+
+    // Wait for push to complete
+    await pWaitFor(() => identityServicePushSpy.callCount === 1)
+    await identityServicePushSpy.firstCall.returnValue
+
+    // Cause supported protocols to change back
     await libp2p.unhandle('/echo/2.0.0')
 
-    // the protocol change event listener in the identity service is async
+    // Wait for push to complete a second time
     await pWaitFor(() => identityServicePushSpy.callCount === 2)
+    await identityServicePushSpy.secondCall.returnValue
 
     // Verify the remote peer is notified of both changes
     expect(identityServicePushSpy.callCount).to.equal(2)
