@@ -370,7 +370,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               const streamCount = countStreams(protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
-                console.info('--> too many inbound!')
                 muxedStream.abort(errCode(new Error(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`), codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS))
 
                 return
