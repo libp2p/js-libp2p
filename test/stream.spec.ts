@@ -191,7 +191,7 @@ describe('stream', () => {
 
     const err = await deferred.promise
     expect(err).to.exist()
-    expect(err).to.have.property('code', 'ERR_MPLEX_STREAM_RESET')
+    expect(err).to.have.property('code', 'ERR_STREAM_RESET')
   })
 
   it('should send data with MESSAGE_INITIATOR messages if stream initiator', async () => {
@@ -553,5 +553,18 @@ describe('stream', () => {
     expect(messages.length).to.equal(2)
     expect(messages[0]).to.have.nested.property('data.length', maxMsgSize)
     expect(messages[1]).to.have.nested.property('data.length', maxMsgSize)
+  })
+
+  it('should error on double-sink', async () => {
+    const send = () => {}
+    const id = randomInt(1000)
+    const stream = createStream({ id, send })
+
+    // first sink is ok
+    await stream.sink([])
+
+    // cannot sink twice
+    await expect(stream.sink([]))
+      .to.eventually.be.rejected.with.property('code', 'ERR_DOUBLE_SINK')
   })
 })

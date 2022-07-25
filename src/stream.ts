@@ -14,9 +14,10 @@ import type { MplexStream } from './mplex.js'
 
 const log = logger('libp2p:mplex:stream')
 
-const ERR_MPLEX_STREAM_RESET = 'ERR_MPLEX_STREAM_RESET'
-const ERR_MPLEX_STREAM_ABORT = 'ERR_MPLEX_STREAM_ABORT'
-const ERR_MPLEX_SINK_ENDED = 'ERR_MPLEX_SINK_ENDED'
+const ERR_STREAM_RESET = 'ERR_STREAM_RESET'
+const ERR_STREAM_ABORT = 'ERR_STREAM_ABORT'
+const ERR_SINK_ENDED = 'ERR_SINK_ENDED'
+const ERR_DOUBLE_SINK = 'ERR_DOUBLE_SINK'
 
 export interface Options {
   id: number
@@ -39,6 +40,7 @@ export function createStream (options: Options): MplexStream {
 
   let sourceEnded = false
   let sinkEnded = false
+  let sinkSunk = false
   let endErr: Error | undefined
 
   const timeline: StreamTimeline = {
@@ -137,15 +139,21 @@ export function createStream (options: Options): MplexStream {
 
     // Close immediately for reading and writing (remote error)
     reset: () => {
-      const err = errCode(new Error('stream reset'), ERR_MPLEX_STREAM_RESET)
+      const err = errCode(new Error('stream reset'), ERR_STREAM_RESET)
       resetController.abort()
       stream.source.end(err)
       onSinkEnd(err)
     },
 
     sink: async (source: Source<Uint8Array>) => {
+      if (sinkSunk) {
+        throw errCode(new Error('sink already called on stream'), ERR_DOUBLE_SINK)
+      }
+
+      sinkSunk = true
+
       if (sinkEnded) {
-        throw errCode(new Error('stream closed for writing'), ERR_MPLEX_SINK_ENDED)
+        throw errCode(new Error('stream closed for writing'), ERR_SINK_ENDED)
       }
 
       source = abortableSource(source, anySignal([
@@ -184,17 +192,17 @@ export function createStream (options: Options): MplexStream {
 
           if (resetController.signal.aborted) {
             err.message = 'stream reset'
-            err.code = ERR_MPLEX_STREAM_RESET
+            err.code = ERR_STREAM_RESET
           }
 
           if (abortController.signal.aborted) {
             err.message = 'stream aborted'
-            err.code = ERR_MPLEX_STREAM_ABORT
+            err.code = ERR_STREAM_ABORT
           }
         }
 
         // Send no more data if this stream was remotely reset
-        if (err.code === ERR_MPLEX_STREAM_RESET) {
+        if (err.code === ERR_STREAM_RESET) {
           log.trace('%s stream %s reset', type, name)
         } else {
           log.trace('%s stream %s error', type, name, err)
