@@ -654,7 +654,7 @@ describe('libp2p.upgrader', () => {
     expect(streamCount).to.equal(1)
 
     await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
-      .with.property('code', 'ERR_MPLEX_STREAM_RESET')
+      .with.property('code', 'ERR_STREAM_RESET')
   })
 
   it('should limit the number of outgoing streams that can be opened using a protocol', async () => {

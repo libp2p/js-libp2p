@@ -202,6 +202,6 @@ describe('Dialing (via relay, TCP)', () => {
 
     // because we timed out, the remote should have reset the stream
     await expect(all(stream.source)).to.eventually.be.rejected
-      .with.property('code', 'ERR_MPLEX_STREAM_RESET')
+      .with.property('code', 'ERR_STREAM_RESET')
   })
 })
