@@ -21,7 +21,6 @@ import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './reg
 import { TimeoutController } from 'timeout-abort-controller'
 import { abortableDuplex } from 'abortable-iterator'
 import { setMaxListeners } from 'events'
-import { start } from '@libp2p/interfaces/dist/src/startable'
 
 const log = logger('libp2p:upgrader')
 
