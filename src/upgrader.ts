@@ -21,6 +21,7 @@ import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './reg
 import { TimeoutController } from 'timeout-abort-controller'
 import { abortableDuplex } from 'abortable-iterator'
 import { setMaxListeners } from 'events'
+import { start } from '@libp2p/interfaces/dist/src/startable'
 
 const log = logger('libp2p:upgrader')
 
@@ -438,16 +439,13 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             throw err
           }
 
+          // after the handshake the returned stream can have early data so override
+          // the souce/sink
+          muxedStream.source = stream.source
+          muxedStream.sink = stream.sink
           muxedStream.stat.protocol = protocol
 
-          return {
-            ...muxedStream,
-            ...stream,
-            stat: {
-              ...muxedStream.stat,
-              protocol
-            }
-          }
+          return muxedStream
         } catch (err: any) {
           log.error('could not create new stream', err)
 
