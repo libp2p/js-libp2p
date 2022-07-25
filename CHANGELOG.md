@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.1...v4.0.2) (2022-07-25)
+
+
+### Bug Fixes
+
+* remove MPLEX_ prefix from error codes ([#195](https://github.com/libp2p/js-libp2p-mplex/issues/195)) ([c6c9581](https://github.com/libp2p/js-libp2p-mplex/commit/c6c9581b34259e1d3811a2edb91a1cc1ef854364))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.0...v4.0.1) (2022-07-22)
 
 
