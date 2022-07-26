@@ -151,8 +151,6 @@ export function createPeerId (init: PeerIdInit) {
 }
 
 export function peerIdFromPeerId (other: any): PeerId {
-  const err = errcode(new Error('Not a PeerId'), 'ERR_INVALID_PARAMETERS')
-
   if (other.type === 'RSA') {
     return new RSAPeerIdImpl(other)
   }
@@ -165,7 +163,7 @@ export function peerIdFromPeerId (other: any): PeerId {
     return new Secp256k1PeerIdImpl(other)
   }
 
-  throw err
+  throw errcode(new Error('Not a PeerId'), 'ERR_INVALID_PARAMETERS')
 }
 
 export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): PeerId {
