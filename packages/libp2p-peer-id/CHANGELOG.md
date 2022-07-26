@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-v1.1.15](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.14...@libp2p/peer-id-v1.1.15) (2022-07-26)
+
+
+### Bug Fixes
+
+* move error creation ([#11](https://github.com/libp2p/js-libp2p-peer-id/issues/11)) ([9d957fb](https://github.com/libp2p/js-libp2p-peer-id/commit/9d957fb141e30cf1064413cd649bb2c8724e935e))
+
 ## [@libp2p/peer-id-v1.1.14](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.13...@libp2p/peer-id-v1.1.14) (2022-07-18)
 
 
