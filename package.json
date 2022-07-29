@@ -205,7 +205,7 @@
     "p-event": "^5.0.1",
     "p-times": "^4.0.0",
     "p-wait-for": "^4.1.0",
-    "protons": "^3.0.4",
+    "protons": "^4.0.0",
     "rimraf": "^3.0.2",
     "sinon": "^14.0.0",
     "ts-sinon": "^2.0.2"
