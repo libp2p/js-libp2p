@@ -3,7 +3,7 @@ import errCode from 'err-code'
 import { StreamHandlerV1 } from './stream-handler.js'
 import { CircuitRelay } from './pb/index.js'
 import { codes as Errors } from '../../errors.js'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { Stream } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:circuit:hop')

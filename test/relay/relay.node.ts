@@ -14,6 +14,7 @@ import { relayV1Codec } from '../../src/circuit/multicodec.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
 import { CircuitRelay } from '../../src/circuit/v1/pb/index.js'
 import { pEvent } from 'p-event'
+import delay from 'delay'
 
 /* eslint-env mocha */
 
@@ -85,7 +86,7 @@ describe('Dialing (via relay, TCP)', () => {
     expect(connection.remotePeer.toBytes()).to.eql(dstLibp2p.peerId.toBytes())
     expect(connection.remoteAddr).to.eql(dialAddr)
 
-    const { stream: echoStream } = await connection.newStream('/echo/1.0.0')
+    const echoStream = await connection.newStream('/echo/1.0.0')
 
     const input = uint8ArrayFromString('hello')
     const [output] = await pipe(
@@ -162,7 +163,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // send an invalid relay message from the relay to the destination peer
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
-    const { stream } = await connections[0].newStream(relayV1Codec)
+    const stream = await connections[0].newStream(relayV1Codec)
     const streamHandler = new StreamHandlerV1({ stream })
     streamHandler.write({
       type: CircuitRelay.Type.STATUS
@@ -175,5 +176,38 @@ describe('Dialing (via relay, TCP)', () => {
     const dstToRelayConn = dstLibp2p.components.getConnectionManager().getConnections(relayLibp2p.peerId)
     expect(dstToRelayConn).to.have.lengthOf(1)
     expect(dstToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
+  })
+
+  it('should time out when establishing a relay connection', async () => {
+    await relayLibp2p.stop()
+    relayLibp2p = await createNode({
+      config: createRelayOptions({
+        relay: {
+          autoRelay: {
+            enabled: false
+          },
+          hop: {
+            // very short timeout
+            timeout: 10
+          }
+        }
+      })
+    })
+
+    const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0]
+    const dialAddr = relayAddr.encapsulate(`/p2p/${relayLibp2p.peerId.toString()}`)
+
+    const connection = await srcLibp2p.dial(dialAddr)
+    const stream = await connection.newStream('/libp2p/circuit/relay/0.1.0')
+
+    await stream.sink(async function * () {
+      // delay for longer than the timeout
+      await delay(1000)
+      yield Uint8Array.from([0])
+    }())
+
+    // because we timed out, the remote should have reset the stream
+    await expect(all(stream.source)).to.eventually.be.rejected
+      .with.property('code', 'ERR_STREAM_RESET')
   })
 })

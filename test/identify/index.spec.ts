@@ -6,7 +6,7 @@ import sinon from 'sinon'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../../src/errors.js'
-import { IdentifyService, Message } from '../../src/identify/index.js'
+import { IdentifyService, IdentifyServiceInit, Message } from '../../src/identify/index.js'
 import Peers from '../fixtures/peers.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
@@ -14,9 +14,9 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import * as lp from 'it-length-prefixed'
 import drain from 'it-drain'
 import { pipe } from 'it-pipe'
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/interfaces/components'
+import { Components } from '@libp2p/components'
 import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 import {
   MULTICODEC_IDENTIFY,
@@ -32,11 +32,16 @@ import pDefer from 'p-defer'
 
 const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
-const defaultInit = {
+const defaultInit: IdentifyServiceInit = {
   protocolPrefix: 'ipfs',
   host: {
     agentVersion: 'v1.0.0'
-  }
+  },
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1,
+  maxPushIncomingStreams: 1,
+  maxPushOutgoingStreams: 1,
+  timeout: 1000
 }
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
@@ -54,7 +59,8 @@ async function createComponents (index: number) {
     connectionManager: new DefaultConnectionManager({
       minConnections: 50,
       maxConnections: 1000,
-      autoDialInterval: 1000
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
     })
   })
   components.setAddressManager(new DefaultAddressManager(components, {
@@ -130,6 +136,7 @@ describe('identify', () => {
   it('should be able to identify another peer with no certified peer records support', async () => {
     const agentVersion = 'js-libp2p/5.0.0'
     const localIdentify = new IdentifyService(localComponents, {
+      ...defaultInit,
       protocolPrefix: 'ipfs',
       host: {
         agentVersion: agentVersion
@@ -137,6 +144,7 @@ describe('identify', () => {
     })
     await start(localIdentify)
     const remoteIdentify = new IdentifyService(remoteComponents, {
+      ...defaultInit,
       protocolPrefix: 'ipfs',
       host: {
         agentVersion: agentVersion
@@ -209,6 +217,7 @@ describe('identify', () => {
   it('should store own host data and protocol version into metadataBook on start', async () => {
     const agentVersion = 'js-project/1.0.0'
     const localIdentify = new IdentifyService(localComponents, {
+      ...defaultInit,
       protocolPrefix: 'ipfs',
       host: {
         agentVersion
@@ -270,8 +279,8 @@ describe('identify', () => {
 
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
-    const { stream } = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('timeline.close')
+    const stream = await newStreamSpy.getCall(0).returnValue
+    expect(stream).to.have.nested.property('stat.timeline.close')
   })
 
   it('should limit incoming identify message sizes', async () => {

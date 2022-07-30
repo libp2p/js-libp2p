@@ -1,16 +1,17 @@
+import type { Components } from '@libp2p/components'
+import type { Startable } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
-import { codes } from '../errors.js'
 import {
-  setDelayedInterval,
   clearDelayedInterval
-// @ts-expect-error set-delayed-interval does not export types
+  , setDelayedInterval
+  // @ts-expect-error set-delayed-interval does not export types
 } from 'set-delayed-interval'
-import { namespaceToCid } from './utils.js'
+import { codes } from '../errors.js'
 import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/interfaces/components'
+import type { HopConfig } from './relay.js'
+import { namespaceToCid } from './utils.js'
 
 const log = logger('libp2p:relay')
 
@@ -18,11 +19,6 @@ export interface RelayAdvertiseConfig {
   bootDelay?: number
   enabled?: boolean
   ttl?: number
-}
-
-export interface HopConfig {
-  enabled?: boolean
-  active?: boolean
 }
 
 export interface AutoRelayConfig {

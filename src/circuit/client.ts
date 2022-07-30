@@ -5,10 +5,10 @@ import {
   CIRCUIT_PROTO_CODE,
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
-import type { AddressSorter } from '@libp2p/interfaces/peer-store'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { Components } from '@libp2p/interfaces/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AddressSorter } from '@libp2p/interface-peer-store'
+import type { Connection } from '@libp2p/interface-connection'
+import type { Components } from '@libp2p/components'
 import sort from 'it-sort'
 import all from 'it-all'
 import { pipe } from 'it-pipe'

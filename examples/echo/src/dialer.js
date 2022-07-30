@@ -37,7 +37,7 @@ async function run() {
 
   // Dial the listener node
   console.log('Dialing to peer:', listenerMultiaddr)
-  const { stream } = await dialerNode.dialProtocol(listenerMultiaddr, '/echo/1.0.0')
+  const stream = await dialerNode.dialProtocol(listenerMultiaddr, '/echo/1.0.0')
 
   console.log('nodeA dialed to nodeB on protocol: /echo/1.0.0')
 

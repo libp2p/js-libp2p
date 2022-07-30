@@ -18,20 +18,18 @@ import {
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
 } from './consts.js'
 import { codes } from '../errors.js'
-import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
-import type { Connection, Stream } from '@libp2p/interfaces/connection'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import type { Components } from '@libp2p/interfaces/components'
+import type { Components } from '@libp2p/components'
 import { TimeoutController } from 'timeout-abort-controller'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import type { Duplex } from 'it-stream-types'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:identify')
-
-// https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
-const IDENTIFY_TIMEOUT = 60000
 
 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
 const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
@@ -54,12 +52,18 @@ export interface IdentifyServiceInit {
   /**
    * How long we should wait for a remote peer to send their identify response
    */
-  timeout?: number
+  timeout: number
 
   /**
    * Identify responses larger than this in bytes will be rejected (default: 8192)
    */
   maxIdentifyMessageSize?: number
+
+  maxInboundStreams: number
+  maxOutboundStreams: number
+
+  maxPushIncomingStreams: number
+  maxPushOutgoingStreams: number
 }
 
 export class IdentifyService implements Startable {
@@ -78,8 +82,6 @@ export class IdentifyService implements Startable {
     this.components = components
     this.started = false
     this.init = init
-
-    this.handleMessage = this.handleMessage.bind(this)
 
     this.identifyProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
     this.identifyPushProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
@@ -127,13 +129,21 @@ export class IdentifyService implements Startable {
     await this.components.getPeerStore().metadataBook.setValue(this.components.getPeerId(), 'AgentVersion', uint8ArrayFromString(this.host.agentVersion))
     await this.components.getPeerStore().metadataBook.setValue(this.components.getPeerId(), 'ProtocolVersion', uint8ArrayFromString(this.host.protocolVersion))
 
-    await this.components.getRegistrar().handle([
-      this.identifyProtocolStr,
-      this.identifyPushProtocolStr
-    ], (data) => {
-      void this.handleMessage(data)?.catch(err => {
+    await this.components.getRegistrar().handle(this.identifyProtocolStr, (data) => {
+      void this._handleIdentify(data).catch(err => {
         log.error(err)
       })
+    }, {
+      maxInboundStreams: this.init.maxInboundStreams,
+      maxOutboundStreams: this.init.maxOutboundStreams
+    })
+    await this.components.getRegistrar().handle(this.identifyPushProtocolStr, (data) => {
+      void this._handlePush(data).catch(err => {
+        log.error(err)
+      })
+    }, {
+      maxInboundStreams: this.init.maxPushIncomingStreams,
+      maxOutboundStreams: this.init.maxPushOutgoingStreams
     })
 
     this.started = true
@@ -155,14 +165,18 @@ export class IdentifyService implements Startable {
     const protocols = await this.components.getPeerStore().protoBook.get(this.components.getPeerId())
 
     const pushes = connections.map(async connection => {
-      const timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
       let stream: Stream | undefined
+      const timeoutController = new TimeoutController(this.init.timeout)
 
       try {
-        const data = await connection.newStream([this.identifyPushProtocolStr], {
+        // fails on node < 15.4
+        setMaxListeners?.(Infinity, timeoutController.signal)
+      } catch {}
+
+      try {
+        stream = await connection.newStream([this.identifyPushProtocolStr], {
           signal: timeoutController.signal
         })
-        stream = data.stream
 
         // make stream abortable
         const source: Duplex<Uint8Array> = abortableDuplex(stream, timeoutController.signal)
@@ -218,21 +232,29 @@ export class IdentifyService implements Startable {
   }
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
-    const { stream } = await connection.newStream([this.identifyProtocolStr], options)
-    let source: Duplex<Uint8Array> = stream
     let timeoutController
     let signal = options.signal
+    let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
+      timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
+
+      try {
+        // fails on node < 15.4
+        setMaxListeners?.(Infinity, timeoutController.signal)
+      } catch {}
     }
 
-    // make stream abortable if AbortSignal passed
-    source = abortableDuplex(stream, signal)
-
     try {
+      stream = await connection.newStream([this.identifyProtocolStr], {
+        signal
+      })
+
+      // make stream abortable
+      const source = abortableDuplex(stream, signal)
+
       const data = await pipe(
         [],
         source,
@@ -256,7 +278,9 @@ export class IdentifyService implements Startable {
         timeoutController.clear()
       }
 
-      stream.close()
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 
@@ -354,28 +378,17 @@ export class IdentifyService implements Startable {
   }
 
   /**
-   * A handler to register with Libp2p to process identify messages
-   */
-  handleMessage (data: IncomingStreamData) {
-    const { protocol } = data
-
-    switch (protocol) {
-      case this.identifyProtocolStr:
-        return this._handleIdentify(data)
-      case this.identifyPushProtocolStr:
-        return this._handlePush(data)
-      default:
-        log.error('cannot handle unknown protocol %s', protocol)
-    }
-  }
-
-  /**
    * Sends the `Identify` response with the Signed Peer Record
    * to the requesting peer over the given `connection`
    */
   async _handleIdentify (data: IncomingStreamData) {
     const { connection, stream } = data
-    const timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
+    const timeoutController = new TimeoutController(this.init.timeout)
+
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, timeoutController.signal)
+    } catch {}
 
     try {
       const publicKey = this.components.getPeerId().publicKey ?? new Uint8Array(0)
@@ -426,7 +439,12 @@ export class IdentifyService implements Startable {
    */
   async _handlePush (data: IncomingStreamData) {
     const { connection, stream } = data
-    const timeoutController = new TimeoutController(this.init.timeout ?? IDENTIFY_TIMEOUT)
+    const timeoutController = new TimeoutController(this.init.timeout)
+
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, timeoutController.signal)
+    } catch {}
 
     let message: Identify | undefined
     try {

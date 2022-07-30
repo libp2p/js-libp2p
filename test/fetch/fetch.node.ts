@@ -7,7 +7,7 @@ import { Mplex } from '@libp2p/mplex'
 import { NOISE } from '@chainsafe/libp2p-noise'
 import { createPeerId } from '../utils/creators/peer.js'
 import { codes } from '../../src/errors.js'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 async function createNode (peerId: PeerId) {
   return await createLibp2pNode({

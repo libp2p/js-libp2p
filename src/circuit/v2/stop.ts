@@ -1,6 +1,6 @@
 
 import { Status, StopMessage } from './pb/index.js'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 
 import { logger } from '@libp2p/logger'
 import { StreamHandlerV2 } from './stream-handler.js'
@@ -54,7 +54,7 @@ export async function stop ({
   connection,
   request
 }: StopOptions) {
-  const { stream } = await connection.newStream([relayV2StopCodec])
+  const stream = await connection.newStream([relayV2StopCodec])
   log('starting circuit relay v2 stop request to %s', connection.remotePeer)
   const streamHandler = new StreamHandlerV2({ stream })
   streamHandler.write(StopMessage.encode(request))

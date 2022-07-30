@@ -1,8 +1,8 @@
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { logger } from '@libp2p/logger'
 import { pipe } from 'it-pipe'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
 import { StreamHandlerV2 } from './stream-handler.js'
 import type { Circuit } from '../transport.js'
@@ -42,7 +42,7 @@ export async function handleHopProtocol (options: HopProtocolOptions) {
 
 export async function reserve (connection: Connection) {
   log('requesting reservation from %s', connection.remotePeer)
-  const { stream } = await connection.newStream([relayV2HopCodec])
+  const stream = await connection.newStream([relayV2HopCodec])
   const streamHandler = new StreamHandlerV2({ stream })
   streamHandler.write(HopMessage.encode({
     type: HopMessage.Type.RESERVE

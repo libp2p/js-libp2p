@@ -1,7 +1,7 @@
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
-import type { ConnectionManager } from '@libp2p/interfaces/connection-manager'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
-import type { Listener } from '@libp2p/interfaces/transport'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Listener } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { Multiaddr } from '@multiformats/multiaddr'
 

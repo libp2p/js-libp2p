@@ -18,16 +18,16 @@ import {
   MAX_PER_PEER_DIALS,
   MAX_ADDRS_TO_DIAL
 } from '../../constants.js'
-import type { Connection } from '@libp2p/interfaces/connection'
+import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 import map from 'it-map'
-import type { AddressSorter } from '@libp2p/interfaces/peer-store'
-import type { ComponentMetricsTracker } from '@libp2p/interfaces/metrics'
+import type { AddressSorter } from '@libp2p/interface-peer-store'
+import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
 
 const log = logger('libp2p:dialer')
 
@@ -177,7 +177,7 @@ export class Dialer implements Startable, Initializable {
 
     log('creating dial target for %p', id)
 
-    const dialTarget = await this._createCancellableDialTarget(id)
+    const dialTarget = await this._createCancellableDialTarget(id, options)
 
     if (dialTarget.addrs.length === 0) {
       throw errCode(new Error('The dial request has no valid addresses'), codes.ERR_NO_VALID_ADDRESSES)
@@ -207,7 +207,7 @@ export class Dialer implements Startable, Initializable {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    */
-  async _createCancellableDialTarget (peer: PeerId): Promise<DialTarget> {
+  async _createCancellableDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
     // Make dial target promise cancellable
     const id = `${(parseInt(String(Math.random() * 1e9), 10)).toString()}${Date.now()}`
     const cancellablePromise = new Promise<DialTarget>((resolve, reject) => {
@@ -216,7 +216,7 @@ export class Dialer implements Startable, Initializable {
 
     try {
       const dialTarget = await Promise.race([
-        this._createDialTarget(peer),
+        this._createDialTarget(peer, options),
         cancellablePromise
       ])
 
@@ -232,7 +232,7 @@ export class Dialer implements Startable, Initializable {
    * If a multiaddr is received it should be the first address attempted.
    * Multiaddrs not supported by the available transports will be filtered out.
    */
-  async _createDialTarget (peer: PeerId): Promise<DialTarget> {
+  async _createDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
     const knownAddrs = await pipe(
       await this.components.getPeerStore().addressBook.get(peer),
       (source) => filter(source, async (address) => {
@@ -253,7 +253,7 @@ export class Dialer implements Startable, Initializable {
 
     const addrs: Multiaddr[] = []
     for (const a of knownAddrs) {
-      const resolvedAddrs = await this._resolve(a)
+      const resolvedAddrs = await this._resolve(a, options)
       resolvedAddrs.forEach(ra => addrs.push(ra))
     }
 
@@ -341,7 +341,7 @@ export class Dialer implements Startable, Initializable {
   /**
    * Resolve multiaddr recursively
    */
-  async _resolve (ma: Multiaddr): Promise<Multiaddr[]> {
+  async _resolve (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
     // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
     // Now only supporting resolve for dnsaddr
     const resolvableProto = ma.protoNames().includes('dnsaddr')
@@ -351,9 +351,9 @@ export class Dialer implements Startable, Initializable {
       return [ma]
     }
 
-    const resolvedMultiaddrs = await this._resolveRecord(ma)
+    const resolvedMultiaddrs = await this._resolveRecord(ma, options)
     const recursiveMultiaddrs = await Promise.all(resolvedMultiaddrs.map(async (nm) => {
-      return await this._resolve(nm)
+      return await this._resolve(nm, options)
     }))
 
     const addrs = recursiveMultiaddrs.flat()
@@ -368,10 +368,10 @@ export class Dialer implements Startable, Initializable {
   /**
    * Resolve a given multiaddr. If this fails, an empty array will be returned
    */
-  async _resolveRecord (ma: Multiaddr): Promise<Multiaddr[]> {
+  async _resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
     try {
       ma = new Multiaddr(ma.toString()) // Use current multiaddr module
-      const multiaddrs = await ma.resolve()
+      const multiaddrs = await ma.resolve(options)
       return multiaddrs
     } catch (err) {
       log.error(`multiaddr ${ma.toString()} could not be resolved`, err)

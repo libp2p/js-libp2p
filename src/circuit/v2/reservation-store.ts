@@ -1,7 +1,7 @@
 import { Status } from './pb/index.js'
 import type { ReservationStore as IReservationStore, ReservationStatus } from './interfaces.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 interface Reservation {
   addr: Multiaddr

@@ -40,7 +40,7 @@ node2.handle('/your-protocol', ({ stream }) => {
 After the protocol is _handled_, now we can dial to it.
 
 ```JavaScript
-const { stream } = await node1.dialProtocol(node2.peerId, ['/your-protocol'])
+const stream = await node1.dialProtocol(node2.peerId, ['/your-protocol'])
 
 await pipe(
   ['my own protocol, wow!'],
@@ -62,7 +62,7 @@ node2.handle('/another-protocol/1.0.1', ({ stream }) => {
   )
 })
 // ...
-const { stream } = await node1.dialProtocol(node2.peerId, ['/another-protocol/1.0.0'])
+const stream = await node1.dialProtocol(node2.peerId, ['/another-protocol/1.0.0'])
 
 await pipe(
   ['my own protocol, wow!'],
@@ -133,19 +133,19 @@ node2.handle(['/a', '/b'], ({ protocol, stream }) => {
   )
 })
 
-const { stream } = await node1.dialProtocol(node2.peerId, ['/a'])
+const stream = await node1.dialProtocol(node2.peerId, ['/a'])
 await pipe(
   ['protocol (a)'],
   stream
 )
 
-const { stream: stream2 } = await node1.dialProtocol(node2.peerId, ['/b'])
+const stream2 = await node1.dialProtocol(node2.peerId, ['/b'])
 await pipe(
   ['protocol (b)'],
   stream2
 )
 
-const { stream: stream3 } = await node1.dialProtocol(node2.peerId, ['/b'])
+const stream3 = await node1.dialProtocol(node2.peerId, ['/b'])
 await pipe(
   ['another stream on protocol (b)'],
   stream3
@@ -167,7 +167,7 @@ There is one last trick on _protocol and stream multiplexing_ that libp2p uses t
 
 With the aid of both mechanisms, we can reuse an incomming connection to dial streams out too, this is specially useful when you are behind tricky NAT, firewalls or if you are running in a browser, where you can't have listening addrs, but you can dial out. By dialing out, you enable other peers to talk with you in Protocols that they want, simply by opening a new multiplexed stream.
 
-You can see this working on example [3.js](./3.js). 
+You can see this working on example [3.js](./3.js).
 
 As we've seen earlier, we can create our node with this createNode function.
 ```js
@@ -229,14 +229,14 @@ node2.handle('/node-2', ({ stream }) => {
 })
 
 // Dialing node2 from node1
-const { stream: stream1 } = await node1.dialProtocol(node2.peerId, ['/node-2'])
+const stream1 = await node1.dialProtocol(node2.peerId, ['/node-2'])
 await pipe(
   ['from 1 to 2'],
   stream1
 )
 
 // Dialing node1 from node2
-const { stream: stream2 } = await node2.dialProtocol(node1.peerId, ['/node-1'])
+const stream2 = await node2.dialProtocol(node1.peerId, ['/node-1'])
 await pipe(
   ['from 2 to 1'],
   stream2
@@ -256,14 +256,14 @@ So, we have successfully set up a bidirectional connection with protocol muxing.
 The code below will result into an error as `the dial address is not valid`.
 ```js
 // Dialing from node2 to node1
-const { stream: stream2 } = await node2.dialProtocol(node1.peerId, ['/node-1'])
+const stream2 = await node2.dialProtocol(node1.peerId, ['/node-1'])
 await pipe(
   ['from 2 to 1'],
   stream2
 )
 
 // Dialing from node1 to node2
-const { stream: stream1 } = await node1.dialProtocol(node2.peerId, ['/node-2'])
+const stream1 = await node1.dialProtocol(node2.peerId, ['/node-2'])
 await pipe(
   ['from 1 to 2'],
   stream1

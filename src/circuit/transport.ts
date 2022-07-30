@@ -9,14 +9,14 @@ import { codes } from '../errors.js'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { relayV2HopCodec, relayV1Codec, relayV2StopCodec } from './multicodec.js'
 import { createListener } from './listener.js'
-import { symbol } from '@libp2p/interfaces/transport'
+import { symbol } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Components, Initializable } from '@libp2p/interfaces/components'
+import { Components, Initializable } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { IncomingStreamData } from '@libp2p/interfaces/registrar'
-import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interfaces/transport'
-import type { Connection, Stream } from '@libp2p/interfaces/connection'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
+import type { Connection, Stream } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { StreamHandlerV2 } from './v2/stream-handler.js'
 import { StreamHandlerV1 } from './v1/stream-handler.js'
 import * as CircuitV1Handler from './v1/index.js'
@@ -207,9 +207,9 @@ export class Circuit implements Transport, Initializable {
     try {
       const stream = await relayConnection.newStream([relayV2HopCodec, relayV1Codec])
 
-      switch (stream.protocol) {
+      switch (stream.stat.protocol) {
         case relayV1Codec: return await this.connectV1({
-          stream: stream.stream,
+          stream,
           connection: relayConnection,
           destinationPeer,
           destinationAddr,
@@ -218,7 +218,7 @@ export class Circuit implements Transport, Initializable {
           disconnectOnFailure
         })
         case relayV2HopCodec: return await this.connectV2({
-          stream: stream.stream,
+          stream,
           connection: relayConnection,
           destinationPeer,
           destinationAddr,
@@ -227,7 +227,7 @@ export class Circuit implements Transport, Initializable {
           disconnectOnFailure
         })
         default:
-          stream.stream.reset()
+          stream.reset()
           throw new Error('Unexpected stream protocol')
       }
     } catch (err: any) {

@@ -1,30 +1,24 @@
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import { codes } from './errors.js'
-import { isTopology, Topology } from '@libp2p/interfaces/topology'
-import type { Registrar, StreamHandler } from '@libp2p/interfaces/registrar'
-import type { PeerProtocolsChangeData } from '@libp2p/interfaces/peer-store'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { Components } from '@libp2p/interfaces/components'
+import { isTopology, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-registrar'
+import merge from 'merge-options'
+import type { Registrar, StreamHandler, Topology } from '@libp2p/interface-registrar'
+import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
+import type { Connection } from '@libp2p/interface-connection'
+import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:registrar')
 
-function supportsProtocol (peerProtocols: string[], topologyProtocols: string[]) {
-  for (const peerProtocol of peerProtocols) {
-    if (topologyProtocols.includes(peerProtocol)) {
-      return true
-    }
-  }
-
-  return false
-}
+export const DEFAULT_MAX_INBOUND_STREAMS = 32
+export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
 
 /**
  * Responsible for notifying registered protocols of events in the network.
  */
 export class DefaultRegistrar implements Registrar {
-  private readonly topologies: Map<string, { topology: Topology, protocols: string[] }>
-  private readonly handlers: Map<string, StreamHandler>
+  private readonly topologies: Map<string, Map<string, Topology>>
+  private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: Components
 
   constructor (components: Components) {
@@ -42,57 +36,54 @@ export class DefaultRegistrar implements Registrar {
   }
 
   getProtocols () {
-    const protocols = new Set<string>()
-
-    for (const topology of this.topologies.values()) {
-      topology.protocols.forEach(protocol => protocols.add(protocol))
-    }
-
-    for (const protocol of this.handlers.keys()) {
-      protocols.add(protocol)
-    }
-
-    return Array.from(protocols).sort()
+    return Array.from(new Set<string>([
+      ...this.topologies.keys(),
+      ...this.handlers.keys()
+    ])).sort()
   }
 
   getHandler (protocol: string) {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
-      throw new Error(`No handler registered for protocol ${protocol}`)
+      throw errCode(new Error(`No handler registered for protocol ${protocol}`), codes.ERR_NO_HANDLER_FOR_PROTOCOL)
     }
 
     return handler
   }
 
   getTopologies (protocol: string) {
-    const output: Topology[] = []
+    const topologies = this.topologies.get(protocol)
 
-    for (const { topology, protocols } of this.topologies.values()) {
-      if (protocols.includes(protocol)) {
-        output.push(topology)
-      }
+    if (topologies == null) {
+      return []
     }
 
-    return output
+    return [
+      ...topologies.values()
+    ]
   }
 
   /**
    * Registers the `handler` for each protocol
    */
-  async handle (protocols: string | string[], handler: StreamHandler): Promise<void> {
-    const protocolList = Array.isArray(protocols) ? protocols : [protocols]
-
-    for (const protocol of protocolList) {
-      if (this.handlers.has(protocol)) {
-        throw errCode(new Error(`Handler already registered for protocol ${protocol}`), codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
-      }
-
-      this.handlers.set(protocol, handler)
+  async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
+    if (this.handlers.has(protocol)) {
+      throw errCode(new Error(`Handler already registered for protocol ${protocol}`), codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
     }
 
+    const options = merge.bind({ ignoreUndefined: true })({
+      maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
+      maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
+    }, opts)
+
+    this.handlers.set(protocol, {
+      handler,
+      options
+    })
+
     // Add new protocols to self protocols in the Protobook
-    await this.components.getPeerStore().protoBook.add(this.components.getPeerId(), protocolList)
+    await this.components.getPeerStore().protoBook.add(this.components.getPeerId(), [protocol])
   }
 
   /**
@@ -113,7 +104,7 @@ export class DefaultRegistrar implements Registrar {
   /**
    * Register handlers for a set of multicodecs given
    */
-  async register (protocols: string | string[], topology: Topology): Promise<string> {
+  async register (protocol: string, topology: Topology): Promise<string> {
     if (!isTopology(topology)) {
       log.error('topology must be an instance of interfaces/topology')
       throw errCode(new Error('topology must be an instance of interfaces/topology'), codes.ERR_INVALID_PARAMETERS)
@@ -122,10 +113,14 @@ export class DefaultRegistrar implements Registrar {
     // Create topology
     const id = `${(Math.random() * 1e9).toString(36)}${Date.now()}`
 
-    this.topologies.set(id, {
-      topology,
-      protocols: Array.isArray(protocols) ? protocols : [protocols]
-    })
+    let topologies = this.topologies.get(protocol)
+
+    if (topologies == null) {
+      topologies = new Map<string, Topology>()
+      this.topologies.set(protocol, topologies)
+    }
+
+    topologies.set(id, topology)
 
     // Set registrar
     await topology.setRegistrar(this)
@@ -137,7 +132,15 @@ export class DefaultRegistrar implements Registrar {
    * Unregister topology
    */
   unregister (id: string) {
-    this.topologies.delete(id)
+    for (const [protocol, topologies] of this.topologies.entries()) {
+      if (topologies.has(id)) {
+        topologies.delete(id)
+
+        if (topologies.size === 0) {
+          this.topologies.delete(protocol)
+        }
+      }
+    }
   }
 
   /**
@@ -148,8 +151,15 @@ export class DefaultRegistrar implements Registrar {
 
     void this.components.getPeerStore().protoBook.get(connection.remotePeer)
       .then(peerProtocols => {
-        for (const { topology, protocols } of this.topologies.values()) {
-          if (supportsProtocol(peerProtocols, protocols)) {
+        for (const protocol of peerProtocols) {
+          const topologies = this.topologies.get(protocol)
+
+          if (topologies == null) {
+            // no topologies are interested in this protocol
+            continue
+          }
+
+          for (const topology of topologies.values()) {
             topology.onDisconnect(connection.remotePeer)
           }
         }
@@ -168,14 +178,28 @@ export class DefaultRegistrar implements Registrar {
     const removed = oldProtocols.filter(protocol => !protocols.includes(protocol))
     const added = protocols.filter(protocol => !oldProtocols.includes(protocol))
 
-    for (const { topology, protocols } of this.topologies.values()) {
-      if (supportsProtocol(removed, protocols)) {
+    for (const protocol of removed) {
+      const topologies = this.topologies.get(protocol)
+
+      if (topologies == null) {
+        // no topologies are interested in this protocol
+        continue
+      }
+
+      for (const topology of topologies.values()) {
         topology.onDisconnect(peerId)
       }
     }
 
-    for (const { topology, protocols } of this.topologies.values()) {
-      if (supportsProtocol(added, protocols)) {
+    for (const protocol of added) {
+      const topologies = this.topologies.get(protocol)
+
+      if (topologies == null) {
+        // no topologies are interested in this protocol
+        continue
+      }
+
+      for (const topology of topologies.values()) {
         const connection = this.components.getConnectionManager().getConnections(peerId)[0]
 
         if (connection == null) {

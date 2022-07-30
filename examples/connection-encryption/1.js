@@ -40,7 +40,7 @@ const createNode = async () => {
     )
   })
 
-  const { stream } = await node1.dialProtocol(node2.peerId, '/a-protocol')
+  const stream = await node1.dialProtocol(node2.peerId, '/a-protocol')
 
   await pipe(
     [uint8ArrayFromString('This information is sent out encrypted to the other peer')],

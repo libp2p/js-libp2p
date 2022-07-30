@@ -60,8 +60,8 @@ export async function test () {
                   selector => {
                       const text = document.querySelector(selector).innerText
                       return text.includes('libp2p id is') &&
-                        text.includes('Found peer') &&
-                        text.includes('Connected to')
+                        text.includes('Found peer 12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m') &&
+                        text.includes('Connected to 12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m')
                   },
                   '#output',
                   { timeout: 10000 }

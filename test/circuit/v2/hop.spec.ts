@@ -1,12 +1,10 @@
-
-import { relayV2StopCodec } from './../../../src/circuit/multicodec.js'
-import { mockDuplex, mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { mockDuplex, mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
 import { expect } from 'aegir/chai'
 import * as peerUtils from '../../utils/creators/peer.js'
 import { handleHopProtocol } from '../../../src/circuit/v2/hop.js'
 import { StreamHandlerV2 } from '../../../src/circuit/v2/stream-handler.js'
-import type { Connection } from '@libp2p/interfaces/connection'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { Status, StopMessage, HopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
 import sinon from 'sinon'
@@ -162,9 +160,9 @@ describe('Circuit v2 - hop protocol', function () {
         mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
       )
       const streamStub = sinon.stub(dstConn, 'newStream')
-      const dstStream = { protocol: relayV2StopCodec, stream: mockStream(pair<Uint8Array>()) }
+      const dstStream = mockStream(pair<Uint8Array>())
       streamStub.resolves(dstStream)
-      const dstStreamHandler = new StreamHandlerV2({ stream: dstStream.stream })
+      const dstStreamHandler = new StreamHandlerV2({ stream: dstStream })
       dstStreamHandler.write(StopMessage.encode({
         type: StopMessage.Type.STATUS,
         status: Status.OK

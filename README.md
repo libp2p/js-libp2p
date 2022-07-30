@@ -66,8 +66,6 @@ We are in the process of writing better documentation, blog posts, tutorials and
 - [docs.libp2p.io](https://docs.libp2p.io)
 - [Specification (WIP)](https://github.com/libp2p/specs)
 - [Discussion Forums](https://discuss.libp2p.io)
-- Talks
-  - [`libp2p <3 ethereum` at DEVCON2](https://ethereumfoundation.org/devcon/?session=libp2p) [📼 video](https://www.youtube.com/watch?v=HxueJbeMVG4) [slides](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p-HEART-devp2p-IPFS-PLUS-Ethereum-networking.pdf) [📼 demo-1](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo1-1.mp4) [📼 demo-2](https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo2-1.mp4)
 - Articles
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
@@ -105,6 +103,7 @@ You can find multiple examples on the [examples folder](./examples) that will gu
 > git clone https://github.com/libp2p/js-libp2p.git
 > cd js-libp2p
 > npm install
+> npm run build
 ```
 
 ### Tests

@@ -1,7 +1,7 @@
 import drain from 'it-drain'
 import errCode from 'err-code'
-import type { DHT } from '@libp2p/interfaces/dht'
-import type { ContentRouting } from '@libp2p/interfaces/content-routing'
+import type { DHT } from '@libp2p/interface-dht'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
 

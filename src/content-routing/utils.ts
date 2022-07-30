@@ -2,8 +2,8 @@ import errCode from 'err-code'
 import filter from 'it-filter'
 import map from 'it-map'
 import type { Source } from 'it-stream-types'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
-import type { PeerStore } from '@libp2p/interfaces/peer-store'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 /**
  * Store the multiaddrs from every peer in the passed peer store

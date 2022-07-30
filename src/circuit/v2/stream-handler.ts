@@ -1,7 +1,7 @@
 import { logger } from '@libp2p/logger'
 import * as lp from 'it-length-prefixed'
 import { Handshake, handshake } from 'it-handshake'
-import type { Stream } from '@libp2p/interfaces/connection'
+import type { Stream } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
 
 const log = logger('libp2p:circuitv2:stream-handler')

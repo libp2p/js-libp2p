@@ -10,6 +10,7 @@ import type { Libp2pInit } from './index.js'
 import { codes, messages } from './errors.js'
 import errCode from 'err-code'
 import type { RecursivePartial } from '@libp2p/interfaces'
+import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 
 const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
@@ -26,6 +27,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
     dialTimeout: Constants.DIAL_TIMEOUT,
+    inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
@@ -68,7 +70,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
     },
     hop: {
       enabled: false,
-      active: false
+      active: false,
+      timeout: 30000
     },
     autoRelay: {
       enabled: false,
@@ -80,13 +83,24 @@ const DefaultConfig: Partial<Libp2pInit> = {
     host: {
       agentVersion: AGENT_VERSION
     },
-    timeout: 30000
+    // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
+    timeout: 60000,
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1,
+    maxPushIncomingStreams: 1,
+    maxPushOutgoingStreams: 1
   },
   ping: {
-    protocolPrefix: 'ipfs'
+    protocolPrefix: 'ipfs',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1,
+    timeout: 10000
   },
   fetch: {
-    protocolPrefix: 'libp2p'
+    protocolPrefix: 'libp2p',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1,
+    timeout: 10000
   }
 }
 
@@ -103,6 +117,15 @@ export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit 
 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw errCode(new Error(messages.ERR_PROTECTOR_REQUIRED), codes.ERR_PROTECTOR_REQUIRED)
+  }
+
+  // Append user agent version to default AGENT_VERSION depending on the environment
+  if (resultingOptions.identify.host.agentVersion === AGENT_VERSION) {
+    if (isNode || isElectronMain) {
+      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.process.version}`
+    } else if (isBrowser || isWebWorker || isElectronRenderer || isReactNative) {
+      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.navigator.userAgent}`
+    }
   }
 
   return resultingOptions

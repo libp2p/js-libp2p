@@ -91,7 +91,7 @@ describe('libp2p.metrics', () => {
     })
 
     const connection = await libp2p.dial(remoteLibp2p.peerId)
-    const { stream } = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream('/echo/1.0.0')
 
     const bytes = randomBytes(512)
     const result = await pipe(
@@ -156,7 +156,7 @@ describe('libp2p.metrics', () => {
     })
 
     const connection = await libp2p.dial(remoteLibp2p.peerId)
-    const { stream } = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream('/echo/1.0.0')
 
     const bytes = randomBytes(512)
     await pipe(
