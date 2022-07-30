@@ -62,6 +62,10 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     this.components.getConnectionManager().addEventListener('peer:disconnect', (evt) => {
       this._onPeerDisconnected(evt)
     })
+
+    this.components.getConnectionManager().addEventListener('peer:connect', (evt) => {
+      log.trace('Connected', evt.detail.remotePeer.toString(), this.components.getPeerId().toString())
+    })
   }
 
   isStarted () {
@@ -90,9 +94,13 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
   async _onProtocolChange ({ peerId, protocols }: {peerId: PeerId, protocols: string[]}) {
     const id = peerId.toString()
 
+    if (peerId.equals(this.components.getPeerId())) {
+      return
+    }
+
     // Check if it has the protocol
     const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
-    log.trace(`Peer ${peerId.toString()} protocol change`)
+    log.trace(`Peer ${peerId.toString()} protocol change`, this.components.getPeerId().toString())
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
     if (hasProtocol == null) {
@@ -106,75 +114,24 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     if (this.relays.has(id)) {
       return
     }
-    log.trace(`Peer ${peerId.toString()} adding as relay`)
 
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
       const connections = this.components.getConnectionManager().getConnections(peerId)
 
-      if (connections.length === 0) {
-        log.error('no connections to peer')
+      const connection = connections[0]
+
+      if (connection == null) {
+        void this._tryToListenOnRelay(peerId)
         return
       }
-
-      const connection = connections[0]
 
       // Do not hop on a relayed connection
       if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {
         log(`relayed connection to ${id} will not be used to hop on`)
         return
       }
-      await this._addListenRelay(connection, peerId)
-    } catch (err: any) {
-      this.onError(err)
-    }
-  }
-
-  /**
-   * Peer disconnects
-   */
-  async _onPeerConnected (evt: CustomEvent<Connection>) {
-    const connection = evt.detail
-    const peerId = connection.remotePeer
-    const id = peerId.toString()
-    const { protocols } = await this.components.getPeerStore().get(peerId)
-    const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
-    log.trace(`Peer ${peerId.toString()} protocol change`)
-
-    // If no protocol, check if we were keeping the peer before as a listenRelay
-    if (hasProtocol == null) {
-      log.trace(`Peer ${peerId.toString()} doesn't have circuitv2 protocol`)
-      if (this.relays.has(id)) {
-        log.trace('remove listen relay')
-        await this._removeListenRelay(id)
-      }
-      return
-    }
-
-    if (this.relays.has(id)) {
-      log.trace(`Peer ${peerId.toString()} is already registered relay`)
-      return
-    }
-    log.trace('debug1')
-
-    // If protocol, check if can hop, store info in the metadataBook and listen on it
-    try {
-      const connections = this.components.getConnectionManager().getConnections(peerId)
-
-      if (connections.length === 0) {
-        log.error('no connections to peer')
-        return
-      }
-
-      const connection = connections[0]
-
-      // Do not hop on a relayed connection
-      if (connection.remoteAddr.protoCodes().includes(CIRCUIT_PROTO_CODE)) {
-        log(`relayed connection to ${id} will not be used to hop on`)
-        return
-      }
-
-      log.trace('debugend')
+      log.trace(`Peer ${peerId.toString()} adding as relay`)
       await this._addListenRelay(connection, peerId)
     } catch (err: any) {
       this.onError(err)
@@ -284,7 +241,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     // Check if we have known hop peers to use and attempt to listen on the already connected
     for (const { id, protocols } of peers) {
       const idStr = id.toString()
-      log.trace('Checking if peer relay', idStr, protocols)
+      log.trace('Checking if peer relay', idStr, protocols, { me: this.components.getPeerId().toString() })
 
       // Continue to next if listening on this or peer to ignore
       if (this.relays.has(idStr)) {
@@ -354,6 +311,10 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
 
   async _tryToListenOnRelay (peerId: PeerId) {
     try {
+      if (peerId.equals(this.components.getPeerId())) {
+        log.trace('Skipping dialling self', peerId.toString())
+        return
+      }
       const connection = await this.components.getConnectionManager().openConnection(peerId)
       await this._addListenRelay(connection, peerId)
     } catch (err: any) {
