@@ -1,3 +1,15 @@
+## [2.0.2](https://github.com/libp2p/js-libp2p-multistream-select/compare/v2.0.1...v2.0.2) (2022-07-31)
+
+
+### Trivial Changes
+
+* update project config ([#14](https://github.com/libp2p/js-libp2p-multistream-select/issues/14)) ([4d4ef28](https://github.com/libp2p/js-libp2p-multistream-select/commit/4d4ef28af8cb8d0f57e06d9ae161ba31e2c5e814))
+
+
+### Dependencies
+
+* update it-length-prefixed deps to support no-copy ops ([#16](https://github.com/libp2p/js-libp2p-multistream-select/issues/16)) ([2946064](https://github.com/libp2p/js-libp2p-multistream-select/commit/2946064a8993b4ec70ebfd3e5a34d86db1ee7fe6))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-multistream-select/compare/v2.0.0...v2.0.1) (2022-06-17)
 
 
