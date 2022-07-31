@@ -3,7 +3,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
 import { PeerIdProto } from './proto.js'
 import type { PublicKey, PrivateKey } from '@libp2p/interface-keys'
-import type { RSAPeerId, Ed25519PeerId, Secp256k1PeerId } from '@libp2p/interface-peer-id'
+import type { RSAPeerId, Ed25519PeerId, Secp256k1PeerId, PeerId } from '@libp2p/interface-peer-id'
 
 export const createEd25519PeerId = async (): Promise<Ed25519PeerId> => {
   const key = await generateKeyPair('Ed25519')
@@ -38,15 +38,15 @@ export const createRSAPeerId = async (opts?: { bits: number }): Promise<RSAPeerI
   throw new Error(`Generated unexpected PeerId type "${id.type}"`)
 }
 
-export async function createFromPubKey (publicKey: PublicKey) {
+export async function createFromPubKey (publicKey: PublicKey): Promise<PeerId> {
   return await peerIdFromKeys(marshalPublicKey(publicKey))
 }
 
-export async function createFromPrivKey (privateKey: PrivateKey) {
+export async function createFromPrivKey (privateKey: PrivateKey): Promise<PeerId> {
   return await peerIdFromKeys(marshalPublicKey(privateKey.public), marshalPrivateKey(privateKey))
 }
 
-export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1PeerId, excludePrivateKey?: boolean) {
+export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1PeerId, excludePrivateKey?: boolean): Uint8Array {
   return PeerIdProto.encode({
     id: peerId.multihash.bytes,
     pubKey: peerId.publicKey,
