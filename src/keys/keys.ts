@@ -3,6 +3,7 @@
 
 import { enumeration, encodeMessage, decodeMessage, message, bytes } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum KeyType {
   RSA = 'RSA',
@@ -34,11 +35,11 @@ export namespace PublicKey {
     })
   }
 
-  export const encode = (obj: PublicKey): Uint8Array => {
+  export const encode = (obj: PublicKey): Uint8ArrayList => {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array): PublicKey => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): PublicKey => {
     return decodeMessage(buf, PublicKey.codec())
   }
 }
@@ -56,11 +57,11 @@ export namespace PrivateKey {
     })
   }
 
-  export const encode = (obj: PrivateKey): Uint8Array => {
+  export const encode = (obj: PrivateKey): Uint8ArrayList => {
     return encodeMessage(obj, PrivateKey.codec())
   }
 
-  export const decode = (buf: Uint8Array): PrivateKey => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): PrivateKey => {
     return decodeMessage(buf, PrivateKey.codec())
   }
 }
