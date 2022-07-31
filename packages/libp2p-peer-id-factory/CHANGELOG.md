@@ -1,3 +1,15 @@
+## [@libp2p/peer-id-factory-v1.0.17](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.16...@libp2p/peer-id-factory-v1.0.17) (2022-07-31)
+
+
+### Trivial Changes
+
+* update project config ([#14](https://github.com/libp2p/js-libp2p-peer-id/issues/14)) ([5c3918c](https://github.com/libp2p/js-libp2p-peer-id/commit/5c3918c61d8346ed1d49094bb592f8c872b7de57))
+
+
+### Dependencies
+
+* update protons and uint8arraylist ([#17](https://github.com/libp2p/js-libp2p-peer-id/issues/17)) ([90588f5](https://github.com/libp2p/js-libp2p-peer-id/commit/90588f599fe9522a0ccfd43f1405425031c5175d))
+
 ## [@libp2p/peer-id-factory-v1.0.16](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.15...@libp2p/peer-id-factory-v1.0.16) (2022-07-18)
 
 
