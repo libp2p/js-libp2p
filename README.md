@@ -1,15 +1,19 @@
-# js-multistream-select <!-- omit in toc -->
+# @libp2p/multistream-select <!-- omit in toc -->
 
-[![test & maybe release](https://github.com/libp2p/js-libp2p-multistream-select/actions/workflows/js-test-and-release.yml/badge.svg)](https://github.com/libp2p/js-libp2p-multistream-select/actions/workflows/js-test-and-release.yml)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-multistream-select.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-multistream-select)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-multistream-select/actions/workflows/js-test-and-release.yml)
 
-> JavaScript implementation of [multistream-select](https://github.com/multiformats/multistream-select)
+> JavaScript implementation of multistream-select
 
-## Table of Contents <!-- omit in toc -->
+## Table of contents <!-- omit in toc -->
 
+- [Install](#install)
 - [Background](#background)
   - [What is `multistream-select`?](#what-is-multistream-select)
     - [Select a protocol flow](#select-a-protocol-flow)
-- [Install](#install)
 - [Usage](#usage)
   - [Dialer](#dialer)
   - [Listener](#listener)
@@ -35,7 +39,13 @@
     - [Returns](#returns-4)
     - [Examples](#examples-4)
 - [License](#license)
-  - [Contribution](#contribution)
+- [Contribution](#contribution)
+
+## Install
+
+```console
+$ npm i @libp2p/multistream-select
+```
 
 ## Background
 
@@ -60,12 +70,6 @@ The caller will send "interactive" messages, expecting for some acknowledgement 
 ```
 
 This mode also packs a `ls` option, so that the callee can list the protocols it currently supports
-
-## Install
-
-```sh
-npm i @libp2p/multistream-select
-```
 
 ## Usage
 
@@ -161,7 +165,7 @@ Create a new multistream select "dialer" instance which can be used to negotiate
 
 #### Parameters
 
-* `duplex` (`Object`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to dial on.
+- `duplex` (`Object`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to dial on.
 
 #### Returns
 
@@ -179,8 +183,8 @@ Negotiate a protocol to use from a list of protocols.
 
 #### Parameters
 
-* `protocols` (`String[]`/`String`) - A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made.
-* `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
+- `protocols` (`String[]`/`String`) - A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made.
+- `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
 
 #### Returns
 
@@ -205,7 +209,7 @@ List protocols that the remote supports.
 
 #### Parameters
 
-* `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
+- `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
 
 #### Returns
 
@@ -230,7 +234,7 @@ Construct a new multistream select "listener" instance which can be used to hand
 
 #### Parameters
 
-* `duplex` (`Object`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to listen on.
+- `duplex` (`Object`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to listen on.
 
 #### Returns
 
@@ -248,8 +252,8 @@ Handle multistream protocol selections for the given list of protocols.
 
 #### Parameters
 
-* `protocols` (`String[]`/`String`) - A list of protocols (or single protocol) that this listener is able to speak.
-* `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
+- `protocols` (`String[]`/`String`) - A list of protocols (or single protocol) that this listener is able to speak.
+- `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
 
 #### Returns
 
@@ -271,9 +275,9 @@ const { stream, protocol } = await listener.handle([
 
 Licensed under either of
 
- * Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / http://www.apache.org/licenses/LICENSE-2.0)
- * MIT ([LICENSE-MIT](LICENSE-MIT) / http://opensource.org/licenses/MIT)
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-### Contribution
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
