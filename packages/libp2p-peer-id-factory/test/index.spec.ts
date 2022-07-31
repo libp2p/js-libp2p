@@ -149,7 +149,7 @@ describe('PeerId', () => {
 
     expect(testIdB58String).to.equal(id2.toString())
     expect(id.publicKey).to.equalBytes(id2.publicKey)
-    expect(uint8ArrayToString(PeerIdFactory.exportToProtobuf(id), 'base16')).to.equal(testId.marshalled)
+    expect(uint8ArrayToString(PeerIdFactory.exportToProtobuf(id).subarray(), 'base16')).to.equal(testId.marshalled)
   })
 
   it('recreate from embedded ed25519 key', async () => {

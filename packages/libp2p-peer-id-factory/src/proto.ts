@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, bytes } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerIdProto {
   id: Uint8Array
@@ -19,11 +20,11 @@ export namespace PeerIdProto {
     })
   }
 
-  export const encode = (obj: PeerIdProto): Uint8Array => {
+  export const encode = (obj: PeerIdProto): Uint8ArrayList => {
     return encodeMessage(obj, PeerIdProto.codec())
   }
 
-  export const decode = (buf: Uint8Array): PeerIdProto => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): PeerIdProto => {
     return decodeMessage(buf, PeerIdProto.codec())
   }
 }

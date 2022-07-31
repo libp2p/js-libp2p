@@ -147,12 +147,13 @@
     "@libp2p/interface-peer-id": "^1.0.0",
     "@libp2p/peer-id": "^1.0.0",
     "multiformats": "^9.6.3",
-    "protons-runtime": "^1.0.4",
+    "protons-runtime": "^2.0.2",
+    "uint8arraylist": "^2.0.0",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
     "aegir": "^37.0.7",
-    "protons": "^3.0.4",
+    "protons": "^4.0.1",
     "util": "^0.12.4"
   }
 }
