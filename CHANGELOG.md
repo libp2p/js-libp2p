@@ -1,3 +1,15 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.0...v3.0.1) (2022-07-31)
+
+
+### Trivial Changes
+
+* update project config ([#356](https://github.com/libp2p/js-libp2p-kad-dht/issues/356)) ([d944d81](https://github.com/libp2p/js-libp2p-kad-dht/commit/d944d81a24875aad602b2a56bdd6a2c012e4208e))
+
+
+### Dependencies
+
+* update it-length-prefixed and protons for no-copy ops ([#357](https://github.com/libp2p/js-libp2p-kad-dht/issues/357)) ([518abfe](https://github.com/libp2p/js-libp2p-kad-dht/commit/518abfe34d7b733f7652ea72e6302a15fc5de64b))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v2.0.0...v3.0.0) (2022-06-17)
 
 
