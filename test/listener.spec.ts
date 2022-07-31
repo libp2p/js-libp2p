@@ -124,7 +124,7 @@ describe('Listener', () => {
             protocolsReader,
             Lp.decode(),
             // Stringify and remove the newline
-            (source) => map(source, (buf) => uint8ArrayToString(buf).trim()),
+            (source) => map(source, (buf) => uint8ArrayToString(buf.subarray()).trim()),
             async (source) => await all(source)
           )
 

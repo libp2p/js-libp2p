@@ -147,14 +147,14 @@
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-first": "^1.0.6",
-    "it-handshake": "^4.0.0",
-    "it-length-prefixed": "^7.0.1",
+    "it-handshake": "^4.0.1",
+    "it-length-prefixed": "^8.0.2",
     "it-pipe": "^2.0.3",
     "it-pushable": "^3.0.0",
-    "it-reader": "^5.0.0",
+    "it-reader": "^6.0.1",
     "it-stream-types": "^1.0.4",
     "p-defer": "^4.0.0",
-    "uint8arraylist": "^1.5.1",
+    "uint8arraylist": "^2.0.0",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
@@ -164,7 +164,7 @@
     "it-all": "^1.0.6",
     "it-map": "^1.0.6",
     "it-pair": "^2.0.2",
-    "p-timeout": "^5.0.2",
+    "p-timeout": "^6.0.0",
     "timeout-abort-controller": "^3.0.0",
     "util": "^0.12.4",
     "varint": "^6.0.0"

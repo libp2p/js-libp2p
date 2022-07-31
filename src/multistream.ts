@@ -17,14 +17,14 @@ const NewLine = uint8ArrayFromString('\n')
 export function encode (buffer: Uint8Array | Uint8ArrayList): Uint8Array {
   const list = new Uint8ArrayList(buffer, NewLine)
 
-  return lp.encode.single(list).slice()
+  return lp.encode.single(list).subarray()
 }
 
 /**
  * `write` encodes and writes a single buffer
  */
 export function write (writer: Pushable<Uint8Array>, buffer: Uint8Array | Uint8ArrayList) {
-  writer.push(encode(buffer).slice())
+  writer.push(encode(buffer).subarray())
 }
 
 /**
@@ -68,7 +68,7 @@ export async function read (reader: Reader, options?: AbortOptions) {
     throw errCode(new Error('no buffer returned'), 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 
-  if (buf[buf.length - 1] !== NewLine[0]) {
+  if (buf.get(buf.byteLength - 1) !== NewLine[0]) {
     throw errCode(new Error('missing newline'), 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 

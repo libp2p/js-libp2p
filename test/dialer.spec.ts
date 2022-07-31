@@ -41,7 +41,9 @@ describe('Dialer', () => {
       expect(selection.protocol).to.equal(protocol)
 
       // A second select will timeout
-      await pTimeout(mss.select(protocol2), 1e3)
+      await pTimeout(mss.select(protocol2), {
+        milliseconds: 1e3
+      })
         .then(() => expect.fail('should have timed out'), (err) => {
           expect(err).to.exist()
         })
