@@ -4,7 +4,7 @@ import type { Connection } from '@libp2p/interface-connection'
 
 import { logger } from '@libp2p/logger'
 import { StreamHandlerV2 } from './stream-handler.js'
-import { relayV2StopCodec } from '../multicodec.js'
+import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
 import { validateStopConnectRequest } from './validation.js'
 
 const log = logger('libp2p:circuitv2:stop')
@@ -54,7 +54,7 @@ export async function stop ({
   connection,
   request
 }: StopOptions) {
-  const stream = await connection.newStream([relayV2StopCodec])
+  const stream = await connection.newStream([RELAY_V2_STOP_CODEC])
   log('starting circuit relay v2 stop request to %s', connection.remotePeer)
   const streamHandler = new StreamHandlerV2({ stream })
   streamHandler.write(StopMessage.encode(request))

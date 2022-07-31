@@ -1,16 +1,16 @@
-import { mockDuplex, mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
-import { expect } from 'aegir/chai'
-import * as peerUtils from '../../utils/creators/peer.js'
-import { handleHopProtocol } from '../../../src/circuit/v2/hop.js'
-import { StreamHandlerV2 } from '../../../src/circuit/v2/stream-handler.js'
 import type { Connection } from '@libp2p/interface-connection'
+import { mockConnection, mockDuplex, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Status, StopMessage, HopMessage } from '../../../src/circuit/v2/pb/index.js'
-import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
+import { Multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { pair } from 'it-pair'
 import sinon from 'sinon'
 import { Circuit } from '../../../src/circuit/transport.js'
-import { Multiaddr } from '@multiformats/multiaddr'
-import { pair } from 'it-pair'
+import { handleHopProtocol } from '../../../src/circuit/v2/hop.js'
+import { HopMessage, Status, StopMessage } from '../../../src/circuit/v2/pb/index.js'
+import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
+import { StreamHandlerV2 } from '../../../src/circuit/v2/stream-handler.js'
+import * as peerUtils from '../../utils/creators/peer.js'
 
 /* eslint-env mocha */
 
@@ -145,7 +145,22 @@ describe('Circuit v2 - hop protocol', function () {
       conn = await mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
       streamHandler = new StreamHandlerV2({ stream: mockStream(pair<Uint8Array>()) })
       reservationStore = new ReservationStore()
-      circuit = new Circuit({})
+      circuit = new Circuit({
+        enabled: true,
+        limit: 15,
+        advertise: {
+          enabled: false
+        },
+        hop: {
+          enabled: true,
+          active: false,
+          timeout: 30000
+        },
+        autoRelay: {
+          enabled: false,
+          maxListeners: 2
+        }
+      })
     })
 
     this.afterEach(async function () {

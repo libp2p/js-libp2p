@@ -7,7 +7,7 @@ import * as mafmt from '@multiformats/mafmt'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { codes } from '../errors.js'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
-import { relayV2HopCodec, relayV1Codec, relayV2StopCodec } from './multicodec.js'
+import { RELAY_V2_HOP_CODEC, RELAY_V1_CODEC, RELAY_V2_STOP_CODEC } from './multicodec.js'
 import { createListener } from './listener.js'
 import { symbol } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -21,6 +21,10 @@ import { StreamHandlerV2 } from './v2/stream-handler.js'
 import { StreamHandlerV1 } from './v1/stream-handler.js'
 import * as CircuitV1Handler from './v1/index.js'
 import * as CircuitV2Handler from './v2/index.js'
+import { TimeoutController } from 'timeout-abort-controller'
+import type { RelayConfig } from '../index.js'
+import { setMaxListeners } from 'events'
+import { abortableDuplex } from 'abortable-iterator'
 
 const log = logger('libp2p:circuit')
 
@@ -41,15 +45,17 @@ export class Circuit implements Transport, Initializable {
   private handler?: ConnectionHandler
   private components: Components = new Components()
   private readonly reservationStore: ReservationStore
+  private readonly _init: RelayConfig
 
-  constructor (options: CircuitOptions) {
+  constructor (options: RelayConfig) {
+    this._init = options
     this.reservationStore = new ReservationStore(options.limit)
   }
 
   init (components: Components): void {
     this.components = components
 
-    void this.components.getRegistrar().handle(relayV1Codec, (data) => {
+    void this.components.getRegistrar().handle(RELAY_V1_CODEC, (data) => {
       void this._onProtocolV1(data).catch(err => {
         log.error(err)
       })
@@ -57,7 +63,7 @@ export class Circuit implements Transport, Initializable {
       .catch(err => {
         log.error(err)
       })
-    void this.components.getRegistrar().handle(relayV2HopCodec, (data) => {
+    void this.components.getRegistrar().handle(RELAY_V2_HOP_CODEC, (data) => {
       void this._onV2ProtocolHop(data).catch(err => {
         log.error(err)
       })
@@ -65,7 +71,7 @@ export class Circuit implements Transport, Initializable {
       .catch(err => {
         log.error(err)
       })
-    void this.components.getRegistrar().handle(relayV2StopCodec, (data) => {
+    void this.components.getRegistrar().handle(RELAY_V2_STOP_CODEC, (data) => {
       void this._onV2ProtocolStop(data).catch(err => {
         log.error(err)
       })
@@ -97,52 +103,82 @@ export class Circuit implements Transport, Initializable {
 
   async _onProtocolV1 (data: IncomingStreamData) {
     const { connection, stream } = data
-    const streamHandler = new StreamHandlerV1({ stream })
-    const request = await streamHandler.read()
+    const controller = new TimeoutController(this._init.hop.timeout)
 
-    if (request == null) {
-      log('request was invalid, could not read from stream')
-      CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.STOP_RELAY_REFUSED)
-      return
-    }
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, controller.signal)
+    } catch {}
 
-    switch (request.type) {
-      case CircuitV1.CircuitRelay.Type.CAN_HOP:
-      case CircuitV1.CircuitRelay.Type.HOP: {
-        log('received circuit v1 hop request from %p', connection.remotePeer)
-        CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY)
-        break
-      }
-      case CircuitV1.CircuitRelay.Type.STOP: {
-        log('received circuit v1 stop request from %p', connection.remotePeer)
-        CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.STOP_RELAY_REFUSED)
-        break
-      }
-      default: {
-        log('Request of type %s not supported', request.type)
+    try {
+      const source = abortableDuplex(stream, controller.signal)
+      const streamHandler = new StreamHandlerV1({ stream: { ...stream, ...source } })
+      const request = await streamHandler.read()
+
+      if (request == null) {
+        log('request was invalid, could not read from stream')
         CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.MALFORMED_MESSAGE)
+        return
       }
+
+      switch (request.type) {
+        case CircuitV1.CircuitRelay.Type.CAN_HOP:
+        case CircuitV1.CircuitRelay.Type.HOP: {
+          log('received circuit v1 hop request from %p', connection.remotePeer)
+          CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY)
+          break
+        }
+        case CircuitV1.CircuitRelay.Type.STOP: {
+          log('received circuit v1 stop request from %p', connection.remotePeer)
+          CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.STOP_RELAY_REFUSED)
+          break
+        }
+        default: {
+          log('Request of type %s not supported', request.type)
+          CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.MALFORMED_MESSAGE)
+        }
+      }
+    } finally {
+      controller.clear()
     }
   }
 
   async _onV2ProtocolHop ({ connection, stream }: IncomingStreamData) {
     log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
-    const streamHandler = new StreamHandlerV2({ stream })
-    const request = CircuitV2.HopMessage.decode(await streamHandler.read())
+    const controller = new TimeoutController(this._init.hop.timeout)
 
-    if (request?.type === undefined) {
-      return
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, controller.signal)
+    } catch {}
+
+    try {
+      const source = abortableDuplex(stream, controller.signal)
+      const streamHandler = new StreamHandlerV2({ stream: { ...stream, ...source } })
+      const request = CircuitV2.HopMessage.decode(await streamHandler.read())
+
+      if (request?.type == null) {
+        log('request was invalid, could not read from stream')
+        streamHandler.write(CircuitV2.HopMessage.encode({
+          type: CircuitV2.HopMessage.Type.STATUS,
+          status: CircuitV2.Status.MALFORMED_MESSAGE
+        }))
+        streamHandler.close()
+        return
+      }
+
+      await CircuitV2Handler.handleHopProtocol({
+        connection,
+        streamHandler,
+        circuit: this,
+        relayPeer: this.components.getPeerId(),
+        relayAddrs: this.components.getAddressManager().getListenAddrs(),
+        reservationStore: this.reservationStore,
+        request
+      })
+    } finally {
+      controller.clear()
     }
-
-    await CircuitV2Handler.handleHopProtocol({
-      connection,
-      streamHandler,
-      circuit: this,
-      relayPeer: this.components.getPeerId(),
-      relayAddrs: this.components.getAddressManager().getListenAddrs(),
-      reservationStore: this.reservationStore,
-      request
-    })
   }
 
   async _onV2ProtocolStop ({ connection, stream }: IncomingStreamData) {
@@ -205,10 +241,10 @@ export class Circuit implements Transport, Initializable {
     }
 
     try {
-      const stream = await relayConnection.newStream([relayV2HopCodec, relayV1Codec])
+      const stream = await relayConnection.newStream([RELAY_V2_HOP_CODEC, RELAY_V1_CODEC])
 
       switch (stream.stat.protocol) {
-        case relayV1Codec: return await this.connectV1({
+        case RELAY_V1_CODEC: return await this.connectV1({
           stream,
           connection: relayConnection,
           destinationPeer,
@@ -217,7 +253,7 @@ export class Circuit implements Transport, Initializable {
           ma,
           disconnectOnFailure
         })
-        case relayV2HopCodec: return await this.connectV2({
+        case RELAY_V2_HOP_CODEC: return await this.connectV2({
           stream,
           connection: relayConnection,
           destinationPeer,

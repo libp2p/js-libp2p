@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { relayV2HopCodec } from './multicodec.js'
+import { RELAY_V2_HOP_CODEC } from './multicodec.js'
 import { getExpiration, namespaceToCid } from './utils.js'
 import {
   CIRCUIT_PROTO_CODE,
@@ -99,7 +99,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     }
 
     // Check if it has the protocol
-    const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
+    const hasProtocol = protocols.find(protocol => protocol === RELAY_V2_HOP_CODEC)
     log.trace(`Peer ${peerId.toString()} protocol change`, this.components.getPeerId().toString())
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
@@ -252,7 +252,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
         continue
       }
 
-      const hasProtocol = protocols.find(protocol => protocol === relayV2HopCodec)
+      const hasProtocol = protocols.find(protocol => protocol === RELAY_V2_HOP_CODEC)
 
       // Continue to next if it does not support Hop
       if (hasProtocol == null) {

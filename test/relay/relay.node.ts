@@ -1,20 +1,21 @@
-import { StreamHandlerV1 } from './../../src/circuit/v1/stream-handler.js'
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
 import { Multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import delay from 'delay'
+import all from 'it-all'
 import { pipe } from 'it-pipe'
+import { pEvent } from 'p-event'
+import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { createNode } from '../utils/creators/peer.js'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit/multicodec.js'
+import { CircuitRelay } from '../../src/circuit/v1/pb/index.js'
+import { HopMessage } from '../../src/circuit/v2/pb/index.js'
+import { StreamHandlerV2 } from '../../src/circuit/v2/stream-handler.js'
 import { codes as Errors } from '../../src/errors.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import all from 'it-all'
-import { relayV1Codec } from '../../src/circuit/multicodec.js'
+import { createNode } from '../utils/creators/peer.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
-import { CircuitRelay } from '../../src/circuit/v1/pb/index.js'
-import { pEvent } from 'p-event'
-import delay from 'delay'
 
 /* eslint-env mocha */
 
@@ -163,13 +164,11 @@ describe('Dialing (via relay, TCP)', () => {
 
     // send an invalid relay message from the relay to the destination peer
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
-    const stream = await connections[0].newStream(relayV1Codec)
-    const streamHandler = new StreamHandlerV1({ stream })
-    streamHandler.write({
-      type: CircuitRelay.Type.STATUS
-    })
-    const res = await streamHandler.read()
-    expect(res?.code).to.equal(CircuitRelay.Status.MALFORMED_MESSAGE)
+    const stream = await connections[0].newStream(RELAY_V2_HOP_CODEC)
+    const streamHandler = new StreamHandlerV2({ stream })
+    streamHandler.write(new Uint8Array())
+    const res = HopMessage.decode(await streamHandler.read())
+    expect(res?.status).to.equal(CircuitRelay.Status.MALFORMED_MESSAGE)
     streamHandler.close()
 
     // should still be connected
@@ -188,7 +187,7 @@ describe('Dialing (via relay, TCP)', () => {
           },
           hop: {
             // very short timeout
-            timeout: 10
+            timeout: 5
           }
         }
       })
@@ -198,7 +197,7 @@ describe('Dialing (via relay, TCP)', () => {
     const dialAddr = relayAddr.encapsulate(`/p2p/${relayLibp2p.peerId.toString()}`)
 
     const connection = await srcLibp2p.dial(dialAddr)
-    const stream = await connection.newStream('/libp2p/circuit/relay/0.1.0')
+    const stream = await connection.newStream(RELAY_V2_HOP_CODEC)
 
     await stream.sink(async function * () {
       // delay for longer than the timeout
