@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, bytes, string, enumeration, int32 } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Record {
   key?: Uint8Array
@@ -23,11 +24,11 @@ export namespace Record {
     })
   }
 
-  export const encode = (obj: Record): Uint8Array => {
+  export const encode = (obj: Record): Uint8ArrayList => {
     return encodeMessage(obj, Record.codec())
   }
 
-  export const decode = (buf: Uint8Array): Record => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Record => {
     return decodeMessage(buf, Record.codec())
   }
 }
@@ -101,11 +102,11 @@ export namespace Message {
       })
     }
 
-    export const encode = (obj: Peer): Uint8Array => {
+    export const encode = (obj: Peer): Uint8ArrayList => {
       return encodeMessage(obj, Peer.codec())
     }
 
-    export const decode = (buf: Uint8Array): Peer => {
+    export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
       return decodeMessage(buf, Peer.codec())
     }
   }
@@ -121,11 +122,11 @@ export namespace Message {
     })
   }
 
-  export const encode = (obj: Message): Uint8Array => {
+  export const encode = (obj: Message): Uint8ArrayList => {
     return encodeMessage(obj, Message.codec())
   }
 
-  export const decode = (buf: Uint8Array): Message => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Message => {
     return decodeMessage(buf, Message.codec())
   }
 }

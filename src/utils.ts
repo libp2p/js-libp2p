@@ -92,15 +92,15 @@ export function keyForPublicKey (peer: PeerId) {
 }
 
 export function isPublicKeyKey (key: Uint8Array) {
-  return uint8ArrayToString(key.slice(0, 4)) === '/pk/'
+  return uint8ArrayToString(key.subarray(0, 4)) === '/pk/'
 }
 
 export function isIPNSKey (key: Uint8Array) {
-  return uint8ArrayToString(key.slice(0, 4)) === '/ipns/'
+  return uint8ArrayToString(key.subarray(0, 4)) === '/ipns/'
 }
 
 export function fromPublicKeyKey (key: Uint8Array) {
-  return peerIdFromBytes(key.slice(4))
+  return peerIdFromBytes(key.subarray(4))
 }
 
 /**

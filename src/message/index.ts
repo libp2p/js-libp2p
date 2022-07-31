@@ -3,6 +3,7 @@ import { Multiaddr } from '@multiformats/multiaddr'
 import { Libp2pRecord } from '@libp2p/record'
 import { Message as PBMessage } from './dht.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const MESSAGE_TYPE = PBMessage.MessageType
 export const CONNECTION_TYPE = PBMessage.ConnectionType
@@ -71,7 +72,7 @@ export class Message {
   /**
    * Decode from protobuf
    */
-  static deserialize (raw: Uint8Array) {
+  static deserialize (raw: Uint8ArrayList | Uint8Array) {
     const dec = PBMessage.decode(raw)
 
     const msg = new Message(dec.type ?? PBMessage.MessageType.PUT_VALUE, dec.key ?? Uint8Array.from([]), dec.clusterLevelRaw ?? 0)

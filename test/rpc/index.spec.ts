@@ -22,6 +22,7 @@ import type { Duplex } from 'it-stream-types'
 import { mockStream, mockConnection, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { Components } from '@libp2p/components'
 import { start } from '@libp2p/interfaces/startable'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 describe('rpc', () => {
   let peerId: PeerId
@@ -65,7 +66,7 @@ describe('rpc', () => {
     const defer = pDefer()
     const msg = new Message(MESSAGE_TYPE.GET_VALUE, uint8ArrayFromString('hello'), 5)
 
-    const validateMessage = (res: Uint8Array[]) => {
+    const validateMessage = (res: Uint8ArrayList[]) => {
       const msg = Message.deserialize(res[0])
       expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
       expect(msg).to.have.property('closerPeers').eql([])

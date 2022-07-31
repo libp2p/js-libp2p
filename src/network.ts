@@ -21,6 +21,7 @@ import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { Components, Initializable } from '@libp2p/components'
 import type { Stream } from '@libp2p/interface-connection'
 import { abortableDuplex } from 'abortable-iterator'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface NetworkInit {
   protocol: string
@@ -150,7 +151,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
   /**
    * Write a message to the given stream
    */
-  async _writeMessage (stream: Duplex<Uint8Array>, msg: Uint8Array, options: AbortOptions) {
+  async _writeMessage (stream: Duplex<Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }
@@ -168,7 +169,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
    * If no response is received after the specified timeout
    * this will error out.
    */
-  async _writeReadMessage (stream: Duplex<Uint8Array>, msg: Uint8Array, options: AbortOptions) {
+  async _writeReadMessage (stream: Duplex<Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }
