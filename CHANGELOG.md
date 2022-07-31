@@ -1,3 +1,15 @@
+## [1.0.1](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.0...v1.0.1) (2022-07-31)
+
+
+### Trivial Changes
+
+* update project config ([#265](https://github.com/libp2p/js-libp2p-crypto/issues/265)) ([10ca181](https://github.com/libp2p/js-libp2p-crypto/commit/10ca18126bacf97e34283cc82c4bc8500716a4e3))
+
+
+### Dependencies
+
+* update protons to support no-copy ops ([#268](https://github.com/libp2p/js-libp2p-crypto/issues/268)) ([920b081](https://github.com/libp2p/js-libp2p-crypto/commit/920b081bb88afe094cbedd84a2113cf29ef9f1e8))
+
 ## [1.0.0](https://github.com/libp2p/js-libp2p-crypto/compare/v0.22.14...v1.0.0) (2022-06-15)
 
 
