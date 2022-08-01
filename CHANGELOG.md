@@ -1,3 +1,15 @@
+## [3.0.4](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.3...v3.0.4) (2022-08-01)
+
+
+### Trivial Changes
+
+* update project config ([#86](https://github.com/libp2p/js-libp2p-pubsub/issues/86)) ([3251829](https://github.com/libp2p/js-libp2p-pubsub/commit/3251829d4bb433fd26dc5cc9c8366c9a49d23e76))
+
+
+### Dependencies
+
+* update it-length-prefixed and uint8arraylists deps ([#91](https://github.com/libp2p/js-libp2p-pubsub/issues/91)) ([f295fce](https://github.com/libp2p/js-libp2p-pubsub/commit/f295fce10a32edb73789a6b08cd9ce9420bbb6a3))
+
 ## [3.0.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.2...v3.0.3) (2022-06-30)
 
 
