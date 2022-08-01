@@ -6,7 +6,7 @@ import Queue from 'p-queue'
 import { createTopology } from '@libp2p/topology'
 import { codes } from './errors.js'
 import { PeerStreams as PeerStreamsImpl } from './peer-streams.js'
-import { toMessage, ensureArray, randomSeqno, noSignMsgId, msgId, toRpcMessage } from './utils.js'
+import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
 import {
   signMessage,
   verifySignature
@@ -17,6 +17,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult } from '@libp2p/interface-pubsub'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { Components, Initializable } from '@libp2p/components'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:pubsub')
 
@@ -284,7 +285,7 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
   /**
    * Responsible for processing each RPC message received by other peers.
    */
-  async processMessages (peerId: PeerId, stream: AsyncIterable<Uint8Array>, peerStreams: PeerStreams) {
+  async processMessages (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>, peerStreams: PeerStreams) {
     try {
       await pipe(
         stream,
@@ -446,6 +447,10 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictSign':
+        if (msg.type !== 'signed') {
+          throw errcode(new Error('Message type should be "signed" when signature policy is StrictSign but it was not'), codes.ERR_MISSING_SIGNATURE)
+        }
+
         if (msg.sequenceNumber == null) {
           throw errcode(new Error('Need seqno when signature policy is StrictSign but it was missing'), codes.ERR_MISSING_SEQNO)
         }
@@ -474,19 +479,19 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
    * Decode Uint8Array into an RPC object.
    * This can be override to use a custom router protobuf.
    */
-  abstract decodeRpc (bytes: Uint8Array): PubSubRPC
+  abstract decodeRpc (bytes: Uint8Array | Uint8ArrayList): PubSubRPC
 
   /**
    * Encode RPC object into a Uint8Array.
    * This can be override to use a custom router protobuf.
    */
-  abstract encodeRpc (rpc: PubSubRPC): Uint8Array
+  abstract encodeRpc (rpc: PubSubRPC): Uint8ArrayList
 
   /**
    * Encode RPC object into a Uint8Array.
    * This can be override to use a custom router protobuf.
    */
-  abstract encodeMessage (rpc: PubSubRPCMessage): Uint8Array
+  abstract encodeMessage (rpc: PubSubRPCMessage): Uint8ArrayList
 
   /**
    * Send an rpc object to a peer
@@ -523,26 +528,42 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictNoSign':
+        if (message.type !== 'unsigned') {
+          throw errcode(new Error('Message type should be "unsigned" when signature policy is StrictNoSign but it was not'), codes.ERR_MISSING_SIGNATURE)
+        }
+
+        // @ts-expect-error should not be present
         if (message.signature != null) {
           throw errcode(new Error('StrictNoSigning: signature should not be present'), codes.ERR_UNEXPECTED_SIGNATURE)
         }
+
+        // @ts-expect-error should not be present
         if (message.key != null) {
           throw errcode(new Error('StrictNoSigning: key should not be present'), codes.ERR_UNEXPECTED_KEY)
         }
+
+        // @ts-expect-error should not be present
         if (message.sequenceNumber != null) {
           throw errcode(new Error('StrictNoSigning: seqno should not be present'), codes.ERR_UNEXPECTED_SEQNO)
         }
         break
       case 'StrictSign':
+        if (message.type !== 'signed') {
+          throw errcode(new Error('Message type should be "signed" when signature policy is StrictSign but it was not'), codes.ERR_MISSING_SIGNATURE)
+        }
+
         if (message.signature == null) {
           throw errcode(new Error('StrictSigning: Signing required and no signature was present'), codes.ERR_MISSING_SIGNATURE)
         }
+
         if (message.sequenceNumber == null) {
-          throw errcode(new Error('StrictSigning: Signing required and no seqno was present'), codes.ERR_MISSING_SEQNO)
+          throw errcode(new Error('StrictSigning: Signing required and no sequenceNumber was present'), codes.ERR_MISSING_SEQNO)
         }
+
         if (!(await verifySignature(message, this.encodeMessage.bind(this)))) {
           throw errcode(new Error('StrictSigning: Invalid message signature'), codes.ERR_INVALID_SIGNATURE)
         }
+
         break
       default:
         throw errcode(new Error('Cannot validate message: unhandled signature policy'), codes.ERR_UNHANDLED_SIGNATURE_POLICY)
@@ -559,14 +580,16 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
    * Normalizes the message and signs it, if signing is enabled.
    * Should be used by the routers to create the message to send.
    */
-  async buildMessage (message: Message) {
+  async buildMessage (message: { from: PeerId, topic: string, data: Uint8Array, sequenceNumber: bigint }): Promise<Message> {
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictSign':
-        message.sequenceNumber = randomSeqno()
         return await signMessage(this.components.getPeerId(), message, this.encodeMessage.bind(this))
       case 'StrictNoSign':
-        return await Promise.resolve(message)
+        return await Promise.resolve({
+          type: 'unsigned',
+          ...message
+        })
       default:
         throw errcode(new Error('Cannot build message: unhandled signature policy'), codes.ERR_UNHANDLED_SIGNATURE_POLICY)
     }
@@ -603,10 +626,11 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
       throw new Error('Pubsub has not started')
     }
 
-    const message: Message = {
+    const message = {
       from: this.components.getPeerId(),
       topic,
-      data: data ?? new Uint8Array(0)
+      data: data ?? new Uint8Array(0),
+      sequenceNumber: randomSeqno()
     }
 
     log('publish topic: %s from: %p data: %m', topic, message.from, message.data)

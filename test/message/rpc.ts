@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, bool, string, bytes, uint64 } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface RPC {
   subscriptions: RPC.SubOpts[]
@@ -24,11 +25,11 @@ export namespace RPC {
       })
     }
 
-    export const encode = (obj: SubOpts): Uint8Array => {
+    export const encode = (obj: SubOpts): Uint8ArrayList => {
       return encodeMessage(obj, SubOpts.codec())
     }
 
-    export const decode = (buf: Uint8Array): SubOpts => {
+    export const decode = (buf: Uint8Array | Uint8ArrayList): SubOpts => {
       return decodeMessage(buf, SubOpts.codec())
     }
   }
@@ -54,11 +55,11 @@ export namespace RPC {
       })
     }
 
-    export const encode = (obj: Message): Uint8Array => {
+    export const encode = (obj: Message): Uint8ArrayList => {
       return encodeMessage(obj, Message.codec())
     }
 
-    export const decode = (buf: Uint8Array): Message => {
+    export const decode = (buf: Uint8Array | Uint8ArrayList): Message => {
       return decodeMessage(buf, Message.codec())
     }
   }
@@ -71,11 +72,11 @@ export namespace RPC {
     })
   }
 
-  export const encode = (obj: RPC): Uint8Array => {
+  export const encode = (obj: RPC): Uint8ArrayList => {
     return encodeMessage(obj, RPC.codec())
   }
 
-  export const decode = (buf: Uint8Array): RPC => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): RPC => {
     return decodeMessage(buf, RPC.codec())
   }
 }
@@ -97,11 +98,11 @@ export namespace ControlMessage {
     })
   }
 
-  export const encode = (obj: ControlMessage): Uint8Array => {
+  export const encode = (obj: ControlMessage): Uint8ArrayList => {
     return encodeMessage(obj, ControlMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array): ControlMessage => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): ControlMessage => {
     return decodeMessage(buf, ControlMessage.codec())
   }
 }
@@ -119,11 +120,11 @@ export namespace ControlIHave {
     })
   }
 
-  export const encode = (obj: ControlIHave): Uint8Array => {
+  export const encode = (obj: ControlIHave): Uint8ArrayList => {
     return encodeMessage(obj, ControlIHave.codec())
   }
 
-  export const decode = (buf: Uint8Array): ControlIHave => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): ControlIHave => {
     return decodeMessage(buf, ControlIHave.codec())
   }
 }
@@ -139,11 +140,11 @@ export namespace ControlIWant {
     })
   }
 
-  export const encode = (obj: ControlIWant): Uint8Array => {
+  export const encode = (obj: ControlIWant): Uint8ArrayList => {
     return encodeMessage(obj, ControlIWant.codec())
   }
 
-  export const decode = (buf: Uint8Array): ControlIWant => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): ControlIWant => {
     return decodeMessage(buf, ControlIWant.codec())
   }
 }
@@ -159,11 +160,11 @@ export namespace ControlGraft {
     })
   }
 
-  export const encode = (obj: ControlGraft): Uint8Array => {
+  export const encode = (obj: ControlGraft): Uint8ArrayList => {
     return encodeMessage(obj, ControlGraft.codec())
   }
 
-  export const decode = (buf: Uint8Array): ControlGraft => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): ControlGraft => {
     return decodeMessage(buf, ControlGraft.codec())
   }
 }
@@ -183,11 +184,11 @@ export namespace ControlPrune {
     })
   }
 
-  export const encode = (obj: ControlPrune): Uint8Array => {
+  export const encode = (obj: ControlPrune): Uint8ArrayList => {
     return encodeMessage(obj, ControlPrune.codec())
   }
 
-  export const decode = (buf: Uint8Array): ControlPrune => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): ControlPrune => {
     return decodeMessage(buf, ControlPrune.codec())
   }
 }
@@ -205,11 +206,11 @@ export namespace PeerInfo {
     })
   }
 
-  export const encode = (obj: PeerInfo): Uint8Array => {
+  export const encode = (obj: PeerInfo): Uint8ArrayList => {
     return encodeMessage(obj, PeerInfo.codec())
   }
 
-  export const decode = (buf: Uint8Array): PeerInfo => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): PeerInfo => {
     return decodeMessage(buf, PeerInfo.codec())
   }
 }

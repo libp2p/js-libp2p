@@ -16,7 +16,7 @@ import { PeerSet } from '@libp2p/peer-collections'
 import { Components } from '@libp2p/components'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { noSignMsgId } from '../src/utils.js'
-import type { PubSubRPC } from '@libp2p/interface-pubsub'
+import type { Message, PubSubRPC } from '@libp2p/interface-pubsub'
 import delay from 'delay'
 import pDefer from 'p-defer'
 
@@ -59,20 +59,18 @@ describe('pubsub base implementation', () => {
     })
 
     it('should sign messages on publish', async () => {
-      sinon.spy(pubsub, 'publishMessage')
+      const publishMessageSpy = sinon.spy(pubsub, 'publishMessage')
 
       await pubsub.start()
       await pubsub.publish(topic, message)
 
       // event dispatch is async
       await pWaitFor(() => {
-        // @ts-expect-error .callCount is a added by sinon
-        return pubsub.publishMessage.callCount === 1
+        return publishMessageSpy.callCount === 1
       })
 
       // Get the first message sent to _publish, and validate it
-      // @ts-expect-error .getCall is a added by sinon
-      const signedMessage: Message = pubsub.publishMessage.getCall(0).lastArg
+      const signedMessage: Message = publishMessageSpy.getCall(0).lastArg
 
       await expect(pubsub.validate(signedMessage)).to.eventually.be.undefined()
     })

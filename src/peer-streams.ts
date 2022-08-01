@@ -8,6 +8,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Stream } from '@libp2p/interface-connection'
 import type { Pushable } from 'it-pushable'
 import type { PeerStreamEvents } from '@libp2p/interface-pubsub'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p-pubsub:peer-streams')
 
@@ -25,11 +26,11 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
   /**
    * Write stream - it's preferable to use the write method
    */
-  public outboundStream?: Pushable<Uint8Array>
+  public outboundStream?: Pushable<Uint8ArrayList>
   /**
    * Read stream
    */
-  public inboundStream?: AsyncIterable<Uint8Array>
+  public inboundStream?: AsyncIterable<Uint8ArrayList>
   /**
    * The raw outbound stream, as retrieved from conn.newStream
    */
@@ -72,13 +73,13 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
    * Send a message to this peer.
    * Throws if there is no `stream` to write to available.
    */
-  write (data: Uint8Array) {
+  write (data: Uint8Array | Uint8ArrayList) {
     if (this.outboundStream == null) {
       const id = this.id.toString()
       throw new Error('No writable connection to ' + id)
     }
 
-    this.outboundStream.push(data)
+    this.outboundStream.push(data instanceof Uint8Array ? new Uint8ArrayList(data) : data)
   }
 
   /**
@@ -115,7 +116,8 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
     }
 
     this._rawOutboundStream = stream
-    this.outboundStream = pushable({
+    this.outboundStream = pushable<Uint8ArrayList>({
+      objectMode: true,
       onEnd: (shouldEmit) => {
         // close writable side of the stream
         if (this._rawOutboundStream != null && this._rawOutboundStream.reset != null) { // eslint-disable-line @typescript-eslint/prefer-optional-chain

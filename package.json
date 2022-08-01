@@ -180,7 +180,7 @@
     "@libp2p/crypto": "^1.0.0",
     "@libp2p/interface-connection": "^2.0.0",
     "@libp2p/interface-peer-id": "^1.0.2",
-    "@libp2p/interface-pubsub": "^1.0.3",
+    "@libp2p/interface-pubsub": "^2.0.0",
     "@libp2p/interface-registrar": "^2.0.0",
     "@libp2p/interfaces": "^3.0.2",
     "@libp2p/logger": "^2.0.0",
@@ -191,11 +191,12 @@
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "iso-random-stream": "^2.0.0",
-    "it-length-prefixed": "^7.0.1",
+    "it-length-prefixed": "^8.0.2",
     "it-pipe": "^2.0.3",
     "it-pushable": "^3.0.0",
     "multiformats": "^9.6.3",
     "p-queue": "^7.2.0",
+    "uint8arraylist": "^2.0.0",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
@@ -204,9 +205,9 @@
     "delay": "^5.0.0",
     "it-pair": "^2.0.2",
     "p-defer": "^4.0.0",
-    "p-wait-for": "^4.1.0",
-    "protons": "^3.0.4",
-    "protons-runtime": "^1.0.4",
+    "p-wait-for": "^5.0.0",
+    "protons": "^4.0.1",
+    "protons-runtime": "^2.0.2",
     "sinon": "^14.0.0",
     "util": "^0.12.4"
   }

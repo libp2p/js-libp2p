@@ -44,28 +44,36 @@ describe('utils', () => {
     const binaryId = uint8ArrayFromString('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'base16')
     const stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
     const m: Message[] = [{
+      type: 'signed',
       from: peerIdFromBytes(binaryId),
       topic: '',
-      data: new Uint8Array()
+      data: new Uint8Array(),
+      sequenceNumber: 1n,
+      signature: new Uint8Array(),
+      key: new Uint8Array()
     }, {
+      type: 'signed',
       from: peerIdFromString(stringId),
       topic: '',
-      data: new Uint8Array()
+      data: new Uint8Array(),
+      sequenceNumber: 1n,
+      signature: new Uint8Array(),
+      key: new Uint8Array()
     }]
     const expected: PubSubRPCMessage[] = [{
       from: binaryId,
       topic: '',
       data: new Uint8Array(),
-      sequenceNumber: undefined,
-      signature: undefined,
-      key: undefined
+      sequenceNumber: utils.bigIntToBytes(1n),
+      signature: new Uint8Array(),
+      key: new Uint8Array()
     }, {
       from: binaryId,
       topic: '',
       data: new Uint8Array(),
-      sequenceNumber: undefined,
-      signature: undefined,
-      key: undefined
+      sequenceNumber: utils.bigIntToBytes(1n),
+      signature: new Uint8Array(),
+      key: new Uint8Array()
     }]
     for (let i = 0; i < m.length; i++) {
       expect(utils.toRpcMessage(m[i])).to.deep.equal(expected[i])

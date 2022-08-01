@@ -71,24 +71,40 @@ export const toMessage = (message: PubSubRPCMessage): Message => {
     throw errcode(new Error('RPC message was missing from'), codes.ERR_MISSING_FROM)
   }
 
+  if (message.sequenceNumber == null || message.from == null || message.signature == null || message.key == null) {
+    return {
+      type: 'unsigned',
+      topic: message.topic ?? '',
+      data: message.data ?? new Uint8Array(0)
+    }
+  }
+
   return {
+    type: 'signed',
     from: peerIdFromBytes(message.from),
     topic: message.topic ?? '',
-    sequenceNumber: message.sequenceNumber == null ? undefined : bigIntFromBytes(message.sequenceNumber),
+    sequenceNumber: bigIntFromBytes(message.sequenceNumber),
     data: message.data ?? new Uint8Array(0),
-    signature: message.signature ?? undefined,
-    key: message.key ?? undefined
+    signature: message.signature,
+    key: message.key
   }
 }
 
 export const toRpcMessage = (message: Message): PubSubRPCMessage => {
+  if (message.type === 'signed') {
+    return {
+      from: message.from.multihash.bytes,
+      data: message.data,
+      sequenceNumber: bigIntToBytes(message.sequenceNumber),
+      topic: message.topic,
+      signature: message.signature,
+      key: message.key
+    }
+  }
+
   return {
-    from: message.from.multihash.bytes,
     data: message.data,
-    sequenceNumber: message.sequenceNumber == null ? undefined : bigIntToBytes(message.sequenceNumber),
-    topic: message.topic,
-    signature: message.signature,
-    key: message.key
+    topic: message.topic
   }
 }
 
