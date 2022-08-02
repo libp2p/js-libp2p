@@ -361,11 +361,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       return
     }
 
-    try {
-      await this.keychain.findKeyByName('self')
-    } catch (err: any) {
-      await this.keychain.importPeer('self', this.peerId)
+    const keyInfos = await this.keychain.listKeys()
+    for (const keyInfo of keyInfos){
+      if (keyInfo.name === 'self'){
+        await this.keychain.findKeyByName('self')
+        return
+      }
     }
+    await this.keychain.importPeer('self', this.peerId)
   }
 
   isStarted () {
