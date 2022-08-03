@@ -1,3 +1,10 @@
+## [3.1.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.4...v3.1.0) (2022-08-03)
+
+
+### Features
+
+* remove unnecessary direct dependency ([#92](https://github.com/libp2p/js-libp2p-pubsub/issues/92)) ([6d51017](https://github.com/libp2p/js-libp2p-pubsub/commit/6d510173d3708e32eb635aac6c3cf7c616d5be4c))
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.3...v3.0.4) (2022-08-01)
 
 
