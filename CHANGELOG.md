@@ -1,3 +1,15 @@
+## [3.1.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.0...v3.1.1) (2022-08-03)
+
+
+### Trivial Changes
+
+* update project ([#20](https://github.com/libp2p/js-libp2p-peer-store/issues/20)) ([fce3db5](https://github.com/libp2p/js-libp2p-peer-store/commit/fce3db536890b4bf223ce0a92453dadb6898440a))
+
+
+### Dependencies
+
+* update uint8arraylist and interface deps ([#21](https://github.com/libp2p/js-libp2p-peer-store/issues/21)) ([f693e84](https://github.com/libp2p/js-libp2p-peer-store/commit/f693e8442d342d2e340dcec4ca2c7f5ede91ceb9))
+
 ## [3.1.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.0.0...v3.1.0) (2022-06-24)
 
 
