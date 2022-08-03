@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.2...v3.0.3) (2022-08-03)
+
+
+### Dependencies
+
+* update project deps to support no-copy operations ([#169](https://github.com/libp2p/js-libp2p-floodsub/issues/169)) ([6a129b7](https://github.com/libp2p/js-libp2p-floodsub/commit/6a129b7ab8ee4e9921446574aabacc23400c1e4b))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.1...v3.0.2) (2022-06-30)
 
 
