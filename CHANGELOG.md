@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.1...v1.0.2) (2022-08-03)
+
+
+### Bug Fixes
+
+* remove iso-random-stream dependency ([#262](https://github.com/libp2p/js-libp2p-crypto/issues/262)) ([c5cb096](https://github.com/libp2p/js-libp2p-crypto/commit/c5cb0969a614fb9cab73a5e12acc5e9e8ce9993d))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.0...v1.0.1) (2022-07-31)
 
 
