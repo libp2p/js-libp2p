@@ -1,3 +1,15 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-record/compare/v2.0.0...v2.0.1) (2022-08-03)
+
+
+### Trivial Changes
+
+* update project ([#53](https://github.com/libp2p/js-libp2p-record/issues/53)) ([1927144](https://github.com/libp2p/js-libp2p-record/commit/1927144ce346592f513e2f29e0b4677dd1feb468))
+
+
+### Dependencies
+
+* update deps to support no-copy operations ([#55](https://github.com/libp2p/js-libp2p-record/issues/55)) ([7be8515](https://github.com/libp2p/js-libp2p-record/commit/7be8515ad87d062bbc9db20fc3134ed06b1286a9))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-record/compare/v1.0.5...v2.0.0) (2022-06-15)
 
 
