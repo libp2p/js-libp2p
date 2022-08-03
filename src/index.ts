@@ -1,3 +1,4 @@
+import type { Uint8ArrayList } from 'uint8arraylist'
 import {
   Record
 } from './record.js'
@@ -40,7 +41,7 @@ export class Libp2pRecord {
   /**
    * Decode a protobuf encoded record
    */
-  static deserialize (raw: Uint8Array) {
+  static deserialize (raw: Uint8Array | Uint8ArrayList) {
     const rec = Record.decode(raw)
 
     return new Libp2pRecord(rec.key, rec.value, new Date(rec.timeReceived))

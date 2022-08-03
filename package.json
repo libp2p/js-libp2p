@@ -169,12 +169,13 @@
     "@libp2p/interface-dht": "^1.0.0",
     "err-code": "^3.0.1",
     "multiformats": "^9.4.5",
-    "protons-runtime": "^1.0.2",
+    "protons-runtime": "^2.0.2",
+    "uint8arraylist": "^2.1.1",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^0.22.10",
+    "@libp2p/crypto": "^1.0.2",
     "aegir": "^37.0.13",
-    "protons": "^3.0.2"
+    "protons": "^4.0.1"
   }
 }
