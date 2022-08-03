@@ -16,12 +16,12 @@ const forge = require('node-forge/lib/forge')
  * function because key generation is deterministic for a given seed.
  */
 
-const randomBytes = require('iso-random-stream/src/random')
 const { concat } = require('uint8arrays/concat')
 const { fromString } = require('uint8arrays/from-string')
 
 const native = require('ed25519')
 const noble = require('@noble/ed25519')
+const { randomBytes } = noble.utils
 const { subtle } = require('crypto').webcrypto
 require('node-forge/lib/ed25519')
 const stable = require('@stablelib/ed25519')
