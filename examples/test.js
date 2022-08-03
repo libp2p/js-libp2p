@@ -36,7 +36,7 @@ async function installDeps (dir) {
     return
   }
 
-  const proc = execa.command('npm install', {
+  const proc = execa('npm', ['install'], {
     cwd: dir
   })
   proc.all.on('data', (data) => {
