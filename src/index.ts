@@ -146,7 +146,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
       expiry: ttl == null ? undefined : BigInt(Date.now() + ttl)
     })
 
-    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }))
+    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }).subarray())
   }
 
   async unTagPeer (peerId: PeerId, tag: string) {
@@ -159,7 +159,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
 
     tags = tags.filter(t => t.name !== tag)
 
-    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }))
+    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }).subarray())
   }
 
   async getTags (peerId: PeerId) {
@@ -175,7 +175,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
 
     if (unexpiredTags.length !== tags.length) {
       // remove any expired tags
-      await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags: unexpiredTags }))
+      await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags: unexpiredTags }).subarray())
     }
 
     return unexpiredTags.map(t => ({

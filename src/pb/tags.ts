@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, string, uint32, uint64 } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Tags {
   tags: Tag[]
@@ -15,11 +16,11 @@ export namespace Tags {
     })
   }
 
-  export const encode = (obj: Tags): Uint8Array => {
+  export const encode = (obj: Tags): Uint8ArrayList => {
     return encodeMessage(obj, Tags.codec())
   }
 
-  export const decode = (buf: Uint8Array): Tags => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Tags => {
     return decodeMessage(buf, Tags.codec())
   }
 }
@@ -39,11 +40,11 @@ export namespace Tag {
     })
   }
 
-  export const encode = (obj: Tag): Uint8Array => {
+  export const encode = (obj: Tag): Uint8ArrayList => {
     return encodeMessage(obj, Tag.codec())
   }
 
-  export const decode = (buf: Uint8Array): Tag => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Tag => {
     return decodeMessage(buf, Tag.codec())
   }
 }

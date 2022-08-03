@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, string, bytes, bool } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Peer {
   addresses: Address[]
@@ -23,11 +24,11 @@ export namespace Peer {
     })
   }
 
-  export const encode = (obj: Peer): Uint8Array => {
+  export const encode = (obj: Peer): Uint8ArrayList => {
     return encodeMessage(obj, Peer.codec())
   }
 
-  export const decode = (buf: Uint8Array): Peer => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
     return decodeMessage(buf, Peer.codec())
   }
 }
@@ -45,11 +46,11 @@ export namespace Address {
     })
   }
 
-  export const encode = (obj: Address): Uint8Array => {
+  export const encode = (obj: Address): Uint8ArrayList => {
     return encodeMessage(obj, Address.codec())
   }
 
-  export const decode = (buf: Uint8Array): Address => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Address => {
     return decodeMessage(buf, Address.codec())
   }
 }
@@ -67,11 +68,11 @@ export namespace Metadata {
     })
   }
 
-  export const encode = (obj: Metadata): Uint8Array => {
+  export const encode = (obj: Metadata): Uint8ArrayList => {
     return encodeMessage(obj, Metadata.codec())
   }
 
-  export const decode = (buf: Uint8Array): Metadata => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Metadata => {
     return decodeMessage(buf, Metadata.codec())
   }
 }

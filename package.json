@@ -147,11 +147,11 @@
     "@libp2p/interface-peer-id": "^1.0.2",
     "@libp2p/interface-peer-info": "^1.0.1",
     "@libp2p/interface-peer-store": "^1.1.0",
-    "@libp2p/interface-record": "^1.0.1",
+    "@libp2p/interface-record": "^2.0.0",
     "@libp2p/interfaces": "^3.0.2",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/peer-id": "^1.1.0",
-    "@libp2p/peer-record": "^2.0.0",
+    "@libp2p/peer-record": "^4.0.0",
     "@multiformats/multiaddr": "^10.2.0",
     "err-code": "^3.0.1",
     "interface-datastore": "^6.1.0",
@@ -162,19 +162,20 @@
     "it-pipe": "^2.0.3",
     "mortice": "^3.0.0",
     "multiformats": "^9.6.3",
-    "protons-runtime": "^1.0.4",
-    "uint8arrays": "^3.0.0"
+    "protons-runtime": "^2.0.2",
+    "uint8arraylist": "^2.1.1",
+    "uint8arrays": "^3.1.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^3.0.1",
     "@libp2p/peer-id-factory": "^1.0.0",
-    "@libp2p/utils": "^2.0.0",
+    "@libp2p/utils": "^3.0.0",
     "aegir": "^37.4.0",
     "datastore-core": "^7.0.1",
     "delay": "^5.0.0",
     "p-defer": "^4.0.0",
-    "p-wait-for": "^4.1.0",
-    "protons": "^3.0.4",
+    "p-wait-for": "^5.0.0",
+    "protons": "^4.0.1",
     "sinon": "^14.0.0"
   }
 }

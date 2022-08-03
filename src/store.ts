@@ -133,7 +133,7 @@ export class PersistentStore {
       peerRecordEnvelope: peer.peerRecordEnvelope
     })
 
-    await this.components.getDatastore().put(this._peerIdToDatastoreKey(peer.id), buf)
+    await this.components.getDatastore().put(this._peerIdToDatastoreKey(peer.id), buf.subarray())
 
     return await this.load(peer.id)
   }

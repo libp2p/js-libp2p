@@ -92,7 +92,7 @@ export class PeerStoreAddressBook {
       // TODO: Once we have ttls for the addresses, we should merge these in
       updatedPeer = await this.store.patchOrCreate(peerId, {
         addresses,
-        peerRecordEnvelope: envelope.marshal()
+        peerRecordEnvelope: envelope.marshal().subarray()
       })
 
       log('stored provided peer record for %p', peerRecord.peerId)
