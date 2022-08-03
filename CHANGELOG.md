@@ -1,3 +1,19 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-peer-record/compare/v3.0.0...v4.0.0) (2022-08-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* update interface deps to use byte lists (#16)
+
+### Trivial Changes
+
+* update project config ([#15](https://github.com/libp2p/js-libp2p-peer-record/issues/15)) ([cd6bded](https://github.com/libp2p/js-libp2p-peer-record/commit/cd6bded2ef90a65c3026bb028879ae6c1f09c260))
+
+
+### Dependencies
+
+* update interface deps to use byte lists ([#16](https://github.com/libp2p/js-libp2p-peer-record/issues/16)) ([878f0ca](https://github.com/libp2p/js-libp2p-peer-record/commit/878f0ca0945d535c578c0285b33532bfefd80fbb))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-peer-record/compare/v2.0.2...v3.0.0) (2022-06-27)
 
 
