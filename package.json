@@ -73,15 +73,15 @@
               "release": "patch"
             },
             {
-              "type": "chore",
-              "release": "patch"
-            },
-            {
               "type": "docs",
               "release": "patch"
             },
             {
               "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
               "release": "patch"
             },
             {
@@ -111,7 +111,11 @@
               },
               {
                 "type": "docs",
-                "section": "Trivial Changes"
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
               },
               {
                 "type": "test",
@@ -144,24 +148,25 @@
   },
   "dependencies": {
     "@libp2p/interface-peer-id": "^1.0.2",
-    "@libp2p/interface-pubsub": "^1.0.3",
+    "@libp2p/interface-pubsub": "^2.0.0",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/pubsub": "^3.0.1",
-    "protons-runtime": "^1.0.3",
+    "protons-runtime": "^2.0.2",
+    "uint8arraylist": "^2.1.1",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
     "@libp2p/components": "^2.0.0",
     "@libp2p/interface-mocks": "^3.0.1",
-    "@libp2p/interface-pubsub-compliance-tests": "^1.0.1",
+    "@libp2p/interface-pubsub-compliance-tests": "^2.0.1",
     "@libp2p/peer-collections": "^2.0.0",
     "@libp2p/peer-id": "^1.1.10",
     "@libp2p/peer-id-factory": "^1.0.9",
     "@multiformats/multiaddr": "^10.1.8",
     "aegir": "^37.2.0",
     "multiformats": "^9.4.5",
-    "p-wait-for": "^4.1.0",
-    "protons": "^3.0.3",
+    "p-wait-for": "^5.0.0",
+    "protons": "^4.0.1",
     "sinon": "^14.0.0",
     "wherearewe": "^1.0.0"
   }

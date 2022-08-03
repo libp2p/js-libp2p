@@ -6,6 +6,7 @@ import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult } 
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { logger } from '@libp2p/logger'
 import { RPC } from './message/rpc.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:floodsub')
 
@@ -43,22 +44,22 @@ export class FloodSub extends PubSubBaseProtocol {
   /**
    * Decode a Uint8Array into an RPC object
    */
-  decodeRpc (bytes: Uint8Array): PubSubRPC {
+  decodeRpc (bytes: Uint8Array | Uint8ArrayList): PubSubRPC {
     return RPC.decode(bytes)
   }
 
   /**
    * Encode an RPC object into a Uint8Array
    */
-  encodeRpc (rpc: PubSubRPC): Uint8Array {
+  encodeRpc (rpc: PubSubRPC): Uint8ArrayList {
     return RPC.encode(rpc)
   }
 
-  decodeMessage (bytes: Uint8Array): PubSubRPCMessage {
+  decodeMessage (bytes: Uint8Array | Uint8ArrayList): PubSubRPCMessage {
     return RPC.Message.decode(bytes)
   }
 
-  encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
+  encodeMessage (rpc: PubSubRPCMessage): Uint8ArrayList {
     return RPC.Message.encode(rpc)
   }
 

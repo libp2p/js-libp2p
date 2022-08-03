@@ -107,13 +107,13 @@ describe('floodsub', () => {
     const [to, rpc] = spy.getCall(0).args
 
     const expected: Message = {
-      from: floodsub.components.getPeerId(),
+      type: 'unsigned',
       data: message,
       topic
     }
 
     expect(to).to.eql(otherPeer)
-    expect(rpc).to.have.nested.property('messages[0]').that.deep.equals(expected)
+    expect(rpc).to.have.nested.property('messages[0]').that.containSubset(expected)
   })
 
   it('does not send received message back to original sender', async () => {
