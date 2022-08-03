@@ -1,4 +1,4 @@
-import { randomBytes } from 'iso-random-stream'
+import { randomBytes } from '@libp2p/crypto'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { sha256 } from 'multiformats/hashes/sha2'

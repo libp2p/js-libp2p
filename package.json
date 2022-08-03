@@ -190,7 +190,6 @@
     "@multiformats/multiaddr": "^10.2.0",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
-    "iso-random-stream": "^2.0.0",
     "it-length-prefixed": "^8.0.2",
     "it-pipe": "^2.0.3",
     "it-pushable": "^3.0.0",
