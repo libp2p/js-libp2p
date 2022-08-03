@@ -26,7 +26,10 @@ export async function waitForOutput (expectedOutput, command, args = [], opts = 
     command = 'node'
   }
 
-  const proc = execa(command, args, opts)
+  const proc = execa(command, args, {
+    ...opts,
+    all: true
+  })
   let output = ''
   let time = 600000
 
