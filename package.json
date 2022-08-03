@@ -147,7 +147,7 @@
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",
     "@libp2p/interface-peer-id": "^1.0.2",
-    "@libp2p/interface-record": "^1.0.1",
+    "@libp2p/interface-record": "^2.0.0",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/peer-id": "^1.1.13",
     "@libp2p/utils": "^3.0.0",
@@ -160,16 +160,18 @@
     "it-map": "^1.0.6",
     "it-pipe": "^2.0.3",
     "multiformats": "^9.6.3",
-    "protons-runtime": "^1.0.4",
+    "protons-runtime": "^2.0.2",
+    "uint8-varint": "^1.0.2",
+    "uint8arraylist": "^2.1.0",
     "uint8arrays": "^3.0.0",
     "varint": "^6.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface-record-compliance-tests": "^1.0.0",
+    "@libp2p/interface-record-compliance-tests": "^2.0.0",
     "@libp2p/peer-id-factory": "^1.0.0",
     "@types/varint": "^6.0.0",
     "aegir": "^37.3.0",
-    "protons": "^3.0.4",
+    "protons": "^4.0.1",
     "sinon": "^14.0.0"
   }
 }

@@ -1,11 +1,11 @@
 import { expect } from 'aegir/chai'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { equals as uint8arrayEquals } from 'uint8arrays/equals'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { codes as ErrorCodes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { Record } from '@libp2p/interface-record'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 const domain = 'libp2p-testing'
 const codec = uint8arrayFromString('/libp2p/testdata')
@@ -22,11 +22,11 @@ class TestRecord implements Record {
   }
 
   marshal () {
-    return uint8arrayFromString(this.data)
+    return new Uint8ArrayList(uint8arrayFromString(this.data))
   }
 
   equals (other: Record) {
-    return uint8arrayEquals(this.marshal(), other.marshal())
+    return this.marshal().equals(other.marshal())
   }
 }
 
@@ -54,7 +54,7 @@ describe('Envelope', () => {
     expect(envelope).to.exist()
     expect(envelope.peerId.equals(peerId)).to.eql(true)
     expect(envelope.payloadType).to.equalBytes(payloadType)
-    expect(envelope.payload).to.equalBytes(payload)
+    expect(envelope.payload.subarray()).to.equalBytes(payload.subarray())
     expect(envelope.signature).to.equalBytes(signature)
   })
 

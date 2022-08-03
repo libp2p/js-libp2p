@@ -7,6 +7,7 @@ import {
   ENVELOPE_DOMAIN_PEER_RECORD,
   ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
 } from './consts.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerRecordInit {
   peerId: PeerId
@@ -30,7 +31,7 @@ export class PeerRecord {
   /**
    * Unmarshal Peer Record Protobuf
    */
-  static createFromProtobuf = (buf: Uint8Array): PeerRecord => {
+  static createFromProtobuf = (buf: Uint8Array | Uint8ArrayList): PeerRecord => {
     const peerRecord = Protobuf.decode(buf)
     const peerId = peerIdFromBytes(peerRecord.peerId)
     const multiaddrs = (peerRecord.addresses ?? []).map((a) => new Multiaddr(a.multiaddr))
@@ -47,7 +48,7 @@ export class PeerRecord {
   public seqNumber: bigint
   public domain = PeerRecord.DOMAIN
   public codec = PeerRecord.CODEC
-  private marshaled?: Uint8Array
+  private marshaled?: Uint8ArrayList
 
   constructor (init: PeerRecordInit) {
     const { peerId, multiaddrs, seqNumber } = init

@@ -1,19 +1,18 @@
 import errCode from 'err-code'
-import { concat as uint8arraysConcat } from 'uint8arrays/concat'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import varint from 'varint'
-import { equals as uint8arraysEquals } from 'uint8arrays/equals'
 import { codes } from '../errors.js'
 import { Envelope as Protobuf } from './envelope.js'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Record, Envelope } from '@libp2p/interface-record'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { unsigned } from 'uint8-varint'
 
 export interface EnvelopeInit {
   peerId: PeerId
   payloadType: Uint8Array
-  payload: Uint8Array
+  payload: Uint8Array | Uint8ArrayList
   signature: Uint8Array
 }
 
@@ -21,7 +20,7 @@ export class RecordEnvelope implements Envelope {
   /**
    * Unmarshal a serialized Envelope protobuf message
    */
-  static createFromProtobuf = async (data: Uint8Array) => {
+  static createFromProtobuf = async (data: Uint8Array | Uint8ArrayList) => {
     const envelopeData = Protobuf.decode(data)
     const peerId = await peerIdFromKeys(envelopeData.publicKey)
 
@@ -38,18 +37,16 @@ export class RecordEnvelope implements Envelope {
    * and signs it with the given peerId's private key
    */
   static seal = async (record: Record, peerId: PeerId) => {
-    const domain = record.domain
-    const payloadType = record.codec
-    const payload = record.marshal()
-
-    const signData = formatSignaturePayload(domain, payloadType, payload)
-
     if (peerId.privateKey == null) {
       throw new Error('Missing private key')
     }
 
+    const domain = record.domain
+    const payloadType = record.codec
+    const payload = record.marshal()
+    const signData = formatSignaturePayload(domain, payloadType, payload)
     const key = await unmarshalPrivateKey(peerId.privateKey)
-    const signature = await key.sign(signData)
+    const signature = await key.sign(signData.subarray())
 
     return new RecordEnvelope({
       peerId,
@@ -63,7 +60,7 @@ export class RecordEnvelope implements Envelope {
    * Open and certify a given marshalled envelope.
    * Data is unmarshalled and the signature validated for the given domain.
    */
-  static openAndCertify = async (data: Uint8Array, domain: string) => {
+  static openAndCertify = async (data: Uint8Array | Uint8ArrayList, domain: string) => {
     const envelope = await RecordEnvelope.createFromProtobuf(data)
     const valid = await envelope.validate(domain)
 
@@ -76,9 +73,9 @@ export class RecordEnvelope implements Envelope {
 
   public peerId: PeerId
   public payloadType: Uint8Array
-  public payload: Uint8Array
+  public payload: Uint8Array | Uint8ArrayList
   public signature: Uint8Array
-  public marshaled?: Uint8Array
+  public marshaled?: Uint8ArrayList
 
   /**
    * The Envelope is responsible for keeping an arbitrary signed record
@@ -96,7 +93,7 @@ export class RecordEnvelope implements Envelope {
   /**
    * Marshal the envelope content
    */
-  marshal () {
+  marshal (): Uint8ArrayList {
     if (this.peerId.publicKey == null) {
       throw new Error('Missing public key')
     }
@@ -105,7 +102,7 @@ export class RecordEnvelope implements Envelope {
       this.marshaled = Protobuf.encode({
         publicKey: this.peerId.publicKey,
         payloadType: this.payloadType,
-        payload: this.payload,
+        payload: this.payload.subarray(),
         signature: this.signature
       })
     }
@@ -117,7 +114,7 @@ export class RecordEnvelope implements Envelope {
    * Verifies if the other Envelope is identical to this one
    */
   equals (other: Envelope) {
-    return uint8arraysEquals(this.marshal(), other.marshal())
+    return this.marshal().equals(other.marshal())
   }
 
   /**
@@ -132,14 +129,14 @@ export class RecordEnvelope implements Envelope {
 
     const key = unmarshalPublicKey(this.peerId.publicKey)
 
-    return await key.verify(signData, this.signature)
+    return await key.verify(signData.subarray(), this.signature)
   }
 }
 
 /**
  * Helper function that prepares a Uint8Array to sign or verify a signature
  */
-const formatSignaturePayload = (domain: string, payloadType: Uint8Array, payload: Uint8Array) => {
+const formatSignaturePayload = (domain: string, payloadType: Uint8Array, payload: Uint8Array | Uint8ArrayList): Uint8ArrayList => {
   // When signing, a peer will prepare a Uint8Array by concatenating the following:
   // - The length of the domain separation string string in bytes
   // - The domain separation string, encoded as UTF-8
@@ -149,16 +146,16 @@ const formatSignaturePayload = (domain: string, payloadType: Uint8Array, payload
   // - The value of the payload field
 
   const domainUint8Array = uint8arraysFromString(domain)
-  const domainLength = varint.encode(domainUint8Array.byteLength)
-  const payloadTypeLength = varint.encode(payloadType.length)
-  const payloadLength = varint.encode(payload.length)
+  const domainLength = unsigned.encode(domainUint8Array.byteLength)
+  const payloadTypeLength = unsigned.encode(payloadType.length)
+  const payloadLength = unsigned.encode(payload.length)
 
-  return uint8arraysConcat([
-    new Uint8Array(domainLength),
+  return new Uint8ArrayList(
+    domainLength,
     domainUint8Array,
-    new Uint8Array(payloadTypeLength),
+    payloadTypeLength,
     payloadType,
-    new Uint8Array(payloadLength),
+    payloadLength,
     payload
-  ])
+  )
 }

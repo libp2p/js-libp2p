@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, bytes, uint64 } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerRecord {
   peerId: Uint8Array
@@ -22,11 +23,11 @@ export namespace PeerRecord {
       })
     }
 
-    export const encode = (obj: AddressInfo): Uint8Array => {
+    export const encode = (obj: AddressInfo): Uint8ArrayList => {
       return encodeMessage(obj, AddressInfo.codec())
     }
 
-    export const decode = (buf: Uint8Array): AddressInfo => {
+    export const decode = (buf: Uint8Array | Uint8ArrayList): AddressInfo => {
       return decodeMessage(buf, AddressInfo.codec())
     }
   }
@@ -39,11 +40,11 @@ export namespace PeerRecord {
     })
   }
 
-  export const encode = (obj: PeerRecord): Uint8Array => {
+  export const encode = (obj: PeerRecord): Uint8ArrayList => {
     return encodeMessage(obj, PeerRecord.codec())
   }
 
-  export const decode = (buf: Uint8Array): PeerRecord => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): PeerRecord => {
     return decodeMessage(buf, PeerRecord.codec())
   }
 }
