@@ -1,6 +1,5 @@
-import { Connection } from '@libp2p/interface-connection';
-import { ConnectionStat } from '@libp2p/interface-connection';
-import { Stream, Direction } from '@libp2p/interface-connection';
+import * as p from '@libp2p/peer-id';
+import * as ic from '@libp2p/interface-connection';
 import { PeerId } from '@libp2p/interface-peer-id';
 import { AbortOptions } from '@libp2p/interfaces';
 import { logger } from '@libp2p/logger';
@@ -13,36 +12,43 @@ type ConnectionInit = {
   id: string;
   localPeer: PeerId;
   localAddr?: Multiaddr;
-  remotePeer: PeerId;
   remoteAddr: Multiaddr;
-  direction: Direction;
+  direction: ic.Direction;
   tags?: string[];
-  stat: ConnectionStat;
   pc: RTCPeerConnection;
   credential_string: string;
 };
 
-export class WebRTCConnection implements Connection {
+export class WebRTCConnection implements ic.Connection {
   id: string;
-  stat: ConnectionStat;
+  stat: ic.ConnectionStat;
   remoteAddr: Multiaddr;
   remotePeer: PeerId;
   tags: string[] = [];
-  streams: Stream[] = [];
-  direction: Direction;
+  streams: ic.Stream[] = [];
+  direction: ic.Direction;
 
   private peerConnection: RTCPeerConnection;
   private ufrag: string;
 
   constructor(init: ConnectionInit) {
     this.streams = [];
-    this.remotePeer = init.remotePeer;
+    let rp = init.remoteAddr.getPeerId();
+    if (rp) {
+      this.remotePeer = p.peerIdFromString(rp);
+    } else {
+      this.remotePeer = init.localPeer;
+    }
     this.remoteAddr = init.remoteAddr;
-    this.stat = init.stat;
     this.id = init.id;
     this.direction = init.direction;
     this.peerConnection = init.pc;
     this.ufrag = init.credential_string;
+    this.stat = {
+      direction: 'outbound',
+      timeline: { open: 0 },
+      status: 'CLOSED',
+    };
     // for muxing incoming stream
     // this._peerConnection.ondatachannel = ({ channel }) => {
     // 	let stream = DataChannelStream(channel)
@@ -50,7 +56,7 @@ export class WebRTCConnection implements Connection {
     // }
   }
 
-  async newStream(multicodecs: string | string[], options?: AbortOptions): Promise<Stream> {
+  async newStream(multicodecs: string | string[], options?: AbortOptions): Promise<ic.Stream> {
     // let label = uuid.v4()
     // let dc = this._peerConnection.createDataChannel(label, {})
     // await datachannel opening
@@ -60,7 +66,7 @@ export class WebRTCConnection implements Connection {
     throw new Error('not implemented');
   }
 
-  addStream(stream: Stream): void {
+  addStream(stream: ic.Stream): void {
     throw new Error('not implemented');
   }
   removeStream(id: string): void {

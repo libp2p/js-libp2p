@@ -66,8 +66,9 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
   };
 }
 
-export function munge(desc: RTCSessionDescription, ufrag: string) {
+export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   //TODO
-  desc.sdp.replaceAll(/^a=ice-ufrag=(.*)/, 'a=ice-ufrag=' + ufrag);
-  desc.sdp.replaceAll(/^a=ice-pwd=(.*)/, 'a=ice-pwd=' + ufrag);
+  // desc.sdp.replaceAll(/^a=ice-ufrag=(.*)/, 'a=ice-ufrag=' + ufrag);
+  // desc.sdp.replaceAll(/^a=ice-pwd=(.*)/, 'a=ice-pwd=' + ufrag);
+  return desc;
 }
