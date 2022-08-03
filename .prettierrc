@@ -10,14 +10,5 @@
    "arrowParens":"always",
    "requirePragma":false,
    "insertPragma":false,
-   "proseWrap":"preserve",
-   "parser":"babel",
-   "overrides": [
-    {
-      "files": "*.js",
-      "options": {
-        "parser": "babel"
-      }
-    }
-  ]
+   "proseWrap":"preserve"
 }

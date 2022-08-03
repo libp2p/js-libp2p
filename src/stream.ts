@@ -1,44 +1,42 @@
-import { Stream }  from '@libp2p/interface-connection';
-import {StreamStat}from '@libp2p/interface-connection';
-import { logger }  from '@libp2p/logger';
-import { Source }  from 'it-stream-types';
-import { Sink }    from 'it-stream-types';
+import { Stream } from '@libp2p/interface-connection';
+import { StreamStat } from '@libp2p/interface-connection';
+import { logger } from '@libp2p/logger';
+import { Source } from 'it-stream-types';
+import { Sink } from 'it-stream-types';
 
-const log = logger('libp2p:webrtc:connection')
-
+const log = logger('libp2p:webrtc:connection');
 
 export class WebRTCStream implements Stream {
-
-    constructor() {
-        this.id = "TODO";
-        this.stat = {
-            direction: 'outbound',
-            timeline: {
-                open: 0, 
-                close: 0
-            }
-        };
-        this.metadata = {}
-        this.sink = (x) => new Promise((res,rej) => {});//TODO
-        if(this.dataChannel) {
-        log('TODO',this.dataChannel.id);
-        }
+  constructor() {
+    this.id = 'TODO';
+    this.stat = {
+      direction: 'outbound',
+      timeline: {
+        open: 0,
+        close: 0,
+      },
+    };
+    this.metadata = {};
+    this.sink = (x) => new Promise((res, rej) => {}); //TODO
+    if (this.dataChannel) {
+      log('TODO', this.dataChannel.id);
     }
+  }
 
-     /**
+  /**
    * Close a stream for reading and writing
    */
-  close() : void {}
+  close(): void {}
 
   /**
    * Close a stream for reading only
    */
-  closeRead() : void {}
+  closeRead(): void {}
 
   /**
    * Close a stream for writing only
    */
-  closeWrite() : void {}
+  closeWrite(): void {}
 
   /**
    * Call when a local error occurs, should close the stream for reading and writing
@@ -48,7 +46,7 @@ export class WebRTCStream implements Stream {
   /**
    * Call when a remote error occurs, should close the stream for reading and writing
    */
-  reset() : void {}
+  reset(): void {}
 
   /**
    * Unique identifier for a stream
@@ -65,9 +63,8 @@ export class WebRTCStream implements Stream {
    */
   metadata: Record<string, any>;
 
-  source: Source<Uint8Array> = process.stdin;//TODO
+  source: Source<Uint8Array> = process.stdin; //TODO
   sink: Sink<Uint8Array, Promise<void>>;
 
   private dataChannel?: RTCDataChannel;
-    
 }
