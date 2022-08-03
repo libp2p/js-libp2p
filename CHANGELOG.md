@@ -1,3 +1,15 @@
+## [4.0.3](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.2...v4.0.3) (2022-08-03)
+
+
+### Trivial Changes
+
+* update project config ([#197](https://github.com/libp2p/js-libp2p-mplex/issues/197)) ([46334e6](https://github.com/libp2p/js-libp2p-mplex/commit/46334e6859cd17c47fe3ffcf2f194eb00f3e748a))
+
+
+### Dependencies
+
+* update uint8arraylist dep ([#199](https://github.com/libp2p/js-libp2p-mplex/issues/199)) ([6e3b9d8](https://github.com/libp2p/js-libp2p-mplex/commit/6e3b9d8b38d283e62103322f1173ccfed4db5a6a))
+
 ## [4.0.2](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.1...v4.0.2) (2022-07-25)
 
 
