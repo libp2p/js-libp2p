@@ -37,6 +37,7 @@ async function installDeps (dir) {
   }
 
   const proc = execa('npm', ['install'], {
+    all: true,
     cwd: dir
   })
   proc.all.on('data', (data) => {
@@ -71,6 +72,7 @@ async function build (dir) {
   }
 
   const proc = execa('npm', ['run', build], {
+    all: true,
     cwd: dir
   })
   proc.all.on('data', (data) => {
