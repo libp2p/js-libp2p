@@ -36,7 +36,46 @@ export class WebRTCTransport implements Transport {
 
   _connect(ma: Multiaddr, options: WebRTCDialOptions) {
     //let peerConnection = new RTCPeerConnection();
-    //let handshakeChannel = peerConnection.createDataChannel("data", {negotiated: true, id: 1} );
+    // create data channel
+    // let handshakeChannel = peerConnection.createDataChannel("data", { negotiated: true, id: 1 })
+    // let handshakeChannel = peerConnection.createDataChannel("data", { id: 1 })
+    //
+    //
+    // create offer sdp
+    // console.log(offerSdp)
+    //
+    //
+    // generate random string for ufrag
+    //
+    //
+    //
+    // munge sdp with ufrag = pwd
+    //
+    //
+    //
+    // set local description
+    //
+    //
+    //
+    // construct answer sdp from multiaddr
+    //
+    //
+    //
+    // set remote description
+    //
+    //
+    //
+    // wait for peerconnection.onopen to fire, or for the datachannel to open
+    // openPromise = new Promise((res, rej) => {
+    // 	dc.onopen = res
+    // 	setTimeout(rej, 10000)
+    // })
+    // await openPromise
+    //
+    // do noise handshake + webrtc handshake as described in spec
+    //
+    //
+    // return Connection(peerconnection, initoptions)
     throw new Error('not implemented');
   }
 }

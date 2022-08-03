@@ -43,9 +43,18 @@ export class WebRTCConnection implements Connection {
     this.direction = init.direction;
     this.peerConnection = init.pc;
     this.ufrag = init.credential_string;
+    // for muxing incoming stream
+    // this._peerConnection.ondatachannel = ({ channel }) => {
+    // 	let stream = DataChannelStream(channel)
+    // 	this.addStream(stream)
+    // }
   }
 
   async newStream(multicodecs: string | string[], options?: AbortOptions): Promise<Stream> {
+    // let label = uuid.v4()
+    // let dc = this._peerConnection.createDataChannel(label, {})
+    // await datachannel opening
+    // return DataChannelStream(dc)
     log('TODO', this.ufrag);
     this.peerConnection.createDataChannel(genUuid());
     throw new Error('not implemented');

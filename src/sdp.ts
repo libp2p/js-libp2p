@@ -4,7 +4,7 @@ import { Multiaddr } from '@multiformats/multiaddr';
 const log = logger('libp2p:webrtc:sdp');
 
 const P_XWEBRTC: number = 0x115;
-const SDP_FORMAT: string = `
+const ANSWER_SDP_FORMAT: string = `
 v=0
 o=- 0 0 IN %s %s
 s=-
@@ -49,7 +49,7 @@ function certhash(ma: Multiaddr): string {
 }
 
 function ma2sdp(ma: Multiaddr, ufrag: string): string {
-  return SDP_FORMAT.replace('/%s/', ipv(ma))
+  return ANSWER_SDP_FORMAT.replace('/%s/', ipv(ma))
     .replace('/%s/', ip(ma))
     .replace('/%s/', ipv(ma))
     .replace('/%s/', ip(ma))
@@ -64,4 +64,10 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
     type: 'offer',
     sdp: ma2sdp(ma, ufrag),
   };
+}
+
+export function munge(desc: RTCSessionDescription, ufrag: string) {
+  //TODO
+  desc.sdp.replaceAll(/^a=ice-ufrag=(.*)/, 'a=ice-ufrag=' + ufrag);
+  desc.sdp.replaceAll(/^a=ice-pwd=(.*)/, 'a=ice-pwd=' + ufrag);
 }
