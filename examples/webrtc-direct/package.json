@@ -10,9 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "@libp2p/webrtc-direct": "^2.0.0",
-    "@chainsafe/libp2p-noise": "^7.0.1",
+    "@chainsafe/libp2p-noise": "^7.0.3",
     "@libp2p/bootstrap": "^2.0.0",
-    "@libp2p/mplex": "^4.0.2",
+    "@libp2p/mplex": "^4.0.3",
     "libp2p": "../../",
     "wrtc": "^0.4.7"
   },
