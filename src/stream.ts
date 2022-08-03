@@ -18,8 +18,11 @@ export class WebRTCStream implements Stream {
                 close: 0
             }
         };
-        this.metadata = {};
-        log('TODO',this.channel?.id);
+        this.metadata = {}
+        this.sink = (x) => new Promise((res,rej) => {});//TODO
+        if(this.dataChannel) {
+        log('TODO',this.dataChannel.id);
+        }
     }
 
      /**
@@ -63,8 +66,8 @@ export class WebRTCStream implements Stream {
   metadata: Record<string, any>;
 
   source: Source<Uint8Array> = process.stdin;//TODO
-  sink: Sink<Uint8Array, Promise<void>> = (x) => new Promise((res,rej) => {});//TODO
+  sink: Sink<Uint8Array, Promise<void>>;
 
-  private channel?: RTCDataChannel;
+  private dataChannel?: RTCDataChannel;
     
 }
