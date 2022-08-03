@@ -16,7 +16,7 @@ import type Sinon from 'sinon'
 import { createRelayOptions, createNodeOptions } from './utils.js'
 import { protocols } from '@multiformats/multiaddr'
 
-async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions) {
+async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions<boolean>) {
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
     for (const addr of node.getMultiaddrs()) {

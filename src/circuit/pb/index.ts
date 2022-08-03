@@ -3,6 +3,7 @@
 
 import { enumeration, encodeMessage, decodeMessage, message, bytes } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface CircuitRelay {
   type?: CircuitRelay.Type
@@ -89,11 +90,11 @@ export namespace CircuitRelay {
       })
     }
 
-    export const encode = (obj: Peer): Uint8Array => {
+    export const encode = (obj: Peer): Uint8ArrayList => {
       return encodeMessage(obj, Peer.codec())
     }
 
-    export const decode = (buf: Uint8Array): Peer => {
+    export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
       return decodeMessage(buf, Peer.codec())
     }
   }
@@ -107,11 +108,11 @@ export namespace CircuitRelay {
     })
   }
 
-  export const encode = (obj: CircuitRelay): Uint8Array => {
+  export const encode = (obj: CircuitRelay): Uint8ArrayList => {
     return encodeMessage(obj, CircuitRelay.codec())
   }
 
-  export const decode = (buf: Uint8Array): CircuitRelay => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): CircuitRelay => {
     return decodeMessage(buf, CircuitRelay.codec())
   }
 }

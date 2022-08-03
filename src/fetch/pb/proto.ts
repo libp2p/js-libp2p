@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, string, enumeration, bytes } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface FetchRequest {
   identifier: string
@@ -15,11 +16,11 @@ export namespace FetchRequest {
     })
   }
 
-  export const encode = (obj: FetchRequest): Uint8Array => {
+  export const encode = (obj: FetchRequest): Uint8ArrayList => {
     return encodeMessage(obj, FetchRequest.codec())
   }
 
-  export const decode = (buf: Uint8Array): FetchRequest => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): FetchRequest => {
     return decodeMessage(buf, FetchRequest.codec())
   }
 }
@@ -55,11 +56,11 @@ export namespace FetchResponse {
     })
   }
 
-  export const encode = (obj: FetchResponse): Uint8Array => {
+  export const encode = (obj: FetchResponse): Uint8ArrayList => {
     return encodeMessage(obj, FetchResponse.codec())
   }
 
-  export const decode = (buf: Uint8Array): FetchResponse => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): FetchResponse => {
     return decodeMessage(buf, FetchResponse.codec())
   }
 }

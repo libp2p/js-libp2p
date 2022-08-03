@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, string, bytes } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Identify {
   protocolVersion?: string
@@ -27,11 +28,11 @@ export namespace Identify {
     })
   }
 
-  export const encode = (obj: Identify): Uint8Array => {
+  export const encode = (obj: Identify): Uint8ArrayList => {
     return encodeMessage(obj, Identify.codec())
   }
 
-  export const decode = (buf: Uint8Array): Identify => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Identify => {
     return decodeMessage(buf, Identify.codec())
   }
 }
