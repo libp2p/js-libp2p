@@ -31,6 +31,8 @@ export class WebRTCConnection implements Connection {
     streams: Stream[] = [];
     direction: Direction;
 
+    private peerConnection: RTCPeerConnection;
+	private ufrag: string;
 
     constructor(init: ConnectionInit) {
         this.streams = []
@@ -58,9 +60,6 @@ export class WebRTCConnection implements Connection {
     async close(): Promise<void> {
         throw new Error("not implemented")
     }
-
-    private peerConnection: RTCPeerConnection;
-	private ufrag: string;
 
 }
 

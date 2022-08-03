@@ -29,6 +29,7 @@ bower_components
 # Editors
 .idea
 *.iml
+.vscode/launch.json
 
 # OS metadata
 .DS_Store
@@ -40,3 +41,5 @@ dist/**/*
 # ignore yarn.lock
 yarn.lock
 package-lock.json
+
+

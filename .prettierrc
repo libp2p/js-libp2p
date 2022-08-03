@@ -1,0 +1,23 @@
+{
+   "printWidth":180,
+   "tabWidth":2,
+   "useTabs":false,
+   "semi":true,
+   "singleQuote":true,
+   "trailingComma":"es5",
+   "bracketSpacing":true,
+   "jsxBracketSameLine":false,
+   "arrowParens":"always",
+   "requirePragma":false,
+   "insertPragma":false,
+   "proseWrap":"preserve",
+   "parser":"babel",
+   "overrides": [
+    {
+      "files": "*.js",
+      "options": {
+        "parser": "babel"
+      }
+    }
+  ]
+}

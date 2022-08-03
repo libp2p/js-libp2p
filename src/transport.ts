@@ -1,7 +1,6 @@
 import { WebRTCDialOptions }  from './options';
-//import { fromMultiAddr }      from './sdp'
 import { Connection }         from '@libp2p/interface-connection';
-import {CreateListenerOptions}from '@libp2p/interface-transport'
+import { CreateListenerOptions}from '@libp2p/interface-transport'
 import {Listener, Transport } from '@libp2p/interface-transport'
 import {DialOptions, symbol } from '@libp2p/interface-transport'
 import { logger }             from '@libp2p/logger'
@@ -23,15 +22,15 @@ export class WebRTCTransport implements Transport {
 	}
 
 	filter(multiaddrs: Multiaddr[]): Multiaddr[] {
-		return []
+		return [];
 	};
 
 	get [Symbol.toStringTag](): string {
-		return '@libp2p/webrtc'
+		return '@libp2p/webrtc';
 	}
 
 	get [symbol](): true {
-		return true
+		return true;
 	}
 
 	todo_cb() {
