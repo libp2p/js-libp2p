@@ -3,6 +3,7 @@
 
 import { encodeMessage, decodeMessage, message, bytes, enumeration } from 'protons-runtime'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Exchange {
   id?: Uint8Array
@@ -17,11 +18,11 @@ export namespace Exchange {
     })
   }
 
-  export const encode = (obj: Exchange): Uint8Array => {
+  export const encode = (obj: Exchange): Uint8ArrayList => {
     return encodeMessage(obj, Exchange.codec())
   }
 
-  export const decode = (buf: Uint8Array): Exchange => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Exchange => {
     return decodeMessage(buf, Exchange.codec())
   }
 }
@@ -58,11 +59,11 @@ export namespace PublicKey {
     })
   }
 
-  export const encode = (obj: PublicKey): Uint8Array => {
+  export const encode = (obj: PublicKey): Uint8ArrayList => {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array): PublicKey => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): PublicKey => {
     return decodeMessage(buf, PublicKey.codec())
   }
 }

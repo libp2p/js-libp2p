@@ -1,5 +1,5 @@
 import path from 'path'
-import execa from 'execa'
+import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { chromium } from 'playwright'

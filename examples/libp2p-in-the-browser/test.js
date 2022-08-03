@@ -1,4 +1,4 @@
-import execa from 'execa'
+import { execa } from 'execa'
 import { chromium } from 'playwright'
 import path from 'path'
 import { fileURLToPath } from 'url'

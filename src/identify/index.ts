@@ -404,7 +404,7 @@ export class IdentifyService implements Startable {
 
         const envelope = await RecordEnvelope.seal(peerRecord, this.components.getPeerId())
         await this.components.getPeerStore().addressBook.consumePeerRecord(envelope)
-        signedPeerRecord = envelope.marshal()
+        signedPeerRecord = envelope.marshal().subarray()
       }
 
       const message = Identify.encode({
