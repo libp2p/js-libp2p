@@ -39,7 +39,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
         Type: type,
         Data: localId.publicKey ?? new Uint8Array(0)
       }
-    }).slice()
+    }).subarray()
   )
 
   log('write pubkey exchange to peer %p', remoteId)

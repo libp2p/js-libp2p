@@ -41,7 +41,7 @@ export class StreamHandler {
     const msg = await this.decoder.next()
 
     if (msg.value != null) {
-      const value = CircuitRelay.decode(msg.value.slice())
+      const value = CircuitRelay.decode(msg.value)
       log('read message type', value.type)
       return value
     }
