@@ -3,7 +3,7 @@ process.env.CI = true // needed for some "clever" build tools
 
 import fs from 'fs-extra'
 import path from 'path'
-import execa from 'execa'
+import { execa } from 'execa'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
