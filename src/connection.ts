@@ -1,4 +1,3 @@
-import * as p from '@libp2p/peer-id';
 import * as ic from '@libp2p/interface-connection';
 import { PeerId } from '@libp2p/interface-peer-id';
 import { AbortOptions } from '@libp2p/interfaces';
@@ -17,6 +16,7 @@ type ConnectionInit = {
   tags?: string[];
   pc: RTCPeerConnection;
   credential_string: string;
+  remotePeerId: PeerId;
 };
 
 export class WebRTCConnection implements ic.Connection {
@@ -33,12 +33,6 @@ export class WebRTCConnection implements ic.Connection {
 
   constructor(init: ConnectionInit) {
     this.streams = [];
-    let rp = init.remoteAddr.getPeerId();
-    if (rp) {
-      this.remotePeer = p.peerIdFromString(rp);
-    } else {
-      this.remotePeer = init.localPeer;
-    }
     this.remoteAddr = init.remoteAddr;
     this.id = init.id;
     this.direction = init.direction;
@@ -49,6 +43,7 @@ export class WebRTCConnection implements ic.Connection {
       timeline: { open: 0 },
       status: 'CLOSED',
     };
+    this.remotePeer = init.remotePeerId;
     // for muxing incoming stream
     // this._peerConnection.ondatachannel = ({ channel }) => {
     // 	let stream = DataChannelStream(channel)

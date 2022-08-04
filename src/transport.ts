@@ -1,4 +1,5 @@
 import * as sdp from './sdp';
+import * as p from '@libp2p/peer-id';
 import { WebRTCConnection } from './connection';
 import { WebRTCDialOptions } from './options';
 import { Components } from '@libp2p/components';
@@ -7,6 +8,7 @@ import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from 
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
+import { NOISE } from '@chainsafe/libp2p-noise';
 
 const log = logger('libp2p:webrtc:transport');
 
@@ -76,17 +78,27 @@ export class WebRTCTransport implements Transport {
     });
     await openPromise;
 
-    // TODO TODO !!
-    // do noise handshake + webrtc handshake as described in spec
+    let myPeerId = this.components.getPeerId();
+    let rps = ma.getPeerId();
+    if (!rps) {
+      throw new Error('TODO Do we really need a peer ID ?');
+    }
+    let theirPeerId = p.peerIdFromString(rps);
+
+    // do noise handshake
+    let noisedConnection = await NOISE.secureOutbound(myPeerId, handshakeChannel, theirPeerId);
+
+    // TODO TODO !! webrtc handshake as described in spec
     //
 
     return new WebRTCConnection({
       id: 'TODO',
       remoteAddr: ma,
-      localPeer: this.components.getPeerId(),
+      localPeer: myPeerId,
       direction: 'outbound',
       pc: peerConnection,
       credential_string: ufrag,
+      remotePeerId: theirPeerId,
     });
   }
 }
