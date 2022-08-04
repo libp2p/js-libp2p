@@ -8,9 +8,10 @@ import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from 
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
-import { NOISE } from '@chainsafe/libp2p-noise';
+import { Noise } from '@chainsafe/libp2p-noise';
 
 const log = logger('libp2p:webrtc:transport');
+const utf8 = new TextEncoder();
 
 export class WebRTCTransport implements Transport {
   private components: Components = new Components();
@@ -86,10 +87,13 @@ export class WebRTCTransport implements Transport {
     let theirPeerId = p.peerIdFromString(rps);
 
     // do noise handshake
-    let noisedConnection = await NOISE.secureOutbound(myPeerId, handshakeChannel, theirPeerId);
+    //set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
+    //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
+    let fingerprintsPrologue = [myPeerId.multihash, theirPeerId.multihash].sort().join('');
+    let noise = new Noise(undefined, utf8.encode(fingerprintsPrologue)); //C'mon feel it.
+    let noisedConnection = await noise.secureOutbound(myPeerId, handshakeChannel, theirPeerId);
 
     // TODO TODO !! webrtc handshake as described in spec
-    //
 
     return new WebRTCConnection({
       id: 'TODO',
