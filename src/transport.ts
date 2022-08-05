@@ -8,7 +8,8 @@ import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from 
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
-import { Noise } from '@chainsafe/libp2p-noise';
+import { Noise, stablelib } from '@chainsafe/libp2p-noise';
+import { WebRTCStream } from './stream';
 
 const log = logger('libp2p:webrtc:transport');
 const utf8 = new TextEncoder();
@@ -41,7 +42,7 @@ export class WebRTCTransport implements Transport {
   async _connect(ma: Multiaddr, options: WebRTCDialOptions) {
     let peerConnection = new RTCPeerConnection();
     // create data channel
-    let handshakeChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
+    let handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
     // let handshakeChannel = peerConnection.createDataChannel("data", { id: 1 })
     //
     //
@@ -74,7 +75,7 @@ export class WebRTCTransport implements Transport {
     //
     // wait for peerconnection.onopen to fire, or for the datachannel to open
     let openPromise = new Promise((res, rej) => {
-      handshakeChannel.onopen = res;
+      handshakeDataChannel.onopen = res;
       setTimeout(rej, 10000);
     });
     await openPromise;
@@ -90,10 +91,8 @@ export class WebRTCTransport implements Transport {
     //set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
     let fingerprintsPrologue = [myPeerId.multihash, theirPeerId.multihash].sort().join('');
-    let noise = new Noise(undefined, utf8.encode(fingerprintsPrologue)); //C'mon feel it.
-    let noisedConnection = await noise.secureOutbound(myPeerId, handshakeChannel, theirPeerId);
-
-    // TODO TODO !! webrtc handshake as described in spec
+    let noise = new Noise(myPeerId.privateKey, undefined, stablelib, utf8.encode(fingerprintsPrologue));
+    await noise.secureOutbound(myPeerId, new WebRTCStream(/*TODO*/), theirPeerId);
 
     return new WebRTCConnection({
       id: 'TODO',
