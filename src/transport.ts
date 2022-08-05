@@ -96,7 +96,7 @@ export class WebRTCTransport implements Transport {
     await noise.secureOutbound(myPeerId, wrappedChannel, theirPeerId);
 
     return new WebRTCConnection({
-      id: 'TODO',
+      id: ma.toString(),
       remoteAddr: ma,
       localPeer: myPeerId,
       direction: 'outbound',
