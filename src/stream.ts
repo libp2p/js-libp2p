@@ -1,4 +1,4 @@
-import { Stream, Direction } from '@libp2p/interface-connection';
+import { Stream } from '@libp2p/interface-connection';
 import { StreamStat } from '@libp2p/interface-connection';
 // import { logger } from '@libp2p/logger';
 import { Source } from 'it-stream-types';
@@ -11,8 +11,8 @@ import merge from 'it-merge';
 
 type StreamInitOpts = {
   channel: RTCDataChannel;
-  direction: Direction;
   metadata?: Record<string, any>;
+  stat: StreamStat;
 };
 
 export class WebRTCStream implements Stream {
@@ -32,7 +32,7 @@ export class WebRTCStream implements Stream {
   metadata: Record<string, any>;
   private readonly channel: RTCDataChannel;
 
-  source: Source<Uint8Array> = process.stdin; //TODO
+  source: Source<Uint8Array> = pushable();
   sink: Sink<Uint8Array, Promise<void>>;
 
   // promises
@@ -45,55 +45,71 @@ export class WebRTCStream implements Stream {
   constructor(opts: StreamInitOpts) {
     this.channel = opts.channel;
     this.id = this.channel.label;
-    this.stat = {
-      direction: opts.direction,
-      timeline: {
-        open: 0,
-        close: 0,
-      },
-    };
+
+    this.stat = opts.stat;
+    switch (this.channel.readyState) {
+      case 'open':
+        this.opened.resolve();
+        break;
+      case 'closed':
+      case 'closing':
+        this.closed = true;
+        if (!this.stat.timeline.close) {
+          this.stat.timeline.close = new Date().getTime();
+        }
+        this.opened.resolve();
+        break;
+    }
 
     this.metadata = opts.metadata ?? {};
-    this.source = pushable();
 
     // closable sink
-    this.sink = async (src: Source<Uint8Array>) => {
-      await this.opened.promise;
-      if (closed || this.writeClosed) {
-        return;
-      }
+    this.sink = this._sinkFn;
 
-      let self = this;
-      let closeWriteIterable = {
-        async *[Symbol.asyncIterator]() {
-          await self.closeWritePromise.promise;
-          yield new Uint8Array(0);
-        },
-      };
-
-      for await (const buf of merge(closeWriteIterable, src)) {
-        if (closed || this.writeClosed) {
-          break;
-        }
-        this.channel.send(buf);
-      }
+    // handle RTCDataChannel events
+    this.channel.onopen = (_evt) => {
+      this.stat.timeline.open = new Date().getTime();
+      this.opened.resolve();
     };
 
-    // handle datachannel events
-    this.channel.onopen = (_) => this.opened.resolve();
-    this.channel.onmessage = (evt) => {
-      if (this.readClosed) {
+    this.channel.onmessage = ({ data }) => {
+      if (this.readClosed || this.closed) {
         return;
       }
-      (this.source as Pushable<Uint8Array>).push(evt.data);
+      (this.source as Pushable<Uint8Array>).push(data);
     };
-    this.channel.onclose = (_) => this.close();
-    this.channel.onerror = (_event) => {
-      this.abort(new Error('TODO'));
+
+    this.channel.onclose = (_evt) => {
+      this.close();
+    };
+
+    this.channel.onerror = (evt) => {
+      let err = (evt as RTCErrorEvent).error;
+      this.abort(err);
     };
   }
 
-  // duplex sink
+  private async _sinkFn(src: Source<Uint8Array>): Promise<void> {
+    await this.opened.promise;
+    if (closed || this.writeClosed) {
+      return;
+    }
+
+    let self = this;
+    let closeWriteIterable = {
+      async *[Symbol.asyncIterator]() {
+        await self.closeWritePromise.promise;
+        yield new Uint8Array(0);
+      },
+    };
+
+    for await (const buf of merge(closeWriteIterable, src)) {
+      if (closed || this.writeClosed) {
+        break;
+      }
+      this.channel.send(buf);
+    }
+  }
 
   /**
    * Close a stream for reading and writing
@@ -102,6 +118,7 @@ export class WebRTCStream implements Stream {
     if (this.closed) {
       return;
     }
+    this.stat.timeline.close = new Date().getTime();
     this.closed = true;
     this.closeRead();
     this.closeWrite();
@@ -114,6 +131,9 @@ export class WebRTCStream implements Stream {
   closeRead(): void {
     this.readClosed = true;
     (this.source as Pushable<Uint8Array>).end();
+    if (this.readClosed && this.writeClosed) {
+      this.close();
+    }
   }
 
   /**
@@ -122,6 +142,9 @@ export class WebRTCStream implements Stream {
   closeWrite(): void {
     this.writeClosed = true;
     this.closeWritePromise.resolve();
+    if (this.readClosed && this.writeClosed) {
+      this.close();
+    }
   }
 
   /**
