@@ -43,7 +43,7 @@ describe('Multistream', () => {
   describe('Multistream.write', () => {
     it('should encode and write a multistream-select message', async () => {
       const input = uint8ArrayFromString(`TEST${Date.now()}`)
-      const writer = pushable()
+      const writer = pushable<Uint8ArrayList | Uint8Array>()
 
       Multistream.write(writer, input)
 
@@ -57,7 +57,7 @@ describe('Multistream', () => {
 
       const output = await all(writer)
       expect(output.length).to.equal(1)
-      expect(output[0]).to.eql(expected)
+      expect(output[0].subarray()).to.equalBytes(expected)
     })
   })
 
@@ -72,7 +72,7 @@ describe('Multistream', () => {
       ])])
 
       const output = await Multistream.read(source)
-      expect(output.slice()).to.eql(input)
+      expect(output.subarray()).to.equalBytes(input)
     })
 
     it('should throw for non-newline delimited message', async () => {

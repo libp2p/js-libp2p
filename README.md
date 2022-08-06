@@ -18,26 +18,14 @@
   - [Dialer](#dialer)
   - [Listener](#listener)
 - [API](#api)
-  - [`new Dialer(duplex)`](#new-dialerduplex)
+  - [`mss.select(dulpex, protocols, [options])`](#mssselectdulpex-protocols-options)
     - [Parameters](#parameters)
     - [Returns](#returns)
     - [Examples](#examples)
-  - [`dialer.select(protocols, [options])`](#dialerselectprotocols-options)
+  - [`mss.handle(duplex, protocols, [options])`](#msshandleduplex-protocols-options)
     - [Parameters](#parameters-1)
     - [Returns](#returns-1)
     - [Examples](#examples-1)
-  - [`dialer.ls([options])`](#dialerlsoptions)
-    - [Parameters](#parameters-2)
-    - [Returns](#returns-2)
-    - [Examples](#examples-2)
-  - [`new Listener(duplex)`](#new-listenerduplex)
-    - [Parameters](#parameters-3)
-    - [Returns](#returns-3)
-    - [Examples](#examples-3)
-  - [`listener.handle(protocols, [options])`](#listenerhandleprotocols-options)
-    - [Parameters](#parameters-4)
-    - [Returns](#returns-4)
-    - [Examples](#examples-4)
 - [License](#license)
 - [Contribution](#contribution)
 
@@ -69,33 +57,29 @@ The caller will send "interactive" messages, expecting for some acknowledgement 
 > <dht-message>
 ```
 
-This mode also packs a `ls` option, so that the callee can list the protocols it currently supports
-
 ## Usage
 
 ```js
-import { Dialer, Listener } from '@libp2p/multistream-select'
+import { select, handle } from '@libp2p/multistream-select'
 // You can now use
-// Dialer - actively select a protocol with a remote
-// Listener - handle a protocol with a remote
+// select - actively select a protocol with a remote
+// handle - handle a protocol with a remote
 ```
 
 ### Dialer
 
 ```js
 import { pipe } from 'it-pipe'
-import { Dialer } from '@libp2p/multistream-select'
+import * as mss from '@libp2p/multistream-select'
 import { Mplex } from '@libp2p/mplex'
 
 const muxer = new Mplex()
 const muxedStream = muxer.newStream()
 
-const mss = new Dialer(muxedStream)
-
 // mss.select(protocol(s))
 // Select from one of the passed protocols (in priority order)
 // Returns selected stream and protocol
-const { stream: dhtStream, protocol } = await mss.select([
+const { stream: dhtStream, protocol } = await mss.select(muxedStream, [
   // This might just be different versions of DHT, but could be different impls
   '/ipfs-dht/2.0.0', // Most of the time this will probably just be one item.
   '/ipfs-dht/1.0.0'
@@ -122,16 +106,14 @@ const { stream: dhtStream, protocol } = await mss.select([
 
 ```js
 import { pipe } from 'it-pipe'
-import { Listener } from '@libp2p/multistream-select'
+import * as mss from '@libp2p/multistream-select'
 import { Mplex } from '@libp2p/mplex'
 
 const muxer = new Mplex({
   async onStream (muxedStream) {
-    const mss = new Listener(muxedStream)
-
     // mss.handle(handledProtocols)
     // Returns selected stream and protocol
-    const { stream, protocol } = await mss.handle([
+    const { stream, protocol } = await mss.handle(muxedStream, [
       '/ipfs-dht/1.0.0',
       '/ipfs-bitswap/1.0.0'
     ])
@@ -159,36 +141,19 @@ const muxer = new Mplex({
 
 ## API
 
-### `new Dialer(duplex)`
-
-Create a new multistream select "dialer" instance which can be used to negotiate a protocol to use, list all available protocols the remote supports, or do both.
-
-#### Parameters
-
-- `duplex` (`Object`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to dial on.
-
-#### Returns
-
-A new multistream select dialer instance.
-
-#### Examples
-
-```js
-const dialer = new MSS.Dialer(duplex)
-```
-
-### `dialer.select(protocols, [options])`
+### `mss.select(dulpex, protocols, [options])`
 
 Negotiate a protocol to use from a list of protocols.
 
 #### Parameters
 
-- `protocols` (`String[]`/`String`) - A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made.
-- `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
+- `duplex` (`Duplex`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to dial on.
+- `protocols` (`string[]`/`string`) - A list of protocols (or single protocol) to negotiate with. Protocols are attempted in order until a match is made.
+- `options` (`{ signal: AbortSignal, writeBytes?: boolean }`) - an options object containing an AbortSignal and an optional boolean `writeBytes` - if this is true, `Uint8Array`s will be written into `duplex`, otherwise `Uint8ArrayList`s will
 
 #### Returns
 
-`Promise<{ stream<Object>, protocol<String> }>` - A stream for the selected protocol and the protocol that was selected from the list of protocols provided to `select`.
+`Promise<{ stream<Duplex>, protocol<string> }>` - A stream for the selected protocol and the protocol that was selected from the list of protocols provided to `select`.
 
 Note that after a protocol is selected `dialer` can no longer be used.
 
@@ -203,68 +168,26 @@ const { stream, protocol } = await dialer.select([
 // Now talk `protocol` on `stream`
 ```
 
-### `dialer.ls([options])`
-
-List protocols that the remote supports.
-
-#### Parameters
-
-- `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
-
-#### Returns
-
-`String[]` - A list of all the protocols the remote supports.
-
-#### Examples
-
-```js
-const protocols = await dialer.ls()
-const wantedProto = '/ipfs-dht/2.0.0'
-
-if (!protocols.includes(wantedProto)) {
-  throw new Error('remote does not support ' + wantedProto)
-}
-
-// Now use dialer.select to use wantedProto, safe in the knowledge it is supported
-```
-
-### `new Listener(duplex)`
-
-Construct a new multistream select "listener" instance which can be used to handle multistream protocol selections for particular protocols.
-
-#### Parameters
-
-- `duplex` (`Object`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to listen on.
-
-#### Returns
-
-A new multistream select listener instance.
-
-#### Examples
-
-```js
-const listener = new MSS.Listener(duplex)
-```
-
-### `listener.handle(protocols, [options])`
+### `mss.handle(duplex, protocols, [options])`
 
 Handle multistream protocol selections for the given list of protocols.
 
 #### Parameters
 
+- `duplex` (`Duplex`) - A [duplex iterable stream](https://gist.github.com/alanshaw/591dc7dd54e4f99338a347ef568d6ee9#duplex-it) to listen on.
 - `protocols` (`String[]`/`String`) - A list of protocols (or single protocol) that this listener is able to speak.
-- `options` (`{ signal: AbortSignal }`) - an options object containing an AbortSignal
+- `options` (`{ signal: AbortSignal, writeBytes?: boolean }`) - an options object containing an AbortSignal and an optional boolean `writeBytes` - if this is true, `Uint8Array`s will be written into `duplex`, otherwise `Uint8ArrayList`s will
 
 #### Returns
 
-`Promise<{ stream<Object>, protocol<String> }>` - A stream for the selected protocol and the protocol that was selected from the list of protocols provided to `select`.
+`Promise<{ stream<Duplex>, protocol<string> }>` - A stream for the selected protocol and the protocol that was selected from the list of protocols provided to `select`.
 
 Note that after a protocol is handled `listener` can no longer be used.
 
 #### Examples
 
 ```js
-const { stream, protocol } = await listener.handle([
+const { stream, protocol } = await mss.handle(duplex, [
   '/ipfs-dht/1.0.0',
   '/ipfs-bitswap/1.0.0'
 ])

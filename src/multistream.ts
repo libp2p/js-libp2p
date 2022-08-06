@@ -11,36 +11,47 @@ import type { Pushable } from 'it-pushable'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Source } from 'it-stream-types'
 import type { Reader } from 'it-reader'
+import type { MultistreamSelectInit } from '.'
 
 const NewLine = uint8ArrayFromString('\n')
 
-export function encode (buffer: Uint8Array | Uint8ArrayList): Uint8Array {
+export function encode (buffer: Uint8Array | Uint8ArrayList): Uint8ArrayList {
   const list = new Uint8ArrayList(buffer, NewLine)
 
-  return lp.encode.single(list).subarray()
+  return lp.encode.single(list)
 }
 
 /**
  * `write` encodes and writes a single buffer
  */
-export function write (writer: Pushable<Uint8Array>, buffer: Uint8Array | Uint8ArrayList) {
-  writer.push(encode(buffer).subarray())
+export function write (writer: Pushable<any>, buffer: Uint8Array | Uint8ArrayList, options: MultistreamSelectInit = {}) {
+  const encoded = encode(buffer)
+
+  if (options.writeBytes === true) {
+    writer.push(encoded.subarray())
+  } else {
+    writer.push(encoded)
+  }
 }
 
 /**
  * `writeAll` behaves like `write`, except it encodes an array of items as a single write
  */
-export function writeAll (writer: Pushable<Uint8Array>, buffers: Uint8Array[]) {
+export function writeAll (writer: Pushable<any>, buffers: Uint8Array[], options: MultistreamSelectInit = {}) {
   const list = new Uint8ArrayList()
 
   for (const buf of buffers) {
     list.append(encode(buf))
   }
 
-  writer.push(list.slice())
+  if (options.writeBytes === true) {
+    writer.push(list.subarray())
+  } else {
+    writer.push(list)
+  }
 }
 
-export async function read (reader: Reader, options?: AbortOptions) {
+export async function read (reader: Reader, options?: AbortOptions): Promise<Uint8ArrayList> {
   let byteLength = 1 // Read single byte chunks until the length is known
   const varByteSource = { // No return impl - we want the reader to remain readable
     [Symbol.asyncIterator]: () => varByteSource,
@@ -56,7 +67,9 @@ export async function read (reader: Reader, options?: AbortOptions) {
   }
 
   // Once the length has been parsed, read chunk for that length
-  const onLength = (l: number) => { byteLength = l }
+  const onLength = (l: number) => {
+    byteLength = l
+  }
 
   const buf = await pipe(
     input,
@@ -72,11 +85,11 @@ export async function read (reader: Reader, options?: AbortOptions) {
     throw errCode(new Error('missing newline'), 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 
-  return buf.slice(0, -1) // Remove newline
+  return buf.sublist(0, -1) // Remove newline
 }
 
 export async function readString (reader: Reader, options?: AbortOptions) {
   const buf = await read(reader, options)
 
-  return uint8ArrayToString(buf)
+  return uint8ArrayToString(buf.subarray())
 }
