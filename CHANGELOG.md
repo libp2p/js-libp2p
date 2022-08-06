@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-multistream-select/compare/v2.0.2...v3.0.0) (2022-08-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* the single-method Listener and Dialer classes have been removed and their methods exported instead
+
+### Bug Fixes
+
+* support Duplex<Uint8Array> and Duplex<Uint8ArrayList> ([#17](https://github.com/libp2p/js-libp2p-multistream-select/issues/17)) ([6e96c89](https://github.com/libp2p/js-libp2p-multistream-select/commit/6e96c89b68a77ea5192e91cab5547e78f5b078fd))
+
 ## [2.0.2](https://github.com/libp2p/js-libp2p-multistream-select/compare/v2.0.1...v2.0.2) (2022-07-31)
 
 
