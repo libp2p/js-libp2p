@@ -92,7 +92,7 @@ export class WebRTCTransport implements Transport {
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
     let fingerprintsPrologue = [myPeerId.multihash, theirPeerId.multihash].sort().join('');
     let noise = new Noise(myPeerId.privateKey, undefined, stablelib, utf8.encode(fingerprintsPrologue));
-    let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, direction: 'outbound' });
+    let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: {direction: 'outbound', timeline: {open: 0}} });
     await noise.secureOutbound(myPeerId, wrappedChannel, theirPeerId);
 
     return new WebRTCConnection({
