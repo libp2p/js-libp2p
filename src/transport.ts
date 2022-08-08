@@ -2,14 +2,15 @@ import * as sdp from './sdp';
 import * as p from '@libp2p/peer-id';
 import { WebRTCConnection } from './connection';
 import { WebRTCDialOptions } from './options';
+import { WebRTCStream } from './stream';
+import { Noise, stablelib } from '@chainsafe/libp2p-noise';
 import { Components } from '@libp2p/components';
 import { Connection } from '@libp2p/interface-connection';
 import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
-import { Noise, stablelib } from '@chainsafe/libp2p-noise';
-import { WebRTCStream } from './stream';
+import  defer  from 'p-defer';
 
 const log = logger('libp2p:webrtc:transport');
 const utf8 = new TextEncoder();
@@ -74,17 +75,16 @@ export class WebRTCTransport implements Transport {
     //
     //
     // wait for peerconnection.onopen to fire, or for the datachannel to open
-    let openPromise = new Promise((res, rej) => {
-      handshakeDataChannel.onopen = res;
-      setTimeout(rej, 10000);
-    });
-    await openPromise;
+    let dataChannelOpenPromise = defer();
+    handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
+    setTimeout(dataChannelOpenPromise.reject, 10000);
+    await dataChannelOpenPromise;
 
     let myPeerId = this.components.getPeerId();
     let rps = ma.getPeerId();
     if (!rps) {
       throw new Error('TODO Do we really need a peer ID ?');
-    }
+    }    
     let theirPeerId = p.peerIdFromString(rps);
 
     // do noise handshake
