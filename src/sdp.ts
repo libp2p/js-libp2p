@@ -66,8 +66,14 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
   };
 }
 
-export function munge(desc: RTCSessionDescription, ufrag: string) {
-  //TODO
-  desc.sdp.replaceAll(/^a=ice-ufrag=(.*)/, 'a=ice-ufrag=' + ufrag);
-  desc.sdp.replaceAll(/^a=ice-pwd=(.*)/, 'a=ice-pwd=' + ufrag);
+export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
+  if (desc.sdp) {
+    desc.sdp = desc.sdp
+      .replace(/^a=ice-ufrag:.*$/, 'a=ice-ufrag:' + ufrag)
+      .replace(/^a=ice-pwd:.*$/, 'a=ice-pwd:' + ufrag)
+      ;
+      return desc;
+  } else {
+    throw Error("Can't munge a missing SDP");
+  }
 }
