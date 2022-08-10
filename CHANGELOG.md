@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.1.0...v3.1.1) (2022-08-10)
+
+
+### Dependencies
+
+* update all deps ([#94](https://github.com/libp2p/js-libp2p-pubsub/issues/94)) ([5d5d788](https://github.com/libp2p/js-libp2p-pubsub/commit/5d5d78820c5feaca070ef504c83b730fd3b8b2d4))
+
 ## [3.1.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.0.4...v3.1.0) (2022-08-03)
 
 
