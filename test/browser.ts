@@ -36,7 +36,7 @@ describe('libp2p-websockets', () => {
       async (source) => await all(source)
     )
 
-    expect(res).to.deep.equal([data])
+    expect(res[0].subarray()).to.equalBytes(data)
   })
 
   it('should filter out no DNS websocket addresses', function () {
@@ -65,7 +65,7 @@ describe('libp2p-websockets', () => {
         async (source) => await all(source)
       )
 
-      expect(res).to.deep.equal([data])
+      expect(res[0].subarray()).to.deep.equal(data)
     })
 
     it('many writes', async function () {
@@ -81,7 +81,7 @@ describe('libp2p-websockets', () => {
         async (source) => await all(source)
       )
 
-      expect(res).to.deep.equal(data)
+      expect(res.map(list => list.subarray())).to.deep.equal(data)
     })
   })
 

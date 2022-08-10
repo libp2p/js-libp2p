@@ -17,8 +17,15 @@ import { WebSockets } from '../src/index.js'
 import * as filters from '../src/filters.js'
 import drain from 'it-drain'
 import type { Listener } from '@libp2p/interface-transport'
-
+import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Source } from 'it-stream-types'
 import './compliance.node.js'
+
+async function * toBuffers (source: Source<Uint8ArrayList>) {
+  for await (const list of source) {
+    yield * list
+  }
+}
 
 const protocol = '/say-hello/1.0.0'
 const registrar = mockRegistrar()
@@ -238,7 +245,7 @@ describe('dial', () => {
       const conn = await ws.dial(ma, { upgrader })
       const stream = await conn.newStream([protocol])
 
-      await expect(all(stream.source)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
       await conn.close()
     })
 
@@ -247,7 +254,7 @@ describe('dial', () => {
       const conn = await ws.dial(ma, { upgrader })
       const stream = await conn.newStream([protocol])
 
-      await expect(all(stream.source)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
       await conn.close()
     })
 
@@ -319,7 +326,12 @@ describe('dial', () => {
       const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
       const stream = await conn.newStream([protocol])
 
-      await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(pipe(
+        s,
+        stream,
+        toBuffers,
+        s
+      )).to.eventually.deep.equal([uint8ArrayFromString('hey')])
     })
   })
 
@@ -363,7 +375,7 @@ describe('dial', () => {
       const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
       const stream = await conn.newStream([protocol])
 
-      const res = await pipe(s, stream, s)
+      const res = await pipe(s, stream, toBuffers, s)
 
       expect(res[0]).to.equalBytes(uint8ArrayFromString('hey'))
       await conn.close()
@@ -395,7 +407,7 @@ describe('dial', () => {
       const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
       const stream = await conn.newStream([protocol])
 
-      await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
     })
 
     it('dial with p2p Id', async () => {
@@ -408,7 +420,7 @@ describe('dial', () => {
       })
       const stream = await conn.newStream([protocol])
 
-      await expect(pipe(s, stream, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
     })
   })
 })

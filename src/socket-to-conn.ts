@@ -43,7 +43,9 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
       const start = Date.now()
 
       try {
-        await pTimeout(stream.close(), CLOSE_TIMEOUT)
+        await pTimeout(stream.close(), {
+          milliseconds: CLOSE_TIMEOUT
+        })
       } catch (err) {
         const { host, port } = maConn.remoteAddr.toOptions()
         log('timeout closing stream to %s:%s after %dms, destroying it manually',
