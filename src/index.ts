@@ -8,6 +8,7 @@ import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
 import * as filters from './filters.js'
 import { Transport, MultiaddrFilter, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interface-transport'
+import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
@@ -37,7 +38,7 @@ export class WebSockets implements Transport {
     return true
   }
 
-  async dial (ma: Multiaddr, options: DialOptions) {
+  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log('dialing %s', ma)
     options = options ?? {}
 
