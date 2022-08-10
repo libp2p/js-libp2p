@@ -1,3 +1,4 @@
+import { InvalidArgumentError } from './error.js'
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 
@@ -76,6 +77,6 @@ export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessio
       ;
       return desc;
   } else {
-    throw Error("Can't munge a missing SDP");
+    throw new InvalidArgumentError("Can't munge a missing SDP");
   }
 }
