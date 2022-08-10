@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.0...v3.0.1) (2022-08-10)
+
+
+### Bug Fixes
+
+* update deps ([#55](https://github.com/libp2p/js-libp2p-utils/issues/55)) ([134c633](https://github.com/libp2p/js-libp2p-utils/commit/134c633f107247ce309ed7da3a29f872615ee920))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-utils/compare/v2.0.1...v3.0.0) (2022-06-27)
 
 
