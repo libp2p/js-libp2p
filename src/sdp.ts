@@ -4,7 +4,6 @@ import { Multiaddr } from '@multiformats/multiaddr';
 
 const log = logger('libp2p:webrtc:sdp');
 
-// const P_WEBRTC: number = 0x115;
 const CERTHASH_CODE: number = 466;
 const ANSWER_SDP_FORMAT: string = `
 v=0
@@ -46,7 +45,7 @@ function certhash(ma: Multiaddr): string {
   if (certhash_value) {
     return certhash_value;
   } else {
-    throw new Error("Couldn't find a webrtc component of multiaddr:" + ma.toString());
+    throw new Error("Couldn't find a certhash component of multiaddr:" + ma.toString());
   }
 }
 
