@@ -146,7 +146,7 @@
   },
   "dependencies": {
     "@libp2p/components": "^2.0.0",
-    "@libp2p/interface-connection": "^2.0.0",
+    "@libp2p/interface-connection": "^3.0.1",
     "@libp2p/interface-stream-muxer": "^2.0.0",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/tracked-map": "^2.0.0",
@@ -161,7 +161,7 @@
     "varint": "^6.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface-stream-muxer-compliance-tests": "^3.0.1",
+    "@libp2p/interface-stream-muxer-compliance-tests": "^4.0.0",
     "@types/varint": "^6.0.0",
     "aegir": "^37.2.0",
     "cborg": "^1.8.1",

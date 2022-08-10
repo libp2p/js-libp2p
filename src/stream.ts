@@ -145,7 +145,7 @@ export function createStream (options: Options): MplexStream {
       onSinkEnd(err)
     },
 
-    sink: async (source: Source<Uint8Array>) => {
+    sink: async (source: Source<Uint8ArrayList | Uint8Array>) => {
       if (sinkSunk) {
         throw errCode(new Error('sink already called on stream'), ERR_DOUBLE_SINK)
       }
@@ -164,7 +164,7 @@ export function createStream (options: Options): MplexStream {
 
       try {
         if (type === 'initiator') { // If initiator, open a new stream
-          send({ id, type: InitiatorMessageTypes.NEW_STREAM, data: uint8ArrayFromString(streamName) })
+          send({ id, type: InitiatorMessageTypes.NEW_STREAM, data: new Uint8ArrayList(uint8ArrayFromString(streamName)) })
         }
 
         const uint8ArrayList = new Uint8ArrayList()
@@ -174,13 +174,13 @@ export function createStream (options: Options): MplexStream {
 
           while (uint8ArrayList.length !== 0) {
             if (uint8ArrayList.length <= maxMsgSize) {
-              send({ id, type: Types.MESSAGE, data: uint8ArrayList.subarray() })
+              send({ id, type: Types.MESSAGE, data: uint8ArrayList.sublist() })
               uint8ArrayList.consume(uint8ArrayList.length)
               break
             }
 
             const toSend = uint8ArrayList.length - maxMsgSize
-            send({ id, type: Types.MESSAGE, data: uint8ArrayList.subarray(0, toSend) })
+            send({ id, type: Types.MESSAGE, data: uint8ArrayList.sublist(0, toSend) })
             uint8ArrayList.consume(toSend)
           }
         }

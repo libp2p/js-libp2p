@@ -41,19 +41,19 @@ export const ReceiverMessageTypes: Record<RECEIVER_NAME, CODE> = Object.freeze({
 export interface NewStreamMessage {
   id: number
   type: MessageTypes.NEW_STREAM
-  data: Uint8Array | Uint8ArrayList
+  data: Uint8ArrayList
 }
 
 export interface MessageReceiverMessage {
   id: number
   type: MessageTypes.MESSAGE_RECEIVER
-  data: Uint8Array | Uint8ArrayList
+  data: Uint8ArrayList
 }
 
 export interface MessageInitiatorMessage {
   id: number
   type: MessageTypes.MESSAGE_INITIATOR
-  data: Uint8Array | Uint8ArrayList
+  data: Uint8ArrayList
 }
 
 export interface CloseReceiverMessage {

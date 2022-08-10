@@ -15,9 +15,10 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { messageWithBytes } from './fixtures/utils.js'
 import type { Message } from '../src/message-types.js'
 import type { MplexStream } from '../src/mplex.js'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 function randomInput (min = 1, max = 100) {
-  return Array.from(Array(randomInt(min, max)), () => randomBytes(randomInt(1, 128)))
+  return Array.from(Array(randomInt(min, max)), () => new Uint8ArrayList(randomBytes(randomInt(1, 128))))
 }
 
 function expectMsgType (actual: keyof typeof MessageTypeNames, expected: keyof typeof MessageTypeNames) {
@@ -37,7 +38,7 @@ function expectMessages (messages: Message[], codes: Array<keyof typeof MessageT
     expect(msg).to.have.property('type', codes[index])
 
     if (msg.type === MessageTypes.MESSAGE_INITIATOR) {
-      expect(msg).to.have.property('data').that.equalBytes([index - 1])
+      expect(messageWithBytes(msg)).to.have.property('data').that.equalBytes([index - 1])
     }
   })
 }
@@ -47,14 +48,18 @@ function expectEchoedMessages (messages: Message[], codes: Array<keyof typeof Me
 }
 
 const msgToBuffer = (msg: Message) => {
-  if (msg.type === MessageTypes.NEW_STREAM || msg.type === MessageTypes.MESSAGE_INITIATOR || msg.type === MessageTypes.MESSAGE_RECEIVER) {
-    msg.data = msg.data.slice()
+  const m: any = {
+    ...msg
   }
 
-  return cborg.encode(msg)
+  if (msg.type === MessageTypes.NEW_STREAM || msg.type === MessageTypes.MESSAGE_INITIATOR || msg.type === MessageTypes.MESSAGE_RECEIVER) {
+    m.data = msg.data.slice()
+  }
+
+  return new Uint8ArrayList(cborg.encode(m))
 }
 
-const bufferToMessage = (buf: Uint8Array): Message => cborg.decode(buf)
+const bufferToMessage = (buf: Uint8Array | Uint8ArrayList): Message => cborg.decode(buf.subarray())
 
 interface onMessage {
   (msg: Message, initator: MplexStream, receiver: MplexStream): void
@@ -85,7 +90,7 @@ async function streamPair (n: number, onInitiatorMessage?: onMessage, onReceiver
   }
   const initiator = createStream({ id, send: mockInitiatorSend, type: 'initiator' })
   const receiver = createStream({ id, send: mockReceiverSend, type: 'receiver' })
-  const input = new Array(n).fill(0).map((_, i) => Uint8Array.from([i]))
+  const input = new Array(n).fill(0).map((_, i) => new Uint8ArrayList(Uint8Array.from([i])))
 
   void pipe(
     receiver,
@@ -211,7 +216,7 @@ describe('stream', () => {
     dataMsgs.forEach((msg, i) => {
       expect(msg.id).to.equal(id)
       expectMsgType(msg.type, MessageTypes.MESSAGE_INITIATOR)
-      expect(messageWithBytes(msg)).to.have.property('data').that.equalBytes(input[i])
+      expect(messageWithBytes(msg)).to.have.property('data').that.equalBytes(input[i].subarray())
     })
   })
 
@@ -232,7 +237,7 @@ describe('stream', () => {
     dataMsgs.forEach((msg, i) => {
       expect(msg.id).to.equal(id)
       expectMsgType(msg.type, MessageTypes.MESSAGE_RECEIVER)
-      expect(messageWithBytes(msg)).to.have.property('data').that.equalBytes(input[i])
+      expect(messageWithBytes(msg)).to.have.property('data').that.equalBytes(input[i].subarray())
     })
   })
 
@@ -280,7 +285,7 @@ describe('stream', () => {
     const input = {
       [Symbol.iterator]: function * () {
         for (let i = 0; i < randomInt(1, 10); i++) {
-          yield randomBytes(randomInt(1, 128))
+          yield new Uint8ArrayList(randomBytes(randomInt(1, 128)))
         }
         throw error
       }
@@ -305,7 +310,7 @@ describe('stream', () => {
     const input = {
       [Symbol.iterator]: function * () {
         for (let i = 0; i < randomInt(1, 10); i++) {
-          yield randomBytes(randomInt(1, 128))
+          yield new Uint8ArrayList(randomBytes(randomInt(1, 128)))
         }
         throw error
       }
@@ -544,7 +549,7 @@ describe('stream', () => {
 
     await pipe(
       [
-        new Uint8Array(maxMsgSize * 2)
+        new Uint8ArrayList(new Uint8Array(maxMsgSize * 2))
       ],
       stream,
       drain

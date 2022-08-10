@@ -16,6 +16,7 @@ import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface-stream-muxe
 import type { Stream } from '@libp2p/interface-connection'
 import type { MplexInit } from './index.js'
 import anySignal from 'any-signal'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:mplex')
 
@@ -41,7 +42,7 @@ function printMessage (msg: Message) {
 }
 
 export interface MplexStream extends Stream {
-  source: Pushable<Uint8Array>
+  source: Pushable<Uint8ArrayList>
 }
 
 interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {}
@@ -162,10 +163,6 @@ export class MplexStreamMuxer implements StreamMuxer {
     const send = (msg: Message) => {
       if (log.enabled) {
         log.trace('%s stream %s send', type, id, printMessage(msg))
-      }
-
-      if (msg.type === MessageTypes.NEW_STREAM || msg.type === MessageTypes.MESSAGE_INITIATOR || msg.type === MessageTypes.MESSAGE_RECEIVER) {
-        msg.data = msg.data instanceof Uint8Array ? msg.data : msg.data.subarray()
       }
 
       this._source.push(msg)
@@ -301,7 +298,7 @@ export class MplexStreamMuxer implements StreamMuxer {
         }
 
         // We got data from the remote, push it into our local stream
-        stream.source.push(message.data.subarray())
+        stream.source.push(message.data)
         break
       case MessageTypes.CLOSE_INITIATOR:
       case MessageTypes.CLOSE_RECEIVER:

@@ -13,6 +13,7 @@ import delay from 'delay'
 import pDefer from 'p-defer'
 import { decode } from '../src/decode.js'
 import { pushable } from 'it-pushable'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('mplex', () => {
   it('should restrict number of initiator streams per connection', async () => {
@@ -44,7 +45,7 @@ describe('mplex', () => {
       const source: NewStreamMessage[] = [{
         id: i,
         type: 0,
-        data: uint8ArrayFromString('17')
+        data: new Uint8ArrayList(uint8ArrayFromString('17'))
       }]
 
       const data = uint8ArrayConcat(await all(encode(source)))
@@ -56,7 +57,7 @@ describe('mplex', () => {
     const source: NewStreamMessage[] = [{
       id: 11,
       type: 0,
-      data: uint8ArrayFromString('17')
+      data: new Uint8ArrayList(uint8ArrayFromString('17'))
     }]
 
     const data = uint8ArrayConcat(await all(encode(source)))
@@ -91,7 +92,7 @@ describe('mplex', () => {
       const newStreamMessage: NewStreamMessage = {
         id,
         type: MessageTypes.NEW_STREAM,
-        data: new Uint8Array(1024)
+        data: new Uint8ArrayList(new Uint8Array(1024))
       }
       yield newStreamMessage
 
@@ -101,7 +102,7 @@ describe('mplex', () => {
         const dataMessage: MessageInitiatorMessage = {
           id,
           type: MessageTypes.MESSAGE_INITIATOR,
-          data: new Uint8Array(1024 * 1024)
+          data: new Uint8ArrayList(new Uint8Array(1024 * 1024))
         }
         yield dataMessage
 
