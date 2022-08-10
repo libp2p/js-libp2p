@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "build": "aegir build",
+    "clean": "rm -rfv node_modules dist *.lock *-lock.json ",
     "test": "aegir test",
     "format": "prettier --write src/*.ts"
   },
@@ -19,10 +20,13 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "@chainsafe/libp2p-noise": "git://github.com/ChainSafe/js-libp2p-noise.git#15f7a6e700a69c9a40abb82d989a55032d5cf687",
     "@libp2p/components": "^2.0.1",
-    "@libp2p/interface-transport": "^1.0.2",
+    "@libp2p/interface-connection": "^3.0.0",
+    "@libp2p/interface-transport": "^1.0.3",
     "@libp2p/interfaces": "^3.0.3",
     "@libp2p/logger": "^2.0.0",
+    "@libp2p/peer-id": "^1.1.15",
     "abortable-iterator": "^4.0.2",
     "it-merge": "^1.0.4",
     "p-defer": "^4.0.0",

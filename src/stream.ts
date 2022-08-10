@@ -6,6 +6,7 @@ import { Sink } from 'it-stream-types';
 import { pushable, Pushable } from 'it-pushable';
 import defer, { DeferredPromise } from 'p-defer';
 import merge from 'it-merge';
+import { Uint8ArrayList } from 'uint8arraylist'
 
 // const log = logger('libp2p:webrtc:connection');
 
@@ -32,8 +33,8 @@ export class WebRTCStream implements Stream {
   metadata: Record<string, any>;
   private readonly channel: RTCDataChannel;
 
-  source: Source<Uint8Array> = pushable();
-  sink: Sink<Uint8Array, Promise<void>>;
+  source: Source<Uint8ArrayList> = pushable();
+  sink: Sink<Uint8ArrayList | Uint8Array, Promise<void>>;
 
   // promises
   opened: DeferredPromise<void> = defer();
@@ -89,7 +90,7 @@ export class WebRTCStream implements Stream {
     };
   }
 
-  private async _sinkFn(src: Source<Uint8Array>): Promise<void> {
+  private async _sinkFn(src: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
     await this.opened.promise;
     if (closed || this.writeClosed) {
       return;
@@ -107,7 +108,7 @@ export class WebRTCStream implements Stream {
       if (closed || this.writeClosed) {
         break;
       }
-      this.channel.send(buf);
+      this.channel.send(buf.subarray());
     }
   }
 

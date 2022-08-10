@@ -1,15 +1,23 @@
+import * as sdp from './sdp';
+import * as p from '@libp2p/peer-id';
+import { WebRTCConnection } from './connection';
 import { WebRTCDialOptions } from './options';
+import { WebRTCStream } from './stream';
+import { Noise, stablelib } from '@chainsafe/libp2p-noise';
+import { Components } from '@libp2p/components';
 import { Connection } from '@libp2p/interface-connection';
-import { CreateListenerOptions } from '@libp2p/interface-transport';
-import { Listener, Transport } from '@libp2p/interface-transport';
-import { DialOptions, symbol } from '@libp2p/interface-transport';
+import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
+import  defer  from 'p-defer';
 
 const log = logger('libp2p:webrtc:transport');
+const utf8 = new TextEncoder();
 
 export class WebRTCTransport implements Transport {
+  private components: Components = new Components();
+
   async dial(ma: Multiaddr, options: DialOptions): Promise<Connection> {
     const rawConn = this._connect(ma, options);
     log('new outbound connection %s', rawConn, genUuid());
@@ -32,50 +40,69 @@ export class WebRTCTransport implements Transport {
     return true;
   }
 
-  todo_cb() {}
-
-  _connect(ma: Multiaddr, options: WebRTCDialOptions) {
-    //let peerConnection = new RTCPeerConnection();
+  async _connect(ma: Multiaddr, options: WebRTCDialOptions) {
+    let peerConnection = new RTCPeerConnection();
     // create data channel
-    // let handshakeChannel = peerConnection.createDataChannel("data", { negotiated: true, id: 1 })
+    let handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
     // let handshakeChannel = peerConnection.createDataChannel("data", { id: 1 })
     //
     //
     // create offer sdp
-    // console.log(offerSdp)
+    let offerSdp = await peerConnection.createOffer();
+    console.log(offerSdp);
     //
     //
     // generate random string for ufrag
-    //
+    let ufrag = genUuid();
     //
     //
     // munge sdp with ufrag = pwd
-    //
+    offerSdp = sdp.munge(offerSdp, ufrag);
     //
     //
     // set local description
-    //
+    peerConnection.setLocalDescription(offerSdp);
     //
     //
     // construct answer sdp from multiaddr
+    let answerSdp = sdp.fromMultiAddr(ma, ufrag);
     //
     //
     //
     // set remote description
+    peerConnection.setRemoteDescription(answerSdp);
     //
     //
     //
     // wait for peerconnection.onopen to fire, or for the datachannel to open
-    // openPromise = new Promise((res, rej) => {
-    // 	dc.onopen = res
-    // 	setTimeout(rej, 10000)
-    // })
-    // await openPromise
-    //
-    // do noise handshake + webrtc handshake as described in spec
-    //
-    //
-    // return Connection(peerconnection, initoptions)
-    throw new Error('not implemented');
+    let dataChannelOpenPromise = defer();
+    handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
+    setTimeout(dataChannelOpenPromise.reject, 10000);
+    await dataChannelOpenPromise;
+
+    let myPeerId = this.components.getPeerId();
+    let rps = ma.getPeerId();
+    if (!rps) {
+      throw new Error('TODO Do we really need a peer ID ?');
+    }    
+    let theirPeerId = p.peerIdFromString(rps);
+
+    // do noise handshake
+    //set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
+    //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
+    let fingerprintsPrologue = [myPeerId.multihash, theirPeerId.multihash].sort().join('');
+    let noise = new Noise(myPeerId.privateKey, undefined, stablelib, utf8.encode(fingerprintsPrologue));
+    let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: {direction: 'outbound', timeline: {open: 0}} });
+    await noise.secureOutbound(myPeerId, wrappedChannel, theirPeerId);
+
+    return new WebRTCConnection({
+      id: ma.toString(),
+      remoteAddr: ma,
+      localPeer: myPeerId,
+      direction: 'outbound',
+      pc: peerConnection,
+      credential_string: ufrag,
+      remotePeerId: theirPeerId,
+    });
   }
 }
