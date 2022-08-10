@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.3...v5.0.0) (2022-08-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* mulitplexed streams now emit `Uint8ArrayList`s and not `Uint8Array`s to handle the case for when transports have smaller chunk sizes than the multiplexer
+
+### Bug Fixes
+
+* emit uint8arraylists for data ([#201](https://github.com/libp2p/js-libp2p-mplex/issues/201)) ([e85ebab](https://github.com/libp2p/js-libp2p-mplex/commit/e85ebab233117643ba8b5acc33b7f90dc491f27d))
+
 ## [4.0.3](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.2...v4.0.3) (2022-08-03)
 
 
