@@ -156,7 +156,7 @@
     "p-retry": "^5.0.0",
     "p-settle": "^5.0.0",
     "private-ip": "^2.3.3",
-    "protons-runtime": "^2.0.2",
+    "protons-runtime": "^3.0.1",
     "retimer": "^3.0.0",
     "sanitize-filename": "^1.6.3",
     "set-delayed-interval": "^1.0.0",
