@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.2...v3.0.3) (2022-08-10)
+
+
+### Bug Fixes
+
+* update all deps ([#199](https://github.com/libp2p/js-libp2p-tcp/issues/199)) ([e3b1344](https://github.com/libp2p/js-libp2p-tcp/commit/e3b13441199ef84912d8ba14f7e42235313b12d6))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.1...v3.0.2) (2022-07-13)
 
 
