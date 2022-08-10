@@ -1,3 +1,11 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.1...v3.0.2) (2022-08-10)
+
+
+### Bug Fixes
+
+* update all deps ([#176](https://github.com/libp2p/js-libp2p-websockets/issues/176)) ([4825cd7](https://github.com/libp2p/js-libp2p-websockets/commit/4825cd7c5cec0cfc495b8b4286658927779bebdc))
+* update dial function return type to avoid Connection import issue ([#171](https://github.com/libp2p/js-libp2p-websockets/issues/171)) ([7ea9f83](https://github.com/libp2p/js-libp2p-websockets/commit/7ea9f83c0e4c3b42ba6e16e3dee1932ddce340f6))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.0...v3.0.1) (2022-07-12)
 
 
