@@ -1,19 +1,35 @@
-import { Stream } from '@libp2p/interface-connection';
-import { StreamStat } from '@libp2p/interface-connection';
+import { Stream, StreamStat, Direction, StreamTimeline } from '@libp2p/interface-connection';
 // import { logger } from '@libp2p/logger';
 import { Source } from 'it-stream-types';
 import { Sink } from 'it-stream-types';
 import { pushable, Pushable } from 'it-pushable';
 import defer, { DeferredPromise } from 'p-defer';
 import merge from 'it-merge';
-import { Uint8ArrayList } from 'uint8arraylist'
+import { Uint8ArrayList } from 'uint8arraylist';
 
 // const log = logger('libp2p:webrtc:connection');
+
+export class WebRTCStreamStat implements StreamStat {
+  direction: Direction;
+  timeline: StreamTimeline;
+  protocol: string;
+
+  constructor(d: Direction, t?: StreamTimeline) {
+    this.direction = d;
+    if (t) {
+      this.timeline = t;
+    } else {
+      this.timeline = { open: new Date().getTime() };
+    }
+    this.protocol = 'webrtc';
+  }
+}
 
 type StreamInitOpts = {
   channel: RTCDataChannel;
   metadata?: Record<string, any>;
-  stat: StreamStat;
+  stat?: StreamStat;
+  direction?: Direction;
 };
 
 export class WebRTCStream implements Stream {
@@ -46,8 +62,13 @@ export class WebRTCStream implements Stream {
   constructor(opts: StreamInitOpts) {
     this.channel = opts.channel;
     this.id = this.channel.label;
-
-    this.stat = opts.stat;
+    if (opts.stat) {
+      this.stat = opts.stat;
+    } else if (opts.direction) {
+      this.stat = new WebRTCStreamStat(opts.direction);
+    } else {
+      throw Error('Caller needs to specify at least direction, if not stat');
+    }
     switch (this.channel.readyState) {
       case 'open':
         this.opened.resolve();

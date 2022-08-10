@@ -45,7 +45,8 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   async _connect(ma: Multiaddr, options: WebRTCDialOptions) {
-    let registrar = (await this.components.promise).getRegistrar();
+    let comps = await this.components.promise;
+    // let registrar = (await this.components.promise).getRegistrar();
     let peerConnection = new RTCPeerConnection();
     // create data channel
     let handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
@@ -85,11 +86,11 @@ export class WebRTCTransport implements Transport, Initializable {
     setTimeout(dataChannelOpenPromise.reject, 10000);
     await dataChannelOpenPromise;
 
-    let myPeerId = this.components.getPeerId();
+    let myPeerId = comps.getPeerId();
     let rps = ma.getPeerId();
     if (!rps) {
       throw new Error('TODO Do we really need a peer ID ?');
-    }    
+    }
     let theirPeerId = p.peerIdFromString(rps);
 
     // do noise handshake
@@ -97,7 +98,7 @@ export class WebRTCTransport implements Transport, Initializable {
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
     let fingerprintsPrologue = [myPeerId.multihash, theirPeerId.multihash].sort().join('');
     let noise = new Noise(myPeerId.privateKey, undefined, stablelib, utf8.encode(fingerprintsPrologue));
-    let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: {direction: 'outbound', timeline: {open: 0}} });
+    let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 0 } } });
     await noise.secureOutbound(myPeerId, wrappedChannel, theirPeerId);
 
     return new WebRTCConnection({
