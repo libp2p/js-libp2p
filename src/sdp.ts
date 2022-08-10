@@ -43,7 +43,6 @@ function certhash(ma: Multiaddr): string {
     .filter((tup) => tup[0] == CERTHASH_CODE)
     .map((tup) => tup[1])[0];
   if (certhash_value) {
-    console.log(certhash_value);
     return certhash_value;
   } else {
     throw new Error("Couldn't find a webrtc component of multiaddr:" + ma.toString());
@@ -72,8 +71,8 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
 export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp) {
     desc.sdp = desc.sdp
-      .replace(/^a=ice-ufrag:.*$/, 'a=ice-ufrag:' + ufrag)
-      .replace(/^a=ice-pwd:.*$/, 'a=ice-pwd:' + ufrag)
+      .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n')
+      .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n')
       ;
       return desc;
   } else {
