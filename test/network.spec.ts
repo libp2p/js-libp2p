@@ -13,6 +13,8 @@ import type { DualKadDHT } from '../src/dual-kad-dht.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Sink } from 'it-stream-types'
+import { Uint8ArrayList } from 'uint8arraylist'
+import map from 'it-map'
 
 describe('Network', () => {
   let dht: DualKadDHT
@@ -61,6 +63,7 @@ describe('Network', () => {
             const data = await pipe(
               [msg.serialize()],
               lp.encode(),
+              source => map(source, arr => new Uint8ArrayList(arr)),
               async (source) => await all(source)
             )
 
@@ -70,7 +73,7 @@ describe('Network', () => {
               yield * array
             })()
 
-            const sink: Sink<Uint8Array> = async source => {
+            const sink: Sink<Uint8ArrayList | Uint8Array> = async source => {
               const res = await pipe(
                 source,
                 lp.decode(),

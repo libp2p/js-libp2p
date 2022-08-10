@@ -213,30 +213,34 @@ export class RoutingTable implements Startable, Initializable {
   /**
    * Find a specific peer by id
    */
-  async find (peer: PeerId) {
+  async find (peer: PeerId): Promise<PeerId | undefined> {
     const key = await utils.convertPeerId(peer)
     const closest = this.closestPeer(key)
 
     if (closest != null && peer.equals(closest)) {
       return closest
     }
+
+    return undefined
   }
 
   /**
    * Retrieve the closest peers to the given key
    */
-  closestPeer (key: Uint8Array) {
+  closestPeer (key: Uint8Array): PeerId | undefined {
     const res = this.closestPeers(key, 1)
 
     if (res.length > 0) {
       return res[0]
     }
+
+    return undefined
   }
 
   /**
    * Retrieve the `count`-closest peers to the given key
    */
-  closestPeers (key: Uint8Array, count = this.kBucketSize) {
+  closestPeers (key: Uint8Array, count = this.kBucketSize): PeerId[] {
     if (this.kb == null) {
       return []
     }

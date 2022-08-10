@@ -155,7 +155,7 @@ export class TestDHT {
     }
   }
 
-  async teardown () {
+  async teardown (): Promise<void> {
     await Promise.all(
       Array.from(this.peers.entries()).map(async ([_, { dht }]) => await dht.stop())
     )

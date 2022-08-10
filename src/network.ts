@@ -151,7 +151,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
   /**
    * Write a message to the given stream
    */
-  async _writeMessage (stream: Duplex<Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
+  async _writeMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }
@@ -169,7 +169,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
    * If no response is received after the specified timeout
    * this will error out.
    */
-  async _writeReadMessage (stream: Duplex<Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
+  async _writeReadMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }

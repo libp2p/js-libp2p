@@ -19,14 +19,16 @@ import type { Validators } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
 import { RoutingTable } from '../../src/routing-table/index.js'
 import type { Duplex } from 'it-stream-types'
-import { mockStream, mockConnection, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { mockStream } from '@libp2p/interface-mocks'
 import { Components } from '@libp2p/components'
 import { start } from '@libp2p/interfaces/startable'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import { Uint8ArrayList } from 'uint8arraylist'
+import map from 'it-map'
+import { stubInterface } from 'ts-sinon'
+import type { Connection } from '@libp2p/interface-connection'
 
 describe('rpc', () => {
   let peerId: PeerId
-  let otherPeerId: PeerId
   let rpc: RPC
   let providers: SinonStubbedInstance<Providers>
   let peerRouting: SinonStubbedInstance<PeerRouting>
@@ -36,7 +38,6 @@ describe('rpc', () => {
 
   beforeEach(async () => {
     peerId = await createPeerId()
-    otherPeerId = await createPeerId()
     datastore = new MemoryDatastore()
 
     const components = new Components({
@@ -78,10 +79,11 @@ describe('rpc', () => {
     const source = await pipe(
       [msg.serialize()],
       lp.encode(),
+      source => map(source, arr => new Uint8ArrayList(arr)),
       async (source) => await all(source)
     )
 
-    const duplexStream: Duplex<Uint8Array> = {
+    const duplexStream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> = {
       source,
       sink: async (source) => {
         const res = await pipe(
@@ -95,7 +97,7 @@ describe('rpc', () => {
 
     await rpc.onIncomingStream({
       stream: mockStream(duplexStream),
-      connection: await mockConnection(mockMultiaddrConnection(duplexStream, otherPeerId))
+      connection: stubInterface<Connection>()
     })
 
     return await defer.promise

@@ -58,7 +58,7 @@ export class PeerRouting implements Initializable {
    * Look if we are connected to a peer with the given id.
    * Returns its id and addresses, if found, otherwise `undefined`.
    */
-  async findPeerLocal (peer: PeerId) {
+  async findPeerLocal (peer: PeerId): Promise<PeerInfo | undefined> {
     let peerData
     const p = await this.routingTable.find(peer)
 
@@ -93,6 +93,8 @@ export class PeerRouting implements Initializable {
         protocols: []
       }
     }
+
+    return undefined
   }
 
   /**

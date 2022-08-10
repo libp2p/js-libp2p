@@ -106,7 +106,7 @@ export class ContentFetching implements Initializable {
         try {
           const dsKey = bufferToRecordKey(key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
-          await this.components.getDatastore().put(dsKey, fixupRec)
+          await this.components.getDatastore().put(dsKey, fixupRec.subarray())
         } catch (err: any) {
           this.log.error('Failed error correcting self', err)
         }
@@ -147,7 +147,7 @@ export class ContentFetching implements Initializable {
     // store the record locally
     const dsKey = bufferToRecordKey(key)
     this.log(`storing record for key ${dsKey.toString()}`)
-    await this.components.getDatastore().put(dsKey, record)
+    await this.components.getDatastore().put(dsKey, record.subarray())
 
     // put record to the closest peers
     yield * pipe(

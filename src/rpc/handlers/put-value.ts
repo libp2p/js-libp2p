@@ -46,7 +46,7 @@ export class PutValueHandler implements DHTMessageHandler, Initializable {
 
       record.timeReceived = new Date()
       const recordKey = bufferToRecordKey(record.key)
-      await this.components.getDatastore().put(recordKey, record.serialize())
+      await this.components.getDatastore().put(recordKey, record.serialize().subarray())
       this.log('put record for %b into datastore under key %k', key, recordKey)
     } catch (err: any) {
       this.log('did not put record for key %b into datastore %o', key, err)

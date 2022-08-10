@@ -65,7 +65,7 @@ export class Message {
       clusterLevelRaw: this.clusterLevelRaw,
       closerPeers: this.closerPeers.map(toPbPeer),
       providerPeers: this.providerPeers.map(toPbPeer),
-      record: this.record == null ? undefined : this.record.serialize()
+      record: this.record == null ? undefined : this.record.serialize().subarray()
     })
   }
 

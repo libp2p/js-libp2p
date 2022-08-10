@@ -69,7 +69,7 @@ describe('rpc - handlers - GetValue', () => {
     const value = uint8ArrayFromString('world')
     const record = new Libp2pRecord(key, value, new Date())
 
-    await datastore.put(utils.bufferToRecordKey(key), record.serialize())
+    await datastore.put(utils.bufferToRecordKey(key), record.serialize().subarray())
 
     const msg = new Message(T, key, 0)
 
