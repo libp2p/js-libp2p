@@ -4,19 +4,23 @@ import { WebRTCConnection } from './connection';
 import { WebRTCDialOptions } from './options';
 import { WebRTCStream } from './stream';
 import { Noise, stablelib } from '@chainsafe/libp2p-noise';
-import { Components } from '@libp2p/components';
+import { Components, Initializable } from '@libp2p/components';
 import { Connection } from '@libp2p/interface-connection';
 import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
-import  defer  from 'p-defer';
+import  defer, { DeferredPromise }  from 'p-defer';
 
 const log = logger('libp2p:webrtc:transport');
 const utf8 = new TextEncoder();
 
-export class WebRTCTransport implements Transport {
-  private components: Components = new Components();
+export class WebRTCTransport implements Transport, Initializable {
+  private components: DeferredPromise<Components> = defer();
+
+  init(components: Components): void {
+    this.components.resolve(components)
+  }
 
   async dial(ma: Multiaddr, options: DialOptions): Promise<Connection> {
     const rawConn = this._connect(ma, options);
@@ -41,6 +45,7 @@ export class WebRTCTransport implements Transport {
   }
 
   async _connect(ma: Multiaddr, options: WebRTCDialOptions) {
+    let registrar = (await this.components.promise).getRegistrar();
     let peerConnection = new RTCPeerConnection();
     // create data channel
     let handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
