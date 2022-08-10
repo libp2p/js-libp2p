@@ -97,6 +97,11 @@ describe('libp2p.metrics', () => {
     const result = await pipe(
       [bytes],
       stream,
+      async function * (source) {
+        for await (const chuck of source) {
+          yield chuck.subarray()
+        }
+      },
       async (source) => await toBuffer(source)
     )
 

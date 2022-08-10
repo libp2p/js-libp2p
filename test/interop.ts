@@ -1,6 +1,6 @@
 import { interopTests } from '@libp2p/interop'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
-import { createServer } from '@libp2p/daemon-server'
+import { createServer, Libp2p } from '@libp2p/daemon-server'
 import { createClient } from '@libp2p/daemon-client'
 import { createLibp2p, Libp2pOptions } from '../src/index.js'
 import { Noise } from '@chainsafe/libp2p-noise'
@@ -126,7 +126,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 
   const node = await createLibp2p(opts)
-  const server = await createServer(new Multiaddr('/ip4/0.0.0.0/tcp/0'), node)
+  const server = await createServer(new Multiaddr('/ip4/0.0.0.0/tcp/0'), node as any as Libp2p)
   await server.start()
 
   return {

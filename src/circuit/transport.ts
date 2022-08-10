@@ -21,6 +21,8 @@ import type { RelayConfig } from '../index.js'
 import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
+import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit')
 
@@ -135,7 +137,7 @@ export class Circuit implements Transport, Initializable {
         // @ts-expect-error dst peer will not be undefined
         const localAddr = new Multiaddr(request.srcPeer.addrs[0])
         const maConn = streamToMaConnection({
-          stream: virtualConnection,
+          stream: virtualConnection as Duplex<Uint8ArrayList, Uint8ArrayList|Uint8Array>,
           remoteAddr,
           localAddr
         })
@@ -203,7 +205,7 @@ export class Circuit implements Transport, Initializable {
 
       const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.getPeerId().toString()}`)
       const maConn = streamToMaConnection({
-        stream: virtualConnection,
+        stream: virtualConnection as Duplex<Uint8ArrayList, Uint8ArrayList|Uint8Array>,
         remoteAddr: ma,
         localAddr
       })

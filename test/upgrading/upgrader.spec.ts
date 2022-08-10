@@ -30,6 +30,7 @@ import { pEvent } from 'p-event'
 import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import drain from 'it-drain'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -409,7 +410,7 @@ describe('Upgrader', () => {
         source: (async function * () {
           // longer than the timeout
           await delay(1000)
-          yield new Uint8Array()
+          yield new Uint8ArrayList()
         }()),
         sink: drain
       })

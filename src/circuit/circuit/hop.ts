@@ -13,6 +13,7 @@ import type { Duplex } from 'it-stream-types'
 import type { Circuit } from '../transport.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit:hop')
 
@@ -84,7 +85,7 @@ export async function handleHop (hopRequest: HopRequest) {
     srcPeer: request.srcPeer
   }
 
-  let destinationStream: Duplex<Uint8Array>
+  let destinationStream: Duplex<Uint8ArrayList>
   try {
     log('performing STOP request')
     const result = await stop({
@@ -128,7 +129,7 @@ export interface HopConfig extends AbortOptions {
  * Performs a HOP request to a relay peer, to request a connection to another
  * peer. A new, virtual, connection will be created between the two via the relay.
  */
-export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
+export async function hop (options: HopConfig): Promise<Duplex<Uint8ArrayList>> {
   const {
     connection,
     request,

@@ -6,8 +6,6 @@ import { DefaultStats, StatsInit } from './stats.js'
 import type { ComponentMetricsUpdate, Metrics, Stats, TrackedMetric, TrackStreamOptions } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Duplex } from 'it-stream-types'
-
 const initialCounters: ['dataReceived', 'dataSent'] = [
   'dataReceived',
   'dataSent'
@@ -263,11 +261,11 @@ export class DefaultMetrics implements Metrics, Startable {
    * When the `PeerId` is known, `Metrics.updatePlaceholder` should be called
    * with the placeholder string returned from here, and the known `PeerId`.
    */
-  trackStream <T extends Duplex<Uint8Array>> (opts: TrackStreamOptions<T>): T {
+  trackStream (opts: TrackStreamOptions) {
     const { stream, remotePeer, protocol } = opts
 
     if (!this.running) {
-      return stream
+      return
     }
 
     const source = stream.source
@@ -275,7 +273,7 @@ export class DefaultMetrics implements Metrics, Startable {
       remotePeer,
       protocol,
       direction: 'in',
-      dataLength: chunk.length
+      dataLength: chunk.byteLength
     }))
 
     const sink = stream.sink
@@ -293,8 +291,6 @@ export class DefaultMetrics implements Metrics, Startable {
         sink
       )
     }
-
-    return stream
   }
 }
 
