@@ -6,7 +6,6 @@ import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord,
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const createPeerId = async (): Promise<PeerId> => {
   const peerId = await PeerIdFactory.createEd25519PeerId()
@@ -25,7 +24,7 @@ export class PubsubImplementation extends PubSubBaseProtocol {
     return RPC.decode(bytes)
   }
 
-  encodeRpc (rpc: PubSubRPC): Uint8ArrayList {
+  encodeRpc (rpc: PubSubRPC): Uint8Array {
     return RPC.encode(rpc)
   }
 
@@ -33,7 +32,7 @@ export class PubsubImplementation extends PubSubBaseProtocol {
     return RPC.Message.decode(bytes)
   }
 
-  encodeMessage (rpc: PubSubRPCMessage): Uint8ArrayList {
+  encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
     return RPC.Message.encode(rpc)
   }
 }

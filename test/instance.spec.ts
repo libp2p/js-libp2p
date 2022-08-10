@@ -8,7 +8,7 @@ class PubsubProtocol extends PubSubBaseProtocol {
     throw new Error('Method not implemented.')
   }
 
-  encodeRpc (rpc: PubSubRPC): Uint8ArrayList {
+  encodeRpc (rpc: PubSubRPC): Uint8Array {
     throw new Error('Method not implemented.')
   }
 
@@ -16,7 +16,7 @@ class PubsubProtocol extends PubSubBaseProtocol {
     throw new Error('Method not implemented.')
   }
 
-  encodeMessage (rpc: PubSubRPCMessage): Uint8ArrayList {
+  encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
     throw new Error('Method not implemented.')
   }
 

@@ -12,9 +12,8 @@ import { randomSeqno, toRpcMessage } from '../src/utils.js'
 import { keys } from '@libp2p/crypto'
 import type { PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
-function encodeMessage (message: PubSubRPCMessage): Uint8ArrayList {
+function encodeMessage (message: PubSubRPCMessage): Uint8Array {
   return RPC.Message.encode(message)
 }
 

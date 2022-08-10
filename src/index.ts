@@ -485,13 +485,13 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
    * Encode RPC object into a Uint8Array.
    * This can be override to use a custom router protobuf.
    */
-  abstract encodeRpc (rpc: PubSubRPC): Uint8ArrayList
+  abstract encodeRpc (rpc: PubSubRPC): Uint8Array
 
   /**
    * Encode RPC object into a Uint8Array.
    * This can be override to use a custom router protobuf.
    */
-  abstract encodeMessage (rpc: PubSubRPCMessage): Uint8ArrayList
+  abstract encodeMessage (rpc: PubSubRPCMessage): Uint8Array
 
   /**
    * Send an rpc object to a peer

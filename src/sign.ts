@@ -5,14 +5,13 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { keys } from '@libp2p/crypto'
 import type { PubSubRPCMessage, SignedMessage } from '@libp2p/interface-pubsub'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
 
 /**
  * Signs the provided message with the given `peerId`
  */
-export async function signMessage (peerId: PeerId, message: { from: PeerId, topic: string, data: Uint8Array, sequenceNumber: bigint }, encode: (rpc: PubSubRPCMessage) => Uint8ArrayList): Promise<SignedMessage> {
+export async function signMessage (peerId: PeerId, message: { from: PeerId, topic: string, data: Uint8Array, sequenceNumber: bigint }, encode: (rpc: PubSubRPCMessage) => Uint8Array): Promise<SignedMessage> {
   if (peerId.privateKey == null) {
     throw new Error('Cannot sign message, no private key present')
   }
@@ -46,7 +45,7 @@ export async function signMessage (peerId: PeerId, message: { from: PeerId, topi
 /**
  * Verifies the signature of the given message
  */
-export async function verifySignature (message: SignedMessage, encode: (rpc: PubSubRPCMessage) => Uint8ArrayList) {
+export async function verifySignature (message: SignedMessage, encode: (rpc: PubSubRPCMessage) => Uint8Array) {
   if (message.type !== 'signed') {
     throw new Error('Message type must be "signed" to be verified')
   }
