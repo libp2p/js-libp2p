@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.3...v3.0.4) (2022-08-10)
+
+
+### Bug Fixes
+
+* update all deps ([#174](https://github.com/libp2p/js-libp2p-floodsub/issues/174)) ([057a01c](https://github.com/libp2p/js-libp2p-floodsub/commit/057a01ced6ad63533b27b4e0aed1e2e17536a131))
+
 ## [3.0.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.2...v3.0.3) (2022-08-03)
 
 
