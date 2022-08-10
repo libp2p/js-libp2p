@@ -3,6 +3,7 @@ import { logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:stream:converter')
 
@@ -29,7 +30,7 @@ interface StreamOptions {
 }
 
 interface StreamProperties {
-  stream: Duplex<Uint8Array>
+  stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
   remoteAddr: Multiaddr
   localAddr: Multiaddr
 }
@@ -41,6 +42,13 @@ interface StreamProperties {
 export function streamToMaConnection (props: StreamProperties, options: StreamOptions = {}) {
   const { stream, remoteAddr } = props
   const { sink, source } = stream
+
+  const mapSource = (async function * () {
+    for await (const list of source) {
+      yield * list
+    }
+  }())
+
   const maConn: MultiaddrConnection = {
     async sink (source) {
       if (options.signal != null) {
@@ -60,7 +68,7 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
         }
       }
     },
-    source: (options.signal != null) ? abortableSource(source, options.signal) : source,
+    source: (options.signal != null) ? abortableSource(mapSource, options.signal) : mapSource,
     remoteAddr,
     /** @type {Timeline} */
     timeline: { open: Date.now(), close: undefined },
