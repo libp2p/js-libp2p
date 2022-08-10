@@ -20,7 +20,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "../js-libp2p-noise",
+    "@chainsafe/libp2p-noise": "git://github.com/ChainSafe/js-libp2p-noise.git#15f7a6e700a69c9a40abb82d989a55032d5cf687",
     "@libp2p/components": "^2.0.3",
     "@libp2p/interface-connection": "^3.0.0",
     "@libp2p/interface-transport": "^1.0.3",
