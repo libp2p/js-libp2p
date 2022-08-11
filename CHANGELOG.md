@@ -1,3 +1,10 @@
+## [3.0.5](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.4...v3.0.5) (2022-08-11)
+
+
+### Dependencies
+
+* update protons to 5.1.0 ([#175](https://github.com/libp2p/js-libp2p-floodsub/issues/175)) ([c41d1fa](https://github.com/libp2p/js-libp2p-floodsub/commit/c41d1fa91e917fa4b80c4ec2e0b58407fb2b5546))
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.3...v3.0.4) (2022-08-10)
 
 
