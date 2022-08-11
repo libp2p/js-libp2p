@@ -1,8 +1,6 @@
 {
   "lerna": "4.0.0",
-  "packages": [
-    "packages/*"
-  ],
+  "useWorkspaces": true,
   "version": "independent",
   "command": {
     "run": {
