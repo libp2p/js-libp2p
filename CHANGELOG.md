@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.0...v4.0.1) (2022-08-11)
+
+
+### Dependencies
+
+* update protons to 5.1.0 ([#21](https://github.com/libp2p/js-libp2p-peer-record/issues/21)) ([9d2e881](https://github.com/libp2p/js-libp2p-peer-record/commit/9d2e88165271c283a6ded4837bc2681fd8cf2f0a))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-peer-record/compare/v3.0.0...v4.0.0) (2022-08-03)
 
 
