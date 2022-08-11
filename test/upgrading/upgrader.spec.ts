@@ -30,6 +30,8 @@ import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import drain from 'it-drain'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core'
 
 const addrs = [
   new Multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -57,7 +59,9 @@ describe('Upgrader', () => {
     localComponents = new Components({
       peerId: localPeer,
       connectionGater: mockConnectionGater(),
-      registrar: mockRegistrar()
+      registrar: mockRegistrar(),
+      peerStore: new PersistentPeerStore(),
+      datastore: new MemoryDatastore()
     })
     localMuxerFactory = new Mplex()
     localUpgrader = new DefaultUpgrader(localComponents, {
@@ -73,7 +77,9 @@ describe('Upgrader', () => {
     remoteComponents = new Components({
       peerId: remotePeer,
       connectionGater: mockConnectionGater(),
-      registrar: mockRegistrar()
+      registrar: mockRegistrar(),
+      peerStore: new PersistentPeerStore(),
+      datastore: new MemoryDatastore()
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
