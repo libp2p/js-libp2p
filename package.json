@@ -9,7 +9,7 @@
   "scripts": {
     "build": "aegir build",
     "clean": "rm -rfv node_modules dist *.lock *-lock.json ",
-    "test": "aegir test",
+    "test": "aegir test --target browser",
     "format": "prettier --write src/*.ts"
   },
   "devDependencies": {
@@ -17,11 +17,14 @@
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/parser": "^5.32.0",
     "aegir": "^37.4.6",
+    "it-all": "^1.0.6",
+    "it-first": "^1.0.7",
     "prettier": "^2.7.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "uint8arrays": "^3.1.0"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "git://github.com/ChainSafe/js-libp2p-noise.git#15f7a6e700a69c9a40abb82d989a55032d5cf687",
+    "@chainsafe/libp2p-noise": "^8.0.0",
     "@libp2p/components": "^2.0.3",
     "@libp2p/interface-connection": "^3.0.1",
     "@libp2p/interface-registrar": "^2.0.3",

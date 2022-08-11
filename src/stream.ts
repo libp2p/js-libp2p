@@ -1,14 +1,15 @@
 import { Stream } from '@libp2p/interface-connection';
 import { StreamStat } from '@libp2p/interface-connection';
-// import { logger } from '@libp2p/logger';
 import { Source } from 'it-stream-types';
 import { Sink } from 'it-stream-types';
 import { pushable, Pushable } from 'it-pushable';
 import defer, { DeferredPromise } from 'p-defer';
 import merge from 'it-merge';
 import { Uint8ArrayList } from 'uint8arraylist';
+import { fromString } from 'uint8arrays/from-string';
+import { logger } from '@libp2p/logger';
 
-// const log = logger('libp2p:webrtc:connection');
+const log = logger('libp2p:webrtc:stream');
 
 type StreamInitOpts = {
   channel: RTCDataChannel;
@@ -42,6 +43,8 @@ export class WebRTCStream implements Stream {
   writeClosed: boolean = false;
   readClosed: boolean = false;
   closed: boolean = false;
+
+  // testing
 
   constructor(opts: StreamInitOpts) {
     this.channel = opts.channel;
@@ -77,7 +80,15 @@ export class WebRTCStream implements Stream {
       if (this.readClosed || this.closed) {
         return;
       }
-      (this.source as Pushable<Uint8Array>).push(data);
+
+      let res: Uint8Array;
+      if (typeof data == 'string') {
+        res = fromString(data);
+      } else {
+        res = new Uint8Array(data as ArrayBuffer);
+      }
+      log.trace(`[stream:${this.id}][${this.stat.direction}] received message: length: ${res.length} ${res}`);
+      (this.source as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(res));
     };
 
     this.channel.onclose = (_evt) => {
@@ -131,7 +142,7 @@ export class WebRTCStream implements Stream {
    */
   closeRead(): void {
     this.readClosed = true;
-    (this.source as Pushable<Uint8Array>).end();
+    (this.source as Pushable<Uint8ArrayList>).end();
     if (this.readClosed && this.writeClosed) {
       this.close();
     }

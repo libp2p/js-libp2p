@@ -64,12 +64,14 @@ export class WebRTCConnection implements ic.Connection {
   private handleIncomingStreams() {
     let metrics = this.components.getMetrics();
     this.peerConnection.ondatachannel = async ({ channel }) => {
+      const logPrefix = `[stream:${channel.label}][inbound]`;
+      log.trace(`incoming stream - ${channel.label}`);
       let [openPromise, abortPromise] = [defer(), defer()];
       let controller = new TimeoutController(OPEN_STREAM_TIMEOUT);
       controller.signal.onabort = () => abortPromise.resolve();
       channel.onopen = () => openPromise.resolve();
 
-      await Promise.race([openPromise, abortPromise]);
+      await Promise.race([openPromise.promise, abortPromise.promise]);
       if (controller.signal.aborted) {
         // TODO: Better errors
         throw Error(controller.signal.reason);
@@ -87,10 +89,14 @@ export class WebRTCConnection implements ic.Connection {
       let registrar = this.components.getRegistrar();
       let protocols = registrar.getProtocols();
 
+      log.trace(`${logPrefix} supported protocols - ${protocols}`);
+
       let { stream, protocol } = await mshandle(rawStream, protocols, { signal: controller.signal });
       if (metrics) {
         metrics.trackStream({ stream, protocol, remotePeer: this.remotePeer });
       }
+
+      log.trace(`${logPrefix} handled protocol - ${protocol}`);
 
       rawStream.stat.protocol = protocol;
       let result = this.wrapMsStream(rawStream, stream);
@@ -139,7 +145,7 @@ export class WebRTCConnection implements ic.Connection {
   }
 
   async newStream(protocols: string | string[], options: AbortOptions = {}): Promise<ic.Stream> {
-    let label = genUuid();
+    let label = genUuid().slice(0, 8);
     let openPromise = defer();
     let abortedPromise = defer();
     let controller: TimeoutController | undefined;
@@ -161,8 +167,10 @@ export class WebRTCConnection implements ic.Connection {
       abortedPromise.resolve();
     };
 
+    log.trace(`[stream: ${label}] peerconnection state: ${this.peerConnection.connectionState}`);
     let channel = this.peerConnection.createDataChannel(label);
     channel.onopen = (_evt) => {
+      log.trace(`[stream: ${label}] data channel opened`);
       openPromise.resolve();
     };
     channel.onerror = (_evt) => {
@@ -171,7 +179,8 @@ export class WebRTCConnection implements ic.Connection {
       abortedPromise.resolve();
     };
 
-    await Promise.race([openPromise, abortedPromise]);
+    log.trace(`[stream: ${label}] datachannel state: ${channel.readyState}`);
+    await Promise.race([openPromise.promise, abortedPromise.promise]);
 
     // check for error
     if (openError) {
