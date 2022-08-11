@@ -214,7 +214,10 @@ export namespace RPC {
           writer.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          subscriptions: [],
+          messages: []
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -223,11 +226,9 @@ export namespace RPC {
 
           switch (tag >>> 3) {
             case 1:
-              obj.subscriptions = obj.subscriptions ?? []
               obj.subscriptions.push(RPC.SubOpts.codec().decode(reader, reader.uint32()))
               break
             case 2:
-              obj.messages = obj.messages ?? []
               obj.messages.push(RPC.Message.codec().decode(reader, reader.uint32()))
               break
             case 3:
@@ -237,17 +238,6 @@ export namespace RPC {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        obj.subscriptions = obj.subscriptions ?? []
-        obj.messages = obj.messages ?? []
-
-        if (obj.subscriptions == null) {
-          throw new Error('Protocol error: value for required field "subscriptions" was not found in protobuf')
-        }
-
-        if (obj.messages == null) {
-          throw new Error('Protocol error: value for required field "messages" was not found in protobuf')
         }
 
         return obj
@@ -323,7 +313,12 @@ export namespace ControlMessage {
           writer.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          ihave: [],
+          iwant: [],
+          graft: [],
+          prune: []
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -332,46 +327,21 @@ export namespace ControlMessage {
 
           switch (tag >>> 3) {
             case 1:
-              obj.ihave = obj.ihave ?? []
               obj.ihave.push(ControlIHave.codec().decode(reader, reader.uint32()))
               break
             case 2:
-              obj.iwant = obj.iwant ?? []
               obj.iwant.push(ControlIWant.codec().decode(reader, reader.uint32()))
               break
             case 3:
-              obj.graft = obj.graft ?? []
               obj.graft.push(ControlGraft.codec().decode(reader, reader.uint32()))
               break
             case 4:
-              obj.prune = obj.prune ?? []
               obj.prune.push(ControlPrune.codec().decode(reader, reader.uint32()))
               break
             default:
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        obj.ihave = obj.ihave ?? []
-        obj.iwant = obj.iwant ?? []
-        obj.graft = obj.graft ?? []
-        obj.prune = obj.prune ?? []
-
-        if (obj.ihave == null) {
-          throw new Error('Protocol error: value for required field "ihave" was not found in protobuf')
-        }
-
-        if (obj.iwant == null) {
-          throw new Error('Protocol error: value for required field "iwant" was not found in protobuf')
-        }
-
-        if (obj.graft == null) {
-          throw new Error('Protocol error: value for required field "graft" was not found in protobuf')
-        }
-
-        if (obj.prune == null) {
-          throw new Error('Protocol error: value for required field "prune" was not found in protobuf')
         }
 
         return obj
@@ -423,7 +393,9 @@ export namespace ControlIHave {
           writer.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          messageIDs: []
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -435,19 +407,12 @@ export namespace ControlIHave {
               obj.topic = reader.string()
               break
             case 2:
-              obj.messageIDs = obj.messageIDs ?? []
               obj.messageIDs.push(reader.bytes())
               break
             default:
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        obj.messageIDs = obj.messageIDs ?? []
-
-        if (obj.messageIDs == null) {
-          throw new Error('Protocol error: value for required field "messageIDs" was not found in protobuf')
         }
 
         return obj
@@ -493,7 +458,9 @@ export namespace ControlIWant {
           writer.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          messageIDs: []
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -502,19 +469,12 @@ export namespace ControlIWant {
 
           switch (tag >>> 3) {
             case 1:
-              obj.messageIDs = obj.messageIDs ?? []
               obj.messageIDs.push(reader.bytes())
               break
             default:
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        obj.messageIDs = obj.messageIDs ?? []
-
-        if (obj.messageIDs == null) {
-          throw new Error('Protocol error: value for required field "messageIDs" was not found in protobuf')
         }
 
         return obj
@@ -628,7 +588,9 @@ export namespace ControlPrune {
           writer.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          peers: []
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -640,7 +602,6 @@ export namespace ControlPrune {
               obj.topic = reader.string()
               break
             case 2:
-              obj.peers = obj.peers ?? []
               obj.peers.push(PeerInfo.codec().decode(reader, reader.uint32()))
               break
             case 3:
@@ -650,12 +611,6 @@ export namespace ControlPrune {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        obj.peers = obj.peers ?? []
-
-        if (obj.peers == null) {
-          throw new Error('Protocol error: value for required field "peers" was not found in protobuf')
         }
 
         return obj
