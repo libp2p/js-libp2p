@@ -7,6 +7,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { Duplex } from 'it-stream-types'
+import map from 'it-map'
 
 const log = logger('libp2p:plaintext')
 const PROTOCOL = '/plaintext/2.0.0'
@@ -47,7 +48,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
   // Get the Exchange message
   // @ts-expect-error needs to be generator
   const response = (await lp.decode.fromReader(shake.reader).next()).value
-  const id = Exchange.decode(response.slice())
+  const id = Exchange.decode(response)
   log('read pubkey exchange from peer %p', remoteId)
 
   let peerId
@@ -81,8 +82,12 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
   log('plaintext key exchange completed successfully with peer %p', peerId)
 
   shake.rest()
+
   return {
-    conn: shake.stream,
+    conn: {
+      sink: shake.stream.sink,
+      source: map(shake.stream.source, (buf) => buf.subarray())
+    },
     remotePeer: peerId,
     remoteEarlyData: new Uint8Array()
   }

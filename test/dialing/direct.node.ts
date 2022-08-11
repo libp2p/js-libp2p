@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from '../../src/insecure/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 
 import delay from 'delay'
@@ -245,7 +245,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => {
@@ -278,7 +278,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -298,7 +298,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -325,7 +325,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -354,7 +354,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -418,7 +418,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -444,7 +444,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -467,7 +467,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ],
       connectionProtector: new PreSharedKeyConnectionProtector({
         psk: swarmKeyBuffer
@@ -505,7 +505,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -541,7 +541,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 

@@ -22,7 +22,7 @@ export interface StreamHandlerOptions {
 
 export class StreamHandler {
   private readonly stream: Stream
-  private readonly shake: Handshake
+  private readonly shake: Handshake<Uint8ArrayList | Uint8Array>
   private readonly decoder: Source<Uint8ArrayList>
 
   constructor (options: StreamHandlerOptions) {
@@ -56,7 +56,7 @@ export class StreamHandler {
    */
   write (msg: CircuitRelay) {
     log('write message type %s', msg.type)
-    this.shake.write(lp.encode.single(CircuitRelay.encode(msg)).slice())
+    this.shake.write(lp.encode.single(CircuitRelay.encode(msg)))
   }
 
   /**

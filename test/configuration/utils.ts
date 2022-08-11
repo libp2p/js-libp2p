@@ -10,7 +10,6 @@ import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import * as cborg from 'cborg'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -33,16 +32,16 @@ class MockPubSub extends PubSubBaseProtocol {
     return cborg.decode(bytes)
   }
 
-  encodeRpc (rpc: PubSubRPC): Uint8ArrayList {
-    return new Uint8ArrayList(cborg.encode(rpc))
+  encodeRpc (rpc: PubSubRPC): Uint8Array {
+    return cborg.encode(rpc)
   }
 
   decodeMessage (bytes: Uint8Array): PubSubRPCMessage {
     return cborg.decode(bytes)
   }
 
-  encodeMessage (rpc: PubSubRPCMessage): Uint8ArrayList {
-    return new Uint8ArrayList(cborg.encode(rpc))
+  encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
+    return cborg.encode(rpc)
   }
 
   async publishMessage (from: PeerId, message: Message): Promise<PublishResult> {
