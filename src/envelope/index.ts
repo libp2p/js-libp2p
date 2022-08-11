@@ -1,5 +1,6 @@
 import errCode from 'err-code'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { codes } from '../errors.js'
 import { Envelope as Protobuf } from './envelope.js'
@@ -12,7 +13,7 @@ import { unsigned } from 'uint8-varint'
 export interface EnvelopeInit {
   peerId: PeerId
   payloadType: Uint8Array
-  payload: Uint8Array | Uint8ArrayList
+  payload: Uint8Array
   signature: Uint8Array
 }
 
@@ -73,9 +74,9 @@ export class RecordEnvelope implements Envelope {
 
   public peerId: PeerId
   public payloadType: Uint8Array
-  public payload: Uint8Array | Uint8ArrayList
+  public payload: Uint8Array
   public signature: Uint8Array
-  public marshaled?: Uint8ArrayList
+  public marshaled?: Uint8Array
 
   /**
    * The Envelope is responsible for keeping an arbitrary signed record
@@ -93,7 +94,7 @@ export class RecordEnvelope implements Envelope {
   /**
    * Marshal the envelope content
    */
-  marshal (): Uint8ArrayList {
+  marshal (): Uint8Array {
     if (this.peerId.publicKey == null) {
       throw new Error('Missing public key')
     }
@@ -114,7 +115,7 @@ export class RecordEnvelope implements Envelope {
    * Verifies if the other Envelope is identical to this one
    */
   equals (other: Envelope) {
-    return this.marshal().equals(other.marshal())
+    return uint8ArrayEquals(this.marshal(), other.marshal())
   }
 
   /**

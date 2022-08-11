@@ -1,9 +1,9 @@
 /* eslint-disable import/export */
 /* eslint-disable @typescript-eslint/no-namespace */
 
-import { encodeMessage, decodeMessage, message, bytes } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Codec } from 'protons-runtime'
 
 export interface Envelope {
   publicKey: Uint8Array
@@ -13,16 +13,102 @@ export interface Envelope {
 }
 
 export namespace Envelope {
+  let _codec: Codec<Envelope>
+
   export const codec = (): Codec<Envelope> => {
-    return message<Envelope>({
-      1: { name: 'publicKey', codec: bytes },
-      2: { name: 'payloadType', codec: bytes },
-      3: { name: 'payload', codec: bytes },
-      5: { name: 'signature', codec: bytes }
-    })
+    if (_codec == null) {
+      _codec = message<Envelope>((obj, writer, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          writer.fork()
+        }
+
+        if (obj.publicKey != null) {
+          writer.uint32(10)
+          writer.bytes(obj.publicKey)
+        } else {
+          throw new Error('Protocol error: required field "publicKey" was not found in object')
+        }
+
+        if (obj.payloadType != null) {
+          writer.uint32(18)
+          writer.bytes(obj.payloadType)
+        } else {
+          throw new Error('Protocol error: required field "payloadType" was not found in object')
+        }
+
+        if (obj.payload != null) {
+          writer.uint32(26)
+          writer.bytes(obj.payload)
+        } else {
+          throw new Error('Protocol error: required field "payload" was not found in object')
+        }
+
+        if (obj.signature != null) {
+          writer.uint32(42)
+          writer.bytes(obj.signature)
+        } else {
+          throw new Error('Protocol error: required field "signature" was not found in object')
+        }
+
+        if (opts.lengthDelimited !== false) {
+          writer.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          publicKey: new Uint8Array(0),
+          payloadType: new Uint8Array(0),
+          payload: new Uint8Array(0),
+          signature: new Uint8Array(0)
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.publicKey = reader.bytes()
+              break
+            case 2:
+              obj.payloadType = reader.bytes()
+              break
+            case 3:
+              obj.payload = reader.bytes()
+              break
+            case 5:
+              obj.signature = reader.bytes()
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        if (obj.publicKey == null) {
+          throw new Error('Protocol error: value for required field "publicKey" was not found in protobuf')
+        }
+
+        if (obj.payloadType == null) {
+          throw new Error('Protocol error: value for required field "payloadType" was not found in protobuf')
+        }
+
+        if (obj.payload == null) {
+          throw new Error('Protocol error: value for required field "payload" was not found in protobuf')
+        }
+
+        if (obj.signature == null) {
+          throw new Error('Protocol error: value for required field "signature" was not found in protobuf')
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
-  export const encode = (obj: Envelope): Uint8ArrayList => {
+  export const encode = (obj: Envelope): Uint8Array => {
     return encodeMessage(obj, Envelope.codec())
   }
 

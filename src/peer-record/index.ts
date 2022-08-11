@@ -48,7 +48,7 @@ export class PeerRecord {
   public seqNumber: bigint
   public domain = PeerRecord.DOMAIN
   public codec = PeerRecord.CODEC
-  private marshaled?: Uint8ArrayList
+  private marshaled?: Uint8Array
 
   constructor (init: PeerRecordInit) {
     const { peerId, multiaddrs, seqNumber } = init
