@@ -176,7 +176,7 @@
     "p-defer": "^4.0.0",
     "p-queue": "^7.2.0",
     "private-ip": "^2.3.3",
-    "protons-runtime": "^3.0.1",
+    "protons-runtime": "^3.1.0",
     "timeout-abort-controller": "^3.0.0",
     "uint8arraylist": "^2.0.0",
     "uint8arrays": "^3.0.0",
@@ -200,7 +200,7 @@
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-retry": "^5.0.0",
-    "protons": "^5.0.0",
+    "protons": "^5.1.0",
     "sinon": "^14.0.0",
     "ts-sinon": "^2.0.2",
     "which": "^2.0.2"

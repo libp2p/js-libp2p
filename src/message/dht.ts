@@ -190,7 +190,9 @@ export namespace Message {
             writer.ldelim()
           }
         }, (reader, length) => {
-          const obj: any = {}
+          const obj: any = {
+            addrs: []
+          }
 
           const end = length == null ? reader.len : reader.pos + length
 
@@ -202,7 +204,6 @@ export namespace Message {
                 obj.id = reader.bytes()
                 break
               case 2:
-                obj.addrs = obj.addrs ?? []
                 obj.addrs.push(reader.bytes())
                 break
               case 3:
@@ -212,12 +213,6 @@ export namespace Message {
                 reader.skipType(tag & 7)
                 break
             }
-          }
-
-          obj.addrs = obj.addrs ?? []
-
-          if (obj.addrs == null) {
-            throw new Error('Protocol error: value for required field "addrs" was not found in protobuf')
           }
 
           return obj
@@ -287,7 +282,10 @@ export namespace Message {
           writer.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          closerPeers: [],
+          providerPeers: []
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -308,28 +306,15 @@ export namespace Message {
               obj.record = reader.bytes()
               break
             case 8:
-              obj.closerPeers = obj.closerPeers ?? []
               obj.closerPeers.push(Message.Peer.codec().decode(reader, reader.uint32()))
               break
             case 9:
-              obj.providerPeers = obj.providerPeers ?? []
               obj.providerPeers.push(Message.Peer.codec().decode(reader, reader.uint32()))
               break
             default:
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        obj.closerPeers = obj.closerPeers ?? []
-        obj.providerPeers = obj.providerPeers ?? []
-
-        if (obj.closerPeers == null) {
-          throw new Error('Protocol error: value for required field "closerPeers" was not found in protobuf')
-        }
-
-        if (obj.providerPeers == null) {
-          throw new Error('Protocol error: value for required field "providerPeers" was not found in protobuf')
         }
 
         return obj
