@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.2...v1.0.3) (2022-08-11)
+
+
+### Dependencies
+
+* update protons to 5.1.0 ([#272](https://github.com/libp2p/js-libp2p-crypto/issues/272)) ([23a031a](https://github.com/libp2p/js-libp2p-crypto/commit/23a031ab554677ee0b7c5d632e5457edf5615954))
+
 ## [1.0.2](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.1...v1.0.2) (2022-08-03)
 
 
