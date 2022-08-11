@@ -1,3 +1,10 @@
+## [3.1.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.1.1...v3.1.2) (2022-08-11)
+
+
+### Dependencies
+
+* **dev:** update protons to 5.1.0 ([#98](https://github.com/libp2p/js-libp2p-pubsub/issues/98)) ([aa6dc45](https://github.com/libp2p/js-libp2p-pubsub/commit/aa6dc453dd2d5cdafa58b5c75571f9ec9f69d197))
+
 ## [3.1.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.1.0...v3.1.1) (2022-08-10)
 
 
