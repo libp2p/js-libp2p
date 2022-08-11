@@ -35,7 +35,7 @@ const createNode = async () => {
       stream,
       async function (source) {
         for await (const msg of source) {
-          console.log(`from: ${protocol}, msg: ${uint8ArrayToString(msg)}`)
+          console.log(`from: ${protocol}, msg: ${uint8ArrayToString(msg.subarray())}`)
         }
       }
     ).finally(() => {

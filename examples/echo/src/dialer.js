@@ -51,7 +51,7 @@ async function run() {
       // For each chunk of data
       for await (const data of source) {
         // Output the data
-        console.log('received echo:', uint8ArrayToString(data))
+        console.log('received echo:', uint8ArrayToString(data.subarray()))
       }
     }
   )
