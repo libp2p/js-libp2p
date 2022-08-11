@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.2...v3.0.3) (2022-08-11)
+
+
+### Dependencies
+
+* update protons to 5.1.0 ([#364](https://github.com/libp2p/js-libp2p-kad-dht/issues/364)) ([52323ab](https://github.com/libp2p/js-libp2p-kad-dht/commit/52323ab051bc6a02084c5653d9998aaa5721b49f))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.1...v3.0.2) (2022-08-10)
 
 
