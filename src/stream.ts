@@ -1,35 +1,20 @@
-import { Stream, StreamStat, Direction, StreamTimeline } from '@libp2p/interface-connection';
-// import { logger } from '@libp2p/logger';
+import { Stream } from '@libp2p/interface-connection';
+import { StreamStat } from '@libp2p/interface-connection';
 import { Source } from 'it-stream-types';
 import { Sink } from 'it-stream-types';
 import { pushable, Pushable } from 'it-pushable';
 import defer, { DeferredPromise } from 'p-defer';
 import merge from 'it-merge';
 import { Uint8ArrayList } from 'uint8arraylist';
+import { fromString } from 'uint8arrays/from-string';
+import { logger } from '@libp2p/logger';
 
-// const log = logger('libp2p:webrtc:connection');
-
-export class WebRTCStreamStat implements StreamStat {
-  direction: Direction;
-  timeline: StreamTimeline;
-  protocol: string;
-
-  constructor(d: Direction, t?: StreamTimeline) {
-    this.direction = d;
-    if (t) {
-      this.timeline = t;
-    } else {
-      this.timeline = { open: new Date().getTime() };
-    }
-    this.protocol = 'webrtc';
-  }
-}
+const log = logger('libp2p:webrtc:stream');
 
 type StreamInitOpts = {
   channel: RTCDataChannel;
   metadata?: Record<string, any>;
-  stat?: StreamStat;
-  direction?: Direction;
+  stat: StreamStat;
 };
 
 export class WebRTCStream implements Stream {
@@ -59,16 +44,13 @@ export class WebRTCStream implements Stream {
   readClosed: boolean = false;
   closed: boolean = false;
 
+  // testing
+
   constructor(opts: StreamInitOpts) {
     this.channel = opts.channel;
     this.id = this.channel.label;
-    if (opts.stat) {
-      this.stat = opts.stat;
-    } else if (opts.direction) {
-      this.stat = new WebRTCStreamStat(opts.direction);
-    } else {
-      throw Error('Caller needs to specify at least direction, if not stat');
-    }
+
+    this.stat = opts.stat;
     switch (this.channel.readyState) {
       case 'open':
         this.opened.resolve();
@@ -98,7 +80,15 @@ export class WebRTCStream implements Stream {
       if (this.readClosed || this.closed) {
         return;
       }
-      (this.source as Pushable<Uint8Array>).push(data);
+
+      let res: Uint8Array;
+      if (typeof data == 'string') {
+        res = fromString(data);
+      } else {
+        res = new Uint8Array(data as ArrayBuffer);
+      }
+      log.trace(`[stream:${this.id}][${this.stat.direction}] received message: length: ${res.length} ${res}`);
+      (this.source as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(res));
     };
 
     this.channel.onclose = (_evt) => {
@@ -152,7 +142,7 @@ export class WebRTCStream implements Stream {
    */
   closeRead(): void {
     this.readClosed = true;
-    (this.source as Pushable<Uint8Array>).end();
+    (this.source as Pushable<Uint8ArrayList>).end();
     if (this.readClosed && this.writeClosed) {
       this.close();
     }
