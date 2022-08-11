@@ -162,7 +162,7 @@
     "it-pipe": "^2.0.3",
     "mortice": "^3.0.0",
     "multiformats": "^9.6.3",
-    "protons-runtime": "^2.0.2",
+    "protons-runtime": "^3.1.0",
     "uint8arraylist": "^2.1.1",
     "uint8arrays": "^3.1.0"
   },
@@ -175,7 +175,7 @@
     "delay": "^5.0.0",
     "p-defer": "^4.0.0",
     "p-wait-for": "^5.0.0",
-    "protons": "^4.0.1",
+    "protons": "^5.1.0",
     "sinon": "^14.0.0"
   }
 }
