@@ -1,9 +1,10 @@
+import { InvalidArgumentError } from './error.js'
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 
 const log = logger('libp2p:webrtc:sdp');
 
-const P_XWEBRTC: number = 0x115;
+const CERTHASH_CODE: number = 466;
 const ANSWER_SDP_FORMAT: string = `
 v=0
 o=- 0 0 IN %s %s
@@ -37,38 +38,44 @@ function port(ma: Multiaddr): number {
   return ma.toOptions().port;
 }
 function certhash(ma: Multiaddr): string {
-  let webrtc_value = ma
-    .stringTuples()
-    .filter((tup) => tup[0] == P_XWEBRTC)
+  let tups = ma.stringTuples();
+  let certhash_value = tups
+    .filter((tup) => tup[0] == CERTHASH_CODE)
     .map((tup) => tup[1])[0];
-  if (webrtc_value) {
-    return webrtc_value.split('/')[1];
+  if (certhash_value) {
+    return certhash_value;
   } else {
-    throw new Error("Couldn't find a webrtc component of multiaddr:" + ma.toString());
+    throw new Error("Couldn't find a certhash component of multiaddr:" + ma.toString());
   }
 }
 
 function ma2sdp(ma: Multiaddr, ufrag: string): string {
-  return ANSWER_SDP_FORMAT.replace('/%s/', ipv(ma))
-    .replace('/%s/', ip(ma))
-    .replace('/%s/', ipv(ma))
-    .replace('/%s/', ip(ma))
-    .replace('/%s/', port(ma).toString())
-    .replace('/%s/', ufrag)
-    .replace('/%s/', ufrag)
-    .replace('/%s/', certhash(ma));
+  return ANSWER_SDP_FORMAT
+    .replace('%s', ipv(ma))
+    .replace('%s', ip(ma))
+    .replace('%s', ipv(ma))
+    .replace('%s', ip(ma))
+    .replace('%d', port(ma).toString())
+    .replace('%s', ufrag)
+    .replace('%s', ufrag)
+    .replace('%s', certhash(ma));
 }
 
 export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   return {
-    type: 'offer',
+    type: 'answer',
     sdp: ma2sdp(ma, ufrag),
   };
 }
 
 export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
-  //TODO
-  // desc.sdp.replaceAll(/^a=ice-ufrag=(.*)/, 'a=ice-ufrag=' + ufrag);
-  // desc.sdp.replaceAll(/^a=ice-pwd=(.*)/, 'a=ice-pwd=' + ufrag);
-  return desc;
+  if (desc.sdp) {
+    desc.sdp = desc.sdp
+      .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n')
+      .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n')
+      ;
+      return desc;
+  } else {
+    throw new InvalidArgumentError("Can't munge a missing SDP");
+  }
 }

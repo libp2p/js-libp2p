@@ -8,7 +8,6 @@
   "type": "module",
   "scripts": {
     "build": "aegir build",
-    "clean": "rm -rfv node_modules dist *.lock *-lock.json ",
     "test": "aegir test",
     "test:browser": "aegir test --target browser",
     "format": "prettier --write src/*.ts"
@@ -34,6 +33,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/multistream-select": "^3.0.0",
     "@libp2p/peer-id": "^1.1.15",
+    "@multiformats/multiaddr": "../js-multiaddr/",
     "abortable-iterator": "^4.0.2",
     "it-merge": "^1.0.4",
     "p-defer": "^4.0.0",
