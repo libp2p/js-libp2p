@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-factory-v1.0.18](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.17...@libp2p/peer-id-factory-v1.0.18) (2022-08-11)
+
+
+### Dependencies
+
+* update protons to 5.1.0 ([#22](https://github.com/libp2p/js-libp2p-peer-id/issues/22)) ([f86d87a](https://github.com/libp2p/js-libp2p-peer-id/commit/f86d87a547e3f1dc13c3aa9816770964830fda6d))
+
 ## [@libp2p/peer-id-factory-v1.0.17](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.16...@libp2p/peer-id-factory-v1.0.17) (2022-07-31)
 
 
