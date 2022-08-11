@@ -21,6 +21,8 @@ import type { RelayConfig } from '../index.js'
 import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
+import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:circuit')
 
@@ -90,7 +92,7 @@ export class Circuit implements Transport, Initializable {
         return
       }
 
-      let virtualConnection
+      let virtualConnection: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> | undefined
 
       switch (request.type) {
         case CircuitPB.Type.CAN_HOP: {
@@ -100,7 +102,7 @@ export class Circuit implements Transport, Initializable {
         }
         case CircuitPB.Type.HOP: {
           log('received HOP request from %p', connection.remotePeer)
-          virtualConnection = await handleHop({
+          await handleHop({
             connection,
             request,
             streamHandler,

@@ -41,7 +41,7 @@ import { Multiaddr } from '@multiformats/multiaddr'
 import Libp2p from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 const relayAddr = ...
 
@@ -56,7 +56,7 @@ const node = await createLibp2p({
     new Mplex()
     ],
   connectionEncryption: [
-    NOISE
+    new Noise()
   ]
   },
   config: {

@@ -42,6 +42,11 @@ function printAddrs (node, number) {
   node2.handle('/print', async ({ stream }) => {
     const result = await pipe(
       stream,
+      async function * (source) {
+        for await (const list of source) {
+          yield list.subarray()
+        }
+      },
       toBuffer
     )
     console.log(uint8ArrayToString(result))
