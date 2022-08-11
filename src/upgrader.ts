@@ -376,6 +376,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
               muxedStream.stat.protocol = protocol
 
+              // If a protocol stream has been successfully negotiated and is to be passed to the application,
+              // the peerstore should ensure that the peer is registered with that protocol
+              this.components.getPeerStore().protoBook.add(remotePeer, [protocol]).catch(err => log.error(err))
+
               connection.addStream(muxedStream)
               this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
             })
@@ -437,6 +441,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           }
 
           muxedStream.stat.protocol = protocol
+
+          // If a protocol stream has been successfully negotiated and is to be passed to the application,
+          // the peerstore should ensure that the peer is registered with that protocol
+          this.components.getPeerStore().protoBook.add(remotePeer, [protocol]).catch(err => log.error(err))
 
           return {
             ...muxedStream,
