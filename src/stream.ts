@@ -1,5 +1,4 @@
-import { Stream } from '@libp2p/interface-connection';
-import { StreamStat } from '@libp2p/interface-connection';
+import { Stream, StreamStat, Direction } from '@libp2p/interface-connection';
 import { Source } from 'it-stream-types';
 import { Sink } from 'it-stream-types';
 import { pushable, Pushable } from 'it-pushable';
@@ -10,6 +9,16 @@ import { fromString } from 'uint8arrays/from-string';
 import { logger } from '@libp2p/logger';
 
 const log = logger('libp2p:webrtc:stream');
+
+export function defaultStat(dir: Direction): StreamStat {
+  return {
+    direction: dir,
+    timeline: {
+      open: 0,
+      close: undefined,
+    },
+  };
+}
 
 type StreamInitOpts = {
   channel: RTCDataChannel;
@@ -171,5 +180,6 @@ export class WebRTCStream implements Stream {
    */
   reset(): void {
     this.close();
+    this.stat = defaultStat(this.stat.direction);
   }
 }
