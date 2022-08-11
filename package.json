@@ -151,7 +151,7 @@
     "@libp2p/interface-pubsub": "^2.0.0",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/pubsub": "^3.1.1",
-    "protons-runtime": "^3.0.1",
+    "protons-runtime": "^3.1.0",
     "uint8arraylist": "^2.1.1",
     "uint8arrays": "^3.0.0"
   },
@@ -166,7 +166,7 @@
     "aegir": "^37.2.0",
     "multiformats": "^9.4.5",
     "p-wait-for": "^5.0.0",
-    "protons": "^5.0.0",
+    "protons": "^5.1.0",
     "sinon": "^14.0.0",
     "wherearewe": "^1.0.0"
   }
