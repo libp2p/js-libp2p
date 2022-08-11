@@ -6,7 +6,7 @@ import { Sink } from 'it-stream-types';
 import { pushable, Pushable } from 'it-pushable';
 import defer, { DeferredPromise } from 'p-defer';
 import merge from 'it-merge';
-import { Uint8ArrayList } from 'uint8arraylist'
+import { Uint8ArrayList } from 'uint8arraylist';
 
 // const log = logger('libp2p:webrtc:connection');
 

@@ -10,22 +10,24 @@ import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from 
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
-import  defer, { DeferredPromise }  from 'p-defer';
+import defer, { DeferredPromise } from 'p-defer';
 
 const log = logger('libp2p:webrtc:transport');
 const utf8 = new TextEncoder();
 
 export class WebRTCTransport implements Transport, Initializable {
-  private components: DeferredPromise<Components> = defer();
+  private componentsPromise: DeferredPromise<void> = defer();
+  private components: Components | undefined;
 
   init(components: Components): void {
-    this.components.resolve(components)
+    this.componentsPromise.resolve();
+    this.components = components;
   }
 
   async dial(ma: Multiaddr, options: DialOptions): Promise<Connection> {
-    const rawConn = this._connect(ma, options);
-    log('new outbound connection %s', rawConn, genUuid());
-    throw new Error('not implemented');
+    const rawConn = await this._connect(ma, options);
+    log(`dialing address - ${ma}`);
+    return rawConn;
   }
 
   createListener(options: CreateListenerOptions): Listener {
@@ -44,13 +46,10 @@ export class WebRTCTransport implements Transport, Initializable {
     return true;
   }
 
-  async _connect(ma: Multiaddr, options: WebRTCDialOptions) {
-    let registrar = (await this.components.promise).getRegistrar();
+  async _connect(ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     let peerConnection = new RTCPeerConnection();
     // create data channel
     let handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
-    // let handshakeChannel = peerConnection.createDataChannel("data", { id: 1 })
-    //
     //
     // create offer sdp
     let offerSdp = await peerConnection.createOffer();
@@ -83,13 +82,13 @@ export class WebRTCTransport implements Transport, Initializable {
     let dataChannelOpenPromise = defer();
     handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
     setTimeout(dataChannelOpenPromise.reject, 10000);
-    await dataChannelOpenPromise;
+    await dataChannelOpenPromise.promise;
 
-    let myPeerId = this.components.getPeerId();
+    let myPeerId = this.components!.getPeerId();
     let rps = ma.getPeerId();
     if (!rps) {
       throw new Error('TODO Do we really need a peer ID ?');
-    }    
+    }
     let theirPeerId = p.peerIdFromString(rps);
 
     // do noise handshake
@@ -97,17 +96,17 @@ export class WebRTCTransport implements Transport, Initializable {
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
     let fingerprintsPrologue = [myPeerId.multihash, theirPeerId.multihash].sort().join('');
     let noise = new Noise(myPeerId.privateKey, undefined, stablelib, utf8.encode(fingerprintsPrologue));
-    let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: {direction: 'outbound', timeline: {open: 0}} });
+    let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 0 } } });
     await noise.secureOutbound(myPeerId, wrappedChannel, theirPeerId);
 
     return new WebRTCConnection({
+      components: this.components!,
       id: ma.toString(),
       remoteAddr: ma,
       localPeer: myPeerId,
       direction: 'outbound',
       pc: peerConnection,
-      credential_string: ufrag,
-      remotePeerId: theirPeerId,
+      remotePeer: theirPeerId,
     });
   }
 }
