@@ -153,7 +153,7 @@
     "@libp2p/utils": "^3.0.0",
     "@multiformats/multiaddr": "^10.1.5",
     "err-code": "^3.0.1",
-    "interface-datastore": "^6.1.0",
+    "interface-datastore": "^7.0.0",
     "it-all": "^1.0.6",
     "it-filter": "^1.0.3",
     "it-foreach": "^0.1.1",
