@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.0...v2.0.1) (2022-08-12)
+
+
+### Trivial Changes
+
+* **deps:** bump interface-datastore from 6.1.1 to 7.0.0 ([#7](https://github.com/libp2p/js-libp2p-logger/issues/7)) ([13aac56](https://github.com/libp2p/js-libp2p-logger/commit/13aac5661ecf77cd5a6d79eb92008435249eb428))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-logger/compare/v1.1.6...v2.0.0) (2022-06-15)
 
 
