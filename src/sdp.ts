@@ -1,4 +1,4 @@
-import { InvalidArgumentError } from './error.js'
+import { InappropriateMultiaddrError, InvalidArgumentError } from './error.js';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 
@@ -39,19 +39,16 @@ function port(ma: Multiaddr): number {
 }
 function certhash(ma: Multiaddr): string {
   let tups = ma.stringTuples();
-  let certhash_value = tups
-    .filter((tup) => tup[0] == CERTHASH_CODE)
-    .map((tup) => tup[1])[0];
+  let certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
   if (certhash_value) {
     return certhash_value;
   } else {
-    throw new Error("Couldn't find a certhash component of multiaddr:" + ma.toString());
+    throw new InappropriateMultiaddrError("Couldn't find a certhash component of multiaddr:" + ma.toString());
   }
 }
 
 function ma2sdp(ma: Multiaddr, ufrag: string): string {
-  return ANSWER_SDP_FORMAT
-    .replace('%s', ipv(ma))
+  return ANSWER_SDP_FORMAT.replace('%s', ipv(ma))
     .replace('%s', ip(ma))
     .replace('%s', ipv(ma))
     .replace('%s', ip(ma))
@@ -70,11 +67,8 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
 
 export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp) {
-    desc.sdp = desc.sdp
-      .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n')
-      .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n')
-      ;
-      return desc;
+    desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n').replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n');
+    return desc;
   } else {
     throw new InvalidArgumentError("Can't munge a missing SDP");
   }
