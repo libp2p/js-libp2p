@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.1...v4.0.2) (2022-08-12)
+
+
+### Dependencies
+
+* bump interface-datastore from 6.1.1 to 7.0.0 ([#22](https://github.com/libp2p/js-libp2p-peer-record/issues/22)) ([f516cf0](https://github.com/libp2p/js-libp2p-peer-record/commit/f516cf0e015bbb15810bf3f121c9c911b6ffb160))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.0...v4.0.1) (2022-08-11)
 
 

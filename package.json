@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-record",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Used to transfer signed peer data across the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-peer-record#readme",
