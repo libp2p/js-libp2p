@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.3...v3.0.4) (2022-08-12)
+
+
+### Dependencies
+
+* update interface-datastore and datastore-level ([#367](https://github.com/libp2p/js-libp2p-kad-dht/issues/367)) ([b2f8e55](https://github.com/libp2p/js-libp2p-kad-dht/commit/b2f8e557eb9721873a401f59ddd3fa12d6ee2ba3))
+
 ## [3.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.2...v3.0.3) (2022-08-11)
 
 
