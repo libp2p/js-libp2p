@@ -130,7 +130,7 @@
     "@multiformats/multiaddr": "^10.3.3",
     "abortable-iterator": "^4.0.2",
     "any-signal": "^3.0.0",
-    "datastore-core": "^7.0.0",
+    "datastore-core": "^8.0.1",
     "err-code": "^3.0.1",
     "events": "^3.3.0",
     "hashlru": "^2.3.0",
