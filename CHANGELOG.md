@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/libp2p/js-libp2p-tracked-map/compare/v2.0.1...v2.0.2) (2022-08-12)
+
+
+### Dependencies
+
+* update interface deps ([#9](https://github.com/libp2p/js-libp2p-tracked-map/issues/9)) ([424b9e8](https://github.com/libp2p/js-libp2p-tracked-map/commit/424b9e81db1d1005fcfdfd599f590e7ff1c30a68))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-tracked-map/compare/v2.0.0...v2.0.1) (2022-07-01)
 
 
