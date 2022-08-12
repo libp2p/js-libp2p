@@ -10,7 +10,9 @@ import type { Libp2pInit } from './index.js'
 import { codes, messages } from './errors.js'
 import errCode from 'err-code'
 import type { RecursivePartial } from '@libp2p/interfaces'
-import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
+import wherearewe from 'wherearewe'
+
+const { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } = wherearewe
 
 const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
