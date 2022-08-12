@@ -1,3 +1,10 @@
+## [3.1.3](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.2...v3.1.3) (2022-08-12)
+
+
+### Dependencies
+
+* update interface-datastore ([#30](https://github.com/libp2p/js-libp2p-peer-store/issues/30)) ([5aff937](https://github.com/libp2p/js-libp2p-peer-store/commit/5aff9373a2757b6ac399e205f077820728d1c72e))
+
 ## [3.1.2](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.1...v3.1.2) (2022-08-11)
 
 
