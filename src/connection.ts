@@ -11,7 +11,7 @@ import { WebRTCStream } from './stream';
 import { select as msselect, handle as mshandle } from '@libp2p/multistream-select';
 import { Duplex } from 'it-stream-types';
 import { Uint8ArrayList } from 'uint8arraylist';
-import { DataChannelError, OperationAbortedError, StreamingLimitationError } from './error';
+import { dataChannelError, operationAborted, overStreamLimit } from './error';
 
 const log = logger('libp2p:webrtc:connection');
 
@@ -74,7 +74,7 @@ export class WebRTCConnection implements ic.Connection {
 
       await Promise.race([openPromise.promise, abortPromise.promise]);
       if (controller.signal.aborted) {
-        throw new OperationAbortedError('prior to a new stream incoming.', controller.signal.reason);
+        throw operationAborted('prior to a new stream incoming.', controller.signal.reason);
       }
 
       let rawStream = new WebRTCStream({
@@ -162,7 +162,7 @@ export class WebRTCConnection implements ic.Connection {
     }
 
     options.signal.onabort = () => {
-      openError = new OperationAbortedError('.', options.signal?.reason || 'aborted');
+      openError = operationAborted('.', options.signal?.reason || 'aborted');
       log.trace(`[stream: ${label}] abort called - ${options.signal?.reason}`);
       abortedPromise.resolve();
     };
@@ -174,7 +174,7 @@ export class WebRTCConnection implements ic.Connection {
       openPromise.resolve();
     };
     channel.onerror = (_evt) => {
-      openError = new DataChannelError(label, (_evt as RTCErrorEvent).error.message);
+      openError = dataChannelError(label, (_evt as RTCErrorEvent).error.message);
       log.trace(openError.message);
       abortedPromise.resolve();
     };
@@ -216,8 +216,8 @@ export class WebRTCConnection implements ic.Connection {
     let protocol = stream.stat.protocol!;
     let direction = stream.stat.direction;
     if (this.countStream(protocol, direction) === this.findStreamLimit(protocol, direction)) {
-      log(`${direction} stream limit reached for protocol - ${protocol}`);
-      let err = new StreamingLimitationError(`${direction} stream limit reached for protocol - ${protocol}`);
+      let err = overStreamLimit(direction, protocol);
+      log(err.message);
       stream.abort(err);
       throw err;
     }
