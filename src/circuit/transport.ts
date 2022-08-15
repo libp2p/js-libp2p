@@ -132,10 +132,10 @@ export class Circuit implements Transport, Initializable {
       }
 
       if (virtualConnection != null) {
-        // @ts-expect-error dst peer will not be undefined
-        const remoteAddr = new Multiaddr(request.dstPeer.addrs[0])
-        // @ts-expect-error dst peer will not be undefined
-        const localAddr = new Multiaddr(request.srcPeer.addrs[0])
+        const remoteAddr = connection.remoteAddr
+          .encapsulate('/p2p-circuit')
+          .encapsulate(new Multiaddr(request.dstPeer?.addrs[0]))
+        const localAddr = new Multiaddr(request.srcPeer?.addrs[0])
         const maConn = streamToMaConnection({
           stream: virtualConnection,
           remoteAddr,
