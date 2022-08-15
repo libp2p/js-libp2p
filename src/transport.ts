@@ -15,7 +15,7 @@ import { base64 } from 'multiformats/bases/base64';
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
 import { concat } from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
-import { InvalidArgumentError, UnsupportedHashAlgorithmError } from './error';
+import { inappropriateMultiaddr, unimplemented, InvalidArgumentError, UnsupportedHashAlgorithmError } from './error';
 
 const log = logger('libp2p:webrtc:transport');
 
@@ -35,7 +35,7 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   createListener(options: CreateListenerOptions): Listener {
-    throw new Error('TODO - replace with an exception more appropriate to the fact that this will not be implemented.');
+    throw unimplemented('WebRTCTransport.createListener');
   }
 
   filter(multiaddrs: Multiaddr[]): Multiaddr[] {
@@ -91,7 +91,7 @@ export class WebRTCTransport implements Transport, Initializable {
     let myPeerId = this.components!.getPeerId();
     let rps = ma.getPeerId();
     if (!rps) {
-      throw new Error('could not get remote peerId');
+      throw inappropriateMultiaddr("we need to have the remote's PeerId");
     }
     let theirPeerId = p.peerIdFromString(rps);
 

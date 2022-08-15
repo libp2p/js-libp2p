@@ -35,6 +35,7 @@
     "@libp2p/peer-id": "^1.1.15",
     "@multiformats/multiaddr": "file:../js-multiaddr",
     "abortable-iterator": "^4.0.2",
+    "err-code": "^3.0.1",
     "it-merge": "^1.0.4",
     "multiformats": "^9.7.1",
     "multihashes": "^4.0.3",
