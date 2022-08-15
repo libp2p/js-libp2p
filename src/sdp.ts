@@ -1,8 +1,12 @@
-import { InvalidArgumentError } from './error.js'
+import { InvalidArgumentError, UnsupportedHashAlgorithmError } from './error.js';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
+import { base64 } from 'multiformats/bases/base64';
+import * as multihashes from 'multihashes';
 
 const log = logger('libp2p:webrtc:sdp');
+
+// const mbdecoder = base64.decoder.or(base58btc.decoder).or(base32.decoder).or(base16.decoder);
 
 const CERTHASH_CODE: number = 466;
 const ANSWER_SDP_FORMAT: string = `
@@ -39,19 +43,38 @@ function port(ma: Multiaddr): number {
 }
 function certhash(ma: Multiaddr): string {
   let tups = ma.stringTuples();
-  let certhash_value = tups
-    .filter((tup) => tup[0] == CERTHASH_CODE)
-    .map((tup) => tup[1])[0];
-  if (certhash_value) {
-    return certhash_value;
-  } else {
-    throw new Error("Couldn't find a certhash component of multiaddr:" + ma.toString());
+  let certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
+  if (!certhash_value) {
+    throw new InvalidArgumentError('certhash not found in multiaddress');
   }
+
+  // certhash_value is a multibase encoded multihash encoded string
+  // the multiformats PR always encodes in base64
+  let mbdecoded = base64.decode(certhash_value);
+  let mhdecoded = multihashes.decode(mbdecoded);
+  let prefix = '';
+  switch (mhdecoded.name) {
+    case 'md5':
+      prefix = 'md5';
+      break;
+    case 'sha2-256':
+      prefix = 'sha-256';
+      break;
+    case 'sha2-512':
+      prefix = 'sha-512';
+      break;
+    default:
+      throw new UnsupportedHashAlgorithmError(mhdecoded.name);
+  }
+
+  let fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+  fp = fp.match(/.{1,2}/g)!.join(':');
+
+  return `${prefix} ${fp}`;
 }
 
 function ma2sdp(ma: Multiaddr, ufrag: string): string {
-  return ANSWER_SDP_FORMAT
-    .replace('%s', ipv(ma))
+  return ANSWER_SDP_FORMAT.replace('%s', ipv(ma))
     .replace('%s', ip(ma))
     .replace('%s', ipv(ma))
     .replace('%s', ip(ma))
@@ -70,12 +93,15 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
 
 export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp) {
-    desc.sdp = desc.sdp
-      .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n')
-      .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n')
-      ;
-      return desc;
+    desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n').replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n');
+    return desc;
   } else {
     throw new InvalidArgumentError("Can't munge a missing SDP");
   }
+}
+
+export function getCerthashFromMultiaddr(ma: Multiaddr): string | undefined {
+  let tups = ma.stringTuples();
+  let certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
+  return certhash_value;
 }

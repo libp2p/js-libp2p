@@ -13,7 +13,7 @@ a=mid:0
 a=ice-options:ice2
 a=ice-ufrag:MyUserFragment
 a=ice-pwd:MyUserFragment
-a=fingerprint:mTXVsdGliYXNlIGlzIGF3ZXNvbWUhIFxvLw
+a=fingerprint:sha-256 b9:2e:11:cf:23:ff:da:31:bb:bb:5c:0a:9d:d9:0e:20:07:e2:bb:61:2f:1f:94:cf:e5:2e:0e:05:5c:4e:8a:88
 a=setup:actpass
 a=sctp-port:5000
 a=max-message-size:100000
@@ -21,7 +21,7 @@ a=max-message-size:100000
 
 describe('SDP creation', () => {
   it('handles simple blue sky easily enough', async () => {
-    let ma = new Multiaddr('/ip4/192.168.0.152/udp/2345/webrtc/certhash/zYAjKoNbau5KiqmHPmSxYCvn66dA1vLmwbt');
+    let ma = new Multiaddr('/ip4/192.168.0.152/udp/2345/webrtc/certhash/uEiC5LhHPI__aMbu7XAqd2Q4gB-K7YS8flM_lLg4FXE6KiA');
     let ufrag = 'MyUserFragment';
     let sdp = underTest.fromMultiAddr(ma, ufrag);
     expect(sdp.sdp).to.equal(an_sdp);
@@ -42,7 +42,7 @@ a=mid:0
 a=ice-options:ice2
 a=ice-ufrag:someotheruserfragmentstring
 a=ice-pwd:someotheruserfragmentstring
-a=fingerprint:mTXVsdGliYXNlIGlzIGF3ZXNvbWUhIFxvLw
+a=fingerprint:sha-256 b9:2e:11:cf:23:ff:da:31:bb:bb:5c:0a:9d:d9:0e:20:07:e2:bb:61:2f:1f:94:cf:e5:2e:0e:05:5c:4e:8a:88
 a=setup:actpass
 a=sctp-port:5000
 a=max-message-size:100000

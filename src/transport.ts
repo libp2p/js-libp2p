@@ -11,9 +11,13 @@ import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
 import defer, { DeferredPromise } from 'p-defer';
+import { base64 } from 'multiformats/bases/base64';
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
+import { concat } from 'uint8arrays/concat';
+import * as multihashes from 'multihashes';
+import { InvalidArgumentError, UnsupportedHashAlgorithmError } from './error';
 
 const log = logger('libp2p:webrtc:transport');
-const utf8 = new TextEncoder();
 
 export class WebRTCTransport implements Transport, Initializable {
   private componentsPromise: DeferredPromise<void> = defer();
@@ -87,15 +91,15 @@ export class WebRTCTransport implements Transport, Initializable {
     let myPeerId = this.components!.getPeerId();
     let rps = ma.getPeerId();
     if (!rps) {
-      throw new Error('TODO Do we really need a peer ID ?');
+      throw new Error('could not get remote peerId');
     }
     let theirPeerId = p.peerIdFromString(rps);
 
     // do noise handshake
     //set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
-    let fingerprintsPrologue = [myPeerId.multihash, theirPeerId.multihash].sort().join('');
-    let noise = new Noise(myPeerId.privateKey, undefined, stablelib, utf8.encode(fingerprintsPrologue));
+    let fingerprintsPrologue = this.generateNoisePrologue(peerConnection, ma);
+    let noise = new Noise(myPeerId.privateKey, undefined, stablelib, fingerprintsPrologue);
     let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 1 } } });
     let wrappedDuplex = {
       ...wrappedChannel,
@@ -119,5 +123,44 @@ export class WebRTCTransport implements Transport, Initializable {
       pc: peerConnection,
       remotePeer: theirPeerId,
     });
+  }
+
+  private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {
+    let remoteCerthash = sdp.getCerthashFromMultiaddr(ma);
+    if (!remoteCerthash) {
+      throw new InvalidArgumentError('no remote tls fingerprint in multiaddr');
+    }
+    let remote = base64.decode(remoteCerthash);
+    if (pc.getConfiguration().certificates?.length === 0) {
+      throw new InvalidArgumentError('no local certificate');
+    }
+    let localCert = pc.getConfiguration().certificates![0];
+    if (localCert.getFingerprints().length === 0) {
+      throw new InvalidArgumentError('no fingerprint on local certificate');
+    }
+
+    let localFingerprint = localCert.getFingerprints()[0];
+    let localFpString = localFingerprint.value!.replaceAll(':', '');
+    let localFpArray = uint8arrayFromString(localFpString, 'hex');
+    let local: Uint8Array;
+    switch (localFingerprint.algorithm!) {
+      case 'md5':
+        local = multihashes.encode(localFpArray, multihashes.names['md5']);
+        break;
+      case 'sha-256':
+        local = multihashes.encode(localFpArray, multihashes.names['sha2-256']);
+        break;
+      case 'sha-512':
+        local = multihashes.encode(localFpArray, multihashes.names['sha2-512']);
+        break;
+      default:
+        throw new UnsupportedHashAlgorithmError(localFingerprint.algorithm || 'none');
+    }
+
+    let prefix = uint8arrayFromString('libp2p-webrtc-noise:');
+    let fps = [local, remote].sort();
+
+    let result = concat([prefix, ...fps]);
+    return result;
   }
 }
