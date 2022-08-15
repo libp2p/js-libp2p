@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import {createConnectionPair, echoHandler} from "./util";
+import {createConnectionPair, echoHandler} from "../test/util.js";
 import { expect } from 'aegir/chai';
 import { pipe } from 'it-pipe';
 import all from 'it-all';

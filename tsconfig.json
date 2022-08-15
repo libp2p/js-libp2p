@@ -4,7 +4,8 @@
 		"outDir": "dist",
 		"emitDeclarationOnly": false,
 		"module": "ES2020",
-		"importsNotUsedAsValues": "preserve"
+		"importsNotUsedAsValues": "preserve",
+    "moduleResolution": "node"
 	},
 	"include": [
 		"src",
