@@ -15,7 +15,7 @@ import { base64 } from 'multiformats/bases/base64';
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
 import { concat } from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
-import { inappropriateMultiaddr, unimplemented, InvalidArgumentError, UnsupportedHashAlgorithmError } from './error';
+import { inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error';
 
 const log = logger('libp2p:webrtc:transport');
 
@@ -128,15 +128,15 @@ export class WebRTCTransport implements Transport, Initializable {
   private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {
     let remoteCerthash = sdp.certhash(ma);
     if (!remoteCerthash) {
-      throw new InvalidArgumentError('no remote tls fingerprint in multiaddr');
+      throw inappropriateMultiaddr('no remote tls fingerprint in multiaddr');
     }
     let remote = base64.decode(remoteCerthash);
     if (pc.getConfiguration().certificates?.length === 0) {
-      throw new InvalidArgumentError('no local certificate');
+      throw invalidArgument('no local certificate');
     }
     let localCert = pc.getConfiguration().certificates![0];
     if (localCert.getFingerprints().length === 0) {
-      throw new InvalidArgumentError('no fingerprint on local certificate');
+      throw invalidArgument('no fingerprint on local certificate');
     }
 
     let localFingerprint = localCert.getFingerprints()[0];
@@ -154,7 +154,7 @@ export class WebRTCTransport implements Transport, Initializable {
         local = multihashes.encode(localFpArray, multihashes.names['sha2-512']);
         break;
       default:
-        throw new UnsupportedHashAlgorithmError(localFingerprint.algorithm || 'none');
+        throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
     }
 
     let prefix = uint8arrayFromString('libp2p-webrtc-noise:');

@@ -13,6 +13,7 @@ export enum codes {
   ERR_DATA_CHANNEL = 'ERR_DATA_CHANNEL',
   ERR_INVALID_MULTIADDR = 'ERR_INVALID_MULTIADDR',
   ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS',
+  ERR_HASH_NOT_SUPPORTED = 'ERR_HASH_NOT_SUPPORTED',
   ERR_NOT_IMPLEMENTED = 'ERR_NOT_IMPLEMENTED',
   ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS',
   ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS',
@@ -23,6 +24,10 @@ export class InvalidArgumentError extends WebRTCTransportError {
     super('There was a problem with a provided argument: ' + msg);
     this.name = 'WebRTC/InvalidArgumentError';
   }
+}
+
+export function unsupportedHashAlgorithm(algorithm: string) {
+  return createError(new UnsupportedHashAlgorithmError(algorithm), codes.ERR_HASH_NOT_SUPPORTED);
 }
 
 export class UnsupportedHashAlgorithmError extends WebRTCTransportError {

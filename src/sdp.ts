@@ -1,4 +1,4 @@
-import { UnsupportedHashAlgorithmError, inappropriateMultiaddr, invalidArgument } from './error.js';
+import { inappropriateMultiaddr, invalidArgument, unsupportedHashAlgorithm } from './error.js';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import * as multihashes from 'multihashes';
@@ -75,7 +75,7 @@ function certhashToFingerprint(ma: Multiaddr): string {
       prefix = 'sha-512';
       break;
     default:
-      throw new UnsupportedHashAlgorithmError(mhdecoded.name);
+      throw unsupportedHashAlgorithm(mhdecoded.name);
   }
 
   let fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
