@@ -1,12 +1,17 @@
 import { InvalidArgumentError, UnsupportedHashAlgorithmError } from './error.js';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
-import { base64 } from 'multiformats/bases/base64';
 import * as multihashes from 'multihashes';
+import { bases } from 'multiformats/basics';
 
 const log = logger('libp2p:webrtc:sdp');
 
-// const mbdecoder = base64.decoder.or(base58btc.decoder).or(base32.decoder).or(base16.decoder);
+const mbdecoder = (function () {
+  const decoders = Object.values(bases).map((b) => b.decoder);
+  let acc = decoders[0].or(decoders[1]);
+  decoders.slice(2).forEach((d) => (acc = acc.or(d)));
+  return acc;
+})();
 
 const CERTHASH_CODE: number = 466;
 const ANSWER_SDP_FORMAT: string = `
@@ -41,16 +46,21 @@ function ip(ma: Multiaddr): string {
 function port(ma: Multiaddr): number {
   return ma.toOptions().port;
 }
-function certhash(ma: Multiaddr): string {
+
+export function certhash(ma: Multiaddr): string {
   let tups = ma.stringTuples();
   let certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
   if (!certhash_value) {
     throw new InvalidArgumentError('certhash not found in multiaddress');
   }
+  return certhash_value;
+}
 
+function certhashToFingerprint(ma: Multiaddr): string {
+  let certhash_value = certhash(ma);
   // certhash_value is a multibase encoded multihash encoded string
   // the multiformats PR always encodes in base64
-  let mbdecoded = base64.decode(certhash_value);
+  let mbdecoded = mbdecoder.decode(certhash_value);
   let mhdecoded = multihashes.decode(mbdecoded);
   let prefix = '';
   switch (mhdecoded.name) {
@@ -81,7 +91,7 @@ function ma2sdp(ma: Multiaddr, ufrag: string): string {
     .replace('%d', port(ma).toString())
     .replace('%s', ufrag)
     .replace('%s', ufrag)
-    .replace('%s', certhash(ma));
+    .replace('%s', certhashToFingerprint(ma));
 }
 
 export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
