@@ -60,7 +60,6 @@ export function certhash(ma: Multiaddr): string {
 function certhashToFingerprint(ma: Multiaddr): string {
   let certhash_value = certhash(ma);
   // certhash_value is a multibase encoded multihash encoded string
-  // the multiformats PR always encodes in base64
   let mbdecoded = mbdecoder.decode(certhash_value);
   let mhdecoded = multihashes.decode(mbdecoded);
   let prefix = '';
