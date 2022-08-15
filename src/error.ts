@@ -47,7 +47,7 @@ export class InappropriateMultiaddrError extends WebRTCTransportError {
   }
 }
 
-export function wrongMultiaddr(msg: string) {
+export function inappropriateMultiaddr(msg: string) {
   return createError(new InappropriateMultiaddrError(msg), codes.ERR_INVALID_MULTIADDR);
 }
 

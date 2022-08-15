@@ -11,7 +11,7 @@ import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
 import defer, { DeferredPromise } from 'p-defer';
-import { InappropriateMultiaddrError, UnimplementedError } from './error';
+import { inappropriateMultiaddr, unimplemented } from './error';
 
 const log = logger('libp2p:webrtc:transport');
 const utf8 = new TextEncoder();
@@ -32,7 +32,7 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   createListener(options: CreateListenerOptions): Listener {
-    throw new UnimplementedError('WebRTCTransport.createListener');
+    throw unimplemented('WebRTCTransport.createListener');
   }
 
   filter(multiaddrs: Multiaddr[]): Multiaddr[] {
@@ -88,7 +88,7 @@ export class WebRTCTransport implements Transport, Initializable {
     let myPeerId = this.components!.getPeerId();
     let rps = ma.getPeerId();
     if (!rps) {
-      throw new InappropriateMultiaddrError("we need to have the remote's PeerId");
+      throw inappropriateMultiaddr("we need to have the remote's PeerId");
     }
     let theirPeerId = p.peerIdFromString(rps);
 

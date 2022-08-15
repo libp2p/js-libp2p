@@ -1,4 +1,4 @@
-import { InappropriateMultiaddrError, InvalidArgumentError } from './error.js';
+import { inappropriateMultiaddr, invalidArgument } from './error.js';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 
@@ -43,7 +43,7 @@ function certhash(ma: Multiaddr): string {
   if (certhash_value) {
     return certhash_value;
   } else {
-    throw new InappropriateMultiaddrError("Couldn't find a certhash component of multiaddr:" + ma.toString());
+    throw inappropriateMultiaddr("Couldn't find a certhash component of multiaddr:" + ma.toString());
   }
 }
 
@@ -70,6 +70,6 @@ export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessio
     desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n').replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n');
     return desc;
   } else {
-    throw new InvalidArgumentError("Can't munge a missing SDP");
+    throw invalidArgument("Can't munge a missing SDP");
   }
 }
