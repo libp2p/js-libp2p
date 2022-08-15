@@ -109,9 +109,3 @@ export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessio
     throw new InvalidArgumentError("Can't munge a missing SDP");
   }
 }
-
-export function getCerthashFromMultiaddr(ma: Multiaddr): string | undefined {
-  let tups = ma.stringTuples();
-  let certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
-  return certhash_value;
-}

@@ -126,7 +126,7 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {
-    let remoteCerthash = sdp.getCerthashFromMultiaddr(ma);
+    let remoteCerthash = sdp.certhash(ma);
     if (!remoteCerthash) {
       throw new InvalidArgumentError('no remote tls fingerprint in multiaddr');
     }
