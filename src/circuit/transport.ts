@@ -133,8 +133,8 @@ export class Circuit implements Transport, Initializable {
 
       if (virtualConnection != null) {
         const remoteAddr = connection.remoteAddr
-              .encapsulate('/p2p-circuit')
-              .encapsulate(new Multiaddr(request.dstPeer?.addrs[0]))
+          .encapsulate('/p2p-circuit')
+          .encapsulate(new Multiaddr(request.dstPeer?.addrs[0]))
         const localAddr = new Multiaddr(request.srcPeer?.addrs[0])
         const maConn = streamToMaConnection({
           stream: virtualConnection,
