@@ -9,12 +9,10 @@ import type { Message, PublishResult, PubSubInit, PubSubRPC, PubSubRPCMessage } 
 import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import * as cborg from 'cborg'
-import { peerIdFromString } from '@libp2p/peer-id'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
 export const baseOptions: Partial<Libp2pInit> = {
-  peerId: peerIdFromString('12D3KooWJKCJW8Y26pRFNv78TCMGLNTfyN8oKaFswMRYXTzSbSst'),
   transports: [new WebSockets()],
   streamMuxers: [new Mplex()],
   connectionEncryption: [new Plaintext()]

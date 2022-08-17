@@ -512,8 +512,6 @@ describe('libp2p.keychain', () => {
       }
     })
 
-    await libp2p.loadKeychain()
-
     const kInfo = await libp2p.keychain.createKey('keyName', 'Ed25519')
     expect(kInfo).to.exist()
   })
@@ -525,8 +523,6 @@ describe('libp2p.keychain', () => {
         datastore: new MemoryDatastore()
       }
     })
-
-    await libp2p.loadKeychain()
 
     const kInfo = await libp2p.keychain.createKey('keyName', 'Ed25519')
     expect(kInfo).to.exist()
@@ -543,7 +539,6 @@ describe('libp2p.keychain', () => {
         }
       }
     })
-    await libp2p.loadKeychain()
 
     const kInfo = await libp2p.keychain.createKey('keyName', 'Ed25519')
     expect(kInfo).to.exist()
@@ -558,7 +553,6 @@ describe('libp2p.keychain', () => {
       }
     })
 
-    await libp2p2.loadKeychain()
     const key = await libp2p2.keychain.findKeyByName('keyName')
 
     expect(key).to.exist()
