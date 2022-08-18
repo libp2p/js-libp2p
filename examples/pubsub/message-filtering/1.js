@@ -40,19 +40,21 @@ const createNode = async () => {
   await node2.dial(node3.peerId)
 
   //subscribe
-  node1.pubsub.addEventListener(topic, (evt) => {
+  node1.pubsub.addEventListener('message', (evt) => {
     // Will not receive own published messages by default
     console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
   node1.pubsub.subscribe(topic)
 
-  node2.pubsub.addEventListener(topic, (evt) => {
+  node2.pubsub.addEventListener('message', (evt) => {
     console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
+  node2.pubsub.subscribe(topic)
 
-  node3.pubsub.addEventListener(topic, (evt) => {
+  node3.pubsub.addEventListener('message', (evt) => {
     console.log(`node3 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
+  node3.pubsub.subscribe(topic)
 
   const validateFruit = (msgTopic, msg) => {
     const fruit = uint8ArrayToString(msg.data)
@@ -69,17 +71,14 @@ const createNode = async () => {
   node3.pubsub.topicValidators.set(topic, validateFruit)
 
   // node1 publishes "fruits" every five seconds
-  var count = 0;
+  let count = 0;
   const myFruits = ['banana', 'apple', 'car', 'orange'];
   // car is not a fruit !
   setInterval(() => {
-    console.log('############## fruit ' + myFruits[count] + ' ##############')
-    node1.pubsub.publish(topic, uint8ArrayFromString(myFruits[count])).catch(err => {
+    const fruit = myFruits[count++ % myFruits.length]
+    console.log('############## fruit ' + fruit + ' ##############')
+    node1.pubsub.publish(topic, uint8ArrayFromString(fruit)).catch(err => {
       console.info(err)
     })
-    count++
-    if (count == myFruits.length) {
-      count = 0
-    }
   }, 5000)
 })()
