@@ -194,7 +194,7 @@
     "protons": "^5.1.0",
     "sinon": "^14.0.0",
     "util": "^0.12.3",
-    "wherearewe": "^1.0.0"
+    "wherearewe": "^2.0.1"
   },
   "browser": {
     "./dist/src/aes/ciphers.js": "./dist/src/aes/ciphers-browser.js",
