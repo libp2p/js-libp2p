@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.3...v1.0.4) (2022-08-26)
+
+
+### Dependencies
+
+* **dev:** bump wherearewe from 1.0.2 to 2.0.1 ([#273](https://github.com/libp2p/js-libp2p-crypto/issues/273)) ([612e8ae](https://github.com/libp2p/js-libp2p-crypto/commit/612e8aef341d1f3392eed047fdc66d9c329cbf1f))
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.2...v1.0.3) (2022-08-11)
 
 
