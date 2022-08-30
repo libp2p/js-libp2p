@@ -1,3 +1,10 @@
+## [5.1.0](https://github.com/libp2p/js-libp2p-mplex/compare/v5.0.0...v5.1.0) (2022-08-30)
+
+
+### Features
+
+* add benchmark ([#207](https://github.com/libp2p/js-libp2p-mplex/issues/207)) ([6bf491f](https://github.com/libp2p/js-libp2p-mplex/commit/6bf491fdad73ee29849740754d5094bc85e26c78))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v4.0.3...v5.0.0) (2022-08-10)
 
 
