@@ -135,6 +135,7 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
+    "benchmark": "node ./node_modules/.bin/benchmark benchmark/send-and-receive.js",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
@@ -173,6 +174,7 @@
     "it-map": "^1.0.6",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0",
+    "@dapplion/benchmark": "^0.2.2",
     "typescript": "^4.7.4"
   },
   "browser": {
