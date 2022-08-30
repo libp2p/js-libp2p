@@ -1,3 +1,10 @@
+## [5.1.1](https://github.com/libp2p/js-libp2p-mplex/compare/v5.1.0...v5.1.1) (2022-08-30)
+
+
+### Dependencies
+
+* update it-pushable ([#210](https://github.com/libp2p/js-libp2p-mplex/issues/210)) ([1188272](https://github.com/libp2p/js-libp2p-mplex/commit/1188272df64c490449c1d3341e4c06c320116b30)), closes [#209](https://github.com/libp2p/js-libp2p-mplex/issues/209)
+
 ## [5.1.0](https://github.com/libp2p/js-libp2p-mplex/compare/v5.0.0...v5.1.0) (2022-08-30)
 
 
