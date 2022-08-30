@@ -114,6 +114,18 @@ describe('listen', () => {
     expect(multiaddrs[0].toString().indexOf('0.0.0.0')).to.equal(-1)
   })
 
+  it('getAddrs from listening on ip6 \'::\'', async () => {
+    const mh = new Multiaddr('/ip6/::/tcp/9090')
+    listener = tcp.createListener({
+      upgrader
+    })
+    await listener.listen(mh)
+
+    const multiaddrs = listener.getAddrs()
+    expect(multiaddrs.length > 0).to.equal(true)
+    expect(multiaddrs[0].toOptions().host).to.not.equal('::')
+  })
+
   it('getAddrs preserves IPFS Id', async () => {
     const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     listener = tcp.createListener({

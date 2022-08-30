@@ -11,7 +11,8 @@ describe('interface-transport compliance', () => {
       const addrs = [
         new Multiaddr('/ip4/127.0.0.1/tcp/9091'),
         new Multiaddr('/ip4/127.0.0.1/tcp/9092'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/9093')
+        new Multiaddr('/ip4/127.0.0.1/tcp/9093'),
+        new Multiaddr('/ip6/::/tcp/9094')
       ]
 
       // Used by the dial tests to simulate a delayed connect
