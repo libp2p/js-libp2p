@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.3...v3.0.4) (2022-08-30)
+
+
+### Bug Fixes
+
+* add tests for ipv6 wildcard support ([#203](https://github.com/libp2p/js-libp2p-tcp/issues/203)) ([71c974d](https://github.com/libp2p/js-libp2p-tcp/commit/71c974deaf40a4ab2eabc7d3e404d865a6892b20)), closes [#100](https://github.com/libp2p/js-libp2p-tcp/issues/100)
+
 ## [3.0.3](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.2...v3.0.3) (2022-08-10)
 
 
