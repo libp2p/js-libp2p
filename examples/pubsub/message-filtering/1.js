@@ -40,24 +40,42 @@ const createNode = async () => {
   await node2.dial(node3.peerId)
 
   //subscribe
-  node1.pubsub.addEventListener(topic, (evt) => {
+  node1.pubsub.addEventListener('message', (evt) => {
+    if (evt.detail.topic !== topic) {
+      return
+    }
+
     // Will not receive own published messages by default
     console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
   node1.pubsub.subscribe(topic)
 
-  node2.pubsub.addEventListener(topic, (evt) => {
+  node2.pubsub.addEventListener('message', (evt) => {
+    if (evt.detail.topic !== topic) {
+      return
+    }
+
     console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
+  node2.pubsub.subscribe(topic)
 
-  node3.pubsub.addEventListener(topic, (evt) => {
+  node3.pubsub.addEventListener('message', (evt) => {
+    if (evt.detail.topic !== topic) {
+      return
+    }
+
     console.log(`node3 received: ${uint8ArrayToString(evt.detail.data)}`)
   })
+  node3.pubsub.subscribe(topic)
+
+  // wait for subscriptions to propagate
+  await delay(1000)
 
   const validateFruit = (msgTopic, msg) => {
     const fruit = uint8ArrayToString(msg.data)
     const validFruit = ['banana', 'apple', 'orange']
 
+    // car is not a fruit !
     if (!validFruit.includes(fruit)) {
       throw new Error('no valid fruit received')
     }
@@ -68,18 +86,19 @@ const createNode = async () => {
   node2.pubsub.topicValidators.set(topic, validateFruit)
   node3.pubsub.topicValidators.set(topic, validateFruit)
 
-  // node1 publishes "fruits" every five seconds
-  var count = 0;
-  const myFruits = ['banana', 'apple', 'car', 'orange'];
-  // car is not a fruit !
-  setInterval(() => {
-    console.log('############## fruit ' + myFruits[count] + ' ##############')
-    node1.pubsub.publish(topic, uint8ArrayFromString(myFruits[count])).catch(err => {
-      console.info(err)
-    })
-    count++
-    if (count == myFruits.length) {
-      count = 0
-    }
-  }, 5000)
+  // node1 publishes "fruits"
+  for (const fruit of ['banana', 'apple', 'car', 'orange']) {
+    console.log('############## fruit ' + fruit + ' ##############')
+    await node1.pubsub.publish(topic, uint8ArrayFromString(fruit))
+  }
+
+  // wait a few seconds for messages to be received
+  await delay(5000)
+  console.log('############## all messages sent ##############')
 })()
+
+async function delay (ms) {
+  await new Promise((resolve) => {
+    setTimeout(() => resolve(), ms)
+  })
+}

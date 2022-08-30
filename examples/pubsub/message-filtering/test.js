@@ -6,29 +6,11 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const stdout = [
-  {
-    topic: 'banana',
-    messageCount: 2
-  },
-  {
-    topic: 'apple',
-    messageCount: 2
-  },
-  {
-    topic: 'car',
-    messageCount: 0
-  },
-  {
-    topic: 'orange',
-    messageCount: 2
-  },
-]
+// holds messages received by peers
+const messages = {}
 
 export async function test () {
   const defer = pDefer()
-  let topicCount = 0
-  let topicMessageCount = 0
 
   process.stdout.write('message-filtering/1.js\n')
 
@@ -38,26 +20,27 @@ export async function test () {
   })
 
   proc.all.on('data', async (data) => {
-    // End
-    if (topicCount === stdout.length) {
-      defer.resolve()
-      proc.all.removeAllListeners('data')
-    }
-
     process.stdout.write(data)
     const line = uint8ArrayToString(data)
 
-    if (stdout[topicCount] && line.includes(stdout[topicCount].topic)) {
-      // Validate previous number of messages
-      if (topicCount > 0 && topicMessageCount > stdout[topicCount - 1].messageCount) {
-        defer.reject()
-        throw new Error(`topic ${stdout[topicCount - 1].topic} had ${topicMessageCount} messages instead of ${stdout[topicCount - 1].messageCount}`)
+    // End
+    if (line.includes('all messages sent')) {
+      if (messages.car > 0) {
+        defer.reject(new Error('Message validation failed - peers failed to filter car messages'))
       }
 
-      topicCount++
-      topicMessageCount = 0
-    } else {
-      topicMessageCount++
+      for (const fruit of ['banana', 'apple', 'orange']) {
+        if (messages[fruit] !== 2) {
+          defer.reject(new Error(`Not enough ${fruit} messages - received ${messages[fruit] ?? 0}, expected 2`))
+        }
+      }
+
+      defer.resolve()
+    }
+
+    if (line.includes('received:')) {
+      const fruit = line.split('received:')[1].trim()
+      messages[fruit] = (messages[fruit] ?? 0) + 1
     }
   })
 
