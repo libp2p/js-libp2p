@@ -10,7 +10,13 @@
     "build": "aegir build",
     "test": "aegir test",
     "test:browser": "aegir test --target browser",
-    "format": "prettier --write src/*.ts"
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "format": "prettier --write src/*.ts",
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "release": "aegir release"
   },
   "devDependencies": {
     "@libp2p/interface-mocks": "^4.0.1",
