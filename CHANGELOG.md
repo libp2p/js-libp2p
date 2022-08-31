@@ -1,3 +1,10 @@
+## [3.0.5](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.4...v3.0.5) (2022-08-31)
+
+
+### Bug Fixes
+
+* destroy sockets on close ([#204](https://github.com/libp2p/js-libp2p-tcp/issues/204)) ([e8b8f2e](https://github.com/libp2p/js-libp2p-tcp/commit/e8b8f2eaf547640f2566b18a8d061912965f2a55)), closes [#201](https://github.com/libp2p/js-libp2p-tcp/issues/201)
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.3...v3.0.4) (2022-08-30)
 
 
