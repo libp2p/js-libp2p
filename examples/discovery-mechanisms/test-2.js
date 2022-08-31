@@ -27,7 +27,7 @@ export async function test () {
     })
   })
 
-  await pWaitFor(() => discoveredNodes > 1)
+  await pWaitFor(() => discoveredNodes > 1, 600000)
 
   proc.kill()
 }

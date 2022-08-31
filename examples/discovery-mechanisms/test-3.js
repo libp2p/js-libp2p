@@ -32,7 +32,7 @@ export async function test () {
     })
   })
 
-  await pWaitFor(() => discoveredPeers.length > 3)
+  await pWaitFor(() => discoveredPeers.length > 2, 600000)
 
   proc.kill()
 }
