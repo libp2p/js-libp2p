@@ -47,9 +47,10 @@ const upgrader = {
   upgradeOutbound: maConn => maConn
 }
 
-const tcp = new TCP({ upgrader })
+const tcp = new TCP()
 
 const listener = tcp.createListener({
+  upgrader,
   handler: (socket) => {
     console.log('new connection opened')
     pipe(

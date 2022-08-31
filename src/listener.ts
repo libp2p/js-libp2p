@@ -32,6 +32,8 @@ async function attemptClose (maConn: MultiaddrConnection) {
 interface Context {
   handler?: (conn: Connection) => void
   upgrader: Upgrader
+  socketInactivityTimeout?: number
+  socketCloseTimeout?: number
 }
 
 /**
@@ -39,7 +41,7 @@ interface Context {
  */
 export function createListener (context: Context) {
   const {
-    handler, upgrader
+    handler, upgrader, socketInactivityTimeout, socketCloseTimeout
   } = context
 
   let peerId: string | null
@@ -53,7 +55,11 @@ export function createListener (context: Context) {
 
     let maConn: MultiaddrConnection
     try {
-      maConn = toMultiaddrConnection(socket, { listeningAddr })
+      maConn = toMultiaddrConnection(socket, {
+        listeningAddr,
+        socketInactivityTimeout,
+        socketCloseTimeout
+      })
     } catch (err) {
       log.error('inbound connection failed', err)
       return
@@ -139,9 +145,9 @@ export function createListener (context: Context) {
         return
       }
 
-      await Promise.all([
+      await Promise.all(
         server.__connections.map(async maConn => await attemptClose(maConn))
-      ])
+      )
 
       await new Promise<void>((resolve, reject) => {
         server.close(err => (err != null) ? reject(err) : resolve())

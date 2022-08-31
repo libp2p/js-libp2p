@@ -15,7 +15,30 @@ import type { Connection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:tcp')
 
+export interface TCPOptions {
+  /**
+   * An optional number in ms that is used as an inactivity timeout after which the socket will be closed
+   */
+  inboundSocketInactivityTimeout?: number
+
+  /**
+   * An optional number in ms that is used as an inactivity timeout after which the socket will be closed
+   */
+  outboundSocketInactivityTimeout?: number
+
+  /**
+   * When closing a socket, wait this long for it to close gracefully before it is closed more forcibly
+   */
+  socketCloseTimeout?: number
+}
+
 export class TCP implements Transport {
+  private readonly opts: TCPOptions
+
+  constructor (options: TCPOptions = {}) {
+    this.opts = options
+  }
+
   get [symbol] (): true {
     return true
   }
@@ -32,7 +55,12 @@ export class TCP implements Transport {
       log('socket error', err)
     })
 
-    const maConn = toMultiaddrConnection(socket, { remoteAddr: ma, signal: options.signal })
+    const maConn = toMultiaddrConnection(socket, {
+      remoteAddr: ma,
+      signal: options.signal,
+      socketInactivityTimeout: this.opts.outboundSocketInactivityTimeout,
+      socketCloseTimeout: this.opts.socketCloseTimeout
+    })
     log('new outbound connection %s', maConn.remoteAddr)
     const conn = await options.upgrader.upgradeOutbound(maConn)
     log('outbound connection %s upgraded', maConn.remoteAddr)
@@ -108,7 +136,11 @@ export class TCP implements Transport {
    * `upgrader.upgradeInbound`.
    */
   createListener (options: CreateListenerOptions) {
-    return createListener(options)
+    return createListener({
+      ...options,
+      socketInactivityTimeout: this.opts.inboundSocketInactivityTimeout,
+      socketCloseTimeout: this.opts.socketCloseTimeout
+    })
   }
 
   /**

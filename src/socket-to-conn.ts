@@ -3,7 +3,8 @@ import { logger } from '@libp2p/logger'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import { CLOSE_TIMEOUT } from './constants.js'
+import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
+import errCode from 'err-code'
 import type { Socket } from 'net'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
@@ -15,6 +16,8 @@ interface ToConnectionOptions {
   remoteAddr?: Multiaddr
   localAddr?: Multiaddr
   signal?: AbortSignal
+  socketInactivityTimeout?: number
+  socketCloseTimeout?: number
 }
 
 /**
@@ -23,6 +26,8 @@ interface ToConnectionOptions {
  */
 export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOptions) => {
   options = options ?? {}
+  const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
+  const closeTimeout = options.socketCloseTimeout ?? CLOSE_TIMEOUT
 
   // Check if we are connected on a unix path
   if (options.listeningAddr?.getPath() != null) {
@@ -33,7 +38,42 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
     options.localAddr = options.remoteAddr
   }
 
+  const remoteAddr = options.remoteAddr ?? toMultiaddr(socket.remoteAddress ?? '', socket.remotePort ?? '')
+  const { host, port } = remoteAddr.toOptions()
   const { sink, source } = toIterable.duplex(socket)
+
+  // by default there is no timeout
+  // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
+  socket.setTimeout(inactivityTimeout, () => {
+    log('%s:%s socket read timeout', host, port)
+
+    // only destroy with an error if the remote has not sent the FIN message
+    let err: Error | undefined
+    if (socket.readable) {
+      err = errCode(new Error('Socket read timeout'), 'ERR_SOCKET_READ_TIMEOUT')
+    }
+
+    // if the socket times out due to inactivity we must manually close the connection
+    // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-timeout
+    socket.destroy(err)
+  })
+
+  socket.once('close', () => {
+    log('%s:%s socket closed', host, port)
+
+    // In instances where `close` was not explicitly called,
+    // such as an iterable stream ending, ensure we have set the close
+    // timeline
+    if (maConn.timeline.close == null) {
+      maConn.timeline.close = Date.now()
+    }
+  })
+
+  socket.once('end', () => {
+    // the remote sent a FIN packet which means no more data will be sent
+    // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
+    log('socket ended', maConn.remoteAddr.toString())
+  })
 
   const maConn: MultiaddrConnection = {
     async sink (source) {
@@ -42,13 +82,7 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
       }
 
       try {
-        await sink((async function * () {
-          for await (const chunk of source) {
-            // Convert BufferList to Buffer
-            // Sink in StreamMuxer define argument as Uint8Array so chunk type infers as number which can't be sliced
-            yield Buffer.isBuffer(chunk) ? chunk : chunk.slice()
-          }
-        })())
+        await sink(source)
       } catch (err: any) {
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {
@@ -58,66 +92,84 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
           log(err)
         }
       }
+
+      // we have finished writing, send the FIN message
+      socket.end()
     },
 
-    // Missing Type for "abortable"
     source: (options.signal != null) ? abortableSource(source, options.signal) : source,
 
     // If the remote address was passed, use it - it may have the peer ID encapsulated
-    remoteAddr: options.remoteAddr ?? toMultiaddr(socket.remoteAddress ?? '', socket.remotePort ?? ''),
+    remoteAddr,
 
     timeline: { open: Date.now() },
 
     async close () {
-      if (socket.destroyed) return
+      if (socket.destroyed) {
+        log('%s:%s socket was already destroyed when trying to close', host, port)
+        return
+      }
 
-      return await new Promise((resolve, reject) => {
+      log('%s:%s closing socket', host, port)
+      await new Promise<void>((resolve, reject) => {
         const start = Date.now()
 
         // Attempt to end the socket. If it takes longer to close than the
         // timeout, destroy it manually.
         const timeout = setTimeout(() => {
-          const { host, port } = maConn.remoteAddr.toOptions()
-          log(
-            'timeout closing socket to %s:%s after %dms, destroying it manually',
-            host,
-            port,
-            Date.now() - start
-          )
-
           if (socket.destroyed) {
             log('%s:%s is already destroyed', host, port)
+            resolve()
           } else {
-            socket.destroy()
-          }
+            log('%s:%s socket close timeout after %dms, destroying it manually', host, port, Date.now() - start)
 
-          resolve()
-        }, CLOSE_TIMEOUT).unref()
+            // will trigger 'error' and 'close' events that resolves promise
+            socket.destroy(errCode(new Error('Socket close timeout'), 'ERR_SOCKET_CLOSE_TIMEOUT'))
+          }
+        }, closeTimeout).unref()
 
         socket.once('close', () => {
+          log('%s:%s socket closed', host, port)
+          // socket completely closed
           clearTimeout(timeout)
           resolve()
         })
-        socket.end((err?: Error & { code?: string }) => {
-          clearTimeout(timeout)
-          maConn.timeline.close = Date.now()
-          if (err != null) {
-            return reject(err)
+        socket.once('error', (err: Error) => {
+          log('%s:%s socket error', host, port, err)
+
+          // error closing socket
+          if (maConn.timeline.close == null) {
+            maConn.timeline.close = Date.now()
           }
-          resolve()
+
+          if (socket.destroyed) {
+            clearTimeout(timeout)
+          }
+
+          reject(err)
         })
+
+        // shorten inactivity timeout
+        socket.setTimeout(closeTimeout)
+
+        // close writable end of the socket
+        socket.end()
+
+        if (socket.writableLength > 0) {
+          // there are outgoing bytes waiting to be sent
+          socket.once('drain', () => {
+            log('%s:%s socket drained', host, port)
+
+            // all bytes have been sent we can destroy the socket (maybe) before the timeout
+            socket.destroy()
+          })
+        } else {
+          // nothing to send, destroy immediately
+          socket.destroy()
+        }
       })
     }
   }
-
-  socket.once('close', () => {
-    // In instances where `close` was not explicitly called,
-    // such as an iterable stream ending, ensure we have set the close
-    // timeline
-    if (maConn.timeline.close == null) {
-      maConn.timeline.close = Date.now()
-    }
-  })
 
   return maConn
 }
