@@ -49,6 +49,7 @@ export class TCP implements Transport {
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     const socket = await this._connect(ma, options)
+    socket.setKeepAlive(true)
 
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {

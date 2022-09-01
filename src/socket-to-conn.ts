@@ -38,7 +38,20 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
     options.localAddr = options.remoteAddr
   }
 
-  const remoteAddr = options.remoteAddr ?? toMultiaddr(socket.remoteAddress ?? '', socket.remotePort ?? '')
+  let remoteAddr: Multiaddr
+
+  if (options.remoteAddr != null) {
+    remoteAddr = options.remoteAddr
+  } else {
+    if (socket.remoteAddress == null || socket.remotePort == null) {
+      // this can be undefined if the socket is destroyed (for example, if the client disconnected)
+      // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketremoteaddress
+      throw errCode(new Error('Could not determine remote address or port'), 'ERR_NO_REMOTE_ADDRESS')
+    }
+
+    remoteAddr = toMultiaddr(socket.remoteAddress, socket.remotePort)
+  }
+
   const { host, port } = remoteAddr.toOptions()
   const { sink, source } = toIterable.duplex(socket)
 

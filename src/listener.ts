@@ -48,6 +48,8 @@ export function createListener (context: Context) {
   let listeningAddr: Multiaddr
 
   const server: ServerWithMultiaddrConnections = Object.assign(net.createServer(socket => {
+    socket.setKeepAlive(true)
+
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
       log('socket error', err)
