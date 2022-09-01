@@ -7,7 +7,7 @@ import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { WebSockets } from '../src/index.js'
 import { mockUpgrader } from '@libp2p/interface-mocks'
-import env from 'wherearewe'
+import { isBrowser, isWebWorker } from 'wherearewe'
 import type { Connection } from '@libp2p/interface-connection'
 
 const protocol = '/echo/1.0.0'
@@ -47,7 +47,7 @@ describe('libp2p-websockets', () => {
 
     const valid = ws.filter([ma1, ma2, ma3, ma4])
 
-    if (env.isBrowser || env.isWebWorker) {
+    if (isBrowser || isWebWorker) {
       expect(valid.length).to.equal(0)
     } else {
       expect(valid.length).to.equal(4)

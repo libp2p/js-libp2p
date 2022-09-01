@@ -3,7 +3,7 @@ import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { AbortError } from '@libp2p/interfaces/errors'
 import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
-import env from 'wherearewe'
+import { isBrowser, isWebWorker } from 'wherearewe'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
 import * as filters from './filters.js'
@@ -135,7 +135,7 @@ export class WebSockets implements Transport {
     }
 
     // Browser
-    if (env.isBrowser || env.isWebWorker) {
+    if (isBrowser || isWebWorker) {
       return filters.dnsWss(multiaddrs)
     }
 
