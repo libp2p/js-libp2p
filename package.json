@@ -6,12 +6,26 @@
   "author": "",
   "license": "Apache-2.0 or MIT",
   "type": "module",
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
   "scripts": {
     "build": "aegir build",
     "test": "aegir test",
     "test:browser": "aegir test --target browser",
-    "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
     "format": "prettier --write src/*.ts",
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -39,7 +53,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/multistream-select": "^3.0.0",
     "@libp2p/peer-id": "^1.1.15",
-    "@multiformats/multiaddr": "file:../js-multiaddr",
+    "@multiformats/multiaddr": "^10.4.0",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-merge": "^1.0.4",
