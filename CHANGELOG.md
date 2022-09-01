@@ -1,3 +1,15 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.2...v3.0.3) (2022-09-01)
+
+
+### Trivial Changes
+
+* update project config ([#180](https://github.com/libp2p/js-libp2p-websockets/issues/180)) ([4f79f9c](https://github.com/libp2p/js-libp2p-websockets/commit/4f79f9ce789a566b99c57597d2d71e2bce40fd6e))
+
+
+### Dependencies
+
+* **dev:** bump wherearewe from 1.0.2 to 2.0.1 ([#177](https://github.com/libp2p/js-libp2p-websockets/issues/177)) ([5d7ae6a](https://github.com/libp2p/js-libp2p-websockets/commit/5d7ae6a5c22c57e7f47f32405fd57ece98664e4d))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.1...v3.0.2) (2022-08-10)
 
 
