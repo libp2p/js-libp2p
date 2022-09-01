@@ -1,3 +1,10 @@
+## [3.0.6](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.5...v3.0.6) (2022-09-01)
+
+
+### Bug Fixes
+
+* add socket keepalive ([#205](https://github.com/libp2p/js-libp2p-tcp/issues/205)) ([9ac799b](https://github.com/libp2p/js-libp2p-tcp/commit/9ac799b0c057d209920997a30ca219ea96000131)), closes [/github.com/libp2p/go-libp2p/blob/master/p2p/transport/tcp/tcp.go#L85](https://github.com/libp2p//github.com/libp2p/go-libp2p/blob/master/p2p/transport/tcp/tcp.go/issues/L85) [/github.com/libp2p/go-libp2p/blob/master/p2p/transport/tcp/tcp.go#L191](https://github.com/libp2p//github.com/libp2p/go-libp2p/blob/master/p2p/transport/tcp/tcp.go/issues/L191)
+
 ## [3.0.5](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.4...v3.0.5) (2022-08-31)
 
 
