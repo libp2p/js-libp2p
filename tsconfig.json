@@ -5,10 +5,11 @@
 		"emitDeclarationOnly": false,
 		"module": "ES2020",
 		"importsNotUsedAsValues": "preserve",
-    "moduleResolution": "node"
+    	"moduleResolution": "node"
 	},
 	"include": [
 		"src",
-		"test"
+		"test",
+		"proto_ts"
 	]
 }

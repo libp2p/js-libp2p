@@ -7,13 +7,14 @@ import { Multiaddr } from '@multiformats/multiaddr';
 import { expect } from 'chai';
 
 function ignoredDialOption(): CreateListenerOptions {
-  let u = mockUpgrader({});
-  return {
-    upgrader: u,
-  };
+    let u = mockUpgrader({});
+    return {
+        upgrader: u
+    };
 }
 
 describe('basic transport tests', () => {
+
   it('Can construct', () => {
     let t = new underTest.WebRTCTransport();
     expect(t.constructor.name).to.equal('WebRTCTransport');
@@ -86,5 +87,5 @@ describe('basic transport tests', () => {
       }
     }
   });
-  it('scratch', async () => {});
 });
+

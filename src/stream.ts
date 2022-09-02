@@ -7,6 +7,7 @@ import merge from 'it-merge';
 import { Uint8ArrayList } from 'uint8arraylist';
 import { fromString } from 'uint8arrays/from-string';
 import { logger } from '@libp2p/logger';
+import * as pb from '../proto_ts/message';
 
 const log = logger('libp2p:webrtc:stream');
 
@@ -97,7 +98,27 @@ export class WebRTCStream implements Stream {
         res = new Uint8Array(data as ArrayBuffer);
       }
       log.trace(`[stream:${this.id}][${this.stat.direction}] received message: length: ${res.length} ${res}`);
-      (this.source as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(res));
+      let m = pb.Message.fromBinary(res);
+      log(`[stream:${this.id}][${this.stat.direction}] received pb.Message: ${Object.entries(m)}`);
+      switch (m.flag) {
+        case undefined:
+          break; //regular message only
+        case pb.Message_Flag.CLOSE_READ:
+          log.trace('Received close-read flag.');
+          this.closeWrite();
+          break;
+        case pb.Message_Flag.CLOSE_WRITE:
+          log.trace('Received close-write flag.');
+          this.closeRead();
+          break;
+        case pb.Message_Flag.RESET:
+          log.trace('Received reset flag.');
+          this.reset();
+      }
+      if (m.message) {
+        log.trace('%s incoming message %s', this.id, m.message);
+        (this.source as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(m.message));
+      }
     };
 
     this.channel.onclose = (_evt) => {
@@ -128,7 +149,10 @@ export class WebRTCStream implements Stream {
       if (closed || this.writeClosed) {
         break;
       }
-      this.channel.send(buf.subarray());
+      let res = buf.subarray();
+      let send_buf = pb.Message.toBinary({ message: buf.subarray() });
+      log.trace(`[stream:${this.id}][${this.stat.direction}] sending message: length: ${res.length} ${res}, encoded through pb as ${send_buf}`);
+      this.channel.send(send_buf);
     }
   }
 
@@ -141,8 +165,8 @@ export class WebRTCStream implements Stream {
     }
     this.stat.timeline.close = new Date().getTime();
     this.closed = true;
-    this.closeRead();
-    this.closeWrite();
+    this.readClosed = true;
+    this.writeClosed = true;
     this.channel.close();
   }
 
@@ -150,6 +174,7 @@ export class WebRTCStream implements Stream {
    * Close a stream for reading only
    */
   closeRead(): void {
+    this._sendFlag(pb.Message_Flag.CLOSE_READ);
     this.readClosed = true;
     (this.source as Pushable<Uint8ArrayList>).end();
     if (this.readClosed && this.writeClosed) {
@@ -161,6 +186,7 @@ export class WebRTCStream implements Stream {
    * Close a stream for writing only
    */
   closeWrite(): void {
+    this._sendFlag(pb.Message_Flag.CLOSE_WRITE);
     this.writeClosed = true;
     this.closeWritePromise.resolve();
     if (this.readClosed && this.writeClosed) {
@@ -179,7 +205,25 @@ export class WebRTCStream implements Stream {
    * Call when a remote error occurs, should close the stream for reading and writing
    */
   reset(): void {
-    this.close();
+    this._sendFlag(pb.Message_Flag.RESET);
     this.stat = defaultStat(this.stat.direction);
+    this.writeClosed = true;
+    this.closeWritePromise.resolve();
+    if (this.readClosed && this.writeClosed) {
+      this.close();
+    }
+  }
+
+  private _sendFlag(flag: pb.Message_Flag): void {
+    if (this.writeClosed) {
+      log.error(`Attempted to send flag ${flag}, but the stream is already closed.`);
+    } else {
+      try {
+        log('Sending flag: %s', flag.toString());
+        this.channel.send(pb.Message.toBinary({ flag: flag }));
+      } catch (e) {
+        log.error(`Exception while sending flag ${flag}: ${e}`);
+      }
+    }
   }
 }
