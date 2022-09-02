@@ -6,7 +6,8 @@ import { WebRTCStream } from './stream';
 import { Noise, stablelib } from '@chainsafe/libp2p-noise';
 import { Components, Initializable } from '@libp2p/components';
 import { Connection } from '@libp2p/interface-connection';
-import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { CreateListenerOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
@@ -18,6 +19,7 @@ import * as multihashes from 'multihashes';
 import { inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error';
 
 const log = logger('libp2p:webrtc:transport');
+const HANDSHAKE_TIMEOUT_MS = 10000;
 
 export class WebRTCTransport implements Transport, Initializable {
   private componentsPromise: DeferredPromise<void> = defer();
@@ -28,7 +30,7 @@ export class WebRTCTransport implements Transport, Initializable {
     this.components = components;
   }
 
-  async dial(ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial(ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options);
     log(`dialing address - ${ma}`);
     return rawConn;
@@ -39,7 +41,7 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   filter(multiaddrs: Multiaddr[]): Multiaddr[] {
-    return [];
+    return multiaddrs.filter(validMa);
   }
 
   get [Symbol.toStringTag](): string {
@@ -51,18 +53,23 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   async _connect(ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
+    let rps = ma.getPeerId();
+    if (!rps) {
+      throw inappropriateMultiaddr("we need to have the remote's PeerId");
+    }
+
     let peerConnection = new RTCPeerConnection();
+
     // create data channel
     let handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
     //
     // create offer sdp
     let offerSdp = await peerConnection.createOffer();
-    console.log(offerSdp);
     //
     //
     // generate random string for ufrag
     let ufrag = genUuid();
-    //
+
     //
     // munge sdp with ufrag = pwd
     offerSdp = sdp.munge(offerSdp, ufrag);
@@ -74,25 +81,32 @@ export class WebRTCTransport implements Transport, Initializable {
     //
     // construct answer sdp from multiaddr
     let answerSdp = sdp.fromMultiAddr(ma, ufrag);
-    //
+
     //
     //
     // set remote description
     peerConnection.setRemoteDescription(answerSdp);
+
     //
     //
     //
     // wait for peerconnection.onopen to fire, or for the datachannel to open
     let dataChannelOpenPromise = defer();
-    handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
-    setTimeout(dataChannelOpenPromise.reject, 10000);
-    await dataChannelOpenPromise.promise;
 
-    let myPeerId = this.components!.getPeerId();
-    let rps = ma.getPeerId();
-    if (!rps) {
-      throw inappropriateMultiaddr("we need to have the remote's PeerId");
-    }
+    handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
+    handshakeDataChannel.onerror = (ev: Event) => {
+      log.error('Error opening a data channel for handshaking: %s', ev.toString());
+      dataChannelOpenPromise.reject();
+    };
+    setTimeout(() => {
+      log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
+      dataChannelOpenPromise.reject();
+    }, HANDSHAKE_TIMEOUT_MS);
+
+    await dataChannelOpenPromise.promise;
+    await this.componentsPromise.promise;
+
+    let myPeerId = await this.getPeerId();
     let theirPeerId = p.peerIdFromString(rps);
 
     // do noise handshake
@@ -163,4 +177,20 @@ export class WebRTCTransport implements Transport, Initializable {
     let result = concat([prefix, ...fps]);
     return result;
   }
+
+  public async getPeerId(): Promise<PeerId> {
+    await this.componentsPromise.promise;
+    return this.components!.getPeerId();
+  }
 }
+
+const WEBRTC_CODE: number = 280;
+const CERTHASH_CODE: number = 466;
+
+function validMa(ma: Multiaddr): boolean {
+  let codes = ma.protoCodes();
+  return codes.includes(WEBRTC_CODE) 
+    && codes.includes(CERTHASH_CODE) 
+    && ma.getPeerId() != null;
+}
+

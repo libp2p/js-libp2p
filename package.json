@@ -8,8 +8,7 @@
   "type": "module",
   "scripts": {
     "build": "aegir build",
-    "test": "aegir test",
-    "test:browser": "aegir test --target browser",
+    "test": "aegir test --target browser",
     "format": "prettier --write src/*.ts"
   },
   "devDependencies": {
