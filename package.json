@@ -24,11 +24,10 @@
   ],
   "scripts": {
     "build": "aegir build",
-    "test": "aegir test",
-    "test:browser": "aegir test --target browser",
-    "format": "prettier --write src/*.ts",
-    "clean": "aegir clean",
+    "test": "aegir test --target browser",
     "lint": "aegir lint",
+    "lint:fix": "aegir lint --fix",
+    "clean": "aegir clean",
     "dep-check": "aegir dep-check",
     "release": "aegir release"
   },

@@ -16,7 +16,12 @@
   - [Transport](#transport)
   - [Connection](#connection)
 - [Contribute](#contribute)
-- [Contribute](#contribute-1)
+- [Development](#development)
+  - [Build](#build)
+  - [Lint](#lint)
+  - [Clean](#clean)
+  - [Check Dependencies](#check-dependencies)
+  - [Build a Release](#build-a-release)
 - [License](#license)
 - [Contribution](#contribution)
 
@@ -63,13 +68,51 @@ Please be aware that all interactions related to libp2p are subject to the IPFS 
 
 Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
-## Contribute
+## Development
 
-The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
+This module leans heavily on (Aegir)[https://github.com/ipfs/aegir] for most of the `package.json` scripts.
 
-- Go through the modules and **check out existing issues**. This is especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
-- **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
+### Build
+The build script is a wrapper to `aegir build`.  To build this package:
 
+```shell
+npm run build
+```
+
+The build will be located in the `/dist` folder.
+
+### Lint
+Aegir is also used to lint the code, which follows the [Standard](https://github.com/standard/standard) JS linter.
+The VS Code plugin for this standard is located at https://marketplace.visualstudio.com/items?itemName=standard.vscode-standard.
+To lint this repo:
+
+```shell
+npm run lint
+```
+
+You can also auto-fix when applicable:
+
+```shell
+npm run lint:fix
+```
+
+### Clean
+
+```shell
+npm run clean
+```
+
+### Check Dependencies
+
+```shell
+npm run deps-check
+```
+
+### Build a Release
+
+```shell
+npm run release
+```
 ## License
 
 Licensed under either of
