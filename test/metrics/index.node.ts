@@ -13,6 +13,7 @@ import type { Libp2pOptions } from '../../src/index.js'
 import type { DefaultMetrics } from '../../src/metrics/index.js'
 import pWaitFor from 'p-wait-for'
 import drain from 'it-drain'
+import map from 'it-map'
 
 describe('libp2p.metrics', () => {
   let libp2p: Libp2pNode
@@ -97,7 +98,7 @@ describe('libp2p.metrics', () => {
     const result = await pipe(
       [bytes],
       stream,
-      async (source) => await toBuffer(source)
+      async (source) => await toBuffer(map(source, (list) => list.subarray()))
     )
 
     // Flush the call stack

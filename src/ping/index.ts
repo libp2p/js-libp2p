@@ -113,7 +113,7 @@ export class PingService implements Startable {
       )
       const end = Date.now()
 
-      if (result == null || !uint8ArrayEquals(data, result)) {
+      if (result == null || !uint8ArrayEquals(data, result.subarray())) {
         throw errCode(new Error('Received wrong ping ack'), codes.ERR_WRONG_PING_ACK)
       }
 

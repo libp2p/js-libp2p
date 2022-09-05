@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { WebSockets } from '@libp2p/websockets'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { Libp2pOptions } from '../../src/index.js'
@@ -20,7 +20,7 @@ describe('getPublicKey', () => {
         new WebSockets()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ],
       dht: new KadDHT()
     }

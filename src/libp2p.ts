@@ -352,22 +352,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     log('libp2p has stopped')
   }
 
-  /**
-   * Load keychain keys from the datastore.
-   * Imports the private key as 'self', if needed.
-   */
-  async loadKeychain () {
-    if (this.keychain == null) {
-      return
-    }
-
-    try {
-      await this.keychain.findKeyByName('self')
-    } catch (err: any) {
-      await this.keychain.importPeer('self', this.peerId)
-    }
-  }
-
   isStarted () {
     return this.started
   }

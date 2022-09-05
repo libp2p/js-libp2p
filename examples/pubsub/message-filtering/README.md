@@ -48,18 +48,30 @@ Now we' can subscribe to the fruit topic and log incoming messages.
 ```JavaScript
 const topic = 'fruit'
 
-node1.pubsub.on(topic, (msg) => {
+node1.pubsub.addEventListener('message', (msg) => {
+  if (msg.detail.topic !== topic) {
+    return
+  }
+
   console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
 })
 await node1.pubsub.subscribe(topic)
 
-node2.pubsub.on(topic, (msg) => {
+node2.pubsub.addEventListener('message', (msg) => {
+  if (msg.detail.topic !== topic) {
+    return
+  }
+
   console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
 })
 await node2.pubsub.subscribe(topic)
 
-node3.pubsub.on(topic, (msg) => {
-  console.log(`node3 received: ${uint8ArrayToString(msg.data)}`)
+node3.pubsub.addEventListener('message', (msg) => {
+  if (msg.detail.topic !== topic) {
+    return
+  }
+
+console.log(`node3 received: ${uint8ArrayToString(msg.data)}`)
 })
 await node3.pubsub.subscribe(topic)
 ```
@@ -83,19 +95,10 @@ node3.pubsub.topicValidators.set(topic, validateFruit)
 In this example, node one has an outdated version of the system, or is a malicious node. When it tries to publish fruit, the messages are re-shared and all the nodes share the message. However, when it tries to publish a vehicle the message is not re-shared.
 
 ```JavaScript
-var count = 0;
-const myFruits = ['banana', 'apple', 'car', 'orange'];
-
-setInterval(() => {
-  console.log('############## fruit ' + myFruits[count] + ' ##############')
-  node1.pubsub.publish(topic, new TextEncoder().encode(myFruits[count])).catch(err => {
-    console.error(err)
-  })
-  count++
-  if (count == myFruits.length) {
-    count = 0
-  }
-}, 5000)
+for (const fruit of ['banana', 'apple', 'car', 'orange']) {
+  console.log('############## fruit ' + fruit + ' ##############')
+  await node1.pubsub.publish(topic, uint8ArrayFromString(fruit))
+}
 ```
 
 Result

@@ -67,7 +67,7 @@ const createNode = async (bootstrappers) => {
     const peer = evt.detail
     console.log(`Peer ${node1.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
-  node2.addEventListener('peer:discovery',(evt) => {
+  node2.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
     console.log(`Peer ${node2.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
@@ -77,4 +77,4 @@ const createNode = async (bootstrappers) => {
     node1.start(),
     node2.start()
   ])
-})();
+})()

@@ -347,6 +347,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
           })
         )
       })
+      .catch(err => {
+        log.error(err)
+      })
       .finally(() => {
         this.connectOnStartupController?.clear()
       })

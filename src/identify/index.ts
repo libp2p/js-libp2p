@@ -26,7 +26,6 @@ import type { Components } from '@libp2p/components'
 import { TimeoutController } from 'timeout-abort-controller'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
-import type { Duplex } from 'it-stream-types'
 import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:identify')
@@ -179,7 +178,7 @@ export class IdentifyService implements Startable {
         })
 
         // make stream abortable
-        const source: Duplex<Uint8Array> = abortableDuplex(stream, timeoutController.signal)
+        const source = abortableDuplex(stream, timeoutController.signal)
 
         await pipe(
           [Identify.encode({
@@ -404,7 +403,7 @@ export class IdentifyService implements Startable {
 
         const envelope = await RecordEnvelope.seal(peerRecord, this.components.getPeerId())
         await this.components.getPeerStore().addressBook.consumePeerRecord(envelope)
-        signedPeerRecord = envelope.marshal()
+        signedPeerRecord = envelope.marshal().subarray()
       }
 
       const message = Identify.encode({
@@ -418,7 +417,7 @@ export class IdentifyService implements Startable {
       })
 
       // make stream abortable
-      const source: Duplex<Uint8Array> = abortableDuplex(stream, timeoutController.signal)
+      const source = abortableDuplex(stream, timeoutController.signal)
 
       await pipe(
         [message],
@@ -449,7 +448,7 @@ export class IdentifyService implements Startable {
     let message: Identify | undefined
     try {
       // make stream abortable
-      const source: Duplex<Uint8Array> = abortableDuplex(stream, timeoutController.signal)
+      const source = abortableDuplex(stream, timeoutController.signal)
 
       const data = await pipe(
         [],

@@ -1,6 +1,6 @@
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
-import { Dialer, Listener } from '@libp2p/multistream-select'
+import * as mss from '@libp2p/multistream-select'
 import { pipe } from 'it-pipe'
 // @ts-expect-error mutable-proxy does not export types
 import mutableProxy from 'mutable-proxy'
@@ -152,7 +152,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
         const idString = `${(Math.random() * 1e9).toString(36)}${Date.now()}`
         setPeer({ toString: () => idString })
-        maConn = metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
+        metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
       }
 
       log('starting the inbound connection upgrade')
@@ -253,7 +253,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       ({ setTarget: setPeer, proxy: proxyPeer } = mutableProxy())
       const idString = `${(Math.random() * 1e9).toString(36)}${Date.now()}`
       setPeer({ toB58String: () => idString })
-      maConn = metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
+      metrics.trackStream({ stream: maConn, remotePeer: proxyPeer })
     }
 
     log('Starting the outbound connection upgrade')
@@ -351,9 +351,8 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
           void Promise.resolve()
             .then(async () => {
-              const mss = new Listener(muxedStream)
               const protocols = this.components.getRegistrar().getProtocols()
-              const { stream, protocol } = await mss.handle(protocols)
+              const { stream, protocol } = await mss.handle(muxedStream, protocols)
               log('%s: incoming stream opened on %s', direction, protocol)
 
               const metrics = this.components.getMetrics()
@@ -376,6 +375,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               }
 
               muxedStream.stat.protocol = protocol
+
+              // If a protocol stream has been successfully negotiated and is to be passed to the application,
+              // the peerstore should ensure that the peer is registered with that protocol
+              this.components.getPeerStore().protoBook.add(remotePeer, [protocol]).catch(err => log.error(err))
 
               connection.addStream(muxedStream)
               this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
@@ -405,7 +408,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
         log('%s: starting new stream on %s', direction, protocols)
         const muxedStream = muxer.newStream()
-        const mss = new Dialer(muxedStream)
         const metrics = this.components.getMetrics()
         let controller: TimeoutController | undefined
 
@@ -422,10 +424,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             } catch {}
           }
 
-          let { stream, protocol } = await mss.select(protocols, options)
+          const { stream, protocol } = await mss.select(muxedStream, protocols, options)
 
           if (metrics != null) {
-            stream = metrics.trackStream({ stream, remotePeer, protocol })
+            metrics.trackStream({ stream, remotePeer, protocol })
           }
 
           const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.getRegistrar())
@@ -437,6 +439,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
             throw err
           }
+
+          // If a protocol stream has been successfully negotiated and is to be passed to the application,
+          // the peerstore should ensure that the peer is registered with that protocol
+          this.components.getPeerStore().protoBook.add(remotePeer, [protocol]).catch(err => log.error(err))
 
           // after the handshake the returned stream can have early data so override
           // the souce/sink
@@ -542,12 +548,13 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
   async _encryptInbound (connection: Duplex<Uint8Array>): Promise<CryptoResult> {
-    const mss = new Listener(connection)
     const protocols = Array.from(this.connectionEncryption.keys())
     log('handling inbound crypto protocol selection', protocols)
 
     try {
-      const { stream, protocol } = await mss.handle(protocols)
+      const { stream, protocol } = await mss.handle(connection, protocols, {
+        writeBytes: true
+      })
       const encrypter = this.connectionEncryption.get(protocol)
 
       if (encrypter == null) {
@@ -570,12 +577,13 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * The first `ConnectionEncrypter` module to succeed will be used
    */
   async _encryptOutbound (connection: MultiaddrConnection, remotePeerId: PeerId): Promise<CryptoResult> {
-    const mss = new Dialer(connection)
     const protocols = Array.from(this.connectionEncryption.keys())
     log('selecting outbound crypto protocol', protocols)
 
     try {
-      const { stream, protocol } = await mss.select(protocols)
+      const { stream, protocol } = await mss.select(connection, protocols, {
+        writeBytes: true
+      })
       const encrypter = this.connectionEncryption.get(protocol)
 
       if (encrypter == null) {
@@ -598,11 +606,12 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * muxer will be used for all future streams on the connection.
    */
   async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory}> {
-    const dialer = new Dialer(connection)
     const protocols = Array.from(muxers.keys())
     log('outbound selecting muxer %s', protocols)
     try {
-      const { stream, protocol } = await dialer.select(protocols)
+      const { stream, protocol } = await mss.select(connection, protocols, {
+        writeBytes: true
+      })
       log('%s selected as muxer protocol', protocol)
       const muxerFactory = muxers.get(protocol)
       return { stream, muxerFactory }
@@ -617,11 +626,12 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * selected muxer will be used for all future streams on the connection.
    */
   async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory}> {
-    const listener = new Listener(connection)
     const protocols = Array.from(muxers.keys())
     log('inbound handling muxers %s', protocols)
     try {
-      const { stream, protocol } = await listener.handle(protocols)
+      const { stream, protocol } = await mss.handle(connection, protocols, {
+        writeBytes: true
+      })
       const muxerFactory = muxers.get(protocol)
       return { stream, muxerFactory }
     } catch (err: any) {
