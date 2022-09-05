@@ -40,7 +40,7 @@ const createNode = async () => {
   ])
 
   // Wait for onConnect handlers in the DHT
-  await delay(100)
+  await delay(1000)
 
   const cid = CID.parse('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
   await node1.contentRouting.provide(cid)

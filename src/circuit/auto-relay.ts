@@ -260,6 +260,12 @@ export class AutoRelay {
         }
 
         const peerId = provider.id
+
+        if (peerId.equals(this.components.getPeerId())) {
+          // Skip the provider if it's us as dialing will fail
+          continue
+        }
+
         await this.components.getPeerStore().addressBook.add(peerId, provider.multiaddrs)
 
         await this._tryToListenOnRelay(peerId)
