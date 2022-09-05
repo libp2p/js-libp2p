@@ -205,8 +205,10 @@ describe('auto-relay', () => {
       })).to.eventually.be.rejected()
 
       // Disconnect from peer used for relay
+      const disconnectPromise = pEvent(relayLibp2p1.connectionManager, 'peer:disconnect', { timeout: 500 })
       await relayLibp2p2.stop()
-      await pEvent(relayLibp2p1.connectionManager, 'peer:disconnect', { timeout: 500 })
+      const event = await disconnectPromise
+      expect(event.detail.remotePeer.toString()).to.equal(relayLibp2p2.peerId.toString())
 
       // Should not be using the relay any more
       await expect(usingAsRelay(relayLibp2p1, relayLibp2p2, {
@@ -399,6 +401,7 @@ describe('auto-relay', () => {
       nock('http://0.0.0.0:60197')
         .post('/api/v0/dht/findprovs')
         .query(true)
+        .twice()
         .reply(200, `{"Extra":"","ID":"${provider}","Responses":[{"Addrs":${JSON.stringify(multiaddrs)},"ID":"${provider}"}],"Type":4}\n`, [
           'Content-Type', 'application/json',
           'X-Chunked-Output', '1'
@@ -432,10 +435,14 @@ describe('auto-relay', () => {
       await local.hangUp(relayAddr)
 
       // Should try to find relay service providers
-      await pWaitFor(() => contentRoutingFindProvidersSpy.callCount === 1)
+      await pWaitFor(() => contentRoutingFindProvidersSpy.callCount === 1, {
+        timeout: 1000
+      })
 
       // Wait for peer added as listen relay
-      await pWaitFor(() => local.getMultiaddrs().length === originalMultiaddrsLength + 1)
+      await pWaitFor(() => local.getMultiaddrs().length === originalMultiaddrsLength + 1, {
+        timeout: 1000
+      })
 
       const relayedAddr = local.getMultiaddrs()[local.getMultiaddrs().length - 1]
       await remote.peerStore.addressBook.set(local.peerId, [relayedAddr])

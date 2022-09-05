@@ -284,7 +284,10 @@ export class Dialer implements Startable, Initializable {
         throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       }
 
-      return await this.components.getTransportManager().dial(addr, options)
+      return await this.components.getTransportManager().dial(addr, options).catch(err => {
+        log.error('dial to %s failed', addr, err)
+        throw err
+      })
     }
 
     const dialRequest = new DialRequest({
