@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - master # with #262 - ${{{ github.default_branch }}}
+      - develop
 
 jobs:
 
