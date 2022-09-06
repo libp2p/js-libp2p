@@ -29,20 +29,21 @@ export interface Message {
  */
 export enum Message_Flag {
     /**
-     * The sender will no longer send messages.
+     * The sender will no longer send messages on the stream.
      *
-     * @generated from protobuf enum value: CLOSE_WRITE = 0;
+     * @generated from protobuf enum value: FIN = 0;
      */
-    CLOSE_WRITE = 0,
+    FIN = 0,
     /**
-     * The sender will no longer read messages.
+     * The sender will no longer read messages on the stream. Incoming data is
+     * being discarded on receipt.
      *
-     * @generated from protobuf enum value: CLOSE_READ = 1;
+     * @generated from protobuf enum value: STOP_SENDING = 1;
      */
-    CLOSE_READ = 1,
+    STOP_SENDING = 1,
     /**
-     * The local endpoint abruptly terminates the stream. The remote endpoint
-     * may discard any in-flight data.
+     * The sender abruptly terminates the sending part of the stream. The
+     * receiver can discard any data that it already received on that stream.
      *
      * @generated from protobuf enum value: RESET = 2;
      */

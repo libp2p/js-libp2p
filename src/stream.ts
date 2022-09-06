@@ -103,17 +103,17 @@ export class WebRTCStream implements Stream {
       switch (m.flag) {
         case undefined:
           break; //regular message only
-        case pb.Message_Flag.CLOSE_READ:
-          log.trace('Received close-read flag.');
+        case pb.Message_Flag.STOP_SENDING:
+          log.trace('Remote has indicated, with "STOP_SENDING" flag, that it will discard any messages we send.');
           this.closeWrite();
           break;
-        case pb.Message_Flag.CLOSE_WRITE:
-          log.trace('Received close-write flag.');
+        case pb.Message_Flag.FIN:
+          log.trace('Remote has indicated, with "FIN" flag, that it will not send any further messages.');
           this.closeRead();
           break;
         case pb.Message_Flag.RESET:
-          log.trace('Received reset flag.');
-          this.reset();
+          log.trace('Remote abruptly stopped sending, indicated with "RESET" flag.');
+          this.closeRead();
       }
       if (m.message) {
         log.trace('%s incoming message %s', this.id, m.message);
@@ -174,7 +174,7 @@ export class WebRTCStream implements Stream {
    * Close a stream for reading only
    */
   closeRead(): void {
-    this._sendFlag(pb.Message_Flag.CLOSE_READ);
+    this._sendFlag(pb.Message_Flag.STOP_SENDING);
     this.readClosed = true;
     (this.source as Pushable<Uint8ArrayList>).end();
     if (this.readClosed && this.writeClosed) {
@@ -186,7 +186,7 @@ export class WebRTCStream implements Stream {
    * Close a stream for writing only
    */
   closeWrite(): void {
-    this._sendFlag(pb.Message_Flag.CLOSE_WRITE);
+    this._sendFlag(pb.Message_Flag.FIN);
     this.writeClosed = true;
     this.closeWritePromise.resolve();
     if (this.readClosed && this.writeClosed) {
@@ -202,11 +202,12 @@ export class WebRTCStream implements Stream {
   }
 
   /**
-   * Call when a remote error occurs, should close the stream for reading and writing
+   * Close the stream for writing, and indicate to the remote side this is being done 'abruptly'
+   * @see closeWrite
    */
   reset(): void {
-    this._sendFlag(pb.Message_Flag.RESET);
     this.stat = defaultStat(this.stat.direction);
+    this._sendFlag(pb.Message_Flag.RESET);
     this.writeClosed = true;
     this.closeWritePromise.resolve();
     if (this.readClosed && this.writeClosed) {
@@ -215,15 +216,11 @@ export class WebRTCStream implements Stream {
   }
 
   private _sendFlag(flag: pb.Message_Flag): void {
-    if (this.writeClosed) {
-      log.error(`Attempted to send flag ${flag}, but the stream is already closed.`);
-    } else {
-      try {
-        log('Sending flag: %s', flag.toString());
-        this.channel.send(pb.Message.toBinary({ flag: flag }));
-      } catch (e) {
-        log.error(`Exception while sending flag ${flag}: ${e}`);
-      }
+    try {
+      log('Sending flag: %s', flag.toString());
+      this.channel.send(pb.Message.toBinary({ flag: flag }));
+    } catch (e) {
+      log.error(`Exception while sending flag ${flag}: ${e}`);
     }
   }
 }
