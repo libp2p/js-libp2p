@@ -1,24 +1,28 @@
 /* eslint-disable no-console */
 'use strict'
 
-const tcp = require('net')
+import tcp from 'net'
 import { pipe } from 'it-pipe'
-const { toIterable } = require('./util')
-const Mplex = require('../src')
+import { toIterable } from './util.js'
+import { Mplex } from '../dist/src/index.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const listener = tcp.createServer(async socket => {
   console.log('[listener] Got connection!')
 
-  const muxer = new Mplex({
-    async onStream (stream) {
-      console.log('[listener] muxed stream opened')
+  const factory = new Mplex()
+  socket = toIterable(socket)
+  const muxer = factory.createStreamMuxer({
+    onIncomingStream: async (stream) => {
+      console.log('[listener] muxed stream opened, id:', stream.id)
       await pipe(
         stream,
         source => (async function * () {
           for await (const chunk of source) {
             console.log('[listener] received:')
-            console.log(chunk.toString())
-            yield 'thanks for the message, I am the listener'
+            console.log(uint8ArrayToString(chunk.slice()))
+            yield uint8ArrayFromString('thanks for the message, I am the listener')
           }
         })(),
         stream
@@ -26,8 +30,6 @@ const listener = tcp.createServer(async socket => {
       console.log('[listener] muxed stream closed')
     }
   })
-
-  socket = toIterable(socket)
   await pipe(socket, muxer, socket)
   console.log('[listener] socket stream closed')
 })

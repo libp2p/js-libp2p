@@ -1,5 +1,5 @@
 // Simple convertion of Node.js duplex to iterable duplex (no backpressure)
-exports.toIterable = socket => {
+export const toIterable = socket => {
   return {
     sink: async source => {
       try {
