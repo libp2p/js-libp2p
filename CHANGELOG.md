@@ -1,3 +1,10 @@
+## [3.0.6](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.5...v3.0.6) (2022-09-07)
+
+
+### Dependencies
+
+* **dev:** bump wherearewe from 1.0.2 to 2.0.1 ([#176](https://github.com/libp2p/js-libp2p-floodsub/issues/176)) ([4897c65](https://github.com/libp2p/js-libp2p-floodsub/commit/4897c659eceecca4d5875e8febe1989080f89a50))
+
 ## [3.0.5](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.4...v3.0.5) (2022-08-11)
 
 
