@@ -1,3 +1,10 @@
+## [3.0.7](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.6...v3.0.7) (2022-09-07)
+
+
+### Documentation
+
+* add warning not to use this module ([#180](https://github.com/libp2p/js-libp2p-floodsub/issues/180)) ([49ee33b](https://github.com/libp2p/js-libp2p-floodsub/commit/49ee33b4af95d7536c8bb9783eca6c65d90c6233))
+
 ## [3.0.6](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.5...v3.0.6) (2022-09-07)
 
 
