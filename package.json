@@ -157,6 +157,7 @@
     "it-pipe": "^2.0.3",
     "it-pushable": "^3.1.0",
     "it-stream-types": "^1.0.4",
+    "rate-limiter-flexible": "^2.3.9",
     "uint8arraylist": "^2.1.1",
     "uint8arrays": "^3.0.0",
     "varint": "^6.0.0"

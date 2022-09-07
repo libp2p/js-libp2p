@@ -44,7 +44,7 @@ class Encoder {
     if ((msg.type === MessageTypes.NEW_STREAM || msg.type === MessageTypes.MESSAGE_INITIATOR || msg.type === MessageTypes.MESSAGE_RECEIVER) && msg.data != null) {
       return [
         header,
-        msg.data instanceof Uint8Array ? msg.data : msg.data.subarray()
+        ...(msg.data instanceof Uint8Array ? [msg.data] : msg.data)
       ]
     }
 

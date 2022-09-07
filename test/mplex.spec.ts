@@ -35,7 +35,8 @@ describe('mplex', () => {
   it('should restrict number of recipient streams per connection', async () => {
     const maxInboundStreams = 10
     const factory = new Mplex({
-      maxInboundStreams
+      maxInboundStreams,
+      disconnectThreshold: Infinity
     })
     const muxer = factory.createStreamMuxer()
     const stream = pushable()

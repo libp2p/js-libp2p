@@ -73,6 +73,7 @@ Creates a factory that can be used to create new muxers.
 - `maxInboundStreams` - a number that defines how many incoming streams are allowed per connection (default: 1024)
 - `maxOutboundStreams` - a number that defines how many outgoing streams are allowed per connection (default: 1024)
 - `maxStreamBufferSize` - a number that defines how large the message buffer is allowed to grow (default: 1024 \* 1024 \* 4 - e.g. 4MB)
+- `disconnectThreshold` - if `maxInboundStreams` is reached, close the connection if the remote continues trying to open more than this many streams per second (default: 5)
 
 ### `const muxer = factory.createStreamMuxer(components, [options])`
 

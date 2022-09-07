@@ -6,7 +6,10 @@ import { Mplex } from '../src/index.js'
 describe('compliance', () => {
   tests({
     async setup () {
-      return new Mplex()
+      return new Mplex({
+        maxInboundStreams: Infinity,
+        disconnectThreshold: Infinity
+      })
     },
     async teardown () {}
   })
