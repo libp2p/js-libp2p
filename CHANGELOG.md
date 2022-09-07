@@ -1,3 +1,10 @@
+## [5.1.2](https://github.com/libp2p/js-libp2p-mplex/compare/v5.1.1...v5.1.2) (2022-09-07)
+
+
+### Documentation
+
+* make the example work ([#206](https://github.com/libp2p/js-libp2p-mplex/issues/206)) ([f07acc3](https://github.com/libp2p/js-libp2p-mplex/commit/f07acc361a0627ae848804ed6eb422efad70878f))
+
 ## [5.1.1](https://github.com/libp2p/js-libp2p-mplex/compare/v5.1.0...v5.1.1) (2022-08-30)
 
 
