@@ -168,6 +168,6 @@
     "p-wait-for": "^5.0.0",
     "protons": "^5.1.0",
     "sinon": "^14.0.0",
-    "wherearewe": "^1.0.0"
+    "wherearewe": "^2.0.1"
   }
 }
