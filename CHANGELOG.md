@@ -1,3 +1,10 @@
+## [5.2.0](https://github.com/libp2p/js-libp2p-mplex/compare/v5.1.2...v5.2.0) (2022-09-07)
+
+
+### Features
+
+* close connections when too many streams are opened ([#213](https://github.com/libp2p/js-libp2p-mplex/issues/213)) ([9140770](https://github.com/libp2p/js-libp2p-mplex/commit/9140770f4559677bbe69fc84d4d2dbcc70068c9e))
+
 ## [5.1.2](https://github.com/libp2p/js-libp2p-mplex/compare/v5.1.1...v5.1.2) (2022-09-07)
 
 
