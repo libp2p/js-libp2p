@@ -1,3 +1,10 @@
+## [5.2.1](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.0...v5.2.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* do not treat stream source as pushable ([#211](https://github.com/libp2p/js-libp2p-mplex/issues/211)) ([359c103](https://github.com/libp2p/js-libp2p-mplex/commit/359c1038b870f84a9dfd390d4a0021c157fe0bcc))
+
 ## [5.2.0](https://github.com/libp2p/js-libp2p-mplex/compare/v5.1.2...v5.2.0) (2022-09-07)
 
 
