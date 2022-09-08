@@ -89,6 +89,10 @@ export function createStream (options: Options): MplexStream {
     }
   }
 
+  const streamSource = pushable<Uint8ArrayList>({
+    onEnd: onSourceEnd
+  })
+
   const stream: MplexStream = {
     // Close for both Reading and Writing
     close: () => {
@@ -106,7 +110,7 @@ export function createStream (options: Options): MplexStream {
         return
       }
 
-      stream.source.end()
+      streamSource.end()
     },
 
     // Close for writing
@@ -132,7 +136,7 @@ export function createStream (options: Options): MplexStream {
     abort: (err: Error) => {
       log.trace('%s stream %s abort', type, streamName, err)
       // End the source with the passed error
-      stream.source.end(err)
+      streamSource.end(err)
       abortController.abort()
       onSinkEnd(err)
     },
@@ -141,7 +145,7 @@ export function createStream (options: Options): MplexStream {
     reset: () => {
       const err = errCode(new Error('stream reset'), ERR_STREAM_RESET)
       resetController.abort()
-      stream.source.end(err)
+      streamSource.end(err)
       onSinkEnd(err)
     },
 
@@ -213,7 +217,7 @@ export function createStream (options: Options): MplexStream {
           }
         }
 
-        stream.source.end(err)
+        streamSource.end(err)
         onSinkEnd(err)
         return
       }
@@ -227,9 +231,15 @@ export function createStream (options: Options): MplexStream {
       onSinkEnd()
     },
 
-    source: pushable({
-      onEnd: onSourceEnd
-    }),
+    source: streamSource,
+
+    sourcePush: (data: Uint8ArrayList) => {
+      streamSource.push(data)
+    },
+
+    sourceReadableLength () {
+      return streamSource.readableLength
+    },
 
     stat: {
       direction: type === 'initiator' ? 'outbound' : 'inbound',

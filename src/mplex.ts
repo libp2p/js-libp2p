@@ -1,5 +1,5 @@
 import { pipe } from 'it-pipe'
-import { Pushable, pushableV } from 'it-pushable'
+import { pushableV } from 'it-pushable'
 import { abortableSource } from 'abortable-iterator'
 import { encode } from './encode.js'
 import { decode } from './decode.js'
@@ -44,7 +44,8 @@ function printMessage (msg: Message) {
 }
 
 export interface MplexStream extends Stream {
-  source: Pushable<Uint8ArrayList>
+  sourceReadableLength: () => number
+  sourcePush: (data: Uint8ArrayList) => void
 }
 
 interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {}
@@ -303,7 +304,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     switch (type) {
       case MessageTypes.MESSAGE_INITIATOR:
       case MessageTypes.MESSAGE_RECEIVER:
-        if (stream.source.readableLength > maxBufferSize) {
+        if (stream.sourceReadableLength() > maxBufferSize) {
           // Stream buffer has got too large, reset the stream
           this._source.push({
             id: message.id,
@@ -318,7 +319,7 @@ export class MplexStreamMuxer implements StreamMuxer {
         }
 
         // We got data from the remote, push it into our local stream
-        stream.source.push(message.data)
+        stream.sourcePush(message.data)
         break
       case MessageTypes.CLOSE_INITIATOR:
       case MessageTypes.CLOSE_RECEIVER:
