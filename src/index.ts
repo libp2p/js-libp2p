@@ -50,6 +50,7 @@ export interface MetricsConfig {
 export interface HopConfig {
   enabled?: boolean
   active?: boolean
+  timeout: number
 }
 
 export interface RelayConfig {
@@ -138,12 +139,6 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   metrics?: Metrics
   pubsub: PubSub
   dht: DualDHT
-
-  /**
-   * Load keychain keys from the datastore.
-   * Imports the private key as 'self', if needed.
-   */
-  loadKeychain: () => Promise<void>
 
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating

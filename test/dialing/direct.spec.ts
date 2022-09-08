@@ -7,7 +7,7 @@ import delay from 'delay'
 import { WebSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { Mplex } from '@libp2p/mplex'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from '../../src/insecure/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -360,7 +360,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -385,7 +385,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ],
       connectionManager: {
         maxParallelDials: 10,
@@ -416,7 +416,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -450,7 +450,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -490,7 +490,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -518,7 +518,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -539,7 +539,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -576,7 +576,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -602,7 +602,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 

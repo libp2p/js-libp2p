@@ -17,12 +17,23 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
 import type { Connection } from '@libp2p/interface-connection'
+import type { RelayConfig } from '../index.js'
+import { abortableDuplex } from 'abortable-iterator'
+import { TimeoutController } from 'timeout-abort-controller'
+import { setMaxListeners } from 'events'
+import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:circuit')
 
 export class Circuit implements Transport, Initializable {
   private handler?: ConnectionHandler
   private components: Components = new Components()
+  private readonly _init: RelayConfig
+
+  constructor (init: RelayConfig) {
+    this._init = init
+  }
 
   init (components: Components): void {
     this.components = components
@@ -54,49 +65,25 @@ export class Circuit implements Transport, Initializable {
 
   async _onProtocol (data: IncomingStreamData) {
     const { connection, stream } = data
-    const streamHandler = new StreamHandler({ stream })
-    const request = await streamHandler.read()
+    const controller = new TimeoutController(this._init.hop.timeout)
 
-    if (request == null) {
-      log('request was invalid, could not read from stream')
-      streamHandler.write({
-        type: CircuitPB.Type.STATUS,
-        code: CircuitPB.Status.MALFORMED_MESSAGE
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, controller.signal)
+    } catch {}
+
+    try {
+      const source = abortableDuplex(stream, controller.signal)
+      const streamHandler = new StreamHandler({
+        stream: {
+          ...stream,
+          ...source
+        }
       })
-      streamHandler.close()
-      return
-    }
+      const request = await streamHandler.read()
 
-    let virtualConnection
-
-    switch (request.type) {
-      case CircuitPB.Type.CAN_HOP: {
-        log('received CAN_HOP request from %p', connection.remotePeer)
-        await handleCanHop({ circuit: this, connection, streamHandler })
-        break
-      }
-      case CircuitPB.Type.HOP: {
-        log('received HOP request from %p', connection.remotePeer)
-        virtualConnection = await handleHop({
-          connection,
-          request,
-          streamHandler,
-          circuit: this,
-          connectionManager: this.components.getConnectionManager()
-        })
-        break
-      }
-      case CircuitPB.Type.STOP: {
-        log('received STOP request from %p', connection.remotePeer)
-        virtualConnection = await handleStop({
-          connection,
-          request,
-          streamHandler
-        })
-        break
-      }
-      default: {
-        log('Request of type %s not supported', request.type)
+      if (request == null) {
+        log('request was invalid, could not read from stream')
         streamHandler.write({
           type: CircuitPB.Type.STATUS,
           code: CircuitPB.Status.MALFORMED_MESSAGE
@@ -104,27 +91,68 @@ export class Circuit implements Transport, Initializable {
         streamHandler.close()
         return
       }
-    }
 
-    if (virtualConnection != null) {
-      // @ts-expect-error dst peer will not be undefined
-      const remoteAddr = new Multiaddr(request.dstPeer.addrs[0])
-      // @ts-expect-error dst peer will not be undefined
-      const localAddr = new Multiaddr(request.srcPeer.addrs[0])
-      const maConn = streamToMaConnection({
-        stream: virtualConnection,
-        remoteAddr,
-        localAddr
-      })
-      const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
-      log('new %s connection %s', type, maConn.remoteAddr)
+      let virtualConnection: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> | undefined
 
-      const conn = await this.components.getUpgrader().upgradeInbound(maConn)
-      log('%s connection %s upgraded', type, maConn.remoteAddr)
-
-      if (this.handler != null) {
-        this.handler(conn)
+      switch (request.type) {
+        case CircuitPB.Type.CAN_HOP: {
+          log('received CAN_HOP request from %p', connection.remotePeer)
+          await handleCanHop({ circuit: this, connection, streamHandler })
+          break
+        }
+        case CircuitPB.Type.HOP: {
+          log('received HOP request from %p', connection.remotePeer)
+          await handleHop({
+            connection,
+            request,
+            streamHandler,
+            circuit: this,
+            connectionManager: this.components.getConnectionManager()
+          })
+          break
+        }
+        case CircuitPB.Type.STOP: {
+          log('received STOP request from %p', connection.remotePeer)
+          virtualConnection = await handleStop({
+            connection,
+            request,
+            streamHandler
+          })
+          break
+        }
+        default: {
+          log('Request of type %s not supported', request.type)
+          streamHandler.write({
+            type: CircuitPB.Type.STATUS,
+            code: CircuitPB.Status.MALFORMED_MESSAGE
+          })
+          streamHandler.close()
+          return
+        }
       }
+
+      if (virtualConnection != null) {
+        const remoteAddr = connection.remoteAddr
+          .encapsulate('/p2p-circuit')
+          .encapsulate(new Multiaddr(request.dstPeer?.addrs[0]))
+        const localAddr = new Multiaddr(request.srcPeer?.addrs[0])
+        const maConn = streamToMaConnection({
+          stream: virtualConnection,
+          remoteAddr,
+          localAddr
+        })
+        const type = request.type === CircuitPB.Type.HOP ? 'relay' : 'inbound'
+        log('new %s connection %s', type, maConn.remoteAddr)
+
+        const conn = await this.components.getUpgrader().upgradeInbound(maConn)
+        log('%s connection %s upgraded', type, maConn.remoteAddr)
+
+        if (this.handler != null) {
+          this.handler(conn)
+        }
+      }
+    } finally {
+      controller.clear()
     }
   }
 
@@ -160,6 +188,7 @@ export class Circuit implements Transport, Initializable {
 
     try {
       const virtualConnection = await hop({
+        ...options,
         connection: relayConnection,
         request: {
           type: CircuitPB.Type.HOP,

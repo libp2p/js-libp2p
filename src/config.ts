@@ -10,6 +10,7 @@ import type { Libp2pInit } from './index.js'
 import { codes, messages } from './errors.js'
 import errCode from 'err-code'
 import type { RecursivePartial } from '@libp2p/interfaces'
+import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 
 const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
@@ -68,7 +69,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
     },
     hop: {
       enabled: false,
-      active: false
+      active: false,
+      timeout: 30000
     },
     autoRelay: {
       enabled: false,
@@ -114,6 +116,15 @@ export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit 
 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw errCode(new Error(messages.ERR_PROTECTOR_REQUIRED), codes.ERR_PROTECTOR_REQUIRED)
+  }
+
+  // Append user agent version to default AGENT_VERSION depending on the environment
+  if (resultingOptions.identify.host.agentVersion === AGENT_VERSION) {
+    if (isNode || isElectronMain) {
+      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.process.version}`
+    } else if (isBrowser || isWebWorker || isElectronRenderer || isReactNative) {
+      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.navigator.userAgent}`
+    }
   }
 
   return resultingOptions

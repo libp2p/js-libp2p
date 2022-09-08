@@ -331,6 +331,11 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         this.connectOnStartupController?.clear()
         this.connectOnStartupController = new TimeoutController(this.startupReconnectTimeout)
 
+        try {
+          // fails on node < 15.4
+          setMaxListeners?.(Infinity, this.connectOnStartupController.signal)
+        } catch {}
+
         await Promise.all(
           keepAlivePeers.map(async peer => {
             await this.openConnection(peer, {
@@ -341,6 +346,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
               })
           })
         )
+      })
+      .catch(err => {
+        log.error(err)
       })
       .finally(() => {
         this.connectOnStartupController?.clear()
@@ -510,6 +518,11 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     if (options?.signal == null) {
       timeoutController = new TimeoutController(this.dialTimeout)
       options.signal = timeoutController.signal
+
+      try {
+        // fails on node < 15.4
+        setMaxListeners?.(Infinity, timeoutController.signal)
+      } catch {}
     }
 
     try {

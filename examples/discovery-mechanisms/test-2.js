@@ -1,5 +1,5 @@
 import path from 'path'
-import execa from 'execa'
+import { execa } from 'execa'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fileURLToPath } from 'url'
@@ -27,7 +27,7 @@ export async function test () {
     })
   })
 
-  await pWaitFor(() => discoveredNodes > 1)
+  await pWaitFor(() => discoveredNodes > 1, 600000)
 
   proc.kill()
 }

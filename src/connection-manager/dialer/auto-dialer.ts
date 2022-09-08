@@ -2,6 +2,7 @@ import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { logger } from '@libp2p/logger'
 import type { Components } from '@libp2p/components'
 import { TimeoutController } from 'timeout-abort-controller'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:dialer:auto-dialer')
 
@@ -43,6 +44,11 @@ export class AutoDialer {
         log('auto-dialing discovered peer %p with timeout %d', peer.id, this.dialTimeout)
 
         const controller = new TimeoutController(this.dialTimeout)
+
+        try {
+          // fails on node < 15.4
+          setMaxListeners?.(Infinity, controller.signal)
+        } catch {}
 
         void this.components.getConnectionManager().openConnection(peer.id, {
           signal: controller.signal

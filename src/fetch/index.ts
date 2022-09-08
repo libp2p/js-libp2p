@@ -14,6 +14,7 @@ import { abortableDuplex } from 'abortable-iterator'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
 import { TimeoutController } from 'timeout-abort-controller'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:fetch')
 
@@ -93,21 +94,27 @@ export class FetchService implements Startable {
     const connection = await this.components.getConnectionManager().openConnection(peer, options)
     let timeoutController
     let signal = options.signal
+    let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
       timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
+
+      try {
+        // fails on node < 15.4
+        setMaxListeners?.(Infinity, timeoutController.signal)
+      } catch {}
     }
 
-    const stream = await connection.newStream([this.protocol], {
-      signal
-    })
-
-    // make stream abortable
-    const source = abortableDuplex(stream, signal)
-
     try {
+      stream = await connection.newStream([this.protocol], {
+        signal
+      })
+
+      // make stream abortable
+      const source = abortableDuplex(stream, signal)
+
       const result = await pipe(
         [FetchRequest.encode({ identifier: key })],
         lp.encode(),
@@ -146,7 +153,9 @@ export class FetchService implements Startable {
         timeoutController.clear()
       }
 
-      stream.close()
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 

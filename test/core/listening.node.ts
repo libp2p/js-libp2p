@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { TCP } from '@libp2p/tcp'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
@@ -31,7 +31,7 @@ describe('Listening', () => {
         new TCP()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 

@@ -10,8 +10,8 @@ import type { Components } from '@libp2p/components'
 
 const log = logger('libp2p:registrar')
 
-export const DEFAULT_MAX_INBOUND_STREAMS = 1
-export const DEFAULT_MAX_OUTBOUND_STREAMS = 1
+export const DEFAULT_MAX_INBOUND_STREAMS = 32
+export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
 
 /**
  * Responsible for notifying registered protocols of events in the network.

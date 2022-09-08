@@ -10,6 +10,55 @@
 
 
 
+## [0.39.0](https://www.github.com/libp2p/js-libp2p/compare/v0.38.0...v0.39.0) (2022-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `loadKeychain` method has been removed as it is no longer necessary
+
+### Bug Fixes
+
+* discovery mechanism examples not working ([#1365](https://www.github.com/libp2p/js-libp2p/issues/1365)) ([d281a60](https://www.github.com/libp2p/js-libp2p/commit/d281a60dac973eeb0c842ffd70cd8bad3ae1156a)), closes [#1229](https://www.github.com/libp2p/js-libp2p/issues/1229)
+* load self key into keychain on startup if not present ([#1357](https://www.github.com/libp2p/js-libp2p/issues/1357)) ([1f38ab7](https://www.github.com/libp2p/js-libp2p/commit/1f38ab7ac8380c9501b252d076bb356662978882)), closes [#1315](https://www.github.com/libp2p/js-libp2p/issues/1315)
+
+## [0.38.0](https://www.github.com/libp2p/js-libp2p/compare/v0.37.3...v0.38.0) (2022-08-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Streams are now `Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>`
+* `connectionManager.peerValue` has been removed, use `peerStore.tagPeer` instead
+* limit protocol streams per-connection (#1255)
+* uses new single-issue libp2p interface modules
+
+### Features
+
+* limit protocol streams per-connection ([#1255](https://www.github.com/libp2p/js-libp2p/issues/1255)) ([de30c2c](https://www.github.com/libp2p/js-libp2p/commit/de30c2cec79d1e9d758cbcddc11d315b17843343))
+* programmatically set agentVersion for use in identify ([#1296](https://www.github.com/libp2p/js-libp2p/issues/1296)) ([0bb1b80](https://www.github.com/libp2p/js-libp2p/commit/0bb1b802c8fc2f32eaef10efbc88005dce6c6020)), closes [#686](https://www.github.com/libp2p/js-libp2p/issues/686) [#1240](https://www.github.com/libp2p/js-libp2p/issues/1240)
+* update libp2p interfaces ([#1252](https://www.github.com/libp2p/js-libp2p/issues/1252)) ([d4dd664](https://www.github.com/libp2p/js-libp2p/commit/d4dd664071476e3d22f53e02e7d66099f3265f6c))
+* use tag values to choose which connections to close ([#1276](https://www.github.com/libp2p/js-libp2p/issues/1276)) ([b1b2b21](https://www.github.com/libp2p/js-libp2p/commit/b1b2b216daf12caccd67503dfd7b296b191c5b83))
+
+
+### Bug Fixes
+
+* add successful stream peer to protobook ([#1341](https://www.github.com/libp2p/js-libp2p/issues/1341)) ([8880eef](https://www.github.com/libp2p/js-libp2p/commit/8880eefa8ffeff1203cdf5053a17dbf45f43cc3d))
+* add timeout for circuit relay ([#1294](https://www.github.com/libp2p/js-libp2p/issues/1294)) ([ba56c64](https://www.github.com/libp2p/js-libp2p/commit/ba56c6466232ad4aa5025e2db084c5c9ccd4e5d0))
+* add timeout for incoming connections and build-in protocols ([#1292](https://www.github.com/libp2p/js-libp2p/issues/1292)) ([750ed9c](https://www.github.com/libp2p/js-libp2p/commit/750ed9c35f095aa6e136a801ccd792f2190f38a1))
+* catch errors when reconnecting old peers ([#1352](https://www.github.com/libp2p/js-libp2p/issues/1352)) ([886759b](https://www.github.com/libp2p/js-libp2p/commit/886759b7fb3c14f243d4e74b1714930424bb7453))
+* close streams when protocol limits are reached ([#1301](https://www.github.com/libp2p/js-libp2p/issues/1301)) ([3c0fb13](https://www.github.com/libp2p/js-libp2p/commit/3c0fb13babe295c8e5284345080bd4434f39efa7))
+* MaxListenersExceeded warning ([#1297](https://www.github.com/libp2p/js-libp2p/issues/1297)) ([627b8bf](https://www.github.com/libp2p/js-libp2p/commit/627b8bf87c775762dd6a9de69b77852e48ebcf26))
+* prepend connection addr to circuit relay address ([#1355](https://www.github.com/libp2p/js-libp2p/issues/1355)) ([509e56a](https://www.github.com/libp2p/js-libp2p/commit/509e56a60359f98ec435f8519c6a499641cce212))
+* remove mplex prefix from muxer errors ([#1304](https://www.github.com/libp2p/js-libp2p/issues/1304)) ([05e8e7e](https://www.github.com/libp2p/js-libp2p/commit/05e8e7ead96d494bdd7dfa5d6430155670066767))
+* specify max stream args separately ([#1254](https://www.github.com/libp2p/js-libp2p/issues/1254)) ([5371729](https://www.github.com/libp2p/js-libp2p/commit/53717296468ef17fdc3e0dda9d5908b15d2772a1))
+* update muxer behavior ([#1289](https://www.github.com/libp2p/js-libp2p/issues/1289)) ([b1b9139](https://www.github.com/libp2p/js-libp2p/commit/b1b91398e27d0b8852a74a87f0d8ccc5f34340b4))
+* use keep-alive tag to reconnect to peers on startup ([#1278](https://www.github.com/libp2p/js-libp2p/issues/1278)) ([2836acc](https://www.github.com/libp2p/js-libp2p/commit/2836acc90f8eafd2106539a80ac7d3b307c0bd02))
+
+
+### deps
+
+* update all deps to support no-copy operations ([#1335](https://www.github.com/libp2p/js-libp2p/issues/1335)) ([f439d9b](https://www.github.com/libp2p/js-libp2p/commit/f439d9b589a0a6544b61aca3736e920943ce38b5))
+
 ### [0.37.3](https://www.github.com/libp2p/js-libp2p/compare/v0.37.2...v0.37.3) (2022-06-08)
 
 

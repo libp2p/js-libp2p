@@ -5,6 +5,8 @@ import { StreamHandler } from './stream-handler.js'
 import { validateAddrs } from './utils.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit:stop')
 
@@ -17,7 +19,7 @@ export interface HandleStopOptions {
 /**
  * Handles incoming STOP requests
  */
-export function handleStop (options: HandleStopOptions): Duplex<Uint8Array> | undefined {
+export function handleStop (options: HandleStopOptions): Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> | undefined {
   const {
     connection,
     request,
@@ -42,7 +44,7 @@ export function handleStop (options: HandleStopOptions): Duplex<Uint8Array> | un
   return streamHandler.rest()
 }
 
-export interface StopOptions {
+export interface StopOptions extends AbortOptions {
   connection: Connection
   request: CircuitPB
 }
@@ -53,10 +55,13 @@ export interface StopOptions {
 export async function stop (options: StopOptions) {
   const {
     connection,
-    request
+    request,
+    signal
   } = options
 
-  const stream = await connection.newStream([RELAY_CODEC])
+  const stream = await connection.newStream(RELAY_CODEC, {
+    signal
+  })
   log('starting stop request to %p', connection.remotePeer)
   const streamHandler = new StreamHandler({ stream })
 

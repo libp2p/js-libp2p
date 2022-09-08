@@ -13,6 +13,8 @@ import type { Components } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
+import type { Stream } from '@libp2p/interface-connection'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:ping')
 
@@ -83,21 +85,27 @@ export class PingService implements Startable {
     const connection = await this.components.getConnectionManager().openConnection(peer, options)
     let timeoutController
     let signal = options.signal
+    let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
       timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
+
+      try {
+        // fails on node < 15.4
+        setMaxListeners?.(Infinity, timeoutController.signal)
+      } catch {}
     }
 
-    const stream = await connection.newStream([this.protocol], {
-      signal
-    })
-
-    // make stream abortable
-    const source = abortableDuplex(stream, signal)
-
     try {
+      stream = await connection.newStream([this.protocol], {
+        signal
+      })
+
+      // make stream abortable
+      const source = abortableDuplex(stream, signal)
+
       const result = await pipe(
         [data],
         source,
@@ -105,7 +113,7 @@ export class PingService implements Startable {
       )
       const end = Date.now()
 
-      if (result == null || !uint8ArrayEquals(data, result)) {
+      if (result == null || !uint8ArrayEquals(data, result.subarray())) {
         throw errCode(new Error('Received wrong ping ack'), codes.ERR_WRONG_PING_ACK)
       }
 
@@ -115,7 +123,9 @@ export class PingService implements Startable {
         timeoutController.clear()
       }
 
-      stream.close()
+      if (stream != null) {
+        stream.close()
+      }
     }
   }
 }

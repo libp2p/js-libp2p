@@ -3,7 +3,7 @@ process.env.CI = true // needed for some "clever" build tools
 
 import fs from 'fs-extra'
 import path from 'path'
-import execa from 'execa'
+import { execa } from 'execa'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -36,7 +36,8 @@ async function installDeps (dir) {
     return
   }
 
-  const proc = execa.command('npm install', {
+  const proc = execa('npm', ['install'], {
+    all: true,
     cwd: dir
   })
   proc.all.on('data', (data) => {
@@ -71,6 +72,7 @@ async function build (dir) {
   }
 
   const proc = execa('npm', ['run', build], {
+    all: true,
     cwd: dir
   })
   proc.all.on('data', (data) => {

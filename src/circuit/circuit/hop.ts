@@ -12,6 +12,8 @@ import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { Duplex } from 'it-stream-types'
 import type { Circuit } from '../transport.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit:hop')
 
@@ -23,7 +25,7 @@ export interface HopRequest {
   connectionManager: ConnectionManager
 }
 
-export async function handleHop (hopRequest: HopRequest) {
+export async function handleHop (hopRequest: HopRequest): Promise<void> {
   const {
     connection,
     request,
@@ -83,7 +85,7 @@ export async function handleHop (hopRequest: HopRequest) {
     srcPeer: request.srcPeer
   }
 
-  let destinationStream: Duplex<Uint8Array>
+  let destinationStream: Duplex<Uint8ArrayList>
   try {
     log('performing STOP request')
     const result = await stop({
@@ -118,7 +120,7 @@ export async function handleHop (hopRequest: HopRequest) {
   )
 }
 
-export interface HopConfig {
+export interface HopConfig extends AbortOptions {
   connection: Connection
   request: CircuitPB
 }
@@ -127,14 +129,17 @@ export interface HopConfig {
  * Performs a HOP request to a relay peer, to request a connection to another
  * peer. A new, virtual, connection will be created between the two via the relay.
  */
-export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
+export async function hop (options: HopConfig): Promise<Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>> {
   const {
     connection,
-    request
+    request,
+    signal
   } = options
 
   // Create a new stream to the relay
-  const stream = await connection.newStream(RELAY_CODEC)
+  const stream = await connection.newStream(RELAY_CODEC, {
+    signal
+  })
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
   streamHandler.write(request)
@@ -147,6 +152,7 @@ export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
 
   if (response.code === CircuitPB.Status.SUCCESS) {
     log('hop request was successful')
+
     return streamHandler.rest()
   }
 
@@ -156,7 +162,7 @@ export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
   throw errCode(new Error(`HOP request failed with code "${response.code ?? 'unknown'}"`), Errors.ERR_HOP_REQUEST_FAILED)
 }
 
-export interface CanHopOptions {
+export interface CanHopOptions extends AbortOptions {
   connection: Connection
 }
 
@@ -165,11 +171,14 @@ export interface CanHopOptions {
  */
 export async function canHop (options: CanHopOptions) {
   const {
-    connection
+    connection,
+    signal
   } = options
 
   // Create a new stream to the relay
-  const stream = await connection.newStream(RELAY_CODEC)
+  const stream = await connection.newStream(RELAY_CODEC, {
+    signal
+  })
 
   // Send the HOP request
   const streamHandler = new StreamHandler({ stream })
