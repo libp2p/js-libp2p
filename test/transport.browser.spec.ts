@@ -96,7 +96,7 @@ describe('basic transport tests', () => {
 		  registrar: mockRegistrar(),
 	  });
 	  t.init(components);
-	  let ma = new Multiaddr('/ip4/192.168.1.16/udp/64922/webrtc/certhash/uEiC52ZcJ-HIPUM2ZZzYuXAmw8Tq-wpwy83ekW0jcODyV1g/p2p/12D3KooWNBEdeJi9BBYayGQGJebcVnnWd9FwhYv4uq6A3WbvTsTF')
+	  let ma = new Multiaddr('/ip4/192.168.1.16/udp/52289/webrtc/certhash/uEiA5bb5XTMJU2itew9D8ix248aEnjBpOMAa0IJiLJOF-uA/p2p/12D3KooWRPUWbvvbacKLNLD5cnBYrpiCwY6L2wNuBguYi4pfGC9n')
 	  await t.dial(ma, ignoredDialOption())
 
   })

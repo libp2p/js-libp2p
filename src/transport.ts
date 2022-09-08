@@ -3,7 +3,7 @@ import * as p from '@libp2p/peer-id';
 import { WebRTCConnection } from './connection';
 import { WebRTCDialOptions } from './options';
 import { WebRTCStream } from './stream';
-import { Noise, stablelib } from '@chainsafe/libp2p-noise';
+import { Noise } from '@chainsafe/libp2p-noise';
 import { Components, Initializable } from '@libp2p/components';
 import { Connection } from '@libp2p/interface-connection';
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -124,7 +124,7 @@ export class WebRTCTransport implements Transport, Initializable {
     //set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
     let fingerprintsPrologue = this.generateNoisePrologue(peerConnection, ma);
-    let noise = new Noise(myPeerId.privateKey!.slice(0,32), undefined, stablelib, fingerprintsPrologue);
+    let noise = new Noise(undefined, undefined, undefined, fingerprintsPrologue);
     // let noise = new Noise(undefined, undefined, stablelib, fingerprintsPrologue);
     let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 1 } } });
     let wrappedDuplex = {
@@ -156,11 +156,9 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {
-    let remoteCerthash = sdp.certhash(ma);
-    if (!remoteCerthash) {
-      throw inappropriateMultiaddr('no remote tls fingerprint in multiaddr');
-    }
-    let remote = sdp.mbdecoder.decode(remoteCerthash)
+    let [_, remoteFpString] = sdp.certhashToFingerprint(ma);
+    let remoteFpArray = uint8arrayFromString(remoteFpString);
+    let remote = multihashes.encode(remoteFpArray, multihashes.names['sha2-256'])
     if (pc.getConfiguration().certificates?.length === 0) {
       throw invalidArgument('no local certificate');
     }
@@ -171,7 +169,7 @@ export class WebRTCTransport implements Transport, Initializable {
 
     let localFingerprint = localCert.getFingerprints()[0];
     let localFpString = localFingerprint.value!.replaceAll(':', '');
-    let localFpArray = uint8arrayFromString(localFpString, 'hex');
+    let localFpArray = uint8arrayFromString(localFpString, 'ascii');
     let local: Uint8Array;
     switch (localFingerprint.algorithm!) {
       case 'md5':
@@ -191,6 +189,7 @@ export class WebRTCTransport implements Transport, Initializable {
     let fps = [local, remote].sort();
 
     let result = concat([prefix, ...fps]);
+    console.log(result.length)
     return result;
   }
 

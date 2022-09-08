@@ -41,7 +41,7 @@ export function certhash(ma: Multiaddr): string {
   }
 }
 
-function certhashToFingerprint(ma: Multiaddr): string[] {
+export function certhashToFingerprint(ma: Multiaddr): string[] {
   let certhash_value = certhash(ma);
   // certhash_value is a multibase encoded multihash encoded string
   let mbdecoded = mbdecoder.decode(certhash_value);
