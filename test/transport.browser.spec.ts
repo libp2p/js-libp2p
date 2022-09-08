@@ -5,6 +5,8 @@ import { mockUpgrader } from '@libp2p/interface-mocks';
 import { CreateListenerOptions, symbol } from '@libp2p/interface-transport';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { expect } from 'chai';
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { mockRegistrar } from '@libp2p/interface-mocks'
 
 function ignoredDialOption(): CreateListenerOptions {
     let u = mockUpgrader({});
@@ -87,5 +89,17 @@ describe('basic transport tests', () => {
       }
     }
   });
+  it('can connect to a server', async () => {
+	  let t  = new underTest.WebRTCTransport()
+	  let components = new Components({
+		  peerId: await createEd25519PeerId(),
+		  registrar: mockRegistrar(),
+	  });
+	  t.init(components);
+	  let ma = new Multiaddr('/ip4/192.168.1.16/udp/64922/webrtc/certhash/uEiC52ZcJ-HIPUM2ZZzYuXAmw8Tq-wpwy83ekW0jcODyV1g/p2p/12D3KooWNBEdeJi9BBYayGQGJebcVnnWd9FwhYv4uq6A3WbvTsTF')
+	  await t.dial(ma, ignoredDialOption())
+
+  })
+  it('scratch', async () => {});
 });
 

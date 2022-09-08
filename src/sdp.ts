@@ -6,7 +6,7 @@ import { bases } from 'multiformats/basics';
 
 const log = logger('libp2p:webrtc:sdp');
 
-const mbdecoder = (function () {
+export const mbdecoder = (function () {
   const decoders = Object.values(bases).map((b) => b.decoder);
   let acc = decoders[0].or(decoders[1]);
   decoders.slice(2).forEach((d) => (acc = acc.or(d)));
@@ -41,7 +41,7 @@ export function certhash(ma: Multiaddr): string {
   }
 }
 
-function certhashToFingerprint(ma: Multiaddr): string {
+function certhashToFingerprint(ma: Multiaddr): string[] {
   let certhash_value = certhash(ma);
   // certhash_value is a multibase encoded multihash encoded string
   let mbdecoded = mbdecoder.decode(certhash_value);
@@ -62,16 +62,16 @@ function certhashToFingerprint(ma: Multiaddr): string {
   }
 
   let fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-  fp = fp.match(/.{1,2}/g)!.join(':');
+  let fpSdp = fp.match(/.{1,2}/g)!.join(':');
 
-  return `${prefix} ${fp}`;
+  return [`${prefix.toUpperCase()} ${fpSdp.toUpperCase()}`, fp];
 }
 
 function ma2sdp(ma: Multiaddr, ufrag: string): string {
   const IP = ip(ma);
   const IPVERSION = ipv(ma);
   const PORT = port(ma);
-  const CERTFP = certhashToFingerprint(ma);
+  const [CERTFP, PWD] = certhashToFingerprint(ma);
   return `v=0
 o=- 0 0 IN ${IPVERSION} ${IP}
 s=-
@@ -80,14 +80,13 @@ t=0 0
 a=ice-lite
 m=application ${PORT} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
-a=setup:active
-a=ice-options:ice2
+a=setup:passive
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${ufrag}
+a=ice-pwd:${PWD}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
 a=max-message-size:100000
-a=candidate:1 1 UDP 1 ${IP} ${PORT} typ host`;
+a=candidate:1467250027 1 UDP 1467250027 ${IP} ${PORT} typ host\r\n`;
 }
 
 export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
@@ -100,6 +99,7 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
 export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp) {
     desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n').replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n');
+	  console.log(desc.sdp)
     return desc;
   } else {
     throw invalidArgument("Can't munge a missing SDP");

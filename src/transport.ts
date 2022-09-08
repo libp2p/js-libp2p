@@ -12,7 +12,8 @@ import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
 import defer, { DeferredPromise } from 'p-defer';
-import { base64 } from 'multiformats/bases/base64';
+// import { base64 } from 'multiformats/bases/base64';
+// import { base58btc } from 'multiformats/bases/base58';
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
 import { concat } from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
@@ -58,50 +59,61 @@ export class WebRTCTransport implements Transport, Initializable {
       throw inappropriateMultiaddr("we need to have the remote's PeerId");
     }
 
-    let peerConnection = new RTCPeerConnection();
+    let certificate = await RTCPeerConnection.generateCertificate({
+      name: "ECDSA",
+      namedCurve: "P-256",
+    } as any)
+    let peerConnection = new RTCPeerConnection({ certificates: [certificate] });
+    // let peerConnection = new RTCPeerConnection();
 
     // create data channel
+    let dataChannelOpenPromise = defer();
     let handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
+    handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
+    handshakeDataChannel.onerror = (ev: Event) => {
+      log.error('Error opening a data channel for handshaking: %s', ev.toString());
+      dataChannelOpenPromise.reject('could not open handshake channel');
+    };
+    setTimeout(() => {
+      log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
+      dataChannelOpenPromise.reject('handshake channel opening timed out');
+    }, HANDSHAKE_TIMEOUT_MS);
+
+    peerConnection.onconnectionstatechange = (_) => {
+	    console.log(peerConnection.connectionState)
+    }
+
     //
     // create offer sdp
     let offerSdp = await peerConnection.createOffer();
     //
     //
     // generate random string for ufrag
-    let ufrag = genUuid();
+    let ufrag = genUuid().replaceAll('-','');
 
     //
     // munge sdp with ufrag = pwd
     offerSdp = sdp.munge(offerSdp, ufrag);
+    console.log(offerSdp)
     //
     //
     // set local description
-    peerConnection.setLocalDescription(offerSdp);
+    await peerConnection.setLocalDescription(offerSdp);
     //
     //
     // construct answer sdp from multiaddr
     let answerSdp = sdp.fromMultiAddr(ma, ufrag);
+    console.log(answerSdp)
 
     //
     //
     // set remote description
-    peerConnection.setRemoteDescription(answerSdp);
+    await peerConnection.setRemoteDescription(answerSdp);
 
     //
     //
     //
     // wait for peerconnection.onopen to fire, or for the datachannel to open
-    let dataChannelOpenPromise = defer();
-
-    handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
-    handshakeDataChannel.onerror = (ev: Event) => {
-      log.error('Error opening a data channel for handshaking: %s', ev.toString());
-      dataChannelOpenPromise.reject();
-    };
-    setTimeout(() => {
-      log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
-      dataChannelOpenPromise.reject();
-    }, HANDSHAKE_TIMEOUT_MS);
 
     await this.componentsPromise.promise;
 
@@ -112,7 +124,8 @@ export class WebRTCTransport implements Transport, Initializable {
     //set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
     let fingerprintsPrologue = this.generateNoisePrologue(peerConnection, ma);
-    let noise = new Noise(myPeerId.privateKey, undefined, stablelib, fingerprintsPrologue);
+    let noise = new Noise(myPeerId.privateKey!.slice(0,32), undefined, stablelib, fingerprintsPrologue);
+    // let noise = new Noise(undefined, undefined, stablelib, fingerprintsPrologue);
     let wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 1 } } });
     let wrappedDuplex = {
       ...wrappedChannel,
@@ -125,7 +138,11 @@ export class WebRTCTransport implements Transport, Initializable {
       },
     };
 
+    console.log('attempting to secure connection')
+
     await noise.secureOutbound(myPeerId, wrappedDuplex, theirPeerId);
+
+    console.log('connection secured')
 
     return new WebRTCConnection({
       components: this.components!,
@@ -143,12 +160,12 @@ export class WebRTCTransport implements Transport, Initializable {
     if (!remoteCerthash) {
       throw inappropriateMultiaddr('no remote tls fingerprint in multiaddr');
     }
-    let remote = base64.decode(remoteCerthash);
+    let remote = sdp.mbdecoder.decode(remoteCerthash)
     if (pc.getConfiguration().certificates?.length === 0) {
       throw invalidArgument('no local certificate');
     }
-    let localCert = pc.getConfiguration().certificates![0];
-    if (localCert.getFingerprints().length === 0) {
+    let localCert = pc.getConfiguration().certificates?.at(0)!;
+    if (!localCert || localCert.getFingerprints().length === 0) {
       throw invalidArgument('no fingerprint on local certificate');
     }
 
