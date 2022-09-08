@@ -10,6 +10,13 @@
 
 
 
+### [0.39.1](https://www.github.com/libp2p/js-libp2p/compare/v0.39.0...v0.39.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* overwrite stream fields after handshake ([#1305](https://www.github.com/libp2p/js-libp2p/issues/1305)) ([43b0418](https://www.github.com/libp2p/js-libp2p/commit/43b04189987f11a7729b522d1e1dbdc1caceb874))
+
 ## [0.39.0](https://www.github.com/libp2p/js-libp2p/compare/v0.38.0...v0.39.0) (2022-09-05)
 
 
