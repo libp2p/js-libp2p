@@ -10,6 +10,18 @@
 
 
 
+## [0.40.0](https://www.github.com/libp2p/js-libp2p/compare/v0.39.0...v0.40.0) (2022-09-09)
+
+
+### Features
+
+* add yamux interop tests ([#1290](https://www.github.com/libp2p/js-libp2p/issues/1290)) ([43eec91](https://www.github.com/libp2p/js-libp2p/commit/43eec91ec5b2165c24699ce27fe969f5dab4644a))
+
+
+### Bug Fixes
+
+* overwrite stream fields after handshake ([#1305](https://www.github.com/libp2p/js-libp2p/issues/1305)) ([43b0418](https://www.github.com/libp2p/js-libp2p/commit/43b04189987f11a7729b522d1e1dbdc1caceb874))
+
 ## [0.39.0](https://www.github.com/libp2p/js-libp2p/compare/v0.38.0...v0.39.0) (2022-09-05)
 
 
