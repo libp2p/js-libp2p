@@ -24,7 +24,7 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'
-import { Components } from '@libp2p/components'
+import type { Components } from '@libp2p/components'
 import map from 'it-map'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
@@ -87,7 +87,7 @@ export interface DialerInit {
 }
 
 export class DefaultDialer implements Startable, Dialer {
-  private readonly components: Components = new Components()
+  private readonly components: Components
   private readonly addressSorter: AddressSorter
   private readonly maxAddrsToDial: number
   private readonly timeout: number
@@ -104,6 +104,7 @@ export class DefaultDialer implements Startable, Dialer {
     this.timeout = init.dialTimeout ?? DIAL_TIMEOUT
     this.maxDialsPerPeer = init.maxDialsPerPeer ?? MAX_PER_PEER_DIALS
     this.tokens = [...new Array(init.maxParallelDials ?? MAX_PARALLEL_DIALS)].map((_, index) => index)
+    this.components = components
     this.pendingDials = trackedMap({
       component: METRICS_COMPONENT,
       metric: METRICS_PENDING_DIALS,
