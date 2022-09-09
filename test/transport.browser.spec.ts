@@ -7,6 +7,9 @@ import { Multiaddr } from '@multiformats/multiaddr';
 import { expect } from 'chai';
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { mockRegistrar } from '@libp2p/interface-mocks'
+import { pipe } from 'it-pipe';
+import first from  'it-first';
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
 
 function ignoredDialOption(): CreateListenerOptions {
     let u = mockUpgrader({});
@@ -96,10 +99,12 @@ describe('basic transport tests', () => {
 		  registrar: mockRegistrar(),
 	  });
 	  t.init(components);
-	  let ma = new Multiaddr('/ip4/192.168.1.16/udp/52289/webrtc/certhash/uEiA5bb5XTMJU2itew9D8ix248aEnjBpOMAa0IJiLJOF-uA/p2p/12D3KooWRPUWbvvbacKLNLD5cnBYrpiCwY6L2wNuBguYi4pfGC9n')
-	  await t.dial(ma, ignoredDialOption())
-
-  })
+	  let ma = new Multiaddr('/ip4/192.168.1.16/udp/50270/webrtc/certhash/uEiD-KG3lTrMy-AdepCOjtIF5OpRLeH6TJwj3uuJDpBdssA/p2p/12D3KooWNBCMnCCNMVZcUEXzT7fNpsuaJvs18hY9bNEQHiW3MXU9')
+	  let conn = await t.dial(ma, ignoredDialOption())
+    let stream = await conn.newStream(['/echo/1.0.0']);
+    let response = await pipe([uint8arrayFromString('test\n')], stream, async (source) => await first(source));
+    expect(response?.subarray()).to.equalBytes(uint8arrayFromString('test\n'))
+  });
   it('scratch', async () => {});
 });
 

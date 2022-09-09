@@ -99,7 +99,6 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
 export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp) {
     desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n').replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n');
-	  console.log(desc.sdp)
     return desc;
   } else {
     throw invalidArgument("Can't munge a missing SDP");

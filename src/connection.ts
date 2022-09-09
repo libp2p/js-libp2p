@@ -91,21 +91,25 @@ export class WebRTCConnection implements ic.Connection {
 
       log.trace(`${logPrefix} supported protocols - ${protocols}`);
 
-      let { stream, protocol } = await mshandle(rawStream, protocols, { signal: controller.signal });
-      if (metrics) {
-        metrics.trackStream({ stream, protocol, remotePeer: this.remotePeer });
+      try {
+        let { stream, protocol } = await mshandle(rawStream, protocols, { signal: controller.signal });
+        if (metrics) {
+          metrics.trackStream({ stream, protocol, remotePeer: this.remotePeer });
+        }
+
+        log.trace(`${logPrefix} handled protocol - ${protocol}`);
+
+        rawStream.stat.protocol = protocol;
+        let result = this.wrapMsStream(rawStream, stream);
+
+        this.addStream(result);
+
+        // handle stream
+        let { handler } = registrar.getHandler(protocol);
+        handler({ connection: this, stream: result });
+      } catch (err) {
+        log.error('stream error: ', rawStream.id, rawStream.stat.direction);
       }
-
-      log.trace(`${logPrefix} handled protocol - ${protocol}`);
-
-      rawStream.stat.protocol = protocol;
-      let result = this.wrapMsStream(rawStream, stream);
-
-      this.addStream(result);
-
-      // handle stream
-      let { handler } = registrar.getHandler(protocol);
-      handler({ connection: this, stream: result });
     };
   }
 

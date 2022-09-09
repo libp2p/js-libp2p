@@ -6,18 +6,17 @@ import { WebRTCStream } from './stream';
 import { Noise } from '@chainsafe/libp2p-noise';
 import { Components, Initializable } from '@libp2p/components';
 import { Connection } from '@libp2p/interface-connection';
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id';
 import { CreateListenerOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
 import { logger } from '@libp2p/logger';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { v4 as genUuid } from 'uuid';
 import defer, { DeferredPromise } from 'p-defer';
-// import { base64 } from 'multiformats/bases/base64';
-// import { base58btc } from 'multiformats/bases/base58';
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
 import { concat } from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
 import { inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error';
+import { compare as uint8arrayCompare } from 'uint8arrays/compare';
 
 const log = logger('libp2p:webrtc:transport');
 const HANDSHAKE_TIMEOUT_MS = 10000;
@@ -60,9 +59,9 @@ export class WebRTCTransport implements Transport, Initializable {
     }
 
     let certificate = await RTCPeerConnection.generateCertificate({
-      name: "ECDSA",
-      namedCurve: "P-256",
-    } as any)
+      name: 'ECDSA',
+      namedCurve: 'P-256',
+    } as any);
     let peerConnection = new RTCPeerConnection({ certificates: [certificate] });
     // let peerConnection = new RTCPeerConnection();
 
@@ -79,43 +78,20 @@ export class WebRTCTransport implements Transport, Initializable {
       dataChannelOpenPromise.reject('handshake channel opening timed out');
     }, HANDSHAKE_TIMEOUT_MS);
 
-    peerConnection.onconnectionstatechange = (_) => {
-	    console.log(peerConnection.connectionState)
-    }
-
-    //
     // create offer sdp
     let offerSdp = await peerConnection.createOffer();
-    //
-    //
     // generate random string for ufrag
-    let ufrag = genUuid().replaceAll('-','');
-
-    //
+    let ufrag = genUuid().replaceAll('-', '');
     // munge sdp with ufrag = pwd
     offerSdp = sdp.munge(offerSdp, ufrag);
-    console.log(offerSdp)
-    //
-    //
     // set local description
     await peerConnection.setLocalDescription(offerSdp);
-    //
-    //
     // construct answer sdp from multiaddr
     let answerSdp = sdp.fromMultiAddr(ma, ufrag);
-    console.log(answerSdp)
-
-    //
-    //
     // set remote description
     await peerConnection.setRemoteDescription(answerSdp);
-
-    //
-    //
-    //
     // wait for peerconnection.onopen to fire, or for the datachannel to open
-
-    await this.componentsPromise.promise;
+    await dataChannelOpenPromise.promise;
 
     let myPeerId = await this.getPeerId();
     let theirPeerId = p.peerIdFromString(rps);
@@ -138,11 +114,7 @@ export class WebRTCTransport implements Transport, Initializable {
       },
     };
 
-    console.log('attempting to secure connection')
-
     await noise.secureOutbound(myPeerId, wrappedDuplex, theirPeerId);
-
-    console.log('connection secured')
 
     return new WebRTCConnection({
       components: this.components!,
@@ -156,9 +128,6 @@ export class WebRTCTransport implements Transport, Initializable {
   }
 
   private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {
-    let [_, remoteFpString] = sdp.certhashToFingerprint(ma);
-    let remoteFpArray = uint8arrayFromString(remoteFpString);
-    let remote = multihashes.encode(remoteFpArray, multihashes.names['sha2-256'])
     if (pc.getConfiguration().certificates?.length === 0) {
       throw invalidArgument('no local certificate');
     }
@@ -169,7 +138,7 @@ export class WebRTCTransport implements Transport, Initializable {
 
     let localFingerprint = localCert.getFingerprints()[0];
     let localFpString = localFingerprint.value!.replaceAll(':', '');
-    let localFpArray = uint8arrayFromString(localFpString, 'ascii');
+    let localFpArray = uint8arrayFromString(localFpString, 'hex');
     let local: Uint8Array;
     switch (localFingerprint.algorithm!) {
       case 'md5':
@@ -185,11 +154,11 @@ export class WebRTCTransport implements Transport, Initializable {
         throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
     }
 
+    let remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(ma));
     let prefix = uint8arrayFromString('libp2p-webrtc-noise:');
-    let fps = [local, remote].sort();
+    let fps = [remote, local].sort(uint8arrayCompare);
 
     let result = concat([prefix, ...fps]);
-    console.log(result.length)
     return result;
   }
 
@@ -204,8 +173,5 @@ const CERTHASH_CODE: number = 466;
 
 function validMa(ma: Multiaddr): boolean {
   let codes = ma.protoCodes();
-  return codes.includes(WEBRTC_CODE) 
-    && codes.includes(CERTHASH_CODE) 
-    && ma.getPeerId() != null;
+  return codes.includes(WEBRTC_CODE) && codes.includes(CERTHASH_CODE) && ma.getPeerId() != null;
 }
-
