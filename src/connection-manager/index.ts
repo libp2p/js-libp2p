@@ -14,7 +14,6 @@ import type { Connection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import { Components, Initializable } from '@libp2p/components'
 import * as STATUS from '@libp2p/interface-connection/status'
-import { Dialer } from './dialer/index.js'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
@@ -144,7 +143,6 @@ export interface ConnectionManagerEvents {
  * Responsible for managing known connections.
  */
 export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable, Initializable {
-  public readonly dialer: Dialer
   private components = new Components()
   private readonly opts: Required<ConnectionManagerInit>
   private readonly connections: Map<string, Connection[]>
@@ -184,8 +182,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       setMaxListeners?.(Infinity, this)
     } catch {}
 
-    this.dialer = new Dialer(this.opts)
-
     this.onConnect = this.onConnect.bind(this)
     this.onDisconnect = this.onDisconnect.bind(this)
 
@@ -195,8 +191,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
   init (components: Components): void {
     this.components = components
-
-    this.dialer.init(components)
 
     // track inbound/outbound connections
     this.components.getMetrics()?.updateComponentMetric({
@@ -304,7 +298,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.latencyMonitor.start()
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
     this.latencyMonitor.addEventListener('data', this._onLatencyMeasure)
-    await this.dialer.start()
 
     this.started = true
     log('started')
@@ -370,7 +363,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.latencyMonitor.removeEventListener('data', this._onLatencyMeasure)
     this.latencyMonitor.stop()
-    await this.dialer.stop()
 
     this.started = false
     await this._close()
@@ -526,7 +518,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     try {
-      const connection = await this.dialer.dial(peerId, options)
+      const connection = await this.components.getDialer().dial(peerId, options)
       let peerConnections = this.connections.get(peerId.toString())
 
       if (peerConnections == null) {
