@@ -11,13 +11,13 @@ import { path as p2pd } from 'go-libp2p'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
+import { Mplex } from '@libp2p/mplex'
 import { Yamux } from '@chainsafe/libp2p-yamux'
 import fs from 'fs'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { FloodSub } from '@libp2p/floodsub'
-import { Mplex } from '@libp2p/mplex'
 
 // IPFS_LOGGING=debug DEBUG=libp2p*,go-libp2p:* npm run test:interop
 
