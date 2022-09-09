@@ -12,6 +12,7 @@ import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
 import { Mplex } from '@libp2p/mplex'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import fs from 'fs'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -93,8 +94,14 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [new TCP()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [],
     connectionEncryption: [new Noise()]
+  }
+
+  if (options.muxer === 'mplex') {
+    opts.streamMuxers?.push(new Mplex())
+  } else {
+    opts.streamMuxers?.push(new Yamux())
   }
 
   if (options.dht === true) {

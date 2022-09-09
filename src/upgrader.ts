@@ -374,6 +374,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
                 return
               }
 
+              // after the handshake the returned stream can have early data so override
+              // the souce/sink
+              muxedStream.source = stream.source
+              muxedStream.sink = stream.sink
               muxedStream.stat.protocol = protocol
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
@@ -381,7 +385,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               this.components.getPeerStore().protoBook.add(remotePeer, [protocol]).catch(err => log.error(err))
 
               connection.addStream(muxedStream)
-              this._onStream({ connection, stream: { ...muxedStream, ...stream }, protocol })
+              this._onStream({ connection, stream: muxedStream, protocol })
             })
             .catch(err => {
               log.error(err)
