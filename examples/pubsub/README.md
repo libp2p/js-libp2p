@@ -23,6 +23,7 @@ First, let's update our libp2p configuration with a pubsub implementation.
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { Gossipsub } from 'libp2p-gossipsub'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   addresses: {
@@ -32,6 +33,7 @@ const node = await createLibp2p({
     new TCP()
   ],
   streamMuxers: [
+    new Yamux(),
     new Mplex()
   ],
   connectionEncryption: [

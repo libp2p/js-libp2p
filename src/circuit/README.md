@@ -40,6 +40,7 @@ Once you have a circuit relay node running, you can configure other nodes to use
 import { Multiaddr } from '@multiformats/multiaddr'
 import Libp2p from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 
@@ -53,6 +54,7 @@ const node = await createLibp2p({
     new TCP()
   ],
   streamMuxers: [
+    new Yamux(),
     new Mplex()
     ],
   connectionEncryption: [

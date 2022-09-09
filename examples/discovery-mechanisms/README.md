@@ -15,12 +15,14 @@ First, we create our libp2p node.
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { Bootstrap } from '@libp2p/bootstrap'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   transports: [
     new TCP()
   ],
   streamMuxers: [
+    new Yamux(),
     new Mplex()
   ],
   connectionEncryption: [
@@ -60,6 +62,7 @@ const node = await createLibp2p({
     new TCP()
   ],
   streamMuxers: [
+    new Yamux(),
     new Mplex()
   ],
   connectionEncryption: [
@@ -112,6 +115,7 @@ Update your libp2p configuration to include MulticastDNS.
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { MulticastDNS } from '@libp2p/mdns'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 
 const createNode = () => {
   return Libp2p.create({
@@ -122,6 +126,7 @@ const createNode = () => {
       new TCP()
     ],
     streamMuxers: [
+      new Yamux(),
       new Mplex()
     ],
     connectionEncryption: [
@@ -172,6 +177,7 @@ You can create your libp2p nodes as follows:
 ```js
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Gossipsub } from 'libp2p-gossipsub'
@@ -187,6 +193,7 @@ const createNode = async (bootstrapers) => {
     new TCP()
   ],
   streamMuxers: [
+    new Yamux(),
     new Mplex()
   ],
   connectionEncryption: [

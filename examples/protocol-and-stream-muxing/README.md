@@ -104,6 +104,7 @@ Currently, we have [libp2p-mplex](https://github.com/libp2p/js-libp2p-mplex) and
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 //...
 
@@ -113,6 +114,7 @@ const createNode = () => {
       new TCP()
     ],
     streamMuxers: [
+      new Yamux(),
       new Mplex()
     ]
   })

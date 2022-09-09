@@ -125,6 +125,7 @@ For Libp2p configurations and modules details read the [Configuration Document](
 ```js
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 
@@ -132,7 +133,7 @@ async function main () {
   // specify options
   const options = {
     transports: [new TCP()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [new Yamux(), new Mplex()],
     connectionEncryption: [new Noise()]
   }
 
@@ -153,6 +154,7 @@ As an alternative, it is possible to create a Libp2p instance with the construct
 ```js
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 
@@ -165,7 +167,7 @@ async function main () {
   const options = {
     peerId,
     transports: [new TCP()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [new Yamux(), new Mplex()],
     connectionEncryption: [new Noise()]
   }
 

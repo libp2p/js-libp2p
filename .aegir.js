@@ -1,5 +1,6 @@
 import { WebSockets } from '@libp2p/websockets'
 import { Mplex } from '@libp2p/mplex'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -28,6 +29,7 @@ export default {
           new WebSockets()
         ],
         streamMuxers: [
+          new Yamux(),
           new Mplex()
         ],
         connectionEncryption: [

@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@chainsafe/libp2p-noise": "^8.0.0",
+    "@chainsafe/libp2p-yamux": "^1.0.0",
     "ipfs-core": "^0.15.4",
     "libp2p": "../../",
     "@libp2p/delegated-content-routing": "^2.0.1",

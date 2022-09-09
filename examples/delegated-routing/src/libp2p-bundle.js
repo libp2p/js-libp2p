@@ -4,6 +4,7 @@
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { WebRTCStar } from '@libp2p/webrtc-star'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
@@ -36,6 +37,7 @@ export default function Libp2pBundle ({peerInfo, peerBook}) {
       new WebSockets()
     ],
     streamMuxers: [
+      new Yamux(),
       new Mplex()
     ],
     connectionEncryption: [

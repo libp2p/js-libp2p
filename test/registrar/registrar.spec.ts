@@ -19,6 +19,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { Plaintext } from '../../src/insecure/index.js'
 import { WebSockets } from '@libp2p/websockets'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
 
@@ -226,6 +227,7 @@ describe('registrar', () => {
           new WebSockets()
         ],
         streamMuxers: [
+          new Yamux(),
           new Mplex()
         ],
         connectionEncryption: [

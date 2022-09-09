@@ -1,6 +1,7 @@
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 
 async function main () {
@@ -17,6 +18,7 @@ async function main () {
       new Noise()
     ],
     streamMuxers: [
+      new Yamux(),
       new Mplex()
     ]
   })

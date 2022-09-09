@@ -2,6 +2,7 @@
 
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { MulticastDNS } from '@libp2p/mdns'
@@ -15,6 +16,7 @@ const createNode = async () => {
       new TCP()
     ],
     streamMuxers: [
+      new Yamux(),
       new Mplex()
     ],
     connectionEncryption: [

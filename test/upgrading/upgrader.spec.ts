@@ -2,6 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
@@ -63,7 +64,7 @@ describe('Upgrader', () => {
       peerStore: new PersistentPeerStore(),
       datastore: new MemoryDatastore()
     })
-    localMuxerFactory = new Mplex()
+    localMuxerFactory = new Yamux()
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
         new Plaintext()
@@ -86,6 +87,7 @@ describe('Upgrader', () => {
         new Plaintext()
       ],
       muxers: [
+        new Yamux(),
         new Mplex()
       ],
       inboundUpgradeTimeout: 1000
@@ -286,6 +288,7 @@ describe('Upgrader', () => {
         new Plaintext()
       ],
       muxers: [
+        new Yamux(),
         new Mplex()
       ],
       inboundUpgradeTimeout: 1000
@@ -482,6 +485,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -504,6 +508,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -520,6 +525,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -537,10 +543,16 @@ describe('libp2p.upgrader', () => {
     const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteLibp2p.components.getUpgrader() as DefaultUpgrader, '_onStream')
 
     const stream = await localConnection.newStream(['/echo/1.0.0'])
-    expect(stream).to.include.keys(['id', 'close', 'reset', 'stat'])
+    expect(stream).to.have.property('id').that.is.a('string')
+    expect(stream).to.have.property('close').that.is.a('function')
+    expect(stream).to.have.property('reset').that.is.a('function')
+    expect(stream).to.have.property('stat').that.is.an('object')
 
     const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
-    expect(arg0.stream).to.include.keys(['id', 'close', 'reset', 'stat'])
+    expect(arg0.stream).to.have.property('id').that.is.a('string')
+    expect(arg0.stream).to.have.property('close').that.is.a('function')
+    expect(arg0.stream).to.have.property('reset').that.is.a('function')
+    expect(arg0.stream).to.have.property('stat').that.is.an('object')
   })
 
   it('should emit connect and disconnect events', async () => {
@@ -551,6 +563,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -565,6 +578,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -610,6 +624,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -624,6 +639,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -672,6 +688,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -686,6 +703,7 @@ describe('libp2p.upgrader', () => {
         new WebSockets()
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [

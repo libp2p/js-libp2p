@@ -2,6 +2,7 @@ import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { WebRTCStar } from '@libp2p/webrtc-star'
 import { Noise } from '@chainsafe/libp2p-noise'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Bootstrap } from '@libp2p/bootstrap'
 
@@ -24,7 +25,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       webRtcStar
     ],
     connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [
+      new Yamux(),
+      new Mplex()
+    ],
     peerDiscovery: [
       webRtcStar.discovery,
       new Bootstrap({

@@ -1,5 +1,6 @@
 import { TCP } from '@libp2p/tcp'
 import { WebSockets } from '@libp2p/websockets'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import defaultsDeep from '@nodeutils/defaults-deep'
@@ -12,6 +13,7 @@ export async function createLibp2p(_options) {
       new WebSockets()
     ],
     streamMuxers: [
+      new Yamux(),
       new Mplex()
     ],
     connectionEncryption: [

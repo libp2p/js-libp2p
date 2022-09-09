@@ -1,5 +1,6 @@
 import { createLibp2p } from 'libp2p'
 import { WebRTCDirect } from '@libp2p/webrtc-direct'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -19,7 +20,10 @@ import wrtc from 'wrtc'
       listen: ['/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct']
     },
     transports: [new WebRTCDirect({ wrtc })],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [
+      new Yamux(),
+      new Mplex()
+    ],
     connectionEncryption: [new Noise()]
   })
 

@@ -19,12 +19,13 @@ The relay node will need to have its relay subsystem enabled, as well as its HOP
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
   connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()]
+  streamMuxers: [new Yamux(), new Mplex()]
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0/ws']
     // TODO check "What is next?" section
@@ -73,6 +74,7 @@ One of the typical use cases for Auto Relay is nodes behind a NAT or browser nod
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 
 const relayAddr = process.argv[2]
@@ -83,7 +85,7 @@ if (!relayAddr) {
 const node = await createLibp2p({
   transports: [new WebSockets()],
   connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()],
+  streamMuxers: [new Yamux(), new Mplex()],
   relay: {
     enabled: true,
     autoRelay: {
@@ -138,6 +140,7 @@ import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 
 const autoRelayNodeAddr = process.argv[2]
 if (!autoRelayNodeAddr) {
@@ -147,7 +150,7 @@ if (!autoRelayNodeAddr) {
 const node = await createLibp2p({
   transports: [new WebSockets()],
   connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()]
+  streamMuxers: [new Yamux(), new Mplex()]
 })
 
 await node.start()

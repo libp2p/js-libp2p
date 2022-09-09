@@ -1,4 +1,5 @@
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Plaintext } from '../../src/insecure/index.js'
 import type { Libp2pOptions } from '../../src'
@@ -10,6 +11,7 @@ export function createBaseOptions (...overrides: Libp2pOptions[]): Libp2pOptions
       new TCP()
     ],
     streamMuxers: [
+      new Yamux(),
       new Mplex()
     ],
     connectionEncryption: [

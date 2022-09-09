@@ -1,5 +1,6 @@
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { PreSharedKeyConnectionProtector } from 'libp2p/pnet'
@@ -14,7 +15,7 @@ export async function privateLibp2pNode (swarmKey) {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [new TCP()], // We're only using the TCP transport for this example
-    streamMuxers: [new Mplex()], // We're only using mplex muxing
+    streamMuxers: [new Yamux(), new Mplex()], // We're using yamux and mplex muxing
     // Let's make sure to use identifying crypto in our pnet since the protector doesn't
     // care about node identity, and only the presence of private keys
     connectionEncryption: [new Noise()],

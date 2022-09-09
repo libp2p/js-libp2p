@@ -2,6 +2,7 @@
 
 import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { CID } from 'multiformats/cid'
@@ -15,7 +16,10 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [new TCP()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [
+      new Yamux(),
+      new Mplex()
+    ],
     connectionEncryption: [new Noise()],
     dht: new KadDHT()
   })

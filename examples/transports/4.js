@@ -4,6 +4,7 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import fs from 'fs'
 import https from 'https'
@@ -35,7 +36,10 @@ const createNode = async (addresses = []) => {
       })
     ],
     connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [
+      new Yamux(),
+      new Mplex()
+    ],
     connectionManager: {
       // Disable autoDial as it would fail because we are using a self-signed cert.
       // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.

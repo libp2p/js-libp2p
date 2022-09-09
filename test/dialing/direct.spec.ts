@@ -6,6 +6,7 @@ import pDefer from 'p-defer'
 import delay from 'delay'
 import { WebSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Plaintext } from '../../src/insecure/index.js'
 import { Multiaddr } from '@multiformats/multiaddr'
@@ -357,6 +358,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -382,6 +384,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -413,6 +416,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -447,6 +451,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -487,6 +492,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -515,6 +521,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -536,6 +543,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -573,6 +581,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [
@@ -599,6 +608,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        new Yamux(),
         new Mplex()
       ],
       connectionEncryption: [

@@ -108,12 +108,13 @@ npm install libp2p-mplex
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
   connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()]
+  streamMuxers: [new Yamux(), new Mplex()]
 })
 ```
 
@@ -134,6 +135,7 @@ import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   addresses: {
@@ -141,7 +143,7 @@ const node = await createLibp2p({
   },
   transports: [new WebSockets()],
   connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()]
+  streamMuxers: [new Yamux(), new Mplex()]
 })
 
 // start libp2p

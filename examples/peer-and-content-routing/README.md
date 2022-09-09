@@ -15,6 +15,7 @@ First, let's update our config to support Peer Routing and Content Routing.
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { KadDHT } from '@libp2p/kad-dht'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   addresses: {
@@ -24,6 +25,7 @@ const node = await createLibp2p({
     new TCP()
   ],
   streamMuxers: [
+    new Yamux(),
     new Mplex()
   ],
   connEncryption: [

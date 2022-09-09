@@ -1,5 +1,6 @@
 import { PubSubBaseProtocol } from '@libp2p/pubsub'
 import { Plaintext } from '../../src/insecure/index.js'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { WebSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -14,7 +15,10 @@ const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
 export const baseOptions: Partial<Libp2pInit> = {
   transports: [new WebSockets()],
-  streamMuxers: [new Mplex()],
+  streamMuxers: [
+    new Yamux(),
+    new Mplex()
+  ],
   connectionEncryption: [new Plaintext()]
 }
 

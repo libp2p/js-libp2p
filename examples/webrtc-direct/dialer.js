@@ -1,5 +1,6 @@
 import { createLibp2p } from 'libp2p'
 import { WebRTCDirect } from '@libp2p/webrtc-direct'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Bootstrap } from '@libp2p/bootstrap'
@@ -9,7 +10,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hardcodedPeerId = '12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m'
   const libp2p = await createLibp2p({
     transports: [new WebRTCDirect()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [
+      new Yamux(),
+      new Mplex()
+    ],
     connectionEncryption: [new Noise()],
     peerDiscovery: [
       new Bootstrap({

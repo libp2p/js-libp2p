@@ -4,6 +4,7 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import { Mplex } from '@libp2p/mplex'
 import { pipe } from 'it-pipe'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -20,7 +21,10 @@ const createNode = async (transports, addresses = []) => {
     },
     transports: transports,
     connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()]
+    streamMuxers: [
+      new Yamux(),
+      new Mplex()
+    ]
   })
 
   await node.start()
