@@ -24,10 +24,11 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'
-import { Components, Initializable } from '@libp2p/components'
+import type { Components } from '@libp2p/components'
 import map from 'it-map'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
+import type { Dialer } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:dialer')
 
@@ -85,8 +86,8 @@ export interface DialerInit {
   metrics?: ComponentMetricsTracker
 }
 
-export class Dialer implements Startable, Initializable {
-  private components: Components = new Components()
+export class DefaultDialer implements Startable, Dialer {
+  private readonly components: Components
   private readonly addressSorter: AddressSorter
   private readonly maxAddrsToDial: number
   private readonly timeout: number
@@ -96,13 +97,14 @@ export class Dialer implements Startable, Initializable {
   public pendingDialTargets: Map<string, PendingDialTarget>
   private started: boolean
 
-  constructor (init: DialerInit = {}) {
+  constructor (components: Components, init: DialerInit = {}) {
     this.started = false
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
     this.maxAddrsToDial = init.maxAddrsToDial ?? MAX_ADDRS_TO_DIAL
     this.timeout = init.dialTimeout ?? DIAL_TIMEOUT
     this.maxDialsPerPeer = init.maxDialsPerPeer ?? MAX_PER_PEER_DIALS
     this.tokens = [...new Array(init.maxParallelDials ?? MAX_PARALLEL_DIALS)].map((_, index) => index)
+    this.components = components
     this.pendingDials = trackedMap({
       component: METRICS_COMPONENT,
       metric: METRICS_PENDING_DIALS,
@@ -111,16 +113,12 @@ export class Dialer implements Startable, Initializable {
     this.pendingDialTargets = trackedMap({
       component: METRICS_COMPONENT,
       metric: METRICS_PENDING_DIAL_TARGETS,
-      metrics: init.metrics
+      metrics: components.getMetrics()
     })
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
       Multiaddr.resolvers.set(key, value)
     }
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   isStarted () {

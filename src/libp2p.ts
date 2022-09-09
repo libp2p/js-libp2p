@@ -49,6 +49,7 @@ import type { Metrics } from '@libp2p/interface-metrics'
 import { DummyDHT } from './dht/dummy-dht.js'
 import { DummyPubSub } from './pubsub/dummy-pubsub.js'
 import { PeerSet } from '@libp2p/peer-collections'
+import { DefaultDialer } from './connection-manager/dialer/index.js'
 
 const log = logger('libp2p')
 
@@ -127,6 +128,9 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       muxers: (init.streamMuxers ?? []).map(component => this.configureComponent(component)),
       inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
     }))
+
+    // Create the dialer
+    this.components.setDialer(new DefaultDialer(this.components, init.connectionManager))
 
     // Create the Connection Manager
     this.connectionManager = this.components.setConnectionManager(new DefaultConnectionManager(init.connectionManager))
@@ -338,7 +342,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     )
 
     await Promise.all(
-      this.services.map(servce => servce.stop())
+      this.services.map(service => service.stop())
     )
 
     await Promise.all(
