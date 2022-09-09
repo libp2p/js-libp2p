@@ -130,7 +130,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     }))
 
     // Create the dialer
-    this.components.setDialer(this.configureComponent(new DefaultDialer(this.components, init.connectionManager)))
+    this.components.setDialer(new DefaultDialer(this.components, init.connectionManager))
 
     // Create the Connection Manager
     this.connectionManager = this.components.setConnectionManager(new DefaultConnectionManager(init.connectionManager))
@@ -342,7 +342,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     )
 
     await Promise.all(
-      this.services.map(servce => servce.stop())
+      this.services.map(service => service.stop())
     )
 
     await Promise.all(
