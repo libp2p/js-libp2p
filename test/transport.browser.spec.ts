@@ -112,10 +112,10 @@ describe('Transport interoperability tests', () => {
     let ma = new Multiaddr(SERVER_MULTIADDR);
     let conn = await t.dial(ma, ignoredDialOption());
     let stream = await conn.newStream(['/echo/1.0.0']);
-    let data = 'dataToBeEchoedBackToMe';
+    let data = 'dataToBeEchoedBackToMe\n';
     let response = await pipe([uint8arrayFromString(data)], stream, async (source) => await first(source));
     expect(response?.subarray()).to.equalBytes(uint8arrayFromString(data));
-    console.log('Response was suppsed to be', data);
-  });
+    // console.log('Response was suppsed to be', data);
+  };);
 });
 
