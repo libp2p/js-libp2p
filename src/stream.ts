@@ -183,9 +183,8 @@ export function createStream (options: Options): MplexStream {
               break
             }
 
-            const toSend = uint8ArrayList.length - maxMsgSize
-            send({ id, type: Types.MESSAGE, data: uint8ArrayList.sublist(0, toSend) })
-            uint8ArrayList.consume(toSend)
+            send({ id, type: Types.MESSAGE, data: uint8ArrayList.sublist(0, maxMsgSize) })
+            uint8ArrayList.consume(maxMsgSize)
           }
         }
       } catch (err: any) {

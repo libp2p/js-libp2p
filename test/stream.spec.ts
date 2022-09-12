@@ -572,4 +572,35 @@ describe('stream', () => {
     await expect(stream.sink([]))
       .to.eventually.be.rejected.with.property('code', 'ERR_DOUBLE_SINK')
   })
+
+  it('should chunk really big messages', async () => {
+    const msgs: Message[] = []
+    const mockSend = (msg: Message) => msgs.push(msg)
+    const id = randomInt(1000)
+    const name = `STREAM${Date.now()}`
+    const maxMsgSize = 10
+    const stream = createStream({ id, name, send: mockSend, maxMsgSize })
+    const input = [
+      new Uint8Array(1024).map(() => randomInt(0, 255))
+    ]
+    const output = new Uint8ArrayList()
+
+    await pipe(input, stream)
+
+    expect(msgs).to.have.lengthOf(105)
+    expect(msgs[0].id).to.equal(id)
+    expectMsgType(msgs[0].type, MessageTypes.NEW_STREAM)
+
+    for (let i = 1; i < msgs.length - 1; i++) {
+      const msg = msgs[i]
+      expectMsgType(msg.type, MessageTypes.MESSAGE_INITIATOR)
+
+      if (msg.type === MessageTypes.MESSAGE_INITIATOR) {
+        output.append(msg.data)
+      }
+    }
+
+    expectMsgType(msgs[msgs.length - 1].type, MessageTypes.CLOSE_INITIATOR)
+    expect(output.subarray()).to.equalBytes(input[0])
+  })
 })
