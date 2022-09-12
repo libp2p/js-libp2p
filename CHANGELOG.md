@@ -1,3 +1,10 @@
+## [5.2.2](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.1...v5.2.2) (2022-09-12)
+
+
+### Bug Fixes
+
+* chunk messages over maxMsgSize ([#214](https://github.com/libp2p/js-libp2p-mplex/issues/214)) ([6d2d8cc](https://github.com/libp2p/js-libp2p-mplex/commit/6d2d8ccf412b4937a955f567bd5f65705b9827a1))
+
 ## [5.2.1](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.0...v5.2.1) (2022-09-08)
 
 
