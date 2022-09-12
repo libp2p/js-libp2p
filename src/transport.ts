@@ -15,7 +15,7 @@ import defer, { DeferredPromise } from 'p-defer';
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
 import { concat } from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
-import { inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error';
+import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error';
 import { compare as uint8arrayCompare } from 'uint8arrays/compare';
 
 const log = logger('libp2p:webrtc:transport');
@@ -63,7 +63,6 @@ export class WebRTCTransport implements Transport, Initializable {
       namedCurve: 'P-256',
     } as any);
     let peerConnection = new RTCPeerConnection({ certificates: [certificate] });
-    // let peerConnection = new RTCPeerConnection();
 
     // create data channel
     let dataChannelOpenPromise = defer();
@@ -71,11 +70,11 @@ export class WebRTCTransport implements Transport, Initializable {
     handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
     handshakeDataChannel.onerror = (ev: Event) => {
       log.error('Error opening a data channel for handshaking: %s', ev.toString());
-      dataChannelOpenPromise.reject('could not open handshake channel');
+      dataChannelOpenPromise.reject(dataChannelError('noise', 'could not open handshake channel'));
     };
     setTimeout(() => {
       log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
-      dataChannelOpenPromise.reject('handshake channel opening timed out');
+      dataChannelOpenPromise.reject(dataChannelError('noise', 'handshake channel opening timed out'));
     }, HANDSHAKE_TIMEOUT_MS);
 
     // create offer sdp

@@ -83,7 +83,7 @@ export class DataChannelError extends WebRTCTransportError {
 }
 
 export function dataChannelError(streamLabel: string, msg: string) {
-  return createError(new OperationAbortedError(streamLabel, msg), codes.ERR_DATA_CHANNEL);
+  return createError(new DataChannelError(streamLabel, msg), codes.ERR_DATA_CHANNEL);
 }
 
 export class StreamingLimitationError extends WebRTCTransportError {

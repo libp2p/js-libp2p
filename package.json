@@ -11,7 +11,11 @@
     "othergen": "./node_modules/.bin/proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=proto_ts/ src/*.proto",
     "build": "aegir build",
     "test": "aegir test --target browser",
-    "format": "prettier --write src/*.ts"
+    "format": "prettier --write src/*.ts",
+    "test:interop": "run-p --race start-ext-server wait-then-test",
+    "start-ext-server": "rm -vf dist/test/server-multiaddr.js ; cd ../go-libp2p/ && go run examples/webrtc/main.go ../js-libp2p-webrtc/dist/test/ ",
+    "wait-for-server": "wait-on --delay 1000 --timeout 10000 dist/test/server-multiaddr.js",
+    "wait-then-test": "run-s wait-for-server test"
   },
   "devDependencies": {
     "@libp2p/interface-mocks": "^4.0.1",
@@ -22,9 +26,11 @@
     "aegir": "^37.4.6",
     "it-all": "^1.0.6",
     "it-first": "^1.0.7",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.7.1",
     "typescript": "^4.7.4",
-    "uint8arrays": "^3.1.0"
+    "uint8arrays": "^3.1.0",
+    "wait-on": "^6.0.1"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^8.0.0",

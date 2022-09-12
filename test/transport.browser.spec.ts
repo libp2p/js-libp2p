@@ -19,7 +19,6 @@ function ignoredDialOption(): CreateListenerOptions {
 }
 
 describe('basic transport tests', () => {
-
   it('Can construct', () => {
     let t = new underTest.WebRTCTransport();
     expect(t.constructor.name).to.equal('WebRTCTransport');
@@ -92,19 +91,31 @@ describe('basic transport tests', () => {
       }
     }
   });
+});
+
+import { SERVER_MULTIADDR } from './server-multiaddr';
+
+describe('Transport interoperability tests', () => {
   it('can connect to a server', async () => {
-	  let t  = new underTest.WebRTCTransport()
-	  let components = new Components({
-		  peerId: await createEd25519PeerId(),
-		  registrar: mockRegistrar(),
-	  });
-	  t.init(components);
-	  let ma = new Multiaddr('/ip4/192.168.1.16/udp/50270/webrtc/certhash/uEiD-KG3lTrMy-AdepCOjtIF5OpRLeH6TJwj3uuJDpBdssA/p2p/12D3KooWNBCMnCCNMVZcUEXzT7fNpsuaJvs18hY9bNEQHiW3MXU9')
-	  let conn = await t.dial(ma, ignoredDialOption())
+    if (SERVER_MULTIADDR) {
+      console.log('Will test connecting to', SERVER_MULTIADDR);
+    } else {
+      console.log('Will not test connecting to an external server, as we do not appear to have one.');
+      return;
+    }
+    let t = new underTest.WebRTCTransport();
+    let components = new Components({
+      peerId: await createEd25519PeerId(),
+      registrar: mockRegistrar(),
+    });
+    t.init(components);
+    let ma = new Multiaddr(SERVER_MULTIADDR);
+    let conn = await t.dial(ma, ignoredDialOption());
     let stream = await conn.newStream(['/echo/1.0.0']);
-    let response = await pipe([uint8arrayFromString('test\n')], stream, async (source) => await first(source));
-    expect(response?.subarray()).to.equalBytes(uint8arrayFromString('test\n'))
+    let data = 'dataToBeEchoedBackToMe';
+    let response = await pipe([uint8arrayFromString(data)], stream, async (source) => await first(source));
+    expect(response?.subarray()).to.equalBytes(uint8arrayFromString(data));
+    console.log('Response was suppsed to be', data);
   });
-  it('scratch', async () => {});
 });
 
