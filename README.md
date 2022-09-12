@@ -43,8 +43,8 @@ import all from 'it-all'
 
 // A simple upgrader that just returns the MultiaddrConnection
 const upgrader = {
-  upgradeInbound: maConn => maConn,
-  upgradeOutbound: maConn => maConn
+  upgradeInbound: async maConn => maConn,
+  upgradeOutbound: async maConn => maConn
 }
 
 const tcp = new TCP()
@@ -64,7 +64,7 @@ const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
 await listener.listen(addr)
 console.log('listening')
 
-const socket = await tcp.dial(addr)
+const socket = await tcp.dial(addr, { upgrader })
 const values = await pipe(
   socket,
   all
