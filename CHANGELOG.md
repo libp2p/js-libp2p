@@ -1,3 +1,10 @@
+## [3.0.8](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.7...v3.0.8) (2022-09-12)
+
+
+### Trivial Changes
+
+* fix readme example ([#207](https://github.com/libp2p/js-libp2p-tcp/issues/207)) ([9f7cf76](https://github.com/libp2p/js-libp2p-tcp/commit/9f7cf761af41c12ca0a23c7df9b305ae876439f8))
+
 ## [3.0.7](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.6...v3.0.7) (2022-09-12)
 
 
