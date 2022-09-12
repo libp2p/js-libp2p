@@ -1,3 +1,10 @@
+## [3.0.7](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.6...v3.0.7) (2022-09-12)
+
+
+### Bug Fixes
+
+* handle address being undefined ([#209](https://github.com/libp2p/js-libp2p-tcp/issues/209)) ([64ed009](https://github.com/libp2p/js-libp2p-tcp/commit/64ed0090ae9d6295496cd69e82b879627ea2069c))
+
 ## [3.0.6](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.5...v3.0.6) (2022-09-01)
 
 
