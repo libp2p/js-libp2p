@@ -71,7 +71,7 @@ function ma2sdp(ma: Multiaddr, ufrag: string): string {
   const IP = ip(ma);
   const IPVERSION = ipv(ma);
   const PORT = port(ma);
-  const [CERTFP, PWD] = certhashToFingerprint(ma);
+  const [CERTFP, _] = certhashToFingerprint(ma);
   return `v=0
 o=- 0 0 IN ${IPVERSION} ${IP}
 s=-
@@ -82,7 +82,7 @@ m=application ${PORT} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:passive
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${PWD}
+a=ice-pwd:${ufrag}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
 a=max-message-size:100000

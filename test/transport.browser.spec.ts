@@ -116,6 +116,6 @@ describe('Transport interoperability tests', () => {
     let response = await pipe([uint8arrayFromString(data)], stream, async (source) => await first(source));
     expect(response?.subarray()).to.equalBytes(uint8arrayFromString(data));
     // console.log('Response was suppsed to be', data);
-  };);
+  });
 });
 
