@@ -19,6 +19,7 @@ function ignoredDialOption(): CreateListenerOptions {
 }
 
 describe('basic transport tests', () => {
+
   it('Can construct', () => {
     let t = new underTest.WebRTCTransport();
     expect(t.constructor.name).to.equal('WebRTCTransport');

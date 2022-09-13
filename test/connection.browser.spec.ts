@@ -6,7 +6,6 @@ import { pipe } from 'it-pipe';
 import first from 'it-first';
 import {fromString} from 'uint8arrays/from-string';
 import {v4} from 'uuid';
-// import { enable as enableLogger } from '@libp2p/logger';
 
 const echoProtocol = '/echo/1.0.0';
 

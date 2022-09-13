@@ -14,7 +14,7 @@ message Message {
     RESET = 2;
   }
 
-  optional Flag flag=1;
+  optional Flag flag = 1;
 
   optional bytes message = 2;
 }
