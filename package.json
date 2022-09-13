@@ -6,12 +6,32 @@
   "author": "",
   "license": "Apache-2.0 or MIT",
   "type": "module",
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "files": [
+    "src",
+    "dist/src",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
   "scripts": {
     "autogen": "npx protoc --ts_out proto_ts --proto_path src src/*.proto",
     "othergen": "./node_modules/.bin/proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=proto_ts/ src/*.proto",
     "build": "aegir build",
     "test": "aegir test --target browser",
-    "format": "prettier --write src/*.ts"
+    "lint": "aegir lint",
+    "lint:fix": "aegir lint --fix",
+    "clean": "aegir clean",
+    "dep-check": "aegir dep-check",
+    "release": "aegir release"
   },
   "devDependencies": {
     "@libp2p/interface-mocks": "^4.0.1",

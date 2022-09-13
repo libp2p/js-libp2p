@@ -15,8 +15,14 @@
 - [API](#api)
   - [Transport](#transport)
   - [Connection](#connection)
+- [Hacking](#hacking)
 - [Contribute](#contribute)
-- [Contribute](#contribute-1)
+- [Development](#development)
+  - [Build](#build)
+  - [Lint](#lint)
+  - [Clean](#clean)
+  - [Check Dependencies](#check-dependencies)
+  - [Build a Release](#build-a-release)
 - [License](#license)
 - [Contribution](#contribution)
 
@@ -70,6 +76,51 @@ Please be aware that all interactions related to libp2p are subject to the IPFS 
 
 Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
+## Development
+
+This module leans heavily on (Aegir)[https://github.com/ipfs/aegir] for most of the `package.json` scripts.
+
+### Build
+The build script is a wrapper to `aegir build`.  To build this package:
+
+```shell
+npm run build
+```
+
+The build will be located in the `/dist` folder.
+
+### Lint
+Aegir is also used to lint the code, which follows the [Standard](https://github.com/standard/standard) JS linter.
+The VS Code plugin for this standard is located at https://marketplace.visualstudio.com/items?itemName=standard.vscode-standard.
+To lint this repo:
+
+```shell
+npm run lint
+```
+
+You can also auto-fix when applicable:
+
+```shell
+npm run lint:fix
+```
+
+### Clean
+
+```shell
+npm run clean
+```
+
+### Check Dependencies
+
+```shell
+npm run deps-check
+```
+
+### Build a Release
+
+```shell
+npm run release
+```
 ## License
 
 Licensed under either of
