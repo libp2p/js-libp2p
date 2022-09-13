@@ -103,7 +103,6 @@ export class WebRTCTransport implements Transport, Initializable {
       dataChannelOpenPromise.reject();
     }, HANDSHAKE_TIMEOUT_MS);
 
-    await dataChannelOpenPromise.promise;
     await this.componentsPromise.promise;
 
     let myPeerId = await this.getPeerId();

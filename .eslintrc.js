@@ -10,6 +10,7 @@ module.exports = {
     'unused-imports',
     'react-perf',
   ],
+  ignorePatterns: ['**/proto_ts/**/*'],
   rules: {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-var-requires': 0,
@@ -39,13 +40,5 @@ module.exports = {
     'plugin:import/warnings',
     'plugin:import/typescript',
     'plugin:markdown/recommended',
-  ],
-  overrides: [
-    {
-      files: ['**/workers/*.ts'],
-      rules: {
-        'no-restricted-globals': 'off',
-      },
-    },
   ],
 };
