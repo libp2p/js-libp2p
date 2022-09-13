@@ -15,6 +15,7 @@
 - [API](#api)
   - [Transport](#transport)
   - [Connection](#connection)
+- [Hacking](#hacking)
 - [Contribute](#contribute)
 - [Development](#development)
   - [Build](#build)
@@ -56,6 +57,12 @@ const values = await pipe(socket, all);
 
 [![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/libp2p-interfaces/src/connection/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/connection)
 
+## Hacking
+
+Besides the usual `npm install` to get dependencies, `npm run build` to invoke tsc, and `npm run test` to execute unit tests...
+
+There is also `npm run autogen` which uses ProtoBuf's protoc to populate the generated code directory `proto_ts` based on `*.proto` files in src. Don't forget to run this step before `build` any time you make a change to any of the `*.proto` files.
+
 ## Contribute
 
 Contributions are welcome! The libp2p implementation in JavaScript is a work in progress. As such, there's a few things you can do right now to help out:
@@ -63,6 +70,7 @@ Contributions are welcome! The libp2p implementation in JavaScript is a work in 
 - [Check out the existing issues](//github.com/little-bear-labs//js-libp2p-webrtc/issues).
 - **Perform code reviews**.
 - **Add tests**. There can never be enough tests.
+- Go through the modules and **check out existing issues**. This is especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
 
 Please be aware that all interactions related to libp2p are subject to the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 

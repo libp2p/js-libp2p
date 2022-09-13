@@ -23,6 +23,8 @@
     "!**/*.tsbuildinfo"
   ],
   "scripts": {
+    "autogen": "npx protoc --ts_out proto_ts --proto_path src src/*.proto",
+    "othergen": "./node_modules/.bin/proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=proto_ts/ src/*.proto",
     "build": "aegir build",
     "test": "aegir test --target browser",
     "lint": "aegir lint",
@@ -53,6 +55,9 @@
     "@libp2p/multistream-select": "^3.0.0",
     "@libp2p/peer-id": "^1.1.15",
     "@multiformats/multiaddr": "^10.4.0",
+    "@protobuf-ts/plugin": "^2.8.0",
+    "@protobuf-ts/protoc": "^2.8.0",
+    "@protobuf-ts/runtime": "^2.8.0",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-merge": "^1.0.4",

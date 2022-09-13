@@ -88,9 +88,9 @@ describe('stream stats', () => {
     expect(s.readClosed).to.equal(false);
     expect(s.writeClosed).to.equal(false);
     expect(s.stat.timeline.close).to.not.exist();
-    s.reset();
-    expect(s.closed).to.equal(true);
-    expect(s.readClosed).to.equal(true);
+    s.reset(); //only resets the write side
+    expect(s.closed).to.equal(false);
+    expect(s.readClosed).to.equal(false);
     expect(s.writeClosed).to.equal(true);
     expect(s.stat.timeline.close).to.not.exist();
   });
