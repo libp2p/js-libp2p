@@ -4,6 +4,7 @@ import { logger } from '@libp2p/logger'
 import toIterable from 'stream-to-it'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
+import { multiaddrToNetConfig } from './utils.js'
 import errCode from 'err-code'
 import type { Socket } from 'net'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -52,13 +53,14 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
     remoteAddr = toMultiaddr(socket.remoteAddress, socket.remotePort)
   }
 
-  const { host, port } = remoteAddr.toOptions()
+  const lOpts = multiaddrToNetConfig(remoteAddr)
+  const lOptsStr = lOpts.path ?? `${lOpts.host ?? ''}:${lOpts.port ?? ''}`
   const { sink, source } = toIterable.duplex(socket)
 
   // by default there is no timeout
   // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
   socket.setTimeout(inactivityTimeout, () => {
-    log('%s:%s socket read timeout', host, port)
+    log('%s socket read timeout', lOptsStr)
 
     // only destroy with an error if the remote has not sent the FIN message
     let err: Error | undefined
@@ -72,7 +74,7 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
   })
 
   socket.once('close', () => {
-    log('%s:%s socket closed', host, port)
+    log('%s socket read timeout', lOptsStr)
 
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
@@ -119,11 +121,11 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
 
     async close () {
       if (socket.destroyed) {
-        log('%s:%s socket was already destroyed when trying to close', host, port)
+        log('%s socket was already destroyed when trying to close', lOptsStr)
         return
       }
 
-      log('%s:%s closing socket', host, port)
+      log('%s closing socket', lOptsStr)
       await new Promise<void>((resolve, reject) => {
         const start = Date.now()
 
@@ -131,10 +133,10 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
         // timeout, destroy it manually.
         const timeout = setTimeout(() => {
           if (socket.destroyed) {
-            log('%s:%s is already destroyed', host, port)
+            log('%s is already destroyed', lOptsStr)
             resolve()
           } else {
-            log('%s:%s socket close timeout after %dms, destroying it manually', host, port, Date.now() - start)
+            log('%s socket close timeout after %dms, destroying it manually', lOptsStr, Date.now() - start)
 
             // will trigger 'error' and 'close' events that resolves promise
             socket.destroy(errCode(new Error('Socket close timeout'), 'ERR_SOCKET_CLOSE_TIMEOUT'))
@@ -142,13 +144,13 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
         }, closeTimeout).unref()
 
         socket.once('close', () => {
-          log('%s:%s socket closed', host, port)
+          log('%s socket closed', lOptsStr)
           // socket completely closed
           clearTimeout(timeout)
           resolve()
         })
         socket.once('error', (err: Error) => {
-          log('%s:%s socket error', host, port, err)
+          log('%s socket error', lOptsStr, err)
 
           // error closing socket
           if (maConn.timeline.close == null) {
@@ -171,7 +173,7 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
         if (socket.writableLength > 0) {
           // there are outgoing bytes waiting to be sent
           socket.once('drain', () => {
-            log('%s:%s socket drained', host, port)
+            log('%s socket drained', lOptsStr)
 
             // all bytes have been sent we can destroy the socket (maybe) before the timeout
             socket.destroy()

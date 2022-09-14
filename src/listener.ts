@@ -110,19 +110,19 @@ export function createListener (context: Context) {
       }
 
       if (typeof address === 'string') {
-        throw new Error('Incorrect server address type')
-      }
-
-      try {
-        // Because TCP will only return the IPv6 version
-        // we need to capture from the passed multiaddr
-        if (listeningAddr.toString().startsWith('/ip4')) {
-          addrs = addrs.concat(getMultiaddrs('ip4', address.address, address.port))
-        } else if (address.family === 'IPv6') {
-          addrs = addrs.concat(getMultiaddrs('ip6', address.address, address.port))
+        addrs = [listeningAddr]
+      } else {
+        try {
+          // Because TCP will only return the IPv6 version
+          // we need to capture from the passed multiaddr
+          if (listeningAddr.toString().startsWith('/ip4')) {
+            addrs = addrs.concat(getMultiaddrs('ip4', address.address, address.port))
+          } else if (address.family === 'IPv6') {
+            addrs = addrs.concat(getMultiaddrs('ip6', address.address, address.port))
+          }
+        } catch (err) {
+          log.error('could not turn %s:%s into multiaddr', address.address, address.port, err)
         }
-      } catch (err) {
-        log.error('could not turn %s:%s into multiaddr', address.address, address.port, err)
       }
 
       return addrs.map(ma => peerId != null ? ma.encapsulate(`/p2p/${peerId}`) : ma)

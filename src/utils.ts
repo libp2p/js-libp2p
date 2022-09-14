@@ -1,15 +1,21 @@
 import { Multiaddr } from '@multiformats/multiaddr'
+import type { ListenOptions, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 import os from 'os'
+import path from 'path'
 
 const ProtoFamily = { ip4: 'IPv4', ip6: 'IPv6' }
 
-export function multiaddrToNetConfig (addr: Multiaddr) {
+export function multiaddrToNetConfig (addr: Multiaddr): ListenOptions | (IpcSocketConnectOpts & TcpSocketConnectOpts) {
   const listenPath = addr.getPath()
 
   // unix socket listening
   if (listenPath != null) {
-    // TCP should not return unix socket else need to refactor listener which accepts connection options object
-    throw new Error('Unix Sockets are not supported by the TCP transport')
+    if (os.platform() === 'win32') {
+      // Use named pipes on Windows systems.
+      return { path: path.join('\\\\.\\pipe\\', listenPath) }
+    } else {
+      return { path: listenPath }
+    }
   }
 
   // tcp listening

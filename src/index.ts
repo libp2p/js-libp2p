@@ -6,10 +6,10 @@ import { toMultiaddrConnection } from './socket-to-conn.js'
 import { createListener } from './listener.js'
 import { multiaddrToNetConfig } from './utils.js'
 import { AbortError } from '@libp2p/interfaces/errors'
-import { CODE_CIRCUIT, CODE_P2P } from './constants.js'
+import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { CreateListenerOptions, DialOptions, symbol, Transport } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Socket } from 'net'
+import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Connection } from '@libp2p/interface-connection'
 
@@ -75,19 +75,20 @@ export class TCP implements Transport {
 
     return await new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
-      const cOpts = multiaddrToNetConfig(ma)
+      const cOpts = multiaddrToNetConfig(ma) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
+      const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
 
       log('dialing %j', cOpts)
       const rawSocket = net.connect(cOpts)
 
       const onError = (err: Error) => {
-        err.message = `connection error ${cOpts.host}:${cOpts.port}: ${err.message}`
+        err.message = `connection error ${cOptsStr}: ${err.message}`
 
         done(err)
       }
 
       const onTimeout = () => {
-        log('connection timeout %s:%s', cOpts.host, cOpts.port)
+        log('connection timeout %s', cOptsStr)
 
         const err = errCode(new Error(`connection timeout after ${Date.now() - start}ms`), 'ERR_CONNECT_TIMEOUT')
         // Note: this will result in onError() being called
@@ -153,6 +154,10 @@ export class TCP implements Transport {
     return multiaddrs.filter(ma => {
       if (ma.protoCodes().includes(CODE_CIRCUIT)) {
         return false
+      }
+
+      if (ma.protoCodes().includes(CODE_UNIX)) {
+        return true
       }
 
       return mafmt.TCP.matches(ma.decapsulateCode(CODE_P2P))

@@ -30,9 +30,8 @@ describe('listen', () => {
     }
   })
 
-  // TCP doesn't support unix paths
-  it.skip('listen on path', async () => {
-    const mh = new Multiaddr(`/unix${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+  it('listen on path', async () => {
+    const mh = new Multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
     listener = tcp.createListener({
       upgrader
@@ -207,9 +206,8 @@ describe('dial', () => {
     await listener.close()
   })
 
-  // TCP doesn't support unix paths
-  it.skip('dial on path', async () => {
-    const ma = new Multiaddr(`/unix${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+  it('dial on path', async () => {
+    const ma = new Multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
     const listener = tcp.createListener({
       upgrader
@@ -226,7 +224,7 @@ describe('dial', () => {
       async (source) => await all(source)
     )
 
-    expect(values).to.deep.equal(['hey'])
+    expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
     await listener.close()
   })
