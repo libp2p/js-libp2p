@@ -1,3 +1,10 @@
+## [3.1.0](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.8...v3.1.0) (2022-09-14)
+
+
+### Features
+
+* Unix domain sockets ([#208](https://github.com/libp2p/js-libp2p-tcp/issues/208)) ([223f79b](https://github.com/libp2p/js-libp2p-tcp/commit/223f79b53091c33d4588b3c5e5adf28bcb929d97)), closes [#132](https://github.com/libp2p/js-libp2p-tcp/issues/132)
+
 ## [3.0.8](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.7...v3.0.8) (2022-09-12)
 
 
