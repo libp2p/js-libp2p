@@ -218,12 +218,12 @@ const node = await createLibp2p({
   }
 })
 
-node.on('peer:discovery', (peer) => {
-  console.log('Discovered %s', peer.id.toB58String()) // Log discovered peer
+node.addEventListener('peer:discovery', (evt) => {
+  console.log('Discovered %s', evt.detail.id.toString()) // Log discovered peer
 })
 
-node.connectionManager.on('peer:connect', (connection) => {
-  console.log('Connected to %s', connection.remotePeer.toB58String()) // Log connected peer
+node.connectionManager.addEventListener('peer:connect', (evt) => {
+  console.log('Connected to %s', evt.detail.remotePeer.toString()) // Log connected peer
 })
 
 // start libp2p
