@@ -39,7 +39,7 @@ export async function createConnectedRTCPeerConnectionPair(): Promise<RTCPeerCon
           return;
         case 'failed':
         case 'disconnected':
-          promise.reject();
+          promise.reject(`Peerconnection state: ${pc.connectionState}`);
           return;
       }
     };
