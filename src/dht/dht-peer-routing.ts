@@ -27,8 +27,8 @@ export class DHTPeerRouting implements PeerRouting {
 
   async * getClosestPeers (key: Uint8Array, options: AbortOptions = {}) {
     for await (const event of this.dht.getClosestPeers(key, options)) {
-      if (event.name === 'PEER_RESPONSE') {
-        yield * event.closer
+      if (event.name === 'FINAL_PEER') {
+        yield event.peer
       }
     }
   }
