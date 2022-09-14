@@ -34,12 +34,12 @@ Now that we have libp2p installed, let's configure the minimum needed to get you
 
 Libp2p uses Transports to establish connections between peers over the network. Transports are the components responsible for performing the actual exchange of data between libp2p nodes. You can configure any number of Transports, but you only need 1 to start with. Supporting more Transports will improve the ability of your node to speak to a larger number of nodes on the network, as matching Transports are required for two nodes to communicate with one another.
 
-You should select Transports according to the runtime of your application; Node.js or the browser. You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). For this guide let's install `libp2p-websockets`, as it can be used in both Node.js and the browser.
+You should select Transports according to the runtime of your application; Node.js or the browser. You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). For this guide let's install `@libp2p/websockets`, as it can be used in both Node.js and the browser.
 
-Start by installing `libp2p-websockets`:
+Start by installing `@libp2p/websockets`:
 
 ```sh
-npm install libp2p-websockets
+npm install @libp2p/websockets
 ```
 
 Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
@@ -66,13 +66,13 @@ If you want to know more about libp2p transports, you should read the following 
 
 Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
 
-There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](./CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `libp2p-noise` module.
+There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](./CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `@chainsafe/libp2p-noise` module.
 
 ```sh
-npm install libp2p-noise
+npm install @chainsafe/libp2p-noise
 ```
 
-With `libp2p-noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
+With `@chainsafe/libp2p-noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -96,12 +96,12 @@ If you want to know more about libp2p connection encryption, you should read the
 
 While multiplexers are not strictly required, they are highly recommended as they improve the effectiveness and efficiency of connections for the various protocols libp2p runs. Adding a multiplexer to your configuration will allow libp2p to run several of its internal protocols, like Identify, as well as allow your application to easily run any number of protocols over a single connection.
 
-Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules, js-libp2p currently only supports `libp2p-mplex`, so we will use that here. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
+Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules, js-libp2p currently only supports `@libp2p/mplex`, so we will use that here. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
-You can install `libp2p-mplex` and add it to your libp2p node as follows in the next example.
+You can install `@libp2p/mplex` and add it to your libp2p node as follows in the next example.
 
 ```sh
-npm install libp2p-mplex
+npm install @libp2p/mplex
 ```
 
 ```js
@@ -170,17 +170,17 @@ Peer discovery is an important part of creating a well connected libp2p node. A 
 For each discovered peer libp2p will emit a `peer:discovery` event which includes metadata about that peer. You can read the [Events](./API.md#events) in the API doc to learn more.
 
 Looking at the [available peer discovery](./CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
-- If you already know the addresses of some other network peers, you should consider using `libp2p-bootstrap` as this is the easiest way of getting your peer into the network.
-- If it is likely that you will have other peers on your local network, `libp2p-mdns` is a must if you're node is not running in the browser. It allows peers to discover each other when on the same local network.
-- If your application is browser based you can use the `libp2p-webrtc-star` Transport, which includes a rendezvous based peer sharing service.
-- A random walk approach can be used via `libp2p-kad-dht`, to crawl the network and find new peers along the way.
+- If you already know the addresses of some other network peers, you should consider using `@libp2p/bootstrap` as this is the easiest way of getting your peer into the network.
+- If it is likely that you will have other peers on your local network, `@libp2p/mdns` is a must if you're node is not running in the browser. It allows peers to discover each other when on the same local network.
+- If your application is browser based you can use the `@libp2p/webrtc-star` Transport, which includes a rendezvous based peer sharing service.
+- A random walk approach can be used via `@libp2p/kad-dht`, to crawl the network and find new peers along the way.
 
-For this guide we will configure `libp2p-bootstrap` as this is useful for joining the public network.
+For this guide we will configure `@libp2p/bootstrap` as this is useful for joining the public network.
 
-Let's install `libp2p-bootstrap`.
+Let's install `@libp2p/bootstrap`.
 
 ```sh
-npm install libp2p-bootstrap
+npm install @libp2p/bootstrap
 ```
 
 We can provide specific configurations for each protocol within a `config.peerDiscovery` property in the options as shown below.
