@@ -148,11 +148,8 @@ const node = await createLibp2p({
 await node.start()
 console.log('libp2p has started')
 
-const listenAddrs = node.transportManager.getAddrs()
+const listenAddrs = node.getMultiaddrs()
 console.log('libp2p is listening on the following addresses: ', listenAddrs)
-
-const advertiseAddrs = node.multiaddrs
-console.log('libp2p is advertising the following addresses: ', advertiseAddrs)
 
 // stop libp2p
 await node.stop()
