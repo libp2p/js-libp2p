@@ -8,23 +8,27 @@ First, let's update our libp2p configuration with a pubsub implementation.
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { Gossipsub } from 'libp2p-gossipsub'
+import { GossipSub } from '@chainsafe/libp2p-gossipsub'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
-const node = await createLibp2p({
-  addresses: {
-    listen: ['/ip4/0.0.0.0/tcp/0']
-  },
-  transports: [
-    new TCP()
-  ],
-  streamMuxers: [
-    new Mplex()
-  ],
-  connectionEncryption: [
-    new Noise()
-  ],
-  pubsub: new Gossipsub()
-})
+const createNode = async () => {
+  const node = await createLibp2p({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()],
+	  // we add the Pubsub module we want
+	  pubsub: new GossipSub({ allowPublishToZeroPeers: true })
+  })
+
+  await node.start()
+
+  return node
+}
 ```
 
 Then, create three nodes and connect them together. In this example, we will connect the nodes in series. Node 1 connected with node 2 and node 2 connected with node 3.
@@ -36,16 +40,19 @@ const [node1, node2, node3] = await Promise.all([
   createNode(),
 ])
 
-await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
 await node1.dial(node2.peerId)
 
-await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
 await node2.dial(node3.peerId)
 ```
 
 Now we' can subscribe to the fruit topic and log incoming messages.
 
 ```JavaScript
+import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
+import { toString as uint8ArrayToString } from "uint8arrays/to-string";
+
 const topic = 'fruit'
 
 node1.pubsub.addEventListener('message', (msg) => {
