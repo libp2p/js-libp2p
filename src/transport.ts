@@ -70,11 +70,11 @@ export class WebRTCTransport implements Transport, Initializable {
     handshakeDataChannel.onopen = (_) => dataChannelOpenPromise.resolve();
     handshakeDataChannel.onerror = (ev: Event) => {
       log.error('Error opening a data channel for handshaking: %s', ev.toString());
-      dataChannelOpenPromise.reject(dataChannelError('noise', 'could not open handshake channel'));
+      dataChannelOpenPromise.reject(dataChannelError('data', `error opening datachannel: ${ev.toString()}`));
     };
     setTimeout(() => {
       log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
-      dataChannelOpenPromise.reject(dataChannelError('noise', 'handshake channel opening timed out'));
+      dataChannelOpenPromise.reject(dataChannelError('data', `data channel was never opened: state: ${handshakeDataChannel.readyState}`));
     }, HANDSHAKE_TIMEOUT_MS);
 
     // create offer sdp
