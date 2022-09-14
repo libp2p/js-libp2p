@@ -115,16 +115,15 @@ describe('peer-routing', () => {
       const dhtGetClosestPeersStub = sinon.stub(nodes[0].dht, 'getClosestPeers').callsFake(async function * () {
         yield {
           from: nodes[2].peerId,
-          type: EventTypes.PEER_RESPONSE,
-          name: 'PEER_RESPONSE',
+          type: EventTypes.FINAL_PEER,
+          name: 'FINAL_PEER',
           messageName: 'FIND_NODE',
           messageType: MessageType.FIND_NODE,
-          closer: [{
+          peer: {
             id: nodes[1].peerId,
             multiaddrs: [],
             protocols: []
-          }],
-          providers: []
+          }
         }
       })
 
@@ -673,26 +672,20 @@ describe('peer-routing', () => {
       const peerStoreAddressBookAddStub = sinon.spy(node.peerStore.addressBook, 'add')
       const dhtGetClosestPeersStub = sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () {
         yield {
-          name: 'PEER_RESPONSE',
-          type: EventTypes.PEER_RESPONSE,
+          name: 'FINAL_PEER',
+          type: EventTypes.FINAL_PEER,
           messageName: 'FIND_NODE',
           messageType: MessageType.FIND_NODE,
           from: peerIds[0],
-          closer: [
-            results[0]
-          ],
-          providers: []
+          peer: results[0]
         }
         yield {
-          name: 'PEER_RESPONSE',
-          type: EventTypes.PEER_RESPONSE,
+          name: 'FINAL_PEER',
+          type: EventTypes.FINAL_PEER,
           messageName: 'FIND_NODE',
           messageType: MessageType.FIND_NODE,
           from: peerIds[0],
-          closer: [
-            results[1]
-          ],
-          providers: []
+          peer: results[1]
         }
       })
 
