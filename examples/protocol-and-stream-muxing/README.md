@@ -6,21 +6,25 @@ The feature of agreeing on a protocol over an established connection is what we 
 
 # 1. Handle multiple protocols
 
-Let's see _protocol multiplexing_ in action! You will need the following modules for this example: `libp2p`, `libp2p-tcp`, `peer-id`, `it-pipe`, `it-buffer` and `streaming-iterables`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
+Let's see _protocol multiplexing_ in action! You will need the following modules for this example: `libp2p`, `@libp2p/tcp`, `@libp2p/peer-id`, `it-pipe`, `it-buffer` and `streaming-iterables`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
 
 After creating the nodes, we need to tell libp2p which protocols to handle.
 
 ```JavaScript
 import { pipe } from 'it-pipe'
-const { map } from 'streaming-iterables')
-const { toBuffer } from 'it-buffer')
+import { map } from 'streaming-iterables'
+import { toBuffer } from 'it-buffer'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 // ...
-const node1 = nodes[0]
-const node2 = nodes[1]
+const [node1, node2] = await Promise.all([
+  createNode(),
+  createNode()
+])
 
 // Add node's 2 data to the PeerStore
-await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
 
 // Here we are telling libp2p that if someone dials this node to talk with the `/your-protocol`
 // multicodec, the protocol identifier, please call this handler and give it the stream
@@ -30,7 +34,7 @@ node2.handle('/your-protocol', ({ stream }) => {
     stream,
     source => (async function () {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg.subarray()))
       }
     })()
   )
@@ -43,7 +47,7 @@ After the protocol is _handled_, now we can dial to it.
 const stream = await node1.dialProtocol(node2.peerId, ['/your-protocol'])
 
 await pipe(
-  ['my own protocol, wow!'],
+  [uint8ArrayFromString('my own protocol, wow!')],
   stream
 )
 ```
@@ -56,7 +60,7 @@ node2.handle('/another-protocol/1.0.1', ({ stream }) => {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg.subarray()))
       }
     }
   )
@@ -65,7 +69,7 @@ node2.handle('/another-protocol/1.0.1', ({ stream }) => {
 const stream = await node1.dialProtocol(node2.peerId, ['/another-protocol/1.0.0'])
 
 await pipe(
-  ['my own protocol, wow!'],
+  [uint8ArrayFromString('my own protocol, wow!')],
   stream
 )
 ```
@@ -75,8 +79,8 @@ This feature is super power for network protocols. It works in the same way as v
 There is still one last feature, you can provide multiple protocols for the same handler. If you have a backwards incompatible change, but it only requires minor changes to the code, you may prefer to do protocol checking instead of having multiple handlers
 
 ```JavaScript
-node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ protocol, stream }) => {
-  if (protocol === '/another-protocol/2.0.0') {
+node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ stream }) => {
+  if (stream.stat.protocol === '/another-protocol/2.0.0') {
     // handle backwards compatibility
   }
 
@@ -84,7 +88,7 @@ node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ protocol
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg.subarray()))
       }
     }
   )
@@ -107,27 +111,27 @@ import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 //...
 
-const createNode = () => {
-  return Libp2p.create({
-    transports: [
-      new TCP()
-    ],
-    streamMuxers: [
-      new Mplex()
-    ]
-  })
-}
+createLibp2p({
+  //...
+  transports: [
+    new TCP()
+  ],
+  streamMuxers: [
+    new Mplex()
+  ]
+})
+
 ```
 
 With this, we can dial as many times as we want to a peer and always reuse the same established underlying connection.
 
 ```JavaScript
-node2.handle(['/a', '/b'], ({ protocol, stream }) => {
+node2.handle(['/a', '/b'], ({ stream }) => {
   pipe(
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(`from: ${protocol}, msg: ${msg.toString()}`)
+        console.log(`from: ${stream.stat.protocol}, msg: ${uint8ArrayToString(msg.subarray())}`)
       }
     }
   )
@@ -135,19 +139,19 @@ node2.handle(['/a', '/b'], ({ protocol, stream }) => {
 
 const stream = await node1.dialProtocol(node2.peerId, ['/a'])
 await pipe(
-  ['protocol (a)'],
+  [uint8ArrayFromString('protocol (a)')],
   stream
 )
 
 const stream2 = await node1.dialProtocol(node2.peerId, ['/b'])
 await pipe(
-  ['protocol (b)'],
+  [uint8ArrayFromString('protocol (b)')],
   stream2
 )
 
 const stream3 = await node1.dialProtocol(node2.peerId, ['/b'])
 await pipe(
-  ['another stream on protocol (b)'],
+  [uint8ArrayFromString('another stream on protocol (b)')],
   stream3
 )
 ```
@@ -172,15 +176,13 @@ You can see this working on example [3.js](./3.js).
 As we've seen earlier, we can create our node with this createNode function.
 ```js
 const createNode = async () => {
-  const node = await Libp2p.create({
+  const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [MPLEX],
-      connEncryption: [NOISE]
-    }
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()],
   })
 
   await node.start()
@@ -199,7 +201,7 @@ const [node1, node2] = await Promise.all([
 
 Since, we want to connect these nodes `node1` & `node2`, we add our `node2` multiaddr in key-value pair in `node1` peer store.
 ```js
-await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
 ```
 
 You may notice that we are only adding `node2` to `node1` peer store. This is because we want to dial up a bidirectional connection between these two nodes.
@@ -211,7 +213,7 @@ node1.handle('/node-1', ({ stream }) => {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg.subarray()))
       }
     }
   )
@@ -222,7 +224,7 @@ node2.handle('/node-2', ({ stream }) => {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg.subarray()))
       }
     }
   )
@@ -231,14 +233,14 @@ node2.handle('/node-2', ({ stream }) => {
 // Dialing node2 from node1
 const stream1 = await node1.dialProtocol(node2.peerId, ['/node-2'])
 await pipe(
-  ['from 1 to 2'],
+  [uint8ArrayFromString('from 1 to 2')],
   stream1
 )
 
 // Dialing node1 from node2
 const stream2 = await node2.dialProtocol(node1.peerId, ['/node-1'])
 await pipe(
-  ['from 2 to 1'],
+  [uint8ArrayFromString('from 2 to 1')],
   stream2
 )
 ```
@@ -258,14 +260,14 @@ The code below will result into an error as `the dial address is not valid`.
 // Dialing from node2 to node1
 const stream2 = await node2.dialProtocol(node1.peerId, ['/node-1'])
 await pipe(
-  ['from 2 to 1'],
+  [uint8ArrayFromString('from 2 to 1')],
   stream2
 )
 
 // Dialing from node1 to node2
 const stream1 = await node1.dialProtocol(node2.peerId, ['/node-2'])
 await pipe(
-  ['from 1 to 2'],
+  [uint8ArrayFromString('from 1 to 2')],
   stream1
 )
 ```
