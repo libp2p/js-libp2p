@@ -41,7 +41,8 @@ describe('connection browser tests', () => {
       break;
     }
     expect(responsed).to.be.true();
-  }).timeout(54321);
+  });
+
 });
 
 export {};

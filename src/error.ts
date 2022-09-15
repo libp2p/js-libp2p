@@ -17,6 +17,18 @@ export enum codes {
   ERR_NOT_IMPLEMENTED = 'ERR_NOT_IMPLEMENTED',
   ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS',
   ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS',
+  ERR_CONNECTION_CLOSED = 'ERR_CONNECTION_CLOSED',
+}
+
+export class ConnectionClosedError extends WebRTCTransportError {
+  constructor(state: RTCPeerConnectionState, msg: string) {
+    super(`peerconnection moved to state: ${state}:` + msg);
+    this.name = 'WebRTC/ConnectionClosed';
+  }
+}
+
+export function connectionClosedError(state: RTCPeerConnectionState, msg: string) {
+  return createError(new ConnectionClosedError(state, msg), codes.ERR_CONNECTION_CLOSED)
 }
 
 export class InvalidArgumentError extends WebRTCTransportError {

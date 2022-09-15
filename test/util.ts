@@ -62,12 +62,6 @@ export async function createConnectedRTCPeerConnectionPair(): Promise<RTCPeerCon
 
   log.trace(`clientstate: ${client.connectionState}, serverstate: ${server.connectionState}`)
 
-  // let dc = client.createDataChannel('test');
-  // log.trace('awaiting test datachannel opening');
-  // await new Promise<void>((res) => {
-  //   dc.onopen = () => res();
-  // });
-
   log('created peer connections');
   return [client, server];
 }

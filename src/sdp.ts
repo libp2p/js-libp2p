@@ -16,7 +16,7 @@ export const mbdecoder = (function () {
 const CERTHASH_CODE: number = 466;
 
 function ipv(ma: Multiaddr): string {
-  for (let proto of ma.protoNames()) {
+  for (const proto of ma.protoNames()) {
     if (proto.startsWith('ip')) {
       return proto.toUpperCase();
     }
@@ -32,8 +32,8 @@ function port(ma: Multiaddr): number {
 }
 
 export function certhash(ma: Multiaddr): string {
-  let tups = ma.stringTuples();
-  let certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
+  const tups = ma.stringTuples();
+  const certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
   if (certhash_value) {
     return certhash_value;
   } else {
@@ -42,10 +42,10 @@ export function certhash(ma: Multiaddr): string {
 }
 
 export function certhashToFingerprint(ma: Multiaddr): string[] {
-  let certhash_value = certhash(ma);
+  const certhash_value = certhash(ma);
   // certhash_value is a multibase encoded multihash encoded string
-  let mbdecoded = mbdecoder.decode(certhash_value);
-  let mhdecoded = multihashes.decode(mbdecoded);
+  const mbdecoded = mbdecoder.decode(certhash_value);
+  const mhdecoded = multihashes.decode(mbdecoded);
   let prefix = '';
   switch (mhdecoded.name) {
     case 'md5':
@@ -61,8 +61,8 @@ export function certhashToFingerprint(ma: Multiaddr): string[] {
       throw unsupportedHashAlgorithm(mhdecoded.name);
   }
 
-  let fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-  let fpSdp = fp.match(/.{1,2}/g)!.join(':');
+  const fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+  const fpSdp = fp.match(/.{1,2}/g)!.join(':');
 
   return [`${prefix.toUpperCase()} ${fpSdp.toUpperCase()}`, fp];
 }
