@@ -1,3 +1,15 @@
+## [3.1.4](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.3...v3.1.4) (2022-09-20)
+
+
+### Bug Fixes
+
+* wrong letter in `multiaddrs` of README.md ([#33](https://github.com/libp2p/js-libp2p-peer-store/issues/33)) ([487c059](https://github.com/libp2p/js-libp2p-peer-store/commit/487c059d4798ba6e0dab8db259863aa2cb10d880))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([7a48e4d](https://github.com/libp2p/js-libp2p-peer-store/commit/7a48e4d11e4455e71554ef1c43d1a5650da979e8))
+
 ## [3.1.3](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.2...v3.1.3) (2022-08-12)
 
 
