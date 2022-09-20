@@ -144,7 +144,7 @@ Access to its underlying books:
 ### Events
 
 - `peer` - emitted when a new peer is added.
-- `change:multiaadrs` - emitted when a known peer has a different set of multiaddrs.
+- `change:multiaddrs` - emitted when a known peer has a different set of multiaddrs.
 - `change:protocols` - emitted when a known peer supports a different set of protocols.
 - `change:pubkey` - emitted when a peer's public key is known.
 - `change:metadata` - emitted when known metadata of a peer changes.
