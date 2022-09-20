@@ -1,3 +1,15 @@
+## [5.2.3](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.2...v5.2.3) (2022-09-20)
+
+
+### Bug Fixes
+
+* optimize stream sink for small messages ([#216](https://github.com/libp2p/js-libp2p-mplex/issues/216)) ([a10205b](https://github.com/libp2p/js-libp2p-mplex/commit/a10205bbf19db147a33201ba8fe1fc793661080d))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([cf94f56](https://github.com/libp2p/js-libp2p-mplex/commit/cf94f56d82457f1c40e5d715d378216bb7d0ed5a))
+
 ## [5.2.2](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.1...v5.2.2) (2022-09-12)
 
 
