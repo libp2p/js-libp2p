@@ -58,14 +58,14 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
     }
   }
 
-  stream.socket.once != null && stream.socket.once('close', () => { // eslint-disable-line @typescript-eslint/prefer-optional-chain
+  stream.socket.addEventListener('close', () => {
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
     // timeline
     if (maConn.timeline.close == null) {
       maConn.timeline.close = Date.now()
     }
-  })
+  }, { once: true })
 
   return maConn
 }
