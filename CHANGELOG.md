@@ -1,3 +1,21 @@
+## [3.0.4](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.3...v3.0.4) (2022-09-21)
+
+
+### Bug Fixes
+
+* remove set timeout ([#182](https://github.com/libp2p/js-libp2p-websockets/issues/182)) ([23518b0](https://github.com/libp2p/js-libp2p-websockets/commit/23518b0dad79d2c38bca8d600bd763703534b7a6)), closes [#121](https://github.com/libp2p/js-libp2p-websockets/issues/121)
+* socket close event not working in browser ([#183](https://github.com/libp2p/js-libp2p-websockets/issues/183)) ([9076b5b](https://github.com/libp2p/js-libp2p-websockets/commit/9076b5bade8dd453b98fc73f0dc0bddaba0fe882)), closes [#179](https://github.com/libp2p/js-libp2p-websockets/issues/179)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([64411ee](https://github.com/libp2p/js-libp2p-websockets/commit/64411eef588a57adb65868940e489f0badfb579d))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 11.0.0 ([#185](https://github.com/libp2p/js-libp2p-websockets/issues/185)) ([539db88](https://github.com/libp2p/js-libp2p-websockets/commit/539db8806dc7748f9c5d6c8ba785a3c78bb92c62))
+
 ## [3.0.3](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.2...v3.0.3) (2022-09-01)
 
 
