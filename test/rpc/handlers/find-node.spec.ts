@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { FindNodeHandler } from '../../../src/rpc/handlers/find-node.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import Sinon, { SinonStubbedInstance } from 'sinon'
@@ -45,9 +45,9 @@ describe('rpc - handlers - FindNode', () => {
     const msg = new Message(T, peerId.multihash.bytes, 0)
 
     addressManager.getAddresses.returns([
-      new Multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${peerId.toString()}`),
-      new Multiaddr(`/ip4/192.168.1.5/tcp/4002/p2p/${peerId.toString()}`),
-      new Multiaddr(`/ip4/221.4.67.0/tcp/4002/p2p/${peerId.toString()}`)
+      multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${peerId.toString()}`),
+      multiaddr(`/ip4/192.168.1.5/tcp/4002/p2p/${peerId.toString()}`),
+      multiaddr(`/ip4/221.4.67.0/tcp/4002/p2p/${peerId.toString()}`)
     ])
 
     const response = await handler.handle(sourcePeer, msg)
@@ -70,9 +70,9 @@ describe('rpc - handlers - FindNode', () => {
       .resolves([{
         id: targetPeer,
         multiaddrs: [
-          new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
-          new Multiaddr('/ip4/192.168.1.5/tcp/4002'),
-          new Multiaddr('/ip4/221.4.67.0/tcp/4002')
+          multiaddr('/ip4/127.0.0.1/tcp/4002'),
+          multiaddr('/ip4/192.168.1.5/tcp/4002'),
+          multiaddr('/ip4/221.4.67.0/tcp/4002')
         ],
         protocols: []
       }])
@@ -108,9 +108,9 @@ describe('rpc - handlers - FindNode', () => {
       .resolves([{
         id: targetPeer,
         multiaddrs: [
-          new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
-          new Multiaddr('/ip4/192.168.1.5/tcp/4002'),
-          new Multiaddr('/ip4/221.4.67.0/tcp/4002')
+          multiaddr('/ip4/127.0.0.1/tcp/4002'),
+          multiaddr('/ip4/192.168.1.5/tcp/4002'),
+          multiaddr('/ip4/221.4.67.0/tcp/4002')
         ],
         protocols: []
       }])
@@ -146,9 +146,9 @@ describe('rpc - handlers - FindNode', () => {
       .resolves([{
         id: targetPeer,
         multiaddrs: [
-          new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
-          new Multiaddr('/ip4/192.168.1.5/tcp/4002'),
-          new Multiaddr('/ip4/221.4.67.0/tcp/4002')
+          multiaddr('/ip4/127.0.0.1/tcp/4002'),
+          multiaddr('/ip4/192.168.1.5/tcp/4002'),
+          multiaddr('/ip4/221.4.67.0/tcp/4002')
         ],
         protocols: []
       }])

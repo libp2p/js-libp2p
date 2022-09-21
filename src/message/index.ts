@@ -1,5 +1,5 @@
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Libp2pRecord } from '@libp2p/record'
 import { Message as PBMessage } from './dht.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -104,7 +104,7 @@ function fromPbPeer (peer: PBMessage.Peer) {
 
   return {
     id: peerIdFromBytes(peer.id),
-    multiaddrs: (peer.addrs ?? []).map((a) => new Multiaddr(a)),
+    multiaddrs: (peer.addrs ?? []).map((a) => multiaddr(a)),
     protocols: []
   }
 }

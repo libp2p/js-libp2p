@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
@@ -65,8 +65,8 @@ describe('rpc - handlers - AddProvider', () => {
     const cid = values[0].cid
     const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, cid.bytes, 0)
 
-    const ma1 = new Multiaddr('/ip4/127.0.0.1/tcp/1234')
-    const ma2 = new Multiaddr('/ip4/127.0.0.1/tcp/2345')
+    const ma1 = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const ma2 = multiaddr('/ip4/127.0.0.1/tcp/2345')
 
     msg.providerPeers = [{
       id: peerIds[0],

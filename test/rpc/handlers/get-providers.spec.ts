@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { GetProvidersHandler } from '../../../src/rpc/handlers/get-providers.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import { createValues, Value } from '../../utils/create-values.js'
 import Sinon, { SinonStubbedInstance } from 'sinon'
@@ -69,9 +69,9 @@ describe('rpc - handlers - GetProviders', () => {
     const closer: PeerInfo[] = [{
       id: closerPeer,
       multiaddrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
-        new Multiaddr('/ip4/192.168.2.6/tcp/4002'),
-        new Multiaddr('/ip4/21.31.57.23/tcp/4002')
+        multiaddr('/ip4/127.0.0.1/tcp/4002'),
+        multiaddr('/ip4/192.168.2.6/tcp/4002'),
+        multiaddr('/ip4/21.31.57.23/tcp/4002')
       ],
       protocols: []
     }]
@@ -79,9 +79,9 @@ describe('rpc - handlers - GetProviders', () => {
     const provider: PeerInfo[] = [{
       id: providerPeer,
       multiaddrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/4002'),
-        new Multiaddr('/ip4/192.168.1.5/tcp/4002'),
-        new Multiaddr('/ip4/135.4.67.0/tcp/4002')
+        multiaddr('/ip4/127.0.0.1/tcp/4002'),
+        multiaddr('/ip4/192.168.1.5/tcp/4002'),
+        multiaddr('/ip4/135.4.67.0/tcp/4002')
       ],
       protocols: []
     }]

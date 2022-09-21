@@ -1,6 +1,6 @@
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import pRetry from 'p-retry'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from './create-peer-id.js'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { mockRegistrar, mockConnectionGater, mockConnectionManager, mockNetwork } from '@libp2p/interface-mocks'
@@ -40,9 +40,9 @@ export class TestDHT {
 
     const addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([
-      new Multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${components.getPeerId().toString()}`),
-      new Multiaddr(`/ip4/192.168.1.1/tcp/4002/p2p/${components.getPeerId().toString()}`),
-      new Multiaddr(`/ip4/85.3.31.0/tcp/4002/p2p/${components.getPeerId().toString()}`)
+      multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${components.getPeerId().toString()}`),
+      multiaddr(`/ip4/192.168.1.1/tcp/4002/p2p/${components.getPeerId().toString()}`),
+      multiaddr(`/ip4/85.3.31.0/tcp/4002/p2p/${components.getPeerId().toString()}`)
     ])
 
     components.setAddressManager(addressManager)

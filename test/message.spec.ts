@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import range from 'lodash.range'
 import random from 'lodash.random'
 import { Libp2pRecord } from '@libp2p/record'
@@ -33,8 +33,8 @@ describe('Message', () => {
     const closer = peers.slice(0, 5).map((p) => ({
       id: p,
       multiaddrs: [
-        new Multiaddr(`/ip4/198.176.1.${random(198)}/tcp/1234`),
-        new Multiaddr(`/ip4/100.176.1.${random(198)}`)
+        multiaddr(`/ip4/198.176.1.${random(198)}/tcp/1234`),
+        multiaddr(`/ip4/100.176.1.${random(198)}`)
       ],
       protocols: []
     }))
@@ -42,8 +42,8 @@ describe('Message', () => {
     const provider = peers.slice(0, 5).map((p) => ({
       id: p,
       multiaddrs: [
-        new Multiaddr(`/ip4/98.176.1.${random(198)}/tcp/1234`),
-        new Multiaddr(`/ip4/10.176.1.${random(198)}`)
+        multiaddr(`/ip4/98.176.1.${random(198)}/tcp/1234`),
+        multiaddr(`/ip4/10.176.1.${random(198)}`)
       ],
       protocols: []
     }))
