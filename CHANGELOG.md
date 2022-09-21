@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/libp2p/js-libp2p-tcp/compare/v3.1.0...v3.1.1) (2022-09-21)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([5096725](https://github.com/libp2p/js-libp2p-tcp/commit/5096725d84fc0197cf0e055bfd6954a125001b47))
+
 ## [3.1.0](https://github.com/libp2p/js-libp2p-tcp/compare/v3.0.8...v3.1.0) (2022-09-14)
 
 
