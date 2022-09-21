@@ -1,4 +1,5 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ListenOptions, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 import os from 'os'
 import path from 'path'
@@ -23,7 +24,7 @@ export function multiaddrToNetConfig (addr: Multiaddr): ListenOptions | (IpcSock
 }
 
 export function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number) {
-  const toMa = (ip: string) => new Multiaddr(`/${proto}/${ip}/tcp/${port}`)
+  const toMa = (ip: string) => multiaddr(`/${proto}/${ip}/tcp/${port}`)
   return (isAnyAddr(ip) ? getNetworkAddrs(ProtoFamily[proto]) : [ip]).map(toMa)
 }
 

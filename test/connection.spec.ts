@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import { TCP } from '../src/index.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Upgrader } from '@libp2p/interface-transport'
@@ -14,7 +14,7 @@ describe('valid localAddr and remoteAddr', () => {
     upgrader = mockUpgrader()
   })
 
-  const ma = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/0')
 
   it('should resolve port 0', async () => {
     // Create a Promise that resolves when a connection is handled

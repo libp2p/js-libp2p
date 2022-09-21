@@ -2,7 +2,7 @@ import { expect } from 'aegir/chai'
 import { TCP } from '../src/index.js'
 import os from 'os'
 import path from 'path'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
@@ -31,7 +31,7 @@ describe('listen', () => {
   })
 
   it('listen on path', async () => {
-    const mh = new Multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const mh = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
     listener = tcp.createListener({
       upgrader
@@ -40,7 +40,7 @@ describe('listen', () => {
   })
 
   it('listen on port 0', async () => {
-    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/0')
     listener = tcp.createListener({
       upgrader
     })
@@ -51,7 +51,7 @@ describe('listen', () => {
     if (isCI != null) {
       return
     }
-    const mh = new Multiaddr('/ip6/::/tcp/9090')
+    const mh = multiaddr('/ip6/::/tcp/9090')
     listener = tcp.createListener({
       upgrader
     })
@@ -59,7 +59,7 @@ describe('listen', () => {
   })
 
   it('listen on any Interface', async () => {
-    const mh = new Multiaddr('/ip4/0.0.0.0/tcp/9090')
+    const mh = multiaddr('/ip4/0.0.0.0/tcp/9090')
     listener = tcp.createListener({
       upgrader
     })
@@ -67,7 +67,7 @@ describe('listen', () => {
   })
 
   it('getAddrs', async () => {
-    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090')
     listener = tcp.createListener({
       upgrader
     })
@@ -79,7 +79,7 @@ describe('listen', () => {
   })
 
   it('getAddrs on port 0 listen', async () => {
-    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/0')
     listener = tcp.createListener({
       upgrader
     })
@@ -90,7 +90,7 @@ describe('listen', () => {
   })
 
   it('getAddrs from listening on 0.0.0.0', async () => {
-    const mh = new Multiaddr('/ip4/0.0.0.0/tcp/9090')
+    const mh = multiaddr('/ip4/0.0.0.0/tcp/9090')
     listener = tcp.createListener({
       upgrader
     })
@@ -102,7 +102,7 @@ describe('listen', () => {
   })
 
   it('getAddrs from listening on 0.0.0.0 and port 0', async () => {
-    const mh = new Multiaddr('/ip4/0.0.0.0/tcp/0')
+    const mh = multiaddr('/ip4/0.0.0.0/tcp/0')
     listener = tcp.createListener({
       upgrader
     })
@@ -114,7 +114,7 @@ describe('listen', () => {
   })
 
   it('getAddrs from listening on ip6 \'::\'', async () => {
-    const mh = new Multiaddr('/ip6/::/tcp/9090')
+    const mh = multiaddr('/ip6/::/tcp/9090')
     listener = tcp.createListener({
       upgrader
     })
@@ -126,7 +126,7 @@ describe('listen', () => {
   })
 
   it('getAddrs preserves IPFS Id', async () => {
-    const mh = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     listener = tcp.createListener({
       upgrader
     })
@@ -159,7 +159,7 @@ describe('dial', () => {
   })
 
   it('dial on IPv4', async () => {
-    const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9090')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090')
     const listener = tcp.createListener({
       upgrader
     })
@@ -186,7 +186,7 @@ describe('dial', () => {
       return
     }
 
-    const ma = new Multiaddr('/ip6/::/tcp/9090')
+    const ma = multiaddr('/ip6/::/tcp/9090')
     const listener = tcp.createListener({
       upgrader
     })
@@ -207,7 +207,7 @@ describe('dial', () => {
   })
 
   it('dial on path', async () => {
-    const ma = new Multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const ma = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
     const listener = tcp.createListener({
       upgrader
@@ -233,7 +233,7 @@ describe('dial', () => {
     let handled: () => void
     const handledPromise = new Promise<void>(resolve => { handled = resolve })
 
-    const ma = new Multiaddr('/ip6/::/tcp/9090')
+    const ma = multiaddr('/ip6/::/tcp/9090')
 
     const listener = tcp.createListener({
       handler: (conn) => {
@@ -268,7 +268,7 @@ describe('dial', () => {
     let handled: () => void
     const handledPromise = new Promise<void>(resolve => { handled = resolve })
 
-    const ma = new Multiaddr('/ip6/::/tcp/9090')
+    const ma = multiaddr('/ip6/::/tcp/9090')
 
     const listener = tcp.createListener({
       handler: () => {
@@ -289,7 +289,7 @@ describe('dial', () => {
   })
 
   it('dials on IPv4 with IPFS Id', async () => {
-    const ma = new Multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const listener = tcp.createListener({
       upgrader
     })

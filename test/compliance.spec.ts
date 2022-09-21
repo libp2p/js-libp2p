@@ -1,6 +1,6 @@
 import sinon from 'sinon'
 import tests from '@libp2p/interface-transport-compliance-tests'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import net from 'net'
 import { TCP } from '../src/index.js'
 
@@ -9,10 +9,10 @@ describe('interface-transport compliance', () => {
     async setup () {
       const tcp = new TCP()
       const addrs = [
-        new Multiaddr('/ip4/127.0.0.1/tcp/9091'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/9092'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/9093'),
-        new Multiaddr('/ip6/::/tcp/9094')
+        multiaddr('/ip4/127.0.0.1/tcp/9091'),
+        multiaddr('/ip4/127.0.0.1/tcp/9092'),
+        multiaddr('/ip4/127.0.0.1/tcp/9093'),
+        multiaddr('/ip6/::/tcp/9094')
       ]
 
       // Used by the dial tests to simulate a delayed connect
