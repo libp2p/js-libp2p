@@ -1,3 +1,16 @@
+## [4.0.3](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.2...v4.0.3) (2022-09-21)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([11230eb](https://github.com/libp2p/js-libp2p-peer-record/commit/11230eb3a6a6e9791e47b7374e0b606be5ca2cc3))
+* update project config ([#25](https://github.com/libp2p/js-libp2p-peer-record/issues/25)) ([cca2319](https://github.com/libp2p/js-libp2p-peer-record/commit/cca231954701ed2edce6d41d4c3cd3d80d747549))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 11.0.0 ([#26](https://github.com/libp2p/js-libp2p-peer-record/issues/26)) ([9b6f719](https://github.com/libp2p/js-libp2p-peer-record/commit/9b6f719628bcd2a69a23cf672e398b69b4415629))
+
 ## [4.0.2](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.1...v4.0.2) (2022-08-12)
 
 
