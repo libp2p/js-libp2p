@@ -1,3 +1,15 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-mdns/compare/v3.0.0...v3.0.1) (2022-09-21)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([cfb0b5c](https://github.com/libp2p/js-libp2p-mdns/commit/cfb0b5cb007b18e5a508d2b11856bbdf895c72d8))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 11.0.0 ([#140](https://github.com/libp2p/js-libp2p-mdns/issues/140)) ([931be6b](https://github.com/libp2p/js-libp2p-mdns/commit/931be6b3fce395ba2e66e9b811b6fb85b7d40083))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v2.0.1...v3.0.0) (2022-07-01)
 
 
