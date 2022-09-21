@@ -85,11 +85,8 @@ export class WebSockets implements Transport {
     const abort = new Promise((resolve, reject) => {
       onAbort = () => {
         reject(new AbortError())
-        // FIXME: https://github.com/libp2p/js-libp2p-websockets/issues/121
-        setTimeout(() => {
-          rawSocket.close().catch(err => {
-            log.error('error closing raw socket', err)
-          })
+        rawSocket.close().catch(err => {
+          log.error('error closing raw socket', err)
         })
       }
 
