@@ -356,7 +356,7 @@ async function filterMultiaddrs (peerId: PeerId, multiaddrs: Multiaddr[], addres
     (source) => filter(source, async (multiaddr) => await addressFilter(peerId, multiaddr)),
     (source) => map(source, (multiaddr) => {
       return {
-        multiaddr: new Multiaddr(multiaddr.toString()),
+        multiaddr,
         isCertified
       }
     }),
