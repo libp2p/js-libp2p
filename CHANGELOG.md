@@ -1,3 +1,15 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-topology/compare/v3.0.0...v3.0.1) (2022-09-21)
+
+
+### Bug Fixes
+
+* remove unused deps and update project config ([#9](https://github.com/libp2p/js-libp2p-topology/issues/9)) ([2aa138f](https://github.com/libp2p/js-libp2p-topology/commit/2aa138f4784662ada8f82304d2b50858a0b0e5ba))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([ce9f715](https://github.com/libp2p/js-libp2p-topology/commit/ce9f71582680514156031f75fa00e8925d12b85e))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-pubsub-topology/compare/v2.0.0...v3.0.0) (2022-06-16)
 
 
