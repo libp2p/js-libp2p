@@ -187,7 +187,7 @@
     "@libp2p/peer-collections": "^2.0.0",
     "@libp2p/peer-id": "^1.1.0",
     "@libp2p/topology": "^3.0.0",
-    "@multiformats/multiaddr": "^10.2.0",
+    "@multiformats/multiaddr": "^11.0.0",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-length-prefixed": "^8.0.2",

@@ -27,7 +27,7 @@ export interface TopicValidator { (topic: string, message: Message): Promise<voi
  * PubSubBaseProtocol handles the peers and connections logic for pubsub routers
  * and specifies the API that pubsub routers should have.
  */
-export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events>, Initializable {
+export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events>, Initializable {
   public started: boolean
   /**
    * Map of topics to which peers are subscribed to
@@ -694,7 +694,6 @@ export abstract class PubSubBaseProtocol<Events = PubSubEvents> extends EventEmi
       throw new Error('Pubsub is not started')
     }
 
-    // @ts-expect-error topic should be a key of the event map
     super.removeEventListener(topic)
 
     const wasSubscribed = this.subscriptions.has(topic)
