@@ -1,6 +1,7 @@
 import os from 'os'
 import { logger } from '@libp2p/logger'
-import { Multiaddr, MultiaddrObject, protocols } from '@multiformats/multiaddr'
+import { protocols, multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr, MultiaddrObject } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -67,7 +68,7 @@ export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTa
   const multiaddrs: Multiaddr[] = []
 
   answers.a.forEach((a) => {
-    const ma = new Multiaddr(`/ip4/${a.data}/tcp/${port}`)
+    const ma = multiaddr(`/ip4/${a.data}/tcp/${port}`)
 
     if (!multiaddrs.some((m) => m.equals(ma))) {
       multiaddrs.push(ma)
@@ -75,7 +76,7 @@ export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTa
   })
 
   answers.aaaa.forEach((a) => {
-    const ma = new Multiaddr(`/ip6/${a.data}/tcp/${port}`)
+    const ma = multiaddr(`/ip6/${a.data}/tcp/${port}`)
 
     if (!multiaddrs.some((m) => m.equals(ma))) {
       multiaddrs.push(ma)

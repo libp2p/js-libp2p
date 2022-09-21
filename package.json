@@ -65,15 +65,15 @@
               "release": "patch"
             },
             {
-              "type": "chore",
-              "release": "patch"
-            },
-            {
               "type": "docs",
               "release": "patch"
             },
             {
               "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
               "release": "patch"
             },
             {
@@ -103,7 +103,11 @@
               },
               {
                 "type": "docs",
-                "section": "Trivial Changes"
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
               },
               {
                 "type": "test",
@@ -130,26 +134,26 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/components": "^2.0.1",
-    "@libp2p/interface-peer-discovery": "^1.0.0",
-    "@libp2p/interface-peer-id": "^1.0.2",
-    "@libp2p/interface-peer-info": "^1.0.1",
-    "@libp2p/interfaces": "^3.0.2",
-    "@libp2p/logger": "^2.0.0",
-    "@libp2p/peer-id": "^1.1.9",
-    "@multiformats/multiaddr": "^10.1.5",
+    "@libp2p/components": "^2.1.0",
+    "@libp2p/interface-peer-discovery": "^1.0.1",
+    "@libp2p/interface-peer-id": "^1.0.4",
+    "@libp2p/interface-peer-info": "^1.0.3",
+    "@libp2p/interfaces": "^3.0.3",
+    "@libp2p/logger": "^2.0.1",
+    "@libp2p/peer-id": "^1.1.15",
+    "@multiformats/multiaddr": "^11.0.0",
     "@types/multicast-dns": "^7.2.1",
     "multicast-dns": "^7.2.0",
     "multiformats": "^9.6.3"
   },
   "devDependencies": {
-    "@libp2p/interface-address-manager": "^1.0.1",
-    "@libp2p/interface-peer-discovery-compliance-tests": "^1.0.0",
-    "@libp2p/peer-id-factory": "^1.0.9",
-    "aegir": "^37.2.0",
+    "@libp2p/interface-address-manager": "^1.0.3",
+    "@libp2p/interface-peer-discovery-compliance-tests": "^1.0.2",
+    "@libp2p/peer-id-factory": "^1.0.18",
+    "aegir": "^37.5.3",
     "delay": "^5.0.0",
     "p-defer": "^4.0.0",
-    "p-wait-for": "^4.1.0",
+    "p-wait-for": "^5.0.0",
     "ts-sinon": "^2.0.2"
   }
 }
