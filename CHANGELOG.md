@@ -1,3 +1,15 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.1...v3.0.2) (2022-09-21)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([ea425dc](https://github.com/libp2p/js-libp2p-utils/commit/ea425dc19253202009497587681da1a7703ac429))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 11.0.0 ([#59](https://github.com/libp2p/js-libp2p-utils/issues/59)) ([46bff23](https://github.com/libp2p/js-libp2p-utils/commit/46bff23bc5296359cfca02fbf078ee197a1629cc))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.0...v3.0.1) (2022-08-10)
 
 
