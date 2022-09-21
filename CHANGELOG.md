@@ -1,3 +1,15 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v2.0.0...v2.0.1) (2022-09-21)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([fed165c](https://github.com/libp2p/js-libp2p-bootstrap/commit/fed165ca3396bb7a9b330b4dbe3a90d4af9cc703))
+
+
+### Dependencies
+
+* update @multiformats/multaddr to 11.0.0 ([#141](https://github.com/libp2p/js-libp2p-bootstrap/issues/141)) ([1c9079c](https://github.com/libp2p/js-libp2p-bootstrap/commit/1c9079c57ff8b12b97b1f6f3b3596c16f145846b))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v1.0.6...v2.0.0) (2022-06-15)
 
 
