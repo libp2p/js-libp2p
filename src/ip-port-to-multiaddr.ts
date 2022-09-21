@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import errCode from 'err-code'
 import { Address4, Address6 } from '@achingbrain/ip-address'
 
@@ -30,15 +30,15 @@ export function ipPortToMultiaddr (ip: string, port: number | string) {
   try {
     // Test valid IPv4
     new Address4(ip) // eslint-disable-line no-new
-    return new Multiaddr(`/ip4/${ip}/tcp/${port}`)
+    return multiaddr(`/ip4/${ip}/tcp/${port}`)
   } catch {}
 
   try {
     // Test valid IPv6
     const ip6 = new Address6(ip)
     return ip6.is4()
-      ? new Multiaddr(`/ip4/${ip6.to4().correctForm()}/tcp/${port}`)
-      : new Multiaddr(`/ip6/${ip}/tcp/${port}`)
+      ? multiaddr(`/ip4/${ip6.to4().correctForm()}/tcp/${port}`)
+      : multiaddr(`/ip6/${ip}/tcp/${port}`)
   } catch (err) {
     const errMsg = `invalid ip:port for creating a multiaddr: ${ip}:${port}`
     log.error(errMsg)

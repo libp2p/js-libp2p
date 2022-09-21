@@ -102,15 +102,15 @@
               "release": "patch"
             },
             {
-              "type": "chore",
-              "release": "patch"
-            },
-            {
               "type": "docs",
               "release": "patch"
             },
             {
               "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
               "release": "patch"
             },
             {
@@ -140,7 +140,11 @@
               },
               {
                 "type": "docs",
-                "section": "Trivial Changes"
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
               },
               {
                 "type": "test",
@@ -172,10 +176,10 @@
   },
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
-    "@libp2p/interface-connection": "^3.0.1",
-    "@libp2p/interface-peer-store": "^1.0.0",
+    "@libp2p/interface-connection": "^3.0.2",
+    "@libp2p/interface-peer-store": "^1.2.1",
     "@libp2p/logger": "^2.0.0",
-    "@multiformats/multiaddr": "^10.1.1",
+    "@multiformats/multiaddr": "^11.0.0",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "is-loopback-addr": "^2.0.1",
