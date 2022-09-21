@@ -1,3 +1,15 @@
+## [3.1.5](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.4...v3.1.5) (2022-09-21)
+
+
+### Bug Fixes
+
+* do not recreate multiaddr ([#34](https://github.com/libp2p/js-libp2p-peer-store/issues/34)) ([8fbcc57](https://github.com/libp2p/js-libp2p-peer-store/commit/8fbcc57c7f8c027c612f448fcc5a062b3c891971))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 11.0.0 ([#35](https://github.com/libp2p/js-libp2p-peer-store/issues/35)) ([49aa018](https://github.com/libp2p/js-libp2p-peer-store/commit/49aa0189a2e73653bd4cf0335c97721db72e67c0))
+
 ## [3.1.4](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.3...v3.1.4) (2022-09-20)
 
 
