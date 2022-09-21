@@ -128,7 +128,7 @@
     "@libp2p/tracked-map": "^2.0.1",
     "@libp2p/utils": "^3.0.1",
     "@multiformats/mafmt": "^11.0.2",
-    "@multiformats/multiaddr": "^10.3.3",
+    "@multiformats/multiaddr": "^11.0.0",
     "abortable-iterator": "^4.0.2",
     "any-signal": "^3.0.0",
     "datastore-core": "^8.0.1",
