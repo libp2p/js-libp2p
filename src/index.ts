@@ -1,4 +1,4 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/mafmt'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
@@ -46,7 +46,7 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
         continue
       }
 
-      const ma = new Multiaddr(candidate)
+      const ma = multiaddr(candidate)
       const peerIdStr = ma.getPeerId()
 
       if (peerIdStr == null) {
