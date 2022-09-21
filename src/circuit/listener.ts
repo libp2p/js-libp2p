@@ -3,7 +3,8 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Listener } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 
 export interface ListenerOptions {
   peerStore: PeerStore
@@ -18,7 +19,7 @@ export function createListener (options: ListenerOptions): Listener {
    */
   async function listen (addr: Multiaddr): Promise<void> {
     const addrString = addr.toString().split('/p2p-circuit').find(a => a !== '')
-    const ma = new Multiaddr(addrString)
+    const ma = multiaddr(addrString)
 
     const relayPeerStr = ma.getPeerId()
 

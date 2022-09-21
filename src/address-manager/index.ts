@@ -1,6 +1,7 @@
 import type { AddressManagerEvents } from '@libp2p/interface-address-manager'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Components } from '@libp2p/components'
 
@@ -58,28 +59,28 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
    * Get peer listen multiaddrs
    */
   getListenAddrs (): Multiaddr[] {
-    return Array.from(this.listen).map((a) => new Multiaddr(a))
+    return Array.from(this.listen).map((a) => multiaddr(a))
   }
 
   /**
    * Get peer announcing multiaddrs
    */
   getAnnounceAddrs (): Multiaddr[] {
-    return Array.from(this.announce).map((a) => new Multiaddr(a))
+    return Array.from(this.announce).map((a) => multiaddr(a))
   }
 
   /**
    * Get observed multiaddrs
    */
   getObservedAddrs (): Multiaddr[] {
-    return Array.from(this.observed).map((a) => new Multiaddr(a))
+    return Array.from(this.observed).map((a) => multiaddr(a))
   }
 
   /**
    * Add peer observed addresses
    */
   addObservedAddr (addr: string | Multiaddr): void {
-    let ma = new Multiaddr(addr)
+    let ma = multiaddr(addr)
     const remotePeer = ma.getPeerId()
 
     // strip our peer id if it has been passed
@@ -88,7 +89,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
 
       // use same encoding for comparison
       if (remotePeerId.equals(this.components.getPeerId())) {
-        ma = ma.decapsulate(new Multiaddr(`/p2p/${this.components.getPeerId().toString()}`))
+        ma = ma.decapsulate(multiaddr(`/p2p/${this.components.getPeerId().toString()}`))
       }
     }
 
@@ -118,7 +119,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
 
     // Create advertising list
     return this.announceFilter(Array.from(addrSet)
-      .map(str => new Multiaddr(str)))
+      .map(str => multiaddr(str)))
       .map(ma => {
         if (ma.getPeerId() === this.components.getPeerId().toString()) {
           return ma

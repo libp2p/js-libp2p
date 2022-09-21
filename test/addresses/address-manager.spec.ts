@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
 import { createNode } from '../utils/creators/peer.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -48,8 +48,8 @@ describe('Address Manager', () => {
 
     const listenMultiaddrs = am.getListenAddrs()
     expect(listenMultiaddrs.length).to.equal(2)
-    expect(listenMultiaddrs[0].equals(new Multiaddr(listenAddresses[0]))).to.equal(true)
-    expect(listenMultiaddrs[1].equals(new Multiaddr(listenAddresses[1]))).to.equal(true)
+    expect(listenMultiaddrs[0].equals(multiaddr(listenAddresses[0]))).to.equal(true)
+    expect(listenMultiaddrs[1].equals(multiaddr(listenAddresses[1]))).to.equal(true)
   })
 
   it('should return announce multiaddrs on get', () => {
@@ -67,7 +67,7 @@ describe('Address Manager', () => {
 
     const announceMultiaddrs = am.getAnnounceAddrs()
     expect(announceMultiaddrs.length).to.equal(1)
-    expect(announceMultiaddrs[0].equals(new Multiaddr(announceAddreses[0]))).to.equal(true)
+    expect(announceMultiaddrs[0].equals(multiaddr(announceAddreses[0]))).to.equal(true)
   })
 
   it('should add observed addresses', () => {

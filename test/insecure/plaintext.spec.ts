@@ -12,7 +12,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 
 describe('plaintext', () => {
@@ -39,8 +39,8 @@ describe('plaintext', () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ]
     })
 
@@ -60,8 +60,8 @@ describe('plaintext', () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ]
     })
 
