@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import nock from 'nock'
 import sinon from 'sinon'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -250,7 +249,6 @@ describe('peer-routing', () => {
     })
 
     afterEach(() => {
-      nock.cleanAll()
       sinon.restore()
     })
 
