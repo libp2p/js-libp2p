@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { PersistentPeerStore } from '../src/index.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -10,10 +10,10 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { Components } from '@libp2p/components'
 import delay from 'delay'
 
-const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
-const addr2 = new Multiaddr('/ip4/127.0.0.1/tcp/8001')
-const addr3 = new Multiaddr('/ip4/127.0.0.1/tcp/8002')
-const addr4 = new Multiaddr('/ip4/127.0.0.1/tcp/8003')
+const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
+const addr2 = multiaddr('/ip4/127.0.0.1/tcp/8001')
+const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
+const addr4 = multiaddr('/ip4/127.0.0.1/tcp/8003')
 
 const proto1 = '/protocol1'
 const proto2 = '/protocol2'
@@ -45,7 +45,7 @@ describe('peer-store', () => {
     })
 
     it('deletes a peerId', async () => {
-      await peerStore.addressBook.set(peerIds[0], [new Multiaddr('/ip4/127.0.0.1/tcp/4001')])
+      await peerStore.addressBook.set(peerIds[0], [multiaddr('/ip4/127.0.0.1/tcp/4001')])
       await expect(peerStore.has(peerIds[0])).to.eventually.be.true()
       await peerStore.delete(peerIds[0])
       await expect(peerStore.has(peerIds[0])).to.eventually.be.false()

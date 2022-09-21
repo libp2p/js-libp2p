@@ -2,7 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { arrayEquals } from '@libp2p/utils/array-equals'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import pDefer from 'p-defer'
@@ -15,9 +15,9 @@ import type { AddressBook } from '@libp2p/interface-peer-store'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Components } from '@libp2p/components'
 
-const addr1 = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
-const addr2 = new Multiaddr('/ip4/20.0.0.1/tcp/8001')
-const addr3 = new Multiaddr('/ip4/127.0.0.1/tcp/8002')
+const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
+const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
+const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
 
 describe('addressBook', () => {
   let peerId: PeerId

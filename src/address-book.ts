@@ -1,6 +1,6 @@
 import { logger } from '@libp2p/logger'
 import errcode from 'err-code'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { isMultiaddr } from '@multiformats/multiaddr'
 import { codes } from './errors.js'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { pipe } from 'it-pipe'
@@ -15,6 +15,7 @@ import type { Store } from './store.js'
 import type { Envelope } from '@libp2p/interface-record'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:peer-store:address-book')
 const EVENT_NAME = 'change:multiaddrs'
@@ -348,7 +349,7 @@ async function filterMultiaddrs (peerId: PeerId, multiaddrs: Multiaddr[], addres
   return await pipe(
     multiaddrs,
     (source) => each(source, (multiaddr) => {
-      if (!Multiaddr.isMultiaddr(multiaddr)) {
+      if (!isMultiaddr(multiaddr)) {
         log.error('multiaddr must be an instance of Multiaddr')
         throw errcode(new Error('multiaddr must be an instance of Multiaddr'), codes.ERR_INVALID_PARAMETERS)
       }

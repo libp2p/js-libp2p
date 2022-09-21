@@ -4,7 +4,7 @@ import errcode from 'err-code'
 import { codes } from './errors.js'
 import { Key } from 'interface-datastore/key'
 import { base32 } from 'multiformats/bases/base32'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Metadata, Peer as PeerPB } from './pb/peer.js'
 import mortice from 'mortice'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
@@ -78,9 +78,9 @@ export class PersistentStore {
     return {
       ...peer,
       id: peerId,
-      addresses: peer.addresses.map(({ multiaddr, isCertified }) => {
+      addresses: peer.addresses.map(({ multiaddr: ma, isCertified }) => {
         return {
-          multiaddr: new Multiaddr(multiaddr),
+          multiaddr: multiaddr(ma),
           isCertified: isCertified ?? false
         }
       }),
@@ -213,7 +213,7 @@ export class PersistentStore {
       id: peerId,
       addresses: Array.from(addresses.entries()).map(([addrStr, isCertified]) => {
         return {
-          multiaddr: new Multiaddr(addrStr),
+          multiaddr: multiaddr(addrStr),
           isCertified
         }
       }),
