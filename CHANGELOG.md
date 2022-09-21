@@ -1,3 +1,16 @@
+## [3.0.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.4...v3.0.5) (2022-09-21)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 11.0.0 ([#372](https://github.com/libp2p/js-libp2p-kad-dht/issues/372)) ([cb0bc9e](https://github.com/libp2p/js-libp2p-kad-dht/commit/cb0bc9e2ec44a7d9ba9ac3c2b6079af5b6d76840))
+
+
+### Trivial Changes
+
+* increase test timeouts ([#373](https://github.com/libp2p/js-libp2p-kad-dht/issues/373)) ([ad25fae](https://github.com/libp2p/js-libp2p-kad-dht/commit/ad25fae47426fd14ac14364e83b755837fb3a400))
+* Update .github/workflows/stale.yml [skip ci] ([2236c50](https://github.com/libp2p/js-libp2p-kad-dht/commit/2236c505f756c3efa7deefe70a2c070f009c36c6))
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.3...v3.0.4) (2022-08-12)
 
 
