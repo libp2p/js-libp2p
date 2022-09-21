@@ -10,6 +10,13 @@
 
 
 
+### [0.39.2](https://www.github.com/libp2p/js-libp2p/compare/v0.39.1...v0.39.2) (2022-09-21)
+
+
+### Bug Fixes
+
+* remove ipfs dependency and upgrade multiaddr ([#1387](https://www.github.com/libp2p/js-libp2p/issues/1387)) ([633d4a9](https://www.github.com/libp2p/js-libp2p/commit/633d4a9740ea02e32c0bb290c0a3958b68f181e9))
+
 ### [0.39.1](https://www.github.com/libp2p/js-libp2p/compare/v0.39.0...v0.39.1) (2022-09-09)
 
 
