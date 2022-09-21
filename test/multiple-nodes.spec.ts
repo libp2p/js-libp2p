@@ -7,15 +7,14 @@ import drain from 'it-drain'
 import last from 'it-last'
 import type { DualKadDHT } from '../src/dual-kad-dht.js'
 
-describe('multiple nodes', () => {
+describe('multiple nodes', function () {
+  this.timeout(60 * 1000)
   const n = 8
   let tdht: TestDHT
   let dhts: DualKadDHT[]
 
   // spawn nodes
   beforeEach(async function () {
-    this.timeout(10 * 1000)
-
     tdht = new TestDHT()
     dhts = await Promise.all(
       new Array(n).fill(0).map(async () => await tdht.spawn({
@@ -31,13 +30,10 @@ describe('multiple nodes', () => {
   })
 
   afterEach(async function () {
-    this.timeout(10 * 1000)
-
     await tdht.teardown()
   })
 
   it('put to "bootstrap" node and get with the others', async function () {
-    this.timeout(10 * 1000)
     const key = uint8ArrayFromString('/v/hello0')
     const value = uint8ArrayFromString('world')
 
@@ -63,7 +59,6 @@ describe('multiple nodes', () => {
   })
 
   it('put to a node and get with the others', async function () {
-    this.timeout(10 * 1000)
     const key = uint8ArrayFromString('/v/hello1')
     const value = uint8ArrayFromString('world')
 
@@ -89,7 +84,6 @@ describe('multiple nodes', () => {
   })
 
   it('put to several nodes in series with different values and get the last one in a subset of them', async function () {
-    this.timeout(20 * 1000)
     const key = uint8ArrayFromString('/v/hallo')
     const result = uint8ArrayFromString('world4')
 
