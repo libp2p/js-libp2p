@@ -1,5 +1,6 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 import { arrayEquals } from '@libp2p/utils/array-equals'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { PeerRecord as Protobuf } from './peer-record.js'
@@ -34,7 +35,7 @@ export class PeerRecord {
   static createFromProtobuf = (buf: Uint8Array | Uint8ArrayList): PeerRecord => {
     const peerRecord = Protobuf.decode(buf)
     const peerId = peerIdFromBytes(peerRecord.peerId)
-    const multiaddrs = (peerRecord.addresses ?? []).map((a) => new Multiaddr(a.multiaddr))
+    const multiaddrs = (peerRecord.addresses ?? []).map((a) => multiaddr(a.multiaddr))
     const seqNumber = peerRecord.seq
 
     return new PeerRecord({ peerId, multiaddrs, seqNumber })
