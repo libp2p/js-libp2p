@@ -6,7 +6,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PreSharedKeyConnectionProtector, generateKey } from '../../src/pnet/index.js'
 import { INVALID_PSK } from '../../src/pnet/errors.js'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 const swarmKeyBuffer = new Uint8Array(95)
@@ -28,8 +28,8 @@ describe('private network', () => {
   it('should protect a simple connection', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ],
       remotePeer: await createEd25519PeerId()
     })
@@ -63,8 +63,8 @@ describe('private network', () => {
   it('should not be able to share correct data with different keys', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ],
       remotePeer: await createEd25519PeerId()
     })

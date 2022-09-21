@@ -1,17 +1,13 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import nock from 'nock'
 import sinon from 'sinon'
-import intoStream from 'into-stream'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import drain from 'it-drain'
 import all from 'it-all'
-import { create as createIpfsHttpClient } from 'ipfs-http-client'
-import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { createBaseOptions } from '../utils/base-options.js'
@@ -19,9 +15,10 @@ import { createRoutingOptions } from './utils.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { EventTypes, MessageType } from '@libp2p/interface-dht'
-import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { KadDHT } from '@libp2p/kad-dht'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
+import { StubbedInstance, stubInterface } from 'ts-sinon'
 
 describe('peer-routing', () => {
   let peerId: PeerId
@@ -237,14 +234,12 @@ describe('peer-routing', () => {
 
   describe('via delegate router', () => {
     let node: Libp2pNode
-    let delegate: DelegatedPeerRouting
+    let delegate: StubbedInstance<PeerRouting>
 
     beforeEach(async () => {
-      delegate = new DelegatedPeerRouting(createIpfsHttpClient({
-        host: '0.0.0.0',
-        protocol: 'http',
-        port: 60197
-      }))
+      delegate = stubInterface<PeerRouting>()
+      delegate.findPeer.returns(Promise.reject(new Error('Could not find peer')))
+      delegate.getClosestPeers.returns(async function * () {}())
 
       node = await createNode({
         config: createBaseOptions({
@@ -254,7 +249,6 @@ describe('peer-routing', () => {
     })
 
     afterEach(() => {
-      nock.cleanAll()
       sinon.restore()
     })
 
@@ -268,7 +262,7 @@ describe('peer-routing', () => {
     it('should use the delegate router to find peers', async () => {
       const remotePeerId = await createPeerId()
 
-      const delegateFindPeerStub = sinon.stub(delegate, 'findPeer').callsFake(async function () {
+      delegate.findPeer.callsFake(async function () {
         return {
           id: remotePeerId,
           multiaddrs: [],
@@ -276,16 +270,15 @@ describe('peer-routing', () => {
         }
       })
 
-      expect(delegateFindPeerStub.called).to.be.false()
+      expect(delegate.findPeer.called).to.be.false()
       await node.peerRouting.findPeer(remotePeerId)
-      expect(delegateFindPeerStub.called).to.be.true()
-      delegateFindPeerStub.restore()
+      expect(delegate.findPeer.called).to.be.true()
     })
 
     it('should use the delegate router to get the closest peers', async () => {
       const remotePeerId = await createPeerId()
 
-      const delegateGetClosestPeersStub = sinon.stub(delegate, 'getClosestPeers').callsFake(async function * () {
+      delegate.getClosestPeers.callsFake(async function * () {
         yield {
           id: remotePeerId,
           multiaddrs: [],
@@ -293,26 +286,9 @@ describe('peer-routing', () => {
         }
       })
 
-      expect(delegateGetClosestPeersStub.called).to.be.false()
+      expect(delegate.getClosestPeers.called).to.be.false()
       await drain(node.peerRouting.getClosestPeers(remotePeerId.toBytes()))
-      expect(delegateGetClosestPeersStub.called).to.be.true()
-      delegateGetClosestPeersStub.restore()
-    })
-
-    it('should be able to find a peer', async () => {
-      const peerKey = peerIdFromString('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/findpeer')
-        .query(true)
-        .reply(200, `{"Extra":"","ID":"some other id","Responses":null,"Type":0}\n{"Extra":"","ID":"","Responses":[{"Addrs":["/ip4/127.0.0.1/tcp/4001"],"ID":"${peerKey.toString()}"}],"Type":2}\n`, [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
-
-      const peer = await node.peerRouting.findPeer(peerKey)
-
-      expect(peer.id.toString()).to.equal(peerKey.toString())
-      expect(mockApi.isDone()).to.equal(true)
+      expect(delegate.getClosestPeers.called).to.be.true()
     })
 
     it('should error when peer tries to find itself', async () => {
@@ -321,91 +297,27 @@ describe('peer-routing', () => {
         .and.to.have.property('code', 'ERR_FIND_SELF')
     })
 
-    it('should error when a peer cannot be found', async () => {
-      const peerId = await createEd25519PeerId()
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/findpeer')
-        .query(true)
-        .reply(200, '{"Extra":"","ID":"some other id","Responses":null,"Type":6}\n{"Extra":"","ID":"yet another id","Responses":null,"Type":0}\n{"Extra":"routing:not found","ID":"","Responses":null,"Type":3}\n', [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
+    it('should handle errors from the delegate when finding closest peers', async () => {
+      const remotePeerId = await createPeerId()
 
-      await expect(node.peerRouting.findPeer(peerId))
-        .to.eventually.be.rejected()
+      delegate.getClosestPeers.callsFake(async function * () { // eslint-disable-line require-yield
+        throw new Error('Could not find closer peers')
+      })
 
-      expect(mockApi.isDone()).to.equal(true)
-    })
-
-    it('should handle errors from the api', async () => {
-      const peerId = await createEd25519PeerId()
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/findpeer')
-        .query(true)
-        .reply(502)
-
-      await expect(node.peerRouting.findPeer(peerId))
-        .to.eventually.be.rejected()
-
-      expect(mockApi.isDone()).to.equal(true)
-    })
-
-    it('should be able to get the closest peers', async () => {
-      const peerId = await createEd25519PeerId()
-      const closest1 = '12D3KooWLewYMMdGWAtuX852n4rgCWkK7EBn4CWbwwBzhsVoKxk3'
-      const closest2 = '12D3KooWDtoQbpKhtnWddfj72QmpFvvLDTsBLTFkjvgQm6cde2AK'
-
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/query')
-        .query(true)
-        .reply(200,
-          () => intoStream([
-            `{"Extra":"","ID":"${closest1}","Responses":[{"ID":"${closest1}","Addrs":["/ip4/127.0.0.1/tcp/63930","/ip4/127.0.0.1/tcp/63930"]}],"Type":1}\n`,
-            `{"Extra":"","ID":"${closest2}","Responses":[{"ID":"${closest2}","Addrs":["/ip4/127.0.0.1/tcp/63506","/ip4/127.0.0.1/tcp/63506"]}],"Type":1}\n`,
-            `{"Extra":"","ID":"${closest2}","Responses":[],"Type":2}\n`,
-            `{"Extra":"","ID":"${closest1}","Responses":[],"Type":2}\n`
-          ]),
-          [
-            'Content-Type', 'application/json',
-            'X-Chunked-Output', '1'
-          ])
-
-      const closestPeers = await all(node.peerRouting.getClosestPeers(peerId.toBytes()))
-
-      expect(closestPeers).to.have.length(2)
-      expect(closestPeers[0].id.toString()).to.equal(closest1)
-      expect(closestPeers[0].multiaddrs).to.have.lengthOf(2)
-      expect(closestPeers[1].id.toString()).to.equal(closest2)
-      expect(closestPeers[1].multiaddrs).to.have.lengthOf(2)
-      expect(mockApi.isDone()).to.equal(true)
-    })
-
-    it('should handle errors when getting the closest peers', async () => {
-      const peerId = await createEd25519PeerId()
-
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/query')
-        .query(true)
-        .reply(502, 'Bad Gateway', [
-          'X-Chunked-Output', '1'
-        ])
-
-      await expect(drain(node.peerRouting.getClosestPeers(peerId.toBytes()))).to.eventually.be.rejected()
-
-      expect(mockApi.isDone()).to.equal(true)
+      expect(delegate.getClosestPeers.called).to.be.false()
+      await expect(drain(node.peerRouting.getClosestPeers(remotePeerId.toBytes())))
+        .to.eventually.be.rejectedWith('Could not find closer peers')
     })
   })
 
   describe('via dht and delegate routers', () => {
     let node: Libp2pNode
-    let delegate: DelegatedPeerRouting
+    let delegate: StubbedInstance<PeerRouting>
 
     beforeEach(async () => {
-      delegate = new DelegatedPeerRouting(createIpfsHttpClient({
-        host: '0.0.0.0',
-        protocol: 'http',
-        port: 60197
-      }))
+      delegate = stubInterface<PeerRouting>()
+      delegate.findPeer.throws(new Error('Could not find peer'))
+      delegate.getClosestPeers.returns(async function * () {}())
 
       node = await createNode({
         config: createRoutingOptions({
@@ -434,7 +346,8 @@ describe('peer-routing', () => {
       }
 
       sinon.stub(node.dht, 'findPeer').callsFake(async function * () {})
-      sinon.stub(delegate, 'findPeer').callsFake(async () => {
+      delegate.findPeer.reset()
+      delegate.findPeer.callsFake(async () => {
         return results
       })
 
@@ -466,7 +379,8 @@ describe('peer-routing', () => {
         }
         await defer.promise
       })
-      sinon.stub(delegate, 'findPeer').callsFake(async () => {
+      delegate.findPeer.reset()
+      delegate.findPeer.callsFake(async () => {
         return results
       })
 
@@ -498,7 +412,8 @@ describe('peer-routing', () => {
           peer: result
         }
       })
-      sinon.stub(delegate, 'findPeer').callsFake(async () => {
+      delegate.findPeer.reset()
+      delegate.findPeer.callsFake(async () => {
         return await defer.promise
       })
 
@@ -513,7 +428,7 @@ describe('peer-routing', () => {
       const result = {
         id: remotePeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/123.123.123.123/tcp/38982')
+          multiaddr('/ip4/123.123.123.123/tcp/38982')
         ],
         protocols: []
       }
@@ -532,7 +447,8 @@ describe('peer-routing', () => {
           peer: result
         }
       })
-      sinon.stub(delegate, 'findPeer').callsFake(async () => {
+      delegate.findPeer.reset()
+      delegate.findPeer.callsFake(async () => {
         const deferred = pDefer<PeerInfo>()
 
         return await deferred.promise
@@ -557,7 +473,7 @@ describe('peer-routing', () => {
 
       sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () { })
 
-      sinon.stub(delegate, 'getClosestPeers').callsFake(async function * () {
+      delegate.getClosestPeers.callsFake(async function * () {
         yield results[0]
       })
 
@@ -572,7 +488,7 @@ describe('peer-routing', () => {
       const result = {
         id: remotePeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/123.123.123.123/tcp/38982')
+          multiaddr('/ip4/123.123.123.123/tcp/38982')
         ],
         protocols: []
       }
@@ -585,7 +501,7 @@ describe('peer-routing', () => {
 
       sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () { })
 
-      sinon.stub(delegate, 'getClosestPeers').callsFake(async function * () {
+      delegate.getClosestPeers.callsFake(async function * () {
         yield result
       })
 
@@ -599,7 +515,7 @@ describe('peer-routing', () => {
       const results = [{
         id: remotePeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/123.123.123.123/tcp/38982')
+          multiaddr('/ip4/123.123.123.123/tcp/38982')
         ],
         protocols: []
       }]
@@ -619,7 +535,7 @@ describe('peer-routing', () => {
         }
       })
 
-      sinon.stub(delegate, 'getClosestPeers').callsFake(async function * () {
+      delegate.getClosestPeers.callsFake(async function * () {
         yield * results
       })
 
@@ -650,8 +566,8 @@ describe('peer-routing', () => {
 
     it('should be enabled and start by default', async () => {
       const results: PeerInfo[] = [
-        { id: peerIds[0], multiaddrs: [new Multiaddr('/ip4/30.0.0.1/tcp/2000')], protocols: [] },
-        { id: peerIds[1], multiaddrs: [new Multiaddr('/ip4/32.0.0.1/tcp/2000')], protocols: [] }
+        { id: peerIds[0], multiaddrs: [multiaddr('/ip4/30.0.0.1/tcp/2000')], protocols: [] },
+        { id: peerIds[1], multiaddrs: [multiaddr('/ip4/32.0.0.1/tcp/2000')], protocols: [] }
       ]
 
       node = await createNode({
@@ -773,7 +689,7 @@ describe('peer-routing', () => {
           messageType: MessageType.FIND_NODE,
           from: peerIds[0],
           closer: [
-            { id: peerIds[0], multiaddrs: [new Multiaddr('/ip4/30.0.0.1/tcp/2000')], protocols: [] }
+            { id: peerIds[0], multiaddrs: [multiaddr('/ip4/30.0.0.1/tcp/2000')], protocols: [] }
           ],
           providers: []
         }

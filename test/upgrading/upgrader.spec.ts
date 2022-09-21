@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Mplex } from '@libp2p/mplex'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import pSettle from 'p-settle'
@@ -34,8 +34,8 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 
 const addrs = [
-  new Multiaddr('/ip4/127.0.0.1/tcp/0'),
-  new Multiaddr('/ip4/127.0.0.1/tcp/0')
+  multiaddr('/ip4/127.0.0.1/tcp/0'),
+  multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Upgrader', () => {

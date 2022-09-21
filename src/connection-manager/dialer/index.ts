@@ -3,7 +3,8 @@ import all from 'it-all'
 import filter from 'it-filter'
 import { pipe } from 'it-pipe'
 import errCode from 'err-code'
-import { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
@@ -117,7 +118,7 @@ export class DefaultDialer implements Startable, Dialer {
     })
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      Multiaddr.resolvers.set(key, value)
+      resolvers.set(key, value)
     }
   }
 
@@ -371,7 +372,7 @@ export class DefaultDialer implements Startable, Dialer {
    */
   async _resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
     try {
-      ma = new Multiaddr(ma.toString()) // Use current multiaddr module
+      ma = multiaddr(ma.toString()) // Use current multiaddr module
       const multiaddrs = await ma.resolve(options)
       return multiaddrs
     } catch (err) {

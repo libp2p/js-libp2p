@@ -1,7 +1,8 @@
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import * as mafmt from '@multiformats/mafmt'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { CircuitRelay as CircuitPB } from './pb/index.js'
 import { codes } from '../errors.js'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
@@ -134,8 +135,8 @@ export class Circuit implements Transport, Initializable {
       if (virtualConnection != null) {
         const remoteAddr = connection.remoteAddr
           .encapsulate('/p2p-circuit')
-          .encapsulate(new Multiaddr(request.dstPeer?.addrs[0]))
-        const localAddr = new Multiaddr(request.srcPeer?.addrs[0])
+          .encapsulate(multiaddr(request.dstPeer?.addrs[0]))
+        const localAddr = multiaddr(request.srcPeer?.addrs[0])
         const maConn = streamToMaConnection({
           stream: virtualConnection,
           remoteAddr,
@@ -162,8 +163,8 @@ export class Circuit implements Transport, Initializable {
   async dial (ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
-    const relayAddr = new Multiaddr(addrs[0])
-    const destinationAddr = new Multiaddr(addrs[addrs.length - 1])
+    const relayAddr = multiaddr(addrs[0])
+    const destinationAddr = multiaddr(addrs[addrs.length - 1])
     const relayId = relayAddr.getPeerId()
     const destinationId = destinationAddr.getPeerId()
 
@@ -198,7 +199,7 @@ export class Circuit implements Transport, Initializable {
           },
           dstPeer: {
             id: destinationPeer.toBytes(),
-            addrs: [new Multiaddr(destinationAddr).bytes]
+            addrs: [multiaddr(destinationAddr).bytes]
           }
         }
       })

@@ -3,7 +3,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../../src/errors.js'
 import { IdentifyService, IdentifyServiceInit, Message } from '../../src/identify/index.js'
@@ -30,7 +30,7 @@ import { TimeoutController } from 'timeout-abort-controller'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 
-const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
+const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 const defaultInit: IdentifyServiceInit = {
   protocolPrefix: 'ipfs',

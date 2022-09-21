@@ -5,7 +5,8 @@ import sinon from 'sinon'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Plaintext } from '../../src/insecure/index.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -33,8 +34,8 @@ import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 
 const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
-const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 
 describe('Dialing (direct, TCP)', () => {
   let remoteTM: DefaultTransportManager
@@ -176,9 +177,9 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should dial to the max concurrency', async () => {
     const addrs = [
-      new Multiaddr('/ip4/0.0.0.0/tcp/8000'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8001'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8002')
+      multiaddr('/ip4/0.0.0.0/tcp/8000'),
+      multiaddr('/ip4/0.0.0.0/tcp/8001'),
+      multiaddr('/ip4/0.0.0.0/tcp/8002')
     ]
     const peerId = await createFromJSON(Peers[1])
 

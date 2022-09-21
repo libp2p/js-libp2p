@@ -5,16 +5,14 @@ import { pEvent } from 'p-event'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
-import nock from 'nock'
-import { create as createIpfsHttpClient } from 'ipfs-http-client'
-import { DelegatedContentRouting } from '@libp2p/delegated-content-routing'
 import { RELAY_CODEC } from '../../src/circuit/multicodec.js'
 import { createNode } from '../utils/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import type { Options as PWaitForOptions } from 'p-wait-for'
-import type Sinon from 'sinon'
 import { createRelayOptions, createNodeOptions } from './utils.js'
 import { protocols } from '@multiformats/multiaddr'
+import { StubbedInstance, stubInterface } from 'ts-sinon'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
 
 async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions<boolean>) {
   // Wait for peer to be used as a relay
@@ -331,27 +329,33 @@ describe('auto-relay', () => {
     let local: Libp2pNode
     let remote: Libp2pNode
     let relayLibp2p: Libp2pNode
-    let contentRoutingProvideSpy: Sinon.SinonSpy
+    let localDelegate: StubbedInstance<ContentRouting>
+    let remoteDelegate: StubbedInstance<ContentRouting>
+    let relayDelegate: StubbedInstance<ContentRouting>
 
     beforeEach(async () => {
-      const delegate = new DelegatedContentRouting(createIpfsHttpClient({
-        host: '0.0.0.0',
-        protocol: 'http',
-        port: 60197
-      }))
+      localDelegate = stubInterface<ContentRouting>()
+      localDelegate.findProviders.returns(async function * () {}())
+
+      remoteDelegate = stubInterface<ContentRouting>()
+      remoteDelegate.findProviders.returns(async function * () {}())
+
+      relayDelegate = stubInterface<ContentRouting>()
+      relayDelegate.provide.returns(Promise.resolve())
+      relayDelegate.findProviders.returns(async function * () {}())
 
       ;[local, remote, relayLibp2p] = await Promise.all([
         createNode({
           config: createNodeOptions({
             contentRouters: [
-              delegate
+              localDelegate
             ]
           })
         }),
         createNode({
           config: createNodeOptions({
             contentRouters: [
-              delegate
+              remoteDelegate
             ]
           })
         }),
@@ -369,43 +373,30 @@ describe('auto-relay', () => {
               }
             },
             contentRouters: [
-              delegate
+              relayDelegate
             ]
           })
         })
       ])
-
-      contentRoutingProvideSpy = sinon.spy(relayLibp2p.contentRouting, 'provide')
     })
 
     beforeEach(async () => {
-      nock('http://0.0.0.0:60197')
-        // mock the refs call
-        .post('/api/v0/refs')
-        .query(true)
-        .reply(200, undefined, [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
-
       // Start each node
       await Promise.all([local, remote, relayLibp2p].map(async libp2p => await libp2p.start()))
 
       // Should provide on start
-      await pWaitFor(() => contentRoutingProvideSpy.callCount === 1)
+      await pWaitFor(() => relayDelegate.provide.callCount === 1)
 
-      const provider = relayLibp2p.peerId.toString()
+      const provider = relayLibp2p.peerId
       const multiaddrs = relayLibp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code))
 
-      // Mock findProviders
-      nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/findprovs')
-        .query(true)
-        .twice()
-        .reply(200, `{"Extra":"","ID":"${provider}","Responses":[{"Addrs":${JSON.stringify(multiaddrs)},"ID":"${provider}"}],"Type":4}\n`, [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
+      localDelegate.findProviders.returns(async function * () {
+        yield {
+          id: provider,
+          multiaddrs,
+          protocols: []
+        }
+      }())
     })
 
     afterEach(async () => {
@@ -417,8 +408,6 @@ describe('auto-relay', () => {
       const originalMultiaddrsLength = local.getMultiaddrs().length
 
       // Spy Find Providers
-      const contentRoutingFindProvidersSpy = sinon.spy(local.contentRouting, 'findProviders')
-
       const relayAddr = relayLibp2p.getMultiaddrs().pop()
 
       if (relayAddr == null) {
@@ -435,7 +424,7 @@ describe('auto-relay', () => {
       await local.hangUp(relayAddr)
 
       // Should try to find relay service providers
-      await pWaitFor(() => contentRoutingFindProvidersSpy.callCount === 1, {
+      await pWaitFor(() => localDelegate.findProviders.callCount === 1, {
         timeout: 1000
       })
 

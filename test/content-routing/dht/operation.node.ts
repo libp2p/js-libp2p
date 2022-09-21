@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { subsystemMulticodecs, createSubsystemOptions } from './utils.js'
@@ -10,8 +11,8 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
 import { start } from '@libp2p/interfaces/startable'
 
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8000')
-const remoteListenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/8001')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
+const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
 
 async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2pNode) {
   const addrs = await libp2p.components.getPeerStore().addressBook.get(remotePeerId)

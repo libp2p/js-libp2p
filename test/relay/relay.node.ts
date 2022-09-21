@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createNode } from '../utils/creators/peer.js'
@@ -150,7 +150,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // Connect the destination peer and the relay
     const tcpAddrs = dstLibp2p.components.getTransportManager().getAddrs()
-    sinon.stub(dstLibp2p.components.getAddressManager(), 'getListenAddrs').returns([new Multiaddr(`${relayAddr.toString()}/p2p-circuit`)])
+    sinon.stub(dstLibp2p.components.getAddressManager(), 'getListenAddrs').returns([multiaddr(`${relayAddr.toString()}/p2p-circuit`)])
 
     await dstLibp2p.components.getTransportManager().listen(dstLibp2p.components.getAddressManager().getListenAddrs())
     expect(dstLibp2p.components.getTransportManager().getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])

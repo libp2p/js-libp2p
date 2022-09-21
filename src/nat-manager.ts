@@ -1,6 +1,6 @@
 import { upnpNat, NatAPI } from '@achingbrain/nat-port-mapper'
 import { logger } from '@libp2p/logger'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { fromNodeAddress } from '@multiformats/multiaddr'
 import { isBrowser } from 'wherearewe'
 import isPrivateIp from 'private-ip'
 import * as pkg from './version.js'
@@ -157,7 +157,7 @@ export class NatManager implements Startable {
         protocol: transport.toUpperCase() === 'TCP' ? 'TCP' : 'UDP'
       })
 
-      this.components.getAddressManager().addObservedAddr(Multiaddr.fromNodeAddress({
+      this.components.getAddressManager().addObservedAddr(fromNodeAddress({
         family: 4,
         address: publicIp,
         port: publicPort

@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { IdentifyService, IdentifyServiceInit } from '../../src/identify/index.js'
 import Peers from '../fixtures/peers.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -25,7 +25,7 @@ import delay from 'delay'
 import { pEvent } from 'p-event'
 import { start, stop } from '@libp2p/interfaces/startable'
 
-const listenMaddrs = [new Multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
+const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 const defaultInit: IdentifyServiceInit = {
   protocolPrefix: 'ipfs',
@@ -119,7 +119,7 @@ describe('identify (push)', () => {
     await remoteIdentify.identify(remoteToLocal)
 
     const updatedProtocol = '/special-new-protocol/1.0.0'
-    const updatedAddress = new Multiaddr('/ip4/127.0.0.1/tcp/48322')
+    const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
     // should have protocols but not our new one
     const identifiedProtocols = await remoteComponents.getPeerStore().protoBook.get(localComponents.getPeerId())
@@ -250,7 +250,7 @@ describe('identify (push)', () => {
     await remoteIdentify.identify(remoteToLocal)
 
     const updatedProtocol = '/special-new-protocol/1.0.0'
-    const updatedAddress = new Multiaddr('/ip4/127.0.0.1/tcp/48322')
+    const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
     // should have protocols but not our new one
     const identifiedProtocols = await remoteComponents.getPeerStore().protoBook.get(localComponents.getPeerId())
