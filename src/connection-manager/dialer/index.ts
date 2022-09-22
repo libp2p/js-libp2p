@@ -232,15 +232,23 @@ export class DefaultDialer implements Startable, Dialer {
    * Multiaddrs not supported by the available transports will be filtered out.
    */
   async _createDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
-    const knownAddrs = await pipe(
+    const _resolve = this._resolve.bind(this)
+
+    const addrs = await pipe(
       await this.components.getPeerStore().addressBook.get(peer),
       (source) => filter(source, async (address) => {
         return !(await this.components.getConnectionGater().denyDialMultiaddr(peer, address.multiaddr))
       }),
+      // Sort addresses so, for example, we try certified public address first
       (source) => sort(source, this.addressSorter),
-      (source) => map(source, (address) => {
-        const ma = address.multiaddr
-
+      async function * resolve (source) {
+        for await (const a of source) {
+          yield * await _resolve(a.multiaddr, options)
+        }
+      },
+      // Multiaddrs not supported by the available transports will be filtered out.
+      (source) => filter(source, (ma) => Boolean(this.components.getTransportManager().transportForMultiaddr(ma))),
+      (source) => map(source, (ma) => {
         if (peer.toString() === ma.getPeerId()) {
           return ma
         }
@@ -250,23 +258,14 @@ export class DefaultDialer implements Startable, Dialer {
       async (source) => await all(source)
     )
 
-    const addrs: Multiaddr[] = []
-    for (const a of knownAddrs) {
-      const resolvedAddrs = await this._resolve(a, options)
-      resolvedAddrs.forEach(ra => addrs.push(ra))
-    }
-
-    // Multiaddrs not supported by the available transports will be filtered out.
-    const supportedAddrs = addrs.filter(a => this.components.getTransportManager().transportForMultiaddr(a))
-
-    if (supportedAddrs.length > this.maxAddrsToDial) {
+    if (addrs.length > this.maxAddrsToDial) {
       await this.components.getPeerStore().delete(peer)
       throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
     }
 
     return {
       id: peer.toString(),
-      addrs: supportedAddrs
+      addrs
     }
   }
 
