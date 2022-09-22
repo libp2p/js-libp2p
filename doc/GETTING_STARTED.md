@@ -69,7 +69,7 @@ Encryption is an important part of communicating on the libp2p network. Every co
 There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](./CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `libp2p-noise` module.
 
 ```sh
-npm install libp2p-noise
+npm install @chainsafe/libp2p-noise
 ```
 
 With `libp2p-noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
