@@ -5,21 +5,41 @@ import { IPFS } from '@multiformats/mafmt'
 import { Bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 import partialValidPeerList from './fixtures/some-invalid-peers.js'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { isPeerId } from '@libp2p/interface-peer-id'
+import { Components } from '@libp2p/components'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core'
+import { multiaddr } from '@multiformats/multiaddr'
+import { peerIdFromString } from '@libp2p/peer-id'
+import delay from 'delay'
 
 describe('bootstrap', () => {
+  let components: Components
+
+  beforeEach(() => {
+    const datastore = new MemoryDatastore()
+    const peerStore = new PersistentPeerStore()
+
+    components = new Components({
+      peerStore,
+      datastore
+    })
+
+    peerStore.init(components)
+  })
+
   it('should throw if no peer list is provided', () => {
     expect(() => new Bootstrap())
       .to.throw('Bootstrap requires a list of peer addresses')
   })
 
-  it('find the other peer', async function () {
+  it('should discover bootstrap peers', async function () {
     this.timeout(5 * 1000)
     const r = new Bootstrap({
       list: peerList,
-      interval: 2000
+      timeout: 100
     })
+    r.init(components)
 
     const p = new Promise((resolve) => r.addEventListener('peer', resolve, {
       once: true
@@ -30,13 +50,61 @@ describe('bootstrap', () => {
     r.stop()
   })
 
-  it('not fail on malformed peers in peer list', async function () {
+  it('should tag bootstrap peers', async function () {
+    this.timeout(5 * 1000)
+
+    const tagName = 'tag-tag'
+    const tagValue = 10
+    const tagTTL = 50
+
+    const r = new Bootstrap({
+      list: peerList,
+      timeout: 100,
+      tagName,
+      tagValue,
+      tagTTL
+    })
+    r.init(components)
+
+    const p = new Promise((resolve) => r.addEventListener('peer', resolve, {
+      once: true
+    }))
+    r.start()
+
+    await p
+
+    const bootstrapper0ma = multiaddr(peerList[0])
+    const bootstrapper0PeerIdStr = bootstrapper0ma.getPeerId()
+
+    if (bootstrapper0PeerIdStr == null) {
+      throw new Error('bootstrapper had no PeerID')
+    }
+
+    const bootstrapper0PeerId = peerIdFromString(bootstrapper0PeerIdStr)
+
+    const tags = await components.getPeerStore().getTags(bootstrapper0PeerId)
+
+    expect(tags).to.have.lengthOf(1, 'bootstrap tag was not set')
+    expect(tags).to.have.nested.property('[0].name', tagName, 'bootstrap tag had incorrect name')
+    expect(tags).to.have.nested.property('[0].value', tagValue, 'bootstrap tag had incorrect value')
+
+    await delay(tagTTL * 2)
+
+    const tags2 = await components.getPeerStore().getTags(bootstrapper0PeerId)
+
+    expect(tags2).to.have.lengthOf(0, 'bootstrap tag did not expire')
+
+    r.stop()
+  })
+
+  it('should not fail on malformed peers in peer list', async function () {
     this.timeout(5 * 1000)
 
     const r = new Bootstrap({
       list: partialValidPeerList,
-      interval: 2000
+      timeout: 100
     })
+    r.init(components)
 
     const p = new Promise<void>((resolve) => {
       r.addEventListener('peer', (evt) => {
@@ -54,29 +122,5 @@ describe('bootstrap', () => {
 
     await p
     r.stop()
-  })
-
-  it('stop emitting events when stop() called', async function () {
-    const interval = 100
-    const r = new Bootstrap({
-      list: peerList,
-      interval
-    })
-
-    let emitted: PeerInfo[] = []
-    r.addEventListener('peer', p => emitted.push(p.detail))
-
-    // Should fire emit event for each peer in list on start,
-    // so wait 50 milliseconds then check
-    const p = new Promise((resolve) => setTimeout(resolve, 50))
-    r.start()
-    await p
-    expect(emitted).to.have.length(peerList.length)
-
-    // After stop is called, no more peers should be emitted
-    emitted = []
-    r.stop()
-    await new Promise((resolve) => setTimeout(resolve, interval))
-    expect(emitted).to.have.length(0)
   })
 })
