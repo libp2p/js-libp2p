@@ -1,3 +1,16 @@
+## [5.2.4](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.3...v5.2.4) (2022-09-23)
+
+
+### Bug Fixes
+
+* remove tracked map as the stats overwrite each other ([#217](https://github.com/libp2p/js-libp2p-mplex/issues/217)) ([d5f4d5f](https://github.com/libp2p/js-libp2p-mplex/commit/d5f4d5f6c92f2d6cc275d8a2250b1feb9b6b756f))
+
+
+### Trivial Changes
+
+* ignore coverage dir ([#219](https://github.com/libp2p/js-libp2p-mplex/issues/219)) ([298590f](https://github.com/libp2p/js-libp2p-mplex/commit/298590f839d147abc1f7168561a589b5977299ef))
+* refactor benchmarks for use in the browser ([#218](https://github.com/libp2p/js-libp2p-mplex/issues/218)) ([ccd3dc7](https://github.com/libp2p/js-libp2p-mplex/commit/ccd3dc74289273135345005c6e64e2a3b4e48be7))
+
 ## [5.2.3](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.2...v5.2.3) (2022-09-20)
 
 
