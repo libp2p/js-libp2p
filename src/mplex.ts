@@ -7,7 +7,6 @@ import { restrictSize } from './restrict-size.js'
 import { MessageTypes, MessageTypeNames, Message } from './message-types.js'
 import { createStream } from './stream.js'
 import { toString as uint8ArrayToString } from 'uint8arrays'
-import { trackedMap } from '@libp2p/tracked-map'
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
@@ -71,11 +70,11 @@ export class MplexStreamMuxer implements StreamMuxer {
       /**
        * Stream to ids map
        */
-      initiators: trackedMap<number, MplexStream>({ metrics: components.getMetrics(), component: 'mplex', metric: 'initiatorStreams' }),
+      initiators: new Map<number, MplexStream>(),
       /**
        * Stream to ids map
        */
-      receivers: trackedMap<number, MplexStream>({ metrics: components.getMetrics(), component: 'mplex', metric: 'receiverStreams' })
+      receivers: new Map<number, MplexStream>()
     }
     this._init = init
 
