@@ -1,3 +1,15 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v2.0.1...v3.0.0) (2022-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `interval` option has been renamed `timeout` and
+peers are now only discovered once
+
+### Bug Fixes
+
+* only discover bootstrap peers once and tag them on discovery ([#142](https://github.com/libp2p/js-libp2p-bootstrap/issues/142)) ([cd41d94](https://github.com/libp2p/js-libp2p-bootstrap/commit/cd41d94fa0fc1d84592448c6e9eccd65ad5e80b1))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v2.0.0...v2.0.1) (2022-09-21)
 
 
