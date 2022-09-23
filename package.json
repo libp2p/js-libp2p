@@ -153,6 +153,7 @@
     "@libp2p/tracked-map": "^2.0.0",
     "abortable-iterator": "^4.0.2",
     "any-signal": "^3.0.0",
+    "benchmark": "^2.1.4",
     "err-code": "^3.0.1",
     "it-pipe": "^2.0.3",
     "it-pushable": "^3.1.0",
@@ -175,7 +176,6 @@
     "it-map": "^1.0.6",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0",
-    "@dapplion/benchmark": "^0.2.2",
     "typescript": "^4.7.4"
   },
   "browser": {
