@@ -11,6 +11,7 @@ import type { MultiaddrConnection, Connection } from '@libp2p/interface-connecti
 import type { Upgrader, Listener } from '@libp2p/interface-transport'
 import type { Server } from 'net'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TCPCreateListenerOptions } from './index.js'
 
 const log = logger('libp2p:tcp:listener')
 
@@ -29,7 +30,7 @@ async function attemptClose (maConn: MultiaddrConnection) {
   }
 }
 
-interface Context {
+interface Context extends TCPCreateListenerOptions {
   handler?: (conn: Connection) => void
   upgrader: Upgrader
   socketInactivityTimeout?: number
@@ -44,12 +45,12 @@ export function createListener (context: Context) {
     handler, upgrader, socketInactivityTimeout, socketCloseTimeout
   } = context
 
+  context.keepAlive = context.keepAlive ?? true
+
   let peerId: string | null
   let listeningAddr: Multiaddr
 
-  const server: ServerWithMultiaddrConnections = Object.assign(net.createServer(socket => {
-    socket.setKeepAlive(true)
-
+  const server: ServerWithMultiaddrConnections = Object.assign(net.createServer(context, socket => {
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
       log('socket error', err)

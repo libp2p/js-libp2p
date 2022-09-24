@@ -8,9 +8,8 @@ import { multiaddrToNetConfig } from './utils.js'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { CreateListenerOptions, DialOptions, symbol, Transport } from '@libp2p/interface-transport'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { Connection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:tcp')
@@ -32,6 +31,24 @@ export interface TCPOptions {
   socketCloseTimeout?: number
 }
 
+/**
+ * Expose a subset of net.connect options
+ */
+export interface TCPSocketOptions extends AbortOptions {
+  noDelay?: boolean
+  keepAlive?: boolean
+  keepAliveInitialDelay?: number
+  allowHalfOpen?: boolean
+}
+
+export interface TCPDialOptions extends DialOptions, TCPSocketOptions {
+
+}
+
+export interface TCPCreateListenerOptions extends CreateListenerOptions, TCPSocketOptions {
+
+}
+
 export class TCP implements Transport {
   private readonly opts: TCPOptions
 
@@ -47,9 +64,10 @@ export class TCP implements Transport {
     return '@libp2p/tcp'
   }
 
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
+    options.keepAlive = options.keepAlive ?? true
+
     const socket = await this._connect(ma, options)
-    socket.setKeepAlive(true)
 
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
@@ -68,7 +86,7 @@ export class TCP implements Transport {
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: AbortOptions = {}) {
+  async _connect (ma: Multiaddr, options: TCPDialOptions) {
     if (options.signal?.aborted === true) {
       throw new AbortError()
     }
@@ -137,7 +155,7 @@ export class TCP implements Transport {
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`.
    */
-  createListener (options: CreateListenerOptions) {
+  createListener (options: TCPCreateListenerOptions) {
     return createListener({
       ...options,
       socketInactivityTimeout: this.opts.inboundSocketInactivityTimeout,
