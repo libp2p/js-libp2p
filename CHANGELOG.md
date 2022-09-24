@@ -1,3 +1,10 @@
+## [3.1.2](https://github.com/libp2p/js-libp2p-tcp/compare/v3.1.1...v3.1.2) (2022-09-24)
+
+
+### Bug Fixes
+
+* expose extra options from net.connect for dial and listen ([#211](https://github.com/libp2p/js-libp2p-tcp/issues/211)) ([6401a87](https://github.com/libp2p/js-libp2p-tcp/commit/6401a87080c77c36cf80634ee3cbe7c1c6fa89bb))
+
 ## [3.1.1](https://github.com/libp2p/js-libp2p-tcp/compare/v3.1.0...v3.1.1) (2022-09-21)
 
 
