@@ -16,7 +16,7 @@ export const echoHandler: StreamHandler = ({ stream }) => pipe(stream.source, st
 
 export async function createConnectedRTCPeerConnectionPair(): Promise<RTCPeerConnection[]> {
   let [client, server] = [new RTCPeerConnection(), new RTCPeerConnection()];
-  log('created peer connections');
+  // log('created peer connections');
   // we don't need auth for a local test but we need a component for candidate gathering
   client.createDataChannel('data');
   client.onicecandidate = ({candidate}) => {
