@@ -78,7 +78,7 @@
   },
   "scripts": {
     "clean": "aegir clean",
-    "lint": "aegir lint",
+    "lint": "aegir lint --fix",
     "dep-check": "aegir dep-check",
     "prepublishOnly": "node scripts/update-version.js",
     "build": "aegir build",
@@ -116,7 +116,7 @@
     "@libp2p/interface-pubsub": "^2.0.1",
     "@libp2p/interface-registrar": "^2.0.3",
     "@libp2p/interface-stream-muxer": "^2.0.2",
-    "@libp2p/interface-transport": "^1.0.3",
+    "@libp2p/interface-transport": "file:../js-libp2p-interfaces/packages/interface-transport",
     "@libp2p/interfaces": "^3.0.3",
     "@libp2p/logger": "^2.0.1",
     "@libp2p/multistream-select": "^3.0.0",
