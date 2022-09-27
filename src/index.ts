@@ -1,144 +1,396 @@
-import { connect, WebSocketOptions } from 'it-ws/client'
-import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
-import { AbortError } from '@libp2p/interfaces/errors'
-import pDefer from 'p-defer'
+import { WebTransport as webTransportPb } from './proto/webtransport.js'
 import { logger } from '@libp2p/logger'
-import { isBrowser, isWebWorker } from 'wherearewe'
-import { createListener } from './listener.js'
-import { socketToMaConn } from './socket-to-conn.js'
-import * as filters from './filters.js'
-import { Transport, MultiaddrFilter, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interface-transport'
-import type { Connection } from '@libp2p/interface-connection'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { DuplexWebSocket } from 'it-ws/duplex'
-import type { ClientOptions } from 'ws'
-import type { Server } from 'http'
+import { Noise } from "@chainsafe/libp2p-noise"
+import type { Components, Initializable } from '@libp2p/components'
+import { Transport, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interface-transport'
+import type { Connection, Direction } from '@libp2p/interface-connection'
+import { Multiaddr, protocols } from '@multiformats/multiaddr'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { bases, digest } from 'multiformats/basics'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Stream } from '@libp2p/interface-connection'
+import type { Duplex, Source } from 'it-stream-types'
 
-const log = logger('libp2p:websockets')
+import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface-stream-muxer'
+import { Uint8ArrayList } from 'uint8arraylist'
 
-export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
-  filter?: MultiaddrFilter
-  websocket?: ClientOptions
-  server?: Server
+const log = logger('libp2p:webtransport')
+
+type Result<V, E> = { ok: V } | { err: E }
+
+declare global {
+  interface Window {
+    WebTransport: any;
+  }
 }
 
-export class WebSockets implements Transport {
-  private readonly init?: WebSocketsInit
+// @ts-ignore - Not easy to combine these types.
+const multibaseDecoder = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
-  constructor (init?: WebSocketsInit) {
-    this.init = init
+function decodeCerthashStr(s: string): MultihashDigest {
+  return digest.decode(multibaseDecoder.decode(s))
+}
+
+// Duplex that does nothing. Needed to fulfill the interface
+function inertDuplex(): Duplex<any, any, any> {
+  return {
+
+    source: {
+      [Symbol.asyncIterator]() {
+        return {
+          next() {
+            // This will never resolve
+            return new Promise(() => { })
+          }
+        }
+      }
+    },
+    sink: (source: Source<any>) => {
+      // This will never resolve
+      return new Promise(() => { })
+    }
+  }
+}
+
+async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string, direction: Direction, activeStreams: Array<Stream>, onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
+  const writer = bidiStream.writable.getWriter()
+  const reader = bidiStream.readable.getReader()
+  await writer.ready;
+
+  function cleanupStreamFromActiveStreams() {
+    const index = activeStreams.findIndex(s => s === stream)
+    if (index != -1) {
+      activeStreams.splice(index, 1)
+      onStreamEnd?.(stream)
+    }
   }
 
-  get [Symbol.toStringTag] () {
-    return '@libp2p/websockets'
+  let writerClosed = false;
+  let readerClosed = false;
+  (async function () {
+    const res: Result<any, any> = await (writer.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
+    console.log("Closed writer", streamId, res)
+    writerClosed = true
+    if (writerClosed && readerClosed) {
+      cleanupStreamFromActiveStreams()
+    }
+  })();
+  (async function () {
+    const res: Result<any, any> = await (reader.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
+    console.log("Closed reader", streamId, res)
+    readerClosed = true
+    if (writerClosed && readerClosed) {
+      cleanupStreamFromActiveStreams()
+    }
+  })();
+
+
+  const stream: Stream = {
+    id: streamId,
+    abort(_err: Error) {
+      if (!writerClosed) {
+        writer.abort()
+        writerClosed = true
+      }
+      stream.closeRead()
+      readerClosed = true
+      cleanupStreamFromActiveStreams()
+    },
+    close() {
+      stream.closeRead()
+      stream.closeWrite()
+      cleanupStreamFromActiveStreams()
+    },
+
+    closeRead() {
+      if (!readerClosed) {
+        reader.cancel().catch((err: any) => {
+          if (err.toString().includes("RESET_STREAM")) {
+            writerClosed = true
+          }
+        })
+        readerClosed = true
+      }
+      if (writerClosed) {
+        cleanupStreamFromActiveStreams()
+      }
+    },
+    closeWrite() {
+      if (!writerClosed) {
+        writerClosed = true
+        writer.close().catch((err: any) => {
+          if (err.toString().includes("RESET_STREAM")) {
+            readerClosed = true
+          }
+        })
+      }
+      if (readerClosed) {
+        cleanupStreamFromActiveStreams()
+      }
+    },
+    reset() {
+      stream.close()
+    },
+    stat: {
+      direction: direction,
+      timeline: { open: Date.now() }
+    },
+    metadata: {},
+    source: (async function* () {
+      while (true) {
+        const val = await reader.read()
+        yield new Uint8ArrayList(val.value)
+      }
+    })(),
+    sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
+      for await (const chunks of source) {
+        for (const buf of chunks) {
+          if (typeof buf === "number") {
+            await writer.write(new Uint8Array([buf]))
+          } else {
+            await writer.write(buf)
+          }
+        }
+      }
+    },
   }
 
-  get [symbol] (): true {
+
+  return stream
+}
+
+
+export class WebTransport implements Transport, Initializable {
+  private components?: Components
+
+
+  init(components: Components) {
+    // Keep track of the components so we can use the registrar
+    this.components = components
+  }
+
+  get [Symbol.toStringTag]() {
+    return '@libp2p/webtransport'
+  }
+
+  get [symbol](): true {
     return true
   }
 
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial(ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log('dialing %s', ma)
+    const localPeer = this.components?.getPeerId()
+    if (localPeer == undefined) {
+      throw new Error("Need a local peerid")
+    }
+
     options = options ?? {}
 
-    const socket = await this._connect(ma, options)
-    const maConn = socketToMaConn(socket, ma)
-    log('new outbound connection %s', maConn.remoteAddr)
+    const parts = ma.stringTuples()
 
-    const conn = await options.upgrader.upgradeOutbound(maConn)
-    log('outbound connection %s upgraded', maConn.remoteAddr)
-    return conn
-  }
-
-  async _connect (ma: Multiaddr, options: AbortOptions): Promise<DuplexWebSocket> {
-    if (options?.signal?.aborted === true) {
-      throw new AbortError()
-    }
-    const cOpts = ma.toOptions()
-    log('dialing %s:%s', cOpts.host, cOpts.port)
-
-    const errorPromise = pDefer()
-    const errfn = (err: any) => {
-      log.error('connection error:', err)
-
-      errorPromise.reject(err)
-    }
-
-    const rawSocket = connect(toUri(ma), this.init)
-
-    if (rawSocket.socket.on != null) {
-      rawSocket.socket.on('error', errfn)
-    } else {
-      rawSocket.socket.onerror = errfn
-    }
-
-    if (options.signal == null) {
-      await Promise.race([rawSocket.connected(), errorPromise.promise])
-
-      log('connected %s', ma)
-      return rawSocket
-    }
-
-    // Allow abort via signal during connect
-    let onAbort
-    const abort = new Promise((resolve, reject) => {
-      onAbort = () => {
-        reject(new AbortError())
-        // FIXME: https://github.com/libp2p/js-libp2p-websockets/issues/121
-        setTimeout(() => {
-          rawSocket.close().catch(err => {
-            log.error('error closing raw socket', err)
-          })
-        })
+    const { url, certhashes, remotePeer } = parts.reduce((state: { url: string, certhashes: Array<MultihashDigest>, seenHost: boolean, seenPort: boolean, remotePeer?: PeerId }, [proto, value]) => {
+      switch (proto) {
+        case protocols("ip4").code:
+        case protocols("ip6").code:
+        case protocols("dns4").code:
+        case protocols("dns6").code:
+          if (state.seenHost || state.seenPort) {
+            throw new Error("Invalid multiaddr, saw host and already saw the host or port")
+          }
+          return {
+            ...state,
+            url: `${state.url}${value}`,
+            seenHost: true,
+          }
+        case protocols("quic").code:
+        case protocols("webtransport").code:
+          if (!state.seenHost || !state.seenPort) {
+            throw new Error("Invalid multiaddr, Didn't see host and port, but saw quic/webtransport")
+          }
+          return state
+        case protocols("udp").code:
+          if (state.seenPort) {
+            throw new Error("Invalid multiaddr, saw port and already saw the port")
+          }
+          return {
+            ...state,
+            url: `${state.url}:${value}`,
+            seenPort: true,
+          }
+        case protocols("certhash").code:
+          if (!state.seenHost || !state.seenPort) {
+            throw new Error("Invalid multiaddr, saw the certhash before seeing the host and port. Url so far: " + state.url)
+          }
+          return {
+            ...state,
+            certhashes: state.certhashes.concat([decodeCerthashStr(value!)])
+          }
+        case protocols("p2p").code:
+          return {
+            ...state,
+            remotePeer: peerIdFromString(value!)
+          }
+        default:
+          throw new Error(`unexpected component in multiaddr: ${proto} ${protocols(proto).name} ${value} `)
       }
+    },
+      // All webtransport urls are https
+      { url: "https://", seenHost: false, seenPort: false, certhashes: [] })
 
-      // Already aborted?
-      if (options?.signal?.aborted === true) {
-        return onAbort()
-      }
 
-      options?.signal?.addEventListener('abort', onAbort)
+    const wt = new window.WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
+      serverCertificateHashes: certhashes.map(certhash => ({
+        algorithm: "sha-256",
+        value: certhash.digest,
+      }))
     })
 
-    try {
-      await Promise.race([abort, errorPromise.promise, rawSocket.connected()])
-    } finally {
-      if (onAbort != null) {
-        options?.signal?.removeEventListener('abort', onAbort)
+    await wt.ready
+
+    const stream = await wt.createBidirectionalStream()
+    const writer = stream.writable.getWriter()
+    const reader = stream.readable.getReader()
+    await writer.ready
+
+    // const duplex: Duplex = 
+    const duplex = {
+      source: (async function* () {
+        while (true) {
+          const val = await reader.read()
+          yield val.value
+        }
+      })(),
+      sink: async function (source: Source<Uint8Array>) {
+        for await (const chunk of source) {
+          await writer.write(chunk)
+        }
       }
     }
 
-    log('connected %s', ma)
-    return rawSocket
+    let msgBytes = webTransportPb.encode({
+      certHashes: certhashes.map(ch => ch.bytes)
+    })
+
+
+
+    const noise = new Noise(undefined, msgBytes)
+
+    if (remotePeer == null) {
+      throw new Error("Need a target peerid")
+    }
+
+    console.log("Upgrading noise")
+    // authenticate webtransport
+    // @ts-ignore
+    const { remoteNoiseExtensions } = await noise.secureOutbound(localPeer, duplex, remotePeer)
+
+    // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
+    const intersectingCerthashes = certhashes.map(ch => ch.bytes).filter(certhash => {
+      return !!remoteNoiseExtensions.webtransportCerthashes.find((remoteCH: Uint8Array) => {
+        if (certhash.length !== remoteCH.length) {
+          return false
+        }
+
+        for (let index = 0; index < certhash.length; index++) {
+          if (remoteCH[index] !== certhash[index]) {
+            return false
+          }
+        }
+        return true
+      })
+    })
+
+    if (intersectingCerthashes.length != certhashes.length) {
+      throw new Error("Our certhashes are not a subset of the remote's reported certhashes")
+    }
+
+    // We're done with this authentication stream
+    writer.close()
+    reader.cancel()
+
+    const maConn = {
+      close: async (err?: Error) => {
+        wt.close()
+      },
+      remoteAddr: ma,
+      timeline: {
+        open: Date.now()
+      },
+      // This connection is never used directly since webtransport supports native streams.
+      ...inertDuplex()
+    }
+
+    return options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, withStreamMuxer: this.webtransportMuxer(wt) })
+  }
+
+
+  webtransportMuxer(wt: typeof window.WebTransport): StreamMuxerFactory {
+    let streamIDCounter = 0
+    return {
+      protocol: "webtransport",
+      createStreamMuxer: (init?: StreamMuxerInit): StreamMuxer => {
+        // TODO handle abort signal – It's unclear if webtransport accepts this even
+
+        if (typeof init == "function") {
+          // The api docs say that init may be a function
+          init = { onIncomingStream: init }
+        }
+
+        const activeStreams: Array<Stream> = [];
+
+        (async function () {
+          // TODO unclear how to add backpressure here?
+          const reader = wt.incomingBidirectionalStreams.getReader();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              break;
+            }
+            const stream = await webtransportBiDiStreamToStream(value, "" + streamIDCounter++, init?.direction || "outbound", activeStreams, init?.onStreamEnd)
+            activeStreams.push(stream)
+            init?.onIncomingStream?.(stream)
+          }
+        })()
+
+
+        const muxer: StreamMuxer = {
+          protocol: "webtransport",
+          streams: activeStreams,
+          newStream: async (name?: string): Promise<Stream> => {
+            const wtStream = await wt.createBidirectionalStream()
+
+            const stream = await webtransportBiDiStreamToStream(wtStream, "" + streamIDCounter++, init?.direction || "outbound", activeStreams, init?.onStreamEnd)
+            activeStreams.push(stream)
+
+            return stream
+          },
+
+          /**
+           * Close or abort all tracked streams and stop the muxer
+           */
+          close: (err?: Error) => {
+            wt.close()
+          },
+          // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
+          ...inertDuplex()
+        }
+
+        return muxer
+      }
+    }
+  }
+
+  createListener(options: CreateListenerOptions) {
+    throw new Error('Webtransport servers are not supported in Node or the browser')
+    // Unreachable, here to make TS happy
+    return null as any
   }
 
   /**
-   * Creates a Websockets listener. The provided `handler` function will be called
-   * anytime a new incoming Connection has been successfully upgraded via
-   * `upgrader.upgradeInbound`
+   * Takes a list of `Multiaddr`s and returns only valid webtransport addresses.
    */
-  createListener (options: CreateListenerOptions) {
-    return createListener({ ...this.init, ...options })
-  }
-
-  /**
-   * Takes a list of `Multiaddr`s and returns only valid Websockets addresses.
-   * By default, in a browser environment only DNS+WSS multiaddr is accepted,
-   * while in a Node.js environment DNS+{WS, WSS} multiaddrs are accepted.
-   */
-  filter (multiaddrs: Multiaddr[]) {
-    multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
-
-    if (this.init?.filter != null) {
-      return this.init?.filter(multiaddrs)
-    }
-
-    // Browser
-    if (isBrowser || isWebWorker) {
-      return filters.dnsWss(multiaddrs)
-    }
-
-    return filters.all(multiaddrs)
+  filter(multiaddrs: Multiaddr[]) {
+    return multiaddrs.filter(ma => ma.protoNames().includes("webtransport"))
   }
 }
