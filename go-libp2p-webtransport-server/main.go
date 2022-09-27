@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"os"
+	"os/signal"
 
 	"github.com/libp2p/go-libp2p"
 	webtransport "github.com/libp2p/go-libp2p/p2p/transport/webtransport"
@@ -22,8 +23,10 @@ func main() {
 
 	for _, a := range h.Addrs() {
 		withP2p := a.Encapsulate(multiaddr.StringCast("/p2p/" + h.ID().String()))
-		fmt.Println("Listening on\n", withP2p)
+		fmt.Printf("addr=%s\n", withP2p.String())
 	}
 
-	time.Sleep(time.Hour * 24)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
 }

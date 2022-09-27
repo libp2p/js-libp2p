@@ -15,7 +15,7 @@ declare global {
 
 describe('libp2p-webtransport', () => {
   it("webtransport connects to go-libp2p", async () => {
-    const maStr = "/ip4/127.0.0.1/udp/9195/quic/webtransport/certhash/uEiCngCsuegJXf24rzC_lKiISlWUg8Ts1l3XFXQgXw_p4dQ/certhash/uEiDCni4m1KyUNdHquD6ehWul6TDlXRIgw-kVlutATZLmEQ/p2p/12D3KooWK6C8p6zmDqGrLDLPgQUHwzmLrDmui8ufWTMuSae3ZGkW"
+    const maStr: string = process.env.serverAddr!
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
       transports: [new WebTransportLibp2p()],

@@ -4,3 +4,5 @@ coverage
 .nyc_output
 docs
 dist
+
+go-libp2p-webtransport-server/main
