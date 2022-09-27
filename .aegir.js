@@ -10,6 +10,9 @@ export default {
       }
 
       const server = spawn('./main', [], { cwd: "./go-libp2p-webtransport-server", killSignal: "SIGINT" });
+      server.stderr.on('data', (data) => {
+        console.log(`stderr: ${data}`, typeof data);
+      })
       const serverAddr = await (new Promise((resolve => {
         server.stdout.on('data', (data) => {
           console.log(`stdout: ${data}`, typeof data);

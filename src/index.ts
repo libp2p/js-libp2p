@@ -289,11 +289,11 @@ export class WebTransport implements Transport, Initializable {
 
     // authenticate webtransport
     // @ts-ignore
-    const { remoteNoiseExtensions } = await noise.secureOutbound(localPeer, duplex, remotePeer)
+    const { remoteExtensions } = await noise.secureOutbound(localPeer, duplex, remotePeer)
 
     // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
     const intersectingCerthashes = certhashes.map(ch => ch.bytes).filter(certhash => {
-      return !!remoteNoiseExtensions.webtransportCerthashes.find((remoteCH: Uint8Array) => {
+      return !!remoteExtensions.webtransportCerthashes.find((remoteCH: Uint8Array) => {
         if (certhash.length !== remoteCH.length) {
           return false
         }
