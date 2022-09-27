@@ -1,4 +1,3 @@
-import { WebTransport as webTransportPb } from './proto/webtransport.js'
 import { logger } from '@libp2p/logger'
 import { Noise } from "@chainsafe/libp2p-noise"
 import type { Components, Initializable } from '@libp2p/components'
@@ -70,7 +69,6 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
   let readerClosed = false;
   (async function () {
     const res: Result<any, any> = await (writer.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
-    console.log("Closed writer", streamId, res)
     writerClosed = true
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
@@ -78,7 +76,6 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
   })();
   (async function () {
     const res: Result<any, any> = await (reader.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
-    console.log("Closed reader", streamId, res)
     readerClosed = true
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
@@ -248,12 +245,33 @@ export class WebTransport implements Transport, Initializable {
 
     await wt.ready
 
+    if (remotePeer == null) {
+      throw new Error("Need a target peerid")
+    }
+
+    this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)
+
+    const maConn = {
+      close: async (err?: Error) => {
+        wt.close()
+      },
+      remoteAddr: ma,
+      timeline: {
+        open: Date.now()
+      },
+      // This connection is never used directly since webtransport supports native streams.
+      ...inertDuplex()
+    }
+
+    return options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, withStreamMuxer: this.webtransportMuxer(wt) })
+  }
+
+  async authenticateWebTransport(wt: typeof window.WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: MultihashDigest<number>[]) {
     const stream = await wt.createBidirectionalStream()
     const writer = stream.writable.getWriter()
     const reader = stream.readable.getReader()
     await writer.ready
 
-    // const duplex: Duplex = 
     const duplex = {
       source: (async function* () {
         while (true) {
@@ -268,19 +286,9 @@ export class WebTransport implements Transport, Initializable {
       }
     }
 
-    let msgBytes = webTransportPb.encode({
-      certHashes: certhashes.map(ch => ch.bytes)
-    })
+    const noise = new Noise()
 
 
-
-    const noise = new Noise(undefined, msgBytes)
-
-    if (remotePeer == null) {
-      throw new Error("Need a target peerid")
-    }
-
-    console.log("Upgrading noise")
     // authenticate webtransport
     // @ts-ignore
     const { remoteNoiseExtensions } = await noise.secureOutbound(localPeer, duplex, remotePeer)
@@ -309,19 +317,7 @@ export class WebTransport implements Transport, Initializable {
     writer.close()
     reader.cancel()
 
-    const maConn = {
-      close: async (err?: Error) => {
-        wt.close()
-      },
-      remoteAddr: ma,
-      timeline: {
-        open: Date.now()
-      },
-      // This connection is never used directly since webtransport supports native streams.
-      ...inertDuplex()
-    }
-
-    return options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, withStreamMuxer: this.webtransportMuxer(wt) })
+    return true
   }
 
 
