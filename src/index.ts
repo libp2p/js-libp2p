@@ -16,8 +16,6 @@ import { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:webtransport')
 
-type Result<V, E> = { ok: V } | { err: E }
-
 declare global {
   interface Window {
     WebTransport: any;
@@ -68,14 +66,14 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
   let writerClosed = false;
   let readerClosed = false;
   (async function () {
-    const res: Result<any, any> = await (writer.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
+    await (writer.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
     writerClosed = true
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
     }
   })();
   (async function () {
-    const res: Result<any, any> = await (reader.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
+    await (reader.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
     readerClosed = true
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
