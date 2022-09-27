@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/websockets",
+  "name": "@libp2p/webtransport",
   "version": "3.0.3",
-  "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
+  "description": "JavaScript implementation of the webtransport module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p-websockets#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p-webtransport#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-websockets.git"
+    "url": "git+https://github.com/libp2p/js-libp2p-webtransport.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-websockets/issues"
+    "url": "https://github.com/libp2p/js-libp2p-webtransport/issues"
   },
   "keywords": [
     "IPFS"
@@ -155,29 +155,37 @@
     "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
     "test:node": "aegir test -t node -f ./dist/test/node.js --cov",
     "test:electron-main": "aegir test -t electron-main -f ./dist/test/node.js --cov",
-    "release": "aegir release"
+    "release": "aegir release",
+    "proto:gen": "protons ./src/proto/webtransport.proto"
   },
   "dependencies": {
+    "@chainsafe/libp2p-noise": "../../ChainSafe/js-libp2p-noise",
     "@libp2p/interface-connection": "^3.0.1",
-    "@libp2p/interface-transport": "^1.0.0",
+    "@libp2p/interface-transport": "../js-libp2p-interfaces/packages/interface-transport",
+    "@libp2p/interface-stream-muxer": "../js-libp2p-interfaces/packages/interface-stream-muxer",
     "@libp2p/interfaces": "^3.0.1",
     "@libp2p/logger": "^2.0.0",
+    "@libp2p/peer-id": "^1.1.15",
     "@libp2p/utils": "^3.0.0",
     "@multiformats/mafmt": "^11.0.2",
-    "@multiformats/multiaddr": "^10.1.5",
+    "@multiformats/multiaddr": "../../multiformats/js-multiaddr",
     "@multiformats/multiaddr-to-uri": "^9.0.0",
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-ws": "^5.0.0",
     "p-defer": "^4.0.0",
     "p-timeout": "^6.0.0",
+    "protons-runtime": "^3.1.0",
     "wherearewe": "^2.0.1"
+  },
+  "overrides": {
+    "@multiformats/multiaddr": "../../multiformats/js-multiaddr"
   },
   "devDependencies": {
     "@libp2p/interface-mocks": "^4.0.1",
     "@libp2p/interface-transport-compliance-tests": "^2.0.5",
     "@types/ws": "^8.2.2",
-    "aegir": "^37.2.0",
+    "aegir": "^37.3.0",
     "is-loopback-addr": "^2.0.1",
     "it-all": "^1.0.6",
     "it-drain": "^1.0.5",
@@ -185,7 +193,9 @@
     "it-pipe": "^2.0.3",
     "it-stream-types": "^1.0.4",
     "it-take": "^1.0.2",
+    "libp2p": "../js-libp2p",
     "p-wait-for": "^5.0.0",
+    "protons": "^5.1.0",
     "uint8arraylist": "^2.3.2",
     "uint8arrays": "^3.0.0"
   },
