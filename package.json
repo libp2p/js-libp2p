@@ -44,14 +44,15 @@
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/parser": "^5.32.0",
     "aegir": "^37.4.6",
+    "chai-bytes": "^0.1.2",
     "it-all": "^1.0.6",
     "it-first": "^1.0.7",
+    "libp2p": "file:../js-libp2p",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.7.1",
     "typescript": "^4.7.4",
     "uint8arrays": "^3.1.0",
-    "wait-on": "^6.0.1",
-    "libp2p": "file:../js-libp2p"
+    "wait-on": "^6.0.1"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^8.0.0",
@@ -64,6 +65,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/multistream-select": "^3.0.0",
     "@libp2p/peer-id": "^1.1.15",
+    "@multiformats/multiaddr": "10.4.3",
     "@protobuf-ts/plugin": "^2.8.0",
     "@protobuf-ts/protoc": "^2.8.0",
     "@protobuf-ts/runtime": "^2.8.0",
@@ -71,7 +73,6 @@
     "err-code": "^3.0.1",
     "it-merge": "^1.0.4",
     "multiformats": "^9.7.1",
-    "@multiformats/multiaddr": "10.4.3",
     "multihashes": "^4.0.3",
     "p-defer": "^4.0.0",
     "socket.io-client": "^4.1.2",

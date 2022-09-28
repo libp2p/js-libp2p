@@ -1,7 +1,6 @@
 import { Stream, StreamStat, Direction } from '@libp2p/interface-connection';
 import { Source } from 'it-stream-types';
 import { Sink } from 'it-stream-types';
-// import { pipe } from 'it-pipe';
 import { pushable, Pushable } from 'it-pushable';
 import defer, { DeferredPromise } from 'p-defer';
 import merge from 'it-merge';
@@ -9,7 +8,6 @@ import { Uint8ArrayList } from 'uint8arraylist';
 import { fromString } from 'uint8arrays/from-string';
 import { logger } from '@libp2p/logger';
 import * as pb from '../proto_ts/message';
-import { toString as uint8arrayToString } from 'uint8arrays/to-string';
 
 const log = logger('libp2p:webrtc:stream');
 
@@ -121,11 +119,7 @@ export class WebRTCStream implements Stream {
       }
       if (m.message) {
         log.trace('%s incoming message %s', this.id, m.message);
-        console.log(this.id, "received message: ", uint8arrayToString(m.message));
-        // console.log("src", this.source as Pushable<Uint8ArrayList>);
         (this._src as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(m.message));
-        // await pipe(new Uint8ArrayList(m.message), this.source)
-        console.log("src", this.source as Pushable<Uint8ArrayList>);
       }
     };
 
@@ -170,7 +164,6 @@ export class WebRTCStream implements Stream {
       let send_buf = pb.Message.toBinary({ message: buf.subarray() });
       log.trace(`[stream:${this.id}][${this.stat.direction}] sending message: length: ${res.length} ${res}, encoded through pb as ${send_buf}`);
       this.channel.send(send_buf);
-      console.log("wrote data", uint8arrayToString(buf.subarray()))
     }
   }
 
@@ -197,7 +190,6 @@ export class WebRTCStream implements Stream {
   closeRead(): void {
     this._sendFlag(pb.Message_Flag.STOP_SENDING);
     this.readClosed = true;
-    // console.log("closing source", this.id)
     (this.source as Pushable<Uint8ArrayList>).end();
     if (this.readClosed && this.writeClosed) {
       this.close();

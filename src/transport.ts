@@ -1,6 +1,6 @@
+
 import * as sdp from './sdp';
 import * as p from '@libp2p/peer-id';
-import { WebRTCConnection } from './connection';
 import { WebRTCDialOptions } from './options';
 import { WebRTCStream } from './stream';
 import { Noise } from '@chainsafe/libp2p-noise';
@@ -17,6 +17,8 @@ import { concat } from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
 import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error';
 import { compare as uint8arrayCompare } from 'uint8arrays/compare';
+import {WebRTCMultiaddrConnection} from './maconn';
+import {DataChannelMuxerFactory} from './muxer';
 
 const log = logger('libp2p:webrtc:transport');
 const HANDSHAKE_TIMEOUT_MS = 10000;
@@ -26,8 +28,8 @@ export class WebRTCTransport implements Transport, Initializable {
   private components: Components | undefined;
 
   init(components: Components): void {
-    this.componentsPromise.resolve();
-    this.components = components;
+    this.components = components
+    this.componentsPromise.resolve()
   }
 
   async dial(ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
@@ -125,19 +127,18 @@ export class WebRTCTransport implements Transport, Initializable {
 
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
-
-    const connection = new WebRTCConnection({
-      components: this.components!,
-      id: ma.toString(),
+    const maConn = new WebRTCMultiaddrConnection({
+      peerConnection,
       remoteAddr: ma,
-      localPeer: myPeerId,
-      direction: 'outbound',
-      pc: peerConnection,
-      remotePeer: theirPeerId,
-    });
+      timeline: {
+        open: (new Date()).getTime(),
+      },
+    })
 
+    const muxerFactory = new DataChannelMuxerFactory(peerConnection)
     await noise.secureOutbound(myPeerId, wrappedDuplex, theirPeerId);
-    return connection;
+    const upgraded = await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory })
+    return upgraded
   }
 
   private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {

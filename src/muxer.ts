@@ -3,7 +3,7 @@ import {Stream} from "@libp2p/interface-connection"
 import {StreamMuxer, StreamMuxerFactory, StreamMuxerInit} from "@libp2p/interface-stream-muxer"
 import {Source, Sink} from "it-stream-types"
 import {v4} from "uuid"
-import {WebRTCStream} from "../stream"
+import {WebRTCStream} from "./stream"
 import {nopSink, nopSource} from "./util"
 
 export class DataChannelMuxerFactory implements StreamMuxerFactory {
@@ -65,7 +65,6 @@ export class DataChannelMuxer implements StreamMuxer {
       },
       closeCb: this.init?.onStreamEnd
     })
-    console.log('created new stream: ', streamName, stream.source)
     return stream
   }
 }

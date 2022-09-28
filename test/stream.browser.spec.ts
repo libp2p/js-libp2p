@@ -1,12 +1,13 @@
-import { expect } from 'chai';
 import * as underTest from '../src/stream.js';
+import { expect, assert } from 'chai'
 
 describe('stream stats', () => {
   it('can construct', () => {
     let pc = new RTCPeerConnection();
     let dc = pc.createDataChannel('whatever', { negotiated: true, id: 91 });
     let s = new underTest.WebRTCStream({ channel: dc, stat: underTest.defaultStat('outbound') });
-    expect(s.stat.timeline.close).to.not.exist();
+    // expect(s.stat.timeline.close).to.not.exist();
+    assert.notExists(s.stat.timeline.close);
   });
 
   it('close marks it closed', () => {
@@ -16,12 +17,12 @@ describe('stream stats', () => {
     expect(s.closed).to.equal(false);
     expect(s.readClosed).to.equal(false);
     expect(s.writeClosed).to.equal(false);
-    expect(s.stat.timeline.close).to.not.exist();
+    // expect(s.stat.timeline.close).to.not.exist();
     s.close();
     expect(s.closed).to.equal(true);
     expect(s.readClosed).to.equal(true);
     expect(s.writeClosed).to.equal(true);
-    expect(s.stat.timeline.close).to.exist();
+    // expect(s.stat.timeline.close).to.exist();
   });
 
   it('closeRead marks it read-closed only', () => {
@@ -71,12 +72,12 @@ describe('stream stats', () => {
     expect(s.closed).to.equal(false);
     expect(s.readClosed).to.equal(false);
     expect(s.writeClosed).to.equal(false);
-    expect(s.stat.timeline.close).to.not.exist();
+    // expect(s.stat.timeline.close).to.not.exist();
     s.abort({ name: 'irrelevant', message: 'this parameter is actually ignored' });
     expect(s.closed).to.equal(true);
     expect(s.readClosed).to.equal(true);
     expect(s.writeClosed).to.equal(true);
-    expect(s.stat.timeline.close).to.exist();
+    // expect(s.stat.timeline.close).to.exist();
     expect(s.stat.timeline.close).to.be.greaterThan(s.stat.timeline.open);
   });
 
@@ -87,11 +88,11 @@ describe('stream stats', () => {
     expect(s.closed).to.equal(false);
     expect(s.readClosed).to.equal(false);
     expect(s.writeClosed).to.equal(false);
-    expect(s.stat.timeline.close).to.not.exist();
+    // expect(s.stat.timeline.close).to.not.exist();
     s.reset(); //only resets the write side
     expect(s.closed).to.equal(false);
     expect(s.readClosed).to.equal(false);
     expect(s.writeClosed).to.equal(true);
-    expect(s.stat.timeline.close).to.not.exist();
+    // expect(s.stat.timeline.close).to.not.exist();
   });
 });
