@@ -42,4 +42,69 @@ describe('peer-set', () => {
 
     expect(set.has(peer)).to.be.true()
   })
+
+  it('should return intersection', async () => {
+    const peer1 = await createEd25519PeerId()
+    const peer2 = await createEd25519PeerId()
+
+    const s1 = new PeerSet([peer1])
+    const s2 = new PeerSet([peer1, peer2])
+
+    expect(s1.intersection(s2)).to.have.property('size', 1)
+    expect(s1.intersection(s2).has(peer1)).to.be.true()
+    expect(s1.intersection(s2).has(peer2)).to.be.false()
+
+    expect(s2.intersection(s1)).to.have.property('size', 1)
+    expect(s2.intersection(s1).has(peer1)).to.be.true()
+    expect(s2.intersection(s1).has(peer2)).to.be.false()
+
+    expect(s1.intersection(s1)).to.have.property('size', 1)
+    expect(s1.intersection(s1).has(peer1)).to.be.true()
+    expect(s1.intersection(s1).has(peer2)).to.be.false()
+
+    expect(s2.intersection(s2)).to.have.property('size', 2)
+    expect(s2.intersection(s2).has(peer1)).to.be.true()
+    expect(s2.intersection(s2).has(peer2)).to.be.true()
+  })
+
+  it('should return difference', async () => {
+    const peer1 = await createEd25519PeerId()
+    const peer2 = await createEd25519PeerId()
+
+    const s1 = new PeerSet([peer1])
+    const s2 = new PeerSet([peer1, peer2])
+
+    expect(s1.difference(s2)).to.have.property('size', 0)
+
+    expect(s2.difference(s1)).to.have.property('size', 1)
+    expect(s2.difference(s1).has(peer1)).to.be.false()
+    expect(s2.difference(s1).has(peer2)).to.be.true()
+
+    expect(s1.difference(s1)).to.have.property('size', 0)
+    expect(s2.difference(s2)).to.have.property('size', 0)
+  })
+
+  it('should return union', async () => {
+    const peer1 = await createEd25519PeerId()
+    const peer2 = await createEd25519PeerId()
+
+    const s1 = new PeerSet([peer1])
+    const s2 = new PeerSet([peer1, peer2])
+
+    expect(s1.union(s2)).to.have.property('size', 2)
+    expect(s1.union(s2).has(peer1)).to.be.true()
+    expect(s1.union(s2).has(peer2)).to.be.true()
+
+    expect(s2.union(s1)).to.have.property('size', 2)
+    expect(s2.union(s1).has(peer1)).to.be.true()
+    expect(s2.union(s1).has(peer2)).to.be.true()
+
+    expect(s1.union(s1)).to.have.property('size', 1)
+    expect(s1.union(s1).has(peer1)).to.be.true()
+    expect(s1.union(s1).has(peer2)).to.be.false()
+
+    expect(s2.union(s2)).to.have.property('size', 2)
+    expect(s2.union(s2).has(peer1)).to.be.true()
+    expect(s2.union(s2).has(peer2)).to.be.true()
+  })
 })

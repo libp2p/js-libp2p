@@ -23,15 +23,15 @@ export class PeerMap <T> {
     }
   }
 
-  [Symbol.iterator] () {
+  [Symbol.iterator] (): IterableIterator<[PeerId, T]> {
     return this.entries()
   }
 
-  clear () {
+  clear (): void {
     this.map.clear()
   }
 
-  delete (peer: PeerId) {
+  delete (peer: PeerId): void {
     this.map.delete(peer.toString())
   }
 
@@ -58,7 +58,7 @@ export class PeerMap <T> {
     return this.map.has(peer.toString())
   }
 
-  set (peer: PeerId, value: T) {
+  set (peer: PeerId, value: T): void {
     this.map.set(peer.toString(), value)
   }
 
@@ -71,11 +71,11 @@ export class PeerMap <T> {
     )
   }
 
-  values () {
+  values (): IterableIterator<T> {
     return this.map.values()
   }
 
-  get size () {
+  get size (): number {
     return this.map.size
   }
 }

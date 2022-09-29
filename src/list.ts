@@ -23,7 +23,7 @@ export class PeerList {
     }
   }
 
-  [Symbol.iterator] () {
+  [Symbol.iterator] (): IterableIterator<PeerId> {
     return mapIterable<[number, string], PeerId>(
       this.list.entries(),
       (val) => {
@@ -32,7 +32,7 @@ export class PeerList {
     )
   }
 
-  concat (list: PeerList) {
+  concat (list: PeerList): PeerList {
     const output = new PeerList(this)
 
     for (const value of list) {
@@ -113,7 +113,7 @@ export class PeerList {
     return peerIdFromString(str)
   }
 
-  push (...peerIds: PeerId[]) {
+  push (...peerIds: PeerId[]): void {
     for (const peerId of peerIds) {
       this.list.push(peerId.toString())
     }
@@ -129,7 +129,7 @@ export class PeerList {
     return peerIdFromString(str)
   }
 
-  unshift (...peerIds: PeerId[]) {
+  unshift (...peerIds: PeerId[]): number {
     let len = this.list.length
 
     for (let i = peerIds.length - 1; i > -1; i--) {
@@ -139,7 +139,7 @@ export class PeerList {
     return len
   }
 
-  get length () {
+  get length (): number {
     return this.list.length
   }
 }

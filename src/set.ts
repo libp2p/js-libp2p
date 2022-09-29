@@ -23,23 +23,23 @@ export class PeerSet {
     }
   }
 
-  get size () {
+  get size (): number {
     return this.set.size
   }
 
-  [Symbol.iterator] () {
+  [Symbol.iterator] (): IterableIterator<PeerId> {
     return this.values()
   }
 
-  add (peer: PeerId) {
+  add (peer: PeerId): void {
     this.set.add(peer.toString())
   }
 
-  clear () {
+  clear (): void {
     this.set.clear()
   }
 
-  delete (peer: PeerId) {
+  delete (peer: PeerId): void {
     this.set.delete(peer.toString())
   }
 
@@ -66,12 +66,50 @@ export class PeerSet {
     return this.set.has(peer.toString())
   }
 
-  values () {
+  values (): IterableIterator<PeerId> {
     return mapIterable<string, PeerId>(
       this.set.values(),
       (val) => {
         return peerIdFromString(val)
       }
     )
+  }
+
+  intersection (other: PeerSet): PeerSet {
+    const output = new PeerSet()
+
+    for (const peerId of other) {
+      if (this.has(peerId)) {
+        output.add(peerId)
+      }
+    }
+
+    return output
+  }
+
+  difference (other: PeerSet): PeerSet {
+    const output = new PeerSet()
+
+    for (const peerId of this) {
+      if (!other.has(peerId)) {
+        output.add(peerId)
+      }
+    }
+
+    return output
+  }
+
+  union (other: PeerSet): PeerSet {
+    const output = new PeerSet()
+
+    for (const peerId of other) {
+      output.add(peerId)
+    }
+
+    for (const peerId of this) {
+      output.add(peerId)
+    }
+
+    return output
   }
 }
