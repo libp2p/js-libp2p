@@ -15,7 +15,7 @@ describe('peer-list', () => {
     expect(list.indexOf(peer2)).to.equal(0)
   })
 
-  it('should create a list with contents', async () => {
+  it('should create a list with PeerList contents', async () => {
     const list1 = new PeerList()
     const peer = await createEd25519PeerId()
 
@@ -24,5 +24,12 @@ describe('peer-list', () => {
     const list2 = new PeerList(list1)
 
     expect(list2.indexOf(peer)).to.equal(0)
+  })
+
+  it('should create a list with Array contents', async () => {
+    const peer = await createEd25519PeerId()
+    const list = new PeerList([peer])
+
+    expect(list.indexOf(peer)).to.equal(0)
   })
 })

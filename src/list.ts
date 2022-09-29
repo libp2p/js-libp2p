@@ -13,7 +13,7 @@ import { mapIterable } from './util.js'
 export class PeerList {
   private readonly list: string[]
 
-  constructor (list?: PeerList) {
+  constructor (list?: PeerList | Iterable<PeerId>) {
     this.list = []
 
     if (list != null) {
