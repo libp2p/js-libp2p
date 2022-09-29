@@ -1,3 +1,15 @@
+## [3.0.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.5...v3.0.6) (2022-09-29)
+
+
+### Bug Fixes
+
+* re-enable ensuring queries run along disjoint paths ([#371](https://github.com/libp2p/js-libp2p-kad-dht/issues/371)) ([5ae4440](https://github.com/libp2p/js-libp2p-kad-dht/commit/5ae4440e7578d3d6adb557f780fcd23ce7fc13b5))
+
+
+### Trivial Changes
+
+* remove IRC badge from readme ([#374](https://github.com/libp2p/js-libp2p-kad-dht/issues/374)) ([e48754f](https://github.com/libp2p/js-libp2p-kad-dht/commit/e48754fa5f16420000804d5f8cb9f536cb7e2596))
+
 ## [3.0.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.4...v3.0.5) (2022-09-21)
 
 
