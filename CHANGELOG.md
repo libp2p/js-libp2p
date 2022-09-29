@@ -1,3 +1,15 @@
+## [2.1.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.0.0...v2.1.0) (2022-09-29)
+
+
+### Features
+
+* accept Iterable<PeerId> in PeerList constructor ([#8](https://github.com/libp2p/js-libp2p-peer-collections/issues/8)) ([5596ede](https://github.com/libp2p/js-libp2p-peer-collections/commit/5596ede224a387181610353167d0dcfe27e2949f))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([615eacf](https://github.com/libp2p/js-libp2p-peer-collections/commit/615eacf6be0f3381756203521b28e1e44de58001))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v1.0.3...v2.0.0) (2022-06-28)
 
 
