@@ -1,3 +1,10 @@
+## [2.2.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.1.0...v2.2.0) (2022-09-29)
+
+
+### Features
+
+* add set operations - intersection, difference, union ([#9](https://github.com/libp2p/js-libp2p-peer-collections/issues/9)) ([896ee1f](https://github.com/libp2p/js-libp2p-peer-collections/commit/896ee1f537bfbdf7104b188edd7e858d02293a44))
+
 ## [2.1.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.0.0...v2.1.0) (2022-09-29)
 
 
