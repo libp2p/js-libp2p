@@ -427,6 +427,38 @@ describe('QueryManager', () => {
     await manager.stop()
   })
 
+  it('should stop when passing through the same node twice', async () => {
+    const manager = new QueryManager({ disjointPaths: 20, alpha: 1 })
+    manager.init(new Components({
+      peerId: ourPeerId
+    }))
+    await manager.start()
+
+    const topology = createTopology({
+      6: { closerPeers: [2] },
+      5: { closerPeers: [4] },
+      4: { closerPeers: [3] },
+      3: { closerPeers: [2] },
+      2: { closerPeers: [1] },
+      1: { closerPeers: [0] },
+      0: { value: uint8ArrayFromString('hello world') }
+    })
+
+    const results = await all(manager.run(key, [peers[6], peers[5]], createQueryFunction(topology)))
+    const traversedPeers = results
+      .map(event => {
+        if (event.type !== EventTypes.PEER_RESPONSE && event.type !== EventTypes.VALUE) {
+          throw new Error(`Unexpected query event type ${event.type}`)
+        }
+
+        return event.from
+      })
+
+    expect(traversedPeers).lengthOf(7)
+
+    await manager.stop()
+  })
+
   it('only closerPeers', async () => {
     const manager = new QueryManager({ disjointPaths: 1, alpha: 1 })
     manager.init(new Components({

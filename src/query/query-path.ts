@@ -13,6 +13,7 @@ import type { CleanUpEvents } from './manager.js'
 import type { Logger } from '@libp2p/logger'
 import type { QueryFunc } from '../query/types.js'
 import type { QueryEvent } from '@libp2p/interface-dht'
+import type { PeerSet } from '@libp2p/peer-collections'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 
@@ -71,6 +72,11 @@ export interface QueryPathOptions {
    * Query log
    */
   log: Logger
+
+  /**
+   * Set of peers seen by this and other paths
+   */
+  peersSeen: PeerSet
 }
 
 /**
@@ -78,7 +84,7 @@ export interface QueryPathOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions) {
-  const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, cleanUp, queryFuncTimeout, log } = options
+  const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, cleanUp, queryFuncTimeout, log, peersSeen } = options
   // Only ALPHA node/value lookups are allowed at any given time for each process
   // https://github.com/libp2p/specs/tree/master/kad-dht#alpha-concurrency-parameter-%CE%B1
   const queue = new Queue({
@@ -87,9 +93,6 @@ export async function * queryPath (options: QueryPathOptions) {
 
   // perform lookups on kadId, not the actual value
   const kadId = await convertBuffer(key)
-
-  // make sure we don't get trapped in a loop
-  const peersSeen = new Set()
 
   /**
    * Adds the passed peer to the query queue if it's not us and no
@@ -100,7 +103,7 @@ export async function * queryPath (options: QueryPathOptions) {
       return
     }
 
-    peersSeen.add(peer.toString())
+    peersSeen.add(peer)
 
     const peerXor = BigInt('0x' + toString(xor(peerKadId, kadId), 'base16'))
 
@@ -130,7 +133,7 @@ export async function * queryPath (options: QueryPathOptions) {
           // if there are closer peers and the query has not completed, continue the query
           if (event.name === 'PEER_RESPONSE') {
             for (const closerPeer of event.closer) {
-              if (peersSeen.has(closerPeer.id.toString())) { // eslint-disable-line max-depth
+              if (peersSeen.has(closerPeer.id)) { // eslint-disable-line max-depth
                 log('already seen %p in query', closerPeer.id)
                 continue
               }
