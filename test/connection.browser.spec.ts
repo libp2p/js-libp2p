@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai';
 import { pipe } from 'it-pipe';
 import first from 'it-first';
 import {fromString} from 'uint8arrays/from-string';
-import { v4 } from 'uuid';
+import {v4} from 'uuid';
 
 const echoProtocol = '/echo/1.0.0';
 
@@ -42,6 +42,7 @@ describe('connection browser tests', () => {
     }
     expect(responsed).to.be.true();
   });
+
 });
 
 export {};

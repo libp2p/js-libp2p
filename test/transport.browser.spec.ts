@@ -5,6 +5,11 @@ import { mockUpgrader } from '@libp2p/interface-mocks';
 import { CreateListenerOptions, symbol } from '@libp2p/interface-transport';
 import { Multiaddr } from '@multiformats/multiaddr';
 import { expect } from 'chai';
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { mockRegistrar } from '@libp2p/interface-mocks'
+import { pipe } from 'it-pipe';
+import first from  'it-first';
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
 
 function ignoredDialOption(): CreateListenerOptions {
     let u = mockUpgrader({});
@@ -86,6 +91,31 @@ describe('basic transport tests', () => {
         expect(e.message).to.contain('PeerId');
       }
     }
+  });
+});
+
+import { SERVER_MULTIADDR } from './server-multiaddr';
+
+describe('Transport interoperability tests', () => {
+  it('can connect to a server', async () => {
+    if (SERVER_MULTIADDR) {
+      console.log('Will test connecting to', SERVER_MULTIADDR);
+    } else {
+      console.log('Will not test connecting to an external server, as we do not appear to have one.');
+      return;
+    }
+    let t = new underTest.WebRTCTransport();
+    let components = new Components({
+      peerId: await createEd25519PeerId(),
+      registrar: mockRegistrar(),
+    });
+    t.init(components);
+    let ma = new Multiaddr(SERVER_MULTIADDR);
+    let conn = await t.dial(ma, ignoredDialOption());
+    let stream = await conn.newStream(['/echo/1.0.0']);
+    let data = 'dataToBeEchoedBackToMe\n';
+    let response = await pipe([uint8arrayFromString(data)], stream, async (source) => await first(source));
+    expect(response?.subarray()).to.equalBytes(uint8arrayFromString(data));
   });
 });
 

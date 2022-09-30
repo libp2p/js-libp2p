@@ -39,7 +39,7 @@ export async function createConnectedRTCPeerConnectionPair(): Promise<RTCPeerCon
           return;
         case 'failed':
         case 'disconnected':
-          promise.reject();
+          promise.reject(`Peerconnection state: ${pc.connectionState}`);
           return;
       }
     };
@@ -61,12 +61,6 @@ export async function createConnectedRTCPeerConnectionPair(): Promise<RTCPeerCon
   await Promise.all([clientConnected.promise, serverConnected.promise])
 
   log.trace(`clientstate: ${client.connectionState}, serverstate: ${server.connectionState}`)
-
-  // let dc = client.createDataChannel('test');
-  // log.trace('awaiting test datachannel opening');
-  // await new Promise<void>((res) => {
-  //   dc.onopen = () => res();
-  // });
 
   log('created peer connections');
   return [client, server];

@@ -11,7 +11,7 @@ import { WebRTCStream } from './stream';
 import { select as msselect, handle as mshandle } from '@libp2p/multistream-select';
 import { Duplex } from 'it-stream-types';
 import { Uint8ArrayList } from 'uint8arraylist';
-import { dataChannelError, operationAborted, overStreamLimit } from './error';
+import { connectionClosedError, dataChannelError, operationAborted, overStreamLimit } from './error';
 
 const log = logger('libp2p:webrtc:connection');
 
@@ -40,6 +40,7 @@ export class WebRTCConnection implements ic.Connection {
   remotePeer: PeerId;
   tags: string[] = [];
   components: Components;
+  closed: boolean = false;
 
   private _streams: Map<string, ic.Stream> = new Map();
   private peerConnection: RTCPeerConnection;
@@ -60,14 +61,22 @@ export class WebRTCConnection implements ic.Connection {
       },
     };
     this.handleIncomingStreams();
+    this.peerConnection.onconnectionstatechange = (_) => {
+	    switch(this.peerConnection.connectionState) {
+		    case 'closed': // fallthrough
+        case 'failed': // fallthrough
+        case 'disconnected': // fallthrough
+          log.trace(`peerconnection moved to state: ${this.peerConnection.connectionState}`)
+          closed = true;
+          this.streams.forEach((stream) => stream.abort(connectionClosedError(this.peerConnection.connectionState, 'closing stream')))
+	    }
+    }
   }
 
   private handleIncomingStreams() {
     let metrics = this.components.getMetrics();
     this.peerConnection.ondatachannel = async ({ channel }) => {
-      const logPrefix = `[stream:${channel.label}][inbound]`;
-      log.trace(`incoming stream - ${channel.label}`);
-      let [openPromise, abortPromise] = [defer(), defer()];
+      const [openPromise, abortPromise] = [defer(), defer()];
       let controller = new TimeoutController(OPEN_STREAM_TIMEOUT);
       controller.signal.onabort = () => abortPromise.resolve();
       channel.onopen = () => openPromise.resolve();
@@ -77,7 +86,7 @@ export class WebRTCConnection implements ic.Connection {
         throw operationAborted('prior to a new stream incoming.', controller.signal.reason);
       }
 
-      let rawStream = new WebRTCStream({
+      const rawStream = new WebRTCStream({
         channel,
         stat: {
           direction: 'inbound',
@@ -86,26 +95,30 @@ export class WebRTCConnection implements ic.Connection {
           },
         },
       });
-      let registrar = this.components.getRegistrar();
-      let protocols = registrar.getProtocols();
+      const registrar = this.components.getRegistrar();
+      const protocols = registrar.getProtocols();
 
-      log.trace(`${logPrefix} supported protocols - ${protocols}`);
+      log.trace(`supported protocols - ${protocols}`);
 
-      let { stream, protocol } = await mshandle(rawStream, protocols, { signal: controller.signal });
-      if (metrics) {
-        metrics.trackStream({ stream, protocol, remotePeer: this.remotePeer });
+      try {
+        const { stream, protocol } = await mshandle(rawStream, protocols, { signal: controller.signal });
+        if (metrics) {
+          metrics.trackStream({ stream, protocol, remotePeer: this.remotePeer });
+        }
+
+        log.trace(`handled protocol - ${protocol}`);
+
+        rawStream.stat.protocol = protocol;
+        const result = this.wrapMsStream(rawStream, stream);
+
+        this.addStream(result);
+
+        // handle stream
+        const { handler } = registrar.getHandler(protocol);
+        handler({ connection: this, stream: result });
+      } catch (err) {
+        log.error('stream error: ', rawStream.id, rawStream.stat.direction);
       }
-
-      log.trace(`${logPrefix} handled protocol - ${protocol}`);
-
-      rawStream.stat.protocol = protocol;
-      let result = this.wrapMsStream(rawStream, stream);
-
-      this.addStream(result);
-
-      // handle stream
-      let { handler } = registrar.getHandler(protocol);
-      handler({ connection: this, stream: result });
     };
   }
 
@@ -132,9 +145,9 @@ export class WebRTCConnection implements ic.Connection {
   }
 
   private findStreamLimit(protocol: string, direction: ic.Direction): number {
-    let registrar = this.components.getRegistrar();
+    const registrar = this.components.getRegistrar();
     try {
-      let handler = registrar.getHandler(protocol);
+      const handler = registrar.getHandler(protocol);
       return direction === 'inbound' ? handler.options.maxInboundStreams || DEFAULT_MAX_INBOUND_STREAMS : handler.options.maxOutboundStreams || DEFAULT_MAX_OUTBOUND_STREAMS;
     } catch (err) {}
     return direction === 'inbound' ? DEFAULT_MAX_INBOUND_STREAMS : DEFAULT_MAX_OUTBOUND_STREAMS;
@@ -145,12 +158,15 @@ export class WebRTCConnection implements ic.Connection {
   }
 
   async newStream(protocols: string | string[], options: AbortOptions = {}): Promise<ic.Stream> {
-    let label = genUuid().slice(0, 8);
-    let openPromise = defer();
-    let abortedPromise = defer();
-    let controller: TimeoutController | undefined;
-    let metrics = this.components.getMetrics();
+    if (this.closed) {
+      throw connectionClosedError(this.peerConnection.connectionState, 'cannot open new stream')
+    }
+    const label = genUuid().slice(0, 8);
+    const [openPromise, abortedPromise] = [defer(), defer()];
+    const metrics = this.components.getMetrics();
+
     let openError: Error | undefined;
+    let controller: TimeoutController | undefined;
 
     log.trace(`opening new stream with protocols: ${protocols}`);
 
@@ -168,7 +184,7 @@ export class WebRTCConnection implements ic.Connection {
     };
 
     log.trace(`[stream: ${label}] peerconnection state: ${this.peerConnection.connectionState}`);
-    let channel = this.peerConnection.createDataChannel(label);
+    const channel = this.peerConnection.createDataChannel(label);
     channel.onopen = (_evt) => {
       log.trace(`[stream: ${label}] data channel opened`);
       openPromise.resolve();
@@ -188,7 +204,7 @@ export class WebRTCConnection implements ic.Connection {
       throw openError;
     }
 
-    let rawStream = new WebRTCStream({
+    const rawStream = new WebRTCStream({
       channel,
       stat: {
         direction: 'outbound',
@@ -198,11 +214,11 @@ export class WebRTCConnection implements ic.Connection {
       },
     });
 
-    let { stream, protocol } = await msselect(rawStream, protocols, { signal: options.signal });
+    const { stream, protocol } = await msselect(rawStream, protocols, { signal: options.signal });
     log.trace(`[stream ${label}] select protocol - ${protocol}`);
     // check if stream is within limit after protocol has been negotiated
     rawStream.stat.protocol = protocol;
-    let result = this.wrapMsStream(rawStream, stream);
+    const result = this.wrapMsStream(rawStream, stream);
     // check if stream can be accomodated
     if (metrics) {
       metrics.trackStream({ stream, protocol, remotePeer: this.remotePeer });
@@ -213,10 +229,10 @@ export class WebRTCConnection implements ic.Connection {
   }
 
   addStream(stream: ic.Stream): void {
-    let protocol = stream.stat.protocol!;
-    let direction = stream.stat.direction;
+    const protocol = stream.stat.protocol!;
+    const direction = stream.stat.direction;
     if (this.countStream(protocol, direction) === this.findStreamLimit(protocol, direction)) {
-      let err = overStreamLimit(direction, protocol);
+      const err = overStreamLimit(direction, protocol);
       log(err.message);
       stream.abort(err);
       throw err;

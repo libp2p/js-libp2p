@@ -6,5 +6,4 @@ export interface WebRTCListenerOptions extends CreateListenerOptions {
   //   channelOptions?: WebRTCReceiverInit
 }
 
-export interface WebRTCDialOptions extends DialOptions {
-}
+export interface WebRTCDialOptions extends DialOptions {}
