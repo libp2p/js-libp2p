@@ -5,12 +5,25 @@ import sinon from 'sinon'
 import { createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import pWaitFor from 'p-wait-for'
+import { multiaddr } from '@multiformats/multiaddr'
+import { codes } from '../../src/errors.js'
+import { Components } from '@libp2p/components'
+import { stubInterface } from 'ts-sinon'
+import type { Dialer } from '@libp2p/interface-connection-manager'
+import type { Connection } from '@libp2p/interface-connection'
+
+const defaultOptions = {
+  maxConnections: 10,
+  minConnections: 1,
+  autoDialInterval: Infinity,
+  inboundUpgradeTimeout: 10000
+}
 
 describe('Connection Manager', () => {
   let libp2p: Libp2pNode
@@ -68,7 +81,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
 
     // Add 1 connection too many
@@ -118,7 +131,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
-    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_maybePruneConnections')
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
 
     // Add 1 too many connections
     const spy = sinon.spy()
@@ -170,5 +183,92 @@ describe('Connection Manager', () => {
 
     expect(connectionManagerOpenConnectionSpy.called).to.be.true('Did not attempt to connect to important peer')
     expect(connectionManagerOpenConnectionSpy.getCall(0).args[0].toString()).to.equal(peerId.toString(), 'Attempted to connect to the wrong peer')
+  })
+
+  it('should deny connections from denylist multiaddrs', async () => {
+    const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
+    const connectionManager = new DefaultConnectionManager({
+      ...defaultOptions,
+      deny: [
+        '/ip4/83.13.55.32'
+      ]
+    })
+
+    const remotePeer = await createEd25519PeerId()
+    const maConn = mockMultiaddrConnection({
+      remoteAddr,
+      source: [],
+      sink: async () => {}
+    }, remotePeer)
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.rejected.with.property('code', codes.ERR_CONNECTION_DENIED)
+  })
+
+  it('should deny connections when maxConnections is exceeded', async () => {
+    const connectionManager = new DefaultConnectionManager({
+      ...defaultOptions,
+      maxConnections: 1
+    })
+
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
+
+    const components = new Components({
+      dialer
+    })
+
+    // set mocks
+    connectionManager.init(components)
+
+    // max out the connection limit
+    await connectionManager.openConnection(await createEd25519PeerId())
+    expect(connectionManager.getConnections()).to.have.lengthOf(1)
+
+    // an inbound connection is opened
+    const remotePeer = await createEd25519PeerId()
+    const maConn = mockMultiaddrConnection({
+      source: [],
+      sink: async () => {}
+    }, remotePeer)
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.rejected.with.property('code', codes.ERR_TOO_MANY_CONNECTIONS)
+  })
+
+  it('should allow connections from allowlist multiaddrs', async () => {
+    const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
+    const connectionManager = new DefaultConnectionManager({
+      ...defaultOptions,
+      maxConnections: 1,
+      allow: [
+        '/ip4/83.13.55.32'
+      ]
+    })
+
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
+
+    const components = new Components({
+      dialer
+    })
+
+    // set mocks
+    connectionManager.init(components)
+
+    // max out the connection limit
+    await connectionManager.openConnection(await createEd25519PeerId())
+    expect(connectionManager.getConnections()).to.have.lengthOf(1)
+
+    // an inbound connection is opened from an address in the allow list
+    const remotePeer = await createEd25519PeerId()
+    const maConn = mockMultiaddrConnection({
+      remoteAddr,
+      source: [],
+      sink: async () => {}
+    }, remotePeer)
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.undefined()
   })
 })

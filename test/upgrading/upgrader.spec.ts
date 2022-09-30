@@ -13,7 +13,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import { codes } from '../../src/errors.js'
-import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
+import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
 import Peers from '../fixtures/peers.js'
 import type { Upgrader } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -61,7 +61,8 @@ describe('Upgrader', () => {
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       peerStore: new PersistentPeerStore(),
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      connectionManager: mockConnectionManager()
     })
     localMuxerFactory = new Mplex()
     localUpgrader = new DefaultUpgrader(localComponents, {
@@ -79,7 +80,8 @@ describe('Upgrader', () => {
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       peerStore: new PersistentPeerStore(),
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      connectionManager: mockConnectionManager()
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
