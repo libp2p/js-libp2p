@@ -40,7 +40,7 @@
   "devDependencies": {
     "@libp2p/interface-mocks": "^4.0.1",
     "@libp2p/peer-id-factory": "^1.0.18",
-    "@multiformats/multiaddr": "^10.4.1",
+    "@multiformats/multiaddr": "^11.0.3",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/parser": "^5.32.0",
     "aegir": "^37.4.6",
@@ -62,7 +62,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/multistream-select": "^3.0.0",
     "@libp2p/peer-id": "^1.1.15",
-    "@multiformats/multiaddr": "^10.4.0",
+    "@multiformats/multiaddr": "^11.0.3",
     "@protobuf-ts/plugin": "^2.8.0",
     "@protobuf-ts/protoc": "^2.8.0",
     "@protobuf-ts/runtime": "^2.8.0",
