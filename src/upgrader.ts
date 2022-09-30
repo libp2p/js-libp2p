@@ -265,7 +265,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
     // Protect
     let protectedConn = maConn
-    if (!skipEncryption) {
+    if ((opts?.muxerFactory) == null) {
       const protector = this.components.getConnectionProtector()
 
       if (protector != null) {
@@ -291,22 +291,21 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         }
       } else {
         // specify this somehow
-        cryptoProtocol = 'custom'
+        cryptoProtocol = 'native'
+        remotePeer = remotePeerId
       }
 
       upgradedConn = encryptedConn
-      if (opts?.muxerFactory) {
+      if ((opts?.muxerFactory) != null) {
         muxerFactory = opts.muxerFactory
-      } else {
+      } else if (this.muxers.size > 0) {
         // Multiplex the connection
-        if (this.muxers.size > 0) {
-          const multiplexed = await this._multiplexOutbound({
-            ...protectedConn,
-            ...encryptedConn
-          }, this.muxers)
-          muxerFactory = multiplexed.muxerFactory
-          upgradedConn = multiplexed.stream
-        }
+        const multiplexed = await this._multiplexOutbound({
+          ...protectedConn,
+          ...encryptedConn
+        }, this.muxers)
+        muxerFactory = multiplexed.muxerFactory
+        upgradedConn = multiplexed.stream
       }
     } catch (err: any) {
       log.error('Failed to upgrade outbound connection', err)
@@ -314,7 +313,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       throw err
     }
 
-    if (await this.components.getConnectionGater().denyOutboundUpgradedConnection(remotePeerId, {
+    if (await this.components.getConnectionGater().denyOutboundUpgradedConnection(remotePeer, {
       ...protectedConn,
       ...encryptedConn
     })) {
@@ -322,7 +321,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     }
 
     if (metrics != null) {
-      metrics.updatePlaceholder(proxyPeer, remotePeerId)
+      metrics.updatePlaceholder(proxyPeer, remotePeer)
       setPeer(remotePeerId)
     }
 
@@ -427,7 +426,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         }
 
         log('%s: starting new stream on %s', direction, protocols)
-        const muxedStream = muxer.newStream()
+        const muxedStream = await muxer.newStream()
         const metrics = this.components.getMetrics()
         let controller: TimeoutController | undefined
 
