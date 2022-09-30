@@ -240,8 +240,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       throw errCode(new Error('The multiaddr connection is blocked by connectionGater.denyOutboundConnection'), codes.ERR_CONNECTION_INTERCEPTED)
     }
 
-    const skipEncryption = opts?.skipEncryption === true
-
     let encryptedConn
     let remotePeer
     let upgradedConn
@@ -276,7 +274,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     try {
       // Encrypt the connection
       encryptedConn = protectedConn
-      if (!skipEncryption) {
+      if (!opts?.skipEncryption) {
         ({
           conn: encryptedConn,
           remotePeer,
@@ -290,7 +288,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
         }
       } else {
-        // specify this somehow
         cryptoProtocol = 'native'
         remotePeer = remotePeerId
       }
@@ -333,7 +330,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       maConn,
       upgradedConn,
       muxerFactory,
-      remotePeer: remotePeerId
+      remotePeer,
     })
   }
 
