@@ -1,3 +1,10 @@
+## [3.1.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.6...v3.1.0) (2022-10-04)
+
+
+### Features
+
+* tag kad-close peers ([#375](https://github.com/libp2p/js-libp2p-kad-dht/issues/375)) ([df15a83](https://github.com/libp2p/js-libp2p-kad-dht/commit/df15a832f9f274b3ebea9b7752e66a149828147c))
+
 ## [3.0.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.0.5...v3.0.6) (2022-09-29)
 
 
