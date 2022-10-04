@@ -8,6 +8,13 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
 import { Components, Initializable } from '@libp2p/components'
+import { PeerSet } from '@libp2p/peer-collections'
+
+export const KAD_CLOSE_TAG_NAME = 'kad-close'
+export const KAD_CLOSE_TAG_VALUE = 50
+export const KBUCKET_SIZE = 20
+export const PING_TIMEOUT = 10000
+export const PING_CONCURRENCY = 10
 
 export interface KBucketPeer {
   id: Uint8Array
@@ -22,10 +29,20 @@ export interface KBucket {
   right: KBucket
 }
 
+interface KBucketTreeEvents {
+  'ping': (oldContacts: KBucketPeer[], newContact: KBucketPeer) => void
+  'added': (contact: KBucketPeer) => void
+  'removed': (contact: KBucketPeer) => void
+}
+
 export interface KBucketTree {
   root: KBucket
   localNodeId: Uint8Array
-  on: (event: 'ping', callback: (oldContacts: KBucketPeer[], newContact: KBucketPeer) => void) => void
+
+  on: <U extends keyof KBucketTreeEvents>(
+    event: U, listener: KBucketTreeEvents[U]
+  ) => this
+
   closest: (key: Uint8Array, count: number) => KBucketPeer[]
   closestPeer: (key: Uint8Array) => KBucketPeer
   remove: (key: Uint8Array) => void
@@ -45,6 +62,8 @@ export interface RoutingTableInit {
   kBucketSize?: number
   pingTimeout?: number
   pingConcurrency?: number
+  tagName?: string
+  tagValue?: number
 }
 
 /**
@@ -63,17 +82,21 @@ export class RoutingTable implements Startable, Initializable {
   private readonly pingConcurrency: number
   private running: boolean
   private readonly protocol: string
+  private readonly tagName: string
+  private readonly tagValue: number
 
   constructor (init: RoutingTableInit) {
-    const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol } = init
+    const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol, tagName, tagValue } = init
 
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
-    this.kBucketSize = kBucketSize ?? 20
-    this.pingTimeout = pingTimeout ?? 10000
-    this.pingConcurrency = pingConcurrency ?? 10
+    this.kBucketSize = kBucketSize ?? KBUCKET_SIZE
+    this.pingTimeout = pingTimeout ?? PING_TIMEOUT
+    this.pingConcurrency = pingConcurrency ?? PING_CONCURRENCY
     this.lan = lan
     this.running = false
     this.protocol = protocol
+    this.tagName = tagName ?? KAD_CLOSE_TAG_NAME
+    this.tagValue = tagValue ?? KAD_CLOSE_TAG_VALUE
 
     const updatePingQueueSizeMetric = () => {
       this.components.getMetrics()?.updateComponentMetric({
@@ -108,19 +131,66 @@ export class RoutingTable implements Startable, Initializable {
   async start () {
     this.running = true
 
-    const kBuck = new KBuck({
+    const kBuck: KBucketTree = new KBuck({
       localNodeId: await utils.convertPeerId(this.components.getPeerId()),
       numberOfNodesPerKBucket: this.kBucketSize,
       numberOfNodesToPing: 1
     })
-    kBuck.on('ping', this._onPing)
     this.kb = kBuck
+
+    // test whether to evict peers
+    kBuck.on('ping', this._onPing)
+
+    // tag kad-close peers
+    this._tagPeers(kBuck)
   }
 
   async stop () {
     this.running = false
     this.pingQueue.clear()
     this.kb = undefined
+  }
+
+  /**
+   * Keep track of our k-closest peers and tag them in the peer store as such
+   * - this will lower the chances that connections to them get closed when
+   * we reach connection limits
+   */
+  _tagPeers (kBuck: KBucketTree) {
+    let kClosest = new PeerSet()
+
+    const updatePeerTags = utils.debounce(() => {
+      const newClosest = new PeerSet(
+        kBuck.closest(kBuck.localNodeId, KBUCKET_SIZE).map(contact => contact.peer)
+      )
+      const addedPeers = newClosest.difference(kClosest)
+      const removedPeers = kClosest.difference(newClosest)
+
+      Promise.resolve()
+        .then(async () => {
+          for (const peer of addedPeers) {
+            await this.components.getPeerStore().tagPeer(peer, this.tagName, {
+              value: this.tagValue
+            })
+          }
+
+          for (const peer of removedPeers) {
+            await this.components.getPeerStore().unTagPeer(peer, this.tagName)
+          }
+        })
+        .catch(err => {
+          this.log.error('Could not update peer tags', err)
+        })
+
+      kClosest = newClosest
+    })
+
+    kBuck.on('added', () => {
+      updatePeerTags()
+    })
+    kBuck.on('removed', () => {
+      updatePeerTags()
+    })
   }
 
   /**

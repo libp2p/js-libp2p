@@ -112,3 +112,12 @@ export function createPutRecord (key: Uint8Array, value: Uint8Array) {
 
   return rec.serialize()
 }
+
+export function debounce (callback: () => void, wait: number = 100) {
+  let timeout: ReturnType<typeof setTimeout>
+
+  return () => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => callback(), wait)
+  }
+}

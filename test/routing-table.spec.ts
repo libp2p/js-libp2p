@@ -3,13 +3,21 @@
 import { expect } from 'aegir/chai'
 import random from 'lodash.random'
 import sinon from 'sinon'
-import { RoutingTable } from '../src/routing-table/index.js'
+import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable } from '../src/routing-table/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { PROTOCOL_DHT } from '../src/constants.js'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { Components } from '@libp2p/components'
 import { mockConnectionManager } from '@libp2p/interface-mocks'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import pWaitFor from 'p-wait-for'
+import { pipe } from 'it-pipe'
+import all from 'it-all'
+import { PeerSet } from '@libp2p/peer-collections'
 
 describe('Routing Table', () => {
   let table: RoutingTable
@@ -20,7 +28,9 @@ describe('Routing Table', () => {
 
     components = new Components({
       peerId: await createPeerId(),
-      connectionManager: mockConnectionManager()
+      connectionManager: mockConnectionManager(),
+      datastore: new MemoryDatastore(),
+      peerStore: new PersistentPeerStore()
     })
 
     table = new RoutingTable({
@@ -206,5 +216,91 @@ describe('Routing Table', () => {
 
     // evicted the old peer
     expect(table.kb.get(oldPeer.id)).to.be.null()
+  })
+
+  it('tags newly found kad-close peers', async () => {
+    const remotePeer = await createEd25519PeerId()
+    const tagPeerSpy = sinon.spy(components.getPeerStore(), 'tagPeer')
+
+    await table.add(remotePeer)
+
+    expect(tagPeerSpy.callCount).to.equal(0, 'did not debounce call to peerStore.tagPeer')
+
+    await pWaitFor(() => {
+      return tagPeerSpy.callCount === 1
+    })
+
+    expect(tagPeerSpy.callCount).to.equal(1, 'did not tag kad-close peer')
+    expect(tagPeerSpy.getCall(0).args[0].toString()).to.equal(remotePeer.toString())
+    expect(tagPeerSpy.getCall(0).args[1]).to.equal(KAD_CLOSE_TAG_NAME)
+    expect(tagPeerSpy.getCall(0).args[2]).to.have.property('value', KAD_CLOSE_TAG_VALUE)
+  })
+
+  it('removes tags from kad-close peers when closer peers are found', async () => {
+    async function getTaggedPeers (): Promise<PeerSet> {
+      return new PeerSet(await pipe(
+        await components.getPeerStore().all(),
+        async function * (source) {
+          for await (const peer of source) {
+            const tags = await components.getPeerStore().getTags(peer.id)
+            const kadCloseTags = tags.filter(tag => tag.name === KAD_CLOSE_TAG_NAME)
+
+            if (kadCloseTags.length > 0) {
+              yield peer.id
+            }
+          }
+        },
+        async (source) => await all(source)
+      ))
+    }
+
+    const tagPeerSpy = sinon.spy(components.getPeerStore(), 'tagPeer')
+    const unTagPeerSpy = sinon.spy(components.getPeerStore(), 'unTagPeer')
+    const localNodeId = await kadUtils.convertPeerId(components.getPeerId())
+    const sortedPeerList = await sortClosestPeers(
+      await Promise.all(
+        new Array(KBUCKET_SIZE + 1).fill(0).map(async () => await createEd25519PeerId())
+      ),
+      localNodeId
+    )
+
+    // sort list furthest -> closest
+    sortedPeerList.reverse()
+
+    // fill the table up to the first kbucket size
+    for (let i = 0; i < KBUCKET_SIZE; i++) {
+      await table.add(sortedPeerList[i])
+    }
+
+    // should have all added contacts in the root kbucket
+    expect(table.kb?.count()).to.equal(KBUCKET_SIZE, 'did not fill kbuckets')
+    expect(table.kb?.root.contacts).to.have.lengthOf(KBUCKET_SIZE, 'split root kbucket when we should not have')
+    expect(table.kb?.root.left).to.be.null('split root kbucket when we should not have')
+    expect(table.kb?.root.right).to.be.null('split root kbucket when we should not have')
+
+    await pWaitFor(() => {
+      return tagPeerSpy.callCount === KBUCKET_SIZE
+    })
+
+    // make sure we tagged all of the peers as kad-close
+    const taggedPeers = await getTaggedPeers()
+    expect(taggedPeers.difference(new PeerSet(sortedPeerList.slice(0, sortedPeerList.length - 1)))).to.have.property('size', 0)
+    tagPeerSpy.resetHistory()
+
+    // add a node that is closer than any added so far
+    await table.add(sortedPeerList[sortedPeerList.length - 1])
+
+    expect(table.kb?.count()).to.equal(KBUCKET_SIZE + 1, 'did not fill kbuckets')
+    expect(table.kb?.root.left).to.not.be.null('did not split root kbucket when we should have')
+    expect(table.kb?.root.right).to.not.be.null('did not split root kbucket when we should have')
+
+    // wait for tag new peer and untag old peer
+    await pWaitFor(() => {
+      return tagPeerSpy.callCount === 1 && unTagPeerSpy.callCount === 1
+    })
+
+    // should have updated list of tagged peers
+    const finalTaggedPeers = await getTaggedPeers()
+    expect(finalTaggedPeers.difference(new PeerSet(sortedPeerList.slice(1)))).to.have.property('size', 0)
   })
 })
