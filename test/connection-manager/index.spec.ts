@@ -12,7 +12,6 @@ import { CustomEvent } from '@libp2p/interfaces/events'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import pWaitFor from 'p-wait-for'
 import { multiaddr } from '@multiformats/multiaddr'
-import { codes } from '../../src/errors.js'
 import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
 import type { Dialer } from '@libp2p/interface-connection-manager'
@@ -202,7 +201,7 @@ describe('Connection Manager', () => {
     }, remotePeer)
 
     await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_CONNECTION_DENIED)
+      .to.eventually.be.false()
   })
 
   it('should deny connections when maxConnections is exceeded', async () => {
@@ -233,7 +232,41 @@ describe('Connection Manager', () => {
     }, remotePeer)
 
     await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_TOO_MANY_CONNECTIONS)
+      .to.eventually.be.false()
+  })
+
+  it('should deny connections from peers that connect too frequently', async () => {
+    const connectionManager = new DefaultConnectionManager({
+      ...defaultOptions,
+      inboundConnectionThreshold: 1
+    })
+
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
+
+    const components = new Components({
+      dialer
+    })
+
+    // set mocks
+    connectionManager.init(components)
+
+    // an inbound connection is opened
+    const remotePeer = await createEd25519PeerId()
+    const maConn = mockMultiaddrConnection({
+      source: [],
+      sink: async () => {},
+      // has to be thin waist, which it will be since we've not done the peer id handshake
+      // yet in the code being exercised by this test
+      remoteAddr: multiaddr('/ip4/34.4.63.125/tcp/4001')
+    }, remotePeer)
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.true()
+
+    // connect again within a second
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.false()
   })
 
   it('should allow connections from allowlist multiaddrs', async () => {
@@ -269,6 +302,6 @@ describe('Connection Manager', () => {
     }, remotePeer)
 
     await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.undefined()
+      .to.eventually.be.true()
   })
 })

@@ -19,6 +19,7 @@ import { multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
+import { RateLimiterMemory } from 'rate-limiter-flexible'
 
 const log = logger('libp2p:connection-manager')
 
@@ -31,7 +32,8 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
   autoDialInterval: 10000,
-  movingAverageInterval: 60000
+  movingAverageInterval: 60000,
+  inboundConnectionThreshold: 5
 }
 
 const METRICS_SYSTEM = 'libp2p'
@@ -144,6 +146,12 @@ export interface ConnectionManagerInit {
    * this node under any circumstances
    */
   deny?: string[]
+
+  /**
+   * If more than this many connections are opened per second by a single
+   * host, reject subsequent connections
+   */
+  inboundConnectionThreshold?: number
 }
 
 export interface ConnectionManagerEvents {
@@ -166,6 +174,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly dialTimeout: number
   private readonly allow: Multiaddr[]
   private readonly deny: Multiaddr[]
+  private readonly inboundConnectionRateLimiter: RateLimiterMemory
 
   constructor (init: ConnectionManagerInit) {
     super()
@@ -204,6 +213,11 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
     this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
+
+    this.inboundConnectionRateLimiter = new RateLimiterMemory({
+      points: this.opts.inboundConnectionThreshold,
+      duration: 1
+    })
   }
 
   init (components: Components): void {
@@ -688,34 +702,42 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     )
   }
 
-  async acceptIncomingConnection (maConn: MultiaddrConnection) {
-    try {
-      // check deny list
-      const denyConnection = this.deny.some(ma => {
-        return maConn.remoteAddr.toString().startsWith(ma.toString())
-      })
+  async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
+    // check deny list
+    const denyConnection = this.deny.some(ma => {
+      return maConn.remoteAddr.toString().startsWith(ma.toString())
+    })
 
-      if (denyConnection) {
-        throw errCode(new Error('connection remote address was in deny list'), codes.ERR_CONNECTION_DENIED)
-      }
-
-      // check allow list
-      const allowConnection = this.allow.some(ma => {
-        return maConn.remoteAddr.toString().startsWith(ma.toString())
-      })
-
-      if (allowConnection) {
-        return
-      }
-
-      if (this.getConnections().length < this.opts.maxConnections) {
-        return
-      }
-
-      throw errCode(new Error('maxConnections exceeded'), codes.ERR_TOO_MANY_CONNECTIONS)
-    } catch (err) {
-      await maConn.close()
-      throw err
+    if (denyConnection) {
+      log('connection remote address was in deny list')
+      return false
     }
+
+    // check allow list
+    const allowConnection = this.allow.some(ma => {
+      return maConn.remoteAddr.toString().startsWith(ma.toString())
+    })
+
+    if (allowConnection) {
+      return true
+    }
+
+    if (maConn.remoteAddr.isThinWaistAddress()) {
+      const host = maConn.remoteAddr.nodeAddress().address
+
+      try {
+        await this.inboundConnectionRateLimiter.consume(host, 1)
+      } catch {
+        log('inboundConnectionThreshold exceeded by host %s', host)
+        return false
+      }
+    }
+
+    if (this.getConnections().length < this.opts.maxConnections) {
+      return true
+    }
+
+    log('maxConnections exceeded')
+    return false
   }
 }
