@@ -10,6 +10,21 @@
 
 
 
+### [0.39.4](https://www.github.com/libp2p/js-libp2p/compare/v0.39.3...v0.39.4) (2022-10-04)
+
+
+### Bug Fixes
+
+* update insecure connection encrypter ([#1400](https://www.github.com/libp2p/js-libp2p/issues/1400)) ([12a2c75](https://www.github.com/libp2p/js-libp2p/commit/12a2c75efc0fc730976652b3ead79f8332476149))
+
+### [0.39.3](https://www.github.com/libp2p/js-libp2p/compare/v0.39.2...v0.39.3) (2022-09-28)
+
+
+### Bug Fixes
+
+* when creating dial targets, encapsulate PeerIds last ([#1389](https://www.github.com/libp2p/js-libp2p/issues/1389)) ([ec02351](https://www.github.com/libp2p/js-libp2p/commit/ec02351e65d0627872e6a53894c060a593b9e66e))
+* yield only final peers from dht getClosestPeers ([#1380](https://www.github.com/libp2p/js-libp2p/issues/1380)) ([3f57eda](https://www.github.com/libp2p/js-libp2p/commit/3f57edaf3b472daf8ea6e914f38ff9ad6cf9b49c))
+
 ### [0.39.2](https://www.github.com/libp2p/js-libp2p/compare/v0.39.1...v0.39.2) (2022-09-21)
 
 

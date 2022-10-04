@@ -100,7 +100,7 @@ export class Plaintext implements ConnectionEncrypter {
     return await encrypt(localId, conn, remoteId)
   }
 
-  async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId: PeerId): Promise<SecuredConnection> {
+  async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
     return await encrypt(localId, conn, remoteId)
   }
 }

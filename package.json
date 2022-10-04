@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.39.2",
+  "version": "0.39.4",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p#readme",
@@ -168,7 +168,7 @@
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "^8.0.1",
+    "@chainsafe/libp2p-noise": "^8.0.2",
     "@chainsafe/libp2p-yamux": "^1.0.0",
     "@libp2p/bootstrap": "^3.0.0",
     "@libp2p/daemon-client": "^3.0.1",
