@@ -10,6 +10,13 @@
 
 
 
+### [0.39.4](https://www.github.com/libp2p/js-libp2p/compare/v0.39.3...v0.39.4) (2022-10-04)
+
+
+### Bug Fixes
+
+* update insecure connection encrypter ([#1400](https://www.github.com/libp2p/js-libp2p/issues/1400)) ([12a2c75](https://www.github.com/libp2p/js-libp2p/commit/12a2c75efc0fc730976652b3ead79f8332476149))
+
 ### [0.39.3](https://www.github.com/libp2p/js-libp2p/compare/v0.39.2...v0.39.3) (2022-09-28)
 
 
