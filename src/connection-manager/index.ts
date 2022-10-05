@@ -136,7 +136,7 @@ export interface ConnectionManagerInit {
   startupReconnectTimeout?: number
 
   /**
-   * A list of multiaddrs that will always be allowed to open connections to
+   * A list of multiaddrs that will always be allowed (except if they are in deny list) to open connections to
    * this node even if we've reached maxConnections
    */
   allow?: string[]
