@@ -10,7 +10,7 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import { codes } from '../errors.js'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
-import type { Connection } from '@libp2p/interface-connection'
+import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import { Components, Initializable } from '@libp2p/components'
 import * as STATUS from '@libp2p/interface-connection/status'
@@ -674,5 +674,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         }))
       })
     )
+  }
+
+  async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
+    return true
   }
 }
