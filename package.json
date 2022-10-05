@@ -104,7 +104,7 @@
     "@libp2p/interface-address-manager": "^1.0.3",
     "@libp2p/interface-connection": "^3.0.2",
     "@libp2p/interface-connection-encrypter": "^3.0.1",
-    "@libp2p/interface-connection-manager": "1.1.1",
+    "@libp2p/interface-connection-manager": "~1.1.1",
     "@libp2p/interface-content-routing": "^1.0.2",
     "@libp2p/interface-dht": "^1.0.1",
     "@libp2p/interface-metrics": "^3.0.0",
