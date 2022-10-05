@@ -10,6 +10,13 @@
 
 
 
+### [0.39.5](https://www.github.com/libp2p/js-libp2p/compare/v0.39.4...v0.39.5) (2022-10-05)
+
+
+### Bug Fixes
+
+* stub new connection manager accept incoming connection method ([#1404](https://www.github.com/libp2p/js-libp2p/issues/1404)) ([5ad175c](https://www.github.com/libp2p/js-libp2p/commit/5ad175cb3918da0956f6c1c336f5423a551c78a8))
+
 ### [0.39.4](https://www.github.com/libp2p/js-libp2p/compare/v0.39.3...v0.39.4) (2022-10-04)
 
 
