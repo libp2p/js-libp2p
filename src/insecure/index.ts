@@ -88,8 +88,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
       sink: shake.stream.sink,
       source: map(shake.stream.source, (buf) => buf.subarray())
     },
-    remotePeer: peerId,
-    remoteEarlyData: new Uint8Array()
+    remotePeer: peerId
   }
 }
 
