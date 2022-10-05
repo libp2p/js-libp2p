@@ -136,8 +136,8 @@ export interface ConnectionManagerInit {
   startupReconnectTimeout?: number
 
   /**
-   * A list of multiaddrs that will always be allowed (except if they are in deny list) to open connections to
-   * this node even if we've reached maxConnections
+   * A list of multiaddrs that will always be allowed (except if they are in the
+   * deny list) to open connections to this node even if we've reached maxConnections
    */
   allow?: string[]
 
@@ -709,7 +709,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     if (denyConnection) {
-      log('connection remote address was in deny list')
+      log('connection from %s refused - connection remote address was in deny list', maConn.remoteAddr)
       return false
     }
 
@@ -728,7 +728,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       try {
         await this.inboundConnectionRateLimiter.consume(host, 1)
       } catch {
-        log('inboundConnectionThreshold exceeded by host %s', host)
+        log('connection from %s refused - inboundConnectionThreshold exceeded by host %s', host, maConn.remoteAddr)
         return false
       }
     }
@@ -737,7 +737,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       return true
     }
 
-    log('maxConnections exceeded')
+    log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
     return false
   }
 }
