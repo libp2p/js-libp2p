@@ -7,7 +7,7 @@ import { logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { Dialer } from './index.js'
+import type { Dialer } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:dialer:dial-request')
 

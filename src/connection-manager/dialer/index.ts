@@ -3,7 +3,8 @@ import all from 'it-all'
 import filter from 'it-filter'
 import { pipe } from 'it-pipe'
 import errCode from 'err-code'
-import { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
@@ -24,10 +25,11 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'
-import { Components, Initializable } from '@libp2p/components'
+import type { Components } from '@libp2p/components'
 import map from 'it-map'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
+import type { Dialer } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:dialer')
 
@@ -85,8 +87,8 @@ export interface DialerInit {
   metrics?: ComponentMetricsTracker
 }
 
-export class Dialer implements Startable, Initializable {
-  private components: Components = new Components()
+export class DefaultDialer implements Startable, Dialer {
+  private readonly components: Components
   private readonly addressSorter: AddressSorter
   private readonly maxAddrsToDial: number
   private readonly timeout: number
@@ -96,13 +98,14 @@ export class Dialer implements Startable, Initializable {
   public pendingDialTargets: Map<string, PendingDialTarget>
   private started: boolean
 
-  constructor (init: DialerInit = {}) {
+  constructor (components: Components, init: DialerInit = {}) {
     this.started = false
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
     this.maxAddrsToDial = init.maxAddrsToDial ?? MAX_ADDRS_TO_DIAL
     this.timeout = init.dialTimeout ?? DIAL_TIMEOUT
     this.maxDialsPerPeer = init.maxDialsPerPeer ?? MAX_PER_PEER_DIALS
     this.tokens = [...new Array(init.maxParallelDials ?? MAX_PARALLEL_DIALS)].map((_, index) => index)
+    this.components = components
     this.pendingDials = trackedMap({
       component: METRICS_COMPONENT,
       metric: METRICS_PENDING_DIALS,
@@ -111,16 +114,12 @@ export class Dialer implements Startable, Initializable {
     this.pendingDialTargets = trackedMap({
       component: METRICS_COMPONENT,
       metric: METRICS_PENDING_DIAL_TARGETS,
-      metrics: init.metrics
+      metrics: components.getMetrics()
     })
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      Multiaddr.resolvers.set(key, value)
+      resolvers.set(key, value)
     }
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   isStarted () {
@@ -233,15 +232,23 @@ export class Dialer implements Startable, Initializable {
    * Multiaddrs not supported by the available transports will be filtered out.
    */
   async _createDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
-    const knownAddrs = await pipe(
+    const _resolve = this._resolve.bind(this)
+
+    const addrs = await pipe(
       await this.components.getPeerStore().addressBook.get(peer),
       (source) => filter(source, async (address) => {
         return !(await this.components.getConnectionGater().denyDialMultiaddr(peer, address.multiaddr))
       }),
+      // Sort addresses so, for example, we try certified public address first
       (source) => sort(source, this.addressSorter),
-      (source) => map(source, (address) => {
-        const ma = address.multiaddr
-
+      async function * resolve (source) {
+        for await (const a of source) {
+          yield * await _resolve(a.multiaddr, options)
+        }
+      },
+      // Multiaddrs not supported by the available transports will be filtered out.
+      (source) => filter(source, (ma) => Boolean(this.components.getTransportManager().transportForMultiaddr(ma))),
+      (source) => map(source, (ma) => {
         if (peer.toString() === ma.getPeerId()) {
           return ma
         }
@@ -251,23 +258,14 @@ export class Dialer implements Startable, Initializable {
       async (source) => await all(source)
     )
 
-    const addrs: Multiaddr[] = []
-    for (const a of knownAddrs) {
-      const resolvedAddrs = await this._resolve(a, options)
-      resolvedAddrs.forEach(ra => addrs.push(ra))
-    }
-
-    // Multiaddrs not supported by the available transports will be filtered out.
-    const supportedAddrs = addrs.filter(a => this.components.getTransportManager().transportForMultiaddr(a))
-
-    if (supportedAddrs.length > this.maxAddrsToDial) {
+    if (addrs.length > this.maxAddrsToDial) {
       await this.components.getPeerStore().delete(peer)
       throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
     }
 
     return {
       id: peer.toString(),
-      addrs: supportedAddrs
+      addrs
     }
   }
 
@@ -284,7 +282,10 @@ export class Dialer implements Startable, Initializable {
         throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       }
 
-      return await this.components.getTransportManager().dial(addr, options)
+      return await this.components.getTransportManager().dial(addr, options).catch(err => {
+        log.error('dial to %s failed', addr, err)
+        throw err
+      })
     }
 
     const dialRequest = new DialRequest({
@@ -370,7 +371,7 @@ export class Dialer implements Startable, Initializable {
    */
   async _resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
     try {
-      ma = new Multiaddr(ma.toString()) // Use current multiaddr module
+      ma = multiaddr(ma.toString()) // Use current multiaddr module
       const multiaddrs = await ma.resolve(options)
       return multiaddrs
     } catch (err) {

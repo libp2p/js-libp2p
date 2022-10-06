@@ -142,12 +142,6 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   dht: DualDHT
 
   /**
-   * Load keychain keys from the datastore.
-   * Imports the private key as 'self', if needed.
-   */
-  loadKeychain: () => Promise<void>
-
-  /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
    * the listen addresses used by transports with any configured
    * announce addresses as well as observed addresses reported by peers.

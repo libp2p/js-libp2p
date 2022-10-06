@@ -5,6 +5,7 @@ import { CircuitRelay } from './pb/index.js'
 import { codes as Errors } from '../../errors.js'
 import type { Stream } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit:hop')
 export interface HopConfig {
@@ -16,7 +17,7 @@ export interface HopConfig {
  * Performs a HOP request to a relay peer, to request a connection to another
  * peer. A new, virtual, connection will be created between the two via the relay.
  */
-export async function hop (options: HopConfig): Promise<Duplex<Uint8Array>> {
+export async function hop (options: HopConfig): Promise<Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>> {
   const {
     stream,
     request

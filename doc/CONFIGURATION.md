@@ -494,8 +494,6 @@ const node = await createLibp2p({
     datastore: dsInstant,
   }
 })
-
-await node.loadKeychain()
 ```
 
 #### Configuring Dialing

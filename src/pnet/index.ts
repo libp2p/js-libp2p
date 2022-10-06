@@ -13,6 +13,7 @@ import {
 import { handshake } from 'it-handshake'
 import { NONCE_LENGTH } from './key-generator.js'
 import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface-connection'
+import map from 'it-map'
 
 const log = logger('libp2p:pnet')
 
@@ -83,6 +84,7 @@ export class PreSharedKeyConnectionProtector implements ConnectionProtector {
       // Encrypt all outbound traffic
       createBoxStream(localNonce, this.psk),
       shake.stream,
+      (source) => map(source, (buf) => buf.subarray()),
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
       external

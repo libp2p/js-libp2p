@@ -66,6 +66,8 @@ We are in the process of writing better documentation, blog posts, tutorials and
 - [docs.libp2p.io](https://docs.libp2p.io)
 - [Specification (WIP)](https://github.com/libp2p/specs)
 - [Discussion Forums](https://discuss.libp2p.io)
+- Talks
+  - [`libp2p <3 ethereum` at DEVCON2](https://archive.devcon.org/archive/watch/2/libp2p-devp2p-ipfs-and-ethereum-networking/)
 - Articles
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 

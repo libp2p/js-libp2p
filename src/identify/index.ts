@@ -5,7 +5,7 @@ import { pipe } from 'it-pipe'
 import drain from 'it-drain'
 import first from 'it-first'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { Identify } from './pb/message.js'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import {
@@ -26,7 +26,6 @@ import type { Components } from '@libp2p/components'
 import { TimeoutController } from 'timeout-abort-controller'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
-import type { Duplex } from 'it-stream-types'
 import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:identify')
@@ -179,7 +178,7 @@ export class IdentifyService implements Startable {
         })
 
         // make stream abortable
-        const source: Duplex<Uint8Array> = abortableDuplex(stream, timeoutController.signal)
+        const source = abortableDuplex(stream, timeoutController.signal)
 
         await pipe(
           [Identify.encode({
@@ -355,7 +354,7 @@ export class IdentifyService implements Startable {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      await this.components.getPeerStore().addressBook.set(id, listenAddrs.map((addr) => new Multiaddr(addr)))
+      await this.components.getPeerStore().addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
     } catch (err: any) {
       log.error('received invalid addrs', err)
     }
@@ -404,7 +403,7 @@ export class IdentifyService implements Startable {
 
         const envelope = await RecordEnvelope.seal(peerRecord, this.components.getPeerId())
         await this.components.getPeerStore().addressBook.consumePeerRecord(envelope)
-        signedPeerRecord = envelope.marshal()
+        signedPeerRecord = envelope.marshal().subarray()
       }
 
       const message = Identify.encode({
@@ -418,7 +417,7 @@ export class IdentifyService implements Startable {
       })
 
       // make stream abortable
-      const source: Duplex<Uint8Array> = abortableDuplex(stream, timeoutController.signal)
+      const source = abortableDuplex(stream, timeoutController.signal)
 
       await pipe(
         [message],
@@ -449,7 +448,7 @@ export class IdentifyService implements Startable {
     let message: Identify | undefined
     try {
       // make stream abortable
-      const source: Duplex<Uint8Array> = abortableDuplex(stream, timeoutController.signal)
+      const source = abortableDuplex(stream, timeoutController.signal)
 
       const data = await pipe(
         [],
@@ -507,7 +506,7 @@ export class IdentifyService implements Startable {
     // LEGACY: Update peers data in PeerStore
     try {
       await this.components.getPeerStore().addressBook.set(id,
-        message.listenAddrs.map((addr) => new Multiaddr(addr)))
+        message.listenAddrs.map((addr) => multiaddr(addr)))
     } catch (err: any) {
       log.error('received invalid addrs', err)
     }
@@ -528,7 +527,7 @@ export class IdentifyService implements Startable {
   static getCleanMultiaddr (addr: Uint8Array | string | null | undefined) {
     if (addr != null && addr.length > 0) {
       try {
-        return new Multiaddr(addr)
+        return multiaddr(addr)
       } catch {
 
       }

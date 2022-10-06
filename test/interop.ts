@@ -5,13 +5,14 @@ import { createClient } from '@libp2p/daemon-client'
 import { createLibp2p, Libp2pOptions } from '../src/index.js'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { TCP } from '@libp2p/tcp'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { KadDHT } from '@libp2p/kad-dht'
 import { path as p2pd } from 'go-libp2p'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
 import { Mplex } from '@libp2p/mplex'
+import { Yamux } from '@chainsafe/libp2p-yamux'
 import fs from 'fs'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -22,7 +23,7 @@ import { FloodSub } from '@libp2p/floodsub'
 
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
-  const apiAddr = new Multiaddr(`/ip4/0.0.0.0/tcp/${controlPort}`)
+  const apiAddr = multiaddr(`/ip4/0.0.0.0/tcp/${controlPort}`)
 
   const log = logger(`go-libp2p:${controlPort}`)
 
@@ -93,8 +94,14 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [new TCP()],
-    streamMuxers: [new Mplex()],
+    streamMuxers: [],
     connectionEncryption: [new Noise()]
+  }
+
+  if (options.muxer === 'mplex') {
+    opts.streamMuxers?.push(new Mplex())
+  } else {
+    opts.streamMuxers?.push(new Yamux())
   }
 
   if (options.dht === true) {
@@ -126,7 +133,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 
   const node = await createLibp2p(opts)
-  const server = await createServer(new Multiaddr('/ip4/0.0.0.0/tcp/0'), node)
+  const server = await createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
   await server.start()
 
   return {

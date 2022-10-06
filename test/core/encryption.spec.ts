@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { WebSockets } from '@libp2p/websockets'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from '../../src/insecure/index.js'
 import { createLibp2p, Libp2pOptions } from '../../src/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createPeerId } from '../utils/creators/peer.js'
@@ -46,7 +46,7 @@ describe('Connection encryption configuration', () => {
         new WebSockets()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     }
     await createLibp2p(config)

@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import { Multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -16,6 +15,7 @@ import { codes as Errors } from '../../src/errors.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { createNode } from '../utils/creators/peer.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
+import { multiaddr } from '@multiformats/multiaddr'
 
 /* eslint-env mocha */
 
@@ -157,7 +157,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     // Connect the destination peer and the relay
     const tcpAddrs = dstLibp2p.components.getTransportManager().getAddrs()
-    sinon.stub(dstLibp2p.components.getAddressManager(), 'getListenAddrs').returns([new Multiaddr(`${relayAddr.toString()}/p2p-circuit`)])
+    sinon.stub(dstLibp2p.components.getAddressManager(), 'getListenAddrs').returns([multiaddr(`${relayAddr.toString()}/p2p-circuit`)])
 
     await dstLibp2p.components.getTransportManager().listen(dstLibp2p.components.getAddressManager().getListenAddrs())
     expect(dstLibp2p.components.getTransportManager().getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])

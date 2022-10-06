@@ -8,8 +8,9 @@ import delay from 'delay'
 import { DialAction, DialRequest } from '../../src/connection-manager/dialer/dial-request.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { Multiaddr } from '@multiformats/multiaddr'
-import { Dialer } from '../../src/connection-manager/dialer/index.js'
+import { multiaddr } from '@multiformats/multiaddr'
+import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
+import { Components } from '@libp2p/components'
 const error = new Error('dial failure')
 
 describe('Dial Request', () => {
@@ -23,12 +24,12 @@ describe('Dial Request', () => {
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new Dialer({
+    const dialer = new DefaultDialer(new Components(), {
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
     const dialRequest = new DialRequest({
-      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
+      addrs: Object.keys(actions).map(str => multiaddr(str)),
       dialer,
       dialAction
     })
@@ -53,12 +54,12 @@ describe('Dial Request', () => {
     }
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new Dialer({
+    const dialer = new DefaultDialer(new Components(), {
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
     const dialRequest = new DialRequest({
-      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
+      addrs: Object.keys(actions).map(str => multiaddr(str)),
       dialer,
       dialAction
     })
@@ -98,13 +99,13 @@ describe('Dial Request', () => {
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const addrs = Object.keys(actions)
     const controller = new AbortController()
-    const dialer = new Dialer({
+    const dialer = new DefaultDialer(new Components(), {
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
     const dialerGetTokensSpy = sinon.spy(dialer, 'getTokens')
     const dialRequest = new DialRequest({
-      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
+      addrs: Object.keys(actions).map(str => multiaddr(str)),
       dialer,
       dialAction
     })
@@ -138,12 +139,12 @@ describe('Dial Request', () => {
 
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const controller = new AbortController()
-    const dialer = new Dialer({
+    const dialer = new DefaultDialer(new Components(), {
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
     const dialRequest = new DialRequest({
-      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
+      addrs: Object.keys(actions).map(str => multiaddr(str)),
       dialer,
       dialAction
     })
@@ -184,13 +185,13 @@ describe('Dial Request', () => {
     const dialAction: DialAction = async (num) => await actions[num.toString()]()
     const addrs = Object.keys(actions)
     const controller = new AbortController()
-    const dialer = new Dialer({
+    const dialer = new DefaultDialer(new Components(), {
       maxParallelDials: 2
     })
     const dialerReleaseTokenSpy = sinon.spy(dialer, 'releaseToken')
     const dialerGetTokensSpy = sinon.spy(dialer, 'getTokens')
     const dialRequest = new DialRequest({
-      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
+      addrs: Object.keys(actions).map(str => multiaddr(str)),
       dialer,
       dialAction
     })
@@ -236,8 +237,8 @@ describe('Dial Request', () => {
     const signals: Record<string, AbortSignal | undefined> = {}
 
     const dialRequest = new DialRequest({
-      addrs: Object.keys(actions).map(str => new Multiaddr(str)),
-      dialer: new Dialer({
+      addrs: Object.keys(actions).map(str => multiaddr(str)),
+      dialer: new DefaultDialer(new Components(), {
         maxParallelDials: 3
       }),
       dialAction: async (ma, opts) => {

@@ -34,7 +34,7 @@ const createNode = async () => {
       stream,
       async function (source) {
         for await (const msg of source) {
-          console.log(uint8ArrayToString(msg))
+          console.log(uint8ArrayToString(msg.subarray()))
         }
       }
     )

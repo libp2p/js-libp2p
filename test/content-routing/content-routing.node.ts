@@ -1,13 +1,10 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import nock from 'nock'
 import sinon from 'sinon'
 import pDefer from 'p-defer'
 import { CID } from 'multiformats/cid'
-import { create as createIpfsHttpClient } from 'ipfs-http-client'
-import { DelegatedContentRouting } from '@libp2p/delegated-content-routing'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import all from 'it-all'
 import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
@@ -16,6 +13,9 @@ import { createRoutingOptions } from './utils.js'
 import type { Libp2p } from '../../src/index.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Libp2pNode } from '../../src/libp2p.js'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { peerIdFromString } from '@libp2p/peer-id'
 
 describe('content-routing', () => {
   describe('no routers', () => {
@@ -119,14 +119,12 @@ describe('content-routing', () => {
 
   describe('via delegate router', () => {
     let node: Libp2pNode
-    let delegate: DelegatedContentRouting
+    let delegate: StubbedInstance<ContentRouting>
 
     beforeEach(async () => {
-      delegate = new DelegatedContentRouting(createIpfsHttpClient({
-        host: '0.0.0.0',
-        protocol: 'http',
-        port: 60197
-      }))
+      delegate = stubInterface<ContentRouting>()
+      delegate.provide.returns(Promise.resolve())
+      delegate.findProviders.returns(async function * () {}())
 
       node = await createNode({
         config: createBaseOptions({
@@ -149,7 +147,7 @@ describe('content-routing', () => {
     it('should use the delegate router to provide', async () => {
       const deferred = pDefer()
 
-      sinon.stub(delegate, 'provide').callsFake(async () => {
+      delegate.provide.callsFake(async () => {
         deferred.resolve()
       })
 
@@ -161,14 +159,14 @@ describe('content-routing', () => {
     it('should use the delegate router to find providers', async () => {
       const deferred = pDefer()
 
-      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+      delegate.findProviders.returns(async function * () {
         yield {
           id: node.peerId,
           multiaddrs: [],
           protocols: []
         }
         deferred.resolve()
-      })
+      }())
 
       await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
@@ -177,94 +175,61 @@ describe('content-routing', () => {
 
     it('should be able to register as a provider', async () => {
       const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
-      const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
-
-      const mockBlockApi = nock('http://0.0.0.0:60197')
-        // mock the block/stat call
-        .post('/api/v0/block/stat')
-        .query(true)
-        .reply(200, '{"Key":"QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB","Size":"2169"}', [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
-      const mockDhtApi = nock('http://0.0.0.0:60197')
-        // mock the dht/provide call
-        .post('/api/v0/dht/provide')
-        .query(true)
-        .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":4}\n`, [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
 
       await node.contentRouting.provide(cid)
 
-      expect(mockBlockApi.isDone()).to.equal(true)
-      expect(mockDhtApi.isDone()).to.equal(true)
+      expect(delegate.provide.calledWith(cid)).to.equal(true)
     })
 
     it('should handle errors when registering as a provider', async () => {
       const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
-      const mockApi = nock('http://0.0.0.0:60197')
-        // mock the block/stat call
-        .post('/api/v0/block/stat')
-        .query(true)
-        .reply(502, 'Bad Gateway', ['Content-Type', 'application/json'])
+
+      delegate.provide.withArgs(cid).throws(new Error('Could not provide'))
 
       await expect(node.contentRouting.provide(cid))
         .to.eventually.be.rejected()
-
-      expect(mockApi.isDone()).to.equal(true)
+        .with.property('message', 'Could not provide')
     })
 
     it('should be able to find providers', async () => {
       const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
       const provider = 'QmZNgCqZCvTsi3B4Vt7gsSqpkqDpE7M2Y9TDmEhbDb4ceF'
 
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/findprovs')
-        .query(true)
-        .reply(200, `{"Extra":"","ID":"QmWKqWXCtRXEeCQTo3FoZ7g4AfnGiauYYiczvNxFCHicbB","Responses":[{"Addrs":["/ip4/0.0.0.0/tcp/0"],"ID":"${provider}"}],"Type":4}\n`, [
-          'Content-Type', 'application/json',
-          'X-Chunked-Output', '1'
-        ])
+      delegate.findProviders.withArgs(cid).returns(async function * () {
+        yield {
+          id: peerIdFromString(provider),
+          multiaddrs: [
+            multiaddr('/ip4/0.0.0.0/tcp/0')
+          ],
+          protocols: []
+        }
+      }())
 
       const providers = await all(node.contentRouting.findProviders(cid))
 
       expect(providers).to.have.length(1)
       expect(providers[0].id.toString()).to.equal(provider)
-      expect(mockApi.isDone()).to.equal(true)
     })
 
     it('should handle errors when finding providers', async () => {
       const cid = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
-      const mockApi = nock('http://0.0.0.0:60197')
-        .post('/api/v0/dht/findprovs')
-        .query(true)
-        .reply(502, 'Bad Gateway', [
-          'X-Chunked-Output', '1'
-        ])
 
-      try {
-        for await (const _ of node.contentRouting.findProviders(cid)) { } // eslint-disable-line
-        throw new Error('should handle errors when finding providers')
-      } catch (err: any) {
-        expect(err).to.exist()
-      }
+      delegate.findProviders.withArgs(cid).throws(new Error('Could not find providers'))
 
-      expect(mockApi.isDone()).to.equal(true)
+      await expect(drain(node.contentRouting.findProviders(cid)))
+        .to.eventually.be.rejected()
+        .with.property('message', 'Could not find providers')
     })
   })
 
   describe('via dht and delegate routers', () => {
     let node: Libp2pNode
-    let delegate: DelegatedContentRouting
+    let delegate: StubbedInstance<ContentRouting>
 
     beforeEach(async () => {
-      delegate = new DelegatedContentRouting(createIpfsHttpClient({
-        host: '0.0.0.0',
-        protocol: 'http',
-        port: 60197
-      }))
+      delegate = stubInterface<ContentRouting>()
+      delegate.provide.returns(Promise.resolve())
+      delegate.findProviders.returns(async function * () {}())
 
       node = await createNode({
         config: createRoutingOptions({
@@ -284,7 +249,7 @@ describe('content-routing', () => {
       const result: PeerInfo = {
         id: providerPeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
         ],
         protocols: []
       }
@@ -294,7 +259,7 @@ describe('content-routing', () => {
       }
 
       sinon.stub(node.dht, 'findProviders').callsFake(async function * () {})
-      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+      delegate.findProviders.callsFake(async function * () {
         yield result
       })
 
@@ -313,7 +278,7 @@ describe('content-routing', () => {
       const result = {
         id: providerPeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
         ],
         protocols: []
       }
@@ -327,7 +292,7 @@ describe('content-routing', () => {
       sinon.stub(node.dht, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
         await defer.promise
       })
-      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+      delegate.findProviders.callsFake(async function * () {
         yield result
 
         await defer.promise
@@ -344,7 +309,7 @@ describe('content-routing', () => {
       const result = {
         id: providerPeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
         ],
         protocols: []
       }
@@ -363,7 +328,7 @@ describe('content-routing', () => {
           ]
         }
       })
-      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+      delegate.findProviders.callsFake(async function * () {
         yield result
       })
 
@@ -377,14 +342,14 @@ describe('content-routing', () => {
       const result1 = {
         id: providerPeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/123.123.123.123/tcp/49320')
+          multiaddr('/ip4/123.123.123.123/tcp/49320')
         ],
         protocols: []
       }
       const result2 = {
         id: providerPeerId,
         multiaddrs: [
-          new Multiaddr('/ip4/213.213.213.213/tcp/2344')
+          multiaddr('/ip4/213.213.213.213/tcp/2344')
         ],
         protocols: []
       }
@@ -403,7 +368,7 @@ describe('content-routing', () => {
           ]
         }
       })
-      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+      delegate.findProviders.callsFake(async function * () {
         yield result2
       })
 
@@ -430,7 +395,7 @@ describe('content-routing', () => {
         dhtDeferred.resolve()
       })
 
-      sinon.stub(delegate, 'provide').callsFake(async function () {
+      delegate.provide.callsFake(async function () {
         delegatedDeferred.resolve()
       })
 
@@ -465,7 +430,7 @@ describe('content-routing', () => {
         }
       })
 
-      sinon.stub(delegate, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
+      delegate.findProviders.callsFake(async function * () { // eslint-disable-line require-yield
       })
 
       const providers = []
@@ -491,7 +456,7 @@ describe('content-routing', () => {
 
       sinon.stub(node.dht, 'findProviders').callsFake(async function * () {})
 
-      sinon.stub(delegate, 'findProviders').callsFake(async function * () {
+      delegate.findProviders.callsFake(async function * () {
         yield results[0]
       })
 

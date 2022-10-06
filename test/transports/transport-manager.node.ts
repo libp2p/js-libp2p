@@ -7,7 +7,7 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { PeerRecord } from '@libp2p/peer-record'
 import { TCP } from '@libp2p/tcp'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import sinon from 'sinon'
 import Peers from '../fixtures/peers.js'
@@ -18,8 +18,8 @@ import { Components } from '@libp2p/components'
 import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 
 const addrs = [
-  new Multiaddr('/ip4/127.0.0.1/tcp/0'),
-  new Multiaddr('/ip4/127.0.0.1/tcp/0')
+  multiaddr('/ip4/127.0.0.1/tcp/0'),
+  multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Transport Manager (TCP)', () => {

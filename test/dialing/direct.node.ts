@@ -4,8 +4,9 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
-import { NOISE } from '@chainsafe/libp2p-noise'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { Plaintext } from '../../src/insecure/index.js'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -17,7 +18,7 @@ import { Connection, isConnection } from '@libp2p/interface-connection'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MemoryDatastore } from 'datastore-core/memory'
-import { Dialer } from '../../src/connection-manager/dialer/index.js'
+import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
@@ -33,8 +34,8 @@ import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 
 const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
-const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 
 describe('Dialing (direct, TCP)', () => {
   let remoteTM: DefaultTransportManager
@@ -95,8 +96,7 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
-    const dialer = new Dialer()
-    dialer.init(localComponents)
+    const dialer = new DefaultDialer(localComponents)
 
     const connection = await dialer.dial(remoteAddr)
     expect(connection).to.exist()
@@ -104,8 +104,7 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should fail to connect to an unsupported multiaddr', async () => {
-    const dialer = new Dialer()
-    dialer.init(localComponents)
+    const dialer = new DefaultDialer(localComponents)
 
     await expect(dialer.dial(unsupportedAddr))
       .to.eventually.be.rejectedWith(Error)
@@ -113,8 +112,7 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should fail to connect if peer has no known addresses', async () => {
-    const dialer = new Dialer()
-    dialer.init(localComponents)
+    const dialer = new DefaultDialer(localComponents)
     const peerId = await createFromJSON(Peers[1])
 
     await expect(dialer.dial(peerId))
@@ -125,8 +123,7 @@ describe('Dialing (direct, TCP)', () => {
   it('should be able to connect to a given peer id', async () => {
     await localComponents.getPeerStore().addressBook.set(remoteComponents.getPeerId(), remoteTM.getAddrs())
 
-    const dialer = new Dialer()
-    dialer.init(localComponents)
+    const dialer = new DefaultDialer(localComponents)
 
     const connection = await dialer.dial(remoteComponents.getPeerId())
     expect(connection).to.exist()
@@ -136,8 +133,7 @@ describe('Dialing (direct, TCP)', () => {
   it('should fail to connect to a given peer with unsupported addresses', async () => {
     await localComponents.getPeerStore().addressBook.add(remoteComponents.getPeerId(), [unsupportedAddr])
 
-    const dialer = new Dialer()
-    dialer.init(localComponents)
+    const dialer = new DefaultDialer(localComponents)
 
     await expect(dialer.dial(remoteComponents.getPeerId()))
       .to.eventually.be.rejectedWith(Error)
@@ -150,8 +146,7 @@ describe('Dialing (direct, TCP)', () => {
     const peerId = await createFromJSON(Peers[1])
     await localComponents.getPeerStore().addressBook.add(peerId, [...remoteAddrs, unsupportedAddr])
 
-    const dialer = new Dialer()
-    dialer.init(localComponents)
+    const dialer = new DefaultDialer(localComponents)
 
     sinon.spy(localTM, 'dial')
     const connection = await dialer.dial(peerId)
@@ -162,10 +157,9 @@ describe('Dialing (direct, TCP)', () => {
   })
 
   it('should abort dials on queue task timeout', async () => {
-    const dialer = new Dialer({
+    const dialer = new DefaultDialer(localComponents, {
       dialTimeout: 50
     })
-    dialer.init(localComponents)
 
     sinon.stub(localTM, 'dial').callsFake(async (addr, options = {}) => {
       expect(options.signal).to.exist()
@@ -183,18 +177,17 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should dial to the max concurrency', async () => {
     const addrs = [
-      new Multiaddr('/ip4/0.0.0.0/tcp/8000'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8001'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8002')
+      multiaddr('/ip4/0.0.0.0/tcp/8000'),
+      multiaddr('/ip4/0.0.0.0/tcp/8001'),
+      multiaddr('/ip4/0.0.0.0/tcp/8002')
     ]
     const peerId = await createFromJSON(Peers[1])
 
     await localComponents.getPeerStore().addressBook.add(peerId, addrs)
 
-    const dialer = new Dialer({
+    const dialer = new DefaultDialer(localComponents, {
       maxParallelDials: 2
     })
-    dialer.init(localComponents)
 
     expect(dialer.tokens).to.have.lengthOf(2)
 
@@ -245,7 +238,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => {
@@ -278,7 +271,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -298,7 +291,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -325,7 +318,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -354,7 +347,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -418,7 +411,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -444,7 +437,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -467,7 +460,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ],
       connectionProtector: new PreSharedKeyConnectionProtector({
         psk: swarmKeyBuffer
@@ -505,7 +498,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 
@@ -541,7 +534,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
 

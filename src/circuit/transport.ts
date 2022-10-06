@@ -4,7 +4,7 @@ import { ReservationStore } from './v2/reservation-store.js'
 import { logger } from '@libp2p/logger'
 import createError from 'err-code'
 import * as mafmt from '@multiformats/mafmt'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { codes } from '../errors.js'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { RELAY_V2_HOP_CODEC, RELAY_V1_CODEC, RELAY_V2_STOP_CODEC } from './multicodec.js'
@@ -25,6 +25,7 @@ import { TimeoutController } from 'timeout-abort-controller'
 import type { RelayConfig } from '../index.js'
 import { setMaxListeners } from 'events'
 import { abortableDuplex } from 'abortable-iterator'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:circuit')
 
@@ -196,7 +197,7 @@ export class Circuit implements Transport, Initializable {
     })
 
     if (mStream !== null && mStream !== undefined) {
-      const remoteAddr = new Multiaddr(request.peer?.addrs?.[0])
+      const remoteAddr = multiaddr(request.peer?.addrs?.[0])
       const localAddr = this.components.getTransportManager().getAddrs()[0]
       const maConn = streamToMaConnection({
         stream: mStream,
@@ -216,8 +217,8 @@ export class Circuit implements Transport, Initializable {
   async dial (ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
-    const relayAddr = new Multiaddr(addrs[0])
-    const destinationAddr = new Multiaddr(addrs[addrs.length - 1])
+    const relayAddr = multiaddr(addrs[0])
+    const destinationAddr = multiaddr(addrs[addrs.length - 1])
     const relayId = relayAddr.getPeerId()
     const destinationId = destinationAddr.getPeerId()
 
@@ -288,7 +289,7 @@ export class Circuit implements Transport, Initializable {
         },
         dstPeer: {
           id: destinationPeer.toBytes(),
-          addrs: [new Multiaddr(destinationAddr).bytes]
+          addrs: [multiaddr(destinationAddr).bytes]
         }
       }
     })
@@ -317,7 +318,7 @@ export class Circuit implements Transport, Initializable {
         type: CircuitV2.HopMessage.Type.CONNECT,
         peer: {
           id: destinationPeer.toBytes(),
-          addrs: [new Multiaddr(destinationAddr).bytes]
+          addrs: [multiaddr(destinationAddr).bytes]
         }
       }))
 

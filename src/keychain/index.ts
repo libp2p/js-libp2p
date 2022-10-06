@@ -13,6 +13,7 @@ import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Components } from '@libp2p/components'
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
+import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 
 const log = logger('libp2p:keychain')
 
@@ -110,9 +111,10 @@ function DsInfoName (name: string) {
  * - '/pkcs8/*key-name*', contains the PKCS #8 for the key
  *
  */
-export class KeyChain {
+export class KeyChain implements Startable {
   private readonly components: Components
   private init: KeyChainInit
+  private started: boolean
 
   /**
    * Creates a new instance of a key chain
@@ -145,6 +147,25 @@ export class KeyChain {
       : ''
 
     privates.set(this, { dek })
+    this.started = false
+  }
+
+  isStarted () {
+    return this.started
+  }
+
+  async start () {
+    const dsname = DsInfoName('self')
+
+    if (!(await this.components.getDatastore().has(dsname))) {
+      await this.importPeer('self', this.components.getPeerId())
+    }
+
+    this.started = true
+  }
+
+  stop () {
+    this.started = false
   }
 
   /**
@@ -474,8 +495,11 @@ export class KeyChain {
       if (!validateKeyName(name)) {
         throw errCode(new Error(`Invalid key name '${name}'`), codes.ERR_INVALID_KEY_NAME)
       }
-      if (peer == null || peer.privateKey == null) {
-        throw errCode(new Error('Peer.privKey is required'), codes.ERR_MISSING_PRIVATE_KEY)
+      if (peer == null) {
+        throw errCode(new Error('PeerId is required'), codes.ERR_MISSING_PRIVATE_KEY)
+      }
+      if (peer.privateKey == null) {
+        throw errCode(new Error('PeerId.privKey is required'), codes.ERR_MISSING_PRIVATE_KEY)
       }
 
       const privateKey = await unmarshalPrivateKey(peer.privateKey)

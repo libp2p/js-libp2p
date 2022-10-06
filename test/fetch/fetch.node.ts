@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { codes } from '../../src/errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -22,7 +22,7 @@ async function createNode (peerId: PeerId) {
       new Mplex()
     ],
     connectionEncryption: [
-      NOISE
+      new Plaintext()
     ]
   })
 }

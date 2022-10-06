@@ -5,7 +5,7 @@ import { pipe } from 'it-pipe'
 import { createNode, populateAddressBooks } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import { PROTOCOL } from '../../src/ping/constants.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import pDefer from 'p-defer'
 import type { Libp2pNode } from '../../src/libp2p.js'
 
@@ -27,7 +27,7 @@ describe('ping', () => {
   afterEach(async () => await Promise.all(nodes.map(async n => await n.stop())))
 
   it('ping once from peer0 to peer1 using a multiaddr', async () => {
-    const ma = new Multiaddr(`${nodes[2].getMultiaddrs()[0].toString()}/p2p/${nodes[2].peerId.toString()}`)
+    const ma = multiaddr(`${nodes[2].getMultiaddrs()[0].toString()}/p2p/${nodes[2].peerId.toString()}`)
     const latency = await nodes[0].ping(ma)
 
     expect(latency).to.be.a('Number')

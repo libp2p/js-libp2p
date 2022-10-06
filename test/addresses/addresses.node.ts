@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { Multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { AddressesOptions } from './utils.js'
 import { createNode } from '../utils/creators/peer.js'
@@ -114,9 +114,9 @@ describe('libp2p.multiaddrs', () => {
     expect(libp2p.components.getAddressManager().getAddresses()).to.have.lengthOf(0)
 
     // Stub transportManager addresses to add a public address
-    const stubMa = new Multiaddr('/ip4/120.220.10.1/tcp/1000')
+    const stubMa = multiaddr('/ip4/120.220.10.1/tcp/1000')
     sinon.stub(libp2p.components.getTransportManager(), 'getAddrs').returns([
-      ...listenAddresses.map((a) => new Multiaddr(a)),
+      ...listenAddresses.map((a) => multiaddr(a)),
       stubMa
     ])
 
@@ -165,7 +165,7 @@ describe('libp2p.multiaddrs', () => {
 
     expect(libp2p.components.getAddressManager().getAddresses()).to.have.lengthOf(listenAddresses.length)
 
-    libp2p.components.getAddressManager().addObservedAddr(new Multiaddr(ma))
+    libp2p.components.getAddressManager().addObservedAddr(multiaddr(ma))
 
     expect(libp2p.components.getAddressManager().getAddresses()).to.have.lengthOf(listenAddresses.length + 1)
     expect(libp2p.components.getAddressManager().getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.include(ma)

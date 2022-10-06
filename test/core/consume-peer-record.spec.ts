@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
 import { WebSockets } from '@libp2p/websockets'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { Plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { Libp2pOptions } from '../../src/index.js'
 
@@ -18,7 +18,7 @@ describe('Consume peer record', () => {
         new WebSockets()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     }
     libp2p = await createLibp2pNode(config)
@@ -42,7 +42,7 @@ describe('Consume peer record', () => {
 
     await libp2p.start()
 
-    libp2p.components.getAddressManager().addObservedAddr(new Multiaddr('/ip4/123.123.123.123/tcp/3983'))
+    libp2p.components.getAddressManager().addObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/3983'))
 
     await p
 

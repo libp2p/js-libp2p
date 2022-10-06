@@ -15,6 +15,9 @@ First, we create our libp2p node.
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { Bootstrap } from '@libp2p/bootstrap'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [
@@ -52,7 +55,6 @@ Now, once we create and start the node, we can listen for events such as `peer:d
 
 ```JavaScript
 const node = await createLibp2p({
-  peerId,
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
@@ -73,13 +75,13 @@ const node = await createLibp2p({
   ]
 })
 
-node.connectionManager.on('peer:connect', (connection) => {
-  console.log('Connection established to:', connection.remotePeer.toB58String())	// Emitted when a new connection has been created
+node.connectionManager.addEventListener('peer:connect', (evt) => {
+  console.log('Connection established to:', evt.detail.remotePeer.toString())	// Emitted when a new connection has been created
 })
 
-node.on('peer:discovery', (peerId) => {
+node.addEventListener('peer:discovery', (evt) => {
   // No need to dial, autoDial is on
-  console.log('Discovered:', peerId.toB58String())
+  console.log('Discovered:', evt.detail.id.toString())
 })
 
 await node.start()
@@ -105,16 +107,19 @@ Connection established to: QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb
 
 ## 2. MulticastDNS to find other peers in the network
 
-For this example, we need `libp2p-mdns`, go ahead and `npm install` it. You can find the complete solution at [2.js](./2.js).
+For this example, we need `@libp2p/mdns`, go ahead and `npm install` it. You can find the complete solution at [2.js](./2.js).
 
 Update your libp2p configuration to include MulticastDNS.
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { MulticastDNS } from '@libp2p/mdns'
+import { TCP } from '@libp2p/tcp'
+import { Mplex } from '@libp2p/mplex'
+import { Noise } from '@chainsafe/libp2p-noise'
 
 const createNode = () => {
-  return Libp2p.create({
+  return createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
@@ -144,8 +149,8 @@ const [node1, node2] = await Promise.all([
   createNode()
 ])
 
-node1.on('peer:discovery', (peer) => console.log('Discovered:', peerId.toB58String()))
-node2.on('peer:discovery', (peer) => console.log('Discovered:', peerId.toB58String()))
+node1.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
+node2.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
 
 await Promise.all([
   node1.start(),
@@ -163,7 +168,7 @@ Discovered: QmRcXXhtG8vTqwVBRonKWtV4ovDoC1Fe56WYtcrw694eiJ
 
 ## 3. Pubsub based Peer Discovery
 
-For this example, we need [`libp2p-pubsub-peer-discovery`](https://github.com/libp2p/js-libp2p-pubsub-peer-discovery/), go ahead and `npm install` it. You also need to spin up a set of [`libp2p-relay-servers`](https://github.com/libp2p/js-libp2p-relay-server). These servers act as relay servers and a peer discovery source.
+For this example, we need [`@libp2p/pubsub-peer-discovery`](https://github.com/libp2p/js-libp2p-pubsub-peer-discovery/), go ahead and `npm install` it. You also need to spin up a set of [`libp2p-relay-servers`](https://github.com/libp2p/js-libp2p-relay-server). These servers act as relay servers and a peer discovery source.
 
 In the context of this example, we will create and run the `libp2p-relay-server` in the same code snippet. You can find the complete solution at [3.js](./3.js).
 
@@ -174,9 +179,9 @@ import { createLibp2p } from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Gossipsub } from 'libp2p-gossipsub'
+import { GossipSub } from '@chainsafe/libp2p-gossipsub'
 import { Bootstrap } from '@libp2p/bootstrap'
-const PubsubPeerDiscovery from 'libp2p-pubsub-peer-discovery')
+import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 
 const createNode = async (bootstrapers) => {
   const node = await createLibp2p({
@@ -184,23 +189,25 @@ const createNode = async (bootstrapers) => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [
-    new TCP()
-  ],
-  streamMuxers: [
-    new Mplex()
-  ],
-  connectionEncryption: [
-    new Noise()
-  ],
-  peerDiscovery: [
-    new Bootstrap({
-      interval: 60e3,
-      list: bootstrapers
-    }),
-    new PubsubPeerDiscovery({
-      interval: 1000
-    })
-  ])
+      new TCP()
+    ],
+    streamMuxers: [
+      new Mplex()
+    ],
+    connectionEncryption: [
+      new Noise()
+    ],
+    pubsub: new GossipSub({ allowPublishToZeroPeers: true }),
+    peerDiscovery: [
+      new Bootstrap({
+        interval: 60e3,
+        list: bootstrapers
+      }),
+      new PubSubPeerDiscovery({
+        interval: 1000
+      })
+    ]
+  })
 
   return node
 }
@@ -209,28 +216,49 @@ const createNode = async (bootstrapers) => {
 We will use the `libp2p-relay-server` as bootstrap nodes for the libp2p nodes, so that they establish a connection with the relay after starting. As a result, after they establish a connection with the relay, the pubsub discovery will kick in and the relay will advertise them.
 
 ```js
-const relay = await createRelayServer({
-  addresses: {
-    listen: ['/ip4/0.0.0.0/tcp/0']
-  }
+const relay = await createLibp2p({
+    addresses: {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
+    },
+    transports: [new TCP()],
+    streamMuxers: [new Mplex()],
+    connectionEncryption: [new Noise()],
+    pubsub: new GossipSub({ allowPublishToZeroPeers: true }),
+    peerDiscovery: [
+      new PubSubPeerDiscovery({
+        interval: 1000
+      })
+    ],
+    relay: {
+      enabled: true, // Allows you to dial and accept relayed connections. Does not make you a relay.
+      hop: {
+        enabled: true // Allows you to be a relay for other peers
+      }
+    }
 })
-console.log(`libp2p relay starting with id: ${relay.peerId.toB58String()}`)
+
+console.log(`libp2p relay starting with id: ${relay.peerId.toString()}`)
+
 await relay.start()
-const relayMultiaddrs = relay.multiaddrs.map((m) => `${m.toString()}/p2p/${relay.peerId.toB58String()}`)
+
+const relayMultiaddrs = relay.getMultiaddrs()
 
 const [node1, node2] = await Promise.all([
   createNode(relayMultiaddrs),
   createNode(relayMultiaddrs)
 ])
 
-node1.on('peer:discovery', (peerId) => {
-  console.log(`Peer ${node1.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+node1.addEventListener('peer:discovery', (evt) => {
+  console.log(`Peer ${node1.peerId.toString()} discovered: ${evt.detail.id.toString()}`)
 })
-node2.on('peer:discovery', (peerId) => {
-  console.log(`Peer ${node2.peerId.toB58String()} discovered: ${peerId.toB58String()}`)
+node2.addEventListener('peer:discovery', (evt) => {
+  console.log(`Peer ${node2.peerId.toString()} discovered: ${evt.detail.id.toString()}`)
 })
 
-;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toB58String()}`))
+;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toString()}`))
+
 await Promise.all([
   node1.start(),
   node2.start()
@@ -258,6 +286,6 @@ This is really useful when running libp2p in constrained environments like a bro
 
 There are plenty more Peer Discovery Mechanisms out there, you can:
 
-- Find one in [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star). Yes, a transport with discovery capabilities! This happens because WebRTC requires a rendezvous point for peers to exchange [SDP](https://tools.ietf.org/html/rfc4317) offer, which means we have one or more points that can introduce peers to each other. Think of it as MulticastDNS for the Web, as in MulticastDNS only works in LAN.
-- Any DHT will offer you a discovery capability. You can simple _random-walk_ the routing tables to find other peers to connect to. For example [libp2p-kad-dht](https://github.com/libp2p/js-libp2p-kad-dht) can be used for peer discovery. An example of how to configure it to enable random walks can be found [here](https://github.com/libp2p/js-libp2p/blob/v0.28.4/doc/CONFIGURATION.md#customizing-dht).
+- Find one in [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star). Yes, a transport with discovery capabilities! This happens because WebRTC requires a rendezvous point for peers to exchange [SDP](https://tools.ietf.org/html/rfc4317) offer, which means we have one or more points that can introduce peers to each other. Think of it as MulticastDNS for the Web, as in MulticastDNS only works in LAN.
+- Any DHT will offer you a discovery capability. You can simple _random-walk_ the routing tables to find other peers to connect to. For example [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht) can be used for peer discovery. An example of how to configure it to enable random walks can be found [here](https://github.com/libp2p/js-libp2p/blob/v0.28.4/doc/CONFIGURATION.md#customizing-dht).
 - You can create your own Discovery service, a registry, a list, a radio beacon, you name it!

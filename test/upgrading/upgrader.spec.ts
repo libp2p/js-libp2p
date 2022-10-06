@@ -3,18 +3,17 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Mplex } from '@libp2p/mplex'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import pSettle from 'p-settle'
 import { WebSockets } from '@libp2p/websockets'
-import { NOISE } from '@chainsafe/libp2p-noise'
 import { PreSharedKeyConnectionProtector } from '../../src/pnet/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import { codes } from '../../src/errors.js'
-import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
+import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
 import Peers from '../fixtures/peers.js'
 import type { Upgrader } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -30,10 +29,13 @@ import { pEvent } from 'p-event'
 import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import drain from 'it-drain'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core'
 
 const addrs = [
-  new Multiaddr('/ip4/127.0.0.1/tcp/0'),
-  new Multiaddr('/ip4/127.0.0.1/tcp/0')
+  multiaddr('/ip4/127.0.0.1/tcp/0'),
+  multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Upgrader', () => {
@@ -57,7 +59,10 @@ describe('Upgrader', () => {
     localComponents = new Components({
       peerId: localPeer,
       connectionGater: mockConnectionGater(),
-      registrar: mockRegistrar()
+      registrar: mockRegistrar(),
+      peerStore: new PersistentPeerStore(),
+      datastore: new MemoryDatastore(),
+      connectionManager: mockConnectionManager()
     })
     localMuxerFactory = new Mplex()
     localUpgrader = new DefaultUpgrader(localComponents, {
@@ -73,7 +78,10 @@ describe('Upgrader', () => {
     remoteComponents = new Components({
       peerId: remotePeer,
       connectionGater: mockConnectionGater(),
-      registrar: mockRegistrar()
+      registrar: mockRegistrar(),
+      peerStore: new PersistentPeerStore(),
+      datastore: new MemoryDatastore(),
+      connectionManager: mockConnectionManager()
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
@@ -409,7 +417,7 @@ describe('Upgrader', () => {
         source: (async function * () {
           // longer than the timeout
           await delay(1000)
-          yield new Uint8Array()
+          yield new Uint8ArrayList()
         }()),
         sink: drain
       })
@@ -479,7 +487,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ],
       connectionProtector: new PreSharedKeyConnectionProtector({
         psk: uint8ArrayFromString(swarmKey)
@@ -501,7 +509,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await libp2p.start()
@@ -517,7 +525,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await remoteLibp2p.start()
@@ -548,7 +556,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await libp2p.start()
@@ -562,7 +570,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await remoteLibp2p.start()
@@ -607,7 +615,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await libp2p.start()
@@ -621,7 +629,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await remoteLibp2p.start()
@@ -669,7 +677,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await libp2p.start()
@@ -683,7 +691,7 @@ describe('libp2p.upgrader', () => {
         new Mplex()
       ],
       connectionEncryption: [
-        NOISE
+        new Plaintext()
       ]
     })
     await remoteLibp2p.start()
