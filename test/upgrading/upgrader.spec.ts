@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Mplex } from '@libp2p/mplex'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import pSettle from 'p-settle'
@@ -13,7 +13,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import swarmKey from '../fixtures/swarm.key.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import { codes } from '../../src/errors.js'
-import { mockConnectionGater, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
+import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream } from '@libp2p/interface-mocks'
 import Peers from '../fixtures/peers.js'
 import type { Upgrader } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -34,8 +34,8 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 
 const addrs = [
-  new Multiaddr('/ip4/127.0.0.1/tcp/0'),
-  new Multiaddr('/ip4/127.0.0.1/tcp/0')
+  multiaddr('/ip4/127.0.0.1/tcp/0'),
+  multiaddr('/ip4/127.0.0.1/tcp/0')
 ]
 
 describe('Upgrader', () => {
@@ -61,7 +61,8 @@ describe('Upgrader', () => {
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       peerStore: new PersistentPeerStore(),
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      connectionManager: mockConnectionManager()
     })
     localMuxerFactory = new Mplex()
     localUpgrader = new DefaultUpgrader(localComponents, {
@@ -79,7 +80,8 @@ describe('Upgrader', () => {
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       peerStore: new PersistentPeerStore(),
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      connectionManager: mockConnectionManager()
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [

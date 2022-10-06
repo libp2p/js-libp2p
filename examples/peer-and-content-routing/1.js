@@ -38,7 +38,7 @@ const createNode = async () => {
   ])
 
   // The DHT routing tables need a moment to populate
-  await delay(100)
+  await delay(1000)
 
   const peer = await node1.peerRouting.findPeer(node3.peerId)
 

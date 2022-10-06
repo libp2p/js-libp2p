@@ -10,6 +10,35 @@
 
 
 
+### [0.39.5](https://www.github.com/libp2p/js-libp2p/compare/v0.39.4...v0.39.5) (2022-10-05)
+
+
+### Bug Fixes
+
+* stub new connection manager accept incoming connection method ([#1404](https://www.github.com/libp2p/js-libp2p/issues/1404)) ([5ad175c](https://www.github.com/libp2p/js-libp2p/commit/5ad175cb3918da0956f6c1c336f5423a551c78a8))
+
+### [0.39.4](https://www.github.com/libp2p/js-libp2p/compare/v0.39.3...v0.39.4) (2022-10-04)
+
+
+### Bug Fixes
+
+* update insecure connection encrypter ([#1400](https://www.github.com/libp2p/js-libp2p/issues/1400)) ([12a2c75](https://www.github.com/libp2p/js-libp2p/commit/12a2c75efc0fc730976652b3ead79f8332476149))
+
+### [0.39.3](https://www.github.com/libp2p/js-libp2p/compare/v0.39.2...v0.39.3) (2022-09-28)
+
+
+### Bug Fixes
+
+* when creating dial targets, encapsulate PeerIds last ([#1389](https://www.github.com/libp2p/js-libp2p/issues/1389)) ([ec02351](https://www.github.com/libp2p/js-libp2p/commit/ec02351e65d0627872e6a53894c060a593b9e66e))
+* yield only final peers from dht getClosestPeers ([#1380](https://www.github.com/libp2p/js-libp2p/issues/1380)) ([3f57eda](https://www.github.com/libp2p/js-libp2p/commit/3f57edaf3b472daf8ea6e914f38ff9ad6cf9b49c))
+
+### [0.39.2](https://www.github.com/libp2p/js-libp2p/compare/v0.39.1...v0.39.2) (2022-09-21)
+
+
+### Bug Fixes
+
+* remove ipfs dependency and upgrade multiaddr ([#1387](https://www.github.com/libp2p/js-libp2p/issues/1387)) ([633d4a9](https://www.github.com/libp2p/js-libp2p/commit/633d4a9740ea02e32c0bb290c0a3958b68f181e9))
+
 ### [0.39.1](https://www.github.com/libp2p/js-libp2p/compare/v0.39.0...v0.39.1) (2022-09-09)
 
 

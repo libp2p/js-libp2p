@@ -3,7 +3,8 @@ import all from 'it-all'
 import filter from 'it-filter'
 import { pipe } from 'it-pipe'
 import errCode from 'err-code'
-import { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
@@ -117,7 +118,7 @@ export class DefaultDialer implements Startable, Dialer {
     })
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      Multiaddr.resolvers.set(key, value)
+      resolvers.set(key, value)
     }
   }
 
@@ -231,15 +232,23 @@ export class DefaultDialer implements Startable, Dialer {
    * Multiaddrs not supported by the available transports will be filtered out.
    */
   async _createDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
-    const knownAddrs = await pipe(
+    const _resolve = this._resolve.bind(this)
+
+    const addrs = await pipe(
       await this.components.getPeerStore().addressBook.get(peer),
       (source) => filter(source, async (address) => {
         return !(await this.components.getConnectionGater().denyDialMultiaddr(peer, address.multiaddr))
       }),
+      // Sort addresses so, for example, we try certified public address first
       (source) => sort(source, this.addressSorter),
-      (source) => map(source, (address) => {
-        const ma = address.multiaddr
-
+      async function * resolve (source) {
+        for await (const a of source) {
+          yield * await _resolve(a.multiaddr, options)
+        }
+      },
+      // Multiaddrs not supported by the available transports will be filtered out.
+      (source) => filter(source, (ma) => Boolean(this.components.getTransportManager().transportForMultiaddr(ma))),
+      (source) => map(source, (ma) => {
         if (peer.toString() === ma.getPeerId()) {
           return ma
         }
@@ -249,23 +258,14 @@ export class DefaultDialer implements Startable, Dialer {
       async (source) => await all(source)
     )
 
-    const addrs: Multiaddr[] = []
-    for (const a of knownAddrs) {
-      const resolvedAddrs = await this._resolve(a, options)
-      resolvedAddrs.forEach(ra => addrs.push(ra))
-    }
-
-    // Multiaddrs not supported by the available transports will be filtered out.
-    const supportedAddrs = addrs.filter(a => this.components.getTransportManager().transportForMultiaddr(a))
-
-    if (supportedAddrs.length > this.maxAddrsToDial) {
+    if (addrs.length > this.maxAddrsToDial) {
       await this.components.getPeerStore().delete(peer)
       throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
     }
 
     return {
       id: peer.toString(),
-      addrs: supportedAddrs
+      addrs
     }
   }
 
@@ -371,7 +371,7 @@ export class DefaultDialer implements Startable, Dialer {
    */
   async _resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
     try {
-      ma = new Multiaddr(ma.toString()) // Use current multiaddr module
+      ma = multiaddr(ma.toString()) // Use current multiaddr module
       const multiaddrs = await ma.resolve(options)
       return multiaddrs
     } catch (err) {

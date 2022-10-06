@@ -37,7 +37,7 @@ Libp2p circuit configuration can be seen at [Setup with Relay](../../doc/CONFIGU
 Once you have a circuit relay node running, you can configure other nodes to use it as a relay as follows:
 
 ```js
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import Libp2p from 'libp2p'
 import { TCP } from '@libp2p/tcp'
 import { Mplex } from '@libp2p/mplex'
@@ -47,7 +47,7 @@ const relayAddr = ...
 
 const node = await createLibp2p({
   addresses: {
-    listen: [new Multiaddr(`${relayAddr}/p2p-circuit`)]
+    listen: [multiaddr(`${relayAddr}/p2p-circuit`)]
   },
   transports: [
     new TCP()

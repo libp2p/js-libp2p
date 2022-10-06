@@ -88,8 +88,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
       sink: shake.stream.sink,
       source: map(shake.stream.source, (buf) => buf.subarray())
     },
-    remotePeer: peerId,
-    remoteEarlyData: new Uint8Array()
+    remotePeer: peerId
   }
 }
 
@@ -100,7 +99,7 @@ export class Plaintext implements ConnectionEncrypter {
     return await encrypt(localId, conn, remoteId)
   }
 
-  async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId: PeerId): Promise<SecuredConnection> {
+  async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
     return await encrypt(localId, conn, remoteId)
   }
 }

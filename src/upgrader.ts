@@ -123,6 +123,13 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * Upgrades an inbound connection
    */
   async upgradeInbound (maConn: MultiaddrConnection): Promise<Connection> {
+    const accept = await this.components.getConnectionManager().acceptIncomingConnection(maConn)
+
+    if (!accept) {
+      await maConn.close()
+      throw errCode(new Error('connection denied'), codes.ERR_CONNECTION_DENIED)
+    }
+
     let encryptedConn
     let remotePeer
     let upgradedConn: Duplex<Uint8Array>

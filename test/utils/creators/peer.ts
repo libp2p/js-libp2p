@@ -1,4 +1,4 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import Peers from '../../fixtures/peers.js'
 import { createBaseOptions } from '../base-options.browser.js'
 import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
@@ -6,7 +6,7 @@ import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
 import type { AddressesConfig, Libp2pOptions } from '../../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 export interface CreatePeerOptions {
   /**

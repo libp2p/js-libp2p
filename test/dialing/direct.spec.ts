@@ -8,7 +8,8 @@ import { WebSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { Mplex } from '@libp2p/mplex'
 import { Plaintext } from '../../src/insecure/index.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { codes as ErrorCodes } from '../../src/errors.js'
@@ -31,7 +32,7 @@ import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
 
-const unsupportedAddr = new Multiaddr('/ip4/127.0.0.1/tcp/9999')
+const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
 describe('Dialing (direct, WebSockets)', () => {
   let localTM: TransportManager
@@ -174,7 +175,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.getPeerStore().addressBook.set(remotePeerId, Array.from({ length: 11 }, (_, i) => new Multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`)))
+    await localComponents.getPeerStore().addressBook.set(remotePeerId, Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`)))
 
     await expect(dialer.dial(remoteAddr))
       .to.eventually.be.rejected()
@@ -183,9 +184,9 @@ describe('Dialing (direct, WebSockets)', () => {
 
   it('should sort addresses on dial', async () => {
     const peerMultiaddrs = [
-      new Multiaddr('/ip4/127.0.0.1/tcp/15001/ws'),
-      new Multiaddr('/ip4/20.0.0.1/tcp/15001/ws'),
-      new Multiaddr('/ip4/30.0.0.1/tcp/15001/ws')
+      multiaddr('/ip4/127.0.0.1/tcp/15001/ws'),
+      multiaddr('/ip4/20.0.0.1/tcp/15001/ws'),
+      multiaddr('/ip4/30.0.0.1/tcp/15001/ws')
     ]
 
     const publicAddressesFirstSpy = sinon.spy(publicAddressesFirst)
@@ -213,9 +214,9 @@ describe('Dialing (direct, WebSockets)', () => {
 
   it('should dial to the max concurrency', async () => {
     const addrs = [
-      new Multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
+      multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
+      multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
+      multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
     ]
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
 
@@ -253,9 +254,9 @@ describe('Dialing (direct, WebSockets)', () => {
 
   it('.destroy should abort pending dials', async () => {
     const addrs = [
-      new Multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
-      new Multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
+      multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
+      multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
+      multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
     ]
     const dialer = new DefaultDialer(localComponents, {
       maxParallelDials: 2
@@ -592,7 +593,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await libp2p.start()
 
-    await expect(libp2p.dial(new Multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${peerId.toString()}`)))
+    await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${peerId.toString()}`)))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_DIALED_SELF)
   })

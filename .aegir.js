@@ -20,6 +20,9 @@ export default {
       // Use the last peer
       const peerId = await createFromJSON(Peers[Peers.length - 1])
       const libp2p = await createLibp2p({
+        connectionManager: {
+          inboundConnectionThreshold: Infinity
+        },
         addresses: {
           listen: [MULTIADDRS_WEBSOCKETS[0]]
         },

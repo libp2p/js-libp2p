@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { Plaintext } from '../../src/insecure/index.js'
@@ -17,7 +17,7 @@ import { createEd25519PeerId, createFromJSON } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Transport Manager (WebSockets)', () => {
   let tm: DefaultTransportManager
@@ -71,7 +71,7 @@ describe('Transport Manager (WebSockets)', () => {
 
   it('should fail to dial an unsupported address', async () => {
     tm.add(new WebSockets({ filter: filters.all }))
-    const addr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+    const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
