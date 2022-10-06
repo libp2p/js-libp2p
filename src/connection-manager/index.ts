@@ -15,10 +15,11 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import { Components, Initializable } from '@libp2p/components'
 import * as STATUS from '@libp2p/interface-connection/status'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
-import type { Resolver } from '@multiformats/multiaddr'
+import { multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
+import { RateLimiterMemory } from 'rate-limiter-flexible'
 
 const log = logger('libp2p:connection-manager')
 
@@ -31,7 +32,8 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
   autoDialInterval: 10000,
-  movingAverageInterval: 60000
+  movingAverageInterval: 60000,
+  inboundConnectionThreshold: 5
 }
 
 const METRICS_SYSTEM = 'libp2p'
@@ -132,6 +134,24 @@ export interface ConnectionManagerInit {
    * tagged with KEEP_ALIVE up to this timeout in ms. (default: 60000)
    */
   startupReconnectTimeout?: number
+
+  /**
+   * A list of multiaddrs that will always be allowed (except if they are in the
+   * deny list) to open connections to this node even if we've reached maxConnections
+   */
+  allow?: string[]
+
+  /**
+   * A list of multiaddrs that will never be allowed to open connections to
+   * this node under any circumstances
+   */
+  deny?: string[]
+
+  /**
+   * If more than this many connections are opened per second by a single
+   * host, reject subsequent connections
+   */
+  inboundConnectionThreshold?: number
 }
 
 export interface ConnectionManagerEvents {
@@ -152,6 +172,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
   private readonly dialTimeout: number
+  private readonly allow: Multiaddr[]
+  private readonly deny: Multiaddr[]
+  private readonly inboundConnectionRateLimiter: RateLimiterMemory
 
   constructor (init: ConnectionManagerInit) {
     super()
@@ -187,6 +210,14 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.startupReconnectTimeout = init.startupReconnectTimeout ?? STARTUP_RECONNECT_TIMEOUT
     this.dialTimeout = init.dialTimeout ?? 30000
+
+    this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
+    this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
+
+    this.inboundConnectionRateLimiter = new RateLimiterMemory({
+      points: this.opts.inboundConnectionThreshold,
+      duration: 1
+    })
   }
 
   init (components: Components): void {
@@ -598,7 +629,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
       log('%s: limit exceeded: %p, %d/%d, pruning %d connection(s)', this.components.getPeerId(), name, value, limit, toPrune)
-      await this._maybePruneConnections(toPrune)
+      await this._pruneConnections(toPrune)
     }
   }
 
@@ -606,13 +637,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * If we have more connections than our maximum, select some excess connections
    * to prune based on peer value
    */
-  async _maybePruneConnections (toPrune: number) {
+  async _pruneConnections (toPrune: number) {
     const connections = this.getConnections()
-
-    if (connections.length <= this.opts.minConnections || toPrune < 1) {
-      return
-    }
-
     const peerValues = new PeerMap<number>()
 
     // work out peer values
@@ -677,6 +703,41 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   }
 
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
-    return true
+    // check deny list
+    const denyConnection = this.deny.some(ma => {
+      return maConn.remoteAddr.toString().startsWith(ma.toString())
+    })
+
+    if (denyConnection) {
+      log('connection from %s refused - connection remote address was in deny list', maConn.remoteAddr)
+      return false
+    }
+
+    // check allow list
+    const allowConnection = this.allow.some(ma => {
+      return maConn.remoteAddr.toString().startsWith(ma.toString())
+    })
+
+    if (allowConnection) {
+      return true
+    }
+
+    if (maConn.remoteAddr.isThinWaistAddress()) {
+      const host = maConn.remoteAddr.nodeAddress().address
+
+      try {
+        await this.inboundConnectionRateLimiter.consume(host, 1)
+      } catch {
+        log('connection from %s refused - inboundConnectionThreshold exceeded by host %s', host, maConn.remoteAddr)
+        return false
+      }
+    }
+
+    if (this.getConnections().length < this.opts.maxConnections) {
+      return true
+    }
+
+    log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
+    return false
   }
 }
