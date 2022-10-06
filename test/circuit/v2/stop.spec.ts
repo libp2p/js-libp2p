@@ -17,7 +17,7 @@ describe('Circuit v2 - stop protocol', function () {
   beforeEach(async () => {
     [srcPeer, relayPeer] = await createPeerIds(2)
     conn = await mockConnection(mockMultiaddrConnection(pair<Uint8Array>(), relayPeer))
-    streamHandler = new StreamHandlerV2({ stream: mockStream(pair<Uint8Array>()) })
+    streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
   })
 
   this.afterEach(async function () {
@@ -51,7 +51,7 @@ describe('Circuit v2 - stop protocol', function () {
 
   it('send stop - success', async function () {
     const streamStub = sinon.stub(conn, 'newStream')
-    streamStub.resolves(mockStream(pair<Uint8Array>()))
+    streamStub.resolves(mockStream(pair<any>()))
     await stop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } } })
     streamHandler.write(StopMessage.encode({
       type: StopMessage.Type.STATUS,
@@ -61,7 +61,7 @@ describe('Circuit v2 - stop protocol', function () {
 
   it('send stop - should not fall apart with invalid status response', async function () {
     const streamStub = sinon.stub(conn, 'newStream')
-    streamStub.resolves(mockStream(pair<Uint8Array>()))
+    streamStub.resolves(mockStream(pair<any>()))
     await stop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } } })
     streamHandler.write(new Uint8Array(10))
   })

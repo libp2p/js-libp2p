@@ -1,4 +1,4 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Status, StopMessage, HopMessage } from './pb/index.js'
 import type { StreamHandlerV2 } from './stream-handler.js'
 
@@ -10,7 +10,7 @@ export function validateStopConnectRequest (request: StopMessage, streamHandler:
   try {
     if (request.peer?.addrs !== null && request.peer?.addrs !== undefined) {
       request.peer.addrs.forEach((addr) => {
-        return new Multiaddr(addr)
+        return multiaddr(addr)
       })
     } else {
       throw new Error('Missing peer info in stop request')
@@ -27,7 +27,7 @@ export function validateHopConnectRequest (request: HopMessage, streamHandler: S
   try {
     if (request.peer?.addrs !== null && request.peer?.addrs !== undefined) {
       request.peer.addrs.forEach((addr) => {
-        return new Multiaddr(addr)
+        return multiaddr(addr)
       })
     } else {
       throw new Error('Missing peer info in hop connect request')

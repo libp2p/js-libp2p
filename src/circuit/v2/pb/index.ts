@@ -1,7 +1,8 @@
 /* eslint-disable import/export */
 /* eslint-disable @typescript-eslint/no-namespace */
 
-import { enumeration, encodeMessage, decodeMessage, message, bytes, uint64, uint32 } from 'protons-runtime'
+import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
 export interface HopMessage {
@@ -27,25 +28,97 @@ export namespace HopMessage {
 
   export namespace Type {
     export const codec = () => {
-      return enumeration<typeof Type>(__TypeValues)
+      return enumeration<Type>(__TypeValues)
     }
   }
 
+  let _codec: Codec<HopMessage>
+
   export const codec = (): Codec<HopMessage> => {
-    return message<HopMessage>({
-      1: { name: 'type', codec: HopMessage.Type.codec() },
-      2: { name: 'peer', codec: Peer.codec(), optional: true },
-      3: { name: 'reservation', codec: Reservation.codec(), optional: true },
-      4: { name: 'limit', codec: Limit.codec(), optional: true },
-      5: { name: 'status', codec: Status.codec(), optional: true }
-    })
+    if (_codec == null) {
+      _codec = message<HopMessage>((obj, writer, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          writer.fork()
+        }
+
+        if (obj.type != null) {
+          writer.uint32(8)
+          HopMessage.Type.codec().encode(obj.type, writer)
+        } else {
+          throw new Error('Protocol error: required field "type" was not found in object')
+        }
+
+        if (obj.peer != null) {
+          writer.uint32(18)
+          Peer.codec().encode(obj.peer, writer)
+        }
+
+        if (obj.reservation != null) {
+          writer.uint32(26)
+          Reservation.codec().encode(obj.reservation, writer)
+        }
+
+        if (obj.limit != null) {
+          writer.uint32(34)
+          Limit.codec().encode(obj.limit, writer)
+        }
+
+        if (obj.status != null) {
+          writer.uint32(40)
+          Status.codec().encode(obj.status, writer)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          writer.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          type: Type.RESERVE
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.type = HopMessage.Type.codec().decode(reader)
+              break
+            case 2:
+              obj.peer = Peer.codec().decode(reader, reader.uint32())
+              break
+            case 3:
+              obj.reservation = Reservation.codec().decode(reader, reader.uint32())
+              break
+            case 4:
+              obj.limit = Limit.codec().decode(reader, reader.uint32())
+              break
+            case 5:
+              obj.status = Status.codec().decode(reader)
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        if (obj.type == null) {
+          throw new Error('Protocol error: value for required field "type" was not found in protobuf')
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
   export const encode = (obj: HopMessage): Uint8Array => {
     return encodeMessage(obj, HopMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array): HopMessage => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): HopMessage => {
     return decodeMessage(buf, HopMessage.codec())
   }
 }
@@ -70,24 +143,89 @@ export namespace StopMessage {
 
   export namespace Type {
     export const codec = () => {
-      return enumeration<typeof Type>(__TypeValues)
+      return enumeration<Type>(__TypeValues)
     }
   }
 
+  let _codec: Codec<StopMessage>
+
   export const codec = (): Codec<StopMessage> => {
-    return message<StopMessage>({
-      1: { name: 'type', codec: StopMessage.Type.codec() },
-      2: { name: 'peer', codec: Peer.codec(), optional: true },
-      3: { name: 'limit', codec: Limit.codec(), optional: true },
-      4: { name: 'status', codec: Status.codec(), optional: true }
-    })
+    if (_codec == null) {
+      _codec = message<StopMessage>((obj, writer, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          writer.fork()
+        }
+
+        if (obj.type != null) {
+          writer.uint32(8)
+          StopMessage.Type.codec().encode(obj.type, writer)
+        } else {
+          throw new Error('Protocol error: required field "type" was not found in object')
+        }
+
+        if (obj.peer != null) {
+          writer.uint32(18)
+          Peer.codec().encode(obj.peer, writer)
+        }
+
+        if (obj.limit != null) {
+          writer.uint32(26)
+          Limit.codec().encode(obj.limit, writer)
+        }
+
+        if (obj.status != null) {
+          writer.uint32(32)
+          Status.codec().encode(obj.status, writer)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          writer.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          type: Type.CONNECT
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.type = StopMessage.Type.codec().decode(reader)
+              break
+            case 2:
+              obj.peer = Peer.codec().decode(reader, reader.uint32())
+              break
+            case 3:
+              obj.limit = Limit.codec().decode(reader, reader.uint32())
+              break
+            case 4:
+              obj.status = Status.codec().decode(reader)
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        if (obj.type == null) {
+          throw new Error('Protocol error: value for required field "type" was not found in protobuf')
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
   export const encode = (obj: StopMessage): Uint8Array => {
     return encodeMessage(obj, StopMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array): StopMessage => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): StopMessage => {
     return decodeMessage(buf, StopMessage.codec())
   }
 }
@@ -98,18 +236,74 @@ export interface Peer {
 }
 
 export namespace Peer {
+  let _codec: Codec<Peer>
+
   export const codec = (): Codec<Peer> => {
-    return message<Peer>({
-      1: { name: 'id', codec: bytes },
-      2: { name: 'addrs', codec: bytes, repeats: true }
-    })
+    if (_codec == null) {
+      _codec = message<Peer>((obj, writer, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          writer.fork()
+        }
+
+        if (obj.id != null) {
+          writer.uint32(10)
+          writer.bytes(obj.id)
+        } else {
+          throw new Error('Protocol error: required field "id" was not found in object')
+        }
+
+        if (obj.addrs != null) {
+          for (const value of obj.addrs) {
+            writer.uint32(18)
+            writer.bytes(value)
+          }
+        } else {
+          throw new Error('Protocol error: required field "addrs" was not found in object')
+        }
+
+        if (opts.lengthDelimited !== false) {
+          writer.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          id: new Uint8Array(0),
+          addrs: []
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.id = reader.bytes()
+              break
+            case 2:
+              obj.addrs.push(reader.bytes())
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        if (obj.id == null) {
+          throw new Error('Protocol error: value for required field "id" was not found in protobuf')
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
   export const encode = (obj: Peer): Uint8Array => {
     return encodeMessage(obj, Peer.codec())
   }
 
-  export const decode = (buf: Uint8Array): Peer => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
     return decodeMessage(buf, Peer.codec())
   }
 }
@@ -121,19 +315,82 @@ export interface Reservation {
 }
 
 export namespace Reservation {
+  let _codec: Codec<Reservation>
+
   export const codec = (): Codec<Reservation> => {
-    return message<Reservation>({
-      1: { name: 'expire', codec: uint64 },
-      2: { name: 'addrs', codec: bytes, repeats: true },
-      3: { name: 'voucher', codec: bytes, optional: true }
-    })
+    if (_codec == null) {
+      _codec = message<Reservation>((obj, writer, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          writer.fork()
+        }
+
+        if (obj.expire != null) {
+          writer.uint32(8)
+          writer.uint64(obj.expire)
+        } else {
+          throw new Error('Protocol error: required field "expire" was not found in object')
+        }
+
+        if (obj.addrs != null) {
+          for (const value of obj.addrs) {
+            writer.uint32(18)
+            writer.bytes(value)
+          }
+        } else {
+          throw new Error('Protocol error: required field "addrs" was not found in object')
+        }
+
+        if (obj.voucher != null) {
+          writer.uint32(26)
+          writer.bytes(obj.voucher)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          writer.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          expire: 0n,
+          addrs: []
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.expire = reader.uint64()
+              break
+            case 2:
+              obj.addrs.push(reader.bytes())
+              break
+            case 3:
+              obj.voucher = reader.bytes()
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        if (obj.expire == null) {
+          throw new Error('Protocol error: value for required field "expire" was not found in protobuf')
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
   export const encode = (obj: Reservation): Uint8Array => {
     return encodeMessage(obj, Reservation.codec())
   }
 
-  export const decode = (buf: Uint8Array): Reservation => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Reservation => {
     return decodeMessage(buf, Reservation.codec())
   }
 }
@@ -144,18 +401,61 @@ export interface Limit {
 }
 
 export namespace Limit {
+  let _codec: Codec<Limit>
+
   export const codec = (): Codec<Limit> => {
-    return message<Limit>({
-      1: { name: 'duration', codec: uint32, optional: true },
-      2: { name: 'data', codec: uint64, optional: true }
-    })
+    if (_codec == null) {
+      _codec = message<Limit>((obj, writer, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          writer.fork()
+        }
+
+        if (obj.duration != null) {
+          writer.uint32(8)
+          writer.uint32(obj.duration)
+        }
+
+        if (obj.data != null) {
+          writer.uint32(16)
+          writer.uint64(obj.data)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          writer.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {}
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.duration = reader.uint32()
+              break
+            case 2:
+              obj.data = reader.uint64()
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
   export const encode = (obj: Limit): Uint8Array => {
     return encodeMessage(obj, Limit.codec())
   }
 
-  export const decode = (buf: Uint8Array): Limit => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Limit => {
     return decodeMessage(buf, Limit.codec())
   }
 }
@@ -184,7 +484,7 @@ enum __StatusValues {
 
 export namespace Status {
   export const codec = () => {
-    return enumeration<typeof Status>(__StatusValues)
+    return enumeration<Status>(__StatusValues)
   }
 }
 export interface ReservationVoucher {
@@ -194,19 +494,91 @@ export interface ReservationVoucher {
 }
 
 export namespace ReservationVoucher {
+  let _codec: Codec<ReservationVoucher>
+
   export const codec = (): Codec<ReservationVoucher> => {
-    return message<ReservationVoucher>({
-      1: { name: 'relay', codec: bytes },
-      2: { name: 'peer', codec: bytes },
-      3: { name: 'expiration', codec: uint64 }
-    })
+    if (_codec == null) {
+      _codec = message<ReservationVoucher>((obj, writer, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          writer.fork()
+        }
+
+        if (obj.relay != null) {
+          writer.uint32(10)
+          writer.bytes(obj.relay)
+        } else {
+          throw new Error('Protocol error: required field "relay" was not found in object')
+        }
+
+        if (obj.peer != null) {
+          writer.uint32(18)
+          writer.bytes(obj.peer)
+        } else {
+          throw new Error('Protocol error: required field "peer" was not found in object')
+        }
+
+        if (obj.expiration != null) {
+          writer.uint32(24)
+          writer.uint64(obj.expiration)
+        } else {
+          throw new Error('Protocol error: required field "expiration" was not found in object')
+        }
+
+        if (opts.lengthDelimited !== false) {
+          writer.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          relay: new Uint8Array(0),
+          peer: new Uint8Array(0),
+          expiration: 0n
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.relay = reader.bytes()
+              break
+            case 2:
+              obj.peer = reader.bytes()
+              break
+            case 3:
+              obj.expiration = reader.uint64()
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        if (obj.relay == null) {
+          throw new Error('Protocol error: value for required field "relay" was not found in protobuf')
+        }
+
+        if (obj.peer == null) {
+          throw new Error('Protocol error: value for required field "peer" was not found in protobuf')
+        }
+
+        if (obj.expiration == null) {
+          throw new Error('Protocol error: value for required field "expiration" was not found in protobuf')
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
   export const encode = (obj: ReservationVoucher): Uint8Array => {
     return encodeMessage(obj, ReservationVoucher.codec())
   }
 
-  export const decode = (buf: Uint8Array): ReservationVoucher => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): ReservationVoucher => {
     return decodeMessage(buf, ReservationVoucher.codec())
   }
 }

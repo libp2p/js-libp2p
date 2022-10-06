@@ -1,4 +1,4 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { Status } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
@@ -10,7 +10,7 @@ describe('Circuit v2 - reservation store', function () {
   it('should add reservation', async function () {
     const store = new ReservationStore(2)
     const peer = await createPeerId()
-    const result = await store.reserve(peer, new Multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
     expect(result.expire).to.not.be.undefined()
     expect(await store.hasReservation(peer)).to.be.true()
@@ -18,8 +18,8 @@ describe('Circuit v2 - reservation store', function () {
   it('should add reservation if peer already has reservation', async function () {
     const store = new ReservationStore(1)
     const peer = await createPeerId()
-    await store.reserve(peer, new Multiaddr())
-    const result = await store.reserve(peer, new Multiaddr())
+    await store.reserve(peer, multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
     expect(result.expire).to.not.be.undefined()
     expect(await store.hasReservation(peer)).to.be.true()
@@ -28,14 +28,14 @@ describe('Circuit v2 - reservation store', function () {
   it('should fail to add reservation on exceeding limit', async function () {
     const store = new ReservationStore(0)
     const peer = await createPeerId()
-    const result = await store.reserve(peer, new Multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.RESERVATION_REFUSED)
   })
 
   it('should remove reservation', async function () {
     const store = new ReservationStore(10)
     const peer = await createPeerId()
-    const result = await store.reserve(peer, new Multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
     expect(await store.hasReservation(peer)).to.be.true()
     await store.removeReservation(peer)

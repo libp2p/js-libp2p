@@ -1,7 +1,7 @@
 import type { Connection } from '@libp2p/interface-connection'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
 import sinon from 'sinon'
@@ -16,7 +16,7 @@ import * as peerUtils from '../../utils/creators/peer.js'
 
 describe('Circuit v2 - hop protocol', function () {
   it('error on unknow message type', async function () {
-    const streamHandler = new StreamHandlerV2({ stream: mockStream(pair<Uint8Array>()) })
+    const streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
     await handleHopProtocol({
       connection: mockConnection(mockMultiaddrConnection(mockDuplex(), await peerUtils.createPeerId())),
       streamHandler,
@@ -36,7 +36,7 @@ describe('Circuit v2 - hop protocol', function () {
     beforeEach(async () => {
       [, relayPeer] = await peerUtils.createPeerIds(2)
       conn = await mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
-      streamHandler = new StreamHandlerV2({ stream: mockStream(pair<Uint8Array>()) })
+      streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
       reservationStore = new ReservationStore()
     })
 
@@ -57,7 +57,7 @@ describe('Circuit v2 - hop protocol', function () {
         streamHandler,
         relayPeer,
         circuit: sinon.stub() as any,
-        relayAddrs: [new Multiaddr('/ip4/127.0.0.1/udp/1234')],
+        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
       expect(reserveStub.calledOnceWith(conn.remotePeer, conn.remoteAddr)).to.be.true()
@@ -80,7 +80,7 @@ describe('Circuit v2 - hop protocol', function () {
         streamHandler,
         relayPeer,
         circuit: sinon.stub() as any,
-        relayAddrs: [new Multiaddr('/ip4/127.0.0.1/udp/1234')],
+        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore,
         acl: { allowReserve: async function () { return false }, allowConnect: sinon.stub() as any }
       })
@@ -102,7 +102,7 @@ describe('Circuit v2 - hop protocol', function () {
         streamHandler,
         relayPeer,
         circuit: sinon.stub() as any,
-        relayAddrs: [new Multiaddr('/ip4/127.0.0.1/udp/1234')],
+        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
       expect(reserveStub.calledOnce).to.be.true()
@@ -127,7 +127,7 @@ describe('Circuit v2 - hop protocol', function () {
         streamHandler,
         relayPeer,
         circuit: sinon.stub() as any,
-        relayAddrs: [new Multiaddr('/ip4/127.0.0.1/udp/1234')],
+        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
       expect(reserveStub.calledOnce).to.be.true()
@@ -143,7 +143,7 @@ describe('Circuit v2 - hop protocol', function () {
     beforeEach(async () => {
       [, relayPeer, dstPeer] = await peerUtils.createPeerIds(3)
       conn = await mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
-      streamHandler = new StreamHandlerV2({ stream: mockStream(pair<Uint8Array>()) })
+      streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
       reservationStore = new ReservationStore()
       circuit = new Circuit({
         enabled: true,
@@ -175,7 +175,7 @@ describe('Circuit v2 - hop protocol', function () {
         mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
       )
       const streamStub = sinon.stub(dstConn, 'newStream')
-      const dstStream = mockStream(pair<Uint8Array>())
+      const dstStream = mockStream(pair<any>())
       streamStub.resolves(dstStream)
       const dstStreamHandler = new StreamHandlerV2({ stream: dstStream })
       dstStreamHandler.write(StopMessage.encode({

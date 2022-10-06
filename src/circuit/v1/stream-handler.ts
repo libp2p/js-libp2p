@@ -30,7 +30,6 @@ export class StreamHandlerV1 {
 
     this.stream = stream
     this.shake = handshake(this.stream)
-    // @ts-expect-error some type incompatibilities
     this.decoder = lp.decode.fromReader(this.shake.reader, { maxDataLength: maxLength })
   }
 

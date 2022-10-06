@@ -6,7 +6,8 @@ import type { Connection } from '@libp2p/interface-connection'
 import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
 import { StreamHandlerV2 } from './stream-handler.js'
 import type { Circuit } from '../transport.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import type { Acl, ReservationStore } from './interfaces.js'
 import { RELAY_V2_HOP_CODEC } from '../multicodec.js'
 import { validateHopConnectRequest } from './validation.js'
@@ -152,7 +153,7 @@ async function handleConnect (options: HopConnectOptions) {
       type: StopMessage.Type.CONNECT,
       peer: {
         id: connection.remotePeer.toBytes(),
-        addrs: [new Multiaddr('/p2p/' + connection.remotePeer.toString()).bytes]
+        addrs: [multiaddr('/p2p/' + connection.remotePeer.toString()).bytes]
       }
     }
   })
