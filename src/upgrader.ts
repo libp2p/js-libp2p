@@ -263,7 +263,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
     // Protect
     let protectedConn = maConn
-    if ((opts?.muxerFactory) == null) {
+    if (opts?.skipProtection !== true) {
       const protector = this.components.getConnectionProtector()
 
       if (protector != null) {
@@ -274,7 +274,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     try {
       // Encrypt the connection
       encryptedConn = protectedConn
-      if (!opts?.skipEncryption) {
+      if (opts?.skipEncryption !== true) {
         ({
           conn: encryptedConn,
           remotePeer,
@@ -293,7 +293,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       }
 
       upgradedConn = encryptedConn
-      if ((opts?.muxerFactory) != null) {
+      if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
       } else if (this.muxers.size > 0) {
         // Multiplex the connection
@@ -330,7 +330,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       maConn,
       upgradedConn,
       muxerFactory,
-      remotePeer,
+      remotePeer
     })
   }
 
