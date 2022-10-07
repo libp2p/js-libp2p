@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.4...v6.0.0) (2022-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 (#222)
+
+### Dependencies
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 ([#222](https://github.com/libp2p/js-libp2p-mplex/issues/222)) ([9b7a800](https://github.com/libp2p/js-libp2p-mplex/commit/9b7a80003f87c76df4d069d3e0d29c940a9237b2))
+
 ## [5.2.4](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.3...v5.2.4) (2022-09-23)
 
 
