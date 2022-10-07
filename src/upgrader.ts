@@ -326,7 +326,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
     if (metrics != null) {
       metrics.updatePlaceholder(proxyPeer, remotePeer)
-      setPeer(remotePeerId)
+      setPeer(remotePeer)
     }
 
     log('Successfully upgraded outbound connection')
