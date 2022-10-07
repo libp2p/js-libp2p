@@ -81,17 +81,17 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
    * Signal that we have confidence an observed multiaddr is publicly dialable -
    * this will make it appear in the output of getAddresses()
    */
-   confirmObservedAddr (addr: Multiaddr): void {
+  confirmObservedAddr (addr: Multiaddr): void {
 
-   }
+  }
 
-   /**
-    * Signal that we do not have confidence an observed multiaddr is publicly dialable -
-    * this will remove it from the output of getObservedAddrs()
-    */
-   removeObservedAddr (addr: Multiaddr): void {
+  /**
+   * Signal that we do not have confidence an observed multiaddr is publicly dialable -
+   * this will remove it from the output of getObservedAddrs()
+   */
+  removeObservedAddr (addr: Multiaddr): void {
 
-   }
+  }
 
   /**
    * Add peer observed addresses
