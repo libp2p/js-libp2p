@@ -5,6 +5,9 @@ import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { WebTransport as WebTransportLibp2p } from '../src/index'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { mockUpgrader } from '@libp2p/interface-mocks'
+import { Components } from '@libp2p/components'
 
 import { createLibp2p } from 'libp2p'
 
@@ -32,5 +35,39 @@ describe('libp2p-webtransport', () => {
     await node.stop()
     const conns = node.connectionManager.getConnections()
     expect(conns.length).to.equal(0)
+  })
+
+  it('fails to connect without certhashes', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const maStr: string = process.env.serverAddr!
+    const maStrNoCerthash: string = maStr.split('/certhash')[0]
+    const maStrP2p = maStr.split('/p2p/')[1]
+    const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
+
+    const peerId = await createEd25519PeerId()
+    const components = new Components({
+      peerId: peerId
+    })
+    const transport = new WebTransportLibp2p()
+    transport.init(components)
+
+    const err = await expect(transport.dial(ma, { upgrader: mockUpgrader() })).to.eventually.be.rejected()
+    expect(err.toString()).to.contain('WebTransportError: Opening handshake failed.')
+  })
+
+  it('fails to connect to invalid addr', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const maStr: string = process.env.serverAddr!
+    const maStrP2p = maStr.split('/p2p/')[1]
+    const ma = multiaddr('/ip4/127.1.0.1/udp/10000/quic/webtransport/p2p/' + maStrP2p)
+
+    const node = await createLibp2p({
+      transports: [new WebTransportLibp2p()],
+      connectionEncryption: [new Noise()]
+    })
+    await node.start()
+
+    const err = await expect(node.dial(ma)).to.eventually.be.rejected()
+    expect(err.errors[0].toString()).to.contain('WebTransportError: Opening handshake failed.')
   })
 })

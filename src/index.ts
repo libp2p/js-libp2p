@@ -218,7 +218,6 @@ export class WebTransport implements Transport, Initializable {
   private components?: Components
 
   init (components: Components) {
-    // Keep track of the components so we can use the registrar
     this.components = components
   }
 
@@ -247,7 +246,9 @@ export class WebTransport implements Transport, Initializable {
         value: certhash.digest
       }))
     })
-
+    wt.closed.catch((error: Error) => {
+      log.error('WebTransport transport closed due to:', error)
+    })
     await wt.ready
 
     if (remotePeer == null) {
