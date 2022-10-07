@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/bootstrap",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-bootstrap#readme",

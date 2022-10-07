@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v3.0.0...v4.0.0) (2022-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 (#143)
+
+### Dependencies
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 ([#143](https://github.com/libp2p/js-libp2p-bootstrap/issues/143)) ([96f2a1e](https://github.com/libp2p/js-libp2p-bootstrap/commit/96f2a1ee7b93c7b74c7070db680e2738f9c2e516))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v2.0.1...v3.0.0) (2022-09-23)
 
 
