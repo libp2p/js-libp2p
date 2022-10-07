@@ -1,3 +1,19 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.7...v4.0.0) (2022-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* update all deps to the latest versions (#187)
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([140a356](https://github.com/libp2p/js-libp2p-floodsub/commit/140a35651f38d2f97aaeb0dda530155572e8384f))
+
+
+### Dependencies
+
+* update all deps to the latest versions ([#187](https://github.com/libp2p/js-libp2p-floodsub/issues/187)) ([a62018d](https://github.com/libp2p/js-libp2p-floodsub/commit/a62018d334984115e1e4e6aa327639005a74a400))
+
 ## [3.0.7](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.6...v3.0.7) (2022-09-07)
 
 
