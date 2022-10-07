@@ -1,14 +1,13 @@
 import { logger } from '@libp2p/logger'
-import { Noise } from "@chainsafe/libp2p-noise"
+import { Noise } from '@chainsafe/libp2p-noise'
 import type { Components, Initializable } from '@libp2p/components'
 import { Transport, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interface-transport'
-import type { Connection, Direction } from '@libp2p/interface-connection'
+import type { Connection, Direction, Stream } from '@libp2p/interface-connection'
 import { Multiaddr, protocols } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { bases, digest } from 'multiformats/basics'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Stream } from '@libp2p/interface-connection'
 import type { Duplex, Source } from 'it-stream-types'
 
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface-stream-muxer'
@@ -18,44 +17,44 @@ const log = logger('libp2p:webtransport')
 
 declare global {
   interface Window {
-    WebTransport: any;
+    WebTransport: any
   }
 }
 
-// @ts-ignore - Not easy to combine these types.
+// @ts-expect-error - Not easy to combine these types.
 const multibaseDecoder = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
-function decodeCerthashStr(s: string): MultihashDigest {
+function decodeCerthashStr (s: string): MultihashDigest {
   return digest.decode(multibaseDecoder.decode(s))
 }
 
 // Duplex that does nothing. Needed to fulfill the interface
-function inertDuplex(): Duplex<any, any, any> {
+function inertDuplex (): Duplex<any, any, any> {
   return {
 
     source: {
-      [Symbol.asyncIterator]() {
+      [Symbol.asyncIterator] () {
         return {
-          next() {
+          async next () {
             // This will never resolve
-            return new Promise(() => { })
+            return await new Promise(() => { })
           }
         }
       }
     },
-    sink: (source: Source<any>) => {
+    sink: async (source: Source<any>) => {
       // This will never resolve
-      return new Promise(() => { })
+      return await new Promise(() => { })
     }
   }
 }
 
-async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string, direction: Direction, activeStreams: Array<Stream>, onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
+async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
   const writer = bidiStream.writable.getWriter()
   const reader = bidiStream.readable.getReader()
-  await writer.ready;
+  await writer.ready
 
-  function cleanupStreamFromActiveStreams() {
+  function cleanupStreamFromActiveStreams () {
     const index = activeStreams.findIndex(s => s === stream)
     if (index != -1) {
       activeStreams.splice(index, 1)
@@ -63,7 +62,7 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
     }
   }
 
-  let writerClosed = false;
+  let writerClosed = false
   let readerClosed = false;
   (async function () {
     await (writer.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
@@ -78,12 +77,11 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
     }
-  })();
-
+  })()
 
   const stream: Stream = {
     id: streamId,
-    abort(_err: Error) {
+    abort (_err: Error) {
       if (!writerClosed) {
         writer.abort()
         writerClosed = true
@@ -92,16 +90,16 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
       readerClosed = true
       cleanupStreamFromActiveStreams()
     },
-    close() {
+    close () {
       stream.closeRead()
       stream.closeWrite()
       cleanupStreamFromActiveStreams()
     },
 
-    closeRead() {
+    closeRead () {
       if (!readerClosed) {
         reader.cancel().catch((err: any) => {
-          if (err.toString().includes("RESET_STREAM")) {
+          if (err.toString().includes('RESET_STREAM')) {
             writerClosed = true
           }
         })
@@ -111,11 +109,11 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
         cleanupStreamFromActiveStreams()
       }
     },
-    closeWrite() {
+    closeWrite () {
       if (!writerClosed) {
         writerClosed = true
         writer.close().catch((err: any) => {
-          if (err.toString().includes("RESET_STREAM")) {
+          if (err.toString().includes('RESET_STREAM')) {
             readerClosed = true
           }
         })
@@ -124,7 +122,7 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
         cleanupStreamFromActiveStreams()
       }
     },
-    reset() {
+    reset () {
       stream.close()
     },
     stat: {
@@ -132,7 +130,7 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
       timeline: { open: Date.now() }
     },
     metadata: {},
-    source: (async function* () {
+    source: (async function * () {
       while (true) {
         const val = await reader.read()
         yield new Uint8ArrayList(val.value)
@@ -141,87 +139,84 @@ async function webtransportBiDiStreamToStream(bidiStream: any, streamId: string,
     sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
       for await (const chunks of source) {
         for (const buf of chunks) {
-          if (typeof buf === "number") {
+          if (typeof buf === 'number') {
             await writer.write(new Uint8Array([buf]))
           } else {
             await writer.write(buf)
           }
         }
       }
-    },
+    }
   }
-
 
   return stream
 }
 
-
 export class WebTransport implements Transport, Initializable {
   private components?: Components
 
-
-  init(components: Components) {
+  init (components: Components) {
     // Keep track of the components so we can use the registrar
     this.components = components
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag] () {
     return '@libp2p/webtransport'
   }
 
-  get [symbol](): true {
+  get [symbol] (): true {
     return true
   }
 
-  async dial(ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log('dialing %s', ma)
     const localPeer = this.components?.getPeerId()
     if (localPeer == undefined) {
-      throw new Error("Need a local peerid")
+      throw new Error('Need a local peerid')
     }
 
     options = options ?? {}
 
     const parts = ma.stringTuples()
 
-    const { url, certhashes, remotePeer } = parts.reduce((state: { url: string, certhashes: Array<MultihashDigest>, seenHost: boolean, seenPort: boolean, remotePeer?: PeerId }, [proto, value]) => {
+    const { url, certhashes, remotePeer } = parts.reduce((state: { url: string, certhashes: MultihashDigest[], seenHost: boolean, seenPort: boolean, remotePeer?: PeerId }, [proto, value]) => {
       switch (proto) {
-        case protocols("ip4").code:
-        case protocols("ip6").code:
-        case protocols("dns4").code:
-        case protocols("dns6").code:
+        case protocols('ip4').code:
+        case protocols('ip6').code:
+        case protocols('dns4').code:
+        case protocols('dns6').code:
           if (state.seenHost || state.seenPort) {
-            throw new Error("Invalid multiaddr, saw host and already saw the host or port")
+            throw new Error('Invalid multiaddr, saw host and already saw the host or port')
           }
           return {
             ...state,
             url: `${state.url}${value}`,
-            seenHost: true,
+            seenHost: true
           }
-        case protocols("quic").code:
-        case protocols("webtransport").code:
+        case protocols('quic').code:
+        case protocols('webtransport').code:
           if (!state.seenHost || !state.seenPort) {
             throw new Error("Invalid multiaddr, Didn't see host and port, but saw quic/webtransport")
           }
           return state
-        case protocols("udp").code:
+        case protocols('udp').code:
           if (state.seenPort) {
-            throw new Error("Invalid multiaddr, saw port and already saw the port")
+            throw new Error('Invalid multiaddr, saw port and already saw the port')
           }
           return {
             ...state,
             url: `${state.url}:${value}`,
-            seenPort: true,
+            seenPort: true
           }
-        case protocols("certhash").code:
+        case protocols('certhash').code:
           if (!state.seenHost || !state.seenPort) {
-            throw new Error("Invalid multiaddr, saw the certhash before seeing the host and port. Url so far: " + state.url)
+            throw new Error('Invalid multiaddr, saw the certhash before seeing the host and port. Url so far: ' + state.url)
           }
           return {
             ...state,
             certhashes: state.certhashes.concat([decodeCerthashStr(value!)])
           }
-        case protocols("p2p").code:
+        case protocols('p2p').code:
           return {
             ...state,
             remotePeer: peerIdFromString(value!)
@@ -230,21 +225,20 @@ export class WebTransport implements Transport, Initializable {
           throw new Error(`unexpected component in multiaddr: ${proto} ${protocols(proto).name} ${value} `)
       }
     },
-      // All webtransport urls are https
-      { url: "https://", seenHost: false, seenPort: false, certhashes: [] })
-
+    // All webtransport urls are https
+    { url: 'https://', seenHost: false, seenPort: false, certhashes: [] })
 
     const wt = new window.WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
       serverCertificateHashes: certhashes.map(certhash => ({
-        algorithm: "sha-256",
-        value: certhash.digest,
+        algorithm: 'sha-256',
+        value: certhash.digest
       }))
     })
 
     await wt.ready
 
     if (remotePeer == null) {
-      throw new Error("Need a target peerid")
+      throw new Error('Need a target peerid')
     }
 
     this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)
@@ -261,17 +255,17 @@ export class WebTransport implements Transport, Initializable {
       ...inertDuplex()
     }
 
-    return options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, withStreamMuxer: this.webtransportMuxer(wt) })
+    return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
   }
 
-  async authenticateWebTransport(wt: typeof window.WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: MultihashDigest<number>[]) {
+  async authenticateWebTransport (wt: typeof window.WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>) {
     const stream = await wt.createBidirectionalStream()
     const writer = stream.writable.getWriter()
     const reader = stream.readable.getReader()
     await writer.ready
 
     const duplex = {
-      source: (async function* () {
+      source: (async function * () {
         while (true) {
           const val = await reader.read()
           yield val.value
@@ -286,14 +280,12 @@ export class WebTransport implements Transport, Initializable {
 
     const noise = new Noise()
 
-
     // authenticate webtransport
-    // @ts-ignore
     const { remoteExtensions } = await noise.secureOutbound(localPeer, duplex, remotePeer)
 
     // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
     const intersectingCerthashes = certhashes.map(ch => ch.bytes).filter(certhash => {
-      return !!remoteExtensions.webtransportCerthashes.find((remoteCH: Uint8Array) => {
+      return Boolean(remoteExtensions?.webtransportCerthashes.find((remoteCH: Uint8Array) => {
         if (certhash.length !== remoteCH.length) {
           return false
         }
@@ -304,7 +296,7 @@ export class WebTransport implements Transport, Initializable {
           }
         }
         return true
-      })
+      }))
     })
 
     if (intersectingCerthashes.length != certhashes.length) {
@@ -318,43 +310,41 @@ export class WebTransport implements Transport, Initializable {
     return true
   }
 
-
-  webtransportMuxer(wt: typeof window.WebTransport): StreamMuxerFactory {
+  webtransportMuxer (wt: typeof window.WebTransport): StreamMuxerFactory {
     let streamIDCounter = 0
     return {
-      protocol: "webtransport",
+      protocol: 'webtransport',
       createStreamMuxer: (init?: StreamMuxerInit): StreamMuxer => {
         // TODO handle abort signal – It's unclear if webtransport accepts this even
 
-        if (typeof init == "function") {
+        if (typeof init === 'function') {
           // The api docs say that init may be a function
           init = { onIncomingStream: init }
         }
 
-        const activeStreams: Array<Stream> = [];
+        const activeStreams: Stream[] = [];
 
         (async function () {
           // TODO unclear how to add backpressure here?
-          const reader = wt.incomingBidirectionalStreams.getReader();
+          const reader = wt.incomingBidirectionalStreams.getReader()
           while (true) {
-            const { done, value } = await reader.read();
+            const { done, value } = await reader.read()
             if (done) {
-              break;
+              break
             }
-            const stream = await webtransportBiDiStreamToStream(value, "" + streamIDCounter++, init?.direction || "outbound", activeStreams, init?.onStreamEnd)
+            const stream = await webtransportBiDiStreamToStream(value, String(streamIDCounter++), init?.direction || 'outbound', activeStreams, init?.onStreamEnd)
             activeStreams.push(stream)
             init?.onIncomingStream?.(stream)
           }
         })()
 
-
         const muxer: StreamMuxer = {
-          protocol: "webtransport",
+          protocol: 'webtransport',
           streams: activeStreams,
           newStream: async (name?: string): Promise<Stream> => {
             const wtStream = await wt.createBidirectionalStream()
 
-            const stream = await webtransportBiDiStreamToStream(wtStream, "" + streamIDCounter++, init?.direction || "outbound", activeStreams, init?.onStreamEnd)
+            const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction || 'outbound', activeStreams, init?.onStreamEnd)
             activeStreams.push(stream)
 
             return stream
@@ -375,7 +365,7 @@ export class WebTransport implements Transport, Initializable {
     }
   }
 
-  createListener(options: CreateListenerOptions) {
+  createListener (options: CreateListenerOptions) {
     throw new Error('Webtransport servers are not supported in Node or the browser')
     // Unreachable, here to make TS happy
     return null as any
@@ -384,7 +374,7 @@ export class WebTransport implements Transport, Initializable {
   /**
    * Takes a list of `Multiaddr`s and returns only valid webtransport addresses.
    */
-  filter(multiaddrs: Multiaddr[]) {
-    return multiaddrs.filter(ma => ma.protoNames().includes("webtransport"))
+  filter (multiaddrs: Multiaddr[]) {
+    return multiaddrs.filter(ma => ma.protoNames().includes('webtransport'))
   }
 }
