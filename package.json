@@ -174,7 +174,7 @@
     "wherearewe": "^2.0.1"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^4.0.3",
+    "@libp2p/interface-mocks": "^6.0.1",
     "@libp2p/interface-transport-compliance-tests": "^2.0.6",
     "@types/ws": "^8.2.2",
     "aegir": "^37.5.3",
