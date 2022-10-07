@@ -418,7 +418,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         }
 
         log('%s: starting new stream on %s', direction, protocols)
-        const muxedStream = muxer.newStream()
+        const muxedStream = await muxer.newStream()
         const metrics = this.components.getMetrics()
         let controller: TimeoutController | undefined
 
