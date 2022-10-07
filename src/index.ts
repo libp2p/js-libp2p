@@ -241,10 +241,13 @@ export class WebTransport implements Transport, Initializable {
       throw new Error('Need a target peerid')
     }
 
-    this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)
+    await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)
 
     const maConn = {
       close: async (err?: Error) => {
+        if (err != null) {
+          log('Closing webtransport with err:', err)
+        }
         wt.close()
       },
       remoteAddr: ma,
@@ -299,14 +302,13 @@ export class WebTransport implements Transport, Initializable {
       }))
     })
 
-    if (intersectingCerthashes.length != certhashes.length) {
-      throw new Error("Our certhashes are not a subset of the remote's reported certhashes")
-    }
-
     // We're done with this authentication stream
     writer.close()
     reader.cancel()
 
+    if (intersectingCerthashes.length !== certhashes.length) {
+      throw new Error("Our certhashes are not a subset of the remote's reported certhashes")
+    }
     return true
   }
 
