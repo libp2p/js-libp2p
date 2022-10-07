@@ -159,7 +159,7 @@
   },
   "dependencies": {
     "@libp2p/interface-connection": "^3.0.2",
-    "@libp2p/interface-transport": "^1.0.4",
+    "@libp2p/interface-transport": "^2.0.0",
     "@libp2p/interfaces": "^3.0.3",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/utils": "^3.0.2",
