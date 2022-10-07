@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v6.0.0...v6.0.1) (2022-10-07)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-stream-muxer-compliance-tests from 4.0.0 to 5.0.0 ([#221](https://github.com/libp2p/js-libp2p-mplex/issues/221)) ([1e3153e](https://github.com/libp2p/js-libp2p-mplex/commit/1e3153e3da749ce159708e838bc350f9b024a32b))
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v5.2.4...v6.0.0) (2022-10-07)
 
 
