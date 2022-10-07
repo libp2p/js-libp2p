@@ -25,7 +25,7 @@ describe('mplex', () => {
 
     // max out the streams for this connection
     for (let i = 0; i < maxOutboundStreams; i++) {
-      muxer.newStream()
+      await muxer.newStream()
     }
 
     // open one more
