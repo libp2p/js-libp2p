@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v3.0.1...v4.0.0) (2022-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 (#143)
+
+### Dependencies
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 ([#143](https://github.com/libp2p/js-libp2p-mdns/issues/143)) ([a6c3f22](https://github.com/libp2p/js-libp2p-mdns/commit/a6c3f22a68c9ea6e5431d3a34e16f67e1e4b9cff))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-mdns/compare/v3.0.0...v3.0.1) (2022-09-21)
 
 
