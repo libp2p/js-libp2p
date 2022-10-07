@@ -56,7 +56,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
 
   function cleanupStreamFromActiveStreams () {
     const index = activeStreams.findIndex(s => s === stream)
-    if (index != -1) {
+    if (index !== -1) {
       activeStreams.splice(index, 1)
       onStreamEnd?.(stream)
     }
@@ -70,14 +70,19 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
     }
-  })();
+  })().catch(() => {
+    log.error('WebTransport failed to cleanup closed stream')
+  });
+
   (async function () {
     await (reader.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
     readerClosed = true
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
     }
-  })()
+  })().catch(() => {
+    log.error('WebTransport failed to cleanup closed stream')
+  })
 
   const stream: Stream = {
     id: streamId,
@@ -99,7 +104,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     closeRead () {
       if (!readerClosed) {
         reader.cancel().catch((err: any) => {
-          if (err.toString().includes('RESET_STREAM')) {
+          if (err.toString().includes('RESET_STREAM') === true) {
             writerClosed = true
           }
         })
@@ -113,7 +118,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
       if (!writerClosed) {
         writerClosed = true
         writer.close().catch((err: any) => {
-          if (err.toString().includes('RESET_STREAM')) {
+          if (err.toString().includes('RESET_STREAM') === true) {
             readerClosed = true
           }
         })
@@ -152,6 +157,63 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
   return stream
 }
 
+function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDigest[], remotePeer?: PeerId } {
+  const parts = ma.stringTuples()
+
+  // This is simpler to have inline than extract into a separate function
+  // eslint-disable-next-line complexity
+  const { url, certhashes, remotePeer } = parts.reduce((state: { url: string, certhashes: MultihashDigest[], seenHost: boolean, seenPort: boolean, remotePeer?: PeerId }, [proto, value]) => {
+    switch (proto) {
+      case protocols('ip4').code:
+      case protocols('ip6').code:
+      case protocols('dns4').code:
+      case protocols('dns6').code:
+        if (state.seenHost || state.seenPort) {
+          throw new Error('Invalid multiaddr, saw host and already saw the host or port')
+        }
+        return {
+          ...state,
+          url: `${state.url}${value ?? ''}`,
+          seenHost: true
+        }
+      case protocols('quic').code:
+      case protocols('webtransport').code:
+        if (!state.seenHost || !state.seenPort) {
+          throw new Error("Invalid multiaddr, Didn't see host and port, but saw quic/webtransport")
+        }
+        return state
+      case protocols('udp').code:
+        if (state.seenPort) {
+          throw new Error('Invalid multiaddr, saw port and already saw the port')
+        }
+        return {
+          ...state,
+          url: `${state.url}:${value ?? ''}`,
+          seenPort: true
+        }
+      case protocols('certhash').code:
+        if (!state.seenHost || !state.seenPort) {
+          throw new Error('Invalid multiaddr, saw the certhash before seeing the host and port. Url so far: ' + state.url)
+        }
+        return {
+          ...state,
+          certhashes: state.certhashes.concat([decodeCerthashStr(value ?? '')])
+        }
+      case protocols('p2p').code:
+        return {
+          ...state,
+          remotePeer: peerIdFromString(value ?? '')
+        }
+      default:
+        throw new Error(`unexpected component in multiaddr: ${proto} ${protocols(proto).name} ${value ?? ''} `)
+    }
+  },
+  // All webtransport urls are https
+  { url: 'https://', seenHost: false, seenPort: false, certhashes: [] })
+
+  return { url, certhashes, remotePeer }
+}
+
 export class WebTransport implements Transport, Initializable {
   private components?: Components
 
@@ -171,62 +233,13 @@ export class WebTransport implements Transport, Initializable {
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log('dialing %s', ma)
     const localPeer = this.components?.getPeerId()
-    if (localPeer == undefined) {
+    if (localPeer === undefined) {
       throw new Error('Need a local peerid')
     }
 
     options = options ?? {}
 
-    const parts = ma.stringTuples()
-
-    const { url, certhashes, remotePeer } = parts.reduce((state: { url: string, certhashes: MultihashDigest[], seenHost: boolean, seenPort: boolean, remotePeer?: PeerId }, [proto, value]) => {
-      switch (proto) {
-        case protocols('ip4').code:
-        case protocols('ip6').code:
-        case protocols('dns4').code:
-        case protocols('dns6').code:
-          if (state.seenHost || state.seenPort) {
-            throw new Error('Invalid multiaddr, saw host and already saw the host or port')
-          }
-          return {
-            ...state,
-            url: `${state.url}${value}`,
-            seenHost: true
-          }
-        case protocols('quic').code:
-        case protocols('webtransport').code:
-          if (!state.seenHost || !state.seenPort) {
-            throw new Error("Invalid multiaddr, Didn't see host and port, but saw quic/webtransport")
-          }
-          return state
-        case protocols('udp').code:
-          if (state.seenPort) {
-            throw new Error('Invalid multiaddr, saw port and already saw the port')
-          }
-          return {
-            ...state,
-            url: `${state.url}:${value}`,
-            seenPort: true
-          }
-        case protocols('certhash').code:
-          if (!state.seenHost || !state.seenPort) {
-            throw new Error('Invalid multiaddr, saw the certhash before seeing the host and port. Url so far: ' + state.url)
-          }
-          return {
-            ...state,
-            certhashes: state.certhashes.concat([decodeCerthashStr(value!)])
-          }
-        case protocols('p2p').code:
-          return {
-            ...state,
-            remotePeer: peerIdFromString(value!)
-          }
-        default:
-          throw new Error(`unexpected component in multiaddr: ${proto} ${protocols(proto).name} ${value} `)
-      }
-    },
-    // All webtransport urls are https
-    { url: 'https://', seenHost: false, seenPort: false, certhashes: [] })
+    const { url, certhashes, remotePeer } = parseMultiaddr(ma)
 
     const wt = new window.WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
       serverCertificateHashes: certhashes.map(certhash => ({
@@ -317,7 +330,7 @@ export class WebTransport implements Transport, Initializable {
     return {
       protocol: 'webtransport',
       createStreamMuxer: (init?: StreamMuxerInit): StreamMuxer => {
-        // TODO handle abort signal – It's unclear if webtransport accepts this even
+        // !TODO handle abort signal when WebTransport supports this.
 
         if (typeof init === 'function') {
           // The api docs say that init may be a function
@@ -331,14 +344,16 @@ export class WebTransport implements Transport, Initializable {
           const reader = wt.incomingBidirectionalStreams.getReader()
           while (true) {
             const { done, value } = await reader.read()
-            if (done) {
+            if (done === true) {
               break
             }
-            const stream = await webtransportBiDiStreamToStream(value, String(streamIDCounter++), init?.direction || 'outbound', activeStreams, init?.onStreamEnd)
+            const stream = await webtransportBiDiStreamToStream(value, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd)
             activeStreams.push(stream)
             init?.onIncomingStream?.(stream)
           }
-        })()
+        })().catch(() => {
+          log.error('WebTransport failed to receive incoming stream')
+        })
 
         const muxer: StreamMuxer = {
           protocol: 'webtransport',
@@ -346,7 +361,7 @@ export class WebTransport implements Transport, Initializable {
           newStream: async (name?: string): Promise<Stream> => {
             const wtStream = await wt.createBidirectionalStream()
 
-            const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction || 'outbound', activeStreams, init?.onStreamEnd)
+            const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd)
             activeStreams.push(stream)
 
             return stream
@@ -356,6 +371,9 @@ export class WebTransport implements Transport, Initializable {
            * Close or abort all tracked streams and stop the muxer
            */
           close: (err?: Error) => {
+            if (err != null) {
+              log('Closing webtransport muxer with err:', err)
+            }
             wt.close()
           },
           // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
@@ -370,6 +388,7 @@ export class WebTransport implements Transport, Initializable {
   createListener (options: CreateListenerOptions) {
     throw new Error('Webtransport servers are not supported in Node or the browser')
     // Unreachable, here to make TS happy
+    // eslint-disable-next-line no-unreachable
     return null as any
   }
 
