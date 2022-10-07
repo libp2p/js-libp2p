@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.1.3...v4.0.0) (2022-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 (#103)
+
+### Dependencies
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 ([#103](https://github.com/libp2p/js-libp2p-pubsub/issues/103)) ([fe407fe](https://github.com/libp2p/js-libp2p-pubsub/commit/fe407fe981c57aaef0b022b536a696c09faa72fd))
+
 ## [3.1.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.1.2...v3.1.3) (2022-09-21)
 
 
