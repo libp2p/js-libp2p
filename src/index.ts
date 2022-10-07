@@ -271,6 +271,13 @@ export class WebTransport implements Transport, Initializable {
       ...inertDuplex()
     }
 
+    try {
+      options?.signal?.throwIfAborted()
+    } catch (e) {
+      wt.close()
+      throw e
+    }
+
     return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
   }
 
@@ -378,6 +385,13 @@ export class WebTransport implements Transport, Initializable {
           },
           // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
           ...inertDuplex()
+        }
+
+        try {
+          init?.signal?.throwIfAborted()
+        } catch (e) {
+          wt.close()
+          throw e
         }
 
         return muxer
