@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v4.0.0...v4.0.1) (2022-10-07)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-mocks from 4.0.3 to 6.0.1 ([#189](https://github.com/libp2p/js-libp2p-websockets/issues/189)) ([00b33f0](https://github.com/libp2p/js-libp2p-websockets/commit/00b33f07a9af8446dcf94a4a0567994f6deefcbf))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v3.0.4...v4.0.0) (2022-10-07)
 
 
