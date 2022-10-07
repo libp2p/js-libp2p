@@ -78,6 +78,23 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
 
   /**
    * Add peer observed addresses
+   * Signal that we have confidence an observed multiaddr is publicly dialable -
+   * this will make it appear in the output of getAddresses()
+   */
+  confirmObservedAddr (addr: Multiaddr): void {
+
+  }
+
+  /**
+   * Signal that we do not have confidence an observed multiaddr is publicly dialable -
+   * this will remove it from the output of getObservedAddrs()
+   */
+  removeObservedAddr (addr: Multiaddr): void {
+
+  }
+
+  /**
+   * Add peer observed addresses
    */
   addObservedAddr (addr: string | Multiaddr): void {
     let ma = multiaddr(addr)
