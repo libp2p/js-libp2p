@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.5...v4.0.0) (2022-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 (#36)
+
+### Dependencies
+
+* bump @libp2p/components from 2.1.1 to 3.0.0 ([#36](https://github.com/libp2p/js-libp2p-peer-store/issues/36)) ([8c76da7](https://github.com/libp2p/js-libp2p-peer-store/commit/8c76da7f581f29cc54a32fbe7b96b87e73370b00))
+
 ## [3.1.5](https://github.com/libp2p/js-libp2p-peer-store/compare/v3.1.4...v3.1.5) (2022-09-21)
 
 
