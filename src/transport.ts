@@ -1,22 +1,21 @@
-
 import * as sdp from './sdp';
 import * as p from '@libp2p/peer-id';
-import { WebRTCDialOptions } from './options';
-import { WebRTCStream } from './stream';
-import { Noise } from '@chainsafe/libp2p-noise';
-import { Components, Initializable } from '@libp2p/components';
-import { Connection } from '@libp2p/interface-connection';
-import type { PeerId } from '@libp2p/interface-peer-id';
-import { CreateListenerOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
-import { logger } from '@libp2p/logger';
-import { Multiaddr } from '@multiformats/multiaddr';
-import { v4 as genUuid } from 'uuid';
-import defer, { DeferredPromise } from 'p-defer';
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
-import { concat } from 'uint8arrays/concat';
+import {WebRTCDialOptions} from './options';
+import {WebRTCStream} from './stream';
+import {Noise} from '@chainsafe/libp2p-noise';
+import {Components, Initializable} from '@libp2p/components';
+import {Connection} from '@libp2p/interface-connection';
+import type {PeerId} from '@libp2p/interface-peer-id';
+import {CreateListenerOptions, Listener, symbol, Transport} from '@libp2p/interface-transport';
+import {logger} from '@libp2p/logger';
+import {Multiaddr} from '@multiformats/multiaddr';
+import {v4 as genUuid} from 'uuid';
+import defer, {DeferredPromise} from 'p-defer';
+import {fromString as uint8arrayFromString} from 'uint8arrays/from-string';
+import {concat} from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
-import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error';
-import { compare as uint8arrayCompare } from 'uint8arrays/compare';
+import {dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm} from './error';
+import {compare as uint8arrayCompare} from 'uint8arrays/compare';
 import {WebRTCMultiaddrConnection} from './maconn';
 import {DataChannelMuxerFactory} from './muxer';
 
@@ -69,22 +68,22 @@ export class WebRTCTransport implements Transport, Initializable {
       namedCurve: 'P-256',
       hash: 'SHA-256',
     } as any);
-    const peerConnection = new RTCPeerConnection({ certificates: [certificate] });
+    const peerConnection = new RTCPeerConnection({certificates: [certificate]});
 
     // create data channel
     const dataChannelOpenPromise = defer();
-    const handshakeDataChannel = peerConnection.createDataChannel('data', { negotiated: true, id: 1 });
+    const handshakeDataChannel = peerConnection.createDataChannel('data', {negotiated: true, id: 1});
     const handhsakeTimeout = setTimeout(() => {
       log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
       dataChannelOpenPromise.reject(dataChannelError('data', `data channel was never opened: state: ${handshakeDataChannel.readyState}`));
     }, HANDSHAKE_TIMEOUT_MS);
 
     handshakeDataChannel.onopen = (_) => {
-	    clearTimeout(handhsakeTimeout)
-	    dataChannelOpenPromise.resolve();
+      clearTimeout(handhsakeTimeout)
+      dataChannelOpenPromise.resolve();
     }
     handshakeDataChannel.onerror = (ev: Event) => {
-    	clearTimeout(handhsakeTimeout)
+      clearTimeout(handhsakeTimeout)
       log.error('Error opening a data channel for handshaking: %s', ev.toString());
       dataChannelOpenPromise.reject(dataChannelError('data', `error opening datachannel: ${ev.toString()}`));
     };
@@ -113,7 +112,7 @@ export class WebRTCTransport implements Transport, Initializable {
     // Since we use the default crypto interface and do not use a static key or early data,
     // we pass in undefined for these parameters.
     const noise = new Noise(undefined, undefined, undefined, fingerprintsPrologue);
-    const wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 1 } } });
+    const wrappedChannel = new WebRTCStream({channel: handshakeDataChannel, stat: {direction: 'outbound', timeline: {open: 1}}});
     const wrappedDuplex = {
       ...wrappedChannel,
       source: {
@@ -137,7 +136,7 @@ export class WebRTCTransport implements Transport, Initializable {
 
     const muxerFactory = new DataChannelMuxerFactory(peerConnection)
     await noise.secureOutbound(myPeerId, wrappedDuplex, theirPeerId);
-    const upgraded = await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory })
+    const upgraded = await options.upgrader.upgradeOutbound(maConn, {skipProtection: true, skipEncryption: true, muxerFactory})
     return upgraded
   }
 

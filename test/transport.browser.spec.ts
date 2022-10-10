@@ -3,7 +3,7 @@ import {UnimplementedError} from '../src/error.js';
 import {Components} from '@libp2p/components';
 import {mockUpgrader} from '@libp2p/interface-mocks';
 import {CreateListenerOptions, symbol} from '@libp2p/interface-transport';
-import {Multiaddr} from '@multiformats/multiaddr';
+import {multiaddr, Multiaddr} from '@multiformats/multiaddr';
 import {SERVER_MULTIADDR} from './server-multiaddr';
 import {Noise} from '@chainsafe/libp2p-noise';
 import {createLibp2p} from 'libp2p';
@@ -67,12 +67,12 @@ describe('basic transport tests', () => {
       '/ip4/1.2.3.4/udp/1234/webrtc/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd',
       '/ip4/1.2.3.4/udp/1234/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd',
     ].map((s) => {
-      return new Multiaddr(s);
+      return multiaddr(s);
     });
     let t = new underTest.WebRTCTransport();
     let result = t.filter(mas);
     let expected: Multiaddr[] = [
-      new Multiaddr('/ip4/1.2.3.4/udp/1234/webrtc/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd'),
+      multiaddr('/ip4/1.2.3.4/udp/1234/webrtc/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd'),
     ];
     // expect(result).to.not.be.null();
     assert.isNotNull(result);
@@ -82,7 +82,7 @@ describe('basic transport tests', () => {
   });
 
   it('throws appropriate error when dialing someone without a peer ID', async () => {
-    let ma = new Multiaddr('/ip4/1.2.3.4/udp/1234/webrtc/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ');
+    let ma = multiaddr('/ip4/1.2.3.4/udp/1234/webrtc/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ');
     let t = new underTest.WebRTCTransport();
     try {
       let conn = await t.dial(ma, ignoredDialOption());
@@ -111,7 +111,7 @@ describe('Transport interoperability tests', () => {
       connectionEncryption: [new Noise()],
     });
     await node.start()
-    const ma = new Multiaddr(SERVER_MULTIADDR)
+    const ma = multiaddr(SERVER_MULTIADDR)
     const stream = await node.dialProtocol(ma, ['/echo/1.0.0'])
     let data = 'dataToBeEchoedBackToMe\n';
     let response = await pipe([uint8arrayFromString(data)], stream, async (source) => await first(source));
