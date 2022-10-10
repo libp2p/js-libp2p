@@ -190,7 +190,7 @@
     "it-pipe": "^2.0.3",
     "it-stream-types": "^1.0.4",
     "it-take": "^1.0.2",
-    "libp2p": "../js-libp2p",
+    "libp2p": "next",
     "p-wait-for": "^5.0.0",
     "protons": "^5.1.0",
     "uint8arraylist": "^2.3.2",
