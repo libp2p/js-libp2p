@@ -13,6 +13,7 @@ In order to prevent excessive resource consumption by a libp2p node it's importa
 - [Closing connections](#closing-connections)
 - [Transport specific limits](#transport-specific-limits)
   - [TCP](#tcp)
+- [Allow/deny lists](#allowdeny-lists)
 
 ## Connection limits
 
@@ -213,5 +214,38 @@ const node = await createLibp2pNode({
       maxConnections: 200
     })
   ]
+})
+```
+
+## Allow/deny lists
+
+It is possible to configure some hosts to always accept connections from and some to always reject connections from.
+
+```js
+const node = await createLibp2pNode({
+  connectionManager: {
+    /**
+     * A list of multiaddrs, any connection with a `remoteAddress` property
+     * that has any of these addresses as a prefix will be accepted ignoring
+     * all connection limits
+     */
+    allow: [
+      '/ip4/43.123.5.23/tcp/3984',
+      '/ip4/234.243.64.2',
+      '/ip4/52.55',
+      // etc
+    ],
+
+    /**
+     * Any connection with a `remoteAddress` property that has any of these
+     * addresses as a prefix will be immediately rejected
+     */
+     deny: [
+      '/ip4/132.14.52.64/tcp/3984',
+      '/ip4/234.243.64.2',
+      '/ip4/34.42',
+      // etc
+    ]
+  }
 })
 ```
