@@ -1,3 +1,15 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v4.0.0...v4.0.1) (2022-10-11)
+
+
+### Bug Fixes
+
+* update interface-pubsub  and adjust topicValidator implementation ([#102](https://github.com/libp2p/js-libp2p-pubsub/issues/102)) ([f84d365](https://github.com/libp2p/js-libp2p-pubsub/commit/f84d36588a1096f349d68752db43247346163e82))
+
+
+### Documentation
+
+* update readme ([7a6f91d](https://github.com/libp2p/js-libp2p-pubsub/commit/7a6f91da1dd05c0039cebfe2a17742736be08c08))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v3.1.3...v4.0.0) (2022-10-07)
 
 
