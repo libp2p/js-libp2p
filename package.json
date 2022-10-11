@@ -154,7 +154,7 @@
     "proto:gen": "protons ./src/proto/webtransport.proto"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "github:chainsafe/js-libp2p-noise#master",
+    "@chainsafe/libp2p-noise": "^9.0.0",
     "@libp2p/interface-connection": "^3.0.1",
     "@libp2p/interface-stream-muxer": "^3.0.0",
     "@libp2p/interface-transport": "^2.0.0",
