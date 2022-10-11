@@ -9,7 +9,6 @@ import { bases, digest } from 'multiformats/basics'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Duplex, Source } from 'it-stream-types'
-
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface-stream-muxer'
 import { Uint8ArrayList } from 'uint8arraylist'
 
@@ -31,7 +30,6 @@ function decodeCerthashStr (s: string): MultihashDigest {
 // Duplex that does nothing. Needed to fulfill the interface
 function inertDuplex (): Duplex<any, any, any> {
   return {
-
     source: {
       [Symbol.asyncIterator] () {
         return {
@@ -184,7 +182,7 @@ function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDig
         return state
       case protocols('udp').code:
         if (state.seenPort) {
-          throw new Error('Invalid multiaddr, saw port and already saw the port')
+          throw new Error('Invalid multiaddr, saw port but already saw the port')
         }
         return {
           ...state,
@@ -193,7 +191,7 @@ function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDig
         }
       case protocols('certhash').code:
         if (!state.seenHost || !state.seenPort) {
-          throw new Error('Invalid multiaddr, saw the certhash before seeing the host and port. Url so far: ' + state.url)
+          throw new Error('Invalid multiaddr, saw the certhash before seeing the host and port')
         }
         return {
           ...state,
@@ -212,6 +210,25 @@ function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDig
   { url: 'https://', seenHost: false, seenPort: false, certhashes: [] })
 
   return { url, certhashes, remotePeer }
+}
+
+// Determines if `maybeSubset` is a subset of `set`. This means that all byte arrays in `maybeSubset` are present in `set`.
+export function isSubset (set: Uint8Array[], maybeSubset: Uint8Array[]): boolean {
+  const intersection = maybeSubset.filter(byteArray => {
+    return Boolean(set.find((otherByteArray: Uint8Array) => {
+      if (byteArray.length !== otherByteArray.length) {
+        return false
+      }
+
+      for (let index = 0; index < byteArray.length; index++) {
+        if (otherByteArray[index] !== byteArray[index]) {
+          return false
+        }
+      }
+      return true
+    }))
+  })
+  return (intersection.length === maybeSubset.length)
 }
 
 export interface WebTransportConfig {
@@ -264,7 +281,9 @@ export class WebTransport implements Transport, Initializable {
       throw new Error('Need a target peerid')
     }
 
-    await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)
+    if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)) {
+      throw new Error('Failed to authenticate webtransport')
+    }
 
     const maConn = {
       close: async (err?: Error) => {
@@ -313,32 +332,22 @@ export class WebTransport implements Transport, Initializable {
 
     const noise = new Noise()
 
-    // authenticate webtransport
     const { remoteExtensions } = await noise.secureOutbound(localPeer, duplex, remotePeer)
 
-    // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
-    const intersectingCerthashes = certhashes.map(ch => ch.bytes).filter(certhash => {
-      return Boolean(remoteExtensions?.webtransportCerthashes.find((remoteCH: Uint8Array) => {
-        if (certhash.length !== remoteCH.length) {
-          return false
-        }
-
-        for (let index = 0; index < certhash.length; index++) {
-          if (remoteCH[index] !== certhash[index]) {
-            return false
-          }
-        }
-        return true
-      }))
+    // We're done with this authentication stream
+    writer.close().catch((err: Error) => {
+      log.error(`Failed to close authentication stream writer: ${err.message}`)
     })
 
-    // We're done with this authentication stream
-    writer.close()
-    reader.cancel()
+    reader.cancel().catch((err: Error) => {
+      log.error(`Failed to close authentication stream reader: ${err.message}`)
+    })
 
-    if (intersectingCerthashes.length !== certhashes.length) {
+    // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
+    if (!isSubset(remoteExtensions?.webtransportCerthashes ?? [], certhashes.map(ch => ch.bytes))) {
       throw new Error("Our certhashes are not a subset of the remote's reported certhashes")
     }
+
     return true
   }
 
@@ -358,7 +367,7 @@ export class WebTransport implements Transport, Initializable {
         const activeStreams: Stream[] = [];
 
         (async function () {
-          // TODO unclear how to add backpressure here?
+          //! TODO unclear how to add backpressure here?
 
           const reader = wt.incomingBidirectionalStreams.getReader()
           while (true) {
