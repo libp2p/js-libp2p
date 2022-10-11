@@ -42,7 +42,6 @@ $ npm i @libp2p/webtransport
 ```js
 import Libp2p from 'libp2p'
 import { WebTransport } from '@libp2p/webtransport'
-import { MPLEX } from 'libp2p-mplex'
 import { NOISE } from 'libp2p-noise'
 
 const node = await Libp2p.create({
