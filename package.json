@@ -148,7 +148,7 @@
   },
   "dependencies": {
     "@libp2p/interface-peer-id": "^1.0.2",
-    "@libp2p/interface-pubsub": "^2.0.0",
+    "@libp2p/interface-pubsub": "^3.0.0",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/pubsub": "^4.0.0",
     "protons-runtime": "^3.1.0",
