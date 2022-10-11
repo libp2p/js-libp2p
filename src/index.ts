@@ -29,6 +29,12 @@ export interface TCPOptions {
    * When closing a socket, wait this long for it to close gracefully before it is closed more forcibly
    */
   socketCloseTimeout?: number
+
+  /**
+   * Set this property to reject connections when the server's connection count gets high.
+   * https://nodejs.org/api/net.html#servermaxconnections
+   */
+  maxConnections?: number
 }
 
 /**
@@ -158,6 +164,7 @@ export class TCP implements Transport {
   createListener (options: TCPCreateListenerOptions): Listener {
     return new TCPListener({
       ...options,
+      maxConnections: this.opts.maxConnections,
       socketInactivityTimeout: this.opts.inboundSocketInactivityTimeout,
       socketCloseTimeout: this.opts.socketCloseTimeout
     })

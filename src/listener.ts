@@ -30,6 +30,7 @@ interface Context extends TCPCreateListenerOptions {
   upgrader: Upgrader
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
+  maxConnections?: number
 }
 
 type Status = {started: false} | {started: true, listeningAddr: Multiaddr, peerId: string | null }
@@ -47,6 +48,13 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     context.keepAlive = context.keepAlive ?? true
 
     this.server = net.createServer(context, this.onSocket.bind(this))
+
+    // https://nodejs.org/api/net.html#servermaxconnections
+    // If set reject connections when the server's connection count gets high
+    // Useful to prevent too resource exhaustion via many open connections on high bursts of activity
+    if (context.maxConnections !== undefined) {
+      this.server.maxConnections = context.maxConnections
+    }
 
     this.server
       .on('listening', () => this.dispatchEvent(new CustomEvent('listening')))
