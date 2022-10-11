@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import { Noise } from '@chainsafe/libp2p-noise'
 import type { Components, Initializable } from '@libp2p/components'
 import { Transport, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interface-transport'
-import type { Connection, Direction, Stream } from '@libp2p/interface-connection'
+import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface-connection'
 import { Multiaddr, protocols } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { bases, digest } from 'multiformats/basics'
@@ -56,6 +56,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     const index = activeStreams.findIndex(s => s === stream)
     if (index !== -1) {
       activeStreams.splice(index, 1)
+      stream.stat.timeline.close = Date.now()
       onStreamEnd?.(stream)
     }
   }
@@ -136,15 +137,23 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     source: (async function * () {
       while (true) {
         const val = await reader.read()
+        if (val.done === true) {
+          readerClosed = true
+          if (writerClosed) {
+            cleanupStreamFromActiveStreams()
+          }
+          return
+        }
+
         yield new Uint8ArrayList(val.value)
       }
     })(),
     sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
       for await (const chunks of source) {
-        for (const buf of chunks) {
-          if (typeof buf === 'number') {
-            await writer.write(new Uint8Array([buf]))
-          } else {
+        if (chunks.constructor === Uint8Array) {
+          await writer.write(chunks)
+        } else {
+          for (const buf of chunks) {
             await writer.write(buf)
           }
         }
@@ -285,7 +294,7 @@ export class WebTransport implements Transport, Initializable {
       throw new Error('Failed to authenticate webtransport')
     }
 
-    const maConn = {
+    const maConn: MultiaddrConnection = {
       close: async (err?: Error) => {
         if (err != null) {
           log('Closing webtransport with err:', err)
@@ -299,6 +308,12 @@ export class WebTransport implements Transport, Initializable {
       // This connection is never used directly since webtransport supports native streams.
       ...inertDuplex()
     }
+
+    wt.closed.catch((err: Error) => {
+      log.error('WebTransport connection closed:', err)
+      // This is how we specify the connection is closed and shouldn't be used.
+      maConn.timeline.close = Date.now()
+    })
 
     try {
       options?.signal?.throwIfAborted()
@@ -383,10 +398,11 @@ export class WebTransport implements Transport, Initializable {
               wtStream.readable.cancel().catch((err: Error) => {
                 log.error(`Failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)
               })
+            } else {
+              const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), 'inbound', activeStreams, init?.onStreamEnd)
+              activeStreams.push(stream)
+              init?.onIncomingStream?.(stream)
             }
-            const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd)
-            activeStreams.push(stream)
-            init?.onIncomingStream?.(stream)
           }
         })().catch(() => {
           log.error('WebTransport failed to receive incoming stream')
