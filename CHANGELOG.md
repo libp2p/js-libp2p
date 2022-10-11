@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v4.0.0...v4.0.1) (2022-10-11)
+
+
+### Dependencies
+
+* bump @libp2p/interface-address-manager from 1.0.3 to 2.0.0 ([#383](https://github.com/libp2p/js-libp2p-kad-dht/issues/383)) ([5e7dfeb](https://github.com/libp2p/js-libp2p-kad-dht/commit/5e7dfeb0fa0479180d92e604052dbb5b16baf5f7))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v3.1.0...v4.0.0) (2022-10-07)
 
 
