@@ -43,7 +43,7 @@ jobs:
   release:
     needs: [test-chrome]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' # with #262 - 'refs/heads/${{{ github.default_branch }}}'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # with #262 - 'refs/heads/${{{ github.default_branch }}}'
     steps:
       - uses: actions/checkout@v3
         with:
