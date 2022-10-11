@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v4.0.0...v4.0.1) (2022-10-11)
+
+
+### Dependencies
+
+* update @libp2p/interface-pubsub to 3.0.0 ([#188](https://github.com/libp2p/js-libp2p-floodsub/issues/188)) ([205686f](https://github.com/libp2p/js-libp2p-floodsub/commit/205686f6a665054e4e08c3595f64c468c8b9936f))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v3.0.7...v4.0.0) (2022-10-07)
 
 
