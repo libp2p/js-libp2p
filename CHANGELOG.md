@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v4.0.1...v4.0.2) (2022-10-11)
+
+
+### Bug Fixes
+
+* port listener to ES6 class syntax ([#214](https://github.com/libp2p/js-libp2p-tcp/issues/214)) ([af7b8e2](https://github.com/libp2p/js-libp2p-tcp/commit/af7b8e2bf48ec0c9f01e087e76bc9570dca05783))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v4.0.0...v4.0.1) (2022-10-07)
 
 

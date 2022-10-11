@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tcp",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-tcp#readme",
