@@ -1,3 +1,10 @@
+## [4.1.0](https://github.com/libp2p/js-libp2p-tcp/compare/v4.0.2...v4.1.0) (2022-10-11)
+
+
+### Features
+
+* add server.maxConnections option ([#213](https://github.com/libp2p/js-libp2p-tcp/issues/213)) ([99e88a4](https://github.com/libp2p/js-libp2p-tcp/commit/99e88a4d3122c46f06f69cfbe3f72a2279e2329f))
+
 ## [4.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v4.0.1...v4.0.2) (2022-10-11)
 
 
