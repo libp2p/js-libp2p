@@ -2,7 +2,7 @@
 
 In order to prevent excessive resource consumption by a libp2p node it's important to understand limits are applied and how to tune them to the needs of your application.
 
-## Table of contents
+## Table of contents <!-- omit in toc -->
 
 - [Connection limits](#connection-limits)
 - [Inbound connection threshold](#inbound-connection-threshold)
@@ -10,6 +10,7 @@ In order to prevent excessive resource consumption by a libp2p node it's importa
 - [Stream limits](#stream-limits)
   - [Mplex](#mplex)
   - [Yamux](#yamux)
+  - [Protocol limits](#protocol-limits)
 - [Closing connections](#closing-connections)
 - [Transport specific limits](#transport-specific-limits)
   - [TCP](#tcp)
@@ -153,7 +154,7 @@ const node = await createLibp2pNode({
 })
 ```
 
-### Protocol limits
+### Protocol limits
 
 When registering listeners for custom protocols, the maximum number of simultaneously open inbound and outbound streams per-connection can be specified. If not specified these will default to 32 inbound streams and 64 outbound streams.
 
