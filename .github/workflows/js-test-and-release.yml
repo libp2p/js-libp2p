@@ -29,6 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
+        with:
+          check-latest: true
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
