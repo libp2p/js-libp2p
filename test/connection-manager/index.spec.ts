@@ -304,4 +304,47 @@ describe('Connection Manager', () => {
     await expect(connectionManager.acceptIncomingConnection(maConn))
       .to.eventually.be.true()
   })
+
+  it('should limit the number of inbound pending connections', async () => {
+    const connectionManager = new DefaultConnectionManager({
+      ...defaultOptions,
+      maxIncomingPendingConnections: 1
+    })
+
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
+
+    const components = new Components({
+      dialer
+    })
+
+    // set mocks
+    connectionManager.init(components)
+
+    // start the upgrade
+    const maConn1 = mockMultiaddrConnection({
+      source: [],
+      sink: async () => {}
+    }, await createEd25519PeerId())
+
+    await expect(connectionManager.acceptIncomingConnection(maConn1))
+      .to.eventually.be.true()
+
+    // start the upgrade
+    const maConn2 = mockMultiaddrConnection({
+      source: [],
+      sink: async () => {}
+    }, await createEd25519PeerId())
+
+    // should be false because we have not completed the upgrade of maConn1
+    await expect(connectionManager.acceptIncomingConnection(maConn2))
+      .to.eventually.be.false()
+
+    // finish the maConn1 pending upgrade
+    connectionManager.afterUpgradeInbound()
+
+    // should be true because we have now completed the upgrade of maConn1
+    await expect(connectionManager.acceptIncomingConnection(maConn2))
+      .to.eventually.be.true()
+  })
 })
