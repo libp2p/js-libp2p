@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v4.0.1...v4.0.2) (2022-10-11)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/peer-store from 3.1.5 to 4.0.0 ([#382](https://github.com/libp2p/js-libp2p-kad-dht/issues/382)) ([94c0dc8](https://github.com/libp2p/js-libp2p-kad-dht/commit/94c0dc850f2b7f16eaa6e70d7157c3b2a3bbf7d5))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v4.0.0...v4.0.1) (2022-10-11)
 
 
