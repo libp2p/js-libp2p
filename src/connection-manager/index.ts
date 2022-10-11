@@ -33,7 +33,8 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   pollInterval: 2000,
   autoDialInterval: 10000,
   movingAverageInterval: 60000,
-  inboundConnectionThreshold: 5
+  inboundConnectionThreshold: 5,
+  maxIncomingPendingConnections: 10
 }
 
 const METRICS_SYSTEM = 'libp2p'
@@ -152,6 +153,12 @@ export interface ConnectionManagerInit {
    * host, reject subsequent connections
    */
   inboundConnectionThreshold?: number
+
+  /**
+   * The maximum number of parallel incoming connections allowed that have yet to
+   * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc
+   */
+  maxIncomingPendingConnections?: number
 }
 
 export interface ConnectionManagerEvents {
@@ -175,6 +182,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly allow: Multiaddr[]
   private readonly deny: Multiaddr[]
   private readonly inboundConnectionRateLimiter: RateLimiterMemory
+  private incomingPendingConnections: number
 
   constructor (init: ConnectionManagerInit) {
     super()
@@ -218,6 +226,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       points: this.opts.inboundConnectionThreshold,
       duration: 1
     })
+
+    this.incomingPendingConnections = 0
   }
 
   init (components: Components): void {
@@ -719,7 +729,15 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     if (allowConnection) {
+      this.incomingPendingConnections++
+
       return true
+    }
+
+    // check pending connections
+    if (this.incomingPendingConnections === this.opts.maxIncomingPendingConnections) {
+      log('connection from %s refused - incomingPendingConnections exceeded by peer %s', maConn.remoteAddr)
+      return false
     }
 
     if (maConn.remoteAddr.isThinWaistAddress()) {
@@ -734,10 +752,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     if (this.getConnections().length < this.opts.maxConnections) {
+      this.incomingPendingConnections++
+
       return true
     }
 
     log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
     return false
+  }
+
+  afterUpgradeInbound () {
+    this.incomingPendingConnections--
   }
 }

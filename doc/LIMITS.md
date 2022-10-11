@@ -20,6 +20,8 @@ In order to prevent excessive resource consumption by a libp2p node it's importa
 
 It's possible to limit the amount of incoming and outgoing connections a node is able to make.  When this limit is reached and an attempt to open a new connection is made, existing connections may be closed to make room for the new connection.
 
+We can also limit the number of connections in a "pending" state. These connections have been opened by a remote peer but peer IDs have yet to be exchanged and/or connection encryption and multiplexing negotiated. Once this limit is hit further connections will be closed unless the remote peer has an address in the [allow list](#allowdeny-lists).
+
 ```js
 const node = await createLibp2pNode({
   connectionManager: {
@@ -32,7 +34,12 @@ const node = await createLibp2pNode({
      * If the number of open connections goes below this number, the node
      * will try to connect to nearby peers from the peer store
      */
-    minConnections: 20
+    minConnections: 20,
+
+    /**
+     * How many connections can be open but not yet upgraded
+     */
+    maxIncomingPendingConnections: 10
   }
 })
 ```

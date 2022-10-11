@@ -126,7 +126,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     const accept = await this.components.getConnectionManager().acceptIncomingConnection(maConn)
 
     if (!accept) {
-      await maConn.close()
       throw errCode(new Error('connection denied'), codes.ERR_CONNECTION_DENIED)
     }
 
@@ -201,7 +200,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         }
       } catch (err: any) {
         log.error('Failed to upgrade inbound connection', err)
-        await maConn.close(err)
         throw err
       }
 
@@ -228,6 +226,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         remotePeer
       })
     } finally {
+      this.components.getConnectionManager().afterUpgradeInbound()
       timeoutController.clear()
     }
   }
