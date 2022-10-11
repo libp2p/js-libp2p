@@ -6,7 +6,18 @@ export default {
   test: {
     async before() {
       if (!existsSync("./go-libp2p-webtransport-server/main")) {
-        exec('go build main.go');
+        await new Promise((resolve, reject) => {
+          exec('go build -o main main.go',
+            { cwd: "./go-libp2p-webtransport-server" },
+            (error, stdout, stderr) => {
+              if (error) {
+                reject(error)
+                console.error(`exec error: ${error}`);
+                return;
+              }
+              resolve()
+            });
+        })
       }
 
       const server = spawn('./main', [], { cwd: "./go-libp2p-webtransport-server", killSignal: "SIGINT" });
