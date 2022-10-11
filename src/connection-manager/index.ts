@@ -740,4 +740,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
     return false
   }
+
+  afterUpgradeInbound () {
+
+  }
 }
