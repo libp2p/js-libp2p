@@ -146,7 +146,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i libp2p",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
@@ -156,8 +156,8 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "github:chainsafe/js-libp2p-noise#master",
     "@libp2p/interface-connection": "^3.0.1",
-    "@libp2p/interface-transport": "^2.0.0",
     "@libp2p/interface-stream-muxer": "^3.0.0",
+    "@libp2p/interface-transport": "^2.0.0",
     "@libp2p/interfaces": "^3.0.1",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/peer-id": "^1.1.15",
@@ -168,9 +168,11 @@
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-ws": "^5.0.0",
+    "multiformats": "^9.9.0",
     "p-defer": "^4.0.0",
     "p-timeout": "^6.0.0",
     "protons-runtime": "^3.1.0",
+    "uint8arraylist": "^2.3.2",
     "wherearewe": "^2.0.1"
   },
   "devDependencies": {
@@ -188,7 +190,6 @@
     "libp2p": "next",
     "p-wait-for": "^5.0.0",
     "protons": "^5.1.0",
-    "uint8arraylist": "^2.3.2",
     "uint8arrays": "^3.0.0"
   },
   "browser": {
