@@ -150,11 +150,6 @@
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
-    "test:chrome-webworker": "aegir test -t webworker -f ./dist/test/browser.js",
-    "test:firefox": "aegir test -t browser -f ./dist/test/browser.js -- --browser firefox",
-    "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
-    "test:node": "aegir test -t node -f ./dist/test/node.js --cov",
-    "test:electron-main": "aegir test -t electron-main -f ./dist/test/node.js --cov",
     "release": "aegir release",
     "proto:gen": "protons ./src/proto/webtransport.proto"
   },
