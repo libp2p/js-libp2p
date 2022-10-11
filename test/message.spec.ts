@@ -41,7 +41,7 @@ describe('pubsub base messages', () => {
 
     const signedMessage = await pubsub.buildMessage(message)
 
-    await expect(pubsub.validate(signedMessage)).to.eventually.not.be.rejected()
+    await expect(pubsub.validate(peerId, signedMessage)).to.eventually.not.be.rejected()
   })
 
   it('validate with StrictNoSign will reject a message with from, signature, key, seqno present', async () => {
@@ -61,19 +61,19 @@ describe('pubsub base messages', () => {
     }
 
     sinon.stub(pubsub, 'globalSignaturePolicy').value('StrictNoSign')
-    await expect(pubsub.validate(signedMessage)).to.eventually.be.rejected()
+    await expect(pubsub.validate(peerId, signedMessage)).to.eventually.be.rejected()
     // @ts-expect-error this field is not optional
     delete signedMessage.from
-    await expect(pubsub.validate(signedMessage)).to.eventually.be.rejected()
+    await expect(pubsub.validate(peerId, signedMessage)).to.eventually.be.rejected()
     // @ts-expect-error this field is not optional
     delete signedMessage.signature
-    await expect(pubsub.validate(signedMessage)).to.eventually.be.rejected()
+    await expect(pubsub.validate(peerId, signedMessage)).to.eventually.be.rejected()
     // @ts-expect-error this field is not optional
     delete signedMessage.key
-    await expect(pubsub.validate(signedMessage)).to.eventually.be.rejected()
+    await expect(pubsub.validate(peerId, signedMessage)).to.eventually.be.rejected()
     // @ts-expect-error this field is not optional
     delete signedMessage.sequenceNumber
-    await expect(pubsub.validate(signedMessage)).to.eventually.not.be.rejected()
+    await expect(pubsub.validate(peerId, signedMessage)).to.eventually.not.be.rejected()
   })
 
   it('validate with StrictNoSign will validate a message without a signature, key, and seqno', async () => {
@@ -87,7 +87,7 @@ describe('pubsub base messages', () => {
     sinon.stub(pubsub, 'globalSignaturePolicy').value('StrictNoSign')
 
     const signedMessage = await pubsub.buildMessage(message)
-    await expect(pubsub.validate(signedMessage)).to.eventually.not.be.rejected()
+    await expect(pubsub.validate(peerId, signedMessage)).to.eventually.not.be.rejected()
   })
 
   it('validate with StrictSign requires a signature', async () => {
@@ -98,6 +98,6 @@ describe('pubsub base messages', () => {
       topic: 'test-topic'
     }
 
-    await expect(pubsub.validate(message)).to.be.rejectedWith(Error, 'Signing required and no signature was present')
+    await expect(pubsub.validate(peerId, message)).to.be.rejectedWith(Error, 'Signing required and no signature was present')
   })
 })

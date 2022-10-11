@@ -1,7 +1,6 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import pWaitFor from 'p-wait-for'
-import errCode from 'err-code'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -11,7 +10,7 @@ import {
   PubsubImplementation
 } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PubSubRPC } from '@libp2p/interface-pubsub'
+import { PubSubRPC, TopicValidatorResult } from '@libp2p/interface-pubsub'
 import { Components } from '@libp2p/components'
 
 const protocol = '/pubsub/1.0.0'
@@ -50,10 +49,11 @@ describe('topic validators', () => {
     const peer = new PeerStreams({ id: otherPeerId, protocol: 'a-protocol' })
 
     // Set a trivial topic validator
-    pubsub.topicValidators.set(filteredTopic, async (topic, message) => {
+    pubsub.topicValidators.set(filteredTopic, async (_otherPeerId, message) => {
       if (!uint8ArrayEquals(message.data, uint8ArrayFromString('a message'))) {
-        throw errCode(new Error(), 'ERR_TOPIC_VALIDATOR_REJECT')
+        return TopicValidatorResult.Reject
       }
+      return TopicValidatorResult.Accept
     })
 
     // valid case

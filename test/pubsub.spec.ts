@@ -72,7 +72,7 @@ describe('pubsub base implementation', () => {
       // Get the first message sent to _publish, and validate it
       const signedMessage: Message = publishMessageSpy.getCall(0).lastArg
 
-      await expect(pubsub.validate(signedMessage)).to.eventually.be.undefined()
+      await expect(pubsub.validate(pubsub.components.getPeerId(), signedMessage)).to.eventually.be.undefined()
     })
 
     it('calls publishes messages twice', async () => {

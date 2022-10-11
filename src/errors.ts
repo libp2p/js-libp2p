@@ -49,5 +49,10 @@ export const codes = {
   /**
    * Message expected to not have a `seqno`, but does
    */
-  ERR_UNEXPECTED_SEQNO: 'ERR_UNEXPECTED_SEQNO'
+  ERR_UNEXPECTED_SEQNO: 'ERR_UNEXPECTED_SEQNO',
+
+  /**
+   * Message failed topic validator
+   */
+  ERR_TOPIC_VALIDATOR_REJECT: 'ERR_TOPIC_VALIDATOR_REJECT'
 }

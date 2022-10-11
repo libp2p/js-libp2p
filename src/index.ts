@@ -14,14 +14,12 @@ import {
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { Connection } from '@libp2p/interface-connection'
-import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult } from '@libp2p/interface-pubsub'
+import { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface-pubsub'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { Components, Initializable } from '@libp2p/components'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:pubsub')
-
-export interface TopicValidator { (topic: string, message: Message): Promise<void> }
 
 /**
  * PubSubBaseProtocol handles the peers and connections logic for pubsub routers
@@ -59,7 +57,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
    * Keyed by topic
    * Topic validators are functions with the following input:
    */
-  public topicValidators: Map<string, TopicValidator>
+  public topicValidators: Map<string, TopicValidatorFn>
   public queue: Queue
   public multicodecs: string[]
   public components: Components = new Components()
@@ -420,7 +418,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
 
     // Ensure the message is valid before processing it
     try {
-      await this.validate(msg)
+      await this.validate(from, msg)
     } catch (err: any) {
       log('Message is invalid, dropping it. %O', err)
       return
@@ -524,7 +522,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
    * Validates the given message. The signature will be checked for authenticity.
    * Throws an error on invalid messages
    */
-  async validate (message: Message) { // eslint-disable-line require-await
+  async validate (from: PeerId, message: Message) { // eslint-disable-line require-await
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictNoSign':
@@ -570,9 +568,11 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     }
 
     const validatorFn = this.topicValidators.get(message.topic)
-
     if (validatorFn != null) {
-      await validatorFn(message.topic, message)
+      const result = await validatorFn(from, message)
+      if (result === TopicValidatorResult.Reject || result === TopicValidatorResult.Ignore) {
+        throw errcode(new Error('Message validation failed'), codes.ERR_TOPIC_VALIDATOR_REJECT)
+      }
     }
   }
 
