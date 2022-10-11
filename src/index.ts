@@ -214,8 +214,13 @@ function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDig
   return { url, certhashes, remotePeer }
 }
 
+export interface WebTransportConfig {
+  maxInboundStreams: 1000
+}
+
 export class WebTransport implements Transport, Initializable {
   private components?: Components
+  private readonly config: WebTransportConfig
 
   init (components: Components) {
     this.components = components
@@ -227,6 +232,10 @@ export class WebTransport implements Transport, Initializable {
 
   get [symbol] (): true {
     return true
+  }
+
+  constructor (config?: WebTransportConfig) {
+    this.config = config ?? { maxInboundStreams: 1000 }
   }
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
@@ -335,6 +344,7 @@ export class WebTransport implements Transport, Initializable {
 
   webtransportMuxer (wt: typeof window.WebTransport): StreamMuxerFactory {
     let streamIDCounter = 0
+    const config = this.config
     return {
       protocol: 'webtransport',
       createStreamMuxer: (init?: StreamMuxerInit): StreamMuxer => {
@@ -349,13 +359,23 @@ export class WebTransport implements Transport, Initializable {
 
         (async function () {
           // TODO unclear how to add backpressure here?
+
           const reader = wt.incomingBidirectionalStreams.getReader()
           while (true) {
-            const { done, value } = await reader.read()
+            const { done, value: wtStream } = await reader.read()
             if (done === true) {
               break
             }
-            const stream = await webtransportBiDiStreamToStream(value, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd)
+            if (activeStreams.length >= config.maxInboundStreams) {
+              // We've reached our limit, close this stream.
+              wtStream.writable.close().catch((err: Error) => {
+                log.error(`Failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)
+              })
+              wtStream.readable.cancel().catch((err: Error) => {
+                log.error(`Failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)
+              })
+            }
+            const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd)
             activeStreams.push(stream)
             init?.onIncomingStream?.(stream)
           }
