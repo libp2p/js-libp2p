@@ -1,6 +1,13 @@
 import { KadDHT as SingleKadDHT } from './kad-dht.js'
 import { DualKadDHT } from './dual-kad-dht.js'
 import type { Selectors, Validators } from '@libp2p/interface-dht'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { Metrics } from '@libp2p/interface-metrics'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Datastore } from 'interface-datastore'
 
 export interface KadDHTInit {
   /**
@@ -57,18 +64,32 @@ export interface KadDHTInit {
   maxOutboundStreams?: number
 }
 
-export class KadDHT extends DualKadDHT {
-  constructor (init?: KadDHTInit) {
-    super(new SingleKadDHT({
+export interface KadDHTComponents {
+  peerId: PeerId
+  registrar: Registrar
+  addressManager: AddressManager
+  peerStore: PeerStore
+  metrics?: Metrics
+  connectionManager: ConnectionManager
+  datastore: Datastore
+}
+
+class KadDHT extends DualKadDHT {
+  constructor (components: KadDHTComponents, init?: KadDHTInit) {
+    super(components, new SingleKadDHT(components, {
       protocolPrefix: '/ipfs',
       ...init,
       lan: false
     }),
-    new SingleKadDHT({
+    new SingleKadDHT(components, {
       protocolPrefix: '/ipfs',
       ...init,
       clientMode: false,
       lan: true
     }))
   }
+}
+
+export function kadDht (init?: KadDHTInit): (components: KadDHTComponents) => DualKadDHT {
+  return (components: KadDHTComponents) => new KadDHT(components, init)
 }

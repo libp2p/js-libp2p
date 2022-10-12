@@ -18,7 +18,6 @@ import { EventTypes, QueryEvent } from '@libp2p/interface-dht'
 import { MESSAGE_TYPE } from '../src/message/index.js'
 import type { QueryFunc } from '../src/query/types.js'
 import { convertBuffer } from '../src/utils.js'
-import { Components } from '@libp2p/components'
 
 interface TopologyEntry {
   delay?: number
@@ -97,20 +96,22 @@ describe('QueryManager', () => {
   })
 
   it('does not run queries before start', async () => {
-    const manager = new QueryManager({ disjointPaths: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1
+    })
 
     // @ts-expect-error not enough params
     await expect(all(manager.run())).to.eventually.be.rejectedWith(/not started/)
   })
 
   it('does not run queries after stop', async () => {
-    const manager = new QueryManager({ disjointPaths: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1
+    })
 
     await manager.start()
     await manager.stop()
@@ -120,10 +121,11 @@ describe('QueryManager', () => {
   })
 
   it('should pass query context', async () => {
-    const manager = new QueryManager({ disjointPaths: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1
+    })
     await manager.start()
 
     const queryFunc: QueryFunc = async function * (context) { // eslint-disable-line require-await
@@ -151,10 +153,12 @@ describe('QueryManager', () => {
   })
 
   it('simple run - succeed finding value', async () => {
-    const manager = new QueryManager({ disjointPaths: 1, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1,
+      alpha: 1
+    })
     await manager.start()
 
     const peersQueried = []
@@ -199,10 +203,12 @@ describe('QueryManager', () => {
   })
 
   it('simple run - fail to find value', async () => {
-    const manager = new QueryManager({ disjointPaths: 1, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1,
+      alpha: 1
+    })
     await manager.start()
 
     const peersQueried = []
@@ -237,10 +243,12 @@ describe('QueryManager', () => {
   })
 
   it('should abort a query', async () => {
-    const manager = new QueryManager({ disjointPaths: 2, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 2,
+      alpha: 1
+    })
     await manager.start()
 
     const controller = new AbortController()
@@ -279,10 +287,12 @@ describe('QueryManager', () => {
   })
 
   it('should allow a sub-query to timeout without aborting the whole query', async () => {
-    const manager = new QueryManager({ disjointPaths: 2, alpha: 2 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 2,
+      alpha: 2
+    })
     await manager.start()
 
     // 2 -> 1 -> 0
@@ -326,10 +336,11 @@ describe('QueryManager', () => {
   })
 
   it('does not return an error if only some queries error', async () => {
-    const manager = new QueryManager({ disjointPaths: 10 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 10
+    })
     await manager.start()
 
     const queryFunc: QueryFunc = async function * ({ peer, pathIndex }) { // eslint-disable-line require-await
@@ -362,10 +373,11 @@ describe('QueryManager', () => {
   })
 
   it('returns empty run if initial peer list is empty', async () => {
-    const manager = new QueryManager({ disjointPaths: 10 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 10
+    })
     await manager.start()
 
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
@@ -380,10 +392,12 @@ describe('QueryManager', () => {
   })
 
   it('should query closer peers first', async () => {
-    const manager = new QueryManager({ disjointPaths: 1, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1,
+      alpha: 1
+    })
     await manager.start()
 
     // 9 -> 8 -> 7 -> 6 -> 5 -> 0
@@ -428,10 +442,12 @@ describe('QueryManager', () => {
   })
 
   it('should stop when passing through the same node twice', async () => {
-    const manager = new QueryManager({ disjointPaths: 20, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 20,
+      alpha: 1
+    })
     await manager.start()
 
     const topology = createTopology({
@@ -460,10 +476,12 @@ describe('QueryManager', () => {
   })
 
   it('only closerPeers', async () => {
-    const manager = new QueryManager({ disjointPaths: 1, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1,
+      alpha: 1
+    })
     await manager.start()
 
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
@@ -488,10 +506,11 @@ describe('QueryManager', () => {
   })
 
   it('only closerPeers concurrent', async () => {
-    const manager = new QueryManager({ disjointPaths: 3 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 3
+    })
     await manager.start()
 
     //  9 -> 2
@@ -520,10 +539,12 @@ describe('QueryManager', () => {
   })
 
   it('queries stop after shutdown', async () => {
-    const manager = new QueryManager({ disjointPaths: 1, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1,
+      alpha: 1
+    })
     await manager.start()
 
     // 3 -> 2 -> 1 -> 0
@@ -569,10 +590,11 @@ describe('QueryManager', () => {
   })
 
   it('disjoint path values', async () => {
-    const manager = new QueryManager({ disjointPaths: 2 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 2
+    })
     await manager.start()
 
     const values = ['v0', 'v1'].map((str) => uint8ArrayFromString(str))
@@ -607,10 +629,11 @@ describe('QueryManager', () => {
   })
 
   it('disjoint path continue other paths after error on one path', async () => {
-    const manager = new QueryManager({ disjointPaths: 2 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 2
+    })
     await manager.start()
 
     // 2 -> 1 (delay) -> 0 [pathComplete]
@@ -642,10 +665,11 @@ describe('QueryManager', () => {
   })
 
   it.skip('should end paths when they have no closer peers to those already queried', async () => {
-    const manager = new QueryManager({ disjointPaths: 1, alpha: 1 })
-    manager.init(new Components({
+    const manager = new QueryManager({
       peerId: ourPeerId
-    }))
+    }, {
+      disjointPaths: 1, alpha: 1
+    })
     await manager.start()
 
     // 3 -> 2 -> 1 -> 4 -> 5 -> 6 // should stop at 1

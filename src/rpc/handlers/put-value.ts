@@ -6,26 +6,27 @@ import type { DHTMessageHandler } from '../index.js'
 import type { Validators } from '@libp2p/interface-dht'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Message } from '../../message/index.js'
-import { Components, Initializable } from '@libp2p/components'
+import type { Datastore } from 'interface-datastore'
 
 export interface PutValueHandlerInit {
   validators: Validators
 }
 
-export class PutValueHandler implements DHTMessageHandler, Initializable {
+export interface PutValueHandlerComponents {
+  datastore: Datastore
+}
+
+export class PutValueHandler implements DHTMessageHandler {
   private readonly log: Logger
-  private components: Components = new Components()
+  private readonly components: PutValueHandlerComponents
   private readonly validators: Validators
 
-  constructor (init: PutValueHandlerInit) {
+  constructor (components: PutValueHandlerComponents, init: PutValueHandlerInit) {
     const { validators } = init
 
+    this.components = components
     this.log = logger('libp2p:kad-dht:rpc:handlers:put-value')
     this.validators = validators
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   async handle (peerId: PeerId, msg: Message) {
@@ -46,7 +47,7 @@ export class PutValueHandler implements DHTMessageHandler, Initializable {
 
       record.timeReceived = new Date()
       const recordKey = bufferToRecordKey(record.key)
-      await this.components.getDatastore().put(recordKey, record.serialize().subarray())
+      await this.components.datastore.put(recordKey, record.serialize().subarray())
       this.log('put record for %b into datastore under key %k', key, recordKey)
     } catch (err: any) {
       this.log('did not put record for key %b into datastore %o', key, err)

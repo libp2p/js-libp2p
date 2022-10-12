@@ -18,10 +18,10 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
 import type { Duplex } from 'it-stream-types'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { Components, Initializable } from '@libp2p/components'
 import type { Stream } from '@libp2p/interface-connection'
 import { abortableDuplex } from 'abortable-iterator'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import type { KadDHTComponents } from './index.js'
 
 export interface NetworkInit {
   protocol: string
@@ -35,26 +35,23 @@ interface NetworkEvents {
 /**
  * Handle network operations for the dht
  */
-export class Network extends EventEmitter<NetworkEvents> implements Startable, Initializable {
+export class Network extends EventEmitter<NetworkEvents> implements Startable {
   private readonly log: Logger
   private readonly protocol: string
   private running: boolean
-  private components: Components = new Components()
+  private readonly components: KadDHTComponents
 
   /**
    * Create a new network
    */
-  constructor (init: NetworkInit) {
+  constructor (components: KadDHTComponents, init: NetworkInit) {
     super()
 
     const { protocol, lan } = init
+    this.components = components
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
     this.running = false
     this.protocol = protocol
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   /**
@@ -97,7 +94,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
     let stream: Stream | undefined
 
     try {
-      const connection = await this.components.getConnectionManager().openConnection(to, options)
+      const connection = await this.components.connectionManager.openConnection(to, options)
       const stream = await connection.newStream(this.protocol, options)
 
       const response = await this._writeReadMessage(stream, msg.serialize(), options)
@@ -133,7 +130,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable, I
     let stream: Stream | undefined
 
     try {
-      const connection = await this.components.getConnectionManager().openConnection(to, options)
+      const connection = await this.components.connectionManager.openConnection(to, options)
       const stream = await connection.newStream(this.protocol, options)
 
       await this._writeMessage(stream, msg.serialize(), options)

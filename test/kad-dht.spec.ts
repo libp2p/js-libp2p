@@ -115,7 +115,7 @@ describe('KadDHT', () => {
       // Currently off by default
       const dht = await tdht.spawn(undefined, false)
 
-      const registrarHandleSpy = sinon.spy(dht.components.getRegistrar(), 'handle')
+      const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
 
       await dht.start()
       // lan dht is always in server mode
@@ -132,7 +132,7 @@ describe('KadDHT', () => {
       // Currently on by default
       const dht = await tdht.spawn({ clientMode: true }, false)
 
-      const registrarHandleSpy = sinon.spy(dht.components.getRegistrar(), 'handle')
+      const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
 
       await dht.start()
       await dht.stop()
@@ -331,10 +331,10 @@ describe('KadDHT', () => {
 
       expect(dhtASpy.callCount).to.eql(2)
 
-      expect(dhtASpy.getCall(0).args[0].equals(dhtB.components.getPeerId())).to.be.true() // query B
+      expect(dhtASpy.getCall(0).args[0].equals(dhtB.components.peerId)).to.be.true() // query B
       expect(dhtASpy.getCall(0).args[1].type).to.equal('GET_VALUE') // query B
 
-      expect(dhtASpy.getCall(1).args[0].equals(dhtB.components.getPeerId())).to.be.true() // update B
+      expect(dhtASpy.getCall(1).args[0].equals(dhtB.components.peerId)).to.be.true() // update B
       expect(dhtASpy.getCall(1).args[1].type).to.equal('PUT_VALUE') // update B
     })
 
@@ -398,7 +398,7 @@ describe('KadDHT', () => {
         tdht.spawn()
       ])
 
-      const ids = dhts.map((d) => d.components.getPeerId())
+      const ids = dhts.map((d) => d.components.peerId)
       const idsB58 = ids.map(id => id.toString())
       sinon.spy(dhts[3].lan.network, 'sendMessage')
 
@@ -609,7 +609,7 @@ describe('KadDHT', () => {
 
       const dht = await tdht.spawn()
 
-      sinon.stub(dht.lan.providers, 'getProviders').resolves([dht.components.getPeerId()])
+      sinon.stub(dht.lan.providers, 'getProviders').resolves([dht.components.peerId])
 
       // Find provider
       const events = await all(dht.findProviders(val.cid))
@@ -643,7 +643,7 @@ describe('KadDHT', () => {
         tdht.connect(dhts[0], dhts[3])
       ])
 
-      const ids = dhts.map((d) => d.components.getPeerId())
+      const ids = dhts.map((d) => d.components.peerId)
 
       const finalPeer = await findEvent(dhts[0].findPeer(ids[ids.length - 1]), 'FINAL_PEER')
 
@@ -660,7 +660,7 @@ describe('KadDHT', () => {
         new Array(nDHTs).fill(0).map(async () => await tdht.spawn())
       )
 
-      const dhtsById: Map<PeerId, DualKadDHT> = new Map(dhts.map((d) => [d.components.getPeerId(), d]))
+      const dhtsById: Map<PeerId, DualKadDHT> = new Map(dhts.map((d) => [d.components.peerId, d]))
       const ids = [...dhtsById.keys()]
 
       // The origin node for the FIND_PEER query
@@ -714,7 +714,7 @@ describe('KadDHT', () => {
         rtableSet[p.toString()] = true
       })
 
-      const originNodeIndex = ids.findIndex(i => uint8ArrayEquals(i.multihash.bytes, originNode.components.getPeerId().multihash.bytes))
+      const originNodeIndex = ids.findIndex(i => uint8ArrayEquals(i.multihash.bytes, originNode.components.peerId.multihash.bytes))
       const otherIds = ids.slice(0, originNodeIndex).concat(ids.slice(originNodeIndex + 1))
 
       // Make the query
@@ -792,7 +792,7 @@ describe('KadDHT', () => {
 
       await tdht.connect(dhtA, dhtB)
 
-      const stub = sinon.stub(dhtA.components.getConnectionManager(), 'openConnection').rejects(error)
+      const stub = sinon.stub(dhtA.components.connectionManager, 'openConnection').rejects(error)
 
       const errors = await all(filter(dhtA.get(uint8ArrayFromString('/v/hello')), event => event.name === 'QUERY_ERROR'))
 
@@ -813,7 +813,7 @@ describe('KadDHT', () => {
         tdht.spawn()
       ])
 
-      const ids = dhts.map((d) => d.components.getPeerId())
+      const ids = dhts.map((d) => d.components.peerId)
       await Promise.all([
         tdht.connect(dhts[0], dhts[1]),
         tdht.connect(dhts[1], dhts[2]),

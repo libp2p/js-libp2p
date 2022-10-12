@@ -13,7 +13,6 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Datastore } from 'interface-datastore'
 import { MemoryDatastore } from 'datastore-core'
 import type { Validators } from '@libp2p/interface-dht'
-import { Components } from '@libp2p/components'
 
 const T = MESSAGE_TYPE.PUT_VALUE
 
@@ -28,14 +27,13 @@ describe('rpc - handlers - PutValue', () => {
     datastore = new MemoryDatastore()
     validators = {}
 
-    const components = new Components({
+    const components = {
       datastore
-    })
+    }
 
-    handler = new PutValueHandler({
+    handler = new PutValueHandler(components, {
       validators
     })
-    handler.init(components)
   })
 
   it('errors on missing record', async () => {

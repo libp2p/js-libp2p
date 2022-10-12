@@ -13,8 +13,8 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { QueryFunc } from './types.js'
 import type { QueryOptions } from '@libp2p/interface-dht'
-import { Components, Initializable } from '@libp2p/components'
 import { PeerSet } from '@libp2p/peer-collections'
+import type { Metrics } from '@libp2p/interface-metrics'
 
 const METRIC_RUNNING_QUERIES = 'running-queries'
 
@@ -28,11 +28,16 @@ export interface QueryManagerInit {
   alpha?: number
 }
 
+export interface QueryManagerComponents {
+  peerId: PeerId
+  metrics?: Metrics
+}
+
 /**
  * Keeps track of all running queries
  */
-export class QueryManager implements Startable, Initializable {
-  private components: Components = new Components()
+export class QueryManager implements Startable {
+  private readonly components: QueryManagerComponents
   private readonly lan: boolean
   public disjointPaths: number
   private readonly alpha: number
@@ -40,18 +45,16 @@ export class QueryManager implements Startable, Initializable {
   private running: boolean
   private queries: number
 
-  constructor (init: QueryManagerInit) {
+  constructor (components: QueryManagerComponents, init: QueryManagerInit) {
     const { lan = false, disjointPaths = K, alpha = ALPHA } = init
+
+    this.components = components
     this.disjointPaths = disjointPaths ?? K
     this.controllers = new Set()
     this.running = false
     this.alpha = alpha ?? ALPHA
     this.lan = lan
     this.queries = 0
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   isStarted () {
@@ -128,7 +131,7 @@ export class QueryManager implements Startable, Initializable {
     try {
       log('query:start')
       this.queries++
-      this.components.getMetrics()?.updateComponentMetric({
+      this.components.metrics?.updateComponentMetric({
         system: 'libp2p',
         component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
         metric: METRIC_RUNNING_QUERIES,
@@ -148,7 +151,7 @@ export class QueryManager implements Startable, Initializable {
         return queryPath({
           key,
           startingPeer: peer,
-          ourPeerId: this.components.getPeerId(),
+          ourPeerId: this.components.peerId,
           signal,
           query: queryFunc,
           pathIndex: index,
@@ -183,7 +186,7 @@ export class QueryManager implements Startable, Initializable {
       }
 
       this.queries--
-      this.components.getMetrics()?.updateComponentMetric({
+      this.components.metrics?.updateComponentMetric({
         system: 'libp2p',
         component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
         metric: METRIC_RUNNING_QUERIES,

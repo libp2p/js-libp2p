@@ -9,11 +9,11 @@ import { createRSAPeerId } from '@libp2p/peer-id-factory'
 import {
   convertPeerId
 } from '../../src/utils.js'
-import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -52,23 +52,22 @@ describe.skip('generate peers', function () {
   beforeEach(async () => {
     const id = await createRSAPeerId({ bits: 512 })
 
-    const components = new Components({
+    const components = {
       peerId: id,
-      connectionManager: stubInterface<ConnectionManager>()
-    })
-    const table = new RoutingTable({
+      connectionManager: stubInterface<ConnectionManager>(),
+      peerStore: stubInterface<PeerStore>()
+    }
+    const table = new RoutingTable(components, {
       kBucketSize: 20,
       lan: false,
       protocol: '/ipfs/kad/1.0.0'
     })
-    table.init(components)
     refresh = new RoutingTableRefresh({
       routingTable: table,
       // @ts-expect-error not a full implementation
       peerRouting: {},
       lan: false
     })
-    refresh.init(components)
   })
 
   const TEST_CASES = [{

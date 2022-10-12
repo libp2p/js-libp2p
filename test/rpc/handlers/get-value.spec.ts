@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
-import { GetValueHandler } from '../../../src/rpc/handlers/get-value.js'
+import { GetValueHandler, GetValueHandlerComponents } from '../../../src/rpc/handlers/get-value.js'
 import * as utils from '../../../src/utils.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createPeerId } from '../../utils/create-peer-id.js'
@@ -14,7 +14,6 @@ import type { KeyBook } from '@libp2p/interface-peer-store'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import type { Datastore } from 'interface-datastore'
-import { Components } from '@libp2p/components'
 import { Libp2pRecord } from '@libp2p/record'
 
 const T = MESSAGE_TYPE.GET_VALUE
@@ -37,18 +36,19 @@ describe('rpc - handlers - GetValue', () => {
     peerRouting = Sinon.createStubInstance(PeerRouting)
     datastore = new MemoryDatastore()
 
-    const components = new Components({
-      peerId,
+    const components: GetValueHandlerComponents = {
       datastore,
-      peerStore: new PersistentPeerStore()
-    })
+      peerStore: new PersistentPeerStore({
+        peerId,
+        datastore
+      })
+    }
 
-    handler = new GetValueHandler({
+    handler = new GetValueHandler(components, {
       peerRouting
     })
-    handler.init(components)
 
-    keyBook = components.getPeerStore().keyBook
+    keyBook = components.peerStore.keyBook
   })
 
   it('errors when missing key', async () => {

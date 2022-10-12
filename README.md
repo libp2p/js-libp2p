@@ -46,19 +46,17 @@ The libp2p-kad-dht module offers 3 APIs: Peer Routing, Content Routing and Peer 
 ### Custom secondary DHT in libp2p
 
 ```js
-import { create } from '@libp2p/kad-dht'
+import { createLibp2pNode } from 'libp2p'
+import { kadDht } from '@libp2p/kad-dht'
 
-/**
- * @param {Libp2p} libp2p
- */
-async function addDHT(libp2p) {
-    const customDHT = create({
-        libp2p,
-        protocolPrefix: '/custom'
-    })
-    await customDHT.start()
+const node = await createLibp2pNode({
+  dht: kadDht()
+  //... other config
+})
+await node.start()
 
-    return customDHT
+for await (const event of node.dht.findPeer(node.peerId)) {
+  console.info(event)
 }
 ```
 

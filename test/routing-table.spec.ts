@@ -3,41 +3,50 @@
 import { expect } from 'aegir/chai'
 import random from 'lodash.random'
 import sinon from 'sinon'
-import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable } from '../src/routing-table/index.js'
+import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, RoutingTableComponents } from '../src/routing-table/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { PROTOCOL_DHT } from '../src/constants.js'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Components } from '@libp2p/components'
 import { mockConnectionManager } from '@libp2p/interface-mocks'
 import { PersistentPeerStore } from '@libp2p/peer-store'
-import { MemoryDatastore } from 'datastore-core'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import pWaitFor from 'p-wait-for'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { PeerSet } from '@libp2p/peer-collections'
+import { stubInterface } from 'ts-sinon'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import { MemoryDatastore } from 'datastore-core'
 
 describe('Routing Table', () => {
   let table: RoutingTable
-  let components: Components
+  let components: RoutingTableComponents
 
   beforeEach(async function () {
     this.timeout(20 * 1000)
 
-    components = new Components({
+    components = {
       peerId: await createPeerId(),
-      connectionManager: mockConnectionManager(),
-      datastore: new MemoryDatastore(),
-      peerStore: new PersistentPeerStore()
+      connectionManager: stubInterface<ConnectionManager>(),
+      peerStore: stubInterface<PeerStore>()
+    }
+    components.connectionManager = mockConnectionManager({
+      ...components,
+      registrar: stubInterface<Registrar>()
+    })
+    components.peerStore = new PersistentPeerStore({
+      ...components,
+      datastore: new MemoryDatastore()
     })
 
-    table = new RoutingTable({
+    table = new RoutingTable(components, {
       lan: false,
       protocol: PROTOCOL_DHT
     })
-    table.init(components)
     await table.start()
   })
 
@@ -140,7 +149,7 @@ describe('Routing Table', () => {
     const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves({
       newStream: newStreamStub
     })
-    components.getConnectionManager().openConnection = openConnectionStub
+    components.connectionManager.openConnection = openConnectionStub
 
     if (fn == null) {
       throw new Error('nothing added to queue')
@@ -199,7 +208,7 @@ describe('Routing Table', () => {
 
     // libp2p fails to dial the old peer
     const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).rejects(new Error('Could not dial peer'))
-    components.getConnectionManager().openConnection = openConnectionStub
+    components.connectionManager.openConnection = openConnectionStub
 
     if (fn == null) {
       throw new Error('nothing added to queue')
@@ -220,7 +229,7 @@ describe('Routing Table', () => {
 
   it('tags newly found kad-close peers', async () => {
     const remotePeer = await createEd25519PeerId()
-    const tagPeerSpy = sinon.spy(components.getPeerStore(), 'tagPeer')
+    const tagPeerSpy = sinon.spy(components.peerStore, 'tagPeer')
 
     await table.add(remotePeer)
 
@@ -239,10 +248,10 @@ describe('Routing Table', () => {
   it('removes tags from kad-close peers when closer peers are found', async () => {
     async function getTaggedPeers (): Promise<PeerSet> {
       return new PeerSet(await pipe(
-        await components.getPeerStore().all(),
+        await components.peerStore.all(),
         async function * (source) {
           for await (const peer of source) {
-            const tags = await components.getPeerStore().getTags(peer.id)
+            const tags = await components.peerStore.getTags(peer.id)
             const kadCloseTags = tags.filter(tag => tag.name === KAD_CLOSE_TAG_NAME)
 
             if (kadCloseTags.length > 0) {
@@ -254,9 +263,9 @@ describe('Routing Table', () => {
       ))
     }
 
-    const tagPeerSpy = sinon.spy(components.getPeerStore(), 'tagPeer')
-    const unTagPeerSpy = sinon.spy(components.getPeerStore(), 'unTagPeer')
-    const localNodeId = await kadUtils.convertPeerId(components.getPeerId())
+    const tagPeerSpy = sinon.spy(components.peerStore, 'tagPeer')
+    const unTagPeerSpy = sinon.spy(components.peerStore, 'unTagPeer')
+    const localNodeId = await kadUtils.convertPeerId(components.peerId)
     const sortedPeerList = await sortClosestPeers(
       await Promise.all(
         new Array(KBUCKET_SIZE + 1).fill(0).map(async () => await createEd25519PeerId())

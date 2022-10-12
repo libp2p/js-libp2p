@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
-import { GetProvidersHandler } from '../../../src/rpc/handlers/get-providers.js'
+import { GetProvidersHandler, GetProvidersHandlerComponents } from '../../../src/rpc/handlers/get-providers.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from '../../utils/create-peer-id.js'
@@ -15,7 +15,6 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { Components } from '@libp2p/components'
 
 const T = MESSAGE_TYPE.GET_PROVIDERS
 
@@ -40,20 +39,20 @@ describe('rpc - handlers - GetProviders', () => {
     peerRouting = Sinon.createStubInstance(PeerRouting)
     providers = Sinon.createStubInstance(Providers)
 
-    const components = new Components({
-      peerId,
-      datastore: new MemoryDatastore(),
-      peerStore: new PersistentPeerStore()
-    })
+    const components: GetProvidersHandlerComponents = {
+      peerStore: new PersistentPeerStore({
+        peerId,
+        datastore: new MemoryDatastore()
+      })
+    }
 
-    handler = new GetProvidersHandler({
+    handler = new GetProvidersHandler(components, {
       peerRouting,
       providers,
       lan: false
     })
-    handler.init(components)
 
-    addressBook = components.getPeerStore().addressBook
+    addressBook = components.peerStore.addressBook
   })
 
   it('errors with an invalid key ', async () => {

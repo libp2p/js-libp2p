@@ -10,7 +10,6 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import type { RoutingTable } from './index.js'
 import type { Logger } from '@libp2p/logger'
 import type { PeerRouting } from '../peer-routing/index.js'
-import type { Components, Initializable } from '@libp2p/components'
 
 /**
  * Cannot generate random KadIds longer than this + 1
@@ -29,7 +28,7 @@ export interface RoutingTableRefreshInit {
  * A wrapper around `k-bucket`, to provide easy store and
  * retrieval for peers.
  */
-export class RoutingTableRefresh implements Initializable {
+export class RoutingTableRefresh {
   private readonly log: Logger
   private readonly peerRouting: PeerRouting
   private readonly routingTable: RoutingTable
@@ -48,10 +47,6 @@ export class RoutingTableRefresh implements Initializable {
     this.commonPrefixLengthRefreshedAt = []
 
     this.refreshTable = this.refreshTable.bind(this)
-  }
-
-  init (components: Components): void {
-
   }
 
   async start () {

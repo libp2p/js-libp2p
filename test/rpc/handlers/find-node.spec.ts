@@ -7,7 +7,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import Sinon, { SinonStubbedInstance } from 'sinon'
-import { Components } from '@libp2p/components'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
@@ -32,13 +31,12 @@ describe('rpc - handlers - FindNode', () => {
     addressManager = stubInterface<AddressManager>()
 
     handler = new FindNodeHandler({
+      peerId,
+      addressManager
+    }, {
       peerRouting,
       lan: false
     })
-    handler.init(new Components({
-      peerId,
-      addressManager
-    }))
   })
 
   it('returns self, if asked for self', async () => {
@@ -116,13 +114,12 @@ describe('rpc - handlers - FindNode', () => {
       }])
 
     handler = new FindNodeHandler({
+      peerId,
+      addressManager
+    }, {
       peerRouting,
       lan: true
     })
-    handler.init(new Components({
-      peerId,
-      addressManager
-    }))
 
     const response = await handler.handle(sourcePeer, msg)
 

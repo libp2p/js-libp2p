@@ -7,8 +7,10 @@ import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
-import { Components, Initializable } from '@libp2p/components'
 import { PeerSet } from '@libp2p/peer-collections'
+import type { Metrics } from '@libp2p/interface-metrics'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
@@ -66,17 +68,24 @@ export interface RoutingTableInit {
   tagValue?: number
 }
 
+export interface RoutingTableComponents {
+  peerId: PeerId
+  peerStore: PeerStore
+  connectionManager: ConnectionManager
+  metrics?: Metrics
+}
+
 /**
  * A wrapper around `k-bucket`, to provide easy store and
  * retrieval for peers.
  */
-export class RoutingTable implements Startable, Initializable {
+export class RoutingTable implements Startable {
   public kBucketSize: number
   public kb?: KBucketTree
   public pingQueue: Queue
 
   private readonly log: Logger
-  private components: Components = new Components()
+  private readonly components: RoutingTableComponents
   private readonly lan: boolean
   private readonly pingTimeout: number
   private readonly pingConcurrency: number
@@ -85,9 +94,10 @@ export class RoutingTable implements Startable, Initializable {
   private readonly tagName: string
   private readonly tagValue: number
 
-  constructor (init: RoutingTableInit) {
+  constructor (components: RoutingTableComponents, init: RoutingTableInit) {
     const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol, tagName, tagValue } = init
 
+    this.components = components
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
     this.kBucketSize = kBucketSize ?? KBUCKET_SIZE
     this.pingTimeout = pingTimeout ?? PING_TIMEOUT
@@ -99,13 +109,13 @@ export class RoutingTable implements Startable, Initializable {
     this.tagValue = tagValue ?? KAD_CLOSE_TAG_VALUE
 
     const updatePingQueueSizeMetric = () => {
-      this.components.getMetrics()?.updateComponentMetric({
+      this.components.metrics?.updateComponentMetric({
         system: 'libp2p',
         component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
         metric: METRIC_PING_QUEUE_SIZE,
         value: this.pingQueue.size
       })
-      this.components.getMetrics()?.updateComponentMetric({
+      this.components.metrics?.updateComponentMetric({
         system: 'libp2p',
         component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
         metric: METRIC_PING_RUNNING,
@@ -120,10 +130,6 @@ export class RoutingTable implements Startable, Initializable {
     this._onPing = this._onPing.bind(this)
   }
 
-  init (components: Components): void {
-    this.components = components
-  }
-
   isStarted () {
     return this.running
   }
@@ -132,7 +138,7 @@ export class RoutingTable implements Startable, Initializable {
     this.running = true
 
     const kBuck: KBucketTree = new KBuck({
-      localNodeId: await utils.convertPeerId(this.components.getPeerId()),
+      localNodeId: await utils.convertPeerId(this.components.peerId),
       numberOfNodesPerKBucket: this.kBucketSize,
       numberOfNodesToPing: 1
     })
@@ -169,13 +175,13 @@ export class RoutingTable implements Startable, Initializable {
       Promise.resolve()
         .then(async () => {
           for (const peer of addedPeers) {
-            await this.components.getPeerStore().tagPeer(peer, this.tagName, {
+            await this.components.peerStore.tagPeer(peer, this.tagName, {
               value: this.tagValue
             })
           }
 
           for (const peer of removedPeers) {
-            await this.components.getPeerStore().unTagPeer(peer, this.tagName)
+            await this.components.peerStore.unTagPeer(peer, this.tagName)
           }
         })
         .catch(err => {
@@ -227,7 +233,7 @@ export class RoutingTable implements Startable, Initializable {
               }
 
               this.log('pinging old contact %p', oldContact.peer)
-              const connection = await this.components.getConnectionManager().openConnection(oldContact.peer, options)
+              const connection = await this.components.connectionManager.openConnection(oldContact.peer, options)
               const stream = await connection.newStream(this.protocol, options)
               stream.close()
               responded++
@@ -244,7 +250,7 @@ export class RoutingTable implements Startable, Initializable {
                 timeoutController.clear()
               }
 
-              this.components.getMetrics()?.updateComponentMetric({
+              this.components.metrics?.updateComponentMetric({
                 system: 'libp2p',
                 component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
                 metric: METRIC_ROUTING_TABLE_SIZE,
@@ -334,7 +340,7 @@ export class RoutingTable implements Startable, Initializable {
 
     this.log('added %p with kad id %b', peer, id)
 
-    this.components.getMetrics()?.updateComponentMetric({
+    this.components.metrics?.updateComponentMetric({
       system: 'libp2p',
       component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
       metric: METRIC_ROUTING_TABLE_SIZE,
@@ -354,7 +360,7 @@ export class RoutingTable implements Startable, Initializable {
 
     this.kb.remove(id)
 
-    this.components.getMetrics()?.updateComponentMetric({
+    this.components.metrics?.updateComponentMetric({
       system: 'libp2p',
       component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
       metric: METRIC_ROUTING_TABLE_SIZE,

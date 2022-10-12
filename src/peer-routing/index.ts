@@ -22,7 +22,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { QueryFunc } from '../query/types.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Components, Initializable } from '@libp2p/components'
+import type { KadDHTComponents } from '../index.js'
 
 export interface PeerRoutingInit {
   routingTable: RoutingTable
@@ -32,26 +32,23 @@ export interface PeerRoutingInit {
   lan: boolean
 }
 
-export class PeerRouting implements Initializable {
-  private components: Components = new Components()
+export class PeerRouting {
+  private readonly components: KadDHTComponents
   private readonly log: Logger
   private readonly routingTable: RoutingTable
   private readonly network: Network
   private readonly validators: Validators
   private readonly queryManager: QueryManager
 
-  constructor (init: PeerRoutingInit) {
+  constructor (components: KadDHTComponents, init: PeerRoutingInit) {
     const { routingTable, network, validators, queryManager, lan } = init
 
+    this.components = components
     this.routingTable = routingTable
     this.network = network
     this.validators = validators
     this.queryManager = queryManager
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:peer-routing`)
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   /**
@@ -66,7 +63,7 @@ export class PeerRouting implements Initializable {
       this.log('findPeerLocal found %p in routing table', peer)
 
       try {
-        peerData = await this.components.getPeerStore().get(p)
+        peerData = await this.components.peerStore.get(p)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -76,7 +73,7 @@ export class PeerRouting implements Initializable {
 
     if (peerData == null) {
       try {
-        peerData = await this.components.getPeerStore().get(peer)
+        peerData = await this.components.peerStore.get(peer)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -146,7 +143,7 @@ export class PeerRouting implements Initializable {
     if (pi != null) {
       this.log('found local')
       yield finalPeerEvent({
-        from: this.components.getPeerId(),
+        from: this.components.peerId,
         peer: pi
       })
       return
@@ -160,11 +157,11 @@ export class PeerRouting implements Initializable {
 
     if (match != null) {
       try {
-        const peer = await this.components.getPeerStore().get(id)
+        const peer = await this.components.peerStore.get(id)
 
         this.log('found in peerStore')
         yield finalPeerEvent({
-          from: this.components.getPeerId(),
+          from: this.components.peerId,
           peer: {
             id: peer.id,
             multiaddrs: peer.addresses.map((address) => address.multiaddr),
@@ -210,7 +207,7 @@ export class PeerRouting implements Initializable {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.components.getPeerId(), error: errcode(new Error('Not found'), 'ERR_NOT_FOUND') })
+      yield queryErrorEvent({ from: this.components.peerId, error: errcode(new Error('Not found'), 'ERR_NOT_FOUND') })
     }
   }
 
@@ -246,10 +243,10 @@ export class PeerRouting implements Initializable {
 
     for (const peer of peers.peers) {
       yield finalPeerEvent({
-        from: this.components.getPeerId(),
+        from: this.components.peerId,
         peer: {
           id: peer,
-          multiaddrs: (await (this.components.getPeerStore().addressBook.get(peer)) ?? []).map(addr => addr.multiaddr),
+          multiaddrs: (await (this.components.peerStore.addressBook.get(peer)) ?? []).map(addr => addr.multiaddr),
           protocols: []
         }
       })
@@ -310,8 +307,8 @@ export class PeerRouting implements Initializable {
       }
 
       try {
-        const addresses = await this.components.getPeerStore().addressBook.get(peerId)
-        const protocols = await this.components.getPeerStore().protoBook.get(peerId)
+        const addresses = await this.components.peerStore.addressBook.get(peerId)
+        const protocols = await this.components.peerStore.protoBook.get(peerId)
 
         output.push({
           id: peerId,

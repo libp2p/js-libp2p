@@ -34,7 +34,7 @@ describe('Network', () => {
     it('send and response echo', async () => {
       const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
 
-      const events = await all(dht.lan.network.sendRequest(dht.components.getPeerId(), msg))
+      const events = await all(dht.lan.network.sendRequest(dht.components.peerId, msg))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()
@@ -53,7 +53,7 @@ describe('Network', () => {
       const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
 
       // mock it
-      dht.components.getConnectionManager().openConnection = async (peer: PeerId) => {
+      dht.components.connectionManager.openConnection = async (peer: PeerId) => {
         // @ts-expect-error incomplete implementation
         const connection: Connection = {
           newStream: async (protocols: string | string[]) => {
@@ -98,7 +98,7 @@ describe('Network', () => {
         return connection
       }
 
-      const events = await all(dht.lan.network.sendRequest(dht.components.getPeerId(), msg))
+      const events = await all(dht.lan.network.sendRequest(dht.components.peerId, msg))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()

@@ -5,18 +5,17 @@ import type { RoutingTable } from '../routing-table'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
-import { FindNodeHandler } from './handlers/find-node.js'
-import { GetProvidersHandler } from './handlers/get-providers.js'
-import { GetValueHandler } from './handlers/get-value.js'
+import { FindNodeHandler, FindNodeHandlerComponents } from './handlers/find-node.js'
+import { GetProvidersHandler, GetProvidersHandlerComponents } from './handlers/get-providers.js'
+import { GetValueHandler, GetValueHandlerComponents } from './handlers/get-value.js'
 import { PingHandler } from './handlers/ping.js'
-import { PutValueHandler } from './handlers/put-value.js'
+import { PutValueHandler, PutValueHandlerComponents } from './handlers/put-value.js'
 import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { Providers } from '../providers'
 import type { PeerRouting } from '../peer-routing'
 import type { Validators } from '@libp2p/interface-dht'
-import type { Components, Initializable } from '@libp2p/components'
 
-export interface DHTMessageHandler extends Initializable {
+export interface DHTMessageHandler {
   handle: (peerId: PeerId, msg: Message) => Promise<Message | undefined>
 }
 
@@ -28,30 +27,27 @@ export interface RPCInit {
   lan: boolean
 }
 
-export class RPC implements Initializable {
+export interface RPCComponents extends GetValueHandlerComponents, PutValueHandlerComponents, FindNodeHandlerComponents, GetProvidersHandlerComponents {
+
+}
+
+export class RPC {
   private readonly handlers: Record<string, DHTMessageHandler>
   private readonly routingTable: RoutingTable
   private readonly log: Logger
 
-  constructor (init: RPCInit) {
+  constructor (components: RPCComponents, init: RPCInit) {
     const { providers, peerRouting, validators, lan } = init
 
     this.log = logger('libp2p:kad-dht:rpc')
-
     this.routingTable = init.routingTable
     this.handlers = {
-      [MESSAGE_TYPE.GET_VALUE]: new GetValueHandler({ peerRouting }),
-      [MESSAGE_TYPE.PUT_VALUE]: new PutValueHandler({ validators }),
-      [MESSAGE_TYPE.FIND_NODE]: new FindNodeHandler({ peerRouting, lan }),
+      [MESSAGE_TYPE.GET_VALUE]: new GetValueHandler(components, { peerRouting }),
+      [MESSAGE_TYPE.PUT_VALUE]: new PutValueHandler(components, { validators }),
+      [MESSAGE_TYPE.FIND_NODE]: new FindNodeHandler(components, { peerRouting, lan }),
       [MESSAGE_TYPE.ADD_PROVIDER]: new AddProviderHandler({ providers }),
-      [MESSAGE_TYPE.GET_PROVIDERS]: new GetProvidersHandler({ peerRouting, providers, lan }),
+      [MESSAGE_TYPE.GET_PROVIDERS]: new GetProvidersHandler(components, { peerRouting, providers, lan }),
       [MESSAGE_TYPE.PING]: new PingHandler()
-    }
-  }
-
-  init (components: Components): void {
-    for (const handler of Object.values(this.handlers)) {
-      handler.init(components)
     }
   }
 

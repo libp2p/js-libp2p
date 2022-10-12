@@ -9,8 +9,8 @@ import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { CID } from 'multiformats'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import { Components, Initializable } from '@libp2p/components'
 import { symbol } from '@libp2p/interface-peer-discovery'
+import type { KadDHTComponents } from './index.js'
 
 const log = logger('libp2p:kad-dht')
 
@@ -18,14 +18,15 @@ const log = logger('libp2p:kad-dht')
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualDHT, Initializable {
-  public wan: KadDHT
-  public lan: KadDHT
-  public components: Components = new Components()
+export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualDHT {
+  public readonly wan: KadDHT
+  public readonly lan: KadDHT
+  public readonly components: KadDHTComponents
 
-  constructor (wan: KadDHT, lan: KadDHT) {
+  constructor (components: KadDHTComponents, wan: KadDHT, lan: KadDHT) {
     super()
 
+    this.components = components
     this.wan = wan
     this.lan = lan
 
@@ -48,12 +49,6 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
 
   get [Symbol.toStringTag] () {
     return '@libp2p/dual-kad-dht'
-  }
-
-  init (components: Components): void {
-    this.components = components
-    this.wan.init(components)
-    this.lan.init(components)
   }
 
   /**
@@ -146,7 +141,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
 
     if (!foundValue) {
       yield queryErrorEvent({
-        from: this.components.getPeerId(),
+        from: this.components.peerId,
         error: errCode(new Error('Not found'), 'ERR_NOT_FOUND')
       })
     }

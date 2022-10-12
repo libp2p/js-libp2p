@@ -5,13 +5,12 @@ import {
   removePublicAddresses
 } from '../../utils.js'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
-import { Components } from '@libp2p/components'
 import { protocols } from '@multiformats/multiaddr'
-import type { Initializable } from '@libp2p/components'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { DHTMessageHandler } from '../index.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:find-node')
 
@@ -20,19 +19,22 @@ export interface FindNodeHandlerInit {
   lan: boolean
 }
 
-export class FindNodeHandler implements DHTMessageHandler, Initializable {
+export interface FindNodeHandlerComponents {
+  peerId: PeerId
+  addressManager: AddressManager
+}
+
+export class FindNodeHandler implements DHTMessageHandler {
   private readonly peerRouting: PeerRouting
   private readonly lan: boolean
-  private components = new Components()
+  private readonly components: FindNodeHandlerComponents
 
-  constructor (init: FindNodeHandlerInit) {
+  constructor (components: FindNodeHandlerComponents, init: FindNodeHandlerInit) {
     const { peerRouting, lan } = init
+
+    this.components = components
     this.peerRouting = peerRouting
     this.lan = Boolean(lan)
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   /**
@@ -43,10 +45,10 @@ export class FindNodeHandler implements DHTMessageHandler, Initializable {
 
     let closer: PeerInfo[] = []
 
-    if (uint8ArrayEquals(this.components.getPeerId().toBytes(), msg.key)) {
+    if (uint8ArrayEquals(this.components.peerId.toBytes(), msg.key)) {
       closer = [{
-        id: this.components.getPeerId(),
-        multiaddrs: this.components.getAddressManager().getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code)),
+        id: this.components.peerId,
+        multiaddrs: this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code)),
         protocols: []
       }]
     } else {

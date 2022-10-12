@@ -8,7 +8,7 @@ import { logger, Logger } from '@libp2p/logger'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { pipe } from 'it-pipe'
-import { Components, Initializable } from '@libp2p/components'
+import type { KadDHTComponents } from './index.js'
 
 export interface QuerySelfInit {
   lan: boolean
@@ -21,9 +21,9 @@ export interface QuerySelfInit {
 /**
  * Receives notifications of new peers joining the network that support the DHT protocol
  */
-export class QuerySelf implements Startable, Initializable {
+export class QuerySelf implements Startable {
   private readonly log: Logger
-  private components: Components = new Components()
+  private readonly components: KadDHTComponents
   private readonly peerRouting: PeerRouting
   private readonly count: number
   private readonly interval: number
@@ -32,19 +32,16 @@ export class QuerySelf implements Startable, Initializable {
   private timeoutId?: NodeJS.Timer
   private controller?: AbortController
 
-  constructor (init: QuerySelfInit) {
+  constructor (components: KadDHTComponents, init: QuerySelfInit) {
     const { peerRouting, lan, count, interval, queryTimeout } = init
 
+    this.components = components
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:query-self`)
     this.running = false
     this.peerRouting = peerRouting
     this.count = count ?? K
     this.interval = interval ?? QUERY_SELF_INTERVAL
     this.queryTimeout = queryTimeout ?? QUERY_SELF_TIMEOUT
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   isStarted () {
@@ -86,7 +83,7 @@ export class QuerySelf implements Startable, Initializable {
           }
         } catch {} // fails on node < 15.4
         const found = await pipe(
-          this.peerRouting.getClosestPeers(this.components.getPeerId().toBytes(), {
+          this.peerRouting.getClosestPeers(this.components.peerId.toBytes(), {
             signal
           }),
           (source) => take(source, this.count),

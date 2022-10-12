@@ -4,7 +4,7 @@ import { logger } from '@libp2p/logger'
 import type { Logger } from '@libp2p/logger'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Components, Initializable } from '@libp2p/components'
+import type { KadDHTComponents } from '.'
 
 export interface TopologyListenerInit {
   protocol: string
@@ -18,25 +18,22 @@ export interface TopologyListenerEvents {
 /**
  * Receives notifications of new peers joining the network that support the DHT protocol
  */
-export class TopologyListener extends EventEmitter<TopologyListenerEvents> implements Startable, Initializable {
+export class TopologyListener extends EventEmitter<TopologyListenerEvents> implements Startable {
   private readonly log: Logger
-  private components: Components = new Components()
+  private readonly components: KadDHTComponents
   private readonly protocol: string
   private running: boolean
   private registrarId?: string
 
-  constructor (init: TopologyListenerInit) {
+  constructor (components: KadDHTComponents, init: TopologyListenerInit) {
     super()
 
     const { protocol, lan } = init
 
+    this.components = components
     this.log = logger(`libp2p:kad-dht:topology-listener:${lan ? 'lan' : 'wan'}`)
     this.running = false
     this.protocol = protocol
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   isStarted () {
@@ -62,7 +59,7 @@ export class TopologyListener extends EventEmitter<TopologyListenerEvents> imple
         }))
       }
     })
-    this.registrarId = await this.components.getRegistrar().register(this.protocol, topology)
+    this.registrarId = await this.components.registrar.register(this.protocol, topology)
   }
 
   /**
@@ -73,7 +70,7 @@ export class TopologyListener extends EventEmitter<TopologyListenerEvents> imple
 
     // unregister protocol and handlers
     if (this.registrarId != null) {
-      this.components.getRegistrar().unregister(this.registrarId)
+      this.components.registrar.unregister(this.registrarId)
       this.registrarId = undefined
     }
   }

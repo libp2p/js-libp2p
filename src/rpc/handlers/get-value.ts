@@ -9,7 +9,8 @@ import { logger } from '@libp2p/logger'
 import type { DHTMessageHandler } from '../index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerRouting } from '../../peer-routing/index.js'
-import { Components, Initializable } from '@libp2p/components'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-value')
 
@@ -17,18 +18,20 @@ export interface GetValueHandlerInit {
   peerRouting: PeerRouting
 }
 
-export class GetValueHandler implements DHTMessageHandler, Initializable {
-  private components: Components = new Components()
+export interface GetValueHandlerComponents {
+  peerStore: PeerStore
+  datastore: Datastore
+}
+
+export class GetValueHandler implements DHTMessageHandler {
+  private readonly components: GetValueHandlerComponents
   private readonly peerRouting: PeerRouting
 
-  constructor (init: GetValueHandlerInit) {
+  constructor (components: GetValueHandlerComponents, init: GetValueHandlerInit) {
     const { peerRouting } = init
 
-    this.peerRouting = peerRouting
-  }
-
-  init (components: Components): void {
     this.components = components
+    this.peerRouting = peerRouting
   }
 
   async handle (peerId: PeerId, msg: Message) {
@@ -48,7 +51,7 @@ export class GetValueHandler implements DHTMessageHandler, Initializable {
       let pubKey: Uint8Array | undefined
 
       try {
-        const key = await this.components.getPeerStore().keyBook.get(idFromKey)
+        const key = await this.components.peerStore.keyBook.get(idFromKey)
 
         if (key == null) {
           throw errcode(new Error('No public key found in key book'), 'ERR_NOT_FOUND')
@@ -99,7 +102,7 @@ export class GetValueHandler implements DHTMessageHandler, Initializable {
     // Fetch value from ds
     let rawRecord
     try {
-      rawRecord = await this.components.getDatastore().get(dsKey)
+      rawRecord = await this.components.datastore.get(dsKey)
     } catch (err: any) {
       if (err.code === 'ERR_NOT_FOUND') {
         return undefined
@@ -118,7 +121,7 @@ export class GetValueHandler implements DHTMessageHandler, Initializable {
     if (record.timeReceived == null ||
       Date.now() - record.timeReceived.getTime() > MAX_RECORD_AGE) {
       // If record is bad delete it and return
-      await this.components.getDatastore().delete(dsKey)
+      await this.components.datastore.delete(dsKey)
       return undefined
     }
 

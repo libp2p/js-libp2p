@@ -22,7 +22,7 @@ import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { Components, Initializable } from '@libp2p/components'
+import type { KadDHTComponents } from '../index.js'
 
 export interface ContentRoutingInit {
   network: Network
@@ -33,28 +33,25 @@ export interface ContentRoutingInit {
   lan: boolean
 }
 
-export class ContentRouting implements Initializable {
+export class ContentRouting {
   private readonly log: Logger
-  private components: Components = new Components()
+  private readonly components: KadDHTComponents
   private readonly network: Network
   private readonly peerRouting: PeerRouting
   private readonly queryManager: QueryManager
   private readonly routingTable: RoutingTable
   private readonly providers: Providers
 
-  constructor (init: ContentRoutingInit) {
+  constructor (components: KadDHTComponents, init: ContentRoutingInit) {
     const { network, peerRouting, queryManager, routingTable, providers, lan } = init
 
+    this.components = components
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
     this.network = network
     this.peerRouting = peerRouting
     this.queryManager = queryManager
     this.routingTable = routingTable
     this.providers = providers
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   /**
@@ -65,11 +62,11 @@ export class ContentRouting implements Initializable {
     this.log('provide %s', key)
 
     // Add peer as provider
-    await this.providers.addProvider(key, this.components.getPeerId())
+    await this.providers.addProvider(key, this.components.peerId)
 
     const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, key.bytes, 0)
     msg.providerPeers = [{
-      id: this.components.getPeerId(),
+      id: this.components.peerId,
       multiaddrs,
       protocols: []
     }]
@@ -144,13 +141,13 @@ export class ContentRouting implements Initializable {
       for (const peerId of provs.slice(0, toFind)) {
         providers.push({
           id: peerId,
-          multiaddrs: ((await this.components.getPeerStore().addressBook.get(peerId)) ?? []).map(address => address.multiaddr),
+          multiaddrs: ((await this.components.peerStore.addressBook.get(peerId)) ?? []).map(address => address.multiaddr),
           protocols: []
         })
       }
 
-      yield peerResponseEvent({ from: this.components.getPeerId(), messageType: MESSAGE_TYPE.GET_PROVIDERS, providers })
-      yield providerEvent({ from: this.components.getPeerId(), providers: providers })
+      yield peerResponseEvent({ from: this.components.peerId, messageType: MESSAGE_TYPE.GET_PROVIDERS, providers })
+      yield providerEvent({ from: this.components.peerId, providers: providers })
     }
 
     // All done

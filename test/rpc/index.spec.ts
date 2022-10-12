@@ -6,7 +6,7 @@ import { pipe } from 'it-pipe'
 import * as lp from 'it-length-prefixed'
 import all from 'it-all'
 import { Message, MESSAGE_TYPE } from '../../src/message/index.js'
-import { RPC } from '../../src/rpc/index.js'
+import { RPC, RPCComponents } from '../../src/rpc/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createPeerId } from '../utils/create-peer-id.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -20,12 +20,13 @@ import type { Datastore } from 'interface-datastore'
 import { RoutingTable } from '../../src/routing-table/index.js'
 import type { Duplex } from 'it-stream-types'
 import { mockStream } from '@libp2p/interface-mocks'
-import { Components } from '@libp2p/components'
 import { start } from '@libp2p/interfaces/startable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import map from 'it-map'
 import { stubInterface } from 'ts-sinon'
 import type { Connection } from '@libp2p/interface-connection'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 describe('rpc', () => {
   let peerId: PeerId
@@ -40,27 +41,28 @@ describe('rpc', () => {
     peerId = await createPeerId()
     datastore = new MemoryDatastore()
 
-    const components = new Components({
+    const components: RPCComponents = {
       peerId,
       datastore,
-      peerStore: new PersistentPeerStore()
-    })
+      peerStore: stubInterface<PeerStore>(),
+      addressManager: stubInterface<AddressManager>()
+    }
+    components.peerStore = new PersistentPeerStore(components)
 
-    await start(components)
+    await start(...Object.values(components))
 
     providers = Sinon.createStubInstance(Providers)
     peerRouting = Sinon.createStubInstance(PeerRouting)
     routingTable = Sinon.createStubInstance(RoutingTable)
     validators = {}
 
-    rpc = new RPC({
+    rpc = new RPC(components, {
       routingTable,
       providers,
       peerRouting,
       validators,
       lan: false
     })
-    rpc.init(components)
   })
 
   it('calls back with the response', async () => {

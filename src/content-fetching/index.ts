@@ -24,7 +24,7 @@ import type { Network } from '../network.js'
 import type { Logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { QueryFunc } from '../query/types.js'
-import { Components, Initializable } from '@libp2p/components'
+import type { KadDHTComponents } from '../index.js'
 
 export interface ContentFetchingInit {
   validators: Validators
@@ -36,9 +36,9 @@ export interface ContentFetchingInit {
   lan: boolean
 }
 
-export class ContentFetching implements Initializable {
+export class ContentFetching {
   private readonly log: Logger
-  private components: Components = new Components()
+  private readonly components: KadDHTComponents
   private readonly validators: Validators
   private readonly selectors: Selectors
   private readonly peerRouting: PeerRouting
@@ -46,8 +46,10 @@ export class ContentFetching implements Initializable {
   private readonly routingTable: RoutingTable
   private readonly network: Network
 
-  constructor (init: ContentFetchingInit) {
+  constructor (components: KadDHTComponents, init: ContentFetchingInit) {
     const { validators, selectors, peerRouting, queryManager, routingTable, network, lan } = init
+
+    this.components = components
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
     this.validators = validators
     this.selectors = selectors
@@ -57,13 +59,9 @@ export class ContentFetching implements Initializable {
     this.network = network
   }
 
-  init (components: Components): void {
-    this.components = components
-  }
-
   async putLocal (key: Uint8Array, rec: Uint8Array) { // eslint-disable-line require-await
     const dsKey = bufferToRecordKey(key)
-    await this.components.getDatastore().put(dsKey, rec)
+    await this.components.datastore.put(dsKey, rec)
   }
 
   /**
@@ -77,7 +75,7 @@ export class ContentFetching implements Initializable {
 
     this.log('fetching record for key %k', dsKey)
 
-    const raw = await this.components.getDatastore().get(dsKey)
+    const raw = await this.components.datastore.get(dsKey)
     this.log('found %k in local datastore', dsKey)
 
     const rec = Libp2pRecord.deserialize(raw)
@@ -102,11 +100,11 @@ export class ContentFetching implements Initializable {
       }
 
       // correct ourself
-      if (this.components.getPeerId().equals(from)) {
+      if (this.components.peerId.equals(from)) {
         try {
           const dsKey = bufferToRecordKey(key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
-          await this.components.getDatastore().put(dsKey, fixupRec.subarray())
+          await this.components.datastore.put(dsKey, fixupRec.subarray())
         } catch (err: any) {
           this.log.error('Failed error correcting self', err)
         }
@@ -147,7 +145,7 @@ export class ContentFetching implements Initializable {
     // store the record locally
     const dsKey = bufferToRecordKey(key)
     this.log(`storing record for key ${dsKey.toString()}`)
-    await this.components.getDatastore().put(dsKey, record.subarray())
+    await this.components.datastore.put(dsKey, record.subarray())
 
     // put record to the closest peers
     yield * pipe(
@@ -246,7 +244,7 @@ export class ContentFetching implements Initializable {
 
       yield valueEvent({
         value: localRec.value,
-        from: this.components.getPeerId()
+        from: this.components.peerId
       })
     } catch (err: any) {
       this.log('error getting local value for %b', key, err)
