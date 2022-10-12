@@ -6,7 +6,8 @@ import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { symbol } from '@libp2p/interface-peer-discovery'
-import { Components, Initializable } from '@libp2p/components'
+import type { Startable } from '@libp2p/interfaces/dist/src/startable'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const log = logger('libp2p:bootstrap')
 
@@ -15,7 +16,7 @@ const DEFAULT_BOOTSTRAP_TAG_VALUE = 50
 const DEFAULT_BOOTSTRAP_TAG_TTL = 120000
 const DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT = 1000
 
-export interface BootstrapOptions {
+export interface BootstrapInit {
   /**
    * The list of peer addresses in multi-address format
    */
@@ -42,24 +43,29 @@ export interface BootstrapOptions {
   tagTTL?: number
 }
 
+export interface BootstrapComponents {
+  peerStore: PeerStore
+}
+
 /**
  * Emits 'peer' events on a regular interval for each peer in the provided list.
  */
-export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Initializable {
+class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   static tag = 'bootstrap'
 
   private timer?: ReturnType<typeof setTimeout>
   private readonly list: PeerInfo[]
   private readonly timeout: number
-  private components: Components = new Components()
-  private readonly _init: BootstrapOptions
+  private readonly components: BootstrapComponents
+  private readonly _init: BootstrapInit
 
-  constructor (options: BootstrapOptions = { list: [] }) {
+  constructor (components: BootstrapComponents, options: BootstrapInit = { list: [] }) {
     if (options.list == null || options.list.length === 0) {
       throw new Error('Bootstrap requires a list of peer addresses')
     }
     super()
 
+    this.components = components
     this.timeout = options.timeout ?? DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT
     this.list = []
 
@@ -87,10 +93,6 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
     }
 
     this._init = options
-  }
-
-  init (components: Components) {
-    this.components = components
   }
 
   get [symbol] (): true {
@@ -131,7 +133,7 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
     }
 
     for (const peerData of this.list) {
-      await this.components.getPeerStore().tagPeer(peerData.id, this._init.tagName ?? DEFAULT_BOOTSTRAP_TAG_NAME, {
+      await this.components.peerStore.tagPeer(peerData.id, this._init.tagName ?? DEFAULT_BOOTSTRAP_TAG_NAME, {
         value: this._init.tagValue ?? DEFAULT_BOOTSTRAP_TAG_VALUE,
         ttl: this._init.tagTTL ?? DEFAULT_BOOTSTRAP_TAG_TTL
       })
@@ -155,4 +157,8 @@ export class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements Peer
 
     this.timer = undefined
   }
+}
+
+export function bootstrap (init: BootstrapInit): (components: BootstrapComponents) => PeerDiscovery {
+  return (components: BootstrapComponents) => new Bootstrap(components, init)
 }
