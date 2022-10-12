@@ -168,7 +168,7 @@
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-ws": "^5.0.0",
-    "multiformats": "^9.9.0",
+    "multiformats": "^10.0.0",
     "p-defer": "^4.0.0",
     "p-timeout": "^6.0.0",
     "protons-runtime": "^4.0.1",
