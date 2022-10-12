@@ -24,7 +24,11 @@ export interface ProtectorInit {
   psk: Uint8Array
 }
 
-export class PreSharedKeyConnectionProtector implements ConnectionProtector {
+export interface PreSharedKeyConnectionProtectorComponents {
+
+}
+
+class PreSharedKeyConnectionProtector implements ConnectionProtector {
   public tag: string
   private readonly psk: Uint8Array
   private readonly enabled: boolean
@@ -95,4 +99,8 @@ export class PreSharedKeyConnectionProtector implements ConnectionProtector {
       ...internal
     }
   }
+}
+
+export function preSharedKey (init: ProtectorInit): (components?: PreSharedKeyConnectionProtectorComponents) => ConnectionProtector {
+  return () => new PreSharedKeyConnectionProtector(init)
 }

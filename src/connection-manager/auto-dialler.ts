@@ -7,7 +7,9 @@ import { pipe } from 'it-pipe'
 import filter from 'it-filter'
 import sort from 'it-sort'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const log = logger('libp2p:connection-manager:auto-dialler')
 
@@ -28,6 +30,12 @@ export interface AutoDiallerInit {
   autoDialInterval?: number
 }
 
+export interface AutoDiallerComponents {
+  peerId: PeerId
+  connectionManager: ConnectionManager
+  peerStore: PeerStore
+}
+
 const defaultOptions: Partial<AutoDiallerInit> = {
   enabled: true,
   minConnections: 0,
@@ -35,7 +43,7 @@ const defaultOptions: Partial<AutoDiallerInit> = {
 }
 
 export class AutoDialler implements Startable {
-  private readonly components: Components
+  private readonly components: AutoDiallerComponents
   private readonly options: Required<AutoDiallerInit>
   private running: boolean
   private autoDialTimeout?: ReturnType<retimer>
@@ -45,7 +53,7 @@ export class AutoDialler implements Startable {
    * It will keep the number of connections below the upper limit and sort
    * the peers to connect based on wether we know their keys and protocols.
    */
-  constructor (components: Components, init: AutoDiallerInit) {
+  constructor (components: AutoDiallerComponents, init: AutoDiallerInit) {
     this.components = components
     this.options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
     this.running = false
@@ -102,19 +110,19 @@ export class AutoDialler implements Startable {
     const minConnections = this.options.minConnections
 
     // Already has enough connections
-    if (this.components.getConnectionManager().getConnections().length >= minConnections) {
+    if (this.components.connectionManager.getConnections().length >= minConnections) {
       this.autoDialTimeout = retimer(this._autoDial, this.options.autoDialInterval)
 
       return
     }
 
     // Sort peers on whether we know protocols or public keys for them
-    const allPeers = await this.components.getPeerStore().all()
+    const allPeers = await this.components.peerStore.all()
 
     const peers = await pipe(
       // shuffle the peers
       allPeers.sort(() => Math.random() > 0.5 ? 1 : -1),
-      (source) => filter(source, (peer) => !peer.id.equals(this.components.getPeerId())),
+      (source) => filter(source, (peer) => !peer.id.equals(this.components.peerId)),
       (source) => sort(source, (a, b) => {
         if (b.protocols.length > a.protocols.length) {
           return 1
@@ -126,7 +134,7 @@ export class AutoDialler implements Startable {
       async (source) => await all(source)
     )
 
-    for (let i = 0; this.running && i < peers.length && this.components.getConnectionManager().getConnections().length < minConnections; i++) {
+    for (let i = 0; this.running && i < peers.length && this.components.connectionManager.getConnections().length < minConnections; i++) {
       // Connection Manager was stopped during async dial
       if (!this.running) {
         return
@@ -134,10 +142,10 @@ export class AutoDialler implements Startable {
 
       const peer = peers[i]
 
-      if (this.components.getConnectionManager().getConnections(peer.id).length === 0) {
+      if (this.components.connectionManager.getConnections(peer.id).length === 0) {
         log('connecting to a peerStore stored peer %p', peer.id)
         try {
-          await this.components.getConnectionManager().openConnection(peer.id)
+          await this.components.connectionManager.openConnection(peer.id)
         } catch (err: any) {
           log.error('could not connect to peerStore stored peer', err)
         }

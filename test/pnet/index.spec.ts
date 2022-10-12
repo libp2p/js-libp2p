@@ -3,7 +3,7 @@ import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { PreSharedKeyConnectionProtector, generateKey } from '../../src/pnet/index.js'
+import { preSharedKey, generateKey } from '../../src/pnet/index.js'
 import { INVALID_PSK } from '../../src/pnet/errors.js'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -18,11 +18,11 @@ generateKey(wrongSwarmKeyBuffer)
 
 describe('private network', () => {
   it('should accept a valid psk buffer', () => {
-    const protector = new PreSharedKeyConnectionProtector({
+    const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })
+    })()
 
-    expect(protector.tag).to.equal('/key/swarm/psk/1.0.0/')
+    expect(protector).to.have.property('tag', '/key/swarm/psk/1.0.0/')
   })
 
   it('should protect a simple connection', async () => {
@@ -33,9 +33,9 @@ describe('private network', () => {
       ],
       remotePeer: await createEd25519PeerId()
     })
-    const protector = new PreSharedKeyConnectionProtector({
+    const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })
+    })()
 
     const [aToB, bToA] = await Promise.all([
       protector.protect(inbound),
@@ -68,13 +68,13 @@ describe('private network', () => {
       ],
       remotePeer: await createEd25519PeerId()
     })
-    const protector = new PreSharedKeyConnectionProtector({
+    const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })
-    const protectorB = new PreSharedKeyConnectionProtector({
+    })()
+    const protectorB = preSharedKey({
       enabled: true,
       psk: wrongSwarmKeyBuffer
-    })
+    })()
 
     const [aToB, bToA] = await Promise.all([
       protector.protect(inbound),
@@ -97,17 +97,17 @@ describe('private network', () => {
   describe('invalid psks', () => {
     it('should not accept a bad psk', () => {
       expect(() => {
-        return new PreSharedKeyConnectionProtector({
+        return preSharedKey({
           psk: uint8ArrayFromString('not-a-key')
-        })
+        })()
       }).to.throw(INVALID_PSK)
     })
 
     it('should not accept a psk of incorrect length', () => {
       expect(() => {
-        return new PreSharedKeyConnectionProtector({
+        return preSharedKey({
           psk: uint8ArrayFromString('/key/swarm/psk/1.0.0/\n/base16/\ndffb7e')
-        })
+        })()
       }).to.throw(INVALID_PSK)
     })
   })

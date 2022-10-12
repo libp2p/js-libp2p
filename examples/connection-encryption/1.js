@@ -1,6 +1,6 @@
 import { createLibp2p } from '../../dist/src/index.js'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -11,9 +11,9 @@ const createNode = async () => {
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()]
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [() => new Noise()]
   })
 
   await node.start()

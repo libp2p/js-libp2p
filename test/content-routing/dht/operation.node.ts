@@ -15,7 +15,7 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
 
 async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2pNode) {
-  const addrs = await libp2p.components.getPeerStore().addressBook.get(remotePeerId)
+  const addrs = await libp2p.components.peerStore.addressBook.get(remotePeerId)
 
   if (addrs.length === 0) {
     throw new Error('No addrs found')
@@ -59,7 +59,7 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      await libp2p.components.getPeerStore().addressBook.set(remotePeerId, [remoteListenAddr])
+      await libp2p.components.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
       remAddr = await getRemoteAddr(remotePeerId, libp2p)
     })
 
@@ -94,9 +94,9 @@ describe('DHT subsystem operates correctly', () => {
         pWaitFor(() => remoteLibp2p.dht.lan.routingTable.size === 1)
       ])
 
-      await libp2p.components.getContentRouting().put(key, value)
+      await libp2p.components.contentRouting.put(key, value)
 
-      const fetchedValue = await remoteLibp2p.components.getContentRouting().get(key)
+      const fetchedValue = await remoteLibp2p.components.contentRouting.get(key)
       expect(fetchedValue).to.equalBytes(value)
     })
   })
@@ -120,7 +120,7 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      await libp2p.components.getPeerStore().addressBook.set(remotePeerId, [remoteListenAddr])
+      await libp2p.components.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
       remAddr = await getRemoteAddr(remotePeerId, libp2p)
     })
 
@@ -166,9 +166,9 @@ describe('DHT subsystem operates correctly', () => {
       await start(dht)
 
       await pWaitFor(() => libp2p.dht.lan.routingTable.size === 1)
-      await libp2p.components.getContentRouting().put(key, value)
+      await libp2p.components.contentRouting.put(key, value)
 
-      const fetchedValue = await remoteLibp2p.components.getContentRouting().get(key)
+      const fetchedValue = await remoteLibp2p.components.contentRouting.get(key)
       expect(fetchedValue).to.equalBytes(value)
     })
   })

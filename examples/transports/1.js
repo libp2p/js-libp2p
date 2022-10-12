@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
+import { tcp } from '@libp2p/tcp'
 import { Noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
@@ -14,10 +14,10 @@ const createNode = async () => {
       ]
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     connectionEncryption: [
-      new Noise()
+      () => new Noise()
     ]
   })
 

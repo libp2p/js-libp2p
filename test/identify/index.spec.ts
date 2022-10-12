@@ -16,7 +16,6 @@ import drain from 'it-drain'
 import { pipe } from 'it-pipe'
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/components'
 import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 import {
   MULTICODEC_IDENTIFY,
@@ -29,6 +28,7 @@ import { start, stop } from '@libp2p/interfaces/startable'
 import { TimeoutController } from 'timeout-abort-controller'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
+import { DefaultComponents } from '../../src/components.js'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -49,35 +49,35 @@ const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 async function createComponents (index: number) {
   const peerId = await createFromJSON(Peers[index])
 
-  const components = new Components({
+  const components = new DefaultComponents({
     peerId,
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
-    connectionGater: mockConnectionGater(),
-    peerStore: new PersistentPeerStore(),
-    connectionManager: new DefaultConnectionManager({
-      minConnections: 50,
-      maxConnections: 1000,
-      autoDialInterval: 1000,
-      inboundUpgradeTimeout: 1000
-    })
+    connectionGater: mockConnectionGater()
   })
-  components.setAddressManager(new DefaultAddressManager(components, {
+  components.peerStore = new PersistentPeerStore(components)
+  components.connectionManager = new DefaultConnectionManager(components, {
+    minConnections: 50,
+    maxConnections: 1000,
+    autoDialInterval: 1000,
+    inboundUpgradeTimeout: 1000
+  })
+  components.addressManager = new DefaultAddressManager(components, {
     announce: listenMaddrs.map(ma => ma.toString())
-  }))
+  })
 
   const transportManager = new DefaultTransportManager(components)
-  components.setTransportManager(transportManager)
+  components.transportManager = transportManager
 
-  await components.getPeerStore().protoBook.set(peerId, protocols)
+  await components.peerStore.protoBook.set(peerId, protocols)
 
   return components
 }
 
 describe('identify', () => {
-  let localComponents: Components
-  let remoteComponents: Components
+  let localComponents: DefaultComponents
+  let remoteComponents: DefaultComponents
 
   let remotePeerRecordUpdater: PeerRecordUpdater
 
@@ -111,8 +111,8 @@ describe('identify', () => {
 
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
-    const localAddressBookConsumePeerRecordSpy = sinon.spy(localComponents.getPeerStore().addressBook, 'consumePeerRecord')
-    const localProtoBookSetSpy = sinon.spy(localComponents.getPeerStore().protoBook, 'set')
+    const localAddressBookConsumePeerRecordSpy = sinon.spy(localComponents.peerStore.addressBook, 'consumePeerRecord')
+    const localProtoBookSetSpy = sinon.spy(localComponents.peerStore.protoBook, 'set')
 
     // Make sure the remote peer has a peer record to share during identify
     await remotePeerRecordUpdater.update()
@@ -124,7 +124,7 @@ describe('identify', () => {
     expect(localProtoBookSetSpy.callCount).to.equal(1)
 
     // Validate the remote peer gets updated in the peer store
-    const addresses = await localComponents.getPeerStore().addressBook.get(remoteComponents.getPeerId())
+    const addresses = await localComponents.peerStore.addressBook.get(remoteComponents.peerId)
     expect(addresses).to.exist()
 
     expect(addresses).have.lengthOf(listenMaddrs.length)
@@ -154,9 +154,9 @@ describe('identify', () => {
 
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
-    sinon.stub(localComponents.getPeerStore().addressBook, 'consumePeerRecord').throws()
+    sinon.stub(localComponents.peerStore.addressBook, 'consumePeerRecord').throws()
 
-    const localProtoBookSetSpy = sinon.spy(localComponents.getPeerStore().protoBook, 'set')
+    const localProtoBookSetSpy = sinon.spy(localComponents.peerStore.protoBook, 'set')
 
     // Run identify
     await localIdentify.identify(localToRemote)
@@ -164,7 +164,7 @@ describe('identify', () => {
     expect(localProtoBookSetSpy.callCount).to.equal(1)
 
     // Validate the remote peer gets updated in the peer store
-    const addresses = await localComponents.getPeerStore().addressBook.get(remoteComponents.getPeerId())
+    const addresses = await localComponents.peerStore.addressBook.get(remoteComponents.peerId)
     expect(addresses).to.exist()
 
     expect(addresses).have.lengthOf(listenMaddrs.length)
@@ -182,17 +182,17 @@ describe('identify', () => {
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     // send an invalid message
-    await remoteComponents.getRegistrar().unhandle(MULTICODEC_IDENTIFY)
-    await remoteComponents.getRegistrar().handle(MULTICODEC_IDENTIFY, (data) => {
+    await remoteComponents.registrar.unhandle(MULTICODEC_IDENTIFY)
+    await remoteComponents.registrar.handle(MULTICODEC_IDENTIFY, (data) => {
       void Promise.resolve().then(async () => {
         const { connection, stream } = data
-        const signedPeerRecord = await remoteComponents.getPeerStore().addressBook.getRawEnvelope(remoteComponents.getPeerId())
+        const signedPeerRecord = await remoteComponents.peerStore.addressBook.getRawEnvelope(remoteComponents.peerId)
 
         const message = Message.Identify.encode({
           protocolVersion: '123',
           agentVersion: '123',
           // send bad public key
-          publicKey: localComponents.getPeerId().publicKey ?? new Uint8Array(0),
+          publicKey: localComponents.peerId.publicKey ?? new Uint8Array(0),
           listenAddrs: [],
           signedPeerRecord,
           observedAddr: connection.remoteAddr.bytes,
@@ -224,16 +224,16 @@ describe('identify', () => {
       }
     })
 
-    await expect(localComponents.getPeerStore().metadataBook.getValue(localComponents.getPeerId(), 'AgentVersion'))
+    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'AgentVersion'))
       .to.eventually.be.undefined()
-    await expect(localComponents.getPeerStore().metadataBook.getValue(localComponents.getPeerId(), 'ProtocolVersion'))
+    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'ProtocolVersion'))
       .to.eventually.be.undefined()
 
     await start(localIdentify)
 
-    await expect(localComponents.getPeerStore().metadataBook.getValue(localComponents.getPeerId(), 'AgentVersion'))
+    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'AgentVersion'))
       .to.eventually.deep.equal(uint8ArrayFromString(agentVersion))
-    await expect(localComponents.getPeerStore().metadataBook.getValue(localComponents.getPeerId(), 'ProtocolVersion'))
+    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'ProtocolVersion'))
       .to.eventually.be.ok()
 
     await stop(localIdentify)
@@ -249,8 +249,8 @@ describe('identify', () => {
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     // replace existing handler with a really slow one
-    await remoteComponents.getRegistrar().unhandle(MULTICODEC_IDENTIFY)
-    await remoteComponents.getRegistrar().handle(MULTICODEC_IDENTIFY, ({ stream }) => {
+    await remoteComponents.registrar.unhandle(MULTICODEC_IDENTIFY)
+    await remoteComponents.registrar.handle(MULTICODEC_IDENTIFY, ({ stream }) => {
       void pipe(
         stream,
         async function * (source) {
@@ -297,7 +297,7 @@ describe('identify', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // handle incoming identify requests and send too much data
-    await localComponents.getRegistrar().handle('/ipfs/id/1.0.0', ({ stream }) => {
+    await localComponents.registrar.handle('/ipfs/id/1.0.0', ({ stream }) => {
       const data = new Uint8Array(1024)
 
       void Promise.resolve().then(async () => {
@@ -313,10 +313,10 @@ describe('identify', () => {
     })
 
     // ensure connections are registered by connection manager
-    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: localToRemote
     }))
-    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: remoteToLocal
     }))
 
@@ -343,7 +343,7 @@ describe('identify', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // handle incoming identify requests and don't send anything
-    await localComponents.getRegistrar().handle('/ipfs/id/1.0.0', ({ stream }) => {
+    await localComponents.registrar.handle('/ipfs/id/1.0.0', ({ stream }) => {
       const data = new Uint8Array(1024)
 
       void Promise.resolve().then(async () => {
@@ -368,10 +368,10 @@ describe('identify', () => {
     })
 
     // ensure connections are registered by connection manager
-    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: localToRemote
     }))
-    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: remoteToLocal
     }))
 

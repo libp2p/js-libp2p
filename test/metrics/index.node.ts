@@ -34,7 +34,7 @@ describe('libp2p.metrics', () => {
       config: createBaseOptions()
     })
 
-    expect(libp2p.components.getMetrics()).to.be.undefined()
+    expect(libp2p.metrics).to.be.undefined()
   })
 
   it('should start/stop metrics on startup/shutdown when enabled', async () => {
@@ -47,7 +47,7 @@ describe('libp2p.metrics', () => {
     })
     libp2p = await createNode({ started: false, config })
 
-    const metrics = libp2p.components.getMetrics() as DefaultMetrics
+    const metrics = libp2p.metrics as DefaultMetrics
 
     if (metrics == null) {
       throw new Error('Metrics not configured')
@@ -106,7 +106,7 @@ describe('libp2p.metrics', () => {
 
     expect(result).to.have.length(bytes.length)
 
-    const metrics = libp2p.components.getMetrics()
+    const metrics = libp2p.metrics
 
     if (metrics == null) {
       throw new Error('Metrics not configured')
@@ -166,7 +166,7 @@ describe('libp2p.metrics', () => {
       drain
     )
 
-    const metrics = libp2p.components.getMetrics()
+    const metrics = libp2p.metrics
 
     if (metrics == null) {
       throw new Error('Metrics not configured')

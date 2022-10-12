@@ -23,7 +23,7 @@ import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { Components } from '@libp2p/components'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const log = logger('libp2p:peer-routing')
 
@@ -54,15 +54,20 @@ export interface PeerRoutingInit {
   refreshManager?: RefreshManagerInit
 }
 
+export interface DefaultPeerRoutingComponents {
+  peerId: PeerId
+  peerStore: PeerStore
+}
+
 export class DefaultPeerRouting implements PeerRouting, Startable {
-  private readonly components: Components
+  private readonly components: DefaultPeerRoutingComponents
   private readonly routers: PeerRouting[]
   private readonly refreshManagerInit: RefreshManagerInit
   private timeoutId?: ReturnType<typeof setTimeout>
   private started: boolean
   private abortController?: TimeoutController
 
-  constructor (components: Components, init: PeerRoutingInit) {
+  constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit) {
     this.components = components
     this.routers = init.routers
     this.refreshManagerInit = init.refreshManager ?? {}
@@ -110,7 +115,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       } catch {}
 
       // nb getClosestPeers adds the addresses to the address book
-      await drain(this.getClosestPeers(this.components.getPeerId().toBytes(), { signal: this.abortController.signal }))
+      await drain(this.getClosestPeers(this.components.peerId.toBytes(), { signal: this.abortController.signal }))
     } catch (err: any) {
       log.error(err)
     } finally {
@@ -139,7 +144,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       throw errCode(new Error('No peer routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
-    if (id.toString() === this.components.getPeerId().toString()) {
+    if (id.toString() === this.components.peerId.toString()) {
       throw errCode(new Error('Should not try to find self'), codes.ERR_FIND_SELF)
     }
 
@@ -154,7 +159,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
         })())
       ),
       (source) => filter(source, Boolean),
-      (source) => storeAddresses(source, this.components.getPeerStore()),
+      (source) => storeAddresses(source, this.components.peerStore),
       async (source) => await first(source)
     )
 
@@ -177,7 +182,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       merge(
         ...this.routers.map(router => router.getClosestPeers(key, options))
       ),
-      (source) => storeAddresses(source, this.components.getPeerStore()),
+      (source) => storeAddresses(source, this.components.peerStore),
       (source) => uniquePeers(source),
       (source) => requirePeers(source)
     )

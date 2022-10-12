@@ -14,7 +14,6 @@ import { Circuit } from '../../src/circuit/transport.js'
 import pDefer from 'p-defer'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { WebSockets } from '@libp2p/websockets'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -154,7 +153,7 @@ describe('Dialing (resolvable addresses)', () => {
     const deferred = pDefer()
 
     // Stub transport
-    const transport = getTransport(libp2p, WebSockets.prototype[Symbol.toStringTag])
+    const transport = getTransport(libp2p, '@libp2p/websockets')
     const stubTransport = sinon.stub(transport, 'dial')
     stubTransport.callsFake(async (multiaddr) => {
       expect(multiaddr.equals(dnsMa)).to.equal(true)
@@ -200,7 +199,7 @@ describe('Dialing (resolvable addresses)', () => {
     resolver.returns(Promise.reject(new Error()))
 
     // Stub transport
-    const transport = getTransport(libp2p, WebSockets.prototype[Symbol.toStringTag])
+    const transport = getTransport(libp2p, '@libp2p/websockets')
     const spy = sinon.spy(transport, 'dial')
 
     await expect(libp2p.dial(dialAddr))
@@ -211,7 +210,7 @@ describe('Dialing (resolvable addresses)', () => {
 })
 
 function getTransport (libp2p: Libp2pNode, tag: string) {
-  const transport = libp2p.components.getTransportManager().getTransports().find(t => {
+  const transport = libp2p.components.transportManager.getTransports().find(t => {
     return t[Symbol.toStringTag] === tag
   })
 

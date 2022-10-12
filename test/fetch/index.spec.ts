@@ -6,7 +6,6 @@ import { FetchService, FetchServiceInit } from '../../src/fetch/index.js'
 import Peers from '../fixtures/peers.js'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/components'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { CustomEvent } from '@libp2p/interfaces/events'
@@ -15,6 +14,7 @@ import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
+import { DefaultComponents } from '../../src/components.js'
 
 const defaultInit: FetchServiceInit = {
   protocolPrefix: 'ipfs',
@@ -26,26 +26,26 @@ const defaultInit: FetchServiceInit = {
 async function createComponents (index: number) {
   const peerId = await createFromJSON(Peers[index])
 
-  const components = new Components({
+  const components = new DefaultComponents({
     peerId,
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
-    peerStore: new PersistentPeerStore(),
     datastore: new MemoryDatastore(),
-    connectionManager: new DefaultConnectionManager({
-      minConnections: 50,
-      maxConnections: 1000,
-      autoDialInterval: 1000,
-      inboundUpgradeTimeout: 1000
-    })
+  })
+  components.peerStore = new PersistentPeerStore(components)
+  components.connectionManager = new DefaultConnectionManager(components, {
+    minConnections: 50,
+    maxConnections: 1000,
+    autoDialInterval: 1000,
+    inboundUpgradeTimeout: 1000
   })
 
   return components
 }
 
 describe('fetch', () => {
-  let localComponents: Components
-  let remoteComponents: Components
+  let localComponents: DefaultComponents
+  let remoteComponents: DefaultComponents
 
   beforeEach(async () => {
     localComponents = await createComponents(0)
@@ -83,11 +83,11 @@ describe('fetch', () => {
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
+    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
 
     // Run fetch
-    const result = await localFetch.fetch(remoteComponents.getPeerId(), key)
+    const result = await localFetch.fetch(remoteComponents.peerId, key)
 
     expect(result).to.equalBytes(value)
   })
@@ -102,12 +102,12 @@ describe('fetch', () => {
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
+    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
 
     // replace existing handler with a really slow one
-    await remoteComponents.getRegistrar().unhandle(remoteFetch.protocol)
-    await remoteComponents.getRegistrar().handle(remoteFetch.protocol, ({ stream }) => {
+    await remoteComponents.registrar.unhandle(remoteFetch.protocol)
+    await remoteComponents.registrar.handle(remoteFetch.protocol, ({ stream }) => {
       void pipe(
         stream,
         async function * (source) {
@@ -128,7 +128,7 @@ describe('fetch', () => {
     const timeoutController = new TimeoutController(10)
 
     // Run fetch, should time out
-    await expect(localFetch.fetch(remoteComponents.getPeerId(), key, {
+    await expect(localFetch.fetch(remoteComponents.peerId, key, {
       signal: timeoutController.signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')

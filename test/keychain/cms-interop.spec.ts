@@ -6,16 +6,19 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { KeyChain } from '../../src/keychain/index.js'
-import { Components } from '@libp2p/components'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 describe('cms interop', () => {
   const passPhrase = 'this is not a secure phrase'
   const aliceKeyName = 'cms-interop-alice'
   let ks: KeyChain
 
-  before(() => {
+  before(async () => {
     const datastore = new MemoryDatastore()
-    ks = new KeyChain(new Components({ datastore }), { pass: passPhrase })
+    ks = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore
+    }, { pass: passPhrase })
   })
 
   const plainData = uint8ArrayFromString('This is a message from Alice to Bob')

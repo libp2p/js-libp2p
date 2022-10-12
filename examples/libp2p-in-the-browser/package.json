@@ -10,10 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "@chainsafe/libp2p-noise": "^9.0.0",
-    "@libp2p/bootstrap": "^4.0.0",
-    "@libp2p/mplex": "^6.0.2",
-    "@libp2p/webrtc-star": "^4.0.1",
-    "@libp2p/websockets": "^3.0.4",
+    "@libp2p/bootstrap": "^5.0.0",
+    "@libp2p/mplex": "^7.0.0",
+    "@libp2p/webrtc-star": "^5.0.1",
+    "@libp2p/websockets": "^5.0.0",
     "libp2p": "../../"
   },
   "devDependencies": {
