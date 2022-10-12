@@ -1,4 +1,4 @@
-import { Multiaddr } from '@multiformats/multiaddr';
+import { multiaddr } from '@multiformats/multiaddr';
 import { expect } from 'chai';
 import * as underTest from '../src/sdp.js';
 import { bases } from 'multiformats/basics';
@@ -24,14 +24,14 @@ a=candidate:1 1 UDP 1 192.168.0.152 2345 typ host`;
 describe('SDP creation', () => {
   it('handles simple blue sky easily enough', async () => {
     return;
-    let ma = new Multiaddr('/ip4/192.168.0.152/udp/2345/webrtc/certhash/uEiC5LhHPI__aMbu7XAqd2Q4gB-K7YS8flM_lLg4FXE6KiA');
+    let ma = multiaddr('/ip4/192.168.0.152/udp/2345/webrtc/certhash/uEiC5LhHPI__aMbu7XAqd2Q4gB-K7YS8flM_lLg4FXE6KiA');
     let ufrag = 'MyUserFragment';
     let sdp = underTest.fromMultiAddr(ma, ufrag);
     expect(sdp.sdp).to.equal(an_sdp);
   });
 
   it('extracts certhash', () => {
-    let ma = new Multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ');
+    let ma = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ');
     let c = underTest.certhash(ma);
     expect(c).to.equal('uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ');
     const mbdecoder = (function () {
