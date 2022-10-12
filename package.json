@@ -64,7 +64,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/multistream-select": "^3.0.0",
     "@libp2p/peer-id": "^1.1.15",
-    "@multiformats/multiaddr": "^11.0.0",
+    "@multiformats/multiaddr": "^11.0.3",
     "@protobuf-ts/plugin": "^2.8.0",
     "@protobuf-ts/protoc": "^2.8.0",
     "@protobuf-ts/runtime": "^2.8.0",
