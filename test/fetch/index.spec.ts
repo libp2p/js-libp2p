@@ -30,7 +30,7 @@ async function createComponents (index: number) {
     peerId,
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
-    datastore: new MemoryDatastore(),
+    datastore: new MemoryDatastore()
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {

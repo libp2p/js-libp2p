@@ -24,10 +24,6 @@ export interface ProtectorInit {
   psk: Uint8Array
 }
 
-export interface PreSharedKeyConnectionProtectorComponents {
-
-}
-
 class PreSharedKeyConnectionProtector implements ConnectionProtector {
   public tag: string
   private readonly psk: Uint8Array
@@ -101,6 +97,6 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
   }
 }
 
-export function preSharedKey (init: ProtectorInit): (components?: PreSharedKeyConnectionProtectorComponents) => ConnectionProtector {
+export function preSharedKey (init: ProtectorInit): () => ConnectionProtector {
   return () => new PreSharedKeyConnectionProtector(init)
 }

@@ -179,7 +179,7 @@ export interface DefaultConnectionManagerComponents {
  * Responsible for managing known connections.
  */
 export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
-  private components: DefaultConnectionManagerComponents
+  private readonly components: DefaultConnectionManagerComponents
   private readonly opts: Required<ConnectionManagerInit>
   private readonly connections: Map<string, Connection[]>
   private started: boolean

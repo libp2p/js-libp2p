@@ -42,7 +42,7 @@ export interface CircuitComponents {
 
 export class Circuit implements Transport, Startable {
   private handler?: ConnectionHandler
-  private components: CircuitComponents
+  private readonly components: CircuitComponents
   private readonly _init: RelayConfig
   private _started: boolean
 

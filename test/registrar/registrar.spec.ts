@@ -40,7 +40,7 @@ describe('registrar', () => {
         datastore: new MemoryDatastore(),
         upgrader: mockUpgrader()
       })
-      components.peerStore =  new PersistentPeerStore(components)
+      components.peerStore = new PersistentPeerStore(components)
       components.connectionManager = new DefaultConnectionManager(components, {
         minConnections: 50,
         maxConnections: 1000,
