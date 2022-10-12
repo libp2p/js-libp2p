@@ -1,10 +1,9 @@
 # @libp2p/floodsub <!-- omit in toc -->
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-floodsub.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-floodsub)
-[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-floodsub/actions/workflows/js-test-and-release.yml)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-floodsub/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-floodsub/actions/workflows/js-test-and-release.yml)
 
 > libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
 
@@ -33,18 +32,21 @@ Instead please use [gossipsub](https://www.npmjs.com/package/@chainsafe/libp2p-g
 ## Usage
 
 ```JavaScript
-import { FloodSub } from '@libp2p/floodsub'
+import { createLibp2pNode } from 'libp2p'
+import { floodsub } from '@libp2p/floodsub'
 
-const fsub = new FloodSub()
-
-await fsub.start()
-
-fsub.addEventListener('message', (data) => {
-  console.log(data)
+const node = await createLibp2pNode({
+  pubsub: floodsub()
+  //... other options
 })
-fsub.subscribe('fruit')
+await node.start()
 
-fsub.publish('fruit', new TextEncoder().encode('banana'))
+node.pubsub.subscribe('fruit')
+node.pubsub.addEventListener('message', (evt) => {
+  console.log(evt)
+})
+
+node.pubsub.publish('fruit', new TextEncoder().encode('banana'))
 ```
 
 ## License

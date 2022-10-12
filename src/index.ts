@@ -1,8 +1,8 @@
 import { toString } from 'uint8arrays/to-string'
-import { PubSubBaseProtocol } from '@libp2p/pubsub'
+import { PubSubBaseProtocol, PubSubComponents } from '@libp2p/pubsub'
 import { multicodec } from './config.js'
 import { SimpleTimeCache } from './cache.js'
-import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult } from '@libp2p/interface-pubsub'
+import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult, PubSub } from '@libp2p/interface-pubsub'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { logger } from '@libp2p/logger'
 import { RPC } from './message/rpc.js'
@@ -16,6 +16,10 @@ export interface FloodSubInit extends PubSubInit {
   seenTTL?: number
 }
 
+export interface FloodSubComponents extends PubSubComponents {
+
+}
+
 /**
  * FloodSub (aka dumbsub is an implementation of pubsub focused on
  * delivering an API for Publish/Subscribe, but with no CastTree Forming
@@ -24,8 +28,8 @@ export interface FloodSubInit extends PubSubInit {
 export class FloodSub extends PubSubBaseProtocol {
   public seenCache: SimpleTimeCache<boolean>
 
-  constructor (init?: FloodSubInit) {
-    super({
+  constructor (components: FloodSubComponents, init?: FloodSubInit) {
+    super(components, {
       ...init,
       canRelayMessage: true,
       multicodecs: [multicodec]
@@ -94,7 +98,7 @@ export class FloodSub extends PubSubBaseProtocol {
     }
 
     peers.forEach(id => {
-      if (this.components.getPeerId().equals(id)) {
+      if (this.components.peerId.equals(id)) {
         log('not sending message on topic %s to myself', message.topic)
         return
       }
@@ -112,4 +116,8 @@ export class FloodSub extends PubSubBaseProtocol {
 
     return { recipients }
   }
+}
+
+export function floodsub (init: FloodSubInit = {}): (components: FloodSubComponents) => PubSub {
+  return (components: FloodSubComponents) => new FloodSub(components, init)
 }

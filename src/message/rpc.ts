@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -22,23 +24,23 @@ export namespace RPC {
 
     export const codec = (): Codec<SubOpts> => {
       if (_codec == null) {
-        _codec = message<SubOpts>((obj, writer, opts = {}) => {
+        _codec = message<SubOpts>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
-            writer.fork()
+            w.fork()
           }
 
           if (obj.subscribe != null) {
-            writer.uint32(8)
-            writer.bool(obj.subscribe)
+            w.uint32(8)
+            w.bool(obj.subscribe)
           }
 
           if (obj.topic != null) {
-            writer.uint32(18)
-            writer.string(obj.topic)
+            w.uint32(18)
+            w.string(obj.topic)
           }
 
           if (opts.lengthDelimited !== false) {
-            writer.ldelim()
+            w.ldelim()
           }
         }, (reader, length) => {
           const obj: any = {}
@@ -91,43 +93,43 @@ export namespace RPC {
 
     export const codec = (): Codec<Message> => {
       if (_codec == null) {
-        _codec = message<Message>((obj, writer, opts = {}) => {
+        _codec = message<Message>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
-            writer.fork()
+            w.fork()
           }
 
           if (obj.from != null) {
-            writer.uint32(10)
-            writer.bytes(obj.from)
+            w.uint32(10)
+            w.bytes(obj.from)
           }
 
           if (obj.data != null) {
-            writer.uint32(18)
-            writer.bytes(obj.data)
+            w.uint32(18)
+            w.bytes(obj.data)
           }
 
           if (obj.sequenceNumber != null) {
-            writer.uint32(26)
-            writer.bytes(obj.sequenceNumber)
+            w.uint32(26)
+            w.bytes(obj.sequenceNumber)
           }
 
           if (obj.topic != null) {
-            writer.uint32(34)
-            writer.string(obj.topic)
+            w.uint32(34)
+            w.string(obj.topic)
           }
 
           if (obj.signature != null) {
-            writer.uint32(42)
-            writer.bytes(obj.signature)
+            w.uint32(42)
+            w.bytes(obj.signature)
           }
 
           if (obj.key != null) {
-            writer.uint32(50)
-            writer.bytes(obj.key)
+            w.uint32(50)
+            w.bytes(obj.key)
           }
 
           if (opts.lengthDelimited !== false) {
-            writer.ldelim()
+            w.ldelim()
           }
         }, (reader, length) => {
           const obj: any = {}
@@ -182,36 +184,38 @@ export namespace RPC {
 
   export const codec = (): Codec<RPC> => {
     if (_codec == null) {
-      _codec = message<RPC>((obj, writer, opts = {}) => {
+      _codec = message<RPC>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.subscriptions != null) {
           for (const value of obj.subscriptions) {
-            writer.uint32(10)
-            RPC.SubOpts.codec().encode(value, writer)
+            w.uint32(10)
+            RPC.SubOpts.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "subscriptions" was not found in object')
         }
 
         if (obj.messages != null) {
           for (const value of obj.messages) {
-            writer.uint32(18)
-            RPC.Message.codec().encode(value, writer)
+            w.uint32(18)
+            RPC.Message.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "messages" was not found in object')
         }
 
         if (obj.control != null) {
-          writer.uint32(26)
-          ControlMessage.codec().encode(obj.control, writer)
+          w.uint32(26)
+          ControlMessage.codec().encode(obj.control, w, {
+            writeDefaults: false
+          })
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -268,49 +272,49 @@ export namespace ControlMessage {
 
   export const codec = (): Codec<ControlMessage> => {
     if (_codec == null) {
-      _codec = message<ControlMessage>((obj, writer, opts = {}) => {
+      _codec = message<ControlMessage>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.ihave != null) {
           for (const value of obj.ihave) {
-            writer.uint32(10)
-            ControlIHave.codec().encode(value, writer)
+            w.uint32(10)
+            ControlIHave.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "ihave" was not found in object')
         }
 
         if (obj.iwant != null) {
           for (const value of obj.iwant) {
-            writer.uint32(18)
-            ControlIWant.codec().encode(value, writer)
+            w.uint32(18)
+            ControlIWant.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "iwant" was not found in object')
         }
 
         if (obj.graft != null) {
           for (const value of obj.graft) {
-            writer.uint32(26)
-            ControlGraft.codec().encode(value, writer)
+            w.uint32(26)
+            ControlGraft.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "graft" was not found in object')
         }
 
         if (obj.prune != null) {
           for (const value of obj.prune) {
-            writer.uint32(34)
-            ControlPrune.codec().encode(value, writer)
+            w.uint32(34)
+            ControlPrune.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "prune" was not found in object')
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -370,27 +374,25 @@ export namespace ControlIHave {
 
   export const codec = (): Codec<ControlIHave> => {
     if (_codec == null) {
-      _codec = message<ControlIHave>((obj, writer, opts = {}) => {
+      _codec = message<ControlIHave>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.topic != null) {
-          writer.uint32(10)
-          writer.string(obj.topic)
+          w.uint32(10)
+          w.string(obj.topic)
         }
 
         if (obj.messageIDs != null) {
           for (const value of obj.messageIDs) {
-            writer.uint32(18)
-            writer.bytes(value)
+            w.uint32(18)
+            w.bytes(value)
           }
-        } else {
-          throw new Error('Protocol error: required field "messageIDs" was not found in object')
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -440,22 +442,20 @@ export namespace ControlIWant {
 
   export const codec = (): Codec<ControlIWant> => {
     if (_codec == null) {
-      _codec = message<ControlIWant>((obj, writer, opts = {}) => {
+      _codec = message<ControlIWant>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.messageIDs != null) {
           for (const value of obj.messageIDs) {
-            writer.uint32(10)
-            writer.bytes(value)
+            w.uint32(10)
+            w.bytes(value)
           }
-        } else {
-          throw new Error('Protocol error: required field "messageIDs" was not found in object')
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -502,18 +502,18 @@ export namespace ControlGraft {
 
   export const codec = (): Codec<ControlGraft> => {
     if (_codec == null) {
-      _codec = message<ControlGraft>((obj, writer, opts = {}) => {
+      _codec = message<ControlGraft>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.topic != null) {
-          writer.uint32(10)
-          writer.string(obj.topic)
+          w.uint32(10)
+          w.string(obj.topic)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {}
@@ -560,32 +560,32 @@ export namespace ControlPrune {
 
   export const codec = (): Codec<ControlPrune> => {
     if (_codec == null) {
-      _codec = message<ControlPrune>((obj, writer, opts = {}) => {
+      _codec = message<ControlPrune>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.topic != null) {
-          writer.uint32(10)
-          writer.string(obj.topic)
+          w.uint32(10)
+          w.string(obj.topic)
         }
 
         if (obj.peers != null) {
           for (const value of obj.peers) {
-            writer.uint32(18)
-            PeerInfo.codec().encode(value, writer)
+            w.uint32(18)
+            PeerInfo.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "peers" was not found in object')
         }
 
         if (obj.backoff != null) {
-          writer.uint32(24)
-          writer.uint64(obj.backoff)
+          w.uint32(24)
+          w.uint64(obj.backoff)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -639,23 +639,23 @@ export namespace PeerInfo {
 
   export const codec = (): Codec<PeerInfo> => {
     if (_codec == null) {
-      _codec = message<PeerInfo>((obj, writer, opts = {}) => {
+      _codec = message<PeerInfo>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.peerID != null) {
-          writer.uint32(10)
-          writer.bytes(obj.peerID)
+          w.uint32(10)
+          w.bytes(obj.peerID)
         }
 
         if (obj.signedPeerRecord != null) {
-          writer.uint32(18)
-          writer.bytes(obj.signedPeerRecord)
+          w.uint32(18)
+          w.bytes(obj.signedPeerRecord)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {}

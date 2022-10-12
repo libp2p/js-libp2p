@@ -11,7 +11,6 @@ import { FloodSub, multicodec } from '../src/index.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { mockRegistrar } from '@libp2p/interface-mocks'
 import pWaitFor from 'p-wait-for'
-import { Components } from '@libp2p/components'
 import { PeerSet } from '@libp2p/peer-collections'
 
 const topic = 'my-topic'
@@ -24,13 +23,12 @@ describe('floodsub', () => {
     expect(multicodec).to.exist()
 
     floodsub = new FloodSub({
+      peerId: await createEd25519PeerId(),
+      registrar: mockRegistrar()
+    }, {
       emitSelf: true,
       globalSignaturePolicy: StrictNoSign
     })
-    floodsub.init(new Components({
-      peerId: await createEd25519PeerId(),
-      registrar: mockRegistrar()
-    }))
   })
 
   beforeEach(async () => {
