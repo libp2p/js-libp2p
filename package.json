@@ -157,7 +157,7 @@
     "p-retry": "^5.0.0",
     "p-settle": "^5.0.0",
     "private-ip": "^2.3.3",
-    "protons-runtime": "^3.0.1",
+    "protons-runtime": "^4.0.0",
     "rate-limiter-flexible": "^2.3.11",
     "retimer": "^3.0.0",
     "sanitize-filename": "^1.6.3",
