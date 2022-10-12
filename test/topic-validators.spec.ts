@@ -11,7 +11,6 @@ import {
 } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { PubSubRPC, TopicValidatorResult } from '@libp2p/interface-pubsub'
-import { Components } from '@libp2p/components'
 
 const protocol = '/pubsub/1.0.0'
 
@@ -25,13 +24,12 @@ describe('topic validators', () => {
     otherPeerId = await createEd25519PeerId()
 
     pubsub = new PubsubImplementation({
+      peerId: peerId,
+      registrar: new MockRegistrar()
+    }, {
       multicodecs: [protocol],
       globalSignaturePolicy: 'StrictNoSign'
     })
-    pubsub.init(new Components({
-      peerId: peerId,
-      registrar: new MockRegistrar()
-    }))
 
     await pubsub.start()
   })

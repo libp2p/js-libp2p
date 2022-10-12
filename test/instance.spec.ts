@@ -2,6 +2,8 @@ import { expect } from 'aegir/chai'
 import { PubSubBaseProtocol } from '../src/index.js'
 import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import { MockRegistrar } from './utils/index.js'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 class PubsubProtocol extends PubSubBaseProtocol {
   decodeRpc (bytes: Uint8Array): PubSubRPC {
@@ -33,9 +35,14 @@ describe('pubsub instance', () => {
     }).to.throw()
   })
 
-  it('should accept valid parameters', () => {
+  it('should accept valid parameters', async () => {
+    const peerId = await createEd25519PeerId()
+
     expect(() => {
-      new PubsubProtocol({ // eslint-disable-line no-new
+      return new PubsubProtocol({
+        peerId,
+        registrar: new MockRegistrar()
+      }, { // eslint-disable-line no-new
         multicodecs: ['/pubsub/1.0.0']
       })
     }).not.to.throw()

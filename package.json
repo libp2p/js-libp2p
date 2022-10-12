@@ -176,7 +176,6 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/components": "^3.1.1",
     "@libp2p/crypto": "^1.0.0",
     "@libp2p/interface-connection": "^3.0.1",
     "@libp2p/interface-peer-id": "^1.0.2",
@@ -193,10 +192,10 @@
     "it-length-prefixed": "^8.0.2",
     "it-pipe": "^2.0.3",
     "it-pushable": "^3.0.0",
-    "multiformats": "^9.6.3",
+    "multiformats": "^10.0.0",
     "p-queue": "^7.2.0",
     "uint8arraylist": "^2.0.0",
-    "uint8arrays": "^3.0.0"
+    "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^1.0.0",
@@ -205,8 +204,8 @@
     "it-pair": "^2.0.2",
     "p-defer": "^4.0.0",
     "p-wait-for": "^5.0.0",
-    "protons": "^5.1.0",
-    "protons-runtime": "^3.1.0",
+    "protons": "^6.0.0",
+    "protons-runtime": "^4.0.1",
     "sinon": "^14.0.0",
     "util": "^0.12.4"
   }

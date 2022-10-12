@@ -11,7 +11,6 @@ import {
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
-import { Components } from '@libp2p/components'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 class PubsubProtocol extends PubSubBaseProtocol {
@@ -52,12 +51,11 @@ describe('pubsub base lifecycle', () => {
       }
 
       pubsub = new PubsubProtocol({
-        multicodecs: ['/pubsub/1.0.0']
-      })
-      pubsub.init(new Components({
         peerId: peerId,
         registrar: sinonMockRegistrar
-      }))
+      }, {
+        multicodecs: ['/pubsub/1.0.0']
+      })
 
       expect(pubsub.peers.size).to.be.eql(0)
     })
@@ -112,19 +110,17 @@ describe('pubsub base lifecycle', () => {
       registrarB = new MockRegistrar()
 
       pubsubA = new PubsubImplementation({
-        multicodecs: [protocol]
-      })
-      pubsubA.init(new Components({
         peerId: peerIdA,
         registrar: registrarA
-      }))
-      pubsubB = new PubsubImplementation({
+      }, {
         multicodecs: [protocol]
       })
-      pubsubB.init(new Components({
+      pubsubB = new PubsubImplementation({
         peerId: peerIdB,
         registrar: registrarB
-      }))
+      }, {
+        multicodecs: [protocol]
+      })
     })
 
     // start pubsub

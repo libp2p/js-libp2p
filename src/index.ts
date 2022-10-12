@@ -12,20 +12,24 @@ import {
   verifySignature
 } from './sign.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { Connection } from '@libp2p/interface-connection'
 import { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface-pubsub'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
-import { Components, Initializable } from '@libp2p/components'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:pubsub')
+
+export interface PubSubComponents {
+  peerId: PeerId
+  registrar: Registrar
+}
 
 /**
  * PubSubBaseProtocol handles the peers and connections logic for pubsub routers
  * and specifies the API that pubsub routers should have.
  */
-export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events>, Initializable {
+export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events> {
   public started: boolean
   /**
    * Map of topics to which peers are subscribed to
@@ -60,14 +64,14 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   public topicValidators: Map<string, TopicValidatorFn>
   public queue: Queue
   public multicodecs: string[]
-  public components: Components = new Components()
+  public components: PubSubComponents
 
   private _registrarTopologyIds: string[] | undefined
   protected enabled: boolean
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
 
-  constructor (props: PubSubInit) {
+  constructor (components: PubSubComponents, props: PubSubInit) {
     super()
 
     const {
@@ -80,6 +84,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
       maxOutboundStreams = 1
     } = props
 
+    this.components = components
     this.multicodecs = ensureArray(multicodecs)
     this.enabled = props.enabled !== false
     this.started = false
@@ -99,10 +104,6 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     this._onPeerDisconnected = this._onPeerDisconnected.bind(this)
   }
 
-  init (components: Components) {
-    this.components = components
-  }
-
   // LIFECYCLE METHODS
 
   /**
@@ -117,7 +118,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
 
     log('starting')
 
-    const registrar = this.components.getRegistrar()
+    const registrar = this.components.registrar
     // Incoming streams
     // Called after a peer dials us
     await Promise.all(this.multicodecs.map(async multicodec => await registrar.handle(multicodec, this._onIncomingStream, {
@@ -145,7 +146,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
       return
     }
 
-    const registrar = this.components.getRegistrar()
+    const registrar = this.components.registrar
 
     // unregister protocol and handlers
     if (this._registrarTopologyIds != null) {
@@ -412,7 +413,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
    * Handles a message from a peer
    */
   async processMessage (from: PeerId, msg: Message) {
-    if (this.components.getPeerId().equals(from) && !this.emitSelf) {
+    if (this.components.peerId.equals(from) && !this.emitSelf) {
       return
     }
 
@@ -425,7 +426,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     }
 
     if (this.subscriptions.has(msg.topic)) {
-      const isFromSelf = this.components.getPeerId().equals(from)
+      const isFromSelf = this.components.peerId.equals(from)
 
       if (!isFromSelf || this.emitSelf) {
         super.dispatchEvent(new CustomEvent<Message>('message', {
@@ -584,7 +585,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictSign':
-        return await signMessage(this.components.getPeerId(), message, this.encodeMessage.bind(this))
+        return await signMessage(this.components.peerId, message, this.encodeMessage.bind(this))
       case 'StrictNoSign':
         return await Promise.resolve({
           type: 'unsigned',
@@ -627,7 +628,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     }
 
     const message = {
-      from: this.components.getPeerId(),
+      from: this.components.peerId,
       topic,
       data: data ?? new Uint8Array(0),
       sequenceNumber: randomSeqno()
@@ -649,10 +650,10 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     }
 
     // send to all the other peers
-    const result = await this.publishMessage(this.components.getPeerId(), rpcMessage)
+    const result = await this.publishMessage(this.components.peerId, rpcMessage)
 
     if (emittedToSelf) {
-      result.recipients = [...result.recipients, this.components.getPeerId()]
+      result.recipients = [...result.recipients, this.components.peerId]
     }
 
     return result

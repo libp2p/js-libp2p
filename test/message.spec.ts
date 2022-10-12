@@ -9,7 +9,6 @@ import {
 } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Message } from '@libp2p/interface-pubsub'
-import { Components } from '@libp2p/components'
 import { randomSeqno } from '../src/utils.js'
 
 describe('pubsub base messages', () => {
@@ -19,12 +18,11 @@ describe('pubsub base messages', () => {
   before(async () => {
     peerId = await createPeerId()
     pubsub = new PubsubImplementation({
-      multicodecs: ['/pubsub/1.0.0']
-    })
-    pubsub.init(new Components({
       peerId: peerId,
       registrar: new MockRegistrar()
-    }))
+    }, {
+      multicodecs: ['/pubsub/1.0.0']
+    })
   })
 
   afterEach(() => {
