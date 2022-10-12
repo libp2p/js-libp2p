@@ -1,3 +1,15 @@
+## [2.0.3](https://github.com/libp2p/js-libp2p-record/compare/v2.0.2...v2.0.3) (2022-10-12)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([92044b6](https://github.com/libp2p/js-libp2p-record/commit/92044b646180e2b2d0f495d26cc54c184ad6fb7b))
+
+
+### Dependencies
+
+* bump uint8arrays, protons and multiformats ([#63](https://github.com/libp2p/js-libp2p-record/issues/63)) ([9106a6a](https://github.com/libp2p/js-libp2p-record/commit/9106a6abdc71a2c94359759bbc2f61213e9a6a0b))
+
 ## [2.0.2](https://github.com/libp2p/js-libp2p-record/compare/v2.0.1...v2.0.2) (2022-08-11)
 
 
