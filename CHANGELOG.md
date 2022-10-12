@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v5.0.0...v5.0.1) (2022-10-12)
+
+
+### Bug Fixes
+
+* update export ([#387](https://github.com/libp2p/js-libp2p-kad-dht/issues/387)) ([9dbbe55](https://github.com/libp2p/js-libp2p-kad-dht/commit/9dbbe55a6a525e78ed8ee8cc7b30636ff93cd18d))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v4.0.2...v5.0.0) (2022-10-12)
 
 
