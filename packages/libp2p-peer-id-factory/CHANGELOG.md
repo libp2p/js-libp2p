@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-factory-v1.0.19](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.18...@libp2p/peer-id-factory-v1.0.19) (2022-10-12)
+
+
+### Dependencies
+
+* bump uint8arrays, protons and multiformats ([#28](https://github.com/libp2p/js-libp2p-peer-id/issues/28)) ([e270265](https://github.com/libp2p/js-libp2p-peer-id/commit/e27026508b3684e6cb2eb896de19c161dbd21d45))
+
 ## [@libp2p/peer-id-factory-v1.0.18](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.17...@libp2p/peer-id-factory-v1.0.18) (2022-08-11)
 
 
