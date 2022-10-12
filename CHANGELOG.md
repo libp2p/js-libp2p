@@ -1,3 +1,14 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v6.0.2...v7.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#223](https://github.com/libp2p/js-libp2p-mplex/issues/223)) ([9c9497f](https://github.com/libp2p/js-libp2p-mplex/commit/9c9497f5cb7a7fbe095d44d508a57a458dae9129))
+
 ## [6.0.2](https://github.com/libp2p/js-libp2p-mplex/compare/v6.0.1...v6.0.2) (2022-10-07)
 
 
