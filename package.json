@@ -190,7 +190,7 @@
     "libp2p": "next",
     "p-wait-for": "^5.0.0",
     "protons": "^5.1.0",
-    "uint8arrays": "^3.0.0"
+    "uint8arrays": "^4.0.2"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
