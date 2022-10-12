@@ -25,6 +25,7 @@ type StreamInitOpts = {
   channel: RTCDataChannel;
   metadata?: Record<string, any>;
   stat: StreamStat;
+  closeCb?: (stream: WebRTCStream) => void;
 };
 
 export class WebRTCStream implements Stream {
@@ -44,7 +45,7 @@ export class WebRTCStream implements Stream {
   metadata: Record<string, any>;
   private readonly channel: RTCDataChannel;
 
-  source: Source<Uint8ArrayList> = pushable();
+  _src: Source<Uint8ArrayList> = pushable();
   sink: Sink<Uint8ArrayList | Uint8Array, Promise<void>>;
 
   // promises
@@ -53,6 +54,7 @@ export class WebRTCStream implements Stream {
   writeClosed: boolean = false;
   readClosed: boolean = false;
   closed: boolean = false;
+  closeCb?: (stream: WebRTCStream) => void | undefined
 
   // testing
 
@@ -86,10 +88,7 @@ export class WebRTCStream implements Stream {
       this.opened.resolve();
     };
 
-    this.channel.onmessage = ({ data }) => {
-      if (this.readClosed || this.closed) {
-        return;
-      }
+    this.channel.onmessage = async ({ data }) => {
 
       let res: Uint8Array;
       if (typeof data == 'string') {
@@ -115,9 +114,12 @@ export class WebRTCStream implements Stream {
           log.trace('Remote abruptly stopped sending, indicated with "RESET" flag.');
           this.closeRead();
       }
+      if (this.readClosed || this.closed) {
+        return;
+      }
       if (m.message) {
         log.trace('%s incoming message %s', this.id, m.message);
-        (this.source as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(m.message));
+        (this._src as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(m.message));
       }
     };
 
@@ -129,6 +131,15 @@ export class WebRTCStream implements Stream {
       let err = (evt as RTCErrorEvent).error;
       this.abort(err);
     };
+  }
+
+  // If user attempts to set a new source
+  // this should be a nop
+  set source(_src: Source<Uint8ArrayList>) {
+  }
+
+  get source(): Source<Uint8ArrayList> {
+    return this._src
   }
 
   private async _sinkFn(src: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
@@ -168,6 +179,9 @@ export class WebRTCStream implements Stream {
     this.readClosed = true;
     this.writeClosed = true;
     this.channel.close();
+    if (this.closeCb) {
+      this.closeCb(this)
+    }
   }
 
   /**
