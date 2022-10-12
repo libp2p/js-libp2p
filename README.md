@@ -47,10 +47,10 @@ The libp2p-kad-dht module offers 3 APIs: Peer Routing, Content Routing and Peer 
 
 ```js
 import { createLibp2pNode } from 'libp2p'
-import { kadDht } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 
 const node = await createLibp2pNode({
-  dht: kadDht()
+  dht: kadDHT()
   //... other config
 })
 await node.start()

@@ -90,6 +90,6 @@ class KadDHT extends DualKadDHT {
   }
 }
 
-export function kadDht (init?: KadDHTInit): (components: KadDHTComponents) => DualKadDHT {
+export function kadDHT (init?: KadDHTInit): (components: KadDHTComponents) => DualKadDHT {
   return (components: KadDHTComponents) => new KadDHT(components, init)
 }
