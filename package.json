@@ -38,7 +38,7 @@
     "release": "aegir release"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^6.0.0",
+    "@libp2p/interface-mocks": "^6.1.0",
     "@libp2p/peer-id-factory": "^1.0.18",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/parser": "^5.32.0",
