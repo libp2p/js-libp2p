@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v4.0.0...v5.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#146](https://github.com/libp2p/js-libp2p-mdns/issues/146)) ([36d68fc](https://github.com/libp2p/js-libp2p-mdns/commit/36d68fc819316ec7f7a215a38310d90130770e0f))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v3.0.1...v4.0.0) (2022-10-07)
 
 
