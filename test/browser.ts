@@ -5,20 +5,21 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { WebSockets } from '../src/index.js'
+import { webSockets } from '../src/index.js'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import type { Connection } from '@libp2p/interface-connection'
+import type { Transport } from '@libp2p/interface-transport'
 
 const protocol = '/echo/1.0.0'
 
 describe('libp2p-websockets', () => {
   const ma = multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
-  let ws: WebSockets
+  let ws: Transport
   let conn: Connection
 
   beforeEach(async () => {
-    ws = new WebSockets()
+    ws = webSockets()()
     conn = await ws.dial(ma, { upgrader: mockUpgrader() })
   })
 
@@ -86,6 +87,6 @@ describe('libp2p-websockets', () => {
   })
 
   it('.createServer throws in browser', () => {
-    expect(new WebSockets().createListener).to.throw()
+    expect(webSockets()().createListener).to.throw()
   })
 })

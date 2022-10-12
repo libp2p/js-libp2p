@@ -6,7 +6,7 @@ import { pipe }from 'it-pipe'
 export default {
   test: {
     async before () {
-      const { WebSockets } = await import('./dist/src/index.js')
+      const { webSockets } = await import('./dist/src/index.js')
 
       const protocol = '/echo/1.0.0'
       const registrar = mockRegistrar()
@@ -20,7 +20,7 @@ export default {
         registrar
       })
 
-      const ws = new WebSockets()
+      const ws = webSockets()()
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9095/ws')
       const listener = ws.createListener({
         upgrader

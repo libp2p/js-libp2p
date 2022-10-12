@@ -23,7 +23,7 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   server?: Server
 }
 
-export class WebSockets implements Transport {
+class WebSockets implements Transport {
   private readonly init?: WebSocketsInit
 
   constructor (init?: WebSocketsInit) {
@@ -137,5 +137,11 @@ export class WebSockets implements Transport {
     }
 
     return filters.all(multiaddrs)
+  }
+}
+
+export function webSockets (init: WebSocketsInit = {}): (components?: any) => Transport {
+  return () => {
+    return new WebSockets(init)
   }
 }

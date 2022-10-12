@@ -1,17 +1,15 @@
 # @libp2p/websockets <!-- omit in toc -->
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-websockets.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-websockets)
-[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-websockets/actions/workflows/js-test-and-release.yml)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-websockets/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-websockets/actions/workflows/js-test-and-release.yml)
 
 > JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec
 
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
-- [Description](#description)
 - [Usage](#usage)
   - [Constructor properties](#constructor-properties)
 - [Libp2p Usage Example](#libp2p-usage-example)
@@ -30,10 +28,6 @@ $ npm i @libp2p/websockets
 [![](https://raw.githubusercontent.com/libp2p/interface-transport/master/img/badge.png)](https://github.com/libp2p/interface-transport)
 [![](https://raw.githubusercontent.com/libp2p/interface-connection/master/img/badge.png)](https://github.com/libp2p/interface-connection)
 
-## Description
-
-`libp2p-websockets` is the WebSockets implementation compatible with libp2p.
-
 ## Usage
 
 ```sh
@@ -43,14 +37,17 @@ $ npm i @libp2p/websockets
 ### Constructor properties
 
 ```js
-import { WebSockets } from '@libp2p/websockets'
+import { createLibp2pNode } from 'libp2p'
+import { webSockets } from '@libp2p/webrtc-direct'
 
-const properties = {
-  upgrader,
-  filter
-}
-
-const ws = new WebSockets(properties)
+const node = await createLibp2p({
+  transports: [
+    webSockets()
+  ]
+  //... other config
+})
+await node.start()
+await node.dial('/ip4/127.0.0.1/tcp/9090/ws')
 ```
 
 | Name     | Type                                                                                                                       | Description                                                            | Default                                                                 |
@@ -72,26 +69,26 @@ The available filters are:
 ## Libp2p Usage Example
 
 ```js
-import Libp2p from 'libp2p'
-import { Websockets } from '@libp2p/websockets'
-import filters from 'libp2p-websockets/filters'
-import { MPLEX } from 'libp2p-mplex'
-import { NOISE } from 'libp2p-noise'
+import { createLibp2pNode } from 'libp2p'
+import { websockets } from '@libp2p/websockets'
+import filters from '@libp2p/websockets/filters'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@libp2p/noise'
 
 const transportKey = Websockets.prototype[Symbol.toStringTag]
 const node = await Libp2p.create({
-  modules: {
-    transport: [Websockets],
-    streamMuxer: [MPLEX],
-    connEncryption: [NOISE]
-  },
-  config: {
-    transport: {
-      [transportKey]: { // Transport properties -- Libp2p upgrader is automatically added
-        filter: filters.dnsWsOrWss
-      }
-    }
-  }
+  transport: [
+    websockets({
+      // connect to all sockets, even insecure ones
+      filters: filters.all
+    })
+  ],
+  streamMuxers: [
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ]
 })
 ```
 

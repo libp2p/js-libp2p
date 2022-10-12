@@ -174,8 +174,8 @@
     "wherearewe": "^2.0.1"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^6.0.1",
-    "@libp2p/interface-transport-compliance-tests": "^2.0.6",
+    "@libp2p/interface-mocks": "^7.0.1",
+    "@libp2p/interface-transport-compliance-tests": "^3.0.0",
     "@types/ws": "^8.2.2",
     "aegir": "^37.5.3",
     "is-loopback-addr": "^2.0.1",
@@ -187,7 +187,7 @@
     "it-take": "^1.0.2",
     "p-wait-for": "^5.0.0",
     "uint8arraylist": "^2.3.2",
-    "uint8arrays": "^3.0.0"
+    "uint8arrays": "^4.0.2"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"

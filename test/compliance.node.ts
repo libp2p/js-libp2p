@@ -3,14 +3,14 @@
 import tests from '@libp2p/interface-transport-compliance-tests'
 import { multiaddr } from '@multiformats/multiaddr'
 import http from 'http'
-import { WebSockets } from '../src/index.js'
+import { webSockets } from '../src/index.js'
 import * as filters from '../src/filters.js'
 import type { WebSocketListenerInit } from '../src/listener.js'
 
 describe('interface-transport compliance', () => {
   tests({
     async setup () {
-      const ws = new WebSockets({ filter: filters.all })
+      const ws = webSockets({ filter: filters.all })()
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
         multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),

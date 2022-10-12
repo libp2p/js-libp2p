@@ -13,10 +13,10 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
 import defer from 'p-defer'
 import waitFor from 'p-wait-for'
-import { WebSockets } from '../src/index.js'
+import { webSockets } from '../src/index.js'
 import * as filters from '../src/filters.js'
 import drain from 'it-drain'
-import type { Listener } from '@libp2p/interface-transport'
+import type { Listener, Transport } from '@libp2p/interface-transport'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Source } from 'it-stream-types'
 import './compliance.node.js'
@@ -43,7 +43,7 @@ const upgrader = mockUpgrader({
 
 describe('instantiate the transport', () => {
   it('create', () => {
-    const ws = new WebSockets()
+    const ws = webSockets()()
     expect(ws).to.exist()
   })
 })
@@ -52,7 +52,7 @@ describe('listen', () => {
   it('should close connections when stopping the listener', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws')
 
-    const ws = new WebSockets()
+    const ws = webSockets()()
     const listener = ws.createListener({
       handler: (conn) => {
         void conn.newStream([protocol]).then(async (stream) => {
@@ -75,12 +75,12 @@ describe('listen', () => {
   })
 
   describe('ip4', () => {
-    let ws: WebSockets
+    let ws: Transport
     const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws')
     let listener: Listener
 
     beforeEach(() => {
-      ws = new WebSockets()
+      ws = webSockets()()
     })
 
     afterEach(async () => {
@@ -184,11 +184,11 @@ describe('listen', () => {
   })
 
   describe('ip6', () => {
-    let ws: WebSockets
+    let ws: Transport
     const ma = multiaddr('/ip6/::1/tcp/9091/ws')
 
     beforeEach(() => {
-      ws = new WebSockets()
+      ws = webSockets()()
     })
 
     it('listen, check for promise', async () => {
@@ -229,12 +229,12 @@ describe('listen', () => {
 
 describe('dial', () => {
   describe('ip4', () => {
-    let ws: WebSockets
+    let ws: Transport
     let listener: Listener
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws')
 
     beforeEach(async () => {
-      ws = new WebSockets()
+      ws = webSockets()()
       listener = ws.createListener({ upgrader })
       return await listener.listen(ma)
     })
@@ -270,7 +270,7 @@ describe('dial', () => {
 
     it('should resolve port 0', async () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
-      const ws = new WebSockets()
+      const ws = webSockets()()
 
       // Create a Promise that resolves when a connection is handled
       const deferred = defer()
@@ -295,12 +295,12 @@ describe('dial', () => {
   })
 
   describe('ip4 no loopback', () => {
-    let ws: WebSockets
+    let ws: Transport
     let listener: Listener
     const ma = multiaddr('/ip4/0.0.0.0/tcp/0/ws')
 
     beforeEach(async () => {
-      ws = new WebSockets()
+      ws = webSockets()()
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
@@ -336,7 +336,7 @@ describe('dial', () => {
   })
 
   describe('ip4 with wss', () => {
-    let ws: WebSockets
+    let ws: Transport
     let listener: Listener
     const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/wss')
     let server: https.Server
@@ -346,7 +346,7 @@ describe('dial', () => {
         cert: fs.readFileSync('./test/fixtures/certificate.pem'),
         key: fs.readFileSync('./test/fixtures/key.pem')
       })
-      ws = new WebSockets({ websocket: { rejectUnauthorized: false }, server })
+      ws = webSockets({ websocket: { rejectUnauthorized: false }, server })()
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
@@ -383,12 +383,12 @@ describe('dial', () => {
   })
 
   describe('ip6', () => {
-    let ws: WebSockets
+    let ws: Transport
     let listener: Listener
     const ma = multiaddr('/ip6/::1/tcp/9091/ws')
 
     beforeEach(async () => {
-      ws = new WebSockets()
+      ws = webSockets()()
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
@@ -426,11 +426,11 @@ describe('dial', () => {
 })
 
 describe('filter addrs', () => {
-  let ws: WebSockets
+  let ws: Transport
 
   describe('default filter addrs with only dns', () => {
     before(() => {
-      ws = new WebSockets()
+      ws = webSockets()()
     })
 
     it('should filter out invalid WS addresses', function () {
@@ -498,7 +498,7 @@ describe('filter addrs', () => {
 
   describe('custom filter addrs', () => {
     before(() => {
-      ws = new WebSockets({ filter: filters.all })
+      ws = webSockets()({ filter: filters.all })
     })
 
     it('should fail invalid WS addresses', function () {
