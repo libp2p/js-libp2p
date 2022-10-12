@@ -189,7 +189,7 @@
     "it-take": "^1.0.2",
     "libp2p": "next",
     "p-wait-for": "^5.0.0",
-    "protons": "^5.1.0",
+    "protons": "^6.0.0",
     "uint8arrays": "^4.0.2"
   },
   "browser": {
