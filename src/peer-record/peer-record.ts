@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -21,20 +23,18 @@ export namespace PeerRecord {
 
     export const codec = (): Codec<AddressInfo> => {
       if (_codec == null) {
-        _codec = message<AddressInfo>((obj, writer, opts = {}) => {
+        _codec = message<AddressInfo>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
-            writer.fork()
+            w.fork()
           }
 
-          if (obj.multiaddr != null) {
-            writer.uint32(10)
-            writer.bytes(obj.multiaddr)
-          } else {
-            throw new Error('Protocol error: required field "multiaddr" was not found in object')
+          if (opts.writeDefaults === true || (obj.multiaddr != null && obj.multiaddr.byteLength > 0)) {
+            w.uint32(10)
+            w.bytes(obj.multiaddr)
           }
 
           if (opts.lengthDelimited !== false) {
-            writer.ldelim()
+            w.ldelim()
           }
         }, (reader, length) => {
           const obj: any = {
@@ -54,10 +54,6 @@ export namespace PeerRecord {
                 reader.skipType(tag & 7)
                 break
             }
-          }
-
-          if (obj.multiaddr == null) {
-            throw new Error('Protocol error: value for required field "multiaddr" was not found in protobuf')
           }
 
           return obj
@@ -80,36 +76,32 @@ export namespace PeerRecord {
 
   export const codec = (): Codec<PeerRecord> => {
     if (_codec == null) {
-      _codec = message<PeerRecord>((obj, writer, opts = {}) => {
+      _codec = message<PeerRecord>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.peerId != null) {
-          writer.uint32(10)
-          writer.bytes(obj.peerId)
-        } else {
-          throw new Error('Protocol error: required field "peerId" was not found in object')
+        if (opts.writeDefaults === true || (obj.peerId != null && obj.peerId.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.peerId)
         }
 
-        if (obj.seq != null) {
-          writer.uint32(16)
-          writer.uint64(obj.seq)
-        } else {
-          throw new Error('Protocol error: required field "seq" was not found in object')
+        if (opts.writeDefaults === true || obj.seq !== 0n) {
+          w.uint32(16)
+          w.uint64(obj.seq)
         }
 
         if (obj.addresses != null) {
           for (const value of obj.addresses) {
-            writer.uint32(26)
-            PeerRecord.AddressInfo.codec().encode(value, writer)
+            w.uint32(26)
+            PeerRecord.AddressInfo.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "addresses" was not found in object')
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -137,14 +129,6 @@ export namespace PeerRecord {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.peerId == null) {
-          throw new Error('Protocol error: value for required field "peerId" was not found in protobuf')
-        }
-
-        if (obj.seq == null) {
-          throw new Error('Protocol error: value for required field "seq" was not found in protobuf')
         }
 
         return obj

@@ -159,11 +159,11 @@
     "it-foreach": "^0.1.1",
     "it-map": "^1.0.6",
     "it-pipe": "^2.0.3",
-    "multiformats": "^9.6.3",
-    "protons-runtime": "^3.1.0",
+    "multiformats": "^10.0.0",
+    "protons-runtime": "^4.0.1",
     "uint8-varint": "^1.0.2",
     "uint8arraylist": "^2.1.0",
-    "uint8arrays": "^3.0.0",
+    "uint8arrays": "^4.0.2",
     "varint": "^6.0.0"
   },
   "devDependencies": {
@@ -171,7 +171,7 @@
     "@libp2p/peer-id-factory": "^1.0.0",
     "@types/varint": "^6.0.0",
     "aegir": "^37.3.0",
-    "protons": "^5.1.0",
+    "protons": "^6.0.0",
     "sinon": "^14.0.0"
   }
 }

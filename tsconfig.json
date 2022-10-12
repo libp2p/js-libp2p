@@ -6,9 +6,5 @@
   "include": [
     "src",
     "test"
-  ],
-  "exclude": [
-    "src/envelope/envelope.js",
-    "src/peer-record/peer-record.js"
   ]
 }

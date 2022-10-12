@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -17,41 +19,33 @@ export namespace Envelope {
 
   export const codec = (): Codec<Envelope> => {
     if (_codec == null) {
-      _codec = message<Envelope>((obj, writer, opts = {}) => {
+      _codec = message<Envelope>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.publicKey != null) {
-          writer.uint32(10)
-          writer.bytes(obj.publicKey)
-        } else {
-          throw new Error('Protocol error: required field "publicKey" was not found in object')
+        if (opts.writeDefaults === true || (obj.publicKey != null && obj.publicKey.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.publicKey)
         }
 
-        if (obj.payloadType != null) {
-          writer.uint32(18)
-          writer.bytes(obj.payloadType)
-        } else {
-          throw new Error('Protocol error: required field "payloadType" was not found in object')
+        if (opts.writeDefaults === true || (obj.payloadType != null && obj.payloadType.byteLength > 0)) {
+          w.uint32(18)
+          w.bytes(obj.payloadType)
         }
 
-        if (obj.payload != null) {
-          writer.uint32(26)
-          writer.bytes(obj.payload)
-        } else {
-          throw new Error('Protocol error: required field "payload" was not found in object')
+        if (opts.writeDefaults === true || (obj.payload != null && obj.payload.byteLength > 0)) {
+          w.uint32(26)
+          w.bytes(obj.payload)
         }
 
-        if (obj.signature != null) {
-          writer.uint32(42)
-          writer.bytes(obj.signature)
-        } else {
-          throw new Error('Protocol error: required field "signature" was not found in object')
+        if (opts.writeDefaults === true || (obj.signature != null && obj.signature.byteLength > 0)) {
+          w.uint32(42)
+          w.bytes(obj.signature)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -83,22 +77,6 @@ export namespace Envelope {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.publicKey == null) {
-          throw new Error('Protocol error: value for required field "publicKey" was not found in protobuf')
-        }
-
-        if (obj.payloadType == null) {
-          throw new Error('Protocol error: value for required field "payloadType" was not found in protobuf')
-        }
-
-        if (obj.payload == null) {
-          throw new Error('Protocol error: value for required field "payload" was not found in protobuf')
-        }
-
-        if (obj.signature == null) {
-          throw new Error('Protocol error: value for required field "signature" was not found in protobuf')
         }
 
         return obj
