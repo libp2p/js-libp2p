@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-'use strict'
 
 /*
 $ node benchmark/send-and-receive.js

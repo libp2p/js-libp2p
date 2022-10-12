@@ -2,7 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { expect } from 'aegir/chai'
-import { Mplex } from '../src/index.js'
+import { mplex } from '../src/index.js'
 import { CloseInitiatorMessage, Message, MessageInitiatorMessage, MessageTypes, NewStreamMessage } from '../src/message-types.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -18,9 +18,9 @@ import { Uint8ArrayList } from 'uint8arraylist'
 describe('mplex', () => {
   it('should restrict number of initiator streams per connection', async () => {
     const maxOutboundStreams = 10
-    const factory = new Mplex({
+    const factory = mplex({
       maxOutboundStreams
-    })
+    })()
     const muxer = factory.createStreamMuxer()
 
     // max out the streams for this connection
@@ -34,10 +34,10 @@ describe('mplex', () => {
 
   it('should restrict number of recipient streams per connection', async () => {
     const maxInboundStreams = 10
-    const factory = new Mplex({
+    const factory = mplex({
       maxInboundStreams,
       disconnectThreshold: Infinity
-    })
+    })()
     const muxer = factory.createStreamMuxer()
     const stream = pushable()
 
@@ -122,9 +122,9 @@ describe('mplex', () => {
     })()
 
     // create the muxer
-    const factory = new Mplex({
+    const factory = mplex({
       maxStreamBufferSize
-    })
+    })()
     const muxer = factory.createStreamMuxer({
       onIncomingStream () {
         // do nothing with the stream so the buffer fills up

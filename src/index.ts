@@ -1,4 +1,3 @@
-import { Components, Initializable } from '@libp2p/components'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import { MplexStreamMuxer } from './mplex.js'
 
@@ -39,23 +38,22 @@ export interface MplexInit {
   disconnectThreshold?: number
 }
 
-export class Mplex implements StreamMuxerFactory, Initializable {
+class Mplex implements StreamMuxerFactory {
   public protocol = '/mplex/6.7.0'
   private readonly _init: MplexInit
-  private components: Components = new Components()
 
   constructor (init: MplexInit = {}) {
     this._init = init
   }
 
-  init (components: Components): void {
-    this.components = components
-  }
-
   createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
-    return new MplexStreamMuxer(this.components, {
+    return new MplexStreamMuxer({
       ...init,
       ...this._init
     })
   }
+}
+
+export function mplex (init: MplexInit = {}): () => StreamMuxerFactory {
+  return () => new Mplex(init)
 }
