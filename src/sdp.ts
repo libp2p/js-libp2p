@@ -6,7 +6,7 @@ import { bases } from 'multiformats/basics';
 
 const log = logger('libp2p:webrtc:sdp');
 
-export const mbdecoder = (function () {
+export const mbdecoder: any = (function () {
   const decoders = Object.values(bases).map((b) => b.decoder);
   let acc = decoders[0].or(decoders[1]);
   decoders.slice(2).forEach((d) => (acc = acc.or(d)));
