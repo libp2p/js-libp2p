@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v4.0.0...v5.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#144](https://github.com/libp2p/js-libp2p-bootstrap/issues/144)) ([772acc1](https://github.com/libp2p/js-libp2p-bootstrap/commit/772acc14a7eaab369bf7d885a96188853d353ed0))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v3.0.0...v4.0.0) (2022-10-07)
 
 
