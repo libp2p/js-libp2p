@@ -1,3 +1,12 @@
+## [1.0.1](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.0...v1.0.1) (2022-10-12)
+
+
+### Dependencies
+
+* bump multiformats from 9.9.0 to 10.0.0 ([c3f7d22](https://github.com/libp2p/js-libp2p-webtransport/commit/c3f7d220969de6ec8a632738f760ab11388ef3e7))
+* **dev:** bump @libp2p/interface-transport-compliance-tests ([62c8e6b](https://github.com/libp2p/js-libp2p-webtransport/commit/62c8e6b3c18959d7416767d307a5ebaac8c19ae8))
+* **dev:** bump protons from 5.1.0 to 6.0.0 ([03f7f33](https://github.com/libp2p/js-libp2p-webtransport/commit/03f7f33ba5561771746f1f1cfff7421da36c5889))
+
 ## 1.0.0 (2022-10-12)
 
 
