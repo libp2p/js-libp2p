@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v4.0.1...v5.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#190](https://github.com/libp2p/js-libp2p-websockets/issues/190)) ([388b30d](https://github.com/libp2p/js-libp2p-websockets/commit/388b30d1c1024e2f7fd9d8bea85701d997f59dbb))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v4.0.0...v4.0.1) (2022-10-07)
 
 
