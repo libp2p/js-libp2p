@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -16,34 +18,28 @@ export namespace Record {
 
   export const codec = (): Codec<Record> => {
     if (_codec == null) {
-      _codec = message<Record>((obj, writer, opts = {}) => {
+      _codec = message<Record>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.key != null) {
-          writer.uint32(10)
-          writer.bytes(obj.key)
-        } else {
-          throw new Error('Protocol error: required field "key" was not found in object')
+        if (opts.writeDefaults === true || (obj.key != null && obj.key.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.key)
         }
 
-        if (obj.value != null) {
-          writer.uint32(18)
-          writer.bytes(obj.value)
-        } else {
-          throw new Error('Protocol error: required field "value" was not found in object')
+        if (opts.writeDefaults === true || (obj.value != null && obj.value.byteLength > 0)) {
+          w.uint32(18)
+          w.bytes(obj.value)
         }
 
-        if (obj.timeReceived != null) {
-          writer.uint32(42)
-          writer.string(obj.timeReceived)
-        } else {
-          throw new Error('Protocol error: required field "timeReceived" was not found in object')
+        if (opts.writeDefaults === true || obj.timeReceived !== '') {
+          w.uint32(42)
+          w.string(obj.timeReceived)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -71,18 +67,6 @@ export namespace Record {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.key == null) {
-          throw new Error('Protocol error: value for required field "key" was not found in protobuf')
-        }
-
-        if (obj.value == null) {
-          throw new Error('Protocol error: value for required field "value" was not found in protobuf')
-        }
-
-        if (obj.timeReceived == null) {
-          throw new Error('Protocol error: value for required field "timeReceived" was not found in protobuf')
         }
 
         return obj
