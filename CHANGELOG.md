@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v4.0.1...v5.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#192](https://github.com/libp2p/js-libp2p-floodsub/issues/192)) ([9916896](https://github.com/libp2p/js-libp2p-floodsub/commit/99168964975976a9bc1a219dd055ab7096ecfc05)), closes [libp2p/js-libp2p-components#6](https://github.com/libp2p/js-libp2p-components/issues/6)
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v4.0.0...v4.0.1) (2022-10-11)
 
 
