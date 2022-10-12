@@ -155,7 +155,7 @@
     "it-stream-types": "^1.0.4",
     "p-defer": "^4.0.0",
     "uint8arraylist": "^2.3.1",
-    "uint8arrays": "^3.0.0"
+    "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
     "@types/varint": "^6.0.0",
