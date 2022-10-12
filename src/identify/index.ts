@@ -179,14 +179,14 @@ export class IdentifyService implements Startable {
         // make stream abortable
         const source = abortableDuplex(stream, timeoutController.signal)
 
-      await source.sink(pipe(
-        [Identify.encode({
-          listenAddrs,
-          signedPeerRecord,
-          protocols
-        })],
-        lp.encode(),
-      ))
+        await source.sink(pipe(
+          [Identify.encode({
+            listenAddrs,
+            signedPeerRecord,
+            protocols
+          })],
+          lp.encode()
+        ))
       } catch (err: any) {
         // Just log errors
         log.error('could not push identify update to peer', err)
