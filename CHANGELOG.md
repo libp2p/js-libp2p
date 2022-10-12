@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v4.0.2...v5.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#386](https://github.com/libp2p/js-libp2p-kad-dht/issues/386)) ([abe5207](https://github.com/libp2p/js-libp2p-kad-dht/commit/abe52072b41d4188af59d61a78b02f38f1cc38a8)), closes [libp2p/js-libp2p-components#6](https://github.com/libp2p/js-libp2p-components/issues/6)
+
 ## [4.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v4.0.1...v4.0.2) (2022-10-11)
 
 
