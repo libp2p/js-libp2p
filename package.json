@@ -150,7 +150,7 @@
     "it-sort": "^1.0.1",
     "it-stream-types": "^1.0.4",
     "merge-options": "^3.0.4",
-    "multiformats": "^9.6.3",
+    "multiformats": "^10.0.0",
     "mutable-proxy": "^1.0.0",
     "node-forge": "^1.3.1",
     "p-fifo": "^1.0.0",
