@@ -3,7 +3,7 @@ import net from 'node:net'
 import { promisify } from 'node:util'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { multiaddr } from '@multiformats/multiaddr'
-import { TCP } from '../src/index.js'
+import { tcp } from '../src/index.js'
 
 describe('maxConnections', () => {
   const afterEachCallbacks: Array<() => Promise<any> | any> = []
@@ -18,10 +18,10 @@ describe('maxConnections', () => {
     const port = 9900
 
     const seenRemoteConnections = new Set<string>()
-    const tcp = new TCP({ maxConnections })
+    const trasnport = tcp({ maxConnections })()
 
     const upgrader = mockUpgrader()
-    const listener = tcp.createListener({ upgrader })
+    const listener = trasnport.createListener({ upgrader })
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))

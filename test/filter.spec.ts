@@ -1,15 +1,16 @@
 import { expect } from 'aegir/chai'
-import { TCP } from '../src/index.js'
+import { tcp } from '../src/index.js'
 import { multiaddr } from '@multiformats/multiaddr'
+import type { Transport } from '@libp2p/interface-transport'
 
 describe('filter addrs', () => {
   const base = '/ip4/127.0.0.1'
   const ipfs = '/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw'
 
-  let tcp: TCP
+  let transport: Transport
 
   before(() => {
-    tcp = new TCP()
+    transport = tcp()()
   })
 
   it('filter valid addrs for this transport', () => {
@@ -22,7 +23,7 @@ describe('filter addrs', () => {
     const ma7 = multiaddr('/dns4/libp2p.io/tcp/9090')
     const ma8 = multiaddr('/dnsaddr/libp2p.io/tcp/9090')
 
-    const valid = tcp.filter([ma1, ma2, ma3, ma4, ma5, ma6, ma7, ma8])
+    const valid = transport.filter([ma1, ma2, ma3, ma4, ma5, ma6, ma7, ma8])
     expect(valid.length).to.equal(4)
     expect(valid[0]).to.deep.equal(ma1)
     expect(valid[1]).to.deep.equal(ma4)
@@ -31,7 +32,7 @@ describe('filter addrs', () => {
   it('filter a single addr for this transport', () => {
     const ma1 = multiaddr(base + '/tcp/9090')
 
-    const valid = tcp.filter([ma1])
+    const valid = transport.filter([ma1])
     expect(valid.length).to.equal(1)
     expect(valid[0]).to.eql(ma1)
   })

@@ -1,16 +1,16 @@
 import { expect } from 'aegir/chai'
-import { TCP } from '../src/index.js'
+import { tcp } from '../src/index.js'
 import { multiaddr } from '@multiformats/multiaddr'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import type { Connection } from '@libp2p/interface-connection'
-import type { Upgrader } from '@libp2p/interface-transport'
+import type { Transport, Upgrader } from '@libp2p/interface-transport'
 
 describe('valid localAddr and remoteAddr', () => {
-  let tcp: TCP
+  let transport: Transport
   let upgrader: Upgrader
 
   beforeEach(() => {
-    tcp = new TCP()
+    transport = tcp()()
     upgrader = mockUpgrader()
   })
 
@@ -24,7 +24,7 @@ describe('valid localAddr and remoteAddr', () => {
     const handler = (conn: Connection) => handled(conn)
 
     // Create a listener with the handler
-    const listener = tcp.createListener({
+    const listener = transport.createListener({
       handler,
       upgrader
     })
@@ -36,7 +36,7 @@ describe('valid localAddr and remoteAddr', () => {
     expect(localAddrs.length).to.equal(1)
 
     // Dial to that address
-    await tcp.dial(localAddrs[0], {
+    await transport.dial(localAddrs[0], {
       upgrader
     })
 
@@ -55,7 +55,7 @@ describe('valid localAddr and remoteAddr', () => {
     const handler = (conn: Connection) => handled(conn)
 
     // Create a listener with the handler
-    const listener = tcp.createListener({
+    const listener = transport.createListener({
       handler,
       upgrader
     })
@@ -67,7 +67,7 @@ describe('valid localAddr and remoteAddr', () => {
     expect(localAddrs.length).to.equal(1)
 
     // Dial to that address
-    const dialerConn = await tcp.dial(localAddrs[0], {
+    const dialerConn = await transport.dial(localAddrs[0], {
       upgrader
     })
 

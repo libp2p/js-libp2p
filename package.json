@@ -148,13 +148,13 @@
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^6.0.0",
-    "@libp2p/interface-transport-compliance-tests": "^2.0.6",
+    "@libp2p/interface-mocks": "^7.0.1",
+    "@libp2p/interface-transport-compliance-tests": "^3.0.0",
     "aegir": "^37.5.3",
     "it-all": "^1.0.6",
     "it-pipe": "^2.0.3",
     "p-defer": "^4.0.0",
     "sinon": "^14.0.0",
-    "uint8arrays": "^3.0.0"
+    "uint8arrays": "^4.0.2"
   }
 }

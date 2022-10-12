@@ -55,7 +55,7 @@ export interface TCPCreateListenerOptions extends CreateListenerOptions, TCPSock
 
 }
 
-export class TCP implements Transport {
+class TCP implements Transport {
   private readonly opts: TCPOptions
 
   constructor (options: TCPOptions = {}) {
@@ -187,5 +187,11 @@ export class TCP implements Transport {
 
       return mafmt.TCP.matches(ma.decapsulateCode(CODE_P2P))
     })
+  }
+}
+
+export function tcp (init: TCPOptions = {}): (components?: any) => Transport {
+  return () => {
+    return new TCP(init)
   }
 }

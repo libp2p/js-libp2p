@@ -2,12 +2,12 @@ import sinon from 'sinon'
 import tests from '@libp2p/interface-transport-compliance-tests'
 import { multiaddr } from '@multiformats/multiaddr'
 import net from 'net'
-import { TCP } from '../src/index.js'
+import { tcp } from '../src/index.js'
 
 describe('interface-transport compliance', () => {
   tests({
     async setup () {
-      const tcp = new TCP()
+      const transport = tcp()()
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091'),
         multiaddr('/ip4/127.0.0.1/tcp/9092'),
@@ -35,7 +35,7 @@ describe('interface-transport compliance', () => {
         }
       }
 
-      return { transport: tcp, addrs, connector }
+      return { transport, addrs, connector }
     },
     async teardown () {}
   })

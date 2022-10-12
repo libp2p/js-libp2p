@@ -36,9 +36,9 @@ $ npm i @libp2p/tcp
 ## Usage
 
 ```js
-import { TCP } from '@libp2p/tcp'
+import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
-import {pipe} from 'it-pipe'
+import { pipe } from 'it-pipe'
 import all from 'it-all'
 
 // A simple upgrader that just returns the MultiaddrConnection
@@ -47,9 +47,9 @@ const upgrader = {
   upgradeOutbound: async maConn => maConn
 }
 
-const tcp = new TCP()
+const transport = tcp()()
 
-const listener = tcp.createListener({
+const listener = transport.createListener({
   upgrader,
   handler: (socket) => {
     console.log('new connection opened')
@@ -64,7 +64,7 @@ const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
 await listener.listen(addr)
 console.log('listening')
 
-const socket = await tcp.dial(addr, { upgrader })
+const socket = await transport.dial(addr, { upgrader })
 const values = await pipe(
   socket,
   all
@@ -89,7 +89,7 @@ Value: hello World!
 
 [![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/libp2p-interfaces/src/transport/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport)
 
-`libp2p-tcp` accepts TCP addresses as both IPFS and non IPFS encapsulated addresses, i.e:
+`@libp2p/tcp` accepts TCP addresses as both IPFS and non IPFS encapsulated addresses, i.e:
 
 `/ip4/127.0.0.1/tcp/4001`
 `/ip4/127.0.0.1/tcp/4001/ipfs/QmHash`
