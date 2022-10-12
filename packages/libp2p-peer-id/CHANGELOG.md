@@ -1,3 +1,15 @@
+## [@libp2p/peer-id-v1.1.16](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.15...@libp2p/peer-id-v1.1.16) (2022-10-12)
+
+
+### Trivial Changes
+
+* update project config ([#14](https://github.com/libp2p/js-libp2p-peer-id/issues/14)) ([5c3918c](https://github.com/libp2p/js-libp2p-peer-id/commit/5c3918c61d8346ed1d49094bb592f8c872b7de57))
+
+
+### Dependencies
+
+* bump uint8arrays, protons and multiformats ([#28](https://github.com/libp2p/js-libp2p-peer-id/issues/28)) ([e270265](https://github.com/libp2p/js-libp2p-peer-id/commit/e27026508b3684e6cb2eb896de19c161dbd21d45))
+
 ## [@libp2p/peer-id-v1.1.15](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.14...@libp2p/peer-id-v1.1.15) (2022-07-26)
 
 
