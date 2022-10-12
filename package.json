@@ -171,7 +171,7 @@
     "multiformats": "^9.9.0",
     "p-defer": "^4.0.0",
     "p-timeout": "^6.0.0",
-    "protons-runtime": "^3.1.0",
+    "protons-runtime": "^4.0.1",
     "uint8arraylist": "^2.3.2",
     "wherearewe": "^2.0.1"
   },
