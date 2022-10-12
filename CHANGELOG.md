@@ -1,3 +1,20 @@
+## [3.1.0](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.0.0...v3.1.0) (2022-10-12)
+
+
+### Features
+
+* add lazy select ([#18](https://github.com/libp2p/js-libp2p-multistream-select/issues/18)) ([d3bff7c](https://github.com/libp2p/js-libp2p-multistream-select/commit/d3bff7cc3cd5afe6ebc1355241030868ec0aa572))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([ba9ea12](https://github.com/libp2p/js-libp2p-multistream-select/commit/ba9ea12b2b55602bbeb6c9227976419851496783))
+
+
+### Dependencies
+
+* bump uint8arrays from 3.x.x to 4.x.x ([#22](https://github.com/libp2p/js-libp2p-multistream-select/issues/22)) ([cfb887b](https://github.com/libp2p/js-libp2p-multistream-select/commit/cfb887b9bc01f8234838049c59866064db97bdf5))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-multistream-select/compare/v2.0.2...v3.0.0) (2022-08-06)
 
 
