@@ -149,6 +149,7 @@
     "it-first": "^1.0.6",
     "it-handshake": "^4.0.1",
     "it-length-prefixed": "^8.0.2",
+    "it-merge": "^1.0.4",
     "it-pipe": "^2.0.3",
     "it-pushable": "^3.0.0",
     "it-reader": "^6.0.1",

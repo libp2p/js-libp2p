@@ -116,4 +116,19 @@ describe('Dialer', () => {
       await expect(mss.select(duplex, protocol)).to.eventually.be.rejected().with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
     })
   })
+
+  describe('dialer.lazySelect', () => {
+    it('should lazily select a single protocol', async () => {
+      const protocol = '/echo/1.0.0'
+      const duplex = pair()
+
+      const selection = mss.lazySelect(duplex, protocol)
+      expect(selection.protocol).to.equal(protocol)
+
+      // Ensure stream is usable after selection
+      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const output = await pipe(input, selection.stream, async (source) => await all(source))
+      expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
+    })
+  })
 })

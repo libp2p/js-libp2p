@@ -21,5 +21,5 @@ export interface MultistreamSelectInit extends AbortOptions {
   writeBytes?: boolean
 }
 
-export { select } from './select.js'
+export { select, lazySelect } from './select.js'
 export { handle } from './handle.js'
