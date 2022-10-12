@@ -13,7 +13,6 @@ import { codes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { AddressBook } from '@libp2p/interface-peer-store'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Components } from '@libp2p/components'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
@@ -31,8 +30,7 @@ describe('addressBook', () => {
     let ab: AddressBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       ab = peerStore.addressBook
     })
 
@@ -149,8 +147,7 @@ describe('addressBook', () => {
     let ab: AddressBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       ab = peerStore.addressBook
     })
 
@@ -304,8 +301,7 @@ describe('addressBook', () => {
     let ab: AddressBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       ab = peerStore.addressBook
     })
 
@@ -342,8 +338,7 @@ describe('addressBook', () => {
     let ab: AddressBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       ab = peerStore.addressBook
     })
 
@@ -400,8 +395,7 @@ describe('addressBook', () => {
 
     describe('consumes a valid peer record and stores its data', () => {
       beforeEach(() => {
-        peerStore = new PersistentPeerStore()
-        peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+        peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
         ab = peerStore.addressBook
       })
 
@@ -602,8 +596,7 @@ describe('addressBook', () => {
 
     describe('fails to consume invalid peer records', () => {
       beforeEach(() => {
-        peerStore = new PersistentPeerStore()
-        peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+        peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
         ab = peerStore.addressBook
       })
 

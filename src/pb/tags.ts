@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -14,22 +16,22 @@ export namespace Tags {
 
   export const codec = (): Codec<Tags> => {
     if (_codec == null) {
-      _codec = message<Tags>((obj, writer, opts = {}) => {
+      _codec = message<Tags>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.tags != null) {
           for (const value of obj.tags) {
-            writer.uint32(10)
-            Tag.codec().encode(value, writer)
+            w.uint32(10)
+            Tag.codec().encode(value, w, {
+              writeDefaults: true
+            })
           }
-        } else {
-          throw new Error('Protocol error: required field "tags" was not found in object')
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -78,30 +80,28 @@ export namespace Tag {
 
   export const codec = (): Codec<Tag> => {
     if (_codec == null) {
-      _codec = message<Tag>((obj, writer, opts = {}) => {
+      _codec = message<Tag>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.name != null) {
-          writer.uint32(10)
-          writer.string(obj.name)
-        } else {
-          throw new Error('Protocol error: required field "name" was not found in object')
+        if (opts.writeDefaults === true || obj.name !== '') {
+          w.uint32(10)
+          w.string(obj.name)
         }
 
         if (obj.value != null) {
-          writer.uint32(16)
-          writer.uint32(obj.value)
+          w.uint32(16)
+          w.uint32(obj.value)
         }
 
         if (obj.expiry != null) {
-          writer.uint32(24)
-          writer.uint64(obj.expiry)
+          w.uint32(24)
+          w.uint64(obj.expiry)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -127,10 +127,6 @@ export namespace Tag {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.name == null) {
-          throw new Error('Protocol error: value for required field "name" was not found in protobuf')
         }
 
         return obj

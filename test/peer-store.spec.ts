@@ -7,7 +7,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Components } from '@libp2p/components'
 import delay from 'delay'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
@@ -35,8 +34,7 @@ describe('peer-store', () => {
     let peerStore: PersistentPeerStore
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId: peerIds[4], datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId: peerIds[4], datastore: new MemoryDatastore() })
     })
 
     it('has an empty map of peers', async () => {
@@ -65,8 +63,7 @@ describe('peer-store', () => {
     let peerStore: PersistentPeerStore
 
     beforeEach(async () => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId: peerIds[4], datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId: peerIds[4], datastore: new MemoryDatastore() })
 
       // Add peer0 with { addr1, addr2 } and { proto1 }
       await peerStore.addressBook.set(peerIds[0], [addr1, addr2])
@@ -166,8 +163,7 @@ describe('peer-store', () => {
     let peerStore: PersistentPeerStore
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId: peerIds[4], datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId: peerIds[4], datastore: new MemoryDatastore() })
     })
 
     it('returns peers if only addresses are known', async () => {
@@ -220,8 +216,7 @@ describe('peer-store', () => {
     let peerStore: PersistentPeerStore
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId: peerIds[4], datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId: peerIds[4], datastore: new MemoryDatastore() })
     })
 
     it('tags a peer', async () => {

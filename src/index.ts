@@ -7,37 +7,38 @@ import { PeerStoreProtoBook } from './proto-book.js'
 import { PersistentStore, Store } from './store.js'
 import type { PeerStore, AddressBook, KeyBook, MetadataBook, ProtoBook, PeerStoreEvents, PeerStoreInit, Peer, TagOptions } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Components, Initializable } from '@libp2p/components'
 import errCode from 'err-code'
 import { Tag, Tags } from './pb/tags.js'
+import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:peer-store')
+
+export interface PersistentPeerStoreComponents {
+  peerId: PeerId
+  datastore: Datastore
+}
 
 /**
  * An implementation of PeerStore that stores data in a Datastore
  */
-export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implements PeerStore, Initializable {
+export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implements PeerStore {
   public addressBook: AddressBook
   public keyBook: KeyBook
   public metadataBook: MetadataBook
   public protoBook: ProtoBook
 
-  private components: Components = new Components()
+  private readonly components: PersistentPeerStoreComponents
   private readonly store: Store
 
-  constructor (init: PeerStoreInit = {}) {
+  constructor (components: PersistentPeerStoreComponents, init: PeerStoreInit = {}) {
     super()
 
-    this.store = new PersistentStore()
+    this.components = components
+    this.store = new PersistentStore(components)
     this.addressBook = new PeerStoreAddressBook(this.dispatchEvent.bind(this), this.store, init.addressFilter)
     this.keyBook = new PeerStoreKeyBook(this.dispatchEvent.bind(this), this.store)
     this.metadataBook = new PeerStoreMetadataBook(this.dispatchEvent.bind(this), this.store)
     this.protoBook = new PeerStoreProtoBook(this.dispatchEvent.bind(this), this.store)
-  }
-
-  init (components: Components) {
-    this.components = components
-    ;(this.store as PersistentStore).init(components)
   }
 
   async forEach (fn: (peer: Peer) => void) {
@@ -47,7 +48,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
 
     try {
       for await (const peer of this.store.all()) {
-        if (peer.id.equals(this.components.getPeerId())) {
+        if (peer.id.equals(this.components.peerId)) {
           // Skip self peer if present
           continue
         }

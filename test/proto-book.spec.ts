@@ -10,7 +10,6 @@ import { codes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { ProtoBook } from '@libp2p/interface-peer-store'
-import { Components } from '@libp2p/components'
 
 const arraysAreEqual = (a: string[], b: string[]) => {
   if (a.length !== b.length) {
@@ -32,8 +31,7 @@ describe('protoBook', () => {
     let pb: ProtoBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       pb = peerStore.protoBook
     })
 
@@ -125,8 +123,7 @@ describe('protoBook', () => {
     let pb: ProtoBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       pb = peerStore.protoBook
     })
 
@@ -229,8 +226,7 @@ describe('protoBook', () => {
     let pb: ProtoBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       pb = peerStore.protoBook
     })
 
@@ -315,8 +311,7 @@ describe('protoBook', () => {
     let pb: ProtoBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       pb = peerStore.protoBook
     })
 
@@ -346,8 +341,7 @@ describe('protoBook', () => {
     let pb: ProtoBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       pb = peerStore.protoBook
     })
 

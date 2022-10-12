@@ -9,7 +9,6 @@ import { codes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { KeyBook } from '@libp2p/interface-peer-store'
-import { Components } from '@libp2p/components'
 
 describe('keyBook', () => {
   let peerId: PeerId
@@ -20,8 +19,7 @@ describe('keyBook', () => {
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
     datastore = new MemoryDatastore()
-    peerStore = new PersistentPeerStore()
-    peerStore.init(new Components({ peerId, datastore }))
+    peerStore = new PersistentPeerStore({ peerId, datastore })
     kb = peerStore.keyBook
   })
 

@@ -10,7 +10,6 @@ import { codes } from '../src/errors.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { MetadataBook } from '@libp2p/interface-peer-store'
-import { Components } from '@libp2p/components'
 
 describe('metadataBook', () => {
   let peerId: PeerId
@@ -24,8 +23,7 @@ describe('metadataBook', () => {
     let mb: MetadataBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       mb = peerStore.metadataBook
     })
 
@@ -162,8 +160,7 @@ describe('metadataBook', () => {
     let mb: MetadataBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       mb = peerStore.metadataBook
     })
 
@@ -203,8 +200,7 @@ describe('metadataBook', () => {
     let mb: MetadataBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       mb = peerStore.metadataBook
     })
 
@@ -254,8 +250,7 @@ describe('metadataBook', () => {
     let mb: MetadataBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       mb = peerStore.metadataBook
     })
 
@@ -310,8 +305,7 @@ describe('metadataBook', () => {
     let mb: MetadataBook
 
     beforeEach(() => {
-      peerStore = new PersistentPeerStore()
-      peerStore.init(new Components({ peerId, datastore: new MemoryDatastore() }))
+      peerStore = new PersistentPeerStore({ peerId, datastore: new MemoryDatastore() })
       mb = peerStore.metadataBook
     })
 

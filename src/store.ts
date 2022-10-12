@@ -10,7 +10,7 @@ import mortice from 'mortice'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
 import type { Peer } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Components } from '@libp2p/components'
+import type { PersistentPeerStoreComponents } from './index.js'
 
 const log = logger('libp2p:peer-store:store')
 
@@ -34,18 +34,15 @@ export interface Store {
 }
 
 export class PersistentStore {
-  private components: Components = new Components()
+  private readonly components: PersistentPeerStoreComponents
   public lock: any
 
-  constructor () {
+  constructor (components: PersistentPeerStoreComponents) {
+    this.components = components
     this.lock = mortice({
       name: 'peer-store',
       singleProcess: true
     })
-  }
-
-  init (components: Components) {
-    this.components = components
   }
 
   _peerIdToDatastoreKey (peerId: PeerId) {
@@ -59,15 +56,15 @@ export class PersistentStore {
   }
 
   async has (peerId: PeerId) {
-    return await this.components.getDatastore().has(this._peerIdToDatastoreKey(peerId))
+    return await this.components.datastore.has(this._peerIdToDatastoreKey(peerId))
   }
 
   async delete (peerId: PeerId) {
-    await this.components.getDatastore().delete(this._peerIdToDatastoreKey(peerId))
+    await this.components.datastore.delete(this._peerIdToDatastoreKey(peerId))
   }
 
   async load (peerId: PeerId): Promise<Peer> {
-    const buf = await this.components.getDatastore().get(this._peerIdToDatastoreKey(peerId))
+    const buf = await this.components.datastore.get(this._peerIdToDatastoreKey(peerId))
     const peer = PeerPB.decode(buf)
     const metadata = new Map()
 
@@ -133,7 +130,7 @@ export class PersistentStore {
       peerRecordEnvelope: peer.peerRecordEnvelope
     })
 
-    await this.components.getDatastore().put(this._peerIdToDatastoreKey(peer.id), buf.subarray())
+    await this.components.datastore.put(this._peerIdToDatastoreKey(peer.id), buf.subarray())
 
     return await this.load(peer.id)
   }
@@ -231,7 +228,7 @@ export class PersistentStore {
   }
 
   async * all () {
-    for await (const key of this.components.getDatastore().queryKeys({
+    for await (const key of this.components.datastore.queryKeys({
       prefix: NAMESPACE_COMMON
     })) {
       // /peers/${peer-id-as-libp2p-key-cid-string-in-base-32}
