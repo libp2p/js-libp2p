@@ -2,7 +2,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { PreSharedKeyConnectionProtector } from 'libp2p/pnet'
+import { preSharedKey } from 'libp2p/pnet'
 
 /**
  * privateLibp2pNode returns a libp2p node function that will use the swarm
@@ -22,7 +22,7 @@ export async function privateLibp2pNode (swarmKey) {
     // being left in for explicit readability.
     // We should explicitly dial pnet peers, or use a custom discovery service for finding nodes in our pnet
     peerDiscovery: [],
-    connectionProtector: new PreSharedKeyConnectionProtector({
+    connectionProtector: preSharedKey({
       psk: swarmKey
     })
   })

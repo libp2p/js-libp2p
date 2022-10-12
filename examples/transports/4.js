@@ -27,7 +27,7 @@ const createNode = async (addresses = []) => {
     },
     transports: [
       tcp(),
-      new WebSockets({
+      webSockets({
         server: httpServer,
         websocket: {
           rejectUnauthorized: false

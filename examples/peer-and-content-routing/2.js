@@ -5,7 +5,7 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { CID } from 'multiformats/cid'
-import { KadDHT } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 import all from 'it-all'
 import delay from 'delay'
 
@@ -17,7 +17,7 @@ const createNode = async () => {
     transports: [tcp()],
     streamMuxers: [mplex()],
     connectionEncryption: [() => new Noise()],
-    dht: new KadDHT()
+    dht: kadDHT()
   })
 
   await node.start()
