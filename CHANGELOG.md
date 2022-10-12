@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v4.0.1...v5.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#106](https://github.com/libp2p/js-libp2p-pubsub/issues/106)) ([01707d7](https://github.com/libp2p/js-libp2p-pubsub/commit/01707d7dde5ff7d2f87115f9215d7a8a35d3d3f4))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v4.0.0...v4.0.1) (2022-10-11)
 
 
