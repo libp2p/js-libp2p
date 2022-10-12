@@ -1,3 +1,16 @@
+## [2.0.2](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.1...v2.0.2) (2022-10-12)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([0d54ade](https://github.com/libp2p/js-libp2p-logger/commit/0d54ade029fcf26d77b35b043e7a521088930231))
+* update project config ([#11](https://github.com/libp2p/js-libp2p-logger/issues/11)) ([e993132](https://github.com/libp2p/js-libp2p-logger/commit/e9931326baa5de5ff8614d685413e1f5bb2bf0bc))
+
+
+### Dependencies
+
+* bump multiformats from 9.9.0 to 10.0.0 ([#10](https://github.com/libp2p/js-libp2p-logger/issues/10)) ([1cbf8c9](https://github.com/libp2p/js-libp2p-logger/commit/1cbf8c973605316f9560c1a50e2a19543ec36f26))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.0...v2.0.1) (2022-08-12)
 
 
