@@ -2,7 +2,6 @@ import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
-import drain from 'it-drain'
 import first from 'it-first'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
@@ -180,16 +179,14 @@ export class IdentifyService implements Startable {
         // make stream abortable
         const source = abortableDuplex(stream, timeoutController.signal)
 
-        await pipe(
-          [Identify.encode({
-            listenAddrs,
-            signedPeerRecord,
-            protocols
-          })],
-          lp.encode(),
-          source,
-          drain
-        )
+      await source.sink(pipe(
+        [Identify.encode({
+          listenAddrs,
+          signedPeerRecord,
+          protocols
+        })],
+        lp.encode(),
+      ))
       } catch (err: any) {
         // Just log errors
         log.error('could not push identify update to peer', err)
@@ -419,12 +416,8 @@ export class IdentifyService implements Startable {
       // make stream abortable
       const source = abortableDuplex(stream, timeoutController.signal)
 
-      await pipe(
-        [message],
-        lp.encode(),
-        source,
-        drain
-      )
+      const msgWithLenPrefix = pipe([message], lp.encode())
+      await source.sink(msgWithLenPrefix)
     } catch (err: any) {
       log.error('could not respond to identify request', err)
     } finally {
