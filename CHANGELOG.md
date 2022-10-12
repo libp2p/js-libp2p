@@ -1,3 +1,14 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v4.1.0...v5.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#219](https://github.com/libp2p/js-libp2p-tcp/issues/219)) ([be2dbc3](https://github.com/libp2p/js-libp2p-tcp/commit/be2dbc3f674e9bce534dc92d93ad2739ed6d2bef))
+
 ## [4.1.0](https://github.com/libp2p/js-libp2p-tcp/compare/v4.0.2...v4.1.0) (2022-10-11)
 
 
