@@ -38,7 +38,7 @@
     "release": "aegir release"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^4.0.1",
+    "@libp2p/interface-mocks": "^6.1.0",
     "@libp2p/peer-id-factory": "^1.0.18",
     "@multiformats/multiaddr": "^10.4.1",
     "@types/uuid": "^8.3.4",
