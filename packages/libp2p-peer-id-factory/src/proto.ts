@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -16,30 +18,28 @@ export namespace PeerIdProto {
 
   export const codec = (): Codec<PeerIdProto> => {
     if (_codec == null) {
-      _codec = message<PeerIdProto>((obj, writer, opts = {}) => {
+      _codec = message<PeerIdProto>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.id != null) {
-          writer.uint32(10)
-          writer.bytes(obj.id)
-        } else {
-          throw new Error('Protocol error: required field "id" was not found in object')
+        if (opts.writeDefaults === true || (obj.id != null && obj.id.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.id)
         }
 
         if (obj.pubKey != null) {
-          writer.uint32(18)
-          writer.bytes(obj.pubKey)
+          w.uint32(18)
+          w.bytes(obj.pubKey)
         }
 
         if (obj.privKey != null) {
-          writer.uint32(26)
-          writer.bytes(obj.privKey)
+          w.uint32(26)
+          w.bytes(obj.privKey)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {
@@ -65,10 +65,6 @@ export namespace PeerIdProto {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.id == null) {
-          throw new Error('Protocol error: value for required field "id" was not found in protobuf')
         }
 
         return obj

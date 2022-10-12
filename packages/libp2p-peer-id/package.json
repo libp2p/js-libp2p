@@ -140,8 +140,8 @@
   "dependencies": {
     "@libp2p/interface-peer-id": "^1.0.0",
     "err-code": "^3.0.1",
-    "multiformats": "^9.6.3",
-    "uint8arrays": "^3.0.0"
+    "multiformats": "^10.0.0",
+    "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
     "aegir": "^37.0.7"
