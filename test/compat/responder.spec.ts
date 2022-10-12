@@ -11,17 +11,17 @@ import { Responder } from '../../src/compat/responder.js'
 import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from '../../src/compat/constants.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { ResponsePacket } from 'multicast-dns'
-import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
 import { findPeerInfoInAnswers } from '../../src/compat/utils.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { MulticastDNSComponents } from '../../src/index.js'
 
 describe('Responder', () => {
   let responder: Responder
   let mdns: mDNS.MulticastDNS
   let peerIds: PeerId[]
-  let components: Components
+  let components: MulticastDNSComponents
   let multiadddrs: Multiaddr[]
 
   beforeEach(async () => {
@@ -38,7 +38,7 @@ describe('Responder', () => {
     const addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns(multiadddrs)
 
-    components = new Components({ peerId: peerIds[0], addressManager })
+    components = { peerId: peerIds[0], addressManager }
   })
 
   afterEach(async () => {
@@ -49,8 +49,7 @@ describe('Responder', () => {
   })
 
   it('should start and stop', async () => {
-    responder = new Responder()
-    responder.init(components)
+    responder = new Responder(components)
 
     await responder.start()
     await responder.stop()
@@ -58,9 +57,8 @@ describe('Responder', () => {
 
   it('should not respond to a query if no TCP addresses', async () => {
     const peerId = await createEd25519PeerId()
-    responder = new Responder()
-    components.getAddressManager().getAddresses = () => []
-    responder.init(components)
+    responder = new Responder(components)
+    components.addressManager.getAddresses = () => []
     mdns = mDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
 
     await responder.start()
@@ -86,8 +84,7 @@ describe('Responder', () => {
   })
 
   it('should not respond to a query with non matching service tag', async () => {
-    responder = new Responder()
-    responder.init(components)
+    responder = new Responder(components)
     mdns = mDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
 
     await responder.start()
@@ -115,8 +112,7 @@ describe('Responder', () => {
   })
 
   it('should respond correctly', async () => {
-    responder = new Responder()
-    responder.init(components)
+    responder = new Responder(components)
     await responder.start()
     const defer = pDefer<PeerInfo>()
 

@@ -4,7 +4,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import pDefer from 'p-defer'
 import { GoMulticastDNS } from '../../src/compat/index.js'
-import { Components } from '@libp2p/components'
 import { stubInterface } from 'ts-sinon'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -19,13 +18,12 @@ async function createGoMulticastDNS () {
     multiaddr(`/ip4/127.0.0.1/tcp/${port++}/p2p/${peerId.toString()}`)
   ])
 
-  const components = new Components({
+  const components = {
     peerId,
     addressManager
-  })
+  }
 
-  const mdns = new GoMulticastDNS()
-  mdns.init(components)
+  const mdns = new GoMulticastDNS(components)
 
   return {
     mdns,
@@ -64,7 +62,7 @@ describe('GoMulticastDNS', () => {
     mdnsA.addEventListener('peer', (evt) => {
       const { id } = evt.detail
 
-      if (!componentsB.getPeerId().equals(id)) {
+      if (!componentsB.peerId.equals(id)) {
         return
       }
 
@@ -82,7 +80,7 @@ describe('GoMulticastDNS', () => {
       mdnsB.stop()
     ])
 
-    expect(peerData.id.equals(componentsB.getPeerId())).to.be.true()
-    expect(peerData.multiaddrs.map(ma => ma.toString())).includes(componentsB.getAddressManager().getAddresses()[1].toString())
+    expect(peerData.id.equals(componentsB.peerId)).to.be.true()
+    expect(peerData.multiaddrs.map(ma => ma.toString())).includes(componentsB.addressManager.getAddresses()[1].toString())
   })
 })

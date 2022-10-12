@@ -3,27 +3,27 @@ import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { Responder } from './responder.js'
 import { Querier } from './querier.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import type { Components, Initializable } from '@libp2p/components'
 import { symbol } from '@libp2p/interface-peer-discovery'
+import type { MulticastDNSComponents } from '../index.js'
 
 export interface GoMulticastDNSInit {
   queryPeriod?: number
   queryInterval?: number
 }
 
-export class GoMulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Initializable {
+export class GoMulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
   private _started: boolean
   private readonly _responder: Responder
   private readonly _querier: Querier
 
-  constructor (options: GoMulticastDNSInit = {}) {
+  constructor (components: MulticastDNSComponents, options: GoMulticastDNSInit = {}) {
     super()
     const { queryPeriod, queryInterval } = options
 
     this._started = false
 
-    this._responder = new Responder()
-    this._querier = new Querier({
+    this._responder = new Responder(components)
+    this._querier = new Querier(components, {
       queryInterval,
       queryPeriod
     })
@@ -39,11 +39,6 @@ export class GoMulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements
 
   get [Symbol.toStringTag] () {
     return '@libp2p/go-mdns'
-  }
-
-  init (components: Components): void {
-    this._responder.init(components)
-    this._querier.init(components)
   }
 
   isStarted () {

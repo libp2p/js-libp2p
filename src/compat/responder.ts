@@ -5,20 +5,17 @@ import { SERVICE_TAG_LOCAL } from './constants.js'
 import { MultiaddrObject, protocols } from '@multiformats/multiaddr'
 import type { RemoteInfo } from 'dgram'
 import type { Answer } from 'dns-packet'
-import { Components, Initializable } from '@libp2p/components'
+import type { MulticastDNSComponents } from '../index.js'
 
 const log = logger('libp2p:mdns:compat:responder')
 
-export class Responder implements Initializable {
-  private components: Components = new Components()
+export class Responder {
+  private readonly components: MulticastDNSComponents
   private _mdns?: MDNS.MulticastDNS
 
-  constructor () {
-    this._onQuery = this._onQuery.bind(this)
-  }
-
-  init (components: Components): void {
+  constructor (components: MulticastDNSComponents) {
     this.components = components
+    this._onQuery = this._onQuery.bind(this)
   }
 
   start () {
@@ -27,7 +24,7 @@ export class Responder implements Initializable {
   }
 
   _onQuery (event: QueryPacket, info: RemoteInfo) {
-    const addresses = this.components.getAddressManager().getAddresses().reduce<MultiaddrObject[]>((acc, addr) => {
+    const addresses = this.components.addressManager.getAddresses().reduce<MultiaddrObject[]>((acc, addr) => {
       addr = addr.decapsulateCode(protocols('p2p').code)
 
       if (addr.isThinWaistAddress()) {
@@ -51,7 +48,7 @@ export class Responder implements Initializable {
     log.trace('got query', event, info)
 
     const answers: Answer[] = []
-    const peerServiceTagLocal = `${this.components.getPeerId().toString()}.${SERVICE_TAG_LOCAL}`
+    const peerServiceTagLocal = `${this.components.peerId.toString()}.${SERVICE_TAG_LOCAL}`
 
     answers.push({
       name: SERVICE_TAG_LOCAL,
@@ -66,7 +63,7 @@ export class Responder implements Initializable {
       type: 'TXT',
       class: 'IN',
       ttl: 120,
-      data: [Buffer.from(this.components.getPeerId().toString())]
+      data: [Buffer.from(this.components.peerId.toString())]
     })
 
     addresses.forEach(ma => {

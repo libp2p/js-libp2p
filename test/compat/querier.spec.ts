@@ -9,7 +9,6 @@ import { SERVICE_TAG_LOCAL } from '../../src/compat/constants.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { RemoteInfo } from 'dgram'
 import type { Answer } from 'dns-packet'
-import { Components } from '@libp2p/components'
 
 describe('Querier', () => {
   let querier: Querier
@@ -35,16 +34,14 @@ describe('Querier', () => {
   })
 
   it('should start and stop', async () => {
-    querier = new Querier()
-    querier.init(new Components({ peerId: peerIds[0] }))
+    querier = new Querier({ peerId: peerIds[0] })
 
     await querier.start()
     await querier.stop()
   })
 
   it('should query on interval', async () => {
-    querier = new Querier({ queryPeriod: 0, queryInterval: 10 })
-    querier.init(new Components({ peerId: peerIds[0] }))
+    querier = new Querier({ peerId: peerIds[0] }, { queryPeriod: 0, queryInterval: 10 })
 
     mdns = MDNS()
 
@@ -246,8 +243,7 @@ describe('Querier', () => {
    * @param {Function} getResponse - Given a query, construct a response to test the querier
    */
   async function ensurePeer (getResponse: (event: QueryPacket, info: RemoteInfo) => Answer[]) {
-    const querier = new Querier()
-    querier.init(new Components({ peerId: peerIds[0] }))
+    const querier = new Querier({ peerId: peerIds[0] })
     mdns = MDNS()
 
     mdns.on('query', (event, info) => {
@@ -283,8 +279,7 @@ describe('Querier', () => {
    * @param {Function} getResponse - Given a query, construct a response to test the querier
    */
   async function ensureNoPeer (getResponse: (event: QueryPacket, info: RemoteInfo) => Answer[]) {
-    const querier = new Querier()
-    querier.init(new Components({ peerId: peerIds[0] }))
+    const querier = new Querier({ peerId: peerIds[0] })
     mdns = MDNS()
 
     mdns.on('query', (event, info) => {

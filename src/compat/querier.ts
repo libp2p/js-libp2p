@@ -5,9 +5,10 @@ import { SERVICE_TAG_LOCAL, MULTICAST_IP, MULTICAST_PORT } from './constants.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { ResponsePacket } from 'multicast-dns'
 import type { RemoteInfo } from 'dgram'
-import { Components, Initializable } from '@libp2p/components'
 import { findPeerInfoInAnswers } from './utils.js'
 import { symbol } from '@libp2p/interface-peer-discovery'
+import type { Startable } from '@libp2p/interfaces/dist/src/startable.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:mdns:compat:querier')
 
@@ -16,20 +17,25 @@ export interface QuerierInit {
   queryPeriod?: number
 }
 
+export interface QuerierComponents {
+  peerId: PeerId
+}
+
 export interface Handle {
   stop: () => Promise<void>
 }
 
-export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Initializable {
+export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   private readonly _init: Required<QuerierInit>
   private _handle?: Handle
-  private components: Components = new Components()
+  private readonly components: QuerierComponents
 
-  constructor (init: QuerierInit = {}) {
+  constructor (components: QuerierComponents, init: QuerierInit = {}) {
     super()
 
     const { queryInterval, queryPeriod } = init
 
+    this.components = components
     this._init = {
       // Re-query in leu of network change detection (every 60s by default)
       queryInterval: queryInterval ?? 60000,
@@ -49,10 +55,6 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
 
   get [Symbol.toStringTag] () {
     return '@libp2p/go-mdns-querier'
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   isStarted () {
@@ -95,7 +97,7 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
     log.trace('received mDNS query response')
     const answers = event.answers ?? []
 
-    const peerInfo = findPeerInfoInAnswers(answers, this.components.getPeerId())
+    const peerInfo = findPeerInfoInAnswers(answers, this.components.peerId)
 
     if (peerInfo == null) {
       log('could not read peer data from query response')

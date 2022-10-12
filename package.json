@@ -134,7 +134,6 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/components": "^3.0.0",
     "@libp2p/interface-peer-discovery": "^1.0.1",
     "@libp2p/interface-peer-id": "^1.0.4",
     "@libp2p/interface-peer-info": "^1.0.3",
@@ -144,11 +143,11 @@
     "@multiformats/multiaddr": "^11.0.0",
     "@types/multicast-dns": "^7.2.1",
     "multicast-dns": "^7.2.0",
-    "multiformats": "^9.6.3"
+    "multiformats": "^10.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface-address-manager": "^1.0.3",
-    "@libp2p/interface-peer-discovery-compliance-tests": "^1.0.2",
+    "@libp2p/interface-address-manager": "^2.0.0",
+    "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.0",
     "@libp2p/peer-id-factory": "^1.0.18",
     "aegir": "^37.5.3",
     "delay": "^5.0.0",

@@ -5,12 +5,13 @@ import * as query from './query.js'
 import { GoMulticastDNS } from './compat/index.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { Components, Initializable } from '@libp2p/components'
 import { symbol } from '@libp2p/interface-peer-discovery'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 
 const log = logger('libp2p:mdns')
 
-export interface MulticastDNSOptions {
+export interface MulticastDNSInit {
   broadcast?: boolean
   interval?: number
   serviceTag?: string
@@ -20,7 +21,12 @@ export interface MulticastDNSOptions {
   compatQueryInterval?: number
 }
 
-export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Initializable {
+export interface MulticastDNSComponents {
+  peerId: PeerId
+  addressManager: AddressManager
+}
+
+class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
   public mdns?: multicastDNS.MulticastDNS
 
   private readonly broadcast: boolean
@@ -29,24 +35,25 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
   private readonly port: number
   private _queryInterval: ReturnType<typeof setInterval> | null
   private readonly _goMdns?: GoMulticastDNS
-  private components: Components = new Components()
+  private readonly components: MulticastDNSComponents
 
-  constructor (options: MulticastDNSOptions = {}) {
+  constructor (components: MulticastDNSComponents, init: MulticastDNSInit = {}) {
     super()
 
-    this.broadcast = options.broadcast !== false
-    this.interval = options.interval ?? (1e3 * 10)
-    this.serviceTag = options.serviceTag ?? 'ipfs.local'
-    this.port = options.port ?? 5353
+    this.components = components
+    this.broadcast = init.broadcast !== false
+    this.interval = init.interval ?? (1e3 * 10)
+    this.serviceTag = init.serviceTag ?? 'ipfs.local'
+    this.port = init.port ?? 5353
     this._queryInterval = null
     this._onPeer = this._onPeer.bind(this)
     this._onMdnsQuery = this._onMdnsQuery.bind(this)
     this._onMdnsResponse = this._onMdnsResponse.bind(this)
 
-    if (options.compat !== false) {
-      this._goMdns = new GoMulticastDNS({
-        queryPeriod: options.compatQueryPeriod,
-        queryInterval: options.compatQueryInterval
+    if (init.compat !== false) {
+      this._goMdns = new GoMulticastDNS(components, {
+        queryPeriod: init.compatQueryPeriod,
+        queryInterval: init.compatQueryInterval
       })
       this._goMdns.addEventListener('peer', this._onPeer)
     }
@@ -58,12 +65,6 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
 
   get [Symbol.toStringTag] () {
     return '@libp2p/mdns'
-  }
-
-  init (components: Components): void {
-    this.components = components
-
-    this._goMdns?.init(components)
   }
 
   isStarted () {
@@ -97,14 +98,14 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
     }
 
     log.trace('received incoming mDNS query')
-    query.gotQuery(event, this.mdns, this.components.getPeerId(), this.components.getAddressManager().getAddresses(), this.serviceTag, this.broadcast)
+    query.gotQuery(event, this.mdns, this.components.peerId, this.components.addressManager.getAddresses(), this.serviceTag, this.broadcast)
   }
 
   _onMdnsResponse (event: multicastDNS.ResponsePacket) {
     log.trace('received mDNS query response')
 
     try {
-      const foundPeer = query.gotResponse(event, this.components.getPeerId(), this.serviceTag)
+      const foundPeer = query.gotResponse(event, this.components.peerId, this.serviceTag)
 
       if (foundPeer != null) {
         log('discovered peer in mDNS qeury response %p', foundPeer.id)
@@ -160,6 +161,10 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
 
     this.mdns = undefined
   }
+}
+
+export function mdns (init: MulticastDNSInit = {}): (components: MulticastDNSComponents) => PeerDiscovery {
+  return (components: MulticastDNSComponents) => new MulticastDNS(components, init)
 }
 
 /* for reference
