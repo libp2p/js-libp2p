@@ -1,3 +1,10 @@
+## [4.0.4](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.3...v4.0.4) (2022-10-12)
+
+
+### Dependencies
+
+* bump uint8arrays, protons and multiformats ([#29](https://github.com/libp2p/js-libp2p-peer-record/issues/29)) ([04bf67d](https://github.com/libp2p/js-libp2p-peer-record/commit/04bf67daedbc75a9f7e6144c1bc818cd7f872b5b))
+
 ## [4.0.3](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.2...v4.0.3) (2022-09-21)
 
 
