@@ -171,7 +171,7 @@
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^9.0.0",
     "@chainsafe/libp2p-yamux": "^2.0.0",
-    "@libp2p/bootstrap": "^4.0.0",
+    "@libp2p/bootstrap": "^5.0.0",
     "@libp2p/daemon-client": "^3.0.1",
     "@libp2p/daemon-server": "^3.0.1",
     "@libp2p/floodsub": "^4.0.1",
