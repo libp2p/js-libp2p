@@ -42,6 +42,7 @@ If you are looking for the documentation of the latest release, you can view the
 ## Table of Contents <!-- omit in toc -->
 
 - [Background](#background)
+- [Roadmap](#roadmap)
 - [Install](#install)
 - [Usage](#usage)
   - [Configuration](#configuration)
@@ -72,6 +73,11 @@ We are in the process of writing better documentation, blog posts, tutorials and
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
 To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
+
+## Roadmap
+
+Our roadmap for js-libp2p can be found here: https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md
+This document represents current projects the js-libp2p team is focused on and provides an estimation of completion targets. It is a completementary roadmap to the overarching libp2p project roadmap: https://github.com/libp2p/specs/blob/master/ROADMAP.md
 
 ## Install
 
