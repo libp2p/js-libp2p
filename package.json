@@ -185,7 +185,7 @@
     "@libp2p/pubsub": "^4.0.0",
     "@libp2p/tcp": "^4.0.0",
     "@libp2p/topology": "^3.0.1",
-    "@libp2p/webrtc-star": "^4.0.1",
+    "@libp2p/webrtc-star": "^5.0.2",
     "@libp2p/websockets": "^4.0.0",
     "@types/node-forge": "^1.0.0",
     "@types/p-fifo": "^1.0.0",
