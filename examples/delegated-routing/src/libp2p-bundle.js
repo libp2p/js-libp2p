@@ -6,16 +6,17 @@ import { webSockets } from '@libp2p/websockets'
 import { webRTCStar } from '@libp2p/webrtc-star'
 import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
-import { DelegatedContentRouting } from '@libp2p/delegated-content-routing'
+import { delegatedPeerRouting } from '@libp2p/delegated-peer-routing'
+import { delegatedContentRouting } from '@libp2p/delegated-content-routing'
+import { create as createIpfsHttpClient } from 'ipfs-http-client'
 
 export default function Libp2pBundle ({peerInfo, peerBook}) {
   const wrtcstar = new webRTCStar()
-  const delegatedApiOptions = {
+  const client = createIpfsHttpClient({
     host: '0.0.0.0',
     protocol: 'http',
     port: '8080'
-  }
+  })
 
   return createLibp2p({
     peerInfo,
@@ -26,17 +27,20 @@ export default function Libp2pBundle ({peerInfo, peerBook}) {
       pollInterval: 5000
     },
     contentRouting: [
-      new DelegatedPeerRouting(peerInfo.id, delegatedApiOptions)
+      delegatedPeerRouting(client)
     ],
     peerRouting: [
-      new DelegatedContentRouting(delegatedApiOptions)
+      delegatedContentRouting(client)
     ],
     transports: [
-      wrtcstar,
+      wrtcstar.transport,
       webSockets()
     ],
     streamMuxers: [
       mplex()
+    ],
+    peerDiscovery: [
+      wrtcstar.discovery
     ],
     connectionEncryption: [
       () => new Noise()

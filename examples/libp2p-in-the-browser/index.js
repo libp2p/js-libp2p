@@ -6,7 +6,7 @@ import { mplex } from '@libp2p/mplex'
 import { bootstrap } from '@libp2p/bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const webRtcStar = webRTCStar()
+  const wrtcStar = webRTCStar()
 
   // Create our libp2p node
   const libp2p = await createLibp2p({
@@ -21,12 +21,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
     transports: [
       webSockets(),
-      webRtcStar
+      wrtcStar.transport
     ],
     connectionEncryption: [() => new Noise()],
     streamMuxers: [mplex()],
     peerDiscovery: [
-      webRtcStar.discovery,
+      wrtcStar.discovery,
       bootstrap({
         list: [
           '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
