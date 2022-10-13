@@ -1,3 +1,16 @@
+## [1.0.5](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.4...v1.0.5) (2022-10-13)
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([05c2246](https://github.com/libp2p/js-libp2p-crypto/commit/05c22463b3334ef9dd2c74a29a5f2a5fca96222a))
+
+
+### Dependencies
+
+* bump multiformats from 9.9.0 to 10.0.0 ([#279](https://github.com/libp2p/js-libp2p-crypto/issues/279)) ([699c812](https://github.com/libp2p/js-libp2p-crypto/commit/699c812e07e35cf81b199698ea362d507777fbd9))
+* **dev:** bump @types/mocha from 9.1.1 to 10.0.0 ([#276](https://github.com/libp2p/js-libp2p-crypto/issues/276)) ([bb22d31](https://github.com/libp2p/js-libp2p-crypto/commit/bb22d314c1c1ea6d1e4d4d0bfcbd76969e1f3ab1))
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.3...v1.0.4) (2022-08-26)
 
 
