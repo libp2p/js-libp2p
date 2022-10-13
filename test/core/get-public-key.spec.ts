@@ -7,7 +7,7 @@ import { createPeerId } from '../utils/creators/peer.js'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { Libp2pOptions } from '../../src/index.js'
 import sinon from 'sinon'
-import { kadDht } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 
 describe('getPublicKey', () => {
   let libp2p: Libp2pNode
@@ -22,7 +22,7 @@ describe('getPublicKey', () => {
       connectionEncryption: [
         plaintext()
       ],
-      dht: kadDht()
+      dht: kadDHT()
     }
     libp2p = await createLibp2pNode(config)
 

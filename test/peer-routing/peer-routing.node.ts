@@ -16,7 +16,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { EventTypes, MessageType } from '@libp2p/interface-dht'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { kadDht } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import { StubbedInstance, stubInterface } from 'ts-sinon'
 
@@ -325,7 +325,7 @@ describe('peer-routing', () => {
           peerRouters: [
             () => delegate
           ],
-          dht: kadDht()
+          dht: kadDHT()
         })
       })
     })

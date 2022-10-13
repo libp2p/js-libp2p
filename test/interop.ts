@@ -6,7 +6,7 @@ import { createLibp2p, Libp2pOptions } from '../src/index.js'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
-import { kadDht } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 import { path as p2pd } from 'go-libp2p'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
@@ -114,7 +114,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.dht === true) {
     opts.dht = (components: any) => {
-      const dht = kadDht({
+      const dht = kadDHT({
         clientMode: false
       })(components)
 

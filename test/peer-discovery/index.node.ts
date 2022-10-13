@@ -5,7 +5,7 @@ import sinon from 'sinon'
 import defer from 'p-defer'
 import { bootstrap } from '@libp2p/bootstrap'
 import { randomBytes } from '@libp2p/crypto'
-import { kadDht } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
 import { multiaddr } from '@multiformats/multiaddr'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -172,7 +172,7 @@ describe('peer discovery scenarios', () => {
       connectionManager: {
         autoDial: false
       },
-      dht: kadDht()
+      dht: kadDHT()
     })
 
     const localConfig = getConfig(peerId)
