@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.5...v1.0.6) (2022-10-13)
+
+
+### Dependencies
+
+* bump uint8arrays from 3.1.1 to 4.0.2 ([#281](https://github.com/libp2p/js-libp2p-crypto/issues/281)) ([2e87325](https://github.com/libp2p/js-libp2p-crypto/commit/2e8732549814bead1f0da1f2afc5b591f1dfc765))
+
 ## [1.0.5](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.4...v1.0.5) (2022-10-13)
 
 
