@@ -185,7 +185,7 @@
     "multiformats": "^10.0.0",
     "node-forge": "^1.1.0",
     "protons-runtime": "^3.1.0",
-    "uint8arrays": "^3.0.0"
+    "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.0",
