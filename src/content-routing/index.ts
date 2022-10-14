@@ -12,18 +12,24 @@ import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { CID } from 'multiformats/cid'
-import type { Components } from '@libp2p/components'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { DualDHT } from '@libp2p/interface-dht'
 
 export interface CompoundContentRoutingInit {
   routers: ContentRouting[]
 }
 
+export interface CompoundContentRoutingComponents {
+  peerStore: PeerStore
+  dht?: DualDHT
+}
+
 export class CompoundContentRouting implements ContentRouting, Startable {
   private readonly routers: ContentRouting[]
   private started: boolean
-  private readonly components: Components
+  private readonly components: CompoundContentRoutingComponents
 
-  constructor (components: Components, init: CompoundContentRoutingInit) {
+  constructor (components: CompoundContentRoutingComponents, init: CompoundContentRoutingInit) {
     this.routers = init.routers ?? []
     this.started = false
     this.components = components
@@ -53,7 +59,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       merge(
         ...this.routers.map(router => router.findProviders(key, options))
       ),
-      (source) => storeAddresses(source, this.components.getPeerStore()),
+      (source) => storeAddresses(source, this.components.peerStore),
       (source) => uniquePeers(source),
       (source) => requirePeers(source)
     )
@@ -79,7 +85,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    const dht = this.components.getDHT()
+    const dht = this.components.dht
 
     if (dht != null) {
       await drain(dht.put(key, value, options))
@@ -95,7 +101,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
     }
 
-    const dht = this.components.getDHT()
+    const dht = this.components.dht
 
     if (dht != null) {
       for await (const event of dht.get(key, options)) {
@@ -121,7 +127,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
     }
 
     let gotValues = 0
-    const dht = this.components.getDHT()
+    const dht = this.components.dht
 
     if (dht != null) {
       for await (const event of dht.get(key, options)) {

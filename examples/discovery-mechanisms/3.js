@@ -1,27 +1,27 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { FloodSub } from '@libp2p/floodsub'
-import { Bootstrap } from '@libp2p/bootstrap'
-import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
+import { floodsub } from '@libp2p/floodsub'
+import { bootstrap } from '@libp2p/bootstrap'
+import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 
 const createNode = async (bootstrappers) => {
   const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
-    pubsub: new FloodSub(),
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [() => new Noise()],
+    pubsub: floodsub(),
     peerDiscovery: [
-      new Bootstrap({
+      bootstrap({
         list: bootstrappers
       }),
-      new PubSubPeerDiscovery({
+      pubsubPeerDiscovery({
         interval: 1000
       })
     ]
@@ -37,12 +37,12 @@ const createNode = async (bootstrappers) => {
         '/ip4/0.0.0.0/tcp/0'
       ]
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
-    pubsub: new FloodSub(),
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [() => new Noise()],
+    pubsub: floodsub(),
     peerDiscovery: [
-      new PubSubPeerDiscovery({
+      pubsubPeerDiscovery({
         interval: 1000
       })
     ],

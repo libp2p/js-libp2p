@@ -9,10 +9,9 @@ import { Key } from 'interface-datastore/key'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { KeyChain, KeyChainInit, KeyInfo } from '../../src/keychain/index.js'
 import { pbkdf2 } from '@libp2p/crypto'
-import { Components } from '@libp2p/components'
 import type { Datastore } from 'interface-datastore'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 
 describe('keychain', () => {
@@ -28,8 +27,14 @@ describe('keychain', () => {
     datastore1 = new MemoryDatastore()
     datastore2 = new MemoryDatastore()
 
-    ks = new KeyChain(new Components({ datastore: datastore2 }), { pass: passPhrase })
-    emptyKeystore = new KeyChain(new Components({ datastore: datastore1 }), { pass: passPhrase })
+    ks = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, { pass: passPhrase })
+    emptyKeystore = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore1
+    }, { pass: passPhrase })
 
     await datastore1.open()
     await datastore2.open()
@@ -40,36 +45,63 @@ describe('keychain', () => {
     await datastore2.close()
   })
 
-  it('can start without a password', () => {
-    expect(() => new KeyChain(new Components({ datastore: datastore2 }), {})).to.not.throw()
+  it('can start without a password', async () => {
+    await expect(async function () {
+      return new KeyChain({
+        peerId: await createEd25519PeerId(),
+        datastore: datastore2
+      }, {})
+    }()).to.eventually.be.ok()
   })
 
-  it('needs a NIST SP 800-132 non-weak pass phrase', () => {
-    expect(() => new KeyChain(new Components({ datastore: datastore2 }), { pass: '< 20 character' })).to.throw()
+  it('needs a NIST SP 800-132 non-weak pass phrase', async () => {
+    await expect(async function () {
+      return new KeyChain({
+        peerId: await createEd25519PeerId(),
+        datastore: datastore2
+      }, { pass: '< 20 character' })
+    }()).to.eventually.be.rejected()
   })
 
   it('has default options', () => {
     expect(KeyChain.options).to.exist()
   })
 
-  it('supports supported hashing alorithms', () => {
-    const ok = new KeyChain(new Components({ datastore: datastore2 }), { pass: passPhrase, dek: { hash: 'sha2-256', salt: 'salt-salt-salt-salt', iterationCount: 1000, keyLength: 14 } })
+  it('supports supported hashing alorithms', async () => {
+    const ok = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, { pass: passPhrase, dek: { hash: 'sha2-256', salt: 'salt-salt-salt-salt', iterationCount: 1000, keyLength: 14 } })
     expect(ok).to.exist()
   })
 
-  it('does not support unsupported hashing alorithms', () => {
-    expect(() => new KeyChain(new Components({ datastore: datastore2 }), { pass: passPhrase, dek: { hash: 'my-hash', salt: 'salt-salt-salt-salt', iterationCount: 1000, keyLength: 14 } })).to.throw()
+  it('does not support unsupported hashing alorithms', async () => {
+    await expect(async function () {
+      return new KeyChain({
+        peerId: await createEd25519PeerId(),
+        datastore: datastore2
+      }, { pass: passPhrase, dek: { hash: 'my-hash', salt: 'salt-salt-salt-salt', iterationCount: 1000, keyLength: 14 } })
+    }()).to.eventually.be.rejected()
   })
 
   it('can list keys without a password', async () => {
-    const keychain = new KeyChain(new Components({ datastore: datastore2 }), {})
+    const keychain = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, {})
 
     expect(await keychain.listKeys()).to.have.lengthOf(0)
   })
 
   it('can find a key without a password', async () => {
-    const keychain = new KeyChain(new Components({ datastore: datastore2 }), {})
-    const keychainWithPassword = new KeyChain(new Components({ datastore: datastore2 }), { pass: `hello-${Date.now()}-${Date.now()}` })
+    const keychain = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, {})
+    const keychainWithPassword = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, { pass: `hello-${Date.now()}-${Date.now()}` })
     const name = `key-${Math.random()}`
 
     const { id } = await keychainWithPassword.createKey(name, 'Ed25519')
@@ -78,8 +110,14 @@ describe('keychain', () => {
   })
 
   it('can remove a key without a password', async () => {
-    const keychainWithoutPassword = new KeyChain(new Components({ datastore: datastore2 }), {})
-    const keychainWithPassword = new KeyChain(new Components({ datastore: datastore2 }), { pass: `hello-${Date.now()}-${Date.now()}` })
+    const keychainWithoutPassword = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, {})
+    const keychainWithPassword = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, { pass: `hello-${Date.now()}-${Date.now()}` })
     const name = `key-${Math.random()}`
 
     expect(await keychainWithPassword.createKey(name, 'Ed25519')).to.have.property('name', name)
@@ -89,16 +127,22 @@ describe('keychain', () => {
   })
 
   it('requires a name to create a password', async () => {
-    const keychain = new KeyChain(new Components({ datastore: datastore2 }), {})
+    const keychain = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, {})
 
     // @ts-expect-error invalid parameters
-    await expect(keychain.createKey(undefined, 'derp')).to.be.rejected()
+    await expect(keychain.createKey(undefined, 'derp')).to.eventually.be.rejected()
   })
 
-  it('can generate options', () => {
+  it('can generate options', async () => {
     const options = KeyChain.generateOptions()
     options.pass = passPhrase
-    const chain = new KeyChain(new Components({ datastore: datastore2 }), options)
+    const chain = new KeyChain({
+      peerId: await createEd25519PeerId(),
+      datastore: datastore2
+    }, options)
     expect(chain).to.exist()
   })
 
@@ -433,7 +477,10 @@ describe('keychain', () => {
           hash: 'sha2-512'
         }
       }
-      kc = new KeyChain(new Components({ datastore: ds }), options)
+      kc = new KeyChain({
+        peerId: await createEd25519PeerId(),
+        datastore: ds
+      }, options)
       await ds.open()
     })
 

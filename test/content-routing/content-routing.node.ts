@@ -129,7 +129,7 @@ describe('content-routing', () => {
       node = await createNode({
         config: createBaseOptions({
           contentRouters: [
-            delegate
+            () => delegate
           ],
           dht: undefined
         })
@@ -233,7 +233,9 @@ describe('content-routing', () => {
 
       node = await createNode({
         config: createRoutingOptions({
-          contentRouters: [delegate]
+          contentRouters: [
+            () => delegate
+          ]
         })
       })
     })

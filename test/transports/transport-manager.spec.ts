@@ -3,32 +3,32 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { multiaddr } from '@multiformats/multiaddr'
-import { WebSockets } from '@libp2p/websockets'
+import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
-import { Plaintext } from '../../src/insecure/index.js'
+import { plaintext } from '../../src/insecure/index.js'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { DefaultTransportManager, FaultTolerance } from '../../src/transport-manager.js'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import Peers from '../fixtures/peers.js'
-import { Components } from '@libp2p/components'
 import { createEd25519PeerId, createFromJSON } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
+import type { DefaultComponents } from '../../src/components.js'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('Transport Manager (WebSockets)', () => {
   let tm: DefaultTransportManager
-  let components: Components
+  let components: DefaultComponents
 
   before(async () => {
-    components = new Components({
+    components = {
       peerId: await createEd25519PeerId(),
       upgrader: mockUpgrader()
-    })
-    components.setAddressManager(new DefaultAddressManager(components, { listen: [listenAddr.toString()] }))
+    } as any
+    components.addressManager = new DefaultAddressManager(components, { listen: [listenAddr.toString()] })
 
     tm = new DefaultTransportManager(components)
   })
@@ -39,30 +39,30 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should be able to add and remove a transport', async () => {
-    const transport = new WebSockets({
+    const transport = webSockets({
       filter: filters.all
     })
 
     expect(tm.getTransports()).to.have.lengthOf(0)
-    tm.add(transport)
+    tm.add(transport())
 
     expect(tm.getTransports()).to.have.lengthOf(1)
-    await tm.remove(transport[Symbol.toStringTag])
+    await tm.remove('@libp2p/websockets')
     expect(tm.getTransports()).to.have.lengthOf(0)
   })
 
   it('should not be able to add a transport twice', async () => {
-    tm.add(new WebSockets())
+    tm.add(webSockets()())
 
     expect(() => {
-      tm.add(new WebSockets())
+      tm.add(webSockets()())
     })
       .to.throw()
       .and.to.have.property('code', ErrorCodes.ERR_DUPLICATE_TRANSPORT)
   })
 
   it('should be able to dial', async () => {
-    tm.add(new WebSockets({ filter: filters.all }))
+    tm.add(webSockets({ filter: filters.all })())
     const addr = MULTIADDRS_WEBSOCKETS[0]
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
@@ -70,7 +70,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to dial an unsupported address', async () => {
-    tm.add(new WebSockets({ filter: filters.all }))
+    tm.add(webSockets({ filter: filters.all })())
     const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
@@ -78,7 +78,7 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to listen with no valid address', async () => {
-    tm.add(new WebSockets({ filter: filters.all }))
+    tm.add(webSockets({ filter: filters.all })())
 
     await expect(tm.listen([listenAddr]))
       .to.eventually.be.rejected()
@@ -108,8 +108,8 @@ describe('libp2p.transportManager (dial only)', () => {
       addresses: {
         listen: ['/ip4/127.0.0.1/tcp/0']
       },
-      transports: [new WebSockets()],
-      connectionEncryption: [new Plaintext()]
+      transports: [webSockets()],
+      connectionEncryption: [plaintext()]
     })
 
     await expect(libp2p.start()).to.eventually.be.rejected
@@ -126,10 +126,10 @@ describe('libp2p.transportManager (dial only)', () => {
         faultTolerance: FaultTolerance.NO_FATAL
       },
       transports: [
-        new WebSockets()
+        webSockets()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
@@ -146,10 +146,10 @@ describe('libp2p.transportManager (dial only)', () => {
         faultTolerance: FaultTolerance.NO_FATAL
       },
       transports: [
-        new WebSockets()
+        webSockets()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 

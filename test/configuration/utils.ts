@@ -1,7 +1,7 @@
-import { PubSubBaseProtocol } from '@libp2p/pubsub'
-import { Plaintext } from '../../src/insecure/index.js'
-import { Mplex } from '@libp2p/mplex'
-import { WebSockets } from '@libp2p/websockets'
+import { PubSubBaseProtocol, PubSubComponents } from '@libp2p/pubsub'
+import { plaintext } from '../../src/insecure/index.js'
+import { mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import mergeOptions from 'merge-options'
@@ -13,14 +13,14 @@ import * as cborg from 'cborg'
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
 export const baseOptions: Partial<Libp2pInit> = {
-  transports: [new WebSockets()],
-  streamMuxers: [new Mplex()],
-  connectionEncryption: [new Plaintext()]
+  transports: [webSockets()],
+  streamMuxers: [mplex()],
+  connectionEncryption: [plaintext()]
 }
 
 class MockPubSub extends PubSubBaseProtocol {
-  constructor (init?: PubSubInit) {
-    super({
+  constructor (components: PubSubComponents, init?: PubSubInit) {
+    super(components, {
       multicodecs: ['/mock-pubsub'],
       ...init
     })
@@ -51,7 +51,7 @@ class MockPubSub extends PubSubBaseProtocol {
     }
 
     peers.forEach(id => {
-      if (this.components.getPeerId().equals(id)) {
+      if (this.components.peerId.equals(id)) {
         return
       }
 
@@ -68,11 +68,11 @@ class MockPubSub extends PubSubBaseProtocol {
 }
 
 export const pubsubSubsystemOptions: Libp2pOptions = mergeOptions(baseOptions, {
-  pubsub: new MockPubSub(),
+  pubsub: (components: PubSubComponents) => new MockPubSub(components),
   addresses: {
     listen: [`${relayAddr.toString()}/p2p-circuit`]
   },
   transports: [
-    new WebSockets({ filter: filters.all })
+    webSockets({ filter: filters.all })
   ]
 })

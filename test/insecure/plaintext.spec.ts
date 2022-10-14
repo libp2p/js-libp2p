@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import Peers from '../fixtures/peers.js'
-import { Plaintext } from '../../src/insecure/index.js'
+import { plaintext } from '../../src/insecure/index.js'
 import {
   InvalidCryptoExchangeError,
   UnexpectedPeerError
@@ -19,7 +19,7 @@ describe('plaintext', () => {
   let localPeer: PeerId
   let remotePeer: PeerId
   let wrongPeer: PeerId
-  let plaintext: ConnectionEncrypter
+  let encrypter: ConnectionEncrypter
 
   beforeEach(async () => {
     [localPeer, remotePeer, wrongPeer] = await Promise.all([
@@ -28,7 +28,7 @@ describe('plaintext', () => {
       createFromJSON(Peers[2])
     ])
 
-    plaintext = new Plaintext()
+    encrypter = plaintext()()
   })
 
   afterEach(() => {
@@ -45,8 +45,8 @@ describe('plaintext', () => {
     })
 
     await Promise.all([
-      plaintext.secureInbound(remotePeer, inbound),
-      plaintext.secureOutbound(localPeer, outbound, wrongPeer)
+      encrypter.secureInbound(remotePeer, inbound),
+      encrypter.secureOutbound(localPeer, outbound, wrongPeer)
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
       expect(err).to.have.property('code', UnexpectedPeerError.code)
@@ -66,8 +66,8 @@ describe('plaintext', () => {
     })
 
     await expect(Promise.all([
-      plaintext.secureInbound(localPeer, inbound),
-      plaintext.secureOutbound(remotePeer, outbound, localPeer)
+      encrypter.secureInbound(localPeer, inbound),
+      encrypter.secureOutbound(remotePeer, outbound, localPeer)
     ]))
       .to.eventually.be.rejected.with.property('code', InvalidCryptoExchangeError.code)
   })

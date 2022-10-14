@@ -10,7 +10,6 @@ import { stubInterface } from 'ts-sinon'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '../../src/index.js'
-import { Components } from '@libp2p/components'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']
@@ -23,10 +22,10 @@ describe('Address Manager', () => {
   })
 
   it('should not need any addresses', () => {
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>()
     })
 
@@ -35,10 +34,10 @@ describe('Address Manager', () => {
   })
 
   it('should return listen multiaddrs on get', () => {
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses
     })
@@ -53,10 +52,10 @@ describe('Address Manager', () => {
   })
 
   it('should return announce multiaddrs on get', () => {
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses,
       announce: announceAddreses
@@ -71,10 +70,10 @@ describe('Address Manager', () => {
   })
 
   it('should add observed addresses', () => {
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>()
     })
 
@@ -87,10 +86,10 @@ describe('Address Manager', () => {
 
   it('should dedupe added observed addresses', () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>()
     })
 
@@ -106,10 +105,10 @@ describe('Address Manager', () => {
 
   it('should only emit one change:addresses event', () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>()
     })
     let eventCount = 0
@@ -128,10 +127,10 @@ describe('Address Manager', () => {
 
   it('should strip our peer address from added observed addresses', () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>()
     })
 
@@ -146,10 +145,10 @@ describe('Address Manager', () => {
 
   it('should strip our peer address from added observed addresses in difference formats', () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
-    const am = new DefaultAddressManager(new Components({
+    const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
-    }), {
+    }, {
       announceFilter: stubInterface<AddressFilter>()
     })
 

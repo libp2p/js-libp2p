@@ -1,7 +1,7 @@
 import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
+import { webSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { mplex } from '@libp2p/mplex'
 
 async function main () {
   const relayAddr = process.argv[2]
@@ -11,13 +11,13 @@ async function main () {
 
   const node = await createLibp2p({
     transports: [
-      new WebSockets()
+      webSockets()
     ],
     connectionEncryption: [
-      new Noise()
+      () => new Noise()
     ],
     streamMuxers: [
-      new Mplex()
+      mplex()
     ],
     relay: {
       enabled: true,
