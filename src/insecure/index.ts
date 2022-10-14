@@ -92,7 +92,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
   }
 }
 
-export class Plaintext implements ConnectionEncrypter {
+class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
 
   async secureInbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
@@ -102,4 +102,8 @@ export class Plaintext implements ConnectionEncrypter {
   async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
     return await encrypt(localId, conn, remoteId)
   }
+}
+
+export function plaintext (): () => ConnectionEncrypter {
+  return () => new Plaintext()
 }

@@ -16,9 +16,9 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { EventTypes, MessageType } from '@libp2p/interface-dht'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { KadDHT } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 
 describe('peer-routing', () => {
   let peerId: PeerId
@@ -242,7 +242,9 @@ describe('peer-routing', () => {
 
       node = await createNode({
         config: createBaseOptions({
-          peerRouters: [delegate]
+          peerRouters: [
+            () => delegate
+          ]
         })
       })
     })
@@ -320,8 +322,10 @@ describe('peer-routing', () => {
 
       node = await createNode({
         config: createRoutingOptions({
-          peerRouters: [delegate],
-          dht: new KadDHT()
+          peerRouters: [
+            () => delegate
+          ],
+          dht: kadDHT()
         })
       })
     })

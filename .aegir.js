@@ -1,5 +1,5 @@
-import { WebSockets } from '@libp2p/websockets'
-import { Mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
+import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -14,7 +14,7 @@ export default {
       // use dynamic import because we only want to reference these files during the test run, e.g. after building
       const { createLibp2p } = await import('./dist/src/index.js')
       const { MULTIADDRS_WEBSOCKETS } = await import('./dist/test/fixtures/browser.js')
-      const { Plaintext } = await import('./dist/src/insecure/index.js')
+      const { plaintext } = await import('./dist/src/insecure/index.js')
       const { default: Peers } = await import('./dist/test/fixtures/peers.js')
 
       // Use the last peer
@@ -28,14 +28,14 @@ export default {
         },
         peerId,
         transports: [
-          new WebSockets()
+          webSockets()
         ],
         streamMuxers: [
-          new Mplex()
+          mplex()
         ],
         connectionEncryption: [
-          new Noise(),
-          new Plaintext()
+          () => () => new Noise(),
+          plaintext()
         ],
         relay: {
           enabled: true,

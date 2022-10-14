@@ -46,6 +46,7 @@ If you are looking for the documentation of the latest release, you can view the
 - [Install](#install)
 - [Usage](#usage)
   - [Configuration](#configuration)
+  - [Limits](#limits)
   - [API](#api)
   - [Getting started](#getting-started)
   - [Tutorials and Examples](#tutorials-and-examples)
@@ -90,6 +91,10 @@ npm install libp2p
 ### Configuration
 
 For all the information on how you can configure libp2p see [CONFIGURATION.md](./doc/CONFIGURATION.md).
+
+### Limits
+
+For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
 
 ### API
 

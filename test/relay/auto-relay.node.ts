@@ -11,7 +11,7 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import type { Options as PWaitForOptions } from 'p-wait-for'
 import { createRelayOptions, createNodeOptions } from './utils.js'
 import { protocols } from '@multiformats/multiaddr'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 
 async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions<boolean>) {
@@ -265,7 +265,7 @@ describe('auto-relay', () => {
       await relayLibp2p1.hangUp(relayLibp2p3.peerId)
 
       // Stub dial
-      sinon.stub(relayLibp2p1.components.getConnectionManager(), 'openConnection').callsFake(async () => {
+      sinon.stub(relayLibp2p1.components.connectionManager, 'openConnection').callsFake(async () => {
         deferred.resolve()
         return await Promise.reject(new Error('failed to dial'))
       })
@@ -348,14 +348,14 @@ describe('auto-relay', () => {
         createNode({
           config: createNodeOptions({
             contentRouters: [
-              localDelegate
+              () => localDelegate
             ]
           })
         }),
         createNode({
           config: createNodeOptions({
             contentRouters: [
-              remoteDelegate
+              () => remoteDelegate
             ]
           })
         }),
@@ -373,7 +373,7 @@ describe('auto-relay', () => {
               }
             },
             contentRouters: [
-              relayDelegate
+              () => relayDelegate
             ]
           })
         })

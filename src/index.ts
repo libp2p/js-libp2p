@@ -26,6 +26,7 @@ import type { KeyChain } from './keychain/index.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { PingServiceInit } from './ping/index.js'
 import type { FetchServiceInit } from './fetch/index.js'
+import type { Components } from './components.js'
 
 export interface PersistentPeerStoreOptions {
   threshold?: number
@@ -113,15 +114,15 @@ export interface Libp2pInit {
   ping: PingServiceInit
   fetch: FetchServiceInit
 
-  transports: Transport[]
-  streamMuxers?: StreamMuxerFactory[]
-  connectionEncryption?: ConnectionEncrypter[]
-  peerDiscovery?: PeerDiscovery[]
-  peerRouters?: PeerRouting[]
-  contentRouters?: ContentRouting[]
-  dht?: DualDHT
-  pubsub?: PubSub
-  connectionProtector?: ConnectionProtector
+  transports: Array<(components: Components) => Transport>
+  streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
+  connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
+  peerDiscovery?: Array<(components: Components) => PeerDiscovery>
+  peerRouters?: Array<(components: Components) => PeerRouting>
+  contentRouters?: Array<(components: Components) => ContentRouting>
+  dht?: (components: Components) => DualDHT
+  pubsub?: (components: Components) => PubSub
+  connectionProtector?: (components: Components) => ConnectionProtector
 }
 
 export interface Libp2pEvents {

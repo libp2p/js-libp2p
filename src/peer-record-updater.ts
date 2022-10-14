@@ -1,16 +1,26 @@
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import type { Components } from '@libp2p/components'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
 import { protocols } from '@multiformats/multiaddr'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const log = logger('libp2p:peer-record-updater')
 
+export interface PeerRecordUpdaterComponents {
+  peerId: PeerId
+  peerStore: PeerStore
+  transportManager: TransportManager
+  addressManager: AddressManager
+}
+
 export class PeerRecordUpdater implements Startable {
-  private readonly components: Components
+  private readonly components: PeerRecordUpdaterComponents
   private started: boolean
 
-  constructor (components: Components) {
+  constructor (components: PeerRecordUpdaterComponents) {
     this.components = components
     this.started = false
     this.update = this.update.bind(this)
@@ -22,16 +32,16 @@ export class PeerRecordUpdater implements Startable {
 
   async start () {
     this.started = true
-    this.components.getTransportManager().addEventListener('listener:listening', this.update)
-    this.components.getTransportManager().addEventListener('listener:close', this.update)
-    this.components.getAddressManager().addEventListener('change:addresses', this.update)
+    this.components.transportManager.addEventListener('listener:listening', this.update)
+    this.components.transportManager.addEventListener('listener:close', this.update)
+    this.components.addressManager.addEventListener('change:addresses', this.update)
   }
 
   async stop () {
     this.started = false
-    this.components.getTransportManager().removeEventListener('listener:listening', this.update)
-    this.components.getTransportManager().removeEventListener('listener:close', this.update)
-    this.components.getAddressManager().removeEventListener('change:addresses', this.update)
+    this.components.transportManager.removeEventListener('listener:listening', this.update)
+    this.components.transportManager.removeEventListener('listener:close', this.update)
+    this.components.addressManager.removeEventListener('change:addresses', this.update)
   }
 
   /**
@@ -41,12 +51,12 @@ export class PeerRecordUpdater implements Startable {
     Promise.resolve()
       .then(async () => {
         const peerRecord = new PeerRecord({
-          peerId: this.components.getPeerId(),
-          multiaddrs: this.components.getAddressManager().getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+          peerId: this.components.peerId,
+          multiaddrs: this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
         })
 
-        const envelope = await RecordEnvelope.seal(peerRecord, this.components.getPeerId())
-        await this.components.getPeerStore().addressBook.consumePeerRecord(envelope)
+        const envelope = await RecordEnvelope.seal(peerRecord, this.components.peerId)
+        await this.components.peerStore.addressBook.consumePeerRecord(envelope)
       })
       .catch(err => {
         log.error('Could not update self peer record: %o', err)

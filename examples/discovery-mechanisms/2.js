@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { MulticastDNS } from '@libp2p/mdns'
+import { mdns } from '@libp2p/mdns'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -12,16 +12,16 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     streamMuxers: [
-      new Mplex()
+      mplex()
     ],
     connectionEncryption: [
-      new Noise()
+      () => new Noise()
     ],
     peerDiscovery: [
-      new MulticastDNS({
+      mdns({
         interval: 20e3
       })
     ]

@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Bootstrap } from '@libp2p/bootstrap'
+import { bootstrap } from '@libp2p/bootstrap'
 import bootstrapers from './bootstrappers.js'
 
 ;(async () => {
@@ -12,11 +12,11 @@ import bootstrapers from './bootstrappers.js'
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [() => new Noise()],
     peerDiscovery: [
-      new Bootstrap({
+      bootstrap({
         interval: 60e3,
         list: bootstrapers
       })

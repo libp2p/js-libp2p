@@ -20,8 +20,8 @@ describe('ping', () => {
     ])
     await populateAddressBooks(nodes)
 
-    await nodes[0].components.getPeerStore().addressBook.set(nodes[1].peerId, nodes[1].getMultiaddrs())
-    await nodes[1].components.getPeerStore().addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
+    await nodes[0].components.peerStore.addressBook.set(nodes[1].peerId, nodes[1].getMultiaddrs())
+    await nodes[1].components.peerStore.addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
   })
 
   afterEach(async () => await Promise.all(nodes.map(async n => await n.stop())))

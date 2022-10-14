@@ -11,15 +11,16 @@ import { codes } from '../errors.js'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import { Components, Initializable } from '@libp2p/components'
+import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
 import * as STATUS from '@libp2p/interface-connection/status'
-import type { AddressSorter } from '@libp2p/interface-peer-store'
+import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import { multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
+import type { Metrics } from '@libp2p/interface-metrics'
+import type { Upgrader } from '@libp2p/interface-transport'
 
 const log = logger('libp2p:connection-manager')
 
@@ -33,7 +34,8 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   pollInterval: 2000,
   autoDialInterval: 10000,
   movingAverageInterval: 60000,
-  inboundConnectionThreshold: 5
+  inboundConnectionThreshold: 5,
+  maxIncomingPendingConnections: 10
 }
 
 const METRICS_SYSTEM = 'libp2p'
@@ -152,6 +154,12 @@ export interface ConnectionManagerInit {
    * host, reject subsequent connections
    */
   inboundConnectionThreshold?: number
+
+  /**
+   * The maximum number of parallel incoming connections allowed that have yet to
+   * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc
+   */
+  maxIncomingPendingConnections?: number
 }
 
 export interface ConnectionManagerEvents {
@@ -159,11 +167,19 @@ export interface ConnectionManagerEvents {
   'peer:disconnect': CustomEvent<PeerId>
 }
 
+export interface DefaultConnectionManagerComponents {
+  peerId: PeerId
+  metrics?: Metrics
+  upgrader: Upgrader
+  peerStore: PeerStore
+  dialer: Dialer
+}
+
 /**
  * Responsible for managing known connections.
  */
-export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable, Initializable {
-  private components = new Components()
+export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
+  private readonly components: DefaultConnectionManagerComponents
   private readonly opts: Required<ConnectionManagerInit>
   private readonly connections: Map<string, Connection[]>
   private started: boolean
@@ -175,8 +191,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly allow: Multiaddr[]
   private readonly deny: Multiaddr[]
   private readonly inboundConnectionRateLimiter: RateLimiterMemory
+  private incomingPendingConnections: number
 
-  constructor (init: ConnectionManagerInit) {
+  constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit) {
     super()
 
     this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
@@ -186,6 +203,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     log('options: %o', this.opts)
+
+    this.components = components
 
     /**
      * Map of connections per peer
@@ -218,13 +237,25 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       points: this.opts.inboundConnectionThreshold,
       duration: 1
     })
+
+    this.incomingPendingConnections = 0
   }
 
-  init (components: Components): void {
-    this.components = components
+  isStarted () {
+    return this.started
+  }
+
+  /**
+   * Starts the Connection Manager. If Metrics are not enabled on libp2p
+   * only event loop and connection limits will be monitored.
+   */
+  async start () {
+    if (this.components.metrics != null) {
+      this.timer = this.timer ?? retimer(this._checkMetrics, this.opts.pollInterval)
+    }
 
     // track inbound/outbound connections
-    this.components.getMetrics()?.updateComponentMetric({
+    this.components.metrics?.updateComponentMetric({
       system: METRICS_SYSTEM,
       component: METRICS_COMPONENT,
       metric: 'connections',
@@ -250,7 +281,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     // track total number of streams per protocol
-    this.components.getMetrics()?.updateComponentMetric({
+    this.components.metrics?.updateComponentMetric({
       system: METRICS_SYSTEM,
       component: METRICS_COMPONENT,
       metric: 'protocol-streams-total',
@@ -273,7 +304,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     // track 90th percentile of streams per protocol
-    this.components.getMetrics()?.updateComponentMetric({
+    this.components.metrics?.updateComponentMetric({
       system: METRICS_SYSTEM,
       component: METRICS_COMPONENT,
       metric: 'protocol-streams-per-connection-90th-percentile',
@@ -310,20 +341,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         return metric
       }
     })
-  }
-
-  isStarted () {
-    return this.started
-  }
-
-  /**
-   * Starts the Connection Manager. If Metrics are not enabled on libp2p
-   * only event loop and connection limits will be monitored.
-   */
-  async start () {
-    if (this.components.getMetrics() != null) {
-      this.timer = this.timer ?? retimer(this._checkMetrics, this.opts.pollInterval)
-    }
 
     // latency monitor
     this.latencyMonitor.start()
@@ -335,16 +352,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   }
 
   async afterStart () {
-    this.components.getUpgrader().addEventListener('connection', this.onConnect)
-    this.components.getUpgrader().addEventListener('connectionEnd', this.onDisconnect)
+    this.components.upgrader.addEventListener('connection', this.onConnect)
+    this.components.upgrader.addEventListener('connectionEnd', this.onDisconnect)
 
     // re-connect to any peers with the KEEP_ALIVE tag
     void Promise.resolve()
       .then(async () => {
         const keepAlivePeers: PeerId[] = []
 
-        for (const peer of await this.components.getPeerStore().all()) {
-          const tags = await this.components.getPeerStore().getTags(peer.id)
+        for (const peer of await this.components.peerStore.all()) {
+          const tags = await this.components.peerStore.getTags(peer.id)
           const hasKeepAlive = tags.filter(tag => tag.name === KEEP_ALIVE).length > 0
 
           if (hasKeepAlive) {
@@ -382,8 +399,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   async beforeStop () {
     // if we are still dialing KEEP_ALIVE peers, abort those dials
     this.connectOnStartupController?.abort()
-    this.components.getUpgrader().removeEventListener('connection', this.onConnect)
-    this.components.getUpgrader().removeEventListener('connectionEnd', this.onDisconnect)
+    this.components.upgrader.removeEventListener('connection', this.onConnect)
+    this.components.upgrader.removeEventListener('connectionEnd', this.onDisconnect)
   }
 
   /**
@@ -430,7 +447,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * @private
    */
   async _checkMetrics () {
-    const metrics = this.components.getMetrics()
+    const metrics = this.components.metrics
 
     if (metrics != null) {
       try {
@@ -477,7 +494,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     if (peerId.publicKey != null) {
-      await this.components.getPeerStore().keyBook.set(peerId, peerId.publicKey)
+      await this.components.peerStore.keyBook.set(peerId, peerId.publicKey)
     }
 
     const numConnections = this.getConnections().length
@@ -508,7 +525,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       this.connections.delete(peerId)
       this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: connection }))
 
-      this.components.getMetrics()?.onPeerDisconnected(connection.remotePeer)
+      this.components.metrics?.onPeerDisconnected(connection.remotePeer)
     }
   }
 
@@ -549,7 +566,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     try {
-      const connection = await this.components.getDialer().dial(peerId, options)
+      const connection = await this.components.dialer.dial(peerId, options)
       let peerConnections = this.connections.get(peerId.toString())
 
       if (peerConnections == null) {
@@ -628,7 +645,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const limit = this.opts[name]
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
-      log('%s: limit exceeded: %p, %d/%d, pruning %d connection(s)', this.components.getPeerId(), name, value, limit, toPrune)
+      log('%s: limit exceeded: %p, %d/%d, pruning %d connection(s)', this.components.peerId, name, value, limit, toPrune)
       await this._pruneConnections(toPrune)
     }
   }
@@ -649,7 +666,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         continue
       }
 
-      const tags = await this.components.getPeerStore().getTags(remotePeer)
+      const tags = await this.components.peerStore.getTags(remotePeer)
 
       // sum all tag values
       peerValues.set(remotePeer, tags.reduce((acc, curr) => {
@@ -719,7 +736,15 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     if (allowConnection) {
+      this.incomingPendingConnections++
+
       return true
+    }
+
+    // check pending connections
+    if (this.incomingPendingConnections === this.opts.maxIncomingPendingConnections) {
+      log('connection from %s refused - incomingPendingConnections exceeded by peer %s', maConn.remoteAddr)
+      return false
     }
 
     if (maConn.remoteAddr.isThinWaistAddress()) {
@@ -734,10 +759,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     if (this.getConnections().length < this.opts.maxConnections) {
+      this.incomingPendingConnections++
+
       return true
     }
 
     log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
     return false
+  }
+
+  afterUpgradeInbound () {
+    this.incomingPendingConnections--
   }
 }
