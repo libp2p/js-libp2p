@@ -11,7 +11,7 @@ import Peers from '../fixtures/peers.js'
 import { codes } from '../../src/errors.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { DefaultComponents } from '../../src/components.js'
 

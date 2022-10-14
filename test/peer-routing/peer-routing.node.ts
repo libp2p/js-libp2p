@@ -18,7 +18,7 @@ import { EventTypes, MessageType } from '@libp2p/interface-dht'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { kadDHT } from '@libp2p/kad-dht'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 
 describe('peer-routing', () => {
   let peerId: PeerId

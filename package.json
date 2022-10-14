@@ -171,8 +171,8 @@
     "@chainsafe/libp2p-noise": "^9.0.0",
     "@chainsafe/libp2p-yamux": "^3.0.0",
     "@libp2p/bootstrap": "^5.0.0",
-    "@libp2p/daemon-client": "^3.0.1",
-    "@libp2p/daemon-server": "^3.0.1",
+    "@libp2p/daemon-client": "^3.0.5",
+    "@libp2p/daemon-server": "^3.0.4",
     "@libp2p/floodsub": "^5.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.2",
     "@libp2p/interface-connection-encrypter-compliance-tests": "^3.0.0",
@@ -205,7 +205,7 @@
     "protons": "^6.0.0",
     "rimraf": "^3.0.2",
     "sinon": "^14.0.0",
-    "ts-sinon": "^2.0.2"
+    "sinon-ts": "^1.0.0"
   },
   "browser": {
     "nat-api": false

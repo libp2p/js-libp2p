@@ -11,7 +11,7 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import type { Options as PWaitForOptions } from 'p-wait-for'
 import { createRelayOptions, createNodeOptions } from './utils.js'
 import { protocols } from '@multiformats/multiaddr'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 
 async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions<boolean>) {

@@ -14,7 +14,7 @@ import type { Libp2p } from '../../src/index.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { peerIdFromString } from '@libp2p/peer-id'
 
 describe('content-routing', () => {
