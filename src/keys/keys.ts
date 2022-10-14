@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -23,8 +25,8 @@ export namespace KeyType {
   }
 }
 export interface PublicKey {
-  Type: KeyType
-  Data: Uint8Array
+  Type?: KeyType
+  Data?: Uint8Array
 }
 
 export namespace PublicKey {
@@ -32,33 +34,26 @@ export namespace PublicKey {
 
   export const codec = (): Codec<PublicKey> => {
     if (_codec == null) {
-      _codec = message<PublicKey>((obj, writer, opts = {}) => {
+      _codec = message<PublicKey>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.Type != null) {
-          writer.uint32(8)
-          KeyType.codec().encode(obj.Type, writer)
-        } else {
-          throw new Error('Protocol error: required field "Type" was not found in object')
+          w.uint32(8)
+          KeyType.codec().encode(obj.Type, w)
         }
 
         if (obj.Data != null) {
-          writer.uint32(18)
-          writer.bytes(obj.Data)
-        } else {
-          throw new Error('Protocol error: required field "Data" was not found in object')
+          w.uint32(18)
+          w.bytes(obj.Data)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {
-          Type: KeyType.RSA,
-          Data: new Uint8Array(0)
-        }
+        const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -76,14 +71,6 @@ export namespace PublicKey {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.Type == null) {
-          throw new Error('Protocol error: value for required field "Type" was not found in protobuf')
-        }
-
-        if (obj.Data == null) {
-          throw new Error('Protocol error: value for required field "Data" was not found in protobuf')
         }
 
         return obj
@@ -103,8 +90,8 @@ export namespace PublicKey {
 }
 
 export interface PrivateKey {
-  Type: KeyType
-  Data: Uint8Array
+  Type?: KeyType
+  Data?: Uint8Array
 }
 
 export namespace PrivateKey {
@@ -112,33 +99,26 @@ export namespace PrivateKey {
 
   export const codec = (): Codec<PrivateKey> => {
     if (_codec == null) {
-      _codec = message<PrivateKey>((obj, writer, opts = {}) => {
+      _codec = message<PrivateKey>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.Type != null) {
-          writer.uint32(8)
-          KeyType.codec().encode(obj.Type, writer)
-        } else {
-          throw new Error('Protocol error: required field "Type" was not found in object')
+          w.uint32(8)
+          KeyType.codec().encode(obj.Type, w)
         }
 
         if (obj.Data != null) {
-          writer.uint32(18)
-          writer.bytes(obj.Data)
-        } else {
-          throw new Error('Protocol error: required field "Data" was not found in object')
+          w.uint32(18)
+          w.bytes(obj.Data)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {
-          Type: KeyType.RSA,
-          Data: new Uint8Array(0)
-        }
+        const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -156,14 +136,6 @@ export namespace PrivateKey {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.Type == null) {
-          throw new Error('Protocol error: value for required field "Type" was not found in protobuf')
-        }
-
-        if (obj.Data == null) {
-          throw new Error('Protocol error: value for required field "Data" was not found in protobuf')
         }
 
         return obj

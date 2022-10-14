@@ -59,7 +59,7 @@ export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array,
 // representative object
 export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
   const decoded = keysPBM.PublicKey.decode(buf)
-  const data = decoded.Data
+  const data = decoded.Data ?? new Uint8Array()
 
   switch (decoded.Type) {
     case keysPBM.KeyType.RSA:
@@ -69,7 +69,7 @@ export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
     case keysPBM.KeyType.Secp256k1:
       return supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(data)
     default:
-      throw unsupportedKey(decoded.Type)
+      throw unsupportedKey(decoded.Type ?? 'RSA')
   }
 }
 
@@ -84,7 +84,7 @@ export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Ui
 // representative object
 export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey> { // eslint-disable-line require-await
   const decoded = keysPBM.PrivateKey.decode(buf)
-  const data = decoded.Data
+  const data = decoded.Data ?? new Uint8Array()
 
   switch (decoded.Type) {
     case keysPBM.KeyType.RSA:
@@ -94,7 +94,7 @@ export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey>
     case keysPBM.KeyType.Secp256k1:
       return supportedKeys.secp256k1.unmarshalSecp256k1PrivateKey(data)
     default:
-      throw unsupportedKey(decoded.Type)
+      throw unsupportedKey(decoded.Type ?? 'RSA')
   }
 }
 

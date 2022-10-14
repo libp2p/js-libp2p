@@ -184,14 +184,14 @@
     "err-code": "^3.0.1",
     "multiformats": "^10.0.0",
     "node-forge": "^1.1.0",
-    "protons-runtime": "^3.1.0",
+    "protons-runtime": "^4.0.1",
     "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.0",
     "aegir": "^37.0.12",
     "benchmark": "^2.1.4",
-    "protons": "^5.1.0",
+    "protons": "^6.0.0",
     "sinon": "^14.0.0",
     "util": "^0.12.3",
     "wherearewe": "^2.0.1"

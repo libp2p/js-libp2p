@@ -57,7 +57,7 @@ describe('secp256k1 keys', () => {
 
   it('key id', async () => {
     const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
-    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data)
+    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
     const id = await key.id()
     expect(id).to.eql('QmPCyMBGEyifPtx5aa6k6wkY9N1eBf9vHK1eKfNc35q9uq')
   })
@@ -191,7 +191,7 @@ describe('go interop', () => {
     const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
     expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
 
-    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data)
+    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
     expect(key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
     expect(key.bytes).to.eql(fixtures.privateKey)
   })
@@ -200,7 +200,7 @@ describe('go interop', () => {
     const decoded = keysPBM.PublicKey.decode(fixtures.publicKey)
     expect(decoded.Type).to.be.eql(keysPBM.KeyType.Secp256k1)
 
-    const key = secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
+    const key = secp256k1.unmarshalSecp256k1PublicKey(decoded.Data ?? new Uint8Array())
     expect(key).to.be.an.instanceof(secp256k1.Secp256k1PublicKey)
     expect(key.bytes).to.eql(fixtures.publicKey)
   })
@@ -209,7 +209,7 @@ describe('go interop', () => {
     const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
     expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
 
-    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data)
+    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
     const sig = await key.sign(fixtures.message)
     expect(sig).to.eql(fixtures.signature)
   })
