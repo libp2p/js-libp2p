@@ -7,7 +7,7 @@ import { createPeerId } from '../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { Startable } from '@libp2p/interfaces/startable'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
 
 describe('peer discovery', () => {

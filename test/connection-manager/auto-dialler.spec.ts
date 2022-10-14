@@ -5,7 +5,7 @@ import { AutoDialler } from '../../src/connection-manager/auto-dialler.js'
 import pWaitFor from 'p-wait-for'
 import delay from 'delay'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
 

@@ -14,7 +14,7 @@ import type { Metrics } from '@libp2p/interface-metrics'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 const error = new Error('dial failure')
 
 describe('Dial Request', () => {

@@ -6,7 +6,7 @@ import { AddressFilter, DefaultAddressManager } from '../../src/address-manager/
 import { createNode } from '../utils/creators/peer.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '../../src/index.js'
