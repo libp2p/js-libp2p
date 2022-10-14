@@ -58,7 +58,7 @@ Others supporting projects (like testing or benchmarking) will have different cr
 - A.1📺 Universal Browser Connectivity - [**WebTransport**](https://github.com/libp2p/js-libp2p-webtransport/issues/1)
 
 #### Mid Q4 (November)
-- C.1 🧪 Future-proof Testing - [**Browser Environment Tests**](https://github.com/testground/testground/issues/1386)
+- C.1 🧪 Future-proof Testing - [**Browser Environment Test Harness**](https://github.com/testground/testground/issues/1386)
 
 #### End of Q4 (December)
 - A.2 📺 Universal Browser Connectivity - [**WebRTC for Browser to Server**](https://github.com/little-bear-labs/js-libp2p-webrtc/pull/4)
@@ -70,7 +70,7 @@ Others supporting projects (like testing or benchmarking) will have different cr
 
 #### Early/Mid Q1
 - C.2 🧪 Future-proof Testing - **Test DHT Server Mode at scale**
--
+
 #### End of Q1 (March)
 - B.3 🥊 Decentralized Hole Punching - **Add QUIC Transport**
 
@@ -109,7 +109,7 @@ Others supporting projects (like testing or benchmarking) will have different cr
 **Why**:  JS support doesn't exist in Testground yet. In addition to the work to get generic JS test runners, we need support in Testground.
 
 **Goal**:
-1. [Browser Environment Tests](https://github.com/testground/testground/issues/1386): Add support for testing browser features within a browser environment.
+1. [Browser Environment Test Harness](https://github.com/testground/testground/issues/1386): Add a test harness to support testing browser features within a browser environment.
 2. Test DHT Server Mode at scale: Requires adding support for js-libp2p in Testground. Server mode is implemented but we need a way to ensure it works and to do that we need a very large network testbed (>20 node at least; ideally 100/1000+.)
 
 ### Libp2p Project Roadmap
