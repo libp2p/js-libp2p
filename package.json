@@ -151,7 +151,7 @@
     "@libp2p/interface-mocks": "^7.0.1",
     "@libp2p/interface-transport-compliance-tests": "^3.0.0",
     "aegir": "^37.5.3",
-    "it-all": "^1.0.6",
+    "it-all": "^2.0.0",
     "it-pipe": "^2.0.3",
     "p-defer": "^4.0.0",
     "sinon": "^14.0.0",
