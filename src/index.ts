@@ -1,7 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { Noise } from '@chainsafe/libp2p-noise'
-import type { Components, Initializable } from '@libp2p/components'
-import { Transport, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interface-transport'
+import { Transport, symbol, CreateListenerOptions, DialOptions, Listener } from '@libp2p/interface-transport'
 import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface-connection'
 import { Multiaddr, protocols } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -240,16 +239,23 @@ export function isSubset (set: Uint8Array[], maybeSubset: Uint8Array[]): boolean
   return (intersection.length === maybeSubset.length)
 }
 
-export interface WebTransportConfig {
-  maxInboundStreams: 1000
+export interface WebTransportInit {
+  maxInboundStreams?: number
 }
 
-export class WebTransport implements Transport, Initializable {
-  private components?: Components
-  private readonly config: WebTransportConfig
+export interface WebTransportComponents {
+  peerId: PeerId
+}
 
-  init (components: Components) {
+class WebTransport implements Transport {
+  private readonly components: WebTransportComponents
+  private readonly config: Required<WebTransportInit>
+
+  constructor (components: WebTransportComponents, init: WebTransportInit = {}) {
     this.components = components
+    this.config = {
+      maxInboundStreams: init.maxInboundStreams ?? 1000
+    }
   }
 
   get [Symbol.toStringTag] () {
@@ -260,13 +266,9 @@ export class WebTransport implements Transport, Initializable {
     return true
   }
 
-  constructor (config?: WebTransportConfig) {
-    this.config = config ?? { maxInboundStreams: 1000 }
-  }
-
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log('dialing %s', ma)
-    const localPeer = this.components?.getPeerId()
+    const localPeer = this.components.peerId
     if (localPeer === undefined) {
       throw new Error('Need a local peerid')
     }
@@ -325,7 +327,7 @@ export class WebTransport implements Transport, Initializable {
     return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
   }
 
-  async authenticateWebTransport (wt: typeof window.WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>) {
+  async authenticateWebTransport (wt: typeof window.WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
     const stream = await wt.createBidirectionalStream()
     const writer = stream.writable.getWriter()
     const reader = stream.readable.getReader()
@@ -445,11 +447,8 @@ export class WebTransport implements Transport, Initializable {
     }
   }
 
-  createListener (options: CreateListenerOptions) {
+  createListener (options: CreateListenerOptions): Listener {
     throw new Error('Webtransport servers are not supported in Node or the browser')
-    // Unreachable, here to make TS happy
-    // eslint-disable-next-line no-unreachable
-    return null as any
   }
 
   /**
@@ -458,4 +457,8 @@ export class WebTransport implements Transport, Initializable {
   filter (multiaddrs: Multiaddr[]) {
     return multiaddrs.filter(ma => ma.protoNames().includes('webtransport'))
   }
+}
+
+export function webTransport (init: WebTransportInit = {}): (components: WebTransportComponents) => Transport {
+  return (components: WebTransportComponents) => new WebTransport(components, init)
 }

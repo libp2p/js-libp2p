@@ -1,8 +1,9 @@
 # @libp2p/webtransport <!-- omit in toc -->
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-webtransport.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-webtransport)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-webtransport/test%20&%20maybe%20release/main?style=flat-square)](https://github.com/libp2p/js-libp2p-webtransport/actions/workflows/js-test-and-release.yml)
 
 > JavaScript implementation of the WebTransport module that libp2p uses and that implements the interface-transport spec
 
@@ -40,16 +41,17 @@ $ npm i @libp2p/webtransport
 ## Libp2p Usage Example
 
 ```js
-import Libp2p from 'libp2p'
-import { WebTransport } from '@libp2p/webtransport'
-import { NOISE } from 'libp2p-noise'
+import { createLibp2pNode } from 'libp2p'
+import { webTransport } from '@libp2p/webtransport'
+import { noise } from 'libp2p-noise'
 
-const node = await Libp2p.create({
-  modules: {
-    connEncryption: [NOISE]
-      transports: [new WebTransport()],
-      connectionEncryption: [new Noise()]
-  },
+const node = await createLibp2pNode({
+  transports: [
+    webTransport()
+  ],
+  connectionEncryption: [
+    noise()
+  ]
 })
 ```
 

@@ -4,7 +4,7 @@
 import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { WebTransport as WebTransportLibp2p, isSubset } from '../src/index'
+import { webTransport, isSubset } from '../src/index'
 import { createLibp2p } from 'libp2p'
 
 declare global {
@@ -19,8 +19,8 @@ describe('libp2p-webtransport', () => {
     const maStr: string = process.env.serverAddr!
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
-      transports: [new WebTransportLibp2p()],
-      connectionEncryption: [new Noise()]
+      transports: [webTransport()],
+      connectionEncryption: [() => new Noise()]
     })
 
     await node.start()
@@ -41,8 +41,8 @@ describe('libp2p-webtransport', () => {
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
 
     const node = await createLibp2p({
-      transports: [new WebTransportLibp2p()],
-      connectionEncryption: [new Noise()]
+      transports: [webTransport()],
+      connectionEncryption: [() => new Noise()]
     })
     await node.start()
 

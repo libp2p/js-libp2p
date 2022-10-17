@@ -1,7 +1,7 @@
 {
   "name": "@libp2p/webtransport",
   "version": "1.0.1",
-  "description": "JavaScript implementation of the webtransport module that libp2p uses and that implements the interface-transport spec",
+  "description": "JavaScript implementation of the WebTransport module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-webtransport#readme",
   "repository": {
@@ -146,51 +146,28 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check -i libp2p",
+    "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "test": "aegir test",
-    "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
-    "release": "aegir release",
-    "proto:gen": "protons ./src/proto/webtransport.proto"
+    "test": "aegir test -t browser",
+    "test:chrome": "aegir test -t browser --cov",
+    "release": "aegir release"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^9.0.0",
-    "@libp2p/interface-connection": "^3.0.1",
+    "@libp2p/interface-connection": "^3.0.2",
+    "@libp2p/interface-peer-id": "^1.0.5",
     "@libp2p/interface-stream-muxer": "^3.0.0",
     "@libp2p/interface-transport": "^2.0.0",
-    "@libp2p/interfaces": "^3.0.1",
-    "@libp2p/logger": "^2.0.0",
-    "@libp2p/peer-id": "^1.1.15",
-    "@libp2p/utils": "^3.0.0",
-    "@multiformats/mafmt": "^11.0.3",
-    "@multiformats/multiaddr": "^11.0.3",
-    "@multiformats/multiaddr-to-uri": "^9.0.0",
-    "abortable-iterator": "^4.0.2",
-    "err-code": "^3.0.1",
-    "it-ws": "^5.0.0",
+    "@libp2p/logger": "^2.0.2",
+    "@libp2p/peer-id": "^1.1.16",
+    "@multiformats/multiaddr": "^11.0.5",
+    "it-stream-types": "^1.0.4",
     "multiformats": "^10.0.0",
-    "p-defer": "^4.0.0",
-    "p-timeout": "^6.0.0",
-    "protons-runtime": "^4.0.1",
-    "uint8arraylist": "^2.3.2",
-    "wherearewe": "^2.0.1"
+    "uint8arraylist": "^2.3.3"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^7.0.1",
-    "@libp2p/interface-transport-compliance-tests": "^3.0.0",
-    "@types/ws": "^8.2.2",
-    "aegir": "^37.3.0",
-    "is-loopback-addr": "^2.0.1",
-    "it-all": "^1.0.6",
-    "it-drain": "^1.0.5",
-    "it-goodbye": "^4.0.1",
-    "it-pipe": "^2.0.3",
-    "it-stream-types": "^1.0.4",
-    "it-take": "^1.0.2",
-    "libp2p": "next",
-    "p-wait-for": "^5.0.0",
-    "protons": "^6.0.0",
-    "uint8arrays": "^4.0.2"
+    "aegir": "^37.5.6",
+    "libp2p": "^0.40.0"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
