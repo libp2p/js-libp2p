@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v5.0.0...v5.0.1) (2022-10-17)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump it-all from 1.0.6 to 2.0.0 ([#222](https://github.com/libp2p/js-libp2p-tcp/issues/222)) ([fddebdf](https://github.com/libp2p/js-libp2p-tcp/commit/fddebdff3ab2056da78f9ec665e5005a659e9045))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v4.1.0...v5.0.0) (2022-10-12)
 
 
