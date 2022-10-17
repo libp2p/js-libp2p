@@ -165,14 +165,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       this.components.transportManager.add(this.configureComponent(fn(this.components)))
     })
 
-    // Attach stream multiplexers
-    if (init.streamMuxers != null && init.streamMuxers.length > 0) {
-      // Add the identify service since we can multiplex
-      this.identifyService = new IdentifyService(this.components, {
-        ...init.identify
-      })
-      this.configureComponent(this.identifyService)
-    }
+    // Add the identify service
+    this.identifyService = new IdentifyService(this.components, {
+      ...init.identify
+    })
+    this.configureComponent(this.identifyService)
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (init.dht != null) {
