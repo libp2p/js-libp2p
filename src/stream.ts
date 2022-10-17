@@ -7,7 +7,7 @@ import merge from 'it-merge';
 import { Uint8ArrayList } from 'uint8arraylist';
 import { fromString } from 'uint8arrays/from-string';
 import { logger } from '@libp2p/logger';
-import * as pb from '../proto_ts/message';
+import * as pb from '../proto_ts/message.js';
 
 const log = logger('libp2p:webrtc:stream');
 
@@ -54,7 +54,7 @@ export class WebRTCStream implements Stream {
   writeClosed: boolean = false;
   readClosed: boolean = false;
   closed: boolean = false;
-  closeCb?: (stream: WebRTCStream) => void | undefined
+  closeCb?: (stream: WebRTCStream) => void | undefined;
 
   // testing
 
@@ -89,7 +89,6 @@ export class WebRTCStream implements Stream {
     };
 
     this.channel.onmessage = async ({ data }) => {
-
       let res: Uint8Array;
       if (typeof data == 'string') {
         res = fromString(data);
@@ -135,11 +134,10 @@ export class WebRTCStream implements Stream {
 
   // If user attempts to set a new source
   // this should be a nop
-  set source(_src: Source<Uint8ArrayList>) {
-  }
+  set source(_src: Source<Uint8ArrayList>) {}
 
   get source(): Source<Uint8ArrayList> {
-    return this._src
+    return this._src;
   }
 
   private async _sinkFn(src: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
@@ -180,7 +178,7 @@ export class WebRTCStream implements Stream {
     this.writeClosed = true;
     this.channel.close();
     if (this.closeCb) {
-      this.closeCb(this)
+      this.closeCb(this);
     }
   }
 

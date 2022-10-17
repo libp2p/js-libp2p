@@ -1,35 +1,34 @@
-import * as sdp from './sdp';
+import * as sdp from './sdp.js';
 import * as p from '@libp2p/peer-id';
-import {WebRTCDialOptions} from './options';
-import {WebRTCStream} from './stream';
-import {Noise} from '@chainsafe/libp2p-noise';
-import {Connection} from '@libp2p/interface-connection';
-import type {PeerId} from '@libp2p/interface-peer-id';
-import {CreateListenerOptions, Listener, symbol, Transport} from '@libp2p/interface-transport';
-import {logger} from '@libp2p/logger';
-import {Multiaddr} from '@multiformats/multiaddr';
-import {v4 as genUuid} from 'uuid';
+import { WebRTCDialOptions } from './options';
+import { WebRTCStream } from './stream';
+import { Noise } from '@chainsafe/libp2p-noise';
+import { Connection } from '@libp2p/interface-connection';
+import type { PeerId } from '@libp2p/interface-peer-id';
+import { CreateListenerOptions, Listener, symbol, Transport } from '@libp2p/interface-transport';
+import { logger } from '@libp2p/logger';
+import { Multiaddr } from '@multiformats/multiaddr';
+import { v4 as genUuid } from 'uuid';
 import defer from 'p-defer';
-import {fromString as uint8arrayFromString} from 'uint8arrays/from-string';
-import {concat} from 'uint8arrays/concat';
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string';
+import { concat } from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
-import {dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm} from './error';
-import {compare as uint8arrayCompare} from 'uint8arrays/compare';
-import {WebRTCMultiaddrConnection} from './maconn';
-import {DataChannelMuxerFactory} from './muxer';
+import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm } from './error.js';
+import { WebRTCMultiaddrConnection } from './maconn.js';
+import { DataChannelMuxerFactory } from './muxer.js';
 
 const log = logger('libp2p:webrtc:transport');
 const HANDSHAKE_TIMEOUT_MS = 10000;
 
 export interface WebRTCTransportComponents {
-  peerId: PeerId
+  peerId: PeerId;
 }
 
 export class WebRTCTransport implements Transport {
-  private components: WebRTCTransportComponents
+  private components: WebRTCTransportComponents;
 
-  constructor (components: WebRTCTransportComponents) {
-    this.components = components
+  constructor(components: WebRTCTransportComponents) {
+    this.components = components;
   }
 
   async dial(ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
@@ -69,22 +68,22 @@ export class WebRTCTransport implements Transport {
       namedCurve: 'P-256',
       hash: 'SHA-256',
     } as any);
-    const peerConnection = new RTCPeerConnection({certificates: [certificate]});
+    const peerConnection = new RTCPeerConnection({ certificates: [certificate] });
 
     // create data channel
     const dataChannelOpenPromise = defer();
-    const handshakeDataChannel = peerConnection.createDataChannel('handshake', {negotiated: true, id: 0});
+    const handshakeDataChannel = peerConnection.createDataChannel('handshake', { negotiated: true, id: 0 });
     const handhsakeTimeout = setTimeout(() => {
       log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
       dataChannelOpenPromise.reject(dataChannelError('data', `data channel was never opened: state: ${handshakeDataChannel.readyState}`));
     }, HANDSHAKE_TIMEOUT_MS);
 
     handshakeDataChannel.onopen = (_) => {
-      clearTimeout(handhsakeTimeout)
+      clearTimeout(handhsakeTimeout);
       dataChannelOpenPromise.resolve();
-    }
+    };
     handshakeDataChannel.onerror = (ev: Event) => {
-      clearTimeout(handhsakeTimeout)
+      clearTimeout(handhsakeTimeout);
       log.error('Error opening a data channel for handshaking: %s', ev.toString());
       dataChannelOpenPromise.reject(dataChannelError('data', `error opening datachannel: ${ev.toString()}`));
     };
@@ -113,7 +112,7 @@ export class WebRTCTransport implements Transport {
     // Since we use the default crypto interface and do not use a static key or early data,
     // we pass in undefined for these parameters.
     const noise = new Noise(undefined, undefined, undefined, fingerprintsPrologue);
-    const wrappedChannel = new WebRTCStream({channel: handshakeDataChannel, stat: {direction: 'outbound', timeline: {open: 1}}});
+    const wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 1 } } });
     const wrappedDuplex = {
       ...wrappedChannel,
       source: {
@@ -131,14 +130,14 @@ export class WebRTCTransport implements Transport {
       peerConnection,
       remoteAddr: ma,
       timeline: {
-        open: (new Date()).getTime(),
+        open: new Date().getTime(),
       },
-    })
+    });
 
-    const muxerFactory = new DataChannelMuxerFactory(peerConnection)
+    const muxerFactory = new DataChannelMuxerFactory(peerConnection);
     await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId);
-    const upgraded = await options.upgrader.upgradeOutbound(maConn, {skipProtection: true, skipEncryption: true, muxerFactory})
-    return upgraded
+    const upgraded = await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory });
+    return upgraded;
   }
 
   private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {
@@ -154,7 +153,7 @@ export class WebRTCTransport implements Transport {
     const localFpString = localFingerprint.value!.replaceAll(':', '');
     const localFpArray = uint8arrayFromString(localFpString, 'hex');
     if (localFingerprint.algorithm! != 'sha-256') {
-        throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
+      throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
     }
     const local = multihashes.encode(localFpArray, multihashes.names['sha2-256']);
 
