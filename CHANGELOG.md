@@ -10,6 +10,30 @@
 
 
 
+## [0.40.0](https://www.github.com/libp2p/js-libp2p/compare/v0.39.5...v0.40.0) (2022-10-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+* the old behaviour was to dial any peer we discover, now we just add them to the peer store instead
+
+### Features
+
+* allow skipping encryption and custom muxer factory in upgrader ([#1411](https://www.github.com/libp2p/js-libp2p/issues/1411)) ([6615efa](https://www.github.com/libp2p/js-libp2p/commit/6615efa683f55425f90c70815467ec5ddfed1fcb))
+* deny incoming connections and add allow/deny lists ([#1398](https://www.github.com/libp2p/js-libp2p/issues/1398)) ([c185ef5](https://www.github.com/libp2p/js-libp2p/commit/c185ef549f599510f258d5d67883f7062c1c944b))
+
+
+### Bug Fixes
+
+* add after upgrade inbound method ([#1422](https://www.github.com/libp2p/js-libp2p/issues/1422)) ([487b942](https://www.github.com/libp2p/js-libp2p/commit/487b94240e244e31ebadb2f8229c1465717454eb))
+* add pending connection limit ([#1423](https://www.github.com/libp2p/js-libp2p/issues/1423)) ([b717beb](https://www.github.com/libp2p/js-libp2p/commit/b717bebf6db1483fc52595a2a137685162d29dca))
+* close stream after sending identify ([#1424](https://www.github.com/libp2p/js-libp2p/issues/1424)) ([a74d22a](https://www.github.com/libp2p/js-libp2p/commit/a74d22a2cddf9ffdca26447fe21a62b5d13e773d))
+* do not auto-dial peers ([#1397](https://www.github.com/libp2p/js-libp2p/issues/1397)) ([ca30192](https://www.github.com/libp2p/js-libp2p/commit/ca3019283497040314603d9ca7c0b65c64d1680c))
+* enable identify service all the time ([#1440](https://www.github.com/libp2p/js-libp2p/issues/1440)) ([931e042](https://www.github.com/libp2p/js-libp2p/commit/931e042228d286dfc604f91951316b83fa1734f3))
+* regenerate protobuf defs ([#1439](https://www.github.com/libp2p/js-libp2p/issues/1439)) ([e10eea2](https://www.github.com/libp2p/js-libp2p/commit/e10eea24d40243c12584429a3b3012488f82bd00))
+* remove @libp2p/components ([#1427](https://www.github.com/libp2p/js-libp2p/issues/1427)) ([a3847f2](https://www.github.com/libp2p/js-libp2p/commit/a3847f2d1725b1c92d5e0ef7bcdf840ea8428a75))
+
 ### [0.39.5](https://www.github.com/libp2p/js-libp2p/compare/v0.39.4...v0.39.5) (2022-10-05)
 
 
