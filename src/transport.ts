@@ -73,7 +73,7 @@ export class WebRTCTransport implements Transport {
 
     // create data channel
     const dataChannelOpenPromise = defer();
-    const handshakeDataChannel = peerConnection.createDataChannel('data', {negotiated: true, id: 1});
+    const handshakeDataChannel = peerConnection.createDataChannel('handshake', {negotiated: true, id: 0});
     const handhsakeTimeout = setTimeout(() => {
       log.error('Data channel never opened. State was: %s', handshakeDataChannel.readyState.toString());
       dataChannelOpenPromise.reject(dataChannelError('data', `data channel was never opened: state: ${handshakeDataChannel.readyState}`));
