@@ -1,7 +1,7 @@
 import * as sdp from './sdp.js';
 import * as p from '@libp2p/peer-id';
-import { WebRTCDialOptions } from './options';
-import { WebRTCStream } from './stream';
+import { WebRTCDialOptions } from './options.js';
+import { WebRTCStream } from './stream.js';
 import { Noise } from '@chainsafe/libp2p-noise';
 import { Connection } from '@libp2p/interface-connection';
 import type { PeerId } from '@libp2p/interface-peer-id';
