@@ -35,15 +35,25 @@ npm i @libp2p/webrtc
 ## Usage
 
 ```js
-import { WebRTCTransport } from '@libp2p/webrtc';
-import { multiaddr } from '@multiformats/multiaddr';
-import { pipe } from 'it-pipe';
-import all from 'it-all';
+import { createLibp2pNode } from 'libp2p'
+import { webRTC } from '@libp2p/webrtc'
+import { noise } from '@chainsafe/libp2p-noise'
+import { multiaddr } from '@multiformats/multiaddr'
+import { pipe } from 'it-pipe'
+import all from 'it-all'
 
-const webrtc = new WebRTCTransport();
-const addr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ');
-const socket = await webrtc.dial(addr);
-const values = await pipe(socket, all);
+const node = await createLibp2pNode({
+  transports: [
+    webRTC()
+  ],
+  connectionEncryption: [
+    noise()
+  ]
+})
+
+const addr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
+const { stream } = await node.dialProtocol(addr, '/my-protocol/1.0.0')
+const values = await pipe(stream, all)
 ```
 ## API
 

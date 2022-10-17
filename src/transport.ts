@@ -3,14 +3,13 @@ import * as p from '@libp2p/peer-id';
 import {WebRTCDialOptions} from './options';
 import {WebRTCStream} from './stream';
 import {Noise} from '@chainsafe/libp2p-noise';
-import {Components, Initializable} from '@libp2p/components';
 import {Connection} from '@libp2p/interface-connection';
 import type {PeerId} from '@libp2p/interface-peer-id';
 import {CreateListenerOptions, Listener, symbol, Transport} from '@libp2p/interface-transport';
 import {logger} from '@libp2p/logger';
 import {Multiaddr} from '@multiformats/multiaddr';
 import {v4 as genUuid} from 'uuid';
-import defer, {DeferredPromise} from 'p-defer';
+import defer from 'p-defer';
 import {fromString as uint8arrayFromString} from 'uint8arrays/from-string';
 import {concat} from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
@@ -22,13 +21,15 @@ import {DataChannelMuxerFactory} from './muxer';
 const log = logger('libp2p:webrtc:transport');
 const HANDSHAKE_TIMEOUT_MS = 10000;
 
-export class WebRTCTransport implements Transport, Initializable {
-  private componentsPromise: DeferredPromise<void> = defer();
-  private components: Components | undefined;
+export interface WebRTCTransportComponents {
+  peerId: PeerId
+}
 
-  init(components: Components): void {
+export class WebRTCTransport implements Transport {
+  private components: WebRTCTransportComponents
+
+  constructor (components: WebRTCTransportComponents) {
     this.components = components
-    this.componentsPromise.resolve()
   }
 
   async dial(ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
@@ -102,7 +103,7 @@ export class WebRTCTransport implements Transport, Initializable {
     // wait for peerconnection.onopen to fire, or for the datachannel to open
     await dataChannelOpenPromise.promise;
 
-    const myPeerId = await this.getPeerId();
+    const myPeerId = this.components.peerId;
     const theirPeerId = p.peerIdFromString(rps);
 
     // do noise handshake
@@ -172,11 +173,6 @@ export class WebRTCTransport implements Transport, Initializable {
     const fps = [remote, local].sort(uint8arrayCompare);
 
     return concat([prefix, ...fps]);
-  }
-
-  public async getPeerId(): Promise<PeerId> {
-    await this.componentsPromise.promise;
-    return this.components!.getPeerId();
   }
 }
 
