@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.2...v1.0.3) (2022-10-18)
+
+
+### Documentation
+
+* add fetch-file-from-kubo example ([#12](https://github.com/libp2p/js-libp2p-webtransport/issues/12)) ([4a8f2f3](https://github.com/libp2p/js-libp2p-webtransport/commit/4a8f2f3eb4fdede1510aa2808d4c9a30d7ae86bf))
+
 ## [1.0.2](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.1...v1.0.2) (2022-10-17)
 
 
