@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    name: Test example ${{ matrix.project }}
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - fetch-file-from-kubo
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.project }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.19.0'
+      - name: Install dependencies for webtransport in root
+        run: npm install
+        working-directory: .
+      - name: build js-libp2p webtransport in root
+        run: npm run build
+        working-directory: .
+      - name: Install dependencies
+        run: npm install
+      - name: Install Playwright
+        run: npx -y playwright install --with-deps
+      - name: Run tests
+        run: npm run test
+        env:
+          CI: true

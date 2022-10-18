@@ -1,0 +1,26 @@
+{
+  "name": "fetch-file-from-kubo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "npm run build && playwright test tests"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^9.0.0",
+    "@libp2p/webtransport": "1.0.2",
+    "@multiformats/multiaddr": "^11.0.3",
+    "blockstore-core": "^2.0.1",
+    "ipfs-bitswap": "^13.0.0",
+    "libp2p": "^0.40.0",
+    "test-util-ipfs-example": "^1.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.27.1",
+    "typescript": "^4.6.4",
+    "vite": "^3.1.0"
+  }
+}

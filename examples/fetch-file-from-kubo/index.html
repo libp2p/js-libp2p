@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>js-libp2p WebTransport</title>
+</head>
+
+<body>
+  <div id="app">
+    <div>
+      <p> Connect to (multiaddr with p2p): </p>
+      <input id="peerInput" type="text" placeholder="multiaddr"
+        value="/ip4/18.237.216.248/udp/4002/quic/webtransport/certhash/uEiD_zsX_4c3px3fXGcR7l7Y1uuUVBNrzvDZ3Yo0gG7icvg/certhash/uEiDa3KMjw1j1X7eoyNBLODDh_4TEsKFNKTE7T2Ji-QTE-w/p2p/12D3KooWKasdPzM2iDcBQTHP3YWR8DdgAoBMP4BqXWvxhuCVAYFU"></input>
+      <button id="connectBtn">Connect</button>
+    </div>
+    <div id="connlistWrapperEl" hidden="true">
+      <h3>Active Connections:</h3>
+      <ul id="connlistEl"></ul>
+    </div>
+    <div id="downloadCidWrapperEl" hidden="true">
+      <p> Cid to download: </p>
+      <input id="cidInput" type="text" placeholder="CID to download"
+        value="QmUeN71m4BgvMGtDun8JioAEaeUyqB65dnKVV2oLEsA5WJ"></input>
+      <button id="fetchBtn">fetch</button>
+    </div>
+    <div>
+      <p id="statusEl" hidden="true">fetching</p>
+      <a id="downloadEl" hidden="true" href="">Download</a>
+    </div>
+
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
