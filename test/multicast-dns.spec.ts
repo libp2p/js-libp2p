@@ -225,4 +225,31 @@ describe('MulticastDNS', () => {
 
     await stop(mdnsA)
   })
+
+  it('find another peer with different udp4 address', async function () {
+    this.timeout(40 * 1000)
+
+    const mdnsA = mdns({
+      broadcast: false, // do not talk to ourself
+      port: 50005,
+      ip: '224.0.0.252',
+      compat: false
+    })(getComponents(pA, aMultiaddrs))
+
+    const mdnsB = mdns({
+      port: 50005, // port must be the same
+      ip: '224.0.0.252', // ip must be the same
+      compat: false
+    })(getComponents(pB, bMultiaddrs))
+
+    await start(mdnsA, mdnsB)
+
+    const { detail: { id } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => mdnsA.addEventListener('peer', resolve, {
+      once: true
+    }))
+
+    expect(pB.toString()).to.eql(id.toString())
+
+    await stop(mdnsA, mdnsB)
+  })
 })

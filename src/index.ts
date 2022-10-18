@@ -16,6 +16,7 @@ export interface MulticastDNSInit {
   interval?: number
   serviceTag?: string
   port?: number
+  ip?: string
   compat?: boolean
   compatQueryPeriod?: number
   compatQueryInterval?: number
@@ -33,6 +34,7 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
   private readonly interval: number
   private readonly serviceTag: string
   private readonly port: number
+  private readonly ip: string
   private _queryInterval: ReturnType<typeof setInterval> | null
   private readonly _goMdns?: GoMulticastDNS
   private readonly components: MulticastDNSComponents
@@ -44,6 +46,7 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     this.broadcast = init.broadcast !== false
     this.interval = init.interval ?? (1e3 * 10)
     this.serviceTag = init.serviceTag ?? 'ipfs.local'
+    this.ip = init.ip ?? '224.0.0.251'
     this.port = init.port ?? 5353
     this._queryInterval = null
     this._onPeer = this._onPeer.bind(this)
@@ -81,7 +84,7 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
       return
     }
 
-    this.mdns = multicastDNS({ port: this.port })
+    this.mdns = multicastDNS({ port: this.port, ip: this.ip })
     this.mdns.on('query', this._onMdnsQuery)
     this.mdns.on('response', this._onMdnsResponse)
 
