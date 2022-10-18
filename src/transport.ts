@@ -136,7 +136,7 @@ export class WebRTCTransport implements Transport {
     })
 
     const muxerFactory = new DataChannelMuxerFactory(peerConnection)
-    await noise.secureOutbound(myPeerId, wrappedDuplex, theirPeerId);
+    await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId);
     const upgraded = await options.upgrader.upgradeOutbound(maConn, {skipProtection: true, skipEncryption: true, muxerFactory})
     return upgraded
   }
@@ -153,26 +153,16 @@ export class WebRTCTransport implements Transport {
     const localFingerprint = localCert.getFingerprints()[0];
     const localFpString = localFingerprint.value!.replaceAll(':', '');
     const localFpArray = uint8arrayFromString(localFpString, 'hex');
-    let local: Uint8Array;
-    switch (localFingerprint.algorithm!) {
-      case 'md5':
-        local = multihashes.encode(localFpArray, multihashes.names['md5']);
-        break;
-      case 'sha-256':
-        local = multihashes.encode(localFpArray, multihashes.names['sha2-256']);
-        break;
-      case 'sha-512':
-        local = multihashes.encode(localFpArray, multihashes.names['sha2-512']);
-        break;
-      default:
+    if (localFingerprint.algorithm! != 'sha-256') {
         throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
     }
+    const local = multihashes.encode(localFpArray, multihashes.names['sha2-256']);
 
     const remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(ma));
     const prefix = uint8arrayFromString('libp2p-webrtc-noise:');
-    const fps = [remote, local].sort(uint8arrayCompare);
 
-    return concat([prefix, ...fps]);
+    // prologue = bytes("libp2p-webrtc-noise:") + noise-responder fingerprint + noise-initiator fingerprint
+    return concat([prefix, local, remote]);
   }
 }
 
