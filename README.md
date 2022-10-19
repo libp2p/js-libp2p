@@ -77,8 +77,11 @@ To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separ
 
 ## Roadmap
 
-Our roadmap for js-libp2p can be found here: https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md
-This document represents current projects the js-libp2p team is focused on and provides an estimation of completion targets. It is a completementary roadmap to the overarching libp2p project roadmap: https://github.com/libp2p/specs/blob/master/ROADMAP.md
+The js-libp2p roadmap can be found here: https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md
+
+It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.
+
+It is completementary to the overarching libp2p project roadmap: https://github.com/libp2p/specs/blob/master/ROADMAP.md
 
 ## Install
 
