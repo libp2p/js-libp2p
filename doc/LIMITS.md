@@ -1,6 +1,6 @@
 # Limits <!-- omit in toc -->
 
-In order to prevent excessive resource consumption by a libp2p node it's important to understand limits are applied and how to tune them to the needs of your application.
+In order to prevent excessive resource consumption by a libp2p node it's important to understand limits are applied and how to tune them to the needs of your application.  This is important for DoS and eclipse attack mitgation as discussed more [here](https://docs.libp2p.io/reference/dos-mitigation/).
 
 ## Table of contents <!-- omit in toc -->
 
