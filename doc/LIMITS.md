@@ -112,7 +112,7 @@ const node = await createLibp2pNode({
      *
      * It is bytes per second.
      */
-    maxSentData: 1024 * 1024
+    maxSentData: 1024 * 1024,
 
     /**
      * If the node receives more than this amount of data in bytes/second
