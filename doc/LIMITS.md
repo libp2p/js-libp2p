@@ -5,13 +5,13 @@ In order to prevent excessive resource consumption by a libp2p node it's importa
 ## Table of contents <!-- omit in toc -->
 
 - [Connection limits](#connection-limits)
+- [Closing connections](#closing-connections)
 - [Inbound connection threshold](#inbound-connection-threshold)
 - [Data transfer and Event Loop limits](#data-transfer-and-event-loop-limits)
 - [Stream limits](#stream-limits)
   - [Mplex](#mplex)
   - [Yamux](#yamux)
   - [Protocol limits](#protocol-limits)
-- [Closing connections](#closing-connections)
 - [Transport specific limits](#transport-specific-limits)
   - [TCP](#tcp)
 - [Allow/deny lists](#allowdeny-lists)
@@ -27,27 +27,44 @@ const node = await createLibp2pNode({
   connectionManager: {
     /**
      * The total number of connections allowed to be open at one time
+     *
+     * This field is optional, the default value is shown
      */
     maxConnections: 200,
 
     /**
      * If the number of open connections goes below this number, the node
-     * will try to connect to nearby peers from the peer store
+     * will try to connect to randomly selected peers from the peer store
+     *
+     * This field is optional, the default value is shown
      */
     minConnections: 20,
 
     /**
      * How many connections can be open but not yet upgraded
+     *
+     * This field is optional, the default value is shown
      */
     maxIncomingPendingConnections: 10
   }
 })
 ```
 
+## Closing connections
+
+When choosing connections to close the connection manager sorts the list of connections by the value derived from the tags given to each peer. The values of all tags are summed and connections with lower valued peers are eligible for closing first.
+
+```js
+// tag a peer
+await libp2p.peerStore.tagPeer(peerId, 'my-tag', {
+  value: 50, // 0-100 is the typical value range
+  ttl: 1000 // optional field, this tag will be deleted after this many ms
+})
+```
+
 ## Inbound connection threshold
 
-To prevent individual peers from opening multiple connections to a node, an `inboundConnectionThreshold` is configurable. This is the number of connections per second an individual remote host can open to a node, once this threshold is crossed all further connections opened by that host will be rejected.
-
+To prevent individual peers from opening multiple connections to a node, an `inboundConnectionThreshold` is configurable. This is the number of connections per second an individual peer can open to a node, once this threshold is crossed all further connections opened by that peer will be rejected until the threshold resets in the next second.
 
 ```js
 const node = await createLibp2pNode({
@@ -55,6 +72,8 @@ const node = await createLibp2pNode({
     /**
      * A remote peer may attempt to open up to this many connections per second,
      * any more than that will be automatically rejected
+     *
+     * This field is optional, the default value is shown
      */
     inboundConnectionThreshold: 5
   }
@@ -63,7 +82,7 @@ const node = await createLibp2pNode({
 
 ## Data transfer and Event Loop limits
 
-If metrics are enabled the node will track the amount of data being sent to and from the network. If the amount sent is over the threshold connections will be trimmed to free up resources.  The default amount is `Ininity` so this must be explicitly enabled.
+If metrics are enabled the node will track the amount of data being sent to and from the network. If the rate of data sent is over the threshold connections will be trimmed to free up resources. The default rate is `Ininity` so this must be explicitly enabled.
 
 Connections may also be trimmed if [event loop](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick) latency exceeds the configured limit.
 
@@ -75,25 +94,44 @@ const node = await createLibp2pNode({
   connectionManager: {
     /**
      * If the node transfers more than this amount of data in bytes/second
-     * low value connections may be closed
+     * connections to untagged peers or those not in the allow list may be
+     * closed.
+     *
+     * This field is optional, the default value is shown.
+     *
+     * It is bytes per second.
      */
     maxData: 1024 * 1024,
 
     /**
      * If the node sends more than this amount of data in bytes/second
-     * low value connections may be closed
+     * connections to untagged peers or those not in the allow list may be
+     * closed.
+     *
+     * This field is optional, the default value is shown
+     *
+     * It is bytes per second.
      */
     maxSentData: 1024 * 1024
 
     /**
      * If the node receives more than this amount of data in bytes/second
-     * low value connections may be closed
+     * connections to untagged peers or those not in the allow list may be
+     * closed.
+     *
+     * This field is optional, the default value is shown.
+     *
+     * It is bytes per second.
      */
     maxReceivedData: 1024 * 1024,
 
     /**
-     * If the event loop takes longer than this many ms to run,  low value
-     * connections may be closed
+     * If the event loop takes longer than this many ms to run, connections
+     * to untagged peers or those not in the allow list may be closed.
+     *
+     * This field is optional, the default value is shown.
+     *
+     * It is milliseconds.
      */
     maxEventLoopDelay: 1000
   }
@@ -113,25 +151,33 @@ These settings are done on a per-muxer basis, please see the README of the relev
 ```js
 const node = await createLibp2pNode({
   muxers: [
-    new Mplex({
+    mplex({
       /**
        * The total number of inbound protocol streams that can be opened on a given connection
+       *
+       * This field is optional, the default value is shown
        */
       maxInboundStreams: 1024,
 
       /**
        * The total number of outbound protocol streams that can be opened on a given connection
+       *
+       * This field is optional, the default value is shown
        */
       maxOutboundStreams: 1024,
 
       /**
        * How much incoming data to buffer before resetting the stream
+       *
+       * This field is optional, the default value is shown
        */
       maxStreamBufferSize: 4 * 1024 * 1024,
 
       /**
        * Mplex does not support backpressure so to protect ourselves, if `maxInboundStreams` is
        * hit and the remote opens more than this many streams per second, close the connection
+       *
+       * This field is optional, the default value is shown
        */
       disconnectThreshold: 5
     })
@@ -146,14 +192,18 @@ const node = await createLibp2pNode({
 ```js
 const node = await createLibp2pNode({
   muxers: [
-    new Yamux({
+    yamux({
       /**
        * The total number of inbound protocol streams that can be opened on a given connection
+       *
+       * This field is optional, the default value is shown
        */
       maxInboundStreams: 1024,
 
       /**
        * The total number of outbound protocol streams that can be opened on a given connection
+       *
+       * This field is optional, the default value is shown
        */
       maxOutboundStreams: 1024
     })
@@ -163,11 +213,11 @@ const node = await createLibp2pNode({
 
 ### Protocol limits
 
-When registering listeners for custom protocols, the maximum number of simultaneously open inbound and outbound streams per-connection can be specified. If not specified these will default to 32 inbound streams and 64 outbound streams.
+When registering listeners for custom protocols, the maximum number of simultaneously open inbound and outbound streams per-connection can be specified. If not specified these will default to [32 inbound streams and 64 outbound streams](https://github.com/libp2p/js-libp2p/blob/master/src/registrar.ts#L14-L15).
 
 If more than this number of streams for the given protocol are opened on a single connection, subsequent new streams for that protocol will be immediately reset.
 
-Since incoming stream data is buffered until it is comsumed, you should attempt to specify the minimum amount of streams required to keep memory usage to a minimum.
+Since incoming stream data is buffered until it is consumed, you should attempt to specify the minimum amount of streams required to keep memory usage to a minimum.
 
 ```js
 libp2p.handle('/my-protocol/1.0.0', (streamData) => {
@@ -175,18 +225,6 @@ libp2p.handle('/my-protocol/1.0.0', (streamData) => {
 }, {
   maxInboundStreams: 10, // defaults to 32
   maxOutboundStreams: 10, // defaults to 64
-})
-```
-
-## Closing connections
-
-When choosing connections to close the connection manager sorts the list of connections by the value derived from the tags given to each peer. The values of all tags are summed and connections with lower valued peers are elibible for closing first.
-
-```js
-// tag a peer
-await libp2p.peerStore.tagPeer(peerId, 'my-tag', {
-  value: 50, // 0-100 is the typical value range
-  ttl: 1000 // optional field, this tag will be deleted after this many ms
 })
 ```
 
@@ -203,14 +241,18 @@ The [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) transport allows addi
 ```js
 const node = await createLibp2pNode({
   transports: [
-    new TCP({
+    tcp({
       /**
-       * Inbound connections with no activity in this timeframe (ms) will be closed
+       * Inbound connections with no activity in this time frame (ms) will be closed
+       *
+       * This field is optional, the default value is shown
        */
       inboundSocketInactivityTimeout: 30000,
 
       /**
-       * Outbound connections with no activity in this timeframe (ms) will be closed
+       * Outbound connections with no activity in this time frame (ms) will be closed
+       *
+       * This field is optional, the default value is shown
        */
       outboundSocketInactivityTimeout: 60000,
 
@@ -218,6 +260,8 @@ const node = await createLibp2pNode({
        * Once this many connections are open on this listener any further connections
        * will be rejected - this will have no effect if it is larger than the value
        * configured for the ConnectionManager maxConnections parameter
+       *
+       * This field is optional, the default value is shown
        */
       maxConnections: 200
     })
