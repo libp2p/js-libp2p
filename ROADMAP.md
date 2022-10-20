@@ -83,7 +83,8 @@ These projects are parallel workstreams, weighed equally with roadmap items in t
 - [A.1 📺 WebTransport](#1-webtransport)
   
 #### Mid Q4 (November)
-- [C.1 🔮 Benchmark transfer performance in CI](#1-benchmark-transfer-performance-in-ci)
+- [***➡️ test-plans/Interop tests for all existing/developing features***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#2-interop-test-plans-for-all-existingdeveloping-transports)
+- [***➡️ test-plans/Benchmarking using nix-builders***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#1-benchmarking-using-nix-builders)
 
 #### End of Q4 (December)
 - [A.2 📺 WebRTC: Browser to Server](#2-webrtc-browser-to-server)
@@ -94,19 +95,21 @@ These projects are parallel workstreams, weighed equally with roadmap items in t
 
 #### Early Q1 (January)
 - [C.1 🔮 Ergonomic metrics API](#1-ergonomic-metrics-api)
+- [***➡️ test-plans/DHT server mode scale test***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md##1-dht-server-mode-scale-test)
 
 #### Mid Q1 (February)
 - [A.3 📺 WebRTC: Browser to Browser](#3-webrtc-browser-to-browser)
 
 #### End of Q1 (March)
 - [B.3 🥊 Add QUIC Transport](#3-add-quic-transport)
+- [***➡️ test-plans/Benchmarking using remote runners***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#2-benchmarking-using-remote-runners)
 
 #### Early Q2 (April)
 - [B.4 🥊 Hole Punching](#4-hole-punching)
 	- 🎉 Estimated Project Completion
 
 ### Up Next
-
+- [***➡️ test-plans/Expansive protocol test coverage***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#d-expansive-protocol-test-coverage)
 
 ## 📖 Appendix
 ### A. 📺 Universal Browser Connectivity
