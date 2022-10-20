@@ -83,7 +83,7 @@ These projects are parallel workstreams, weighed equally with roadmap items in t
 - [A.1 📺 WebTransport](#1-webtransport)
   
 #### Mid Q4 (November)
-- [***➡️ test-plans/Interop tests for all existing/developing features***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#2-interop-test-plans-for-all-existingdeveloping-transports)
+- [***➡️ test-plans/Interop tests for all existing/developing transports***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#2-interop-test-plans-for-all-existingdeveloping-transports)
 - [***➡️ test-plans/Benchmarking using nix-builders***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#1-benchmarking-using-nix-builders)
 
 #### End of Q4 (December)
