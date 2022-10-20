@@ -1,9 +1,9 @@
 # js-libp2p roadmap Q4’22/Q1’23  <!-- omit in toc -->
 
 ```
-Date: 2022-10-07
-Status: In Progress
-Notes: This document is still in review will may be heavily modified based on stakeholder feedback. Please add any feedback or questions in:
+Date: 2022-10-20
+Status: Accepted
+Notes: Internal js-libp2p stakeholders have aligned on this roadmap. Please add any feedback or questions in:
 https://github.com/libp2p/js-libp2p/issues/1438
 ```
 
@@ -71,8 +71,9 @@ Supporting projects (such as testing or benchmarking) may have different criteri
 As mentioned in our [vision](#vision), performance and stability are core libp2p tenets. Rigorous benchmarking and testing help us uphold them. Related projects are listed in the [libp2p/test-plans roadmap](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md) and the [testground/testground roadmap](https://github.com/testground/testground/blob/master/ROADMAP.md). Our major priorities in Q4’22 and Q1’23 are:
 - [interoperability testing](https://github.com/libp2p/test-plans/issues/53) (across implementations & versions and between transports, muxers, & security protocols)
 - [add a browser environment test harness to support testing browser features](https://github.com/testground/testground/issues/1386)
-- test DHT Server Mode at scale (testbed of at least >20 nodes; ideally 100/1000+) in Testground
 - [performance benchmark js-libp2p using Testground](https://github.com/testground/testground/pull/1425) (create a benchmark suite to run in CI)
+- [test DHT Server Mode at scale (testbed of at least >20 nodes; ideally 100/1000+) in Testground](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#1-dht-server-mode-scale-test)
+
 
 These projects are parallel workstreams, weighed equally with roadmap items in this document. Some efforts like interoperability testing have a higher priority than implementation projects. The js-libp2p maintainers co-own these efforts with the go-libp2p, rust-libp2p, and Testground maintainers.
 
@@ -81,7 +82,7 @@ These projects are parallel workstreams, weighed equally with roadmap items in t
 
 #### Early Q4 (October)
 - [A.1 📺 WebTransport](#1-webtransport)
-  
+
 #### Mid Q4 (November)
 - [***➡️ test-plans/Interop tests for all existing/developing transports***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#2-interop-test-plans-for-all-existingdeveloping-transports)
 - [***➡️ test-plans/Benchmarking using nix-builders***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#1-benchmarking-using-nix-builders)
@@ -112,8 +113,7 @@ These projects are parallel workstreams, weighed equally with roadmap items in t
 - [***➡️ test-plans/Expansive protocol test coverage***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#d-expansive-protocol-test-coverage)
 
 ## 📖 Appendix
-### A. 📺 Universal Browser Connectivity
-<!--- TODO: Link to GitHub Epic -->
+### [A. 📺 Universal Browser Connectivity](https://github.com/libp2p/js-libp2p/issues/1463)
 
 **Why**: A huge part of “the Web” is happening inside the browser. As a universal p2p networking stack, libp2p needs to be able to offer solutions for browser users.
 
@@ -123,28 +123,27 @@ These projects are parallel workstreams, weighed equally with roadmap items in t
 Implementation of WebTransport in js-libp2p. Allows for interoperability with go-libp2p.
 #### 2. [WebRTC: Browser to Server](https://github.com/little-bear-labs/js-libp2p-webrtc/pull/4)
 Add support for WebRTC transport in js-libp2p, enabling browser connectivity with servers. This will cover the browsers that don't support WebTransport (most notable is iOS Safari). This is getting close to finalized.
-#### 3. WebRTC: Browser to Browser
+#### [3. WebRTC: Browser to Browser](https://github.com/libp2p/js-libp2p/issues/1462)
 Even though this use case is made possible by [webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) and [webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) currently, they are a less than ideal solutions. Both libraries have shortcomings, aren't implemented in other languages, and don't employ newer libp2p advancements such as Circuit Relay v2, DCUtR, and authentication via Noise. Therefore, we want to support WebRTC Browser to Browser as a first class transport in js-libp2p and deprecate the previous libraries. A follow up to A.2 where we will begin the work to specify the semantics of browser to browser connectivity and then implement it in js-libp2p.
 
-### B. 🥊 Decentralized Hole Punching
-<!--- TODO: Link to GitHub Epic -->
-**Why**:  P2P networks can have a combination of both public and private nodes. While private nodes can dial nodes on the public Internet, they are unreachable from the outside as they are behind a NAT or a firewall. We need a mechanism to dial them. A [previous DHT crawl found that almost 63%](https://github.com/libp2p/specs/blob/master/ROADMAP.md#-hole-punching-on-tcp-and-quic) of the network was undialable.
+### [B. 🥊 Decentralized Hole Punching](https://github.com/libp2p/js-libp2p/issues/1461)
+**Why:**  P2P networks can have a combination of both public and private nodes. While private nodes can dial nodes on the public Internet, they are unreachable from the outside as they are behind a NAT or a firewall. We need a mechanism to dial them. A [previous DHT crawl found that almost 63%](https://github.com/libp2p/specs/blob/master/ROADMAP.md#-hole-punching-on-tcp-and-quic) of the network was undialable.
 
 **Goal:** Implement Decentralized Hole Punching in js-libp2p and bring it to parity with the Go and Rust implementations.
 #### 1. [AutoNat](https://github.com/libp2p/js-libp2p/issues/1005)
 Determine whether a node is public or private (located behind a firewall or a NAT.) This is a dependency for enabling the DHT in server mode by default for projects like js-ipfs.
 #### 2. [Circuit Relay v2](https://github.com/libp2p/js-libp2p/issues/1029)
 Connect to, request reservations, and establish a secure relay connection through discovered public relay node.
-#### 3. Add QUIC Transport
+#### [3. Add QUIC Transport](https://github.com/libp2p/js-libp2p/issues/1459)
 Hole punching is [more reliable with UDP (therefore QUIC)](https://www.notion.so/pl-strflt/NAT-Hole-punching-Success-Rate-2022-09-29-Data-Analysis-8e72705ca3cc49ab983bc5e8792e3e98#5b76991da8d24736abd486aa93e85a97) than TCP. This requires adding support for QUIC in js-libp2p. There is some work [being done here](https://github.com/nodejs/node/pull/44325) to add support in node.js which we depend on.
-#### 4. Hole Punching
+#### [4. Hole Punching](https://github.com/libp2p/js-libp2p/issues/1460)
 Use [DCUtR](https://github.com/libp2p/specs/blob/master/relay/DCUtR.md) to synchronize hole punching
 
-### C. 🔮 Ergonomic Observability
-***Why*** Though we already expose [per-component metrics](https://github.com/libp2p/js-libp2p/issues/1060) in js-libp2p, the overhead of recording metrics is high (excessive object allocation per metric to record). This will be helpful to [our users](https://github.com/chainsafe/lodestar) who record metrics on the order of thousands/second.
+### [C. 🔮 Ergonomic Observability](https://github.com/libp2p/js-libp2p/issues/1458)
+**Why:** Though we already expose [per-component metrics](https://github.com/libp2p/js-libp2p/issues/1060) in js-libp2p, the overhead of recording metrics is high (excessive object allocation per metric to record). This will be helpful to [our users](https://github.com/chainsafe/lodestar) who record metrics on the order of thousands/second.
 
-***Goal***
+**Goal:**
 We make the lives of js-libp2p easier by adding an improved metrics API.
 
-#### 1. Ergonomic metrics API
-Create a ergonomic, generalized metrics recording interface which addresses current allocation overhead and duplication of information. Do not bloat the browser bundle with [prom-client](https://github.com/siimon/prom-client).)
+#### [1. Ergonomic metrics API](https://github.com/libp2p/js-libp2p/issues/1458)
+Create a ergonomic, generalized metrics recording interface which addresses current allocation overhead and duplication of information. Do not bloat the browser bundle with [prom-client](https://github.com/siimon/prom-client).
