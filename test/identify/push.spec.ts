@@ -39,7 +39,9 @@ const defaultInit: IdentifyServiceInit = {
   maxOutboundStreams: 1,
   maxPushIncomingStreams: 1,
   maxPushOutgoingStreams: 1,
-  timeout: 1000
+  timeout: 1000,
+  disableIdentify: false,
+  disableIdentifyPush: false
 }
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]

@@ -65,6 +65,16 @@ export interface IdentifyServiceInit {
 
   maxPushIncomingStreams: number
   maxPushOutgoingStreams: number
+
+  /**
+   * Disable the identify protocol completely
+   */
+  disableIdentify: boolean
+
+  /**
+   * Disable the identify-push protocol completely
+   */
+  disableIdentifyPush: boolean
 }
 
 export interface IdentifyServiceComponents {
@@ -101,29 +111,33 @@ export class IdentifyService implements Startable {
       ...init.host
     }
 
-    // When a new connection happens, trigger identify
-    this.components.connectionManager.addEventListener('peer:connect', (evt) => {
-      const connection = evt.detail
-      this.identify(connection).catch(log.error)
-    })
+    if (!this.init.disableIdentify) {
+      // When a new connection happens, trigger identify
+      this.components.connectionManager.addEventListener('peer:connect', (evt) => {
+        const connection = evt.detail
+        this.identify(connection).catch(log.error)
+      })
+    }
 
-    // When self multiaddrs change, trigger identify-push
-    this.components.peerStore.addEventListener('change:multiaddrs', (evt) => {
-      const { peerId } = evt.detail
+    if (!this.init.disableIdentifyPush) {
+      // When self multiaddrs change, trigger identify-push
+      this.components.peerStore.addEventListener('change:multiaddrs', (evt) => {
+        const { peerId } = evt.detail
 
-      if (this.components.peerId.equals(peerId)) {
-        void this.pushToPeerStore().catch(err => log.error(err))
-      }
-    })
+        if (this.components.peerId.equals(peerId)) {
+          void this.pushToPeerStore().catch(err => log.error(err))
+        }
+      })
 
-    // When self protocols change, trigger identify-push
-    this.components.peerStore.addEventListener('change:protocols', (evt) => {
-      const { peerId } = evt.detail
+      // When self protocols change, trigger identify-push
+      this.components.peerStore.addEventListener('change:protocols', (evt) => {
+        const { peerId } = evt.detail
 
-      if (this.components.peerId.equals(peerId)) {
-        void this.pushToPeerStore().catch(err => log.error(err))
-      }
-    })
+        if (this.components.peerId.equals(peerId)) {
+          void this.pushToPeerStore().catch(err => log.error(err))
+        }
+      })
+    }
   }
 
   isStarted () {
@@ -138,29 +152,37 @@ export class IdentifyService implements Startable {
     await this.components.peerStore.metadataBook.setValue(this.components.peerId, 'AgentVersion', uint8ArrayFromString(this.host.agentVersion))
     await this.components.peerStore.metadataBook.setValue(this.components.peerId, 'ProtocolVersion', uint8ArrayFromString(this.host.protocolVersion))
 
-    await this.components.registrar.handle(this.identifyProtocolStr, (data) => {
-      void this._handleIdentify(data).catch(err => {
-        log.error(err)
+    if (!this.init.disableIdentify) {
+      await this.components.registrar.handle(this.identifyProtocolStr, (data) => {
+        void this._handleIdentify(data).catch(err => {
+          log.error(err)
+        })
+      }, {
+        maxInboundStreams: this.init.maxInboundStreams,
+        maxOutboundStreams: this.init.maxOutboundStreams
       })
-    }, {
-      maxInboundStreams: this.init.maxInboundStreams,
-      maxOutboundStreams: this.init.maxOutboundStreams
-    })
-    await this.components.registrar.handle(this.identifyPushProtocolStr, (data) => {
-      void this._handlePush(data).catch(err => {
-        log.error(err)
+    }
+    if (!this.init.disableIdentifyPush) {
+      await this.components.registrar.handle(this.identifyPushProtocolStr, (data) => {
+        void this._handlePush(data).catch(err => {
+          log.error(err)
+        })
+      }, {
+        maxInboundStreams: this.init.maxPushIncomingStreams,
+        maxOutboundStreams: this.init.maxPushOutgoingStreams
       })
-    }, {
-      maxInboundStreams: this.init.maxPushIncomingStreams,
-      maxOutboundStreams: this.init.maxPushOutgoingStreams
-    })
+    }
 
     this.started = true
   }
 
   async stop () {
-    await this.components.registrar.unhandle(this.identifyProtocolStr)
-    await this.components.registrar.unhandle(this.identifyPushProtocolStr)
+    if (!this.init.disableIdentify) {
+      await this.components.registrar.unhandle(this.identifyProtocolStr)
+    }
+    if (!this.init.disableIdentifyPush) {
+      await this.components.registrar.unhandle(this.identifyPushProtocolStr)
+    }
 
     this.started = false
   }

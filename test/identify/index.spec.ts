@@ -41,7 +41,9 @@ const defaultInit: IdentifyServiceInit = {
   maxOutboundStreams: 1,
   maxPushIncomingStreams: 1,
   maxPushOutgoingStreams: 1,
-  timeout: 1000
+  timeout: 1000,
+  disableIdentify: false,
+  disableIdentifyPush: false
 }
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
@@ -382,5 +384,12 @@ describe('identify', () => {
 
     await expect(identifySpy.getCall(0).returnValue)
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
+  })
+
+  it('should disable identify and identify-push when initialized as disabled', async () => {
+    void new IdentifyService(localComponents, { ...defaultInit, disableIdentify: true, disableIdentifyPush: true })
+
+    expect(() => localComponents.registrar.getHandler(MULTICODEC_IDENTIFY)).to.throw().with.property('code', 'ERR_NO_HANDLER_FOR_PROTOCOL')
+    expect(() => localComponents.registrar.getHandler(MULTICODEC_IDENTIFY_PUSH)).to.throw().with.property('code', 'ERR_NO_HANDLER_FOR_PROTOCOL')
   })
 })
