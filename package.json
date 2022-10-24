@@ -88,7 +88,7 @@
     "generate:proto:identify": "protons ./src/identify/pb/message.proto",
     "generate:proto:plaintext": "protons ./src/insecure/pb/proto.proto",
     "test": "aegir test",
-    "test:node": "DEBUG=libp2p*,-*:trace aegir test -t node -f \"./dist/test/**/*.{node,spec}.js\" --cov",
+    "test:node": "DEBUG=libp2p*,-*:trace aegir test -t node -f \"./dist/test/**/*.{node,spec}.js\" --cov --grep Fetch",
     "test:chrome": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" --cov",
     "test:chrome-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\"",
     "test:firefox": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
