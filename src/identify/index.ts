@@ -67,14 +67,14 @@ export interface IdentifyServiceInit {
   maxPushOutgoingStreams: number
 
   /**
-   * Disable the identify protocol completely
+   * Enable the identify protocol
    */
-  disableIdentify: boolean
+  enable: boolean
 
   /**
-   * Disable the identify-push protocol completely
+   * Enable the identify-push protocol
    */
-  disableIdentifyPush: boolean
+  enablePush: boolean
 }
 
 export interface IdentifyServiceComponents {
@@ -111,7 +111,7 @@ export class IdentifyService implements Startable {
       ...init.host
     }
 
-    if (!this.init.disableIdentify) {
+    if (this.init.enable) {
       // When a new connection happens, trigger identify
       this.components.connectionManager.addEventListener('peer:connect', (evt) => {
         const connection = evt.detail
@@ -119,7 +119,7 @@ export class IdentifyService implements Startable {
       })
     }
 
-    if (!this.init.disableIdentifyPush) {
+    if (this.init.enablePush) {
       // When self multiaddrs change, trigger identify-push
       this.components.peerStore.addEventListener('change:multiaddrs', (evt) => {
         const { peerId } = evt.detail
@@ -152,7 +152,7 @@ export class IdentifyService implements Startable {
     await this.components.peerStore.metadataBook.setValue(this.components.peerId, 'AgentVersion', uint8ArrayFromString(this.host.agentVersion))
     await this.components.peerStore.metadataBook.setValue(this.components.peerId, 'ProtocolVersion', uint8ArrayFromString(this.host.protocolVersion))
 
-    if (!this.init.disableIdentify) {
+    if (this.init.enable) {
       await this.components.registrar.handle(this.identifyProtocolStr, (data) => {
         void this._handleIdentify(data).catch(err => {
           log.error(err)
@@ -162,7 +162,7 @@ export class IdentifyService implements Startable {
         maxOutboundStreams: this.init.maxOutboundStreams
       })
     }
-    if (!this.init.disableIdentifyPush) {
+    if (this.init.enablePush) {
       await this.components.registrar.handle(this.identifyPushProtocolStr, (data) => {
         void this._handlePush(data).catch(err => {
           log.error(err)
@@ -177,10 +177,10 @@ export class IdentifyService implements Startable {
   }
 
   async stop () {
-    if (!this.init.disableIdentify) {
+    if (this.init.enable) {
       await this.components.registrar.unhandle(this.identifyProtocolStr)
     }
-    if (!this.init.disableIdentifyPush) {
+    if (this.init.enablePush) {
       await this.components.registrar.unhandle(this.identifyPushProtocolStr)
     }
 
