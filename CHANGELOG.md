@@ -1,3 +1,10 @@
+## [5.1.0](https://github.com/libp2p/js-libp2p-mdns/compare/v5.0.0...v5.1.0) (2022-10-27)
+
+
+### Features
+
+* add support for custom DNS server IP ([#142](https://github.com/libp2p/js-libp2p-mdns/issues/142)) ([3b6c7db](https://github.com/libp2p/js-libp2p-mdns/commit/3b6c7dbb0e6cfd11d1394ac3e62509926346dbf2))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v4.0.0...v5.0.0) (2022-10-12)
 
 
