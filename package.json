@@ -147,7 +147,7 @@
     "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "it-first": "^1.0.6",
-    "it-handshake": "^4.0.1",
+    "it-handshake": "^4.1.2",
     "it-length-prefixed": "^8.0.2",
     "it-merge": "^1.0.4",
     "it-pipe": "^2.0.3",
