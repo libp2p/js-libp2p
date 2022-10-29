@@ -3,8 +3,8 @@ import {Stream} from "@libp2p/interface-connection"
 import {StreamMuxer, StreamMuxerFactory, StreamMuxerInit} from "@libp2p/interface-stream-muxer"
 import {Source, Sink} from "it-stream-types"
 import {v4} from "uuid"
-import {WebRTCStream} from "./stream"
-import {nopSink, nopSource} from "./util"
+import {WebRTCStream} from "./stream.js"
+import {nopSink, nopSource} from "./util.js"
 
 export class DataChannelMuxerFactory implements StreamMuxerFactory {
   private peerConnection: RTCPeerConnection

@@ -7,7 +7,7 @@ import merge from 'it-merge';
 import { Uint8ArrayList } from 'uint8arraylist';
 import { fromString } from 'uint8arrays/from-string';
 import { logger } from '@libp2p/logger';
-import * as pb from '../proto_ts/message';
+import * as pb from '../proto_ts/message.js';
 
 const log = logger('libp2p:webrtc:stream');
 
