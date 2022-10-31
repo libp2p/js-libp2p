@@ -1,3 +1,15 @@
+## [3.1.1](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.0...v3.1.1) (2022-10-31)
+
+
+### Bug Fixes
+
+* set min and max protocol length ([#21](https://github.com/libp2p/js-libp2p-multistream-select/issues/21)) ([ae42f76](https://github.com/libp2p/js-libp2p-multistream-select/commit/ae42f7623b557d33208c12c69d7f01e49f478fdb))
+
+
+### Trivial Changes
+
+* update to handshake 4.1.2 ([#28](https://github.com/libp2p/js-libp2p-multistream-select/issues/28)) ([53883b1](https://github.com/libp2p/js-libp2p-multistream-select/commit/53883b1c6215584043f4dd6e97e2d10adb890af6))
+
 ## [3.1.0](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.0.0...v3.1.0) (2022-10-12)
 
 
