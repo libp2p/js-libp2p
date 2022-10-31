@@ -90,7 +90,7 @@ export class WebRTCTransport implements Transport {
     // create offer sdp
     let offerSdp = await peerConnection.createOffer();
     // generate random string for ufrag
-    const ufrag = genUuid().replaceAll('-', '');
+    const ufrag = "libp2p+webrtc+v1/" + genUuid().replaceAll('-', '');
     // munge sdp with ufrag = pwd
     offerSdp = sdp.munge(offerSdp, ufrag);
     // set local description
