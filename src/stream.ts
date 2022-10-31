@@ -1,14 +1,15 @@
 import {Stream, StreamStat, Direction} from '@libp2p/interface-connection';
 import {Source} from 'it-stream-types';
 import {Sink} from 'it-stream-types';
-import {pushable, Pushable} from 'it-pushable';
+import {pushable} from 'it-pushable';
+import * as lp from 'it-length-prefixed';
+import { pipe } from 'it-pipe';
 import defer, {DeferredPromise} from 'p-defer';
 import merge from 'it-merge';
 import {Uint8ArrayList} from 'uint8arraylist';
 import {logger} from '@libp2p/logger';
 import * as pb from '../proto_ts/message.js';
 import {concat} from 'uint8arrays/concat';
-import * as varint from 'varint';
 
 const log = logger('libp2p:webrtc:stream');
 
@@ -46,7 +47,8 @@ export class WebRTCStream implements Stream {
   metadata: Record<string, any>;
   private readonly channel: RTCDataChannel;
 
-  _src: Source<Uint8ArrayList> = pushable();
+  private readonly _src: Source<Uint8ArrayList>;
+  _innersrc = pushable();
   sink: Sink<Uint8ArrayList | Uint8Array, Promise<void>>;
 
   // promises
@@ -92,36 +94,6 @@ export class WebRTCStream implements Stream {
       this.opened.resolve();
     };
 
-    this.channel.onmessage = async ({data}) => {
-
-      let offset = 0;
-      const res = new Uint8Array(data as ArrayBuffer);
-      if (res.length == 0) {
-        return
-      }
-
-      // start reading bytes
-      //
-      while (offset < res.length) {
-
-        // check if reading prefix length is required
-        if (this.messageState.messageSize == 0) {
-          const messageSize = varint.decode(res, offset);
-          this.messageState.messageSize = messageSize;
-          offset += varint.decode.bytes;
-        } else {
-          const end = Math.min(offset + this.messageState.bytesRemaining(), res.length);
-          this.messageState.write(res.subarray(offset, end));
-          offset = end;
-          if (this.messageState.hasMessage()) {
-            this.processIncomingProtobuf(this.messageState.buffer);
-            this.messageState.clear();
-          }
-        }
-      }
-
-    };
-
     this.channel.onclose = (_evt) => {
       this.close();
     };
@@ -130,6 +102,29 @@ export class WebRTCStream implements Stream {
       let err = (evt as RTCErrorEvent).error;
       this.abort(err);
     };
+
+    const self = this;
+    // reader pipe
+    this.channel.onmessage = async ({data}) => {
+      const res = new Uint8Array(data as ArrayBuffer);
+      if (res.length == 0) {
+        return
+      }
+      this._innersrc.push(res)
+    };
+
+    this._src = pipe(
+      this._innersrc,
+      lp.decode(),
+      (source) => (async function * () {
+        for await (const buf of source) {
+          const { data } = self.processIncomingProtobuf(buf.subarray());
+          if (data) {
+            yield new Uint8ArrayList(data);
+          }
+        }
+      })(),
+    )
 
   }
 
@@ -162,13 +157,13 @@ export class WebRTCStream implements Stream {
       }
       const res = buf.subarray();
       const msgbuf = pb.Message.toBinary({message: buf.subarray()});
-      const prefix = varint.encode(msgbuf.length);
+      const sendbuf = lp.encode.single(msgbuf)
       log.trace(`[stream:${this.id}][${this.stat.direction}] sending message: length: ${res.length} ${res}, encoded through pb as ${msgbuf}`);
-      this.channel.send(concat([prefix, msgbuf]));
+      this.channel.send(sendbuf.subarray())
     }
   }
 
-  processIncomingProtobuf(buffer: Uint8Array): void {
+  processIncomingProtobuf(buffer: Uint8Array): { data: Uint8Array | undefined } {
     log.trace(`[stream:${this.id}][${this.stat.direction}] received message: length: ${buffer.length} ${buffer}`);
     const m = pb.Message.fromBinary(buffer);
     log.trace(`[stream:${this.id}][${this.stat.direction}] received pb.Message: ${Object.entries(m)}`);
@@ -188,12 +183,9 @@ export class WebRTCStream implements Stream {
         this.closeRead();
     }
     if (this.readClosed || this.closed) {
-      return;
+      return { data: undefined };
     }
-    if (m.message) {
-      log.trace('%s incoming message %s', this.id, m.message);
-      (this._src as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(m.message));
-    }
+    return { data: m.message }
   }
 
   /**
@@ -219,7 +211,7 @@ export class WebRTCStream implements Stream {
   closeRead(): void {
     this._sendFlag(pb.Message_Flag.STOP_SENDING);
     this.readClosed = true;
-    (this.source as Pushable<Uint8ArrayList>).end();
+    (this._innersrc).end();
     if (this.readClosed && this.writeClosed) {
       this.close();
     }
@@ -262,8 +254,7 @@ export class WebRTCStream implements Stream {
     try {
       log.trace('Sending flag: %s', flag.toString());
       const msgbuf = pb.Message.toBinary({flag: flag});
-      const prefix = varint.encode(msgbuf.length);
-      this.channel.send(concat([prefix, msgbuf]));
+      this.channel.send(lp.encode.single(msgbuf).subarray());
     } catch (e) {
       log.error(`Exception while sending flag ${flag}: ${e}`);
     }
