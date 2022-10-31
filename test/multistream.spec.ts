@@ -87,6 +87,31 @@ describe('Multistream', () => {
         .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
     })
 
+    it('should throw for a large message', async () => {
+      const input = new Uint8Array(10000)
+      input[input.length - 1] = '\n'.charCodeAt(0)
+
+      const source = reader([uint8ArrayConcat([
+        Uint8Array.from(Varint.encode(input.length)),
+        input
+      ])])
+
+      await expect(Multistream.read(source)).to.eventually.be.rejected()
+        .with.property('code', 'ERR_MSG_DATA_TOO_LONG')
+    })
+
+    it('should throw for a 0-length message', async () => {
+      const input = new Uint8Array(0)
+
+      const source = reader([uint8ArrayConcat([
+        Uint8Array.from(Varint.encode(input.length)),
+        input
+      ])])
+
+      await expect(Multistream.read(source)).to.eventually.be.rejected()
+        .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
+    })
+
     it('should be abortable', async () => {
       const input = uint8ArrayFromString(`TEST${Date.now()}`)
 

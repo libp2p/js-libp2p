@@ -12,6 +12,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { Source } from 'it-stream-types'
 import type { Reader } from 'it-reader'
 import type { MultistreamSelectInit } from '.'
+import { MAX_PROTOCOL_LENGTH } from './constants.js'
 
 const NewLine = uint8ArrayFromString('\n')
 
@@ -73,11 +74,11 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
 
   const buf = await pipe(
     input,
-    lp.decode({ onLength }),
+    lp.decode({ onLength, maxDataLength: MAX_PROTOCOL_LENGTH }),
     async (source) => await first(source)
   )
 
-  if (buf == null) {
+  if (buf == null || buf.length === 0) {
     throw errCode(new Error('no buffer returned'), 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 
