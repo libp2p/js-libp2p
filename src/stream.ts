@@ -44,20 +44,29 @@ export class WebRTCStream implements Stream {
    * User defined stream metadata
    */
   metadata: Record<string, any>;
+
   private readonly channel: RTCDataChannel;
   streamState = new StreamState();
 
+  // _src is exposed to the user via the `source` getter to read unwrapped protobuf
+  // data from the underlying datachannel.
   private readonly _src: Source<Uint8ArrayList>;
+
+  // _innersrc is used to push data from the underlying datachannel to the
+  // length prefix decoder and then the protobuf decoder.
   private readonly _innersrc = pushable();
+
+  // sink is used to write data to the remote. It takes care of wrapping
+  // data in a protobuf and adding the length prefix.
   sink: Sink<Uint8ArrayList | Uint8Array, Promise<void>>;
 
   // promises
+  // opened is resolved when the underlying datachannel is in the open state.
   opened: DeferredPromise<void> = defer();
+  // closeWritePromise is used to trigger a generator which can be used to close
+  // the sink.
   closeWritePromise: DeferredPromise<void> = defer();
-  closed: boolean = false;
   closeCb?: (stream: WebRTCStream) => void | undefined
-
-  // testing
 
   constructor(opts: StreamInitOpts) {
     this.channel = opts.channel;
@@ -70,7 +79,7 @@ export class WebRTCStream implements Stream {
         break;
       case 'closed':
       case 'closing':
-        this.closed = true;
+        this.streamState.state = StreamStates.CLOSED;
         if (!this.stat.timeline.close) {
           this.stat.timeline.close = new Date().getTime();
         }
@@ -99,6 +108,7 @@ export class WebRTCStream implements Stream {
     };
 
     const self = this;
+
     // reader pipe
     this.channel.onmessage = async ({data}) => {
       if (data.length == 0 || !data) {
@@ -184,9 +194,6 @@ export class WebRTCStream implements Stream {
    * Close a stream for reading and writing
    */
   close(): void {
-    if (this.closed) {
-      return;
-    }
     this.stat.timeline.close = new Date().getTime();
     this.streamState.state = StreamStates.CLOSED;
     this._innersrc.end();
@@ -238,9 +245,9 @@ export class WebRTCStream implements Stream {
    */
   reset(): void {
     this.stat = defaultStat(this.stat.direction);
-    this._sendFlag(pb.Message_Flag.RESET);
     const [currentState, nextState] = this.streamState.transition({direction: 'outbound', flag: pb.Message_Flag.RESET});
     if (currentState != nextState) {
+      this._sendFlag(pb.Message_Flag.RESET);
       this.close();
     }
   }
