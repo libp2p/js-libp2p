@@ -2,14 +2,13 @@ import {Stream, StreamStat, Direction} from '@libp2p/interface-connection';
 import {Source} from 'it-stream-types';
 import {Sink} from 'it-stream-types';
 import {pushable} from 'it-pushable';
-import * as lp from 'it-length-prefixed';
-import { pipe } from 'it-pipe';
+import * as lengthPrefixed from 'it-length-prefixed';
+import {pipe} from 'it-pipe';
 import defer, {DeferredPromise} from 'p-defer';
 import merge from 'it-merge';
 import {Uint8ArrayList} from 'uint8arraylist';
 import {logger} from '@libp2p/logger';
 import * as pb from '../proto_ts/message.js';
-import {concat} from 'uint8arrays/concat';
 
 const log = logger('libp2p:webrtc:stream');
 
@@ -46,21 +45,17 @@ export class WebRTCStream implements Stream {
    */
   metadata: Record<string, any>;
   private readonly channel: RTCDataChannel;
+  streamState = new StreamState();
 
   private readonly _src: Source<Uint8ArrayList>;
-  _innersrc = pushable();
+  private readonly _innersrc = pushable();
   sink: Sink<Uint8ArrayList | Uint8Array, Promise<void>>;
 
   // promises
   opened: DeferredPromise<void> = defer();
   closeWritePromise: DeferredPromise<void> = defer();
-  writeClosed: boolean = false;
-  readClosed: boolean = false;
   closed: boolean = false;
   closeCb?: (stream: WebRTCStream) => void | undefined
-
-  // read state
-  messageState: MessageState = new MessageState();
 
   // testing
 
@@ -106,21 +101,24 @@ export class WebRTCStream implements Stream {
     const self = this;
     // reader pipe
     this.channel.onmessage = async ({data}) => {
-      const res = new Uint8Array(data as ArrayBuffer);
-      if (res.length == 0) {
-        return
+      if (data.length == 0 || !data) {
+        return;
       }
-      this._innersrc.push(res)
+      this._innersrc.push(new Uint8Array(data as ArrayBufferLike))
     };
 
+    // pipe framed protobuf messages through
+    // a length prefixed decoder, and surface
+    // data from the `Message.message` field
+    // through a source.
     this._src = pipe(
       this._innersrc,
-      lp.decode(),
-      (source) => (async function * () {
+      lengthPrefixed.decode(),
+      (source) => (async function* () {
         for await (const buf of source) {
-          const { data } = self.processIncomingProtobuf(buf.subarray());
-          if (data) {
-            yield new Uint8ArrayList(data);
+          const {message} = self.processIncomingProtobuf(buf.subarray());
+          if (message) {
+            yield new Uint8ArrayList(message);
           }
         }
       })(),
@@ -139,7 +137,7 @@ export class WebRTCStream implements Stream {
 
   private async _sinkFn(src: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
     await this.opened.promise;
-    if (closed || this.writeClosed) {
+    if (this.streamState.state == StreamStates.CLOSED || this.streamState.state == StreamStates.WRITE_CLOSED) {
       return;
     }
 
@@ -152,40 +150,34 @@ export class WebRTCStream implements Stream {
     };
 
     for await (const buf of merge(closeWriteIterable, src)) {
-      if (closed || this.writeClosed) {
-        break;
+      const state = self.streamState.state;
+      if (state == StreamStates.CLOSED || state == StreamStates.WRITE_CLOSED) {
+        return;
       }
-      const res = buf.subarray();
       const msgbuf = pb.Message.toBinary({message: buf.subarray()});
-      const sendbuf = lp.encode.single(msgbuf)
-      log.trace(`[stream:${this.id}][${this.stat.direction}] sending message: length: ${res.length} ${res}, encoded through pb as ${msgbuf}`);
+      const sendbuf = lengthPrefixed.encode.single(msgbuf)
       this.channel.send(sendbuf.subarray())
     }
   }
 
-  processIncomingProtobuf(buffer: Uint8Array): { data: Uint8Array | undefined } {
-    log.trace(`[stream:${this.id}][${this.stat.direction}] received message: length: ${buffer.length} ${buffer}`);
+  processIncomingProtobuf(buffer: Uint8Array): pb.Message {
     const m = pb.Message.fromBinary(buffer);
-    log.trace(`[stream:${this.id}][${this.stat.direction}] received pb.Message: ${Object.entries(m)}`);
-    switch (m.flag) {
-      case undefined:
-        break; //regular message only
-      case pb.Message_Flag.STOP_SENDING:
-        log.trace('Remote has indicated, with "STOP_SENDING" flag, that it will discard any messages we send.');
-        this.closeWrite();
-        break;
-      case pb.Message_Flag.FIN:
-        log.trace('Remote has indicated, with "FIN" flag, that it will not send any further messages.');
-        this.closeRead();
-        break;
-      case pb.Message_Flag.RESET:
-        log.trace('Remote abruptly stopped sending, indicated with "RESET" flag.');
-        this.closeRead();
+    if (m.flag) {
+      const [currentState, nextState] = this.streamState.transition({direction: 'inbound', flag: m.flag!});
+      if (currentState != nextState) {
+        switch (nextState) {
+          case StreamStates.READ_CLOSED:
+            this._innersrc.end();
+            break;
+          case StreamStates.WRITE_CLOSED:
+            this.closeWritePromise.resolve();
+            break;
+          case StreamStates.CLOSED:
+            this.close();
+        }
+      }
     }
-    if (this.readClosed || this.closed) {
-      return { data: undefined };
-    }
-    return { data: m.message }
+    return m;
   }
 
   /**
@@ -196,9 +188,9 @@ export class WebRTCStream implements Stream {
       return;
     }
     this.stat.timeline.close = new Date().getTime();
-    this.closed = true;
-    this.readClosed = true;
-    this.writeClosed = true;
+    this.streamState.state = StreamStates.CLOSED;
+    this._innersrc.end();
+    this.closeWritePromise.resolve();
     this.channel.close();
     if (this.closeCb) {
       this.closeCb(this)
@@ -209,10 +201,12 @@ export class WebRTCStream implements Stream {
    * Close a stream for reading only
    */
   closeRead(): void {
-    this._sendFlag(pb.Message_Flag.STOP_SENDING);
-    this.readClosed = true;
-    (this._innersrc).end();
-    if (this.readClosed && this.writeClosed) {
+    const [currentState, nextState] = this.streamState.transition({direction: 'outbound', flag: pb.Message_Flag.STOP_SENDING});
+    if (currentState == StreamStates.OPEN || currentState == StreamStates.WRITE_CLOSED) {
+      this._sendFlag(pb.Message_Flag.STOP_SENDING);
+      (this._innersrc).end();
+    }
+    if (currentState != nextState && nextState == StreamStates.CLOSED) {
       this.close();
     }
   }
@@ -221,10 +215,12 @@ export class WebRTCStream implements Stream {
    * Close a stream for writing only
    */
   closeWrite(): void {
-    this._sendFlag(pb.Message_Flag.FIN);
-    this.writeClosed = true;
-    this.closeWritePromise.resolve();
-    if (this.readClosed && this.writeClosed) {
+    const [currentState, nextState] = this.streamState.transition({direction: 'outbound', flag: pb.Message_Flag.FIN});
+    if (currentState == StreamStates.OPEN || currentState == StreamStates.READ_CLOSED) {
+      this._sendFlag(pb.Message_Flag.FIN);
+      this.closeWritePromise.resolve();
+    }
+    if (currentState != nextState && nextState == StreamStates.CLOSED) {
       this.close();
     }
   }
@@ -243,9 +239,8 @@ export class WebRTCStream implements Stream {
   reset(): void {
     this.stat = defaultStat(this.stat.direction);
     this._sendFlag(pb.Message_Flag.RESET);
-    this.writeClosed = true;
-    this.closeWritePromise.resolve();
-    if (this.readClosed && this.writeClosed) {
+    const [currentState, nextState] = this.streamState.transition({direction: 'outbound', flag: pb.Message_Flag.RESET});
+    if (currentState != nextState) {
       this.close();
     }
   }
@@ -254,33 +249,79 @@ export class WebRTCStream implements Stream {
     try {
       log.trace('Sending flag: %s', flag.toString());
       const msgbuf = pb.Message.toBinary({flag: flag});
-      this.channel.send(lp.encode.single(msgbuf).subarray());
+      this.channel.send(lengthPrefixed.encode.single(msgbuf).subarray());
     } catch (e) {
       log.error(`Exception while sending flag ${flag}: ${e}`);
     }
   }
 }
 
-class MessageState {
-  public buffer: Uint8Array = new Uint8Array()
-  public messageSize: number = 0;
+/*
+ * State transitions for a stream
+ */
+type StreamStateInput = {
+  direction: 'inbound' | 'outbound',
+  flag: pb.Message_Flag,
+};
 
-  public bytesRemaining(): number {
-    return this.messageSize - this.buffer.length;
+export enum StreamStates {
+  OPEN,
+  READ_CLOSED,
+  WRITE_CLOSED,
+  CLOSED,
+}
+
+class StreamState {
+  state: StreamStates = StreamStates.OPEN
+
+  transition({direction, flag}: StreamStateInput): [StreamStates, StreamStates] {
+    let prev = this.state;
+    if (this.state == StreamStates.CLOSED) {
+      return [prev, StreamStates.CLOSED];
+    }
+    if (direction == 'inbound') {
+      switch (flag) {
+        case pb.Message_Flag.FIN:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.READ_CLOSED;
+          } else if (this.state == StreamStates.WRITE_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.STOP_SENDING:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.WRITE_CLOSED;
+          } else if (this.state == StreamStates.READ_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.RESET:
+          this.state = StreamStates.CLOSED;
+      }
+    } else {
+      switch (flag) {
+        case pb.Message_Flag.FIN:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.WRITE_CLOSED;
+          } else if (this.state == StreamStates.READ_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.STOP_SENDING:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.READ_CLOSED;
+          } else if (this.state == StreamStates.WRITE_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.RESET:
+          this.state = StreamStates.CLOSED;
+      }
+    }
+    return [prev, this.state];
   }
-
-  public hasMessage(): boolean {
-    return this.messageSize != 0 && this.buffer.length == this.messageSize;
-  }
-
-  public write(b: Uint8Array) {
-    this.buffer = concat([this.buffer, b]);
-  }
-
-  public clear() {
-    this.buffer = new Uint8Array();
-    this.messageSize = 0;
-  }
-
-
 }
