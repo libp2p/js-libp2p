@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.3...v1.0.4) (2022-11-01)
+
+
+### Documentation
+
+* Use textarea for multiaddr input in example ([#24](https://github.com/libp2p/js-libp2p-webtransport/issues/24)) ([14ce351](https://github.com/libp2p/js-libp2p-webtransport/commit/14ce351375dabb31df948005b20acff56acc483a))
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.2...v1.0.3) (2022-10-18)
 
 
