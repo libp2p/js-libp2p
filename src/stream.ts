@@ -126,7 +126,7 @@ export class WebRTCStream implements Stream {
       lengthPrefixed.decode(),
       (source) => (async function* () {
         for await (const buf of source) {
-          const {message} = self.processIncomingProtobuf(buf.subarray());
+          const message = self.processIncomingProtobuf(buf.subarray());
           if (message) {
             yield new Uint8ArrayList(message);
           }
@@ -170,7 +170,7 @@ export class WebRTCStream implements Stream {
     }
   }
 
-  processIncomingProtobuf(buffer: Uint8Array): pb.Message {
+  processIncomingProtobuf(buffer: Uint8Array): Uint8Array | undefined {
     const m = pb.Message.fromBinary(buffer);
     if (m.flag) {
       const [currentState, nextState] = this.streamState.transition({direction: 'inbound', flag: m.flag!});
@@ -187,7 +187,7 @@ export class WebRTCStream implements Stream {
         }
       }
     }
-    return m;
+    return m.message;
   }
 
   /**
