@@ -1,12 +1,13 @@
-import { Stream, StreamStat, Direction } from '@libp2p/interface-connection';
-import { Source } from 'it-stream-types';
-import { Sink } from 'it-stream-types';
-import { pushable, Pushable } from 'it-pushable';
-import defer, { DeferredPromise } from 'p-defer';
+import {Stream, StreamStat, Direction} from '@libp2p/interface-connection';
+import {Source} from 'it-stream-types';
+import {Sink} from 'it-stream-types';
+import {pushable} from 'it-pushable';
+import * as lengthPrefixed from 'it-length-prefixed';
+import {pipe} from 'it-pipe';
+import defer, {DeferredPromise} from 'p-defer';
 import merge from 'it-merge';
-import { Uint8ArrayList } from 'uint8arraylist';
-import { fromString } from 'uint8arrays/from-string';
-import { logger } from '@libp2p/logger';
+import {Uint8ArrayList} from 'uint8arraylist';
+import {logger} from '@libp2p/logger';
 import * as pb from '../proto_ts/message.js';
 
 const log = logger('libp2p:webrtc:stream');
@@ -43,20 +44,29 @@ export class WebRTCStream implements Stream {
    * User defined stream metadata
    */
   metadata: Record<string, any>;
-  private readonly channel: RTCDataChannel;
 
-  _src: Source<Uint8ArrayList> = pushable();
+  private readonly channel: RTCDataChannel;
+  streamState = new StreamState();
+
+  // _src is exposed to the user via the `source` getter to read unwrapped protobuf
+  // data from the underlying datachannel.
+  private readonly _src: Source<Uint8ArrayList>;
+
+  // _innersrc is used to push data from the underlying datachannel to the
+  // length prefix decoder and then the protobuf decoder.
+  private readonly _innersrc = pushable();
+
+  // sink is used to write data to the remote. It takes care of wrapping
+  // data in a protobuf and adding the length prefix.
   sink: Sink<Uint8ArrayList | Uint8Array, Promise<void>>;
 
   // promises
+  // opened is resolved when the underlying datachannel is in the open state.
   opened: DeferredPromise<void> = defer();
+  // closeWritePromise is used to trigger a generator which can be used to close
+  // the sink.
   closeWritePromise: DeferredPromise<void> = defer();
-  writeClosed: boolean = false;
-  readClosed: boolean = false;
-  closed: boolean = false;
   closeCb?: (stream: WebRTCStream) => void | undefined
-
-  // testing
 
   constructor(opts: StreamInitOpts) {
     this.channel = opts.channel;
@@ -69,7 +79,7 @@ export class WebRTCStream implements Stream {
         break;
       case 'closed':
       case 'closing':
-        this.closed = true;
+        this.streamState.state = StreamStates.CLOSED;
         if (!this.stat.timeline.close) {
           this.stat.timeline.close = new Date().getTime();
         }
@@ -88,41 +98,6 @@ export class WebRTCStream implements Stream {
       this.opened.resolve();
     };
 
-    this.channel.onmessage = async ({ data }) => {
-
-      let res: Uint8Array;
-      if (typeof data == 'string') {
-        res = fromString(data);
-      } else {
-        res = new Uint8Array(data as ArrayBuffer);
-      }
-      log.trace(`[stream:${this.id}][${this.stat.direction}] received message: length: ${res.length} ${res}`);
-      let m = pb.Message.fromBinary(res);
-      log(`[stream:${this.id}][${this.stat.direction}] received pb.Message: ${Object.entries(m)}`);
-      switch (m.flag) {
-        case undefined:
-          break; //regular message only
-        case pb.Message_Flag.STOP_SENDING:
-          log.trace('Remote has indicated, with "STOP_SENDING" flag, that it will discard any messages we send.');
-          this.closeWrite();
-          break;
-        case pb.Message_Flag.FIN:
-          log.trace('Remote has indicated, with "FIN" flag, that it will not send any further messages.');
-          this.closeRead();
-          break;
-        case pb.Message_Flag.RESET:
-          log.trace('Remote abruptly stopped sending, indicated with "RESET" flag.');
-          this.closeRead();
-      }
-      if (this.readClosed || this.closed) {
-        return;
-      }
-      if (m.message) {
-        log.trace('%s incoming message %s', this.id, m.message);
-        (this._src as Pushable<Uint8ArrayList>).push(new Uint8ArrayList(m.message));
-      }
-    };
-
     this.channel.onclose = (_evt) => {
       this.close();
     };
@@ -131,6 +106,34 @@ export class WebRTCStream implements Stream {
       let err = (evt as RTCErrorEvent).error;
       this.abort(err);
     };
+
+    const self = this;
+
+    // reader pipe
+    this.channel.onmessage = async ({data}) => {
+      if (data.length == 0 || !data) {
+        return;
+      }
+      this._innersrc.push(new Uint8Array(data as ArrayBufferLike))
+    };
+
+    // pipe framed protobuf messages through
+    // a length prefixed decoder, and surface
+    // data from the `Message.message` field
+    // through a source.
+    this._src = pipe(
+      this._innersrc,
+      lengthPrefixed.decode(),
+      (source) => (async function* () {
+        for await (const buf of source) {
+          const message = self.processIncomingProtobuf(buf.subarray());
+          if (message) {
+            yield new Uint8ArrayList(message);
+          }
+        }
+      })(),
+    )
+
   }
 
   // If user attempts to set a new source
@@ -144,12 +147,12 @@ export class WebRTCStream implements Stream {
 
   private async _sinkFn(src: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
     await this.opened.promise;
-    if (closed || this.writeClosed) {
+    if (this.streamState.state == StreamStates.CLOSED || this.streamState.state == StreamStates.WRITE_CLOSED) {
       return;
     }
 
-    let self = this;
-    let closeWriteIterable = {
+    const self = this;
+    const closeWriteIterable = {
       async *[Symbol.asyncIterator]() {
         await self.closeWritePromise.promise;
         yield new Uint8Array(0);
@@ -157,27 +160,44 @@ export class WebRTCStream implements Stream {
     };
 
     for await (const buf of merge(closeWriteIterable, src)) {
-      if (closed || this.writeClosed) {
-        break;
+      const state = self.streamState.state;
+      if (state == StreamStates.CLOSED || state == StreamStates.WRITE_CLOSED) {
+        return;
       }
-      let res = buf.subarray();
-      let send_buf = pb.Message.toBinary({ message: buf.subarray() });
-      log.trace(`[stream:${this.id}][${this.stat.direction}] sending message: length: ${res.length} ${res}, encoded through pb as ${send_buf}`);
-      this.channel.send(send_buf);
+      const msgbuf = pb.Message.toBinary({message: buf.subarray()});
+      const sendbuf = lengthPrefixed.encode.single(msgbuf)
+      this.channel.send(sendbuf.subarray())
     }
+  }
+
+  processIncomingProtobuf(buffer: Uint8Array): Uint8Array | undefined {
+    const m = pb.Message.fromBinary(buffer);
+    if (m.flag) {
+      const [currentState, nextState] = this.streamState.transition({direction: 'inbound', flag: m.flag!});
+      if (currentState != nextState) {
+        switch (nextState) {
+          case StreamStates.READ_CLOSED:
+            this._innersrc.end();
+            break;
+          case StreamStates.WRITE_CLOSED:
+            this.closeWritePromise.resolve();
+            break;
+          case StreamStates.CLOSED:
+            this.close();
+        }
+      }
+    }
+    return m.message;
   }
 
   /**
    * Close a stream for reading and writing
    */
   close(): void {
-    if (this.closed) {
-      return;
-    }
     this.stat.timeline.close = new Date().getTime();
-    this.closed = true;
-    this.readClosed = true;
-    this.writeClosed = true;
+    this.streamState.state = StreamStates.CLOSED;
+    this._innersrc.end();
+    this.closeWritePromise.resolve();
     this.channel.close();
     if (this.closeCb) {
       this.closeCb(this)
@@ -188,10 +208,12 @@ export class WebRTCStream implements Stream {
    * Close a stream for reading only
    */
   closeRead(): void {
-    this._sendFlag(pb.Message_Flag.STOP_SENDING);
-    this.readClosed = true;
-    (this.source as Pushable<Uint8ArrayList>).end();
-    if (this.readClosed && this.writeClosed) {
+    const [currentState, nextState] = this.streamState.transition({direction: 'outbound', flag: pb.Message_Flag.STOP_SENDING});
+    if (currentState == StreamStates.OPEN || currentState == StreamStates.WRITE_CLOSED) {
+      this._sendFlag(pb.Message_Flag.STOP_SENDING);
+      (this._innersrc).end();
+    }
+    if (currentState != nextState && nextState == StreamStates.CLOSED) {
       this.close();
     }
   }
@@ -200,10 +222,12 @@ export class WebRTCStream implements Stream {
    * Close a stream for writing only
    */
   closeWrite(): void {
-    this._sendFlag(pb.Message_Flag.FIN);
-    this.writeClosed = true;
-    this.closeWritePromise.resolve();
-    if (this.readClosed && this.writeClosed) {
+    const [currentState, nextState] = this.streamState.transition({direction: 'outbound', flag: pb.Message_Flag.FIN});
+    if (currentState == StreamStates.OPEN || currentState == StreamStates.READ_CLOSED) {
+      this._sendFlag(pb.Message_Flag.FIN);
+      this.closeWritePromise.resolve();
+    }
+    if (currentState != nextState && nextState == StreamStates.CLOSED) {
       this.close();
     }
   }
@@ -221,20 +245,90 @@ export class WebRTCStream implements Stream {
    */
   reset(): void {
     this.stat = defaultStat(this.stat.direction);
-    this._sendFlag(pb.Message_Flag.RESET);
-    this.writeClosed = true;
-    this.closeWritePromise.resolve();
-    if (this.readClosed && this.writeClosed) {
+    const [currentState, nextState] = this.streamState.transition({direction: 'outbound', flag: pb.Message_Flag.RESET});
+    if (currentState != nextState) {
+      this._sendFlag(pb.Message_Flag.RESET);
       this.close();
     }
   }
 
   private _sendFlag(flag: pb.Message_Flag): void {
     try {
-      log('Sending flag: %s', flag.toString());
-      this.channel.send(pb.Message.toBinary({ flag: flag }));
+      log.trace('Sending flag: %s', flag.toString());
+      const msgbuf = pb.Message.toBinary({flag: flag});
+      this.channel.send(lengthPrefixed.encode.single(msgbuf).subarray());
     } catch (e) {
       log.error(`Exception while sending flag ${flag}: ${e}`);
     }
+  }
+}
+
+/*
+ * State transitions for a stream
+ */
+type StreamStateInput = {
+  direction: 'inbound' | 'outbound',
+  flag: pb.Message_Flag,
+};
+
+export enum StreamStates {
+  OPEN,
+  READ_CLOSED,
+  WRITE_CLOSED,
+  CLOSED,
+}
+
+class StreamState {
+  state: StreamStates = StreamStates.OPEN
+
+  transition({direction, flag}: StreamStateInput): [StreamStates, StreamStates] {
+    let prev = this.state;
+    if (this.state == StreamStates.CLOSED) {
+      return [prev, StreamStates.CLOSED];
+    }
+    if (direction == 'inbound') {
+      switch (flag) {
+        case pb.Message_Flag.FIN:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.READ_CLOSED;
+          } else if (this.state == StreamStates.WRITE_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.STOP_SENDING:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.WRITE_CLOSED;
+          } else if (this.state == StreamStates.READ_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.RESET:
+          this.state = StreamStates.CLOSED;
+      }
+    } else {
+      switch (flag) {
+        case pb.Message_Flag.FIN:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.WRITE_CLOSED;
+          } else if (this.state == StreamStates.READ_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.STOP_SENDING:
+          if (this.state == StreamStates.OPEN) {
+            this.state = StreamStates.READ_CLOSED;
+          } else if (this.state == StreamStates.WRITE_CLOSED) {
+            this.state = StreamStates.CLOSED;
+          }
+          break;
+
+        case pb.Message_Flag.RESET:
+          this.state = StreamStates.CLOSED;
+      }
+    }
+    return [prev, this.state];
   }
 }

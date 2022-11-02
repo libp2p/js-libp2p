@@ -27,7 +27,7 @@ export interface WebRTCTransportComponents {
 export class WebRTCTransport implements Transport {
   private components: WebRTCTransportComponents
 
-  constructor (components: WebRTCTransportComponents) {
+  constructor(components: WebRTCTransportComponents) {
     this.components = components
   }
 
@@ -70,7 +70,9 @@ export class WebRTCTransport implements Transport {
     } as any);
     const peerConnection = new RTCPeerConnection({certificates: [certificate]});
 
-    // create data channel
+    // create data channel for running the noise handshake. Once the data channel is opened,
+    // the remote will initiate the noise handshake. This is used to confirm the identity of
+    // the peer.
     const dataChannelOpenPromise = defer();
     const handshakeDataChannel = peerConnection.createDataChannel('handshake', {negotiated: true, id: 0});
     const handhsakeTimeout = setTimeout(() => {
@@ -82,22 +84,24 @@ export class WebRTCTransport implements Transport {
       clearTimeout(handhsakeTimeout)
       dataChannelOpenPromise.resolve();
     }
+
     handshakeDataChannel.onerror = (ev: Event) => {
       clearTimeout(handhsakeTimeout)
       log.error('Error opening a data channel for handshaking: %s', ev.toString());
       dataChannelOpenPromise.reject(dataChannelError('data', `error opening datachannel: ${ev.toString()}`));
     };
-    // create offer sdp
+
+
     let offerSdp = await peerConnection.createOffer();
-    // generate random string for ufrag
-    const ufrag = genUuid().replaceAll('-', '');
-    // munge sdp with ufrag = pwd
+    const ufrag = "libp2p+webrtc+v1/" + genUuid().replaceAll('-', '');
+    // munge sdp with ufrag = pwd. This allows the remote to respond to
+    // STUN messages without performing an actual SDP exchange. This is because
+    // it can infer the passwd field by reading the USERNAME attribute
+    // of the STUN message.
     offerSdp = sdp.munge(offerSdp, ufrag);
-    // set local description
     await peerConnection.setLocalDescription(offerSdp);
     // construct answer sdp from multiaddr
     const answerSdp = sdp.fromMultiAddr(ma, ufrag);
-    // set remote description
     await peerConnection.setRemoteDescription(answerSdp);
     // wait for peerconnection.onopen to fire, or for the datachannel to open
     await dataChannelOpenPromise.promise;
@@ -135,6 +139,8 @@ export class WebRTCTransport implements Transport {
     })
 
     const muxerFactory = new DataChannelMuxerFactory(peerConnection)
+    // For outbound connections, the remote is expected to start the noise handshake.
+    // Therefore, we need to secure an inbound noise connection from the remote.
     await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId);
     const upgraded = await options.upgrader.upgradeOutbound(maConn, {skipProtection: true, skipEncryption: true, muxerFactory})
     return upgraded
@@ -153,7 +159,7 @@ export class WebRTCTransport implements Transport {
     const localFpString = localFingerprint.value!.replaceAll(':', '');
     const localFpArray = uint8arrayFromString(localFpString, 'hex');
     if (localFingerprint.algorithm! != 'sha-256') {
-        throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
+      throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
     }
     const local = multihashes.encode(localFpArray, multihashes.names['sha2-256']);
 
