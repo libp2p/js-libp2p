@@ -1,8 +1,8 @@
-import { inappropriateMultiaddr, invalidArgument, unsupportedHashAlgorithm } from './error.js';
-import { logger } from '@libp2p/logger';
-import { Multiaddr } from '@multiformats/multiaddr';
+import {inappropriateMultiaddr, invalidArgument, unsupportedHashAlgorithm} from './error.js';
+import {logger} from '@libp2p/logger';
+import {Multiaddr} from '@multiformats/multiaddr';
 import * as multihashes from 'multihashes';
-import { bases } from 'multiformats/basics';
+import {bases} from 'multiformats/basics';
 
 const log = logger('libp2p:webrtc:sdp');
 
@@ -41,30 +41,33 @@ export function certhash(ma: Multiaddr): string {
   }
 }
 
+export function decodeCerthash(certhash: string) {
+  const mbdecoded = mbdecoder.decode(certhash);
+  return multihashes.decode(mbdecoded);
+}
+
 export function certhashToFingerprint(ma: Multiaddr): string[] {
-  const certhash_value = certhash(ma);
   // certhash_value is a multibase encoded multihash encoded string
-  const mbdecoded = mbdecoder.decode(certhash_value);
-  const mhdecoded = multihashes.decode(mbdecoded);
-  let prefix = '';
-  switch (mhdecoded.name) {
-    case 'md5':
-      prefix = 'md5';
-      break;
-    case 'sha2-256':
-      prefix = 'sha-256';
-      break;
-    case 'sha2-512':
-      prefix = 'sha-512';
-      break;
-    default:
-      throw unsupportedHashAlgorithm(mhdecoded.name);
-  }
+  const mhdecoded = decodeCerthash(certhash(ma));
+  let prefix = toSupportedHashFunction(mhdecoded.name);
 
   const fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
   const fpSdp = fp.match(/.{1,2}/g)!.join(':');
 
   return [`${prefix.toUpperCase()} ${fpSdp.toUpperCase()}`, fp];
+}
+
+export function toSupportedHashFunction(name: multihashes.HashName): string {
+  switch (name) {
+    case 'sha1':
+      return 'sha-1'
+    case 'sha2-256':
+      return 'sha-256';
+    case 'sha2-512':
+      return 'sha-512';
+    default:
+      throw unsupportedHashAlgorithm(name);
+  }
 }
 
 function ma2sdp(ma: Multiaddr, ufrag: string): string {
