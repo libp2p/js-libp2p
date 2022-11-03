@@ -34,7 +34,7 @@ export default {
           mplex()
         ],
         connectionEncryption: [
-          () => noise(),
+          noise(),
           plaintext()
         ],
         relay: {
