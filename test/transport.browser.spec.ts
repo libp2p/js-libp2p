@@ -5,7 +5,7 @@ import { mockUpgrader } from '@libp2p/interface-mocks'
 import { CreateListenerOptions, symbol } from '@libp2p/interface-transport'
 import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
 import { SERVER_MULTIADDR } from './server-multiaddr'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { createLibp2p } from 'libp2p'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { pipe } from 'it-pipe'
@@ -110,7 +110,7 @@ describe('Transport interoperability tests', () => {
     }
     const node = await createLibp2p({
       transports: [webRTC()],
-      connectionEncryption: [() => new Noise()]
+      connectionEncryption: [noise({})]
     })
     await node.start()
     const ma = multiaddr(SERVER_MULTIADDR)

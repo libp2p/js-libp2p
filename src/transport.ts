@@ -2,7 +2,7 @@ import * as sdp from './sdp.js'
 import * as p from '@libp2p/peer-id'
 import { WebRTCDialOptions } from './options.js'
 import { WebRTCStream } from './stream.js'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise as Noise } from '@chainsafe/libp2p-noise'
 import { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { CreateListenerOptions, Listener, symbol, Transport } from '@libp2p/interface-transport'
@@ -117,7 +117,8 @@ export class WebRTCTransport implements Transport {
     const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, remoteCerthash.name, ma)
     // Since we use the default crypto interface and do not use a static key or early data,
     // we pass in undefined for these parameters.
-    const noise = new Noise(undefined, undefined, undefined, fingerprintsPrologue)
+    const noiseInit = { staticNoiseKey: undefined, extensions: undefined, crypto: undefined, prologueBytes: fingerprintsPrologue };
+    const noise = Noise(noiseInit)()
     const wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'outbound', timeline: { open: 1 } } })
     const wrappedDuplex = {
       ...wrappedChannel,
