@@ -8,7 +8,7 @@ module.exports = {
     'compat',
     'prettier',
     'unused-imports',
-    'react-perf',
+    'react-perf'
   ],
   ignorePatterns: ['**/proto_ts/**/*'],
   rules: {
@@ -29,7 +29,7 @@ module.exports = {
     camelcase: 0,
     'react-hooks/exhaustive-deps': 1,
     'no-use-before-define': 'off',
-    '@typescript-eslint/no-use-before-define': ['error'],
+    '@typescript-eslint/no-use-before-define': ['error']
   },
   extends: [
     'react-app',
@@ -39,6 +39,6 @@ module.exports = {
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:import/typescript',
-    'plugin:markdown/recommended',
-  ],
-};
+    'plugin:markdown/recommended'
+  ]
+}

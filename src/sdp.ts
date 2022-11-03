@@ -1,80 +1,80 @@
-import {inappropriateMultiaddr, invalidArgument, unsupportedHashAlgorithm} from './error.js';
-import {logger} from '@libp2p/logger';
-import {Multiaddr} from '@multiformats/multiaddr';
-import * as multihashes from 'multihashes';
-import {bases} from 'multiformats/basics';
+import { inappropriateMultiaddr, invalidArgument, unsupportedHashAlgorithm } from './error.js'
+import { logger } from '@libp2p/logger'
+import { Multiaddr } from '@multiformats/multiaddr'
+import * as multihashes from 'multihashes'
+import { bases } from 'multiformats/basics'
 
-const log = logger('libp2p:webrtc:sdp');
+const log = logger('libp2p:webrtc:sdp')
 
 export const mbdecoder: any = (function () {
-  const decoders = Object.values(bases).map((b) => b.decoder);
-  let acc = decoders[0].or(decoders[1]);
-  decoders.slice(2).forEach((d) => (acc = acc.or(d)));
-  return acc;
-})();
+  const decoders = Object.values(bases).map((b) => b.decoder)
+  let acc = decoders[0].or(decoders[1])
+  decoders.slice(2).forEach((d) => (acc = acc.or(d)))
+  return acc
+})()
 
-const CERTHASH_CODE: number = 466;
+const CERTHASH_CODE: number = 466
 
-function ipv(ma: Multiaddr): string {
+function ipv (ma: Multiaddr): string {
   for (const proto of ma.protoNames()) {
     if (proto.startsWith('ip')) {
-      return proto.toUpperCase();
+      return proto.toUpperCase()
     }
   }
-  log('Warning: multiaddr does not appear to contain IP4 or IP6.', ma);
-  return 'IP6';
+  log('Warning: multiaddr does not appear to contain IP4 or IP6.', ma)
+  return 'IP6'
 }
-function ip(ma: Multiaddr): string {
-  return ma.toOptions().host;
+function ip (ma: Multiaddr): string {
+  return ma.toOptions().host
 }
-function port(ma: Multiaddr): number {
-  return ma.toOptions().port;
+function port (ma: Multiaddr): number {
+  return ma.toOptions().port
 }
 
-export function certhash(ma: Multiaddr): string {
-  const tups = ma.stringTuples();
-  const certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0];
+export function certhash (ma: Multiaddr): string {
+  const tups = ma.stringTuples()
+  const certhash_value = tups.filter((tup) => tup[0] == CERTHASH_CODE).map((tup) => tup[1])[0]
   if (certhash_value) {
-    return certhash_value;
+    return certhash_value
   } else {
-    throw inappropriateMultiaddr("Couldn't find a certhash component of multiaddr:" + ma.toString());
+    throw inappropriateMultiaddr("Couldn't find a certhash component of multiaddr:" + ma.toString())
   }
 }
 
-export function decodeCerthash(certhash: string) {
-  const mbdecoded = mbdecoder.decode(certhash);
-  return multihashes.decode(mbdecoded);
+export function decodeCerthash (certhash: string) {
+  const mbdecoded = mbdecoder.decode(certhash)
+  return multihashes.decode(mbdecoded)
 }
 
-export function certhashToFingerprint(ma: Multiaddr): string[] {
+export function certhashToFingerprint (ma: Multiaddr): string[] {
   // certhash_value is a multibase encoded multihash encoded string
-  const mhdecoded = decodeCerthash(certhash(ma));
-  let prefix = toSupportedHashFunction(mhdecoded.name);
+  const mhdecoded = decodeCerthash(certhash(ma))
+  const prefix = toSupportedHashFunction(mhdecoded.name)
 
-  const fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-  const fpSdp = fp.match(/.{1,2}/g)!.join(':');
+  const fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+  const fpSdp = fp.match(/.{1,2}/g)!.join(':')
 
-  return [`${prefix.toUpperCase()} ${fpSdp.toUpperCase()}`, fp];
+  return [`${prefix.toUpperCase()} ${fpSdp.toUpperCase()}`, fp]
 }
 
-export function toSupportedHashFunction(name: multihashes.HashName): string {
+export function toSupportedHashFunction (name: multihashes.HashName): string {
   switch (name) {
     case 'sha1':
       return 'sha-1'
     case 'sha2-256':
-      return 'sha-256';
+      return 'sha-256'
     case 'sha2-512':
-      return 'sha-512';
+      return 'sha-512'
     default:
-      throw unsupportedHashAlgorithm(name);
+      throw unsupportedHashAlgorithm(name)
   }
 }
 
-function ma2sdp(ma: Multiaddr, ufrag: string): string {
-  const IP = ip(ma);
-  const IPVERSION = ipv(ma);
-  const PORT = port(ma);
-  const [CERTFP, _] = certhashToFingerprint(ma);
+function ma2sdp (ma: Multiaddr, ufrag: string): string {
+  const IP = ip(ma)
+  const IPVERSION = ipv(ma)
+  const PORT = port(ma)
+  const [CERTFP, _] = certhashToFingerprint(ma)
   return `v=0
 o=- 0 0 IN ${IPVERSION} ${IP}
 s=-
@@ -89,21 +89,21 @@ a=ice-pwd:${ufrag}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
 a=max-message-size:100000
-a=candidate:1467250027 1 UDP 1467250027 ${IP} ${PORT} typ host\r\n`;
+a=candidate:1467250027 1 UDP 1467250027 ${IP} ${PORT} typ host\r\n`
 }
 
-export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+export function fromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   return {
     type: 'answer',
-    sdp: ma2sdp(ma, ufrag),
-  };
+    sdp: ma2sdp(ma, ufrag)
+  }
 }
 
-export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
+export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp) {
-    desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n').replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n');
-    return desc;
+    desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n').replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n')
+    return desc
   } else {
-    throw invalidArgument("Can't munge a missing SDP");
+    throw invalidArgument("Can't munge a missing SDP")
   }
 }

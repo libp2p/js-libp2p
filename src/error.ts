@@ -1,10 +1,10 @@
-import { default as createError } from 'err-code';
-import { Direction } from '@libp2p/interface-connection';
+import { default as createError } from 'err-code'
+import { Direction } from '@libp2p/interface-connection'
 
 export class WebRTCTransportError extends Error {
-  constructor(msg: string) {
-    super('WebRTC transport error: ' + msg);
-    this.name = 'WebRTCTransportError';
+  constructor (msg: string) {
+    super('WebRTC transport error: ' + msg)
+    this.name = 'WebRTCTransportError'
   }
 }
 
@@ -21,91 +21,91 @@ export enum codes {
 }
 
 export class ConnectionClosedError extends WebRTCTransportError {
-  constructor(state: RTCPeerConnectionState, msg: string) {
-    super(`peerconnection moved to state: ${state}:` + msg);
-    this.name = 'WebRTC/ConnectionClosed';
+  constructor (state: RTCPeerConnectionState, msg: string) {
+    super(`peerconnection moved to state: ${state}:` + msg)
+    this.name = 'WebRTC/ConnectionClosed'
   }
 }
 
-export function connectionClosedError(state: RTCPeerConnectionState, msg: string) {
+export function connectionClosedError (state: RTCPeerConnectionState, msg: string) {
   return createError(new ConnectionClosedError(state, msg), codes.ERR_CONNECTION_CLOSED)
 }
 
 export class InvalidArgumentError extends WebRTCTransportError {
-  constructor(msg: string) {
-    super('There was a problem with a provided argument: ' + msg);
-    this.name = 'WebRTC/InvalidArgumentError';
+  constructor (msg: string) {
+    super('There was a problem with a provided argument: ' + msg)
+    this.name = 'WebRTC/InvalidArgumentError'
   }
 }
 
-export function unsupportedHashAlgorithm(algorithm: string) {
-  return createError(new UnsupportedHashAlgorithmError(algorithm), codes.ERR_HASH_NOT_SUPPORTED);
+export function unsupportedHashAlgorithm (algorithm: string) {
+  return createError(new UnsupportedHashAlgorithmError(algorithm), codes.ERR_HASH_NOT_SUPPORTED)
 }
 
 export class UnsupportedHashAlgorithmError extends WebRTCTransportError {
-  constructor(algo: string) {
-    let msg = `unsupported hash algorithm: ${algo}`;
-    super(msg);
-    this.name = 'WebRTC/UnsupportedHashAlgorithmError';
+  constructor (algo: string) {
+    const msg = `unsupported hash algorithm: ${algo}`
+    super(msg)
+    this.name = 'WebRTC/UnsupportedHashAlgorithmError'
   }
 }
 
-export function invalidArgument(msg: string) {
-  return createError(new InvalidArgumentError(msg), codes.ERR_INVALID_PARAMETERS);
+export function invalidArgument (msg: string) {
+  return createError(new InvalidArgumentError(msg), codes.ERR_INVALID_PARAMETERS)
 }
 
 export class UnimplementedError extends WebRTCTransportError {
-  constructor(methodName: string) {
-    super('A method (' + methodName + ') was called though it has been intentionally left unimplemented.');
-    this.name = 'WebRTC/UnimplementedError';
+  constructor (methodName: string) {
+    super('A method (' + methodName + ') was called though it has been intentionally left unimplemented.')
+    this.name = 'WebRTC/UnimplementedError'
   }
 }
 
-export function unimplemented(methodName: string) {
-  return createError(new UnimplementedError(methodName), codes.ERR_NOT_IMPLEMENTED);
+export function unimplemented (methodName: string) {
+  return createError(new UnimplementedError(methodName), codes.ERR_NOT_IMPLEMENTED)
 }
 
 export class InappropriateMultiaddrError extends WebRTCTransportError {
-  constructor(msg: string) {
-    super('There was a problem with the Multiaddr which was passed in: ' + msg);
-    this.name = 'WebRTC/InappropriateMultiaddrError';
+  constructor (msg: string) {
+    super('There was a problem with the Multiaddr which was passed in: ' + msg)
+    this.name = 'WebRTC/InappropriateMultiaddrError'
   }
 }
 
-export function inappropriateMultiaddr(msg: string) {
-  return createError(new InappropriateMultiaddrError(msg), codes.ERR_INVALID_MULTIADDR);
+export function inappropriateMultiaddr (msg: string) {
+  return createError(new InappropriateMultiaddrError(msg), codes.ERR_INVALID_MULTIADDR)
 }
 
 export class OperationAbortedError extends WebRTCTransportError {
-  constructor(context: string, abortReason: string) {
-    super(`Signalled to abort because (${abortReason}})${context}`);
-    this.name = 'WebRTC/OperationAbortedError';
+  constructor (context: string, abortReason: string) {
+    super(`Signalled to abort because (${abortReason}})${context}`)
+    this.name = 'WebRTC/OperationAbortedError'
   }
 }
 
-export function operationAborted(context: string, reason: string) {
-  return createError(new OperationAbortedError(context, reason), codes.ERR_ALREADY_ABORTED);
+export function operationAborted (context: string, reason: string) {
+  return createError(new OperationAbortedError(context, reason), codes.ERR_ALREADY_ABORTED)
 }
 
 export class DataChannelError extends WebRTCTransportError {
-  constructor(streamLabel: string, errorMessage: string) {
-    super(`[stream: ${streamLabel}] data channel error: ${errorMessage}`);
-    this.name = 'WebRTC/DataChannelError';
+  constructor (streamLabel: string, errorMessage: string) {
+    super(`[stream: ${streamLabel}] data channel error: ${errorMessage}`)
+    this.name = 'WebRTC/DataChannelError'
   }
 }
 
-export function dataChannelError(streamLabel: string, msg: string) {
-  return createError(new DataChannelError(streamLabel, msg), codes.ERR_DATA_CHANNEL);
+export function dataChannelError (streamLabel: string, msg: string) {
+  return createError(new DataChannelError(streamLabel, msg), codes.ERR_DATA_CHANNEL)
 }
 
 export class StreamingLimitationError extends WebRTCTransportError {
-  constructor(msg: string) {
-    super(msg);
-    this.name = 'WebRTC/StreamingLimitationError';
+  constructor (msg: string) {
+    super(msg)
+    this.name = 'WebRTC/StreamingLimitationError'
   }
 }
 
-export function overStreamLimit(dir: Direction, proto: string) {
-  let code = dir == 'inbound' ? codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS : codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS;
-  return createError(new StreamingLimitationError(`${dir} stream limit reached for protocol - ${proto}`), code);
+export function overStreamLimit (dir: Direction, proto: string) {
+  const code = dir == 'inbound' ? codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS : codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS
+  return createError(new StreamingLimitationError(`${dir} stream limit reached for protocol - ${proto}`), code)
 }

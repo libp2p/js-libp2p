@@ -1,1 +1,1 @@
-export var SERVER_MULTIADDR = '';
+export var SERVER_MULTIADDR = ''
