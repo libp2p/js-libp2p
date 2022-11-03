@@ -13,12 +13,15 @@ import defer from 'p-defer';
 import {fromString as uint8arrayFromString} from 'uint8arrays/from-string';
 import {concat} from 'uint8arrays/concat';
 import * as multihashes from 'multihashes';
-import {dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithm} from './error.js';
+import {dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument} from './error.js';
 import {WebRTCMultiaddrConnection} from './maconn.js';
 import {DataChannelMuxerFactory} from './muxer.js';
 
 const log = logger('libp2p:webrtc:transport');
 const HANDSHAKE_TIMEOUT_MS = 10000;
+const WEBRTC_CODE: number = 280;
+const CERTHASH_CODE: number = 466;
+
 
 export interface WebRTCTransportComponents {
   peerId: PeerId
@@ -59,14 +62,15 @@ export class WebRTCTransport implements Transport {
       throw inappropriateMultiaddr("we need to have the remote's PeerId");
     }
 
+    const remoteCerthash = sdp.decodeCerthash(sdp.certhash(ma))
     // ECDSA is preferred over RSA here. From our testing we find that P-256 elliptic
     // curve is supported by Pion, webrtc-rs, as well as Chromium (P-228 and P-384
-    // was not supported in Chromium). We fix the hash algorith to SHA-256 for
-    // reasons documented here: https://github.com/libp2p/specs/pull/412#discussion_r968327480
+    // was not supported in Chromium). We use the same hash function as found in the
+    // multiaddr if it is supported.
     const certificate = await RTCPeerConnection.generateCertificate({
       name: 'ECDSA',
       namedCurve: 'P-256',
-      hash: 'SHA-256',
+      hash: sdp.toSupportedHashFunction(remoteCerthash.name),
     } as any);
     const peerConnection = new RTCPeerConnection({certificates: [certificate]});
 
@@ -112,7 +116,7 @@ export class WebRTCTransport implements Transport {
     // do noise handshake
     //set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
     //  <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
-    const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, ma);
+    const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, remoteCerthash.name, ma);
     // Since we use the default crypto interface and do not use a static key or early data,
     // we pass in undefined for these parameters.
     const noise = new Noise(undefined, undefined, undefined, fingerprintsPrologue);
@@ -146,7 +150,7 @@ export class WebRTCTransport implements Transport {
     return upgraded
   }
 
-  private generateNoisePrologue(pc: RTCPeerConnection, ma: Multiaddr): Uint8Array {
+  private generateNoisePrologue(pc: RTCPeerConnection, hashName: multihashes.HashName, ma: Multiaddr): Uint8Array {
     if (pc.getConfiguration().certificates?.length === 0) {
       throw invalidArgument('no local certificate');
     }
@@ -158,10 +162,7 @@ export class WebRTCTransport implements Transport {
     const localFingerprint = localCert.getFingerprints()[0];
     const localFpString = localFingerprint.value!.replaceAll(':', '');
     const localFpArray = uint8arrayFromString(localFpString, 'hex');
-    if (localFingerprint.algorithm! != 'sha-256') {
-      throw unsupportedHashAlgorithm(localFingerprint.algorithm || 'none');
-    }
-    const local = multihashes.encode(localFpArray, multihashes.names['sha2-256']);
+    const local = multihashes.encode(localFpArray, multihashes.names[hashName]);
 
     const remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(ma));
     const prefix = uint8arrayFromString('libp2p-webrtc-noise:');
@@ -170,9 +171,6 @@ export class WebRTCTransport implements Transport {
     return concat([prefix, local, remote]);
   }
 }
-
-const WEBRTC_CODE: number = 280;
-const CERTHASH_CODE: number = 466;
 
 function validMa(ma: Multiaddr): boolean {
   const codes = ma.protoCodes();
