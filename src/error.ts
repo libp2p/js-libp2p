@@ -1,4 +1,4 @@
-import { default as createError } from 'err-code'
+import errCode from 'err-code'
 import { Direction } from '@libp2p/interface-connection'
 
 export class WebRTCTransportError extends Error {
@@ -11,13 +11,14 @@ export class WebRTCTransportError extends Error {
 export enum codes {
   ERR_ALREADY_ABORTED = 'ERR_ALREADY_ABORTED',
   ERR_DATA_CHANNEL = 'ERR_DATA_CHANNEL',
-  ERR_INVALID_MULTIADDR = 'ERR_INVALID_MULTIADDR',
-  ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS',
+  ERR_CONNECTION_CLOSED = 'ERR_CONNECTION_CLOSED',
   ERR_HASH_NOT_SUPPORTED = 'ERR_HASH_NOT_SUPPORTED',
+  ERR_INVALID_MULTIADDR = 'ERR_INVALID_MULTIADDR',
+  ERR_INVALID_FINGERPRINT = 'ERR_INVALID_FINGERPRINT',
+  ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS',
   ERR_NOT_IMPLEMENTED = 'ERR_NOT_IMPLEMENTED',
   ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS',
   ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS',
-  ERR_CONNECTION_CLOSED = 'ERR_CONNECTION_CLOSED',
 }
 
 export class ConnectionClosedError extends WebRTCTransportError {
@@ -28,7 +29,7 @@ export class ConnectionClosedError extends WebRTCTransportError {
 }
 
 export function connectionClosedError (state: RTCPeerConnectionState, msg: string) {
-  return createError(new ConnectionClosedError(state, msg), codes.ERR_CONNECTION_CLOSED)
+  return errCode(new ConnectionClosedError(state, msg), codes.ERR_CONNECTION_CLOSED)
 }
 
 export class InvalidArgumentError extends WebRTCTransportError {
@@ -39,7 +40,7 @@ export class InvalidArgumentError extends WebRTCTransportError {
 }
 
 export function unsupportedHashAlgorithm (algorithm: string) {
-  return createError(new UnsupportedHashAlgorithmError(algorithm), codes.ERR_HASH_NOT_SUPPORTED)
+  return errCode(new UnsupportedHashAlgorithmError(algorithm), codes.ERR_HASH_NOT_SUPPORTED)
 }
 
 export class UnsupportedHashAlgorithmError extends WebRTCTransportError {
@@ -51,7 +52,7 @@ export class UnsupportedHashAlgorithmError extends WebRTCTransportError {
 }
 
 export function invalidArgument (msg: string) {
-  return createError(new InvalidArgumentError(msg), codes.ERR_INVALID_PARAMETERS)
+  return errCode(new InvalidArgumentError(msg), codes.ERR_INVALID_PARAMETERS)
 }
 
 export class UnimplementedError extends WebRTCTransportError {
@@ -62,7 +63,18 @@ export class UnimplementedError extends WebRTCTransportError {
 }
 
 export function unimplemented (methodName: string) {
-  return createError(new UnimplementedError(methodName), codes.ERR_NOT_IMPLEMENTED)
+  return errCode(new UnimplementedError(methodName), codes.ERR_NOT_IMPLEMENTED)
+}
+
+export class InvalidFingerprintError extends WebRTCTransportError {
+  constructor (fingerprint: string, source: string) {
+    super(`Invalid fingerprint "${fingerprint}" within ${source}`)
+    this.name = 'WebRTC/InvalidFingerprintError'
+  }
+}
+
+export function invalidFingerprint (fingerprint: string, source: string) {
+  return errCode(new InvalidFingerprintError(fingerprint, source), codes.ERR_INVALID_FINGERPRINT)
 }
 
 export class InappropriateMultiaddrError extends WebRTCTransportError {
@@ -73,7 +85,7 @@ export class InappropriateMultiaddrError extends WebRTCTransportError {
 }
 
 export function inappropriateMultiaddr (msg: string) {
-  return createError(new InappropriateMultiaddrError(msg), codes.ERR_INVALID_MULTIADDR)
+  return errCode(new InappropriateMultiaddrError(msg), codes.ERR_INVALID_MULTIADDR)
 }
 
 export class OperationAbortedError extends WebRTCTransportError {
@@ -84,7 +96,7 @@ export class OperationAbortedError extends WebRTCTransportError {
 }
 
 export function operationAborted (context: string, reason: string) {
-  return createError(new OperationAbortedError(context, reason), codes.ERR_ALREADY_ABORTED)
+  return errCode(new OperationAbortedError(context, reason), codes.ERR_ALREADY_ABORTED)
 }
 
 export class DataChannelError extends WebRTCTransportError {
@@ -95,7 +107,7 @@ export class DataChannelError extends WebRTCTransportError {
 }
 
 export function dataChannelError (streamLabel: string, msg: string) {
-  return createError(new DataChannelError(streamLabel, msg), codes.ERR_DATA_CHANNEL)
+  return errCode(new DataChannelError(streamLabel, msg), codes.ERR_DATA_CHANNEL)
 }
 
 export class StreamingLimitationError extends WebRTCTransportError {
@@ -106,6 +118,6 @@ export class StreamingLimitationError extends WebRTCTransportError {
 }
 
 export function overStreamLimit (dir: Direction, proto: string) {
-  const code = dir == 'inbound' ? codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS : codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS
-  return createError(new StreamingLimitationError(`${dir} stream limit reached for protocol - ${proto}`), code)
+  const code = dir === 'inbound' ? codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS : codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS
+  return errCode(new StreamingLimitationError(`${dir} stream limit reached for protocol - ${proto}`), code)
 }

@@ -50,9 +50,8 @@ export class DataChannelMuxer implements StreamMuxer {
     }
   }
 
-  newStream (name?: string | undefined): Stream {
-    const streamName = name || ''
-    const channel = this.peerConnection.createDataChannel(streamName)
+  newStream (name: string = ''): Stream {
+    const channel = this.peerConnection.createDataChannel(name)
     const stream = new WebRTCStream({
       channel,
       stat: {

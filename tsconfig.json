@@ -2,6 +2,7 @@
 	"extends": "aegir/src/config/tsconfig.aegir.json",
 	"compilerOptions": {
 		"allowJs": true,
+		"allowSyntheticDefaultImports": true,
 		"emitDeclarationOnly": false,
 		"importsNotUsedAsValues": "preserve",
 		"module": "ES2020",

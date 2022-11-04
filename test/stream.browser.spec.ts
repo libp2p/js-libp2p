@@ -1,7 +1,7 @@
 import * as underTest from '../src/stream'
 import { expect, assert } from 'chai'
 
-describe('stream stats', () => {
+describe('Stream Stats', () => {
   it('can construct', () => {
     const pc = new RTCPeerConnection()
     const dc = pc.createDataChannel('whatever', { negotiated: true, id: 91 })
