@@ -3,7 +3,7 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import { Gauge, CollectFunction, collectDefaultMetrics, DefaultMetricsCollectorConfiguration, register } from 'prom-client'
 import { PrometheusMetric } from './metric.js'
 import { PrometheusMetricGroup } from './metric-group.js'
-import { DefaultMetrics, DefaultMetricsInit } from '@libp2p/metrics'
+import { DefaultMetrics, DefaultMetricsInit, DefaultMetricsComponents } from '@libp2p/metrics'
 
 export interface PrometheusMetricsInit extends DefaultMetricsInit {
   defaultMetrics?: DefaultMetricsCollectorConfiguration
@@ -12,8 +12,8 @@ export interface PrometheusMetricsInit extends DefaultMetricsInit {
 }
 
 class PrometheusMetrics extends DefaultMetrics implements Metrics, Startable {
-  constructor (init?: Partial<PrometheusMetricsInit>) {
-    super(init)
+  constructor (components: DefaultMetricsComponents, init?: Partial<PrometheusMetricsInit>) {
+    super(components, init)
 
     if (init?.preserveExistingMetrics !== true) {
       // all metrics in prometheus are global so it's necessary to remove
@@ -128,8 +128,8 @@ class PrometheusMetrics extends DefaultMetrics implements Metrics, Startable {
   }
 }
 
-export function prometheusMetrics (init?: Partial<PrometheusMetricsInit>): () => Metrics {
-  return () => {
-    return new PrometheusMetrics(init)
+export function prometheusMetrics (init?: Partial<PrometheusMetricsInit>): (components: DefaultMetricsComponents) => Metrics {
+  return (components: DefaultMetricsComponents) => {
+    return new PrometheusMetrics(components, init)
   }
 }
