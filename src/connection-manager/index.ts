@@ -482,6 +482,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     } else if (storedConn != null) {
       this.connections.delete(peerId)
       this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: connection }))
+
+      // FIXME: the metrics component can listen for the 'peer:disconnect' event instead
+      this.components.metrics?.onPeerDisconnected(connection.remotePeer)
     }
   }
 
