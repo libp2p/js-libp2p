@@ -1,7 +1,7 @@
-import * as sdp from './sdp.js'
+import * as sdp from './sdp'
 import * as p from '@libp2p/peer-id'
-import { WebRTCDialOptions } from './options.js'
-import { WebRTCStream } from './stream.js'
+import { WebRTCDialOptions } from './options'
+import { WebRTCStream } from './stream'
 import { noise as Noise } from '@chainsafe/libp2p-noise'
 import { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -13,9 +13,9 @@ import defer from 'p-defer'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { concat } from 'uint8arrays/concat'
 import * as multihashes from 'multihashes'
-import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from './error.js'
-import { WebRTCMultiaddrConnection } from './maconn.js'
-import { DataChannelMuxerFactory } from './muxer.js'
+import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from './error'
+import { WebRTCMultiaddrConnection } from './maconn'
+import { DataChannelMuxerFactory } from './muxer'
 
 const log = logger('libp2p:webrtc:transport')
 const HANDSHAKE_TIMEOUT_MS = 10000

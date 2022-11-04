@@ -7,7 +7,7 @@ import defer, { DeferredPromise } from 'p-defer'
 import merge from 'it-merge'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { logger } from '@libp2p/logger'
-import * as pb from '../proto_ts/message.js'
+import * as pb from '../proto_ts/message'
 
 const log = logger('libp2p:webrtc:stream')
 

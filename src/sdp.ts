@@ -1,4 +1,4 @@
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error.js'
+import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error'
 import { logger } from '@libp2p/logger'
 import { Multiaddr } from '@multiformats/multiaddr'
 import * as multihashes from 'multihashes'

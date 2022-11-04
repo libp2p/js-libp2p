@@ -1,7 +1,7 @@
-import * as underTest from '../src/transport.js'
-import { expectError } from '../src/util'
-import { UnimplementedError } from '../src/error.js'
-import { webRTC } from '../src/index.js'
+import * as underTest from './../src/transport'
+import { expectError } from './util'
+import { UnimplementedError } from './../src/error'
+import { webRTC } from '../src/index'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { CreateListenerOptions, symbol } from '@libp2p/interface-transport'
 import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
@@ -90,7 +90,7 @@ describe('WebRTC Transport', () => {
   })
 })
 
-// @TODO(ddimaria): remove this test and remove related scripts in package.json
+// @TODO(ddimaria): remove this test and remove related scripts in packageon
 describe('WebRTC Transport Interoperability', () => {
   it('can connect to a server', async () => {
     // we do not test connecting to an external server, as we do not appear to have one

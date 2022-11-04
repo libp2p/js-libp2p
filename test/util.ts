@@ -1,3 +1,13 @@
+import { expect } from 'chai'
+
+export const expectError = (error: unknown, message: string) => {
+  if (error instanceof Error) {
+    expect(error.message).to.equal(message)
+  } else {
+    expect('Did not throw error:').to.equal(message)
+  }
+}
+
 // import * as ic from '@libp2p/interface-connection'
 // import {createEd25519PeerId} from '@libp2p/peer-id-factory';
 // import {mockRegistrar, mockUpgrader} from '@libp2p/interface-mocks';
@@ -102,4 +112,3 @@
 //     { connection: serverConnection, registrar: serverRegistrar },
 //   ];
 // }
-export {}
