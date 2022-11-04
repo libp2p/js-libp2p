@@ -13,6 +13,7 @@ import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import pWaitFor from 'p-wait-for'
 import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'sinon-ts'
+import { mockMetrics } from '@libp2p/interface-mocks'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Metrics } from '@libp2p/interface-metrics'
@@ -53,9 +54,7 @@ describe('Connection Manager', () => {
   it('should be able to create with metrics', async () => {
     libp2p = await createNode({
       config: createBaseOptions({
-        metrics: {
-          enabled: true
-        }
+        metrics: mockMetrics()
       }),
       started: false
     })

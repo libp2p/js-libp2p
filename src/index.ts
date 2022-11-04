@@ -20,7 +20,7 @@ import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { Registrar, StreamHandler, StreamHandlerOptions } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { Metrics, MetricsInit } from '@libp2p/interface-metrics'
+import type { Metrics } from '@libp2p/interface-metrics'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { KeyChain } from './keychain/index.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
@@ -104,7 +104,6 @@ export interface Libp2pInit {
   connectionGater: Partial<ConnectionGater>
   transportManager: TransportManagerConfig
   datastore: Datastore
-  metrics: MetricsInit
   peerStore: PeerStoreInit
   peerRouting: PeerRoutingConfig
   keychain: KeychainConfig
@@ -121,6 +120,7 @@ export interface Libp2pInit {
   peerRouters?: Array<(components: Components) => PeerRouting>
   contentRouters?: Array<(components: Components) => ContentRouting>
   dht?: (components: Components) => DualDHT
+  metrics?: (components: Components) => Metrics
   pubsub?: (components: Components) => PubSub
   connectionProtector?: (components: Components) => ConnectionProtector
 }

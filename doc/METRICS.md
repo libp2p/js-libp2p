@@ -9,8 +9,6 @@ Metrics allow you to gather run time statistics on your libp2p node.
   - [Enable metrics](#enable-metrics)
   - [Stream Metrics](#stream-metrics)
   - [Component Metrics](#component-metrics)
-  - [Application metrics](#application-metrics)
-  - [Integration](#integration)
 - [Extracting metrics](#extracting-metrics)
 
 ## Overview
@@ -31,15 +29,14 @@ Although designed to primarily integrate with tools such as [Prometheus](https:/
 
 ### Enable metrics
 
-First enable metrics tracking:
+First enable metrics tracking by supplying a [Metrics](https://www.npmjs.com/package/@libp2p/interface-metrics) implementation:
 
 ```js
 import { createLibp2pNode } from 'libp2p'
+import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
 const node = await createLibp2pNode({
-  metrics: {
-    enabled: true
-  }
+  metrics: prometheusMetrics()
   //... other config
 })
 ```
@@ -87,133 +84,94 @@ class MyClass {
 }
 ```
 
-Metrics are updated by calling [`Metrics.updateComponentMetric`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L192) and passing an object that conforms to the [`ComponentMetricsUpdate`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L122-L152) interface:
+A tracked metric can be created by calling either `registerMetric` on the metrics object:
 
 ```ts
-metrics.updateComponentMetric({
-  system: 'libp2p',
-  component: 'connection-manager',
-  metric: 'incoming-connections',
-  value: 5
-})
-```
-
-If several metrics should be grouped together (e.g. for graphing purposes) the `value` field can be a [`ComponentMetricsGroup`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L159):
-
-```ts
-metrics.updateComponentMetric({
-  system: 'libp2p',
-  component: 'connection-manager',
-  metric: 'connections',
-  value: {
-    incoming: 5,
-    outgoing: 10
-  }
-})
-```
-
-If the metrics are expensive to calculate, a [`CalculateComponentMetric`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L164) function can be set as the value instead - this will need to be invoked to collect the metrics (see [Extracting metrics](#extracting-metrics) below):
-
-```ts
-metrics.updateComponentMetric({
-  system: 'libp2p',
-  component: 'connection-manager',
-  metric: 'something-expensive',
-  value: () => {
-    // valid return types are:
-    // number
-    // Promise<number>
-    // ComponentMetricsGroup
-    // Promise<ComponentMetricsGroup>
-  }
-})
-```
-
-### Application metrics
-
-You can of course piggy-back your own metrics on to the lib2p metrics object, just specify a different `system` as part of your `ComponentMetricsUpdate`:
-
-```ts
-metrics.updateComponentMetric({
-  system: 'my-app',
-  component: 'my-component',
-  metric: 'important-metric',
-  value: 5
-})
-```
-
-### Integration
-
-To help with integrating with metrics gathering software, a `label` and `help` can also be added to your `ComponentMetricsUpdate`. These are expected by certain tools such as [Prometheus](https://prometheus.io/).
-
-```ts
-metrics.updateComponentMetric({
-  system: 'libp2p',
-  component: 'connection-manager',
-  metric: 'incoming-connections',
-  value: 5,
+const metric = metrics.registerMetric('my_metric', {
+  // an optional label
   label: 'label',
+  // optional help text
   help: 'help'
 })
+
+// set a value
+metric.update(5)
+
+// increment by one, optionally pass a number to increment by
+metric.increment()
+
+// decrement by one, optionally pass a number to increment by
+metric.decrement()
+
+// reset to the default value
+metric.reset()
+
+// use the metric to time something
+const stopTimer = metric.timer()
+// later
+stopTimer()
+```
+
+A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
+
+```ts
+metrics.registerMetric('my_metric', {
+  async calculate () {
+    return 5
+  }
+})
+```
+
+If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
+
+```ts
+const metric = metrics.registerMetricGroup('my_metric', {
+  // an optional label
+  label: 'label',
+  // optional help text
+  help: 'help'
+})
+
+metric.update({
+  key1: 1,
+  key2: 1
+})
+
+// increment one or more keys in the group
+metric.increment({
+  key1: true
+})
+
+// increment one or more keys by passed value
+metric.increment({
+  key1: 5
+})
+
+// reset to the default value
+metric.reset()
+
+// use the metric to time something as one of the keys
+const stopTimer = metric.timer('key1')
+// later
+stopTimer()
 ```
 
 ## Extracting metrics
 
-Metrics can be extracted from the metrics object and supplied to a tracking system such as [Prometheus](https://prometheus.io/). This code is borrowed from the `js-ipfs` metrics endpoint which uses [prom-client](https://www.npmjs.com/package/prom-client) to format metrics:
+Metrics implementations will allow extracting the values for presentation in an external system. For example here is how to use the metrics implementation from `@libp2p/prometheus-metrics` to enable scraping stats to display in [Prometheus](https://prometheus.io/) or a [Graphana](https://grafana.com/) dashboard:
 
 ```ts
+import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import client from 'prom-client'
 
 const libp2p = createLibp2pNode({
-  metrics: {
-    enabled: true
-  }
+  metrics: prometheusMetrics()
   //... other config
 })
 
 // A handler invoked by express/hapi or your http framework of choice
 export default async function metricsEndpoint (req, res) {
-  const metrics = libp2p.metrics
-
-  if (metrics) {
-    // update the prometheus client with the recorded metrics
-    for (const [system, components] of metrics.getComponentMetrics().entries()) {
-      for (const [component, componentMetrics] of components.entries()) {
-        for (const [metricName, trackedMetric] of componentMetrics.entries()) {
-          // set the relevant gauges
-          const name = `${system}-${component}-${metricName}`.replace(/-/g, '_')
-          const labelName = trackedMetric.label ?? metricName.replace(/-/g, '_')
-          const help = trackedMetric.help ?? metricName.replace(/-/g, '_')
-          const gaugeOptions = { name, help }
-          const metricValue = await trackedMetric.calculate()
-
-          if (typeof metricValue !== 'number') {
-            // metric group
-            gaugeOptions.labelNames = [
-              labelName
-            ]
-          }
-
-          if (!gauges[name]) {
-            // create metric if it's not been seen before
-            gauges[name] = new client.Gauge(gaugeOptions)
-          }
-
-          if (typeof metricValue !== 'number') {
-            // metric group
-            Object.entries(metricValue).forEach(([key, value]) => {
-              gauges[name].set({ [labelName]: key }, value)
-            })
-          } else {
-            // metric value
-            gauges[name].set(metricValue)
-          }
-        }
-      }
-    }
-  }
-
-  // done updating, write the metrics into the response
+  // prom-client metrics are global so extract them from the client
   res.send(await client.register.metrics())
 }
 ```

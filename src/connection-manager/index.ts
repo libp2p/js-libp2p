@@ -38,8 +38,6 @@ const defaultOptions: Partial<ConnectionManagerInit> = {
   maxIncomingPendingConnections: 10
 }
 
-const METRICS_SYSTEM = 'libp2p'
-const METRICS_COMPONENT = 'connection-manager'
 const STARTUP_RECONNECT_TIMEOUT = 60000
 
 export interface ConnectionManagerInit {
@@ -212,7 +210,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.connections = new Map()
 
     this.started = false
-    this._checkMetrics = this._checkMetrics.bind(this)
 
     this.latencyMonitor = new LatencyMonitor({
       latencyCheckIntervalMs: init.pollInterval,
@@ -250,17 +247,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * only event loop and connection limits will be monitored.
    */
   async start () {
-    if (this.components.metrics != null) {
-      this.timer = this.timer ?? retimer(this._checkMetrics, this.opts.pollInterval)
-    }
-
     // track inbound/outbound connections
-    this.components.metrics?.updateComponentMetric({
-      system: METRICS_SYSTEM,
-      component: METRICS_COMPONENT,
-      metric: 'connections',
-      label: 'direction',
-      value: () => {
+    this.components.metrics?.registerMetricGroup('libp2p_connection_manager_connections', {
+      calculate: () => {
         const metric = {
           inbound: 0,
           outbound: 0
@@ -281,12 +270,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     // track total number of streams per protocol
-    this.components.metrics?.updateComponentMetric({
-      system: METRICS_SYSTEM,
-      component: METRICS_COMPONENT,
-      metric: 'protocol-streams-total',
+    this.components.metrics?.registerMetricGroup('libp2p_protocol_streams_total', {
       label: 'protocol',
-      value: () => {
+      calculate: () => {
         const metric: Record<string, number> = {}
 
         for (const conns of this.connections.values()) {
@@ -304,12 +290,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     // track 90th percentile of streams per protocol
-    this.components.metrics?.updateComponentMetric({
-      system: METRICS_SYSTEM,
-      component: METRICS_COMPONENT,
-      metric: 'protocol-streams-per-connection-90th-percentile',
+    this.components.metrics?.registerMetricGroup('libp2p_connection_manager_protocol_streams_per_connection_90th_percentile', {
       label: 'protocol',
-      value: () => {
+      calculate: () => {
         const allStreams: Record<string, number[]> = {}
 
         for (const conns of this.connections.values()) {
@@ -440,31 +423,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.connections.clear()
   }
 
-  /**
-   * Checks the libp2p metrics to determine if any values have exceeded
-   * the configured maximums.
-   *
-   * @private
-   */
-  async _checkMetrics () {
-    const metrics = this.components.metrics
-
-    if (metrics != null) {
-      try {
-        const movingAverages = metrics.getGlobal().getMovingAverages()
-        const received = movingAverages.dataReceived[this.opts.movingAverageInterval].movingAverage
-        await this._checkMaxLimit('maxReceivedData', received)
-        const sent = movingAverages.dataSent[this.opts.movingAverageInterval].movingAverage
-        await this._checkMaxLimit('maxSentData', sent)
-        const total = received + sent
-        await this._checkMaxLimit('maxData', total)
-        log.trace('metrics update', total)
-      } finally {
-        this.timer = retimer(this._checkMetrics, this.opts.pollInterval)
-      }
-    }
-  }
-
   onConnect (evt: CustomEvent<Connection>) {
     void this._onConnect(evt).catch(err => {
       log.error(err)
@@ -524,8 +482,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     } else if (storedConn != null) {
       this.connections.delete(peerId)
       this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: connection }))
-
-      this.components.metrics?.onPeerDisconnected(connection.remotePeer)
     }
   }
 
