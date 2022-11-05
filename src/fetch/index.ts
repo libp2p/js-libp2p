@@ -114,7 +114,7 @@ export class FetchService implements Startable {
     }
 
     try {
-      stream = await connection.newStream([this.protocol], {
+      stream = await connection.newStream(this.protocol, {
         signal
       })
 

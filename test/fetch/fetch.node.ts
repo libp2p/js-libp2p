@@ -23,15 +23,11 @@ async function createNode (peerId: PeerId) {
     ],
     connectionEncryption: [
       plaintext()
-    ],
-    fetch: {
-      // increase timeout for CI
-      timeout: 120000
-    }
+    ]
   })
 }
 
-describe.skip('Fetch', () => {
+describe('Fetch', () => {
   let sender: Libp2pNode
   let receiver: Libp2pNode
   const PREFIX_A = '/moduleA/'
@@ -66,9 +62,6 @@ describe.skip('Fetch', () => {
   })
 
   afterEach(async () => {
-    receiver.fetchService.unregisterLookupFunction(PREFIX_A)
-    receiver.fetchService.unregisterLookupFunction(PREFIX_B)
-
     await sender.stop()
     await receiver.stop()
   })
