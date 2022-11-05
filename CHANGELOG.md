@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v5.0.2...v6.0.0) (2022-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires @libp2p/interface-metrics v4
+
+### Bug Fixes
+
+* update to metrics v4 ([#398](https://github.com/libp2p/js-libp2p-kad-dht/issues/398)) ([3182cb0](https://github.com/libp2p/js-libp2p-kad-dht/commit/3182cb0dbcfa8eca0ceb243db53c43eed14c1af8))
+
 ## [5.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v5.0.1...v5.0.2) (2022-11-05)
 
 
