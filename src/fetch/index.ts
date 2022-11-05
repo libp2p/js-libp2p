@@ -103,6 +103,7 @@ export class FetchService implements Startable {
 
     // create a timeout if no abort signal passed
     if (signal == null) {
+      log('using default timeout of %d ms', this.init.timeout)
       timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
 

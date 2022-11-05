@@ -31,7 +31,7 @@ async function createNode (peerId: PeerId) {
   })
 }
 
-describe('Fetch', () => {
+describe.skip('Fetch', () => {
   let sender: Libp2pNode
   let receiver: Libp2pNode
   const PREFIX_A = '/moduleA/'
