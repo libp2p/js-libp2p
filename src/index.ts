@@ -72,12 +72,20 @@ class PrometheusMetrics implements Metrics {
     })
   }
 
+  /**
+   * Increment the transfer stat for the passed key, making sure
+   * it exists first
+   */
   _incrementValue (key: string, value: number) {
     const existing = this.transferStats.get(key) ?? 0n
 
     this.transferStats.set(key, existing + BigInt(value))
   }
 
+  /**
+   * Override the sink/source of the stream to count the bytes
+   * in and out
+   */
   _track (stream: Duplex<any>, name: string) {
     const self = this
 
@@ -89,11 +97,9 @@ class PrometheusMetrics implements Metrics {
     }
 
     const source = stream.source
-    stream.source = (async function * trackedSource () {
-      yield * each(source, buf => {
-        self._incrementValue(`${name} received`, buf.byteLength)
-      })
-    }())
+    stream.source = each(source, buf => {
+      self._incrementValue(`${name} received`, buf.byteLength)
+    })
   }
 
   trackMultiaddrConnection (maConn: MultiaddrConnection): void {
@@ -102,7 +108,7 @@ class PrometheusMetrics implements Metrics {
 
   trackProtocolStream (stream: Stream, connection: Connection): void {
     if (stream.stat.protocol == null) {
-      // prototol not negotiated yet, should not happen as the upgrader
+      // protocol not negotiated yet, should not happen as the upgrader
       // calls this handler after protocol negotiation
       return
     }
