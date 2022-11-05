@@ -166,7 +166,7 @@
     "it-first": "^1.0.6",
     "it-length": "^1.0.3",
     "it-length-prefixed": "^8.0.2",
-    "it-map": "^1.0.6",
+    "it-map": "^2.0.0",
     "it-merge": "^1.0.3",
     "it-parallel": "^2.0.1",
     "it-pipe": "^2.0.3",
