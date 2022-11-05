@@ -6,7 +6,7 @@ export class PrometheusCounterGroup implements CounterGroup {
   private readonly counter: PromCounter
   private readonly label: string
 
-  constructor (name: string, opts: CalculatedMetricOptions<Record<string, number | bigint>>) {
+  constructor (name: string, opts: CalculatedMetricOptions<Record<string, number>>) {
     name = normaliseString(name)
     const help = normaliseString(opts.help ?? name)
     const label = this.label = normaliseString(opts.label ?? name)
@@ -14,15 +14,13 @@ export class PrometheusCounterGroup implements CounterGroup {
 
     // calculated metric
     if (opts?.calculate != null) {
-      const calculate: CalculateMetric<Record<string, number | bigint>> = opts.calculate
+      const calculate: CalculateMetric<Record<string, number>> = opts.calculate
 
       collect = async function () {
         const values = await calculate()
 
         Object.entries(values).forEach(([key, value]) => {
-          // prom-client does not support bigints for values
-          // https://github.com/siimon/prom-client/issues/259
-          this.inc({ [label]: key }, Number(value))
+          this.inc({ [label]: key }, value)
         })
       }
     }
@@ -35,11 +33,9 @@ export class PrometheusCounterGroup implements CounterGroup {
     })
   }
 
-  increment (values: Record<string, number | bigint | unknown>): void {
+  increment (values: Record<string, number | unknown>): void {
     Object.entries(values).forEach(([key, value]) => {
-      // prom-client does not support bigints for values
-      // https://github.com/siimon/prom-client/issues/259
-      const inc = typeof value === 'number' || typeof value === 'bigint' ? Number(value) : 1
+      const inc = typeof value === 'number' ? value : 1
 
       this.counter.inc({ [this.label]: key }, inc)
     })

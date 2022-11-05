@@ -133,7 +133,7 @@
   },
   "dependencies": {
     "@libp2p/interface-connection": "^3.0.2",
-    "@libp2p/interface-metrics": "^4.0.0",
+    "@libp2p/interface-metrics": "^4.0.2",
     "@libp2p/logger": "^2.0.2",
     "it-foreach": "^1.0.0",
     "it-stream-types": "^1.0.4"

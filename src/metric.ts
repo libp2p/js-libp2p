@@ -18,9 +18,7 @@ export class PrometheusMetric implements Metric {
       collect = async function () {
         const value = await calculate()
 
-        // prom-client does not support bigints for values
-        // https://github.com/siimon/prom-client/issues/259
-        this.set(Number(value))
+        this.set(value)
       }
     }
 
@@ -32,22 +30,16 @@ export class PrometheusMetric implements Metric {
     })
   }
 
-  update (value: number | bigint): void {
-    // prom-client does not support bigints for values
-    // https://github.com/siimon/prom-client/issues/259
-    this.gauge.set(Number(value))
+  update (value: number): void {
+    this.gauge.set(value)
   }
 
-  increment (value: number | bigint = 1): void {
-    // prom-client does not support bigints for values
-    // https://github.com/siimon/prom-client/issues/259
-    this.gauge.inc(Number(value))
+  increment (value: number = 1): void {
+    this.gauge.inc(value)
   }
 
-  decrement (value: number | bigint = 1): void {
-    // prom-client does not support bigints for values
-    // https://github.com/siimon/prom-client/issues/259
-    this.gauge.dec(Number(value))
+  decrement (value: number = 1): void {
+    this.gauge.dec(value)
   }
 
   reset (): void {

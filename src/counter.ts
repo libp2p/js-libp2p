@@ -18,7 +18,7 @@ export class PrometheusCounter implements Counter {
       collect = async function () {
         const value = await calculate()
 
-        this.inc(Number(value))
+        this.inc(value)
       }
     }
 
@@ -30,10 +30,8 @@ export class PrometheusCounter implements Counter {
     })
   }
 
-  increment (value: number | bigint = 1): void {
-    // prom-client does not support bigints for values
-    // https://github.com/siimon/prom-client/issues/259
-    this.counter.inc(Number(value))
+  increment (value: number = 1): void {
+    this.counter.inc(value)
   }
 
   reset (): void {
