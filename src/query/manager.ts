@@ -14,9 +14,7 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { QueryFunc } from './types.js'
 import type { QueryOptions } from '@libp2p/interface-dht'
 import { PeerSet } from '@libp2p/peer-collections'
-import type { Metrics } from '@libp2p/interface-metrics'
-
-const METRIC_RUNNING_QUERIES = 'running-queries'
+import type { Metric, Metrics } from '@libp2p/interface-metrics'
 
 export interface CleanUpEvents {
   'cleanup': CustomEvent
@@ -44,6 +42,10 @@ export class QueryManager implements Startable {
   private readonly controllers: Set<AbortController>
   private running: boolean
   private queries: number
+  private metrics?: {
+    runningQueries: Metric
+    queryTime: Metric
+  }
 
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
     const { lan = false, disjointPaths = K, alpha = ALPHA } = init
@@ -66,6 +68,13 @@ export class QueryManager implements Startable {
    */
   async start () {
     this.running = true
+
+    if (this.components.metrics != null && this.metrics == null) {
+      this.metrics = {
+        runningQueries: this.components.metrics.registerMetric(`libp2p_kad_dht_${this.lan ? 'lan' : 'wan'}_running_queries`),
+        queryTime: this.components.metrics.registerMetric(`libp2p_kad_dht_${this.lan ? 'lan' : 'wan'}_query_time_seconds`)
+      }
+    }
   }
 
   /**
@@ -86,6 +95,7 @@ export class QueryManager implements Startable {
       throw new Error('QueryManager not started')
     }
 
+    const stopQueryTimer = this.metrics?.queryTime.timer()
     let timeoutController
 
     if (options.signal == null) {
@@ -131,12 +141,7 @@ export class QueryManager implements Startable {
     try {
       log('query:start')
       this.queries++
-      this.components.metrics?.updateComponentMetric({
-        system: 'libp2p',
-        component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
-        metric: METRIC_RUNNING_QUERIES,
-        value: this.queries
-      })
+      this.metrics?.runningQueries.update(this.queries)
 
       if (peers.length === 0) {
         log.error('Running query with no peers')
@@ -186,12 +191,11 @@ export class QueryManager implements Startable {
       }
 
       this.queries--
-      this.components.metrics?.updateComponentMetric({
-        system: 'libp2p',
-        component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
-        metric: METRIC_RUNNING_QUERIES,
-        value: this.queries
-      })
+      this.metrics?.runningQueries.update(this.queries)
+
+      if (stopQueryTimer != null) {
+        stopQueryTimer()
+      }
 
       cleanUp.dispatchEvent(new CustomEvent('cleanup'))
       log('query:done in %dms', Date.now() - startTime)

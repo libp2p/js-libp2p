@@ -8,7 +8,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
-import type { Metrics } from '@libp2p/interface-metrics'
+import type { Metric, Metrics } from '@libp2p/interface-metrics'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
@@ -54,10 +54,6 @@ export interface KBucketTree {
   toIterable: () => Iterable<KBucket>
 }
 
-const METRIC_ROUTING_TABLE_SIZE = 'routing-table-size'
-const METRIC_PING_QUEUE_SIZE = 'ping-queue-size'
-const METRIC_PING_RUNNING = 'ping-running'
-
 export interface RoutingTableInit {
   lan: boolean
   protocol: string
@@ -93,6 +89,11 @@ export class RoutingTable implements Startable {
   private readonly protocol: string
   private readonly tagName: string
   private readonly tagValue: number
+  private metrics?: {
+    routingTableSize: Metric
+    pingQueueSize: Metric
+    pingRunning: Metric
+  }
 
   constructor (components: RoutingTableComponents, init: RoutingTableInit) {
     const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol, tagName, tagValue } = init
@@ -109,18 +110,8 @@ export class RoutingTable implements Startable {
     this.tagValue = tagValue ?? KAD_CLOSE_TAG_VALUE
 
     const updatePingQueueSizeMetric = () => {
-      this.components.metrics?.updateComponentMetric({
-        system: 'libp2p',
-        component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
-        metric: METRIC_PING_QUEUE_SIZE,
-        value: this.pingQueue.size
-      })
-      this.components.metrics?.updateComponentMetric({
-        system: 'libp2p',
-        component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
-        metric: METRIC_PING_RUNNING,
-        value: this.pingQueue.pending
-      })
+      this.metrics?.pingQueueSize.update(this.pingQueue.size)
+      this.metrics?.pingRunning.update(this.pingQueue.pending)
     }
 
     this.pingQueue = new Queue({ concurrency: this.pingConcurrency })
@@ -136,6 +127,14 @@ export class RoutingTable implements Startable {
 
   async start () {
     this.running = true
+
+    if (this.components.metrics != null) {
+      this.metrics = {
+        routingTableSize: this.components.metrics.registerMetric(`libp2p_kad_dht_${this.lan ? 'lan' : 'wan'}_routing_table_size`),
+        pingQueueSize: this.components.metrics.registerMetric(`libp2p_kad_dht_${this.lan ? 'lan' : 'wan'}_ping_queue_size`),
+        pingRunning: this.components.metrics.registerMetric(`libp2p_kad_dht_${this.lan ? 'lan' : 'wan'}_ping_running`)
+      }
+    }
 
     const kBuck: KBucketTree = new KBuck({
       localNodeId: await utils.convertPeerId(this.components.peerId),
@@ -250,12 +249,7 @@ export class RoutingTable implements Startable {
                 timeoutController.clear()
               }
 
-              this.components.metrics?.updateComponentMetric({
-                system: 'libp2p',
-                component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
-                metric: METRIC_ROUTING_TABLE_SIZE,
-                value: this.size
-              })
+              this.metrics?.routingTableSize.update(this.size)
             }
           })
         )
@@ -340,12 +334,7 @@ export class RoutingTable implements Startable {
 
     this.log('added %p with kad id %b', peer, id)
 
-    this.components.metrics?.updateComponentMetric({
-      system: 'libp2p',
-      component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
-      metric: METRIC_ROUTING_TABLE_SIZE,
-      value: this.size
-    })
+    this.metrics?.routingTableSize.update(this.size)
   }
 
   /**
@@ -360,11 +349,6 @@ export class RoutingTable implements Startable {
 
     this.kb.remove(id)
 
-    this.components.metrics?.updateComponentMetric({
-      system: 'libp2p',
-      component: `kad-dht-${this.lan ? 'lan' : 'wan'}`,
-      metric: METRIC_ROUTING_TABLE_SIZE,
-      value: this.size
-    })
+    this.metrics?.routingTableSize.update(this.size)
   }
 }
