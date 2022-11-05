@@ -11,6 +11,11 @@
 
 - [Install](#install)
 - [Usage](#usage)
+  - [Queries](#queries)
+    - [Data sent/received](#data-sentreceived)
+    - [CPU usage](#cpu-usage)
+    - [Memory usage](#memory-usage)
+    - [DHT query time](#dht-query-time)
 - [License](#license)
 - [Contribute](#contribute)
 
@@ -45,6 +50,40 @@ async handler (request, h) {
 ```
 
 All Prometheus metrics are global so there's no other work required to extract them.
+
+### Queries
+
+Some useful queries are:
+
+#### Data sent/received
+
+```
+rate(libp2p_data_transfer_bytes_total[30s])
+```
+
+#### CPU usage
+
+```
+rate(process_cpu_user_seconds_total[30s]) * 100
+```
+
+#### Memory usage
+
+```
+nodejs_memory_usage_bytes
+```
+
+#### DHT query time
+
+```
+libp2p_kad_dht_wan_query_time_seconds
+```
+
+or
+
+```
+libp2p_kad_dht_lan_query_time_seconds
+```
 
 ## License
 

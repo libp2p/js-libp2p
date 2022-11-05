@@ -32,7 +32,7 @@ export interface PrometheusMetricsInit {
 }
 
 class PrometheusMetrics implements Metrics {
-  private readonly transferStats = new Map<string, bigint>()
+  private transferStats: Map<string, number>
 
   constructor (init?: Partial<PrometheusMetricsInit>) {
     if (init?.preserveExistingMetrics !== true) {
@@ -45,6 +45,9 @@ class PrometheusMetrics implements Metrics {
       collectDefaultMetrics(init?.defaultMetrics)
     }
 
+    // holds global and per-protocol sent/received stats
+    this.transferStats = new Map()
+
     log('Collecting data transfer metrics')
     this.registerCounterGroup('libp2p_data_transfer_bytes_total', {
       label: 'protocol',
@@ -52,10 +55,11 @@ class PrometheusMetrics implements Metrics {
         const output: Record<string, number> = {}
 
         for (const [key, value] of this.transferStats.entries()) {
-          // prom-client does not support bigints for values
-          // https://github.com/siimon/prom-client/issues/259
-          output[key] = Number(value)
+          output[key] = value
         }
+
+        // reset counts for next time
+        this.transferStats = new Map()
 
         return output
       }
@@ -77,9 +81,9 @@ class PrometheusMetrics implements Metrics {
    * it exists first
    */
   _incrementValue (key: string, value: number) {
-    const existing = this.transferStats.get(key) ?? 0n
+    const existing = this.transferStats.get(key) ?? 0
 
-    this.transferStats.set(key, existing + BigInt(value))
+    this.transferStats.set(key, existing + value)
   }
 
   /**
