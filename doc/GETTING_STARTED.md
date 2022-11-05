@@ -76,12 +76,12 @@ With `@chainsafe/libp2p-noise` installed, we can add it to our existing configur
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets';
-import { noise } from '@chainsafe/libp2p-noise';
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()],
+  connectionEncryption: [noise()]
 })
 ```
 
@@ -106,14 +106,14 @@ npm install @libp2p/mplex
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets';
-import { noise } from '@chainsafe/libp2p-noise';
-import { mplex } from '@libp2p/mplex';
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex()]
 })
 ```
 
@@ -131,9 +131,9 @@ Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] 
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets';
-import { noise } from '@chainsafe/libp2p-noise';
-import { mplex } from '@libp2p/mplex';
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
   addresses: {
@@ -141,7 +141,7 @@ const node = await createLibp2p({
   },
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex()]
 })
 
 // start libp2p
@@ -184,9 +184,9 @@ We can provide specific configurations for each protocol within a `config.peerDi
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets';
-import { noise } from '@chainsafe/libp2p-noise';
-import { mplex } from '@libp2p/mplex';
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 
 import { bootstrap } from '@libp2p/bootstrap'
 
@@ -203,14 +203,14 @@ const node = await createLibp2p({
   peerDiscovery: [
     bootstrap({
       list: bootstrapMultiaddrs, // provide array of multiaddrs
-    }),
+    })
   ],
   connectionManager: {
     autoDial: true, // Auto connect to discovered peers (limited by ConnectionManager minConnections)
     // The `tag` property will be searched when creating the instance of your Peer Discovery service.
     // The associated object, will be passed to the service when it is instantiated.
-  },
-});
+  }
+})
 
 node.addEventListener('peer:discovery', (evt) => {
   console.log('Discovered %s', evt.detail.id.toString()) // Log discovered peer
