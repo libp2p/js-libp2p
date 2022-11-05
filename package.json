@@ -148,6 +148,7 @@
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {
+    "@libp2p/interface-metrics": "^4.0.0",
     "@libp2p/interface-mocks": "^7.0.1",
     "@libp2p/interface-transport-compliance-tests": "^3.0.0",
     "aegir": "^37.5.3",

@@ -11,6 +11,7 @@ import type { MultiaddrConnection, Connection } from '@libp2p/interface-connecti
 import type { Upgrader, Listener, ListenerEvents } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TCPCreateListenerOptions } from './index.js'
+import type { CounterGroup, Metric, Metrics } from '@libp2p/interface-metrics'
 
 const log = logger('libp2p:tcp:listener')
 
@@ -31,6 +32,16 @@ interface Context extends TCPCreateListenerOptions {
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
   maxConnections?: number
+  metrics?: Metrics
+}
+
+const SERVER_STATUS_UP = 1
+const SERVER_STATUS_DOWN = 0
+
+export interface TCPListenerMetrics {
+  status: Metric
+  errors: CounterGroup
+  events: CounterGroup
 }
 
 type Status = {started: false} | {started: true, listeningAddr: Multiaddr, peerId: string | null }
@@ -39,8 +50,8 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   private readonly server: net.Server
   /** Keep track of open connections to destroy in case of timeout */
   private readonly connections = new Set<MultiaddrConnection>()
-
   private status: Status = { started: false }
+  private metrics?: TCPListenerMetrics
 
   constructor (private readonly context: Context) {
     super()
@@ -57,15 +68,62 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     }
 
     this.server
-      .on('listening', () => this.dispatchEvent(new CustomEvent('listening')))
-      .on('error', err => this.dispatchEvent(new CustomEvent<Error>('error', { detail: err })))
-      .on('close', () => this.dispatchEvent(new CustomEvent('close')))
+      .on('listening', () => {
+        if (context.metrics != null) {
+          // we are listening, register metrics for our port
+          const address = this.server.address()
+          let addr: string
+
+          if (address == null) {
+            addr = 'unknown'
+          } else if (typeof address === 'string') {
+            // unix socket
+            addr = address
+          } else {
+            addr = `${address.address}:${address.port}`
+          }
+
+          context.metrics?.registerMetric(`libp2p_tcp_connections_${addr}_count`, {
+            help: 'Current active connections in TCP listener',
+            calculate: () => {
+              return this.connections.size
+            }
+          })
+
+          this.metrics = {
+            status: context.metrics.registerMetric(`libp2p_tcp_${addr}_server_status`, {
+              help: 'Current status of the TCP server'
+            }),
+            errors: context.metrics.registerCounterGroup(`libp2p_tcp_${addr}_server_errors_total`, {
+              label: 'error',
+              help: 'Total count of TCP listener errors by error type'
+            }),
+            events: context.metrics.registerCounterGroup(`libp2p_tcp_$${addr}_socket_events`, {
+              label: 'event',
+              help: 'Total count of TCP socket events by event'
+            })
+          }
+
+          this.metrics?.status.update(SERVER_STATUS_UP)
+        }
+
+        this.dispatchEvent(new CustomEvent('listening'))
+      })
+      .on('error', err => {
+        this.metrics?.errors.increment({ listen_error: true })
+        this.dispatchEvent(new CustomEvent<Error>('error', { detail: err }))
+      })
+      .on('close', () => {
+        this.metrics?.status.update(SERVER_STATUS_DOWN)
+        this.dispatchEvent(new CustomEvent('close'))
+      })
   }
 
   private onSocket (socket: net.Socket) {
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
       log('socket error', err)
+      this.metrics?.events.increment({ error: true })
     })
 
     let maConn: MultiaddrConnection
@@ -73,10 +131,12 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
       maConn = toMultiaddrConnection(socket, {
         listeningAddr: this.status.started ? this.status.listeningAddr : undefined,
         socketInactivityTimeout: this.context.socketInactivityTimeout,
-        socketCloseTimeout: this.context.socketCloseTimeout
+        socketCloseTimeout: this.context.socketCloseTimeout,
+        metrics: this.metrics?.events
       })
     } catch (err) {
       log.error('inbound connection failed', err)
+      this.metrics?.errors.increment({ inbound_to_connection: true })
       return
     }
 
@@ -99,6 +159,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
         })
         .catch(async err => {
           log.error('inbound connection failed', err)
+          this.metrics?.errors.increment({ inbound_upgrade: true })
 
           await attemptClose(maConn)
         })
@@ -111,6 +172,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
       attemptClose(maConn)
         .catch(err => {
           log.error('closing inbound connection failed', err)
+          this.metrics?.errors.increment({ inbound_closing_failed: true })
         })
     }
   }

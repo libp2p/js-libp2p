@@ -9,6 +9,7 @@ import errCode from 'err-code'
 import type { Socket } from 'net'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
+import type { CounterGroup } from '@libp2p/interface-metrics'
 
 const log = logger('libp2p:tcp:socket')
 
@@ -19,14 +20,15 @@ interface ToConnectionOptions {
   signal?: AbortSignal
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
+  metrics?: CounterGroup
 }
 
 /**
  * Convert a socket into a MultiaddrConnection
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOptions) => {
-  options = options ?? {}
+export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions) => {
+  const metrics = options.metrics
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
   const closeTimeout = options.socketCloseTimeout ?? CLOSE_TIMEOUT
 
@@ -61,6 +63,7 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
   // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
   socket.setTimeout(inactivityTimeout, () => {
     log('%s socket read timeout', lOptsStr)
+    metrics?.increment({ timeout: true })
 
     // only destroy with an error if the remote has not sent the FIN message
     let err: Error | undefined
@@ -75,6 +78,7 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
 
   socket.once('close', () => {
     log('%s socket read timeout', lOptsStr)
+    metrics?.increment({ close: true })
 
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
@@ -88,6 +92,7 @@ export const toMultiaddrConnection = (socket: Socket, options?: ToConnectionOpti
     // the remote sent a FIN packet which means no more data will be sent
     // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
     log('socket ended', maConn.remoteAddr.toString())
+    metrics?.increment({ end: true })
   })
 
   const maConn: MultiaddrConnection = {
