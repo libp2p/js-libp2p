@@ -1,3 +1,19 @@
+## [5.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v5.0.1...v5.0.2) (2022-11-05)
+
+
+### Dependencies
+
+* bump it-all from 1.0.6 to 2.0.0 ([#389](https://github.com/libp2p/js-libp2p-kad-dht/issues/389)) ([0596485](https://github.com/libp2p/js-libp2p-kad-dht/commit/059648530a991cb04e8f7408791d6facf4b57e41))
+* bump it-drain from 1.0.5 to 2.0.0 ([#390](https://github.com/libp2p/js-libp2p-kad-dht/issues/390)) ([fdda357](https://github.com/libp2p/js-libp2p-kad-dht/commit/fdda357118f7020469aba57122f322e6210ff907))
+* bump it-first from 1.0.7 to 2.0.0 ([#391](https://github.com/libp2p/js-libp2p-kad-dht/issues/391)) ([681c24e](https://github.com/libp2p/js-libp2p-kad-dht/commit/681c24ea1cd7c65f82ca76c00c9c3051432665f8))
+* bump it-length from 1.0.4 to 2.0.0 ([#394](https://github.com/libp2p/js-libp2p-kad-dht/issues/394)) ([ae07736](https://github.com/libp2p/js-libp2p-kad-dht/commit/ae0773619c80c30c2eb556a8802833c1051c3cb0))
+* bump it-map from 1.0.6 to 2.0.0 ([#396](https://github.com/libp2p/js-libp2p-kad-dht/issues/396)) ([ac5101c](https://github.com/libp2p/js-libp2p-kad-dht/commit/ac5101c764a7eb1be0d531e6a61268b2a8f1a613))
+* bump it-merge from 1.0.4 to 2.0.0 ([#393](https://github.com/libp2p/js-libp2p-kad-dht/issues/393)) ([1acb5f1](https://github.com/libp2p/js-libp2p-kad-dht/commit/1acb5f170351a72860bf9552ecba0f1bf98dc3b6))
+* bump it-parallel from 2.0.2 to 3.0.0 ([#392](https://github.com/libp2p/js-libp2p-kad-dht/issues/392)) ([06a2c48](https://github.com/libp2p/js-libp2p-kad-dht/commit/06a2c480f88447c8631d9348ad28af5308d73eb9))
+* bump it-take from 1.0.2 to 2.0.0 ([#397](https://github.com/libp2p/js-libp2p-kad-dht/issues/397)) ([4e909d2](https://github.com/libp2p/js-libp2p-kad-dht/commit/4e909d286e0bee6f423abe59216b412fe38a2563))
+* **dev:** bump it-filter from 1.0.3 to 2.0.0 ([#395](https://github.com/libp2p/js-libp2p-kad-dht/issues/395)) ([5668f9c](https://github.com/libp2p/js-libp2p-kad-dht/commit/5668f9c6ea9afddc76dd41714515cea65aed1c50))
+* **dev:** bump it-last from 1.0.6 to 2.0.0 ([#388](https://github.com/libp2p/js-libp2p-kad-dht/issues/388)) ([5b55239](https://github.com/libp2p/js-libp2p-kad-dht/commit/5b55239d5a85cb00ea8189fa2803a881313070cc))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v5.0.0...v5.0.1) (2022-10-12)
 
 
