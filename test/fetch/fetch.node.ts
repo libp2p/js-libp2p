@@ -23,7 +23,10 @@ async function createNode (peerId: PeerId) {
     ],
     connectionEncryption: [
       plaintext()
-    ]
+    ],
+    nat: {
+      enabled: false
+    }
   })
 }
 
