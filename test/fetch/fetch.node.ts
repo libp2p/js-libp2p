@@ -23,7 +23,11 @@ async function createNode (peerId: PeerId) {
     ],
     connectionEncryption: [
       plaintext()
-    ]
+    ],
+    fetch: {
+      // increase timeout for CI
+      timeout: 120000
+    }
   })
 }
 
