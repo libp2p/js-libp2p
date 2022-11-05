@@ -5,11 +5,12 @@
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-prometheus-metrics.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-prometheus-metrics)
 [![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-prometheus-metrics/test%20&%20maybe%20release/main?style=flat-square)](https://github.com/libp2p/js-libp2p-prometheus-metrics/actions/workflows/js-test-and-release.yml)
 
-> Collect libp2p metrics for scraping by Prometheus
+> Collect libp2p metrics for scraping by Prometheus or Graphana
 
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
+- [Usage](#usage)
 - [License](#license)
 - [Contribute](#contribute)
 
@@ -18,6 +19,32 @@
 ```console
 $ npm i @libp2p/prometheus-metrics
 ```
+
+## Usage
+
+Configure your libp2p node with Prometheus metrics:
+
+```js
+import { createLibp2p } from 'libp2p'
+import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+})
+```
+
+Then use the `prom-client` module to supply metrics to the Prometheus/Graphana client using your http framework:
+
+```js
+import client from 'prom-client'
+
+async handler (request, h) {
+  return h.response(await client.register.metrics())
+    .type(client.register.contentType)
+}
+```
+
+All Prometheus metrics are global so there's no other work required to extract them.
 
 ## License
 

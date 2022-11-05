@@ -1,7 +1,7 @@
 {
   "name": "@libp2p/prometheus-metrics",
   "version": "0.0.0",
-  "description": "Collect libp2p metrics for scraping by Prometheus",
+  "description": "Collect libp2p metrics for scraping by Prometheus or Graphana",
   "author": "",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-prometheus-metrics#readme",
@@ -132,22 +132,23 @@
     "release": "aegir release"
   },
   "dependencies": {
+    "@libp2p/interface-connection": "^3.0.2",
     "@libp2p/interface-metrics": "^3.0.0",
-    "@libp2p/metrics": "^0.0.0",
-    "it-drain": "^2.0.0",
-    "it-pipe": "^2.0.4"
+    "@libp2p/logger": "^2.0.2",
+    "it-foreach": "^1.0.0",
+    "it-stream-types": "^1.0.4"
   },
   "peerDependencies": {
     "prom-client": "^14.1.0"
   },
   "devDependencies": {
-    "@libp2p/interface-connection": "^3.0.2",
     "@libp2p/interface-mocks": "^7.0.3",
     "@libp2p/peer-id-factory": "^1.0.19",
     "@multiformats/multiaddr": "^11.0.7",
     "aegir": "^37.5.6",
+    "it-drain": "^2.0.0",
     "it-pair": "^2.0.3",
-    "it-stream-types": "^1.0.4",
+    "it-pipe": "^2.0.4",
     "p-defer": "^4.0.0",
     "prom-client": "^14.1.0",
     "uint8arraylist": "^2.3.3"

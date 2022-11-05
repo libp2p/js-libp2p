@@ -1,56 +1,67 @@
-import type { CalculatedMetricOptions, CalculateMetric, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface-metrics'
-import type { Startable } from '@libp2p/interfaces/startable'
-import { Gauge, CollectFunction, collectDefaultMetrics, DefaultMetricsCollectorConfiguration, register } from 'prom-client'
+import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface-metrics'
+import { collectDefaultMetrics, DefaultMetricsCollectorConfiguration, register } from 'prom-client'
+import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface-connection'
+import type { Duplex } from 'it-stream-types'
+import each from 'it-foreach'
 import { PrometheusMetric } from './metric.js'
 import { PrometheusMetricGroup } from './metric-group.js'
-import { DefaultMetrics, DefaultMetricsInit, DefaultMetricsComponents } from '@libp2p/metrics'
+import { PrometheusCounter } from './counter.js'
+import { PrometheusCounterGroup } from './counter-group.js'
+import { logger } from '@libp2p/logger'
 
-export interface PrometheusMetricsInit extends DefaultMetricsInit {
-  defaultMetrics?: DefaultMetricsCollectorConfiguration
-  preserveExistingMetrics?: boolean
+const log = logger('libp2p:prometheus-metrics')
+
+export interface PrometheusMetricsInit {
+  /**
+   * By default we collect default metrics - CPU, memory etc, to not do
+   * this, pass true here
+   */
   collectDefaultMetrics?: boolean
+
+  /**
+   * prom-client options to pass to the `collectDefaultMetrics` function
+   */
+  defaultMetrics?: DefaultMetricsCollectorConfiguration
+
+  /**
+   * All metrics in prometheus are global so to prevent clashes in naming
+   * we reset the global metrics registry on creation - to not do this,
+   * pass true here
+   */
+  preserveExistingMetrics?: boolean
 }
 
-class PrometheusMetrics extends DefaultMetrics implements Metrics, Startable {
-  constructor (components: DefaultMetricsComponents, init?: Partial<PrometheusMetricsInit>) {
-    super(components, init)
+class PrometheusMetrics implements Metrics {
+  private transferStats = new Map<string, bigint>()
 
+  constructor (init?: Partial<PrometheusMetricsInit>) {
     if (init?.preserveExistingMetrics !== true) {
-      // all metrics in prometheus are global so it's necessary to remove
-      // existing metrics to make sure we don't error when setting up metrics
+      log('Clearing existing metrics')
       register.clear()
     }
 
     if (init?.preserveExistingMetrics !== false) {
-      // collect memory/CPU and node-specific default metrics
+      log('Collecting default metrics')
       collectDefaultMetrics(init?.defaultMetrics)
     }
 
-    this.registerMetricGroup('libp2p_data_transfer_bytes', {
+    log('Collecting data transfer metrics')
+    this.registerCounterGroup('libp2p_data_transfer_bytes_total', {
       label: 'protocol',
       calculate: () => {
         const output: Record<string, number> = {}
 
-        const global = this.getGlobal().getSnapshot()
-        output['global sent'] = Number(global.dataSent)
-        output['global received'] = Number(global.dataReceived)
-
-        for (const protocol of this.getProtocols()) {
-          const stats = this.forProtocol(protocol)
-
-          if (stats == null) {
-            continue
-          }
-
-          const snapshot = stats.getSnapshot()
-          output[`${protocol} sent`] = Number(snapshot.dataSent)
-          output[`${protocol} received`] = Number(snapshot.dataReceived)
+        for (const [key, value] of this.transferStats.entries()) {
+          // prom-client does not support bigints for values
+          // https://github.com/siimon/prom-client/issues/259
+          output[key] = Number(value)
         }
 
         return output
       }
     })
 
+    log('Collecting memory metrics')
     this.registerMetricGroup('nodejs_memory_usage_bytes', {
       label: 'memory',
       calculate: () => {
@@ -61,75 +72,107 @@ class PrometheusMetrics extends DefaultMetrics implements Metrics, Startable {
     })
   }
 
+  _incrementValue(key: string, value: number) {
+    const existing = this.transferStats.get(key) ?? 0n
+
+    this.transferStats.set(key, existing + BigInt(value))
+  }
+
+  _track (stream: Duplex<any>, name: string) {
+    const self = this
+
+    const sink = stream.sink
+    stream.sink = async function trackedSink (source) {
+      await sink(each(source, buf => {
+        self._incrementValue(`${name} sent`, buf.byteLength)
+      }))
+    }
+
+    const source = stream.source
+    stream.source = async function * trackedSource () {
+      yield * each(source, buf => {
+        self._incrementValue(`${name} received`, buf.byteLength)
+      })
+    }()
+  }
+
+  trackMultiaddrConnection (maConn: MultiaddrConnection): void {
+    this._track(maConn, 'global')
+  }
+
+  trackProtocolStream (stream: Stream, connection: Connection): void {
+    if (stream.stat.protocol == null) {
+      // prototol not negotiated yet, should not happen as the upgrader
+      // calls this handler after protocol negotiation
+      return
+    }
+
+    this._track(stream, stream.stat.protocol)
+  }
+
   registerMetric (name: string, opts: CalculatedMetricOptions): void
   registerMetric (name: string, opts?: MetricOptions): Metric
-  registerMetric (name: string, opts: any): any {
+  registerMetric (name: string, opts: any = {}): any {
     if (name == null ?? name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      const calculate = opts.calculate
+    log('Register metric', name)
+    const metric = new PrometheusMetric(name, opts ?? {})
 
-      // calculated metric
-      const collect: CollectFunction<Gauge<any>> = async function () {
-        const value = await calculate()
-
-        this.set(value)
-      }
-
-      // prom-client metrics are global
-      new Gauge({ // eslint-disable-line no-new
-        name,
-        help: opts.help ?? name,
-        labelNames: [opts.label ?? name],
-        collect
-      })
-
-      return
+    if (opts.calculate == null) {
+      return metric
     }
-
-    return new PrometheusMetric(name, opts ?? {})
   }
 
   registerMetricGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
   registerMetricGroup (name: string, opts?: MetricOptions): MetricGroup
-  registerMetricGroup (name: string, opts: any): any {
+  registerMetricGroup (name: string, opts: any = {}): any {
     if (name == null ?? name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      const calculate: CalculateMetric<Record<string, number>> = opts.calculate
-      const label = opts.label ?? name
+    log('Register metric group', name)
+    const group = new PrometheusMetricGroup(name, opts ?? {})
 
-      // calculated metric
-      const collect: CollectFunction<Gauge<any>> = async function () {
-        const values = await calculate()
+    if (opts.calculate == null) {
+      return group
+    }
+  }
 
-        Object.entries(values).forEach(([key, value]) => {
-          this.set({ [label]: key }, value)
-        })
-      }
-
-      // prom-client metrics are global
-      new Gauge({ // eslint-disable-line no-new
-        name,
-        help: opts.help ?? name,
-        labelNames: [opts.label ?? name],
-        collect
-      })
-
-      return
+  registerCounter (name: string, opts: CalculatedMetricOptions): void
+  registerCounter (name: string, opts?: MetricOptions): Counter
+  registerCounter (name: string, opts: any = {}): any {
+    if (name == null ?? name.trim() === '') {
+      throw new Error('Counter name is required')
     }
 
-    return new PrometheusMetricGroup(name, opts ?? {})
+    log('Register counter', name)
+    const counter = new PrometheusCounter(name, opts)
+
+    if (opts.calculate == null) {
+      return counter
+    }
+  }
+
+  registerCounterGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
+  registerCounterGroup (name: string, opts?: MetricOptions): CounterGroup
+  registerCounterGroup (name: string, opts: any = {}): any {
+    if (name == null ?? name.trim() === '') {
+      throw new Error('Metric name is required')
+    }
+
+    log('Register counter group', name)
+    const group = new PrometheusCounterGroup(name, opts)
+
+    if (opts.calculate == null) {
+      return group
+    }
   }
 }
 
-export function prometheusMetrics (init?: Partial<PrometheusMetricsInit>): (components: DefaultMetricsComponents) => Metrics {
-  return (components: DefaultMetricsComponents) => {
-    return new PrometheusMetrics(components, init)
+export function prometheusMetrics (init?: Partial<PrometheusMetricsInit>): () => Metrics {
+  return () => {
+    return new PrometheusMetrics(init)
   }
 }

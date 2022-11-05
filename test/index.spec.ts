@@ -281,10 +281,7 @@ describe('prometheus metrics', () => {
       const metrics = prometheusMetrics()()
 
       // track outgoing stream
-      metrics.trackStream({
-        stream: outbound,
-        remotePeer
-      })
+      metrics.trackMultiaddrConnection(outbound)
 
       let scrapedMetrics = await client.register.metrics()
 
@@ -321,10 +318,7 @@ describe('prometheus metrics', () => {
       const metrics = prometheusMetrics()()
 
       // track incoming stream
-      metrics.trackStream({
-        stream: inbound,
-        remotePeer
-      })
+      metrics.trackMultiaddrConnection(inbound)
 
       let scrapedMetrics = await client.register.metrics()
 
@@ -371,11 +365,7 @@ describe('prometheus metrics', () => {
       const metrics = prometheusMetrics()()
 
       // track outgoing stream
-      metrics.trackStream({
-        stream: aToB,
-        remotePeer: connectionA.remotePeer,
-        protocol
-      })
+      metrics.trackProtocolStream(aToB, connectionA)
 
       let scrapedMetrics = await client.register.metrics()
 
@@ -403,10 +393,7 @@ describe('prometheus metrics', () => {
       }
       await peerA.registrar.handle(protocol, ({ stream, connection }) => {
         // track incoming stream
-        metrics.trackStream({
-          stream,
-          remotePeer: connection.remotePeer
-        })
+        metrics.trackProtocolStream(stream, connectionA)
 
         // ignore data
         void pipe(stream, drain).then(() => {
