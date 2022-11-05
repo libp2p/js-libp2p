@@ -1,3 +1,20 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-tracked-map/compare/v2.0.2...v3.0.0) (2022-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires @libp2p/interface-metrics v4
+
+### Bug Fixes
+
+* update @libp2p/interface-metrics to v4 ([#12](https://github.com/libp2p/js-libp2p-tracked-map/issues/12)) ([6a97551](https://github.com/libp2p/js-libp2p-tracked-map/commit/6a97551c3c3c718c63f7ba3102b83b7ac1e08d8f))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([fb388de](https://github.com/libp2p/js-libp2p-tracked-map/commit/fb388de359071a8c66ae8e17cca14f06a878aa20))
+* update project config ([#13](https://github.com/libp2p/js-libp2p-tracked-map/issues/13)) ([e58d7df](https://github.com/libp2p/js-libp2p-tracked-map/commit/e58d7dfefe80daebee042b4a5925f847ae6ded09))
+
 ## [2.0.2](https://github.com/libp2p/js-libp2p-tracked-map/compare/v2.0.1...v2.0.2) (2022-08-12)
 
 
