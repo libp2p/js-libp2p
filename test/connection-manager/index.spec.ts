@@ -15,7 +15,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'sinon-ts'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { Connection } from '@libp2p/interface-connection'
-import type { Metrics } from '@libp2p/interface-metrics'
 import type { Upgrader } from '@libp2p/interface-transport'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 
@@ -188,7 +187,6 @@ describe('Connection Manager', () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer: stubInterface<Dialer>()
@@ -216,7 +214,6 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer
@@ -245,7 +242,6 @@ describe('Connection Manager', () => {
     dialer.dial.resolves(stubInterface<Connection>())
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer
@@ -278,7 +274,6 @@ describe('Connection Manager', () => {
     dialer.dial.resolves(stubInterface<Connection>())
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer
@@ -312,7 +307,6 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: await createEd25519PeerId(),
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer

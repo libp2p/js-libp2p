@@ -18,7 +18,6 @@ import delay from 'delay'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { codes } from '../../src/errors.js'
 import { start } from '@libp2p/interfaces/startable'
-import type { Metrics } from '@libp2p/interface-metrics'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 
 describe('Connection Manager', () => {
@@ -54,7 +53,6 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: peerIds[0],
-      metrics: stubInterface<Metrics>(),
       dialer: stubInterface<Dialer>(),
       upgrader,
       peerStore
@@ -95,7 +93,6 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: peerIds[0],
-      metrics: stubInterface<Metrics>(),
       dialer: stubInterface<Dialer>(),
       upgrader,
       peerStore
