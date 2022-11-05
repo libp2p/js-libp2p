@@ -271,7 +271,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     // track total number of streams per protocol
     this.components.metrics?.registerMetricGroup('libp2p_protocol_streams_total', {
-      label: 'protocol',
+      labels: ['protocol'],
       calculate: () => {
         const metric: Record<string, number> = {}
 
@@ -291,7 +291,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     // track 90th percentile of streams per protocol
     this.components.metrics?.registerMetricGroup('libp2p_connection_manager_protocol_streams_per_connection_90th_percentile', {
-      label: 'protocol',
+      labels: ['protocol'],
       calculate: () => {
         const allStreams: Record<string, number[]> = {}
 
@@ -482,9 +482,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     } else if (storedConn != null) {
       this.connections.delete(peerId)
       this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: connection }))
-
-      // FIXME: the metrics component can listen for the 'peer:disconnect' event instead
-      this.components.metrics?.onPeerDisconnected(connection.remotePeer)
     }
   }
 
