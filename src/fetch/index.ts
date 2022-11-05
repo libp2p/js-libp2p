@@ -9,7 +9,7 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { Stream } from '@libp2p/interface-connection'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { AbortOptions } from '@libp2p/interfaces'
-// import { abortableDuplex } from 'abortable-iterator'
+import { abortableDuplex } from 'abortable-iterator'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
 import { TimeoutController } from 'timeout-abort-controller'
@@ -119,12 +119,12 @@ export class FetchService implements Startable {
       })
 
       // make stream abortable
-      // const source = abortableDuplex(stream, signal)
+      const source = abortableDuplex(stream, signal)
 
       const result = await pipe(
         [FetchRequest.encode({ identifier: key })],
         lp.encode(),
-        stream,
+        source,
         lp.decode(),
         async function (source) {
           const buf = await first(source)
