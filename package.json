@@ -196,7 +196,7 @@
     "delay": "^5.0.0",
     "execa": "^6.0.0",
     "it-filter": "^2.0.0",
-    "it-last": "^1.0.6",
+    "it-last": "^2.0.0",
     "it-pair": "^2.0.2",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
