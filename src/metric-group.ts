@@ -4,7 +4,7 @@ import { normaliseString } from './utils.js'
 
 export class PrometheusMetricGroup implements MetricGroup {
   private readonly gauge: Gauge
-  private label: string
+  private readonly label: string
 
   constructor (name: string, opts: CalculatedMetricOptions<Record<string, number | bigint>>) {
     name = normaliseString(name)

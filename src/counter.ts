@@ -8,7 +8,7 @@ export class PrometheusCounter implements Counter {
   constructor (name: string, opts: CalculatedMetricOptions) {
     name = normaliseString(name)
     const help = normaliseString(opts.help ?? name)
-    const labels = opts.label ? [normaliseString(opts.label)] : []
+    const labels = opts.label != null ? [normaliseString(opts.label)] : []
     let collect: CollectFunction<PromCounter<any>> | undefined
 
     // calculated metric

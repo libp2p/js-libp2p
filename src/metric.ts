@@ -8,7 +8,7 @@ export class PrometheusMetric implements Metric {
   constructor (name: string, opts: CalculatedMetricOptions) {
     name = normaliseString(name)
     const help = normaliseString(opts.help ?? name)
-    const labels = opts.label ? [normaliseString(opts.label)] : []
+    const labels = opts.label != null ? [normaliseString(opts.label)] : []
     let collect: CollectFunction<Gauge<any>> | undefined
 
     // calculated metric

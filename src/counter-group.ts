@@ -4,7 +4,7 @@ import { normaliseString } from './utils.js'
 
 export class PrometheusCounterGroup implements CounterGroup {
   private readonly counter: PromCounter
-  private label: string
+  private readonly label: string
 
   constructor (name: string, opts: CalculatedMetricOptions<Record<string, number | bigint>>) {
     name = normaliseString(name)

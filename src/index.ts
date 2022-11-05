@@ -32,7 +32,7 @@ export interface PrometheusMetricsInit {
 }
 
 class PrometheusMetrics implements Metrics {
-  private transferStats = new Map<string, bigint>()
+  private readonly transferStats = new Map<string, bigint>()
 
   constructor (init?: Partial<PrometheusMetricsInit>) {
     if (init?.preserveExistingMetrics !== true) {
@@ -72,7 +72,7 @@ class PrometheusMetrics implements Metrics {
     })
   }
 
-  _incrementValue(key: string, value: number) {
+  _incrementValue (key: string, value: number) {
     const existing = this.transferStats.get(key) ?? 0n
 
     this.transferStats.set(key, existing + BigInt(value))
@@ -89,11 +89,11 @@ class PrometheusMetrics implements Metrics {
     }
 
     const source = stream.source
-    stream.source = async function * trackedSource () {
+    stream.source = (async function * trackedSource () {
       yield * each(source, buf => {
         self._incrementValue(`${name} received`, buf.byteLength)
       })
-    }()
+    }())
   }
 
   trackMultiaddrConnection (maConn: MultiaddrConnection): void {
