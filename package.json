@@ -161,7 +161,7 @@
     "err-code": "^3.0.1",
     "hashlru": "^2.3.0",
     "interface-datastore": "^7.0.0",
-    "it-all": "^1.0.6",
+    "it-all": "^2.0.0",
     "it-drain": "^2.0.0",
     "it-first": "^2.0.0",
     "it-length": "^2.0.0",
