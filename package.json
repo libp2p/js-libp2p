@@ -171,7 +171,7 @@
     "it-parallel": "^2.0.1",
     "it-pipe": "^2.0.3",
     "it-stream-types": "^1.0.4",
-    "it-take": "^1.0.2",
+    "it-take": "^2.0.0",
     "k-bucket": "^5.1.0",
     "multiformats": "^10.0.0",
     "p-defer": "^4.0.0",
