@@ -1,101 +1,65 @@
 import { expect } from 'aegir/chai'
 import { trackedMap } from '../src/index.js'
-import sinon from 'sinon'
-import type { ComponentMetricsTracker, ComponentMetricsUpdate } from '@libp2p/interface-metrics'
-import type { SinonStub } from 'sinon'
+import type { SinonStubbedInstance } from 'sinon'
+import type { Metric, Metrics } from '@libp2p/interface-metrics'
+import { stubInterface } from 'sinon-ts'
 
 describe('tracked-map', () => {
-  let metrics: ComponentMetricsTracker
-  let updateComponentMetricStub: SinonStub<[ComponentMetricsUpdate], void>
+  let metrics: SinonStubbedInstance<Metrics>
 
   beforeEach(() => {
-    updateComponentMetricStub = sinon.stub()
-
-    metrics = {
-      updateComponentMetric: updateComponentMetricStub,
-      getComponentMetrics: sinon.stub()
-    }
+    metrics = stubInterface<Metrics>()
   })
 
   it('should return a map with metrics', () => {
-    const system = 'system'
-    const component = 'component'
-    const metric = 'metric'
+    const name = 'system_component_metric'
+    const metric = stubInterface<Metric>()
+    // @ts-expect-error the wrong overload is selected
+    metrics.registerMetric.withArgs(name).returns(metric)
 
     const map = trackedMap({
-      metrics,
-      system,
-      component,
-      metric
+      name,
+      metrics
     })
 
     expect(map).to.be.an.instanceOf(Map)
-    expect(updateComponentMetricStub.calledWith({
-      system,
-      component,
-      metric,
-      value: 0
-    })).to.be.true()
+    expect(metrics.registerMetric.calledWith(name)).to.be.true()
   })
 
   it('should return a map without metrics', () => {
-    const system = 'system'
-    const component = 'component'
-    const metric = 'metric'
+    const name = 'system_component_metric'
+    const metric = stubInterface<Metric>()
+    // @ts-expect-error the wrong overload is selected
+    metrics.registerMetric.withArgs(name).returns(metric)
 
     const map = trackedMap({
-      system,
-      component,
-      metric
+      name
     })
 
     expect(map).to.be.an.instanceOf(Map)
-    expect(updateComponentMetricStub.called).to.be.false()
-  })
-
-  it('should default system to libp2p', () => {
-    const component = 'component'
-    const metric = 'metric'
-
-    const map = trackedMap({
-      metrics,
-      component,
-      metric
-    })
-
-    expect(map).to.be.an.instanceOf(Map)
-    expect(updateComponentMetricStub.calledWith({
-      system: 'libp2p',
-      component,
-      metric,
-      value: 0
-    })).to.be.true()
+    expect(metrics.registerMetric.called).to.be.false()
   })
 
   it('should track metrics', () => {
-    const system = 'system'
-    const component = 'component'
-    const metric = 'metric'
+    const name = 'system_component_metric'
     let value = 0
     let callCount = 0
 
-    metrics.updateComponentMetric = (data) => {
-      expect(data.system).to.equal(system)
-      expect(data.component).to.equal(component)
-      expect(data.metric).to.equal(metric)
+    const metric = stubInterface<Metric>()
+    // @ts-expect-error the wrong overload is selected
+    metrics.registerMetric.withArgs(name).returns(metric)
 
-      if (typeof data.value === 'number') {
-        value = data.value
+    metric.update.callsFake((v) => {
+      if (typeof v === 'number') {
+        value = v
       }
 
       callCount++
-    }
+    })
 
     const map = trackedMap({
-      metrics,
-      system,
-      component,
-      metric
+      name,
+      metrics
     })
 
     expect(map).to.be.an.instanceOf(Map)

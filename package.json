@@ -138,10 +138,11 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interface-metrics": "^3.0.0"
+    "@libp2p/interface-metrics": "^4.0.0"
   },
   "devDependencies": {
     "aegir": "^37.0.7",
-    "sinon": "^14.0.0"
+    "sinon": "^14.0.0",
+    "sinon-ts": "^1.0.0"
   }
 }

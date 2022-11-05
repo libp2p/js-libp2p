@@ -1,27 +1,19 @@
-import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
+import type { Metric, Metrics } from '@libp2p/interface-metrics'
 
 export interface TrackedMapInit {
-  metrics: ComponentMetricsTracker
-  system?: string
-  component: string
-  metric: string
+  name: string
+  metrics: Metrics
 }
 
 class TrackedMap<K, V> extends Map<K, V> {
-  private readonly system: string
-  private readonly component: string
-  private readonly metric: string
-  private readonly metrics: ComponentMetricsTracker
+  private readonly metric: Metric
 
   constructor (init: TrackedMapInit) {
     super()
 
-    const { system, component, metric, metrics } = init
-    this.system = system ?? 'libp2p'
-    this.component = component
-    this.metric = metric
-    this.metrics = metrics
+    const { name, metrics } = init
 
+    this.metric = metrics.registerMetric(name)
     this.updateComponentMetric()
   }
 
@@ -43,28 +35,21 @@ class TrackedMap<K, V> extends Map<K, V> {
   }
 
   private updateComponentMetric () {
-    this.metrics.updateComponentMetric({
-      system: this.system,
-      component: this.component,
-      metric: this.metric,
-      value: this.size
-    })
+    this.metric.update(this.size)
   }
 }
 
 export interface CreateTrackedMapOptions {
-  metrics?: ComponentMetricsTracker
-  system?: string
-  component: string
-  metric: string
+  name: string
+  metrics?: Metrics
 }
 
 export function trackedMap <K, V> (config: CreateTrackedMapOptions): Map<K, V> {
-  const { system, component, metric, metrics } = config
+  const { name, metrics } = config
   let map: Map<K, V>
 
   if (metrics != null) {
-    map = new TrackedMap<K, V>({ system, component, metric, metrics })
+    map = new TrackedMap<K, V>({ name, metrics })
   } else {
     map = new Map<K, V>()
   }
