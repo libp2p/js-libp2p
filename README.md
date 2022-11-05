@@ -16,6 +16,7 @@
     - [CPU usage](#cpu-usage)
     - [Memory usage](#memory-usage)
     - [DHT query time](#dht-query-time)
+    - [TCP transport dialer errors](#tcp-transport-dialer-errors)
 - [License](#license)
 - [Contribute](#contribute)
 
@@ -83,6 +84,12 @@ or
 
 ```
 libp2p_kad_dht_lan_query_time_seconds
+```
+
+#### TCP transport dialer errors
+
+```
+rate(libp2p_tcp_dialer_errors_total[30s])
 ```
 
 ## License
