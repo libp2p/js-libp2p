@@ -155,10 +155,10 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
 
     return await new Promise<void>((resolve, reject) => {
       const options = multiaddrToNetConfig(listeningAddr)
-      this.server.listen(options, (err?: any) => {
-        if (err != null) {
-          return reject(err)
-        }
+      this.server.on('error', (err) => {
+        reject(err)
+      })
+      this.server.listen(options, () => {
         log('Listening on %s', this.server.address())
         resolve()
       })

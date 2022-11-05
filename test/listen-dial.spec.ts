@@ -47,6 +47,22 @@ describe('listen', () => {
     await listener.listen(mh)
   })
 
+  it('errors when listening on busy port', async () => {
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/0')
+    listener = transport.createListener({
+      upgrader
+    })
+    await listener.listen(mh)
+
+    const listener2 = transport.createListener({
+      upgrader
+    })
+
+    const mh2 = listener.getAddrs()[0]
+    await expect(listener2.listen(mh2)).to.eventually.be.rejected()
+      .with.property('code', 'EADDRINUSE')
+  })
+
   it('listen on IPv6 addr', async () => {
     if (isCI != null) {
       return
