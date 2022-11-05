@@ -283,11 +283,6 @@ describe('prometheus metrics', () => {
       // track outgoing stream
       metrics.trackMultiaddrConnection(outbound)
 
-      let scrapedMetrics = await client.register.metrics()
-
-      expect(scrapedMetrics).to.include('libp2p_global_bytes{direction="sent"} 0')
-      expect(scrapedMetrics).to.include('libp2p_global_bytes{direction="received"} 0')
-
       // send data to the remote over the tracked stream
       const data = Uint8Array.from([0, 1, 2, 3, 4])
       await outbound.sink([
@@ -297,10 +292,8 @@ describe('prometheus metrics', () => {
       // wait for all bytes to be received
       await deferred.promise
 
-      scrapedMetrics = await client.register.metrics()
-
-      expect(scrapedMetrics).to.include(`libp2p_global_bytes{direction="sent"} ${data.length}`)
-      expect(scrapedMetrics).to.include('libp2p_global_bytes{direction="received"} 0')
+      const scrapedMetrics = await client.register.metrics()
+      expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="global sent"} ${data.length}`)
     })
 
     it('should track bytes received over connections', async () => {
@@ -320,11 +313,6 @@ describe('prometheus metrics', () => {
       // track incoming stream
       metrics.trackMultiaddrConnection(inbound)
 
-      let scrapedMetrics = await client.register.metrics()
-
-      expect(scrapedMetrics).to.include('libp2p_global_bytes{direction="sent"} 0')
-      expect(scrapedMetrics).to.include('libp2p_global_bytes{direction="received"} 0')
-
       // send data to the remote over the tracked stream
       const data = Uint8Array.from([0, 1, 2, 3, 4])
       await outbound.sink([
@@ -339,10 +327,8 @@ describe('prometheus metrics', () => {
       // wait for all bytes to be received
       await deferred.promise
 
-      scrapedMetrics = await client.register.metrics()
-
-      expect(scrapedMetrics).to.include('libp2p_global_bytes{direction="sent"} 0')
-      expect(scrapedMetrics).to.include(`libp2p_global_bytes{direction="received"} ${data.length}`)
+      const scrapedMetrics = await client.register.metrics()
+      expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="global received"} ${data.length}`)
     })
 
     it('should track sent stream metrics', async () => {
@@ -367,21 +353,14 @@ describe('prometheus metrics', () => {
       // track outgoing stream
       metrics.trackProtocolStream(aToB, connectionA)
 
-      let scrapedMetrics = await client.register.metrics()
-
-      expect(scrapedMetrics).to.include('libp2p_protocol__my_protocol_send_1_0_0_bytes{direction="sent"} 0')
-      expect(scrapedMetrics).to.include('libp2p_protocol__my_protocol_send_1_0_0_bytes{direction="received"} 0')
-
       // send data to the remote over the tracked stream
       const data = Uint8Array.from([0, 1, 2, 3, 4])
       await aToB.sink([
         data
       ])
 
-      scrapedMetrics = await client.register.metrics()
-
-      expect(scrapedMetrics).to.include(`libp2p_protocol__my_protocol_send_1_0_0_bytes{direction="sent"} ${data.length}`)
-      expect(scrapedMetrics).to.include('libp2p_protocol__my_protocol_send_1_0_0_bytes{direction="received"} 0')
+      const scrapedMetrics = await client.register.metrics()
+      expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="${protocol} sent"} ${data.length}`)
     })
 
     it('should track sent received metrics', async () => {
@@ -411,10 +390,6 @@ describe('prometheus metrics', () => {
 
       const bToA = await connectionB.newStream(protocol)
 
-      let scrapedMetrics = await client.register.metrics()
-      expect(scrapedMetrics).to.include('libp2p_protocol__my_protocol_receive_1_0_0_bytes{direction="sent"} 0')
-      expect(scrapedMetrics).to.include('libp2p_protocol__my_protocol_receive_1_0_0_bytes{direction="received"} 0')
-
       // send data from remote to local
       const data = Uint8Array.from([0, 1, 2, 3, 4])
       await bToA.sink([
@@ -424,10 +399,8 @@ describe('prometheus metrics', () => {
       // wait for data to have been transferred
       await deferred.promise
 
-      scrapedMetrics = await client.register.metrics()
-
-      expect(scrapedMetrics).to.include('libp2p_protocol__my_protocol_receive_1_0_0_bytes{direction="sent"} 0')
-      expect(scrapedMetrics).to.include(`libp2p_protocol__my_protocol_receive_1_0_0_bytes{direction="received"} ${data.length}`)
+      const scrapedMetrics = await client.register.metrics()
+      expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="${protocol} received"} ${data.length}`)
     })
   })
 })
