@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.0.0...v1.0.1) (2022-11-05)
+
+
+### Bug Fixes
+
+* pass numbers to prom-client ([#1](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/1)) ([7c38140](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/7c38140d97dc4cbfb5d21e63a214df133eae9d73))
+
 ## 1.0.0 (2022-11-05)
 
 
