@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v5.0.2...v6.0.0) (2022-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires metrics interface v4
+
+### Features
+
+* add metrics ([#223](https://github.com/libp2p/js-libp2p-tcp/issues/223)) ([c004357](https://github.com/libp2p/js-libp2p-tcp/commit/c0043577777181545eef925b50e28743cfd7a29d)), closes [#217](https://github.com/libp2p/js-libp2p-tcp/issues/217)
+
 ## [5.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v5.0.1...v5.0.2) (2022-11-05)
 
 
