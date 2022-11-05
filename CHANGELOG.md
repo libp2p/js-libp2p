@@ -1,3 +1,10 @@
+## [5.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v5.0.1...v5.0.2) (2022-11-05)
+
+
+### Bug Fixes
+
+* handle listen error ([#224](https://github.com/libp2p/js-libp2p-tcp/issues/224)) ([4125e9e](https://github.com/libp2p/js-libp2p-tcp/commit/4125e9eaa4d531dbcb0f2777149d1ca8fa9460a5))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v5.0.0...v5.0.1) (2022-10-17)
 
 
