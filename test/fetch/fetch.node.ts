@@ -23,7 +23,10 @@ async function createNode (peerId: PeerId) {
     ],
     connectionEncryption: [
       plaintext()
-    ]
+    ],
+    nat: {
+      enabled: false
+    }
   })
 }
 
@@ -62,9 +65,6 @@ describe('Fetch', () => {
   })
 
   afterEach(async () => {
-    receiver.fetchService.unregisterLookupFunction(PREFIX_A)
-    receiver.fetchService.unregisterLookupFunction(PREFIX_B)
-
     await sender.stop()
     await receiver.stop()
   })

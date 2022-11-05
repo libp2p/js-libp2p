@@ -38,8 +38,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     this.started = false
     this.transports = new Map<string, Transport>()
     this.listeners = trackedMap({
-      component: 'transport-manager',
-      metric: 'listeners',
+      name: 'libp2p_transport_manager_listeners',
       metrics: this.components.metrics
     })
     this.faultTolerance = init.faultTolerance ?? FaultTolerance.FATAL_ALL
