@@ -2,8 +2,6 @@ import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import mergeOptions from 'merge-options'
 import { LatencyMonitor, SummaryObject } from './latency-monitor.js'
-// @ts-expect-error retimer does not have types
-import retimer from 'retimer'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
@@ -181,7 +179,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly opts: Required<ConnectionManagerInit>
   private readonly connections: Map<string, Connection[]>
   private started: boolean
-  private timer?: ReturnType<retimer>
   private readonly latencyMonitor: LatencyMonitor
   private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
@@ -271,7 +268,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     // track total number of streams per protocol
     this.components.metrics?.registerMetricGroup('libp2p_protocol_streams_total', {
-      labels: ['protocol'],
+      label: 'protocol',
       calculate: () => {
         const metric: Record<string, number> = {}
 
@@ -291,7 +288,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     // track 90th percentile of streams per protocol
     this.components.metrics?.registerMetricGroup('libp2p_connection_manager_protocol_streams_per_connection_90th_percentile', {
-      labels: ['protocol'],
+      label: 'protocol',
       calculate: () => {
         const allStreams: Record<string, number[]> = {}
 
@@ -390,8 +387,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * Stops the Connection Manager
    */
   async stop () {
-    this.timer?.clear()
-
     this.latencyMonitor.removeEventListener('data', this._onLatencyMeasure)
     this.latencyMonitor.stop()
 

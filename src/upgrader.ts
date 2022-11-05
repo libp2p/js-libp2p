@@ -2,8 +2,6 @@ import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import * as mss from '@libp2p/multistream-select'
 import { pipe } from 'it-pipe'
-// @ts-expect-error mutable-proxy does not export types
-import mutableProxy from 'mutable-proxy'
 import { codes } from './errors.js'
 import { createConnection } from '@libp2p/connection'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
