@@ -6,7 +6,7 @@ import { createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
@@ -15,7 +15,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'sinon-ts'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { Connection } from '@libp2p/interface-connection'
-import type { Metrics } from '@libp2p/interface-metrics'
 import type { Upgrader } from '@libp2p/interface-transport'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 
@@ -53,9 +52,7 @@ describe('Connection Manager', () => {
   it('should be able to create with metrics', async () => {
     libp2p = await createNode({
       config: createBaseOptions({
-        metrics: {
-          enabled: true
-        }
+        metrics: mockMetrics()
       }),
       started: false
     })
@@ -190,7 +187,6 @@ describe('Connection Manager', () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer: stubInterface<Dialer>()
@@ -218,7 +214,6 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer
@@ -247,7 +242,6 @@ describe('Connection Manager', () => {
     dialer.dial.resolves(stubInterface<Connection>())
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer
@@ -280,7 +274,6 @@ describe('Connection Manager', () => {
     dialer.dial.resolves(stubInterface<Connection>())
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer
@@ -314,7 +307,6 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: await createEd25519PeerId(),
-      metrics: stubInterface<Metrics>(),
       upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       dialer

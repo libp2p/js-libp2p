@@ -14,7 +14,6 @@ import { AutoDialler } from './connection-manager/auto-dialler.js'
 import { Circuit } from './circuit/transport.js'
 import { Relay } from './circuit/index.js'
 import { KeyChain } from './keychain/index.js'
-import { DefaultMetrics } from './metrics/index.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
 import { DefaultRegistrar } from './registrar.js'
@@ -103,8 +102,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     ]
 
     // Create Metrics
-    if (init.metrics.enabled) {
-      this.metrics = this.components.metrics = new DefaultMetrics(init.metrics)
+    if (init.metrics != null) {
+      this.metrics = this.components.metrics = this.configureComponent(init.metrics(this.components))
     }
 
     this.peerStore = this.components.peerStore

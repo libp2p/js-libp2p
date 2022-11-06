@@ -197,18 +197,12 @@ const bootstrapMultiaddrs = [
 ]
 
 const node = await createLibp2p({
-  transports: [
-    webSockets()
-  ],
-  connectionEncryption: [
-    noise()
-  ],
-  streamMuxers: [
-    mplex()
-  ],
+  transports: [webSockets()],
+  connectionEncryption: [noise()],
+  streamMuxers: [mplex()],
   peerDiscovery: [
     bootstrap({
-      list: bootstrapMultiaddrs // provide array of multiaddrs
+      list: bootstrapMultiaddrs, // provide array of multiaddrs
     })
   ],
   connectionManager: {
