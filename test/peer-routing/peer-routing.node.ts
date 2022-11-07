@@ -237,7 +237,7 @@ describe('peer-routing', () => {
 
     beforeEach(async () => {
       delegate = stubInterface<PeerRouting>()
-      delegate.findPeer.returns(Promise.reject(new Error('Could not find peer')))
+      delegate.findPeer.rejects(new Error('Could not find peer'))
       delegate.getClosestPeers.returns(async function * () {}())
 
       node = await createNode({
