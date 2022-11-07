@@ -7,14 +7,14 @@ import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Stream } from '@libp2p/interface-connection'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
-import type { Components } from '@libp2p/components'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
 import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:fetch')
 
@@ -38,6 +38,11 @@ export interface LookupFunction {
   (key: string): Promise<Uint8Array | null>
 }
 
+export interface FetchServiceComponents {
+  registrar: Registrar
+  connectionManager: ConnectionManager
+}
+
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
  * Developers can register one or more lookup function for retrieving the value corresponding to
@@ -46,12 +51,12 @@ export interface LookupFunction {
  */
 export class FetchService implements Startable {
   public readonly protocol: string
-  private readonly components: Components
+  private readonly components: FetchServiceComponents
   private readonly lookupFunctions: Map<string, LookupFunction>
   private started: boolean
   private readonly init: FetchServiceInit
 
-  constructor (components: Components, init: FetchServiceInit) {
+  constructor (components: FetchServiceComponents, init: FetchServiceInit) {
     this.started = false
     this.components = components
     this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
@@ -61,7 +66,7 @@ export class FetchService implements Startable {
   }
 
   async start () {
-    await this.components.getRegistrar().handle(this.protocol, (data) => {
+    await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
         .catch(err => {
           log.error(err)
@@ -77,7 +82,7 @@ export class FetchService implements Startable {
   }
 
   async stop () {
-    await this.components.getRegistrar().unhandle(this.protocol)
+    await this.components.registrar.unhandle(this.protocol)
     this.started = false
   }
 
@@ -91,13 +96,14 @@ export class FetchService implements Startable {
   async fetch (peer: PeerId, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.getConnectionManager().openConnection(peer, options)
+    const connection = await this.components.connectionManager.openConnection(peer, options)
     let timeoutController
     let signal = options.signal
     let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
+      log('using default timeout of %d ms', this.init.timeout)
       timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
 
@@ -108,7 +114,7 @@ export class FetchService implements Startable {
     }
 
     try {
-      stream = await connection.newStream([this.protocol], {
+      stream = await connection.newStream(this.protocol, {
         signal
       })
 

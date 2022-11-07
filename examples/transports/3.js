@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { WebSockets } from '@libp2p/websockets'
+import { tcp } from '@libp2p/tcp'
+import { webSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { mplex } from '@libp2p/mplex'
 import { pipe } from 'it-pipe'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -19,8 +19,8 @@ const createNode = async (transports, addresses = []) => {
       listen: addresses
     },
     transports: transports,
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()]
+    connectionEncryption: [() => new Noise()],
+    streamMuxers: [mplex()]
   })
 
   await node.start()
@@ -45,9 +45,9 @@ function print ({ stream }) {
 
 (async () => {
   const [node1, node2, node3] = await Promise.all([
-    createNode([new TCP()], '/ip4/0.0.0.0/tcp/0'),
-    createNode([new TCP(), new WebSockets()], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
-    createNode([new WebSockets()], '/ip4/127.0.0.1/tcp/20000/ws')
+    createNode([tcp()], '/ip4/0.0.0.0/tcp/0'),
+    createNode([tcp(), webSockets()], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
+    createNode([webSockets()], '/ip4/127.0.0.1/tcp/20000/ws')
   ])
 
   printAddrs(node1, '1')

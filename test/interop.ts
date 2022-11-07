@@ -4,20 +4,20 @@ import { createServer } from '@libp2p/daemon-server'
 import { createClient } from '@libp2p/daemon-client'
 import { createLibp2p, Libp2pOptions } from '../src/index.js'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { TCP } from '@libp2p/tcp'
+import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
-import { KadDHT } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 import { path as p2pd } from 'go-libp2p'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
-import { Mplex } from '@libp2p/mplex'
-import { Yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import fs from 'fs'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import { FloodSub } from '@libp2p/floodsub'
+import { floodsub } from '@libp2p/floodsub'
 
 // IPFS_LOGGING=debug DEBUG=libp2p*,go-libp2p:* npm run test:interop
 
@@ -93,46 +93,49 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
+    transports: [tcp()],
     streamMuxers: [],
-    connectionEncryption: [new Noise()]
+    connectionEncryption: [() => new Noise()]
   }
 
   if (options.muxer === 'mplex') {
-    opts.streamMuxers?.push(new Mplex())
+    opts.streamMuxers?.push(mplex())
   } else {
-    opts.streamMuxers?.push(new Yamux())
-  }
-
-  if (options.dht === true) {
-    // go-libp2p-daemon only has the older single-table DHT instead of the dual
-    // lan/wan version found in recent go-ipfs versions. unfortunately it's been
-    // abandoned so here we simulate the older config with the js implementation
-    const dht = new KadDHT({
-      clientMode: false
-    })
-    const lan = dht.lan
-
-    const protocol = '/ipfs/kad/1.0.0'
-    lan.protocol = protocol
-    // @ts-expect-error
-    lan.network.protocol = protocol
-    // @ts-expect-error
-    lan.topologyListener.protocol = protocol
-
-    // @ts-expect-error
-    opts.dht = lan
+    opts.streamMuxers?.push(yamux())
   }
 
   if (options.pubsub === true) {
     if (options.pubsubRouter === 'floodsub') {
-      opts.pubsub = new FloodSub()
+      opts.pubsub = floodsub()
     } else {
-      opts.pubsub = new FloodSub()
+      opts.pubsub = floodsub()
+    }
+  }
+
+  if (options.dht === true) {
+    opts.dht = (components: any) => {
+      const dht = kadDHT({
+        clientMode: false
+      })(components)
+
+      // go-libp2p-daemon only has the older single-table DHT instead of the dual
+      // lan/wan version found in recent go-ipfs versions. unfortunately it's been
+      // abandoned so here we simulate the older config with the js implementation
+      const lan = dht.lan
+
+      const protocol = '/ipfs/kad/1.0.0'
+      lan.protocol = protocol
+      // @ts-expect-error
+      lan.network.protocol = protocol
+      // @ts-expect-error
+      lan.topologyListener.protocol = protocol
+
+      return lan
     }
   }
 
   const node = await createLibp2p(opts)
+
   const server = await createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
   await server.start()
 

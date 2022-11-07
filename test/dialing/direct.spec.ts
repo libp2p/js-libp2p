@@ -4,10 +4,10 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import pDefer from 'p-defer'
 import delay from 'delay'
-import { WebSockets } from '@libp2p/websockets'
+import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
-import { Mplex } from '@libp2p/mplex'
-import { Plaintext } from '../../src/insecure/index.js'
+import { mplex } from '@libp2p/mplex'
+import { plaintext } from '../../src/insecure/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import { AbortError } from '@libp2p/interfaces/errors'
@@ -21,7 +21,6 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
 import { createPeerId } from '../utils/creators/peer.js'
 import type { TransportManager } from '@libp2p/interface-transport'
-import { Components } from '@libp2p/components'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Connection } from '@libp2p/interface-connection'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
@@ -31,39 +30,40 @@ import Peers from '../fixtures/peers.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
+import { DefaultComponents } from '../../src/components.js'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
 describe('Dialing (direct, WebSockets)', () => {
   let localTM: TransportManager
-  let localComponents: Components
+  let localComponents: DefaultComponents
   let remoteAddr: Multiaddr
-  let remoteComponents: Components
+  let remoteComponents: DefaultComponents
 
   beforeEach(async () => {
-    localComponents = new Components({
+    localComponents = new DefaultComponents({
       peerId: await createFromJSON(Peers[0]),
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader(),
       connectionGater: mockConnectionGater()
     })
-    localComponents.setPeerStore(new PersistentPeerStore({
-      addressFilter: localComponents.getConnectionGater().filterMultiaddrForPeer
-    }))
-    localComponents.setConnectionManager(new DefaultConnectionManager({
+    localComponents.peerStore = new PersistentPeerStore(localComponents, {
+      addressFilter: localComponents.connectionGater.filterMultiaddrForPeer
+    })
+    localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
       maxConnections: 100,
       minConnections: 50,
       autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
-    }))
+    })
 
     localTM = new DefaultTransportManager(localComponents)
-    localTM.add(new WebSockets({ filter: filters.all }))
-    localComponents.setTransportManager(localTM)
+    localTM.add(webSockets({ filter: filters.all })())
+    localComponents.transportManager = localTM
 
     // this peer is spun up in .aegir.cjs
     remoteAddr = MULTIADDRS_WEBSOCKETS[0]
-    remoteComponents = new Components({
+    remoteComponents = new DefaultComponents({
       peerId: peerIdFromString(remoteAddr.getPeerId() ?? '')
     })
   })
@@ -110,7 +110,7 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new DefaultDialer(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.getPeerStore().addressBook.set(remotePeerId, [remoteAddr])
+    await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
 
     const connection = await dialer.dial(remoteAddr)
     expect(connection).to.exist()
@@ -120,7 +120,7 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should fail to connect to an unsupported multiaddr', async () => {
     const dialer = new DefaultDialer(localComponents)
 
-    await expect(dialer.dial(unsupportedAddr.encapsulate(`/p2p/${remoteComponents.getPeerId().toString()}`)))
+    await expect(dialer.dial(unsupportedAddr.encapsulate(`/p2p/${remoteComponents.peerId.toString()}`)))
       .to.eventually.be.rejectedWith(Error)
       .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
@@ -129,7 +129,7 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new DefaultDialer(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.getPeerStore().addressBook.set(remotePeerId, [remoteAddr])
+    await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
 
     const connection = await dialer.dial(remotePeerId)
     expect(connection).to.exist()
@@ -140,7 +140,7 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new DefaultDialer(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.getPeerStore().addressBook.set(remotePeerId, [unsupportedAddr])
+    await localComponents.peerStore.addressBook.set(remotePeerId, [unsupportedAddr])
 
     await expect(dialer.dial(remotePeerId))
       .to.eventually.be.rejectedWith(Error)
@@ -153,7 +153,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.getPeerStore().addressBook.set(remotePeerId, [remoteAddr])
+    await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
 
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
       expect(options.signal).to.exist()
@@ -175,7 +175,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.getPeerStore().addressBook.set(remotePeerId, Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`)))
+    await localComponents.peerStore.addressBook.set(remotePeerId, Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`)))
 
     await expect(dialer.dial(remoteAddr))
       .to.eventually.be.rejected()
@@ -198,10 +198,10 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Inject data in the AddressBook
-    await localComponents.getPeerStore().addressBook.add(remoteComponents.getPeerId(), peerMultiaddrs)
+    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, peerMultiaddrs)
 
     // Perform 3 multiaddr dials
-    await dialer.dial(remoteComponents.getPeerId())
+    await dialer.dial(remoteComponents.peerId)
 
     const sortedAddresses = peerMultiaddrs
       .map((m) => ({ multiaddr: m, isCertified: false }))
@@ -225,7 +225,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Inject data in the AddressBook
-    await localComponents.getPeerStore().addressBook.add(remotePeerId, addrs)
+    await localComponents.peerStore.addressBook.add(remotePeerId, addrs)
 
     expect(dialer.tokens).to.have.lengthOf(2)
 
@@ -263,7 +263,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Inject data in the AddressBook
-    await localComponents.getPeerStore().addressBook.add(remoteComponents.getPeerId(), addrs)
+    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
 
     expect(dialer.tokens).to.have.lengthOf(2)
 
@@ -278,7 +278,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Perform 3 multiaddr dials
-    const dialPromise = dialer.dial(remoteComponents.getPeerId())
+    const dialPromise = dialer.dial(remoteComponents.peerId)
 
     // Let the call stack run
     await delay(0)
@@ -306,7 +306,7 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Perform dial
-    const dialPromise = dialer.dial(remoteComponents.getPeerId())
+    const dialPromise = dialer.dial(remoteComponents.peerId)
 
     // Let the call stack run
     await delay(0)
@@ -340,19 +340,19 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
-    const dialer = libp2p.components.getDialer()
+    const dialer = libp2p.components.dialer
 
     expect(dialer).to.exist()
     expect(dialer).to.have.property('tokens').with.lengthOf(Constants.MAX_PARALLEL_DIALS)
@@ -364,15 +364,15 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     const config = {
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ],
       connectionManager: {
         maxParallelDials: 10,
@@ -382,7 +382,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     }
     libp2p = await createLibp2pNode(config)
 
-    const dialer = libp2p.components.getDialer()
+    const dialer = libp2p.components.dialer
 
     expect(dialer).to.exist()
     expect(dialer).to.have.property('tokens').with.lengthOf(config.connectionManager.maxParallelDials)
@@ -394,20 +394,20 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
-    const dialerDialSpy = sinon.spy(libp2p.components.getDialer(), 'dial')
-    const addressBookAddSpy = sinon.spy(libp2p.components.getPeerStore().addressBook, 'add')
+    const dialerDialSpy = sinon.spy(libp2p.components.dialer, 'dial')
+    const addressBookAddSpy = sinon.spy(libp2p.components.peerStore.addressBook, 'add')
 
     await libp2p.start()
 
@@ -427,15 +427,15 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
@@ -444,7 +444,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     }
 
     const identifySpy = sinon.spy(libp2p.identifyService, 'identify')
-    const protobookSetSpy = sinon.spy(libp2p.components.getPeerStore().protoBook, 'set')
+    const protobookSetSpy = sinon.spy(libp2p.components.peerStore.protoBook, 'set')
     const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
 
     await libp2p.start()
@@ -467,15 +467,15 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
@@ -495,15 +495,15 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
@@ -516,19 +516,19 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
-    const dialer = libp2p.components.getDialer() as DefaultDialer
+    const dialer = libp2p.components.dialer as DefaultDialer
     sinon.stub(dialer, '_createDialTarget').callsFake(async () => {
       const deferredDial = pDefer<DialTarget>()
       return await deferredDial.promise
@@ -553,21 +553,21 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 
     await libp2p.start()
 
-    const dialer = libp2p.components.getDialer() as DefaultDialer
+    const dialer = libp2p.components.dialer as DefaultDialer
     const dialerDestroyStub = sinon.spy(dialer, 'stop')
 
     await libp2p.stop()
@@ -579,15 +579,15 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
-        new WebSockets({
+        webSockets({
           filter: filters.all
         })
       ],
       streamMuxers: [
-        new Mplex()
+        mplex()
       ],
       connectionEncryption: [
-        new Plaintext()
+        plaintext()
       ]
     })
 

@@ -12,7 +12,6 @@ import drain from 'it-drain'
 import { pipe } from 'it-pipe'
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/components'
 import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 import {
   MULTICODEC_IDENTIFY,
@@ -24,6 +23,9 @@ import { CustomEvent } from '@libp2p/interfaces/events'
 import delay from 'delay'
 import { pEvent } from 'p-event'
 import { start, stop } from '@libp2p/interfaces/startable'
+import { stubInterface } from 'sinon-ts'
+import type { Dialer } from '@libp2p/interface-connection-manager'
+import { DefaultComponents } from '../../src/components.js'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -41,38 +43,39 @@ const defaultInit: IdentifyServiceInit = {
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
-async function createComponents (index: number) {
+async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
-  const components = new Components({
+  const components = new DefaultComponents({
     peerId,
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
     connectionGater: mockConnectionGater(),
-    peerStore: new PersistentPeerStore(),
-    connectionManager: new DefaultConnectionManager({
-      minConnections: 50,
-      maxConnections: 1000,
-      autoDialInterval: 1000,
-      inboundUpgradeTimeout: 1000
-    })
+    dialer: stubInterface<Dialer>()
   })
-  components.setAddressManager(new DefaultAddressManager(components, {
+  components.peerStore = new PersistentPeerStore(components)
+  components.connectionManager = new DefaultConnectionManager(components, {
+    minConnections: 50,
+    maxConnections: 1000,
+    autoDialInterval: 1000,
+    inboundUpgradeTimeout: 1000
+  })
+  components.addressManager = new DefaultAddressManager(components, {
     announce: listenMaddrs.map(ma => ma.toString())
-  }))
+  })
 
   const transportManager = new DefaultTransportManager(components)
-  components.setTransportManager(transportManager)
+  components.transportManager = transportManager
 
-  await components.getPeerStore().protoBook.set(peerId, protocols)
+  await components.peerStore.protoBook.set(peerId, protocols)
 
   return components
 }
 
 describe('identify (push)', () => {
-  let localComponents: Components
-  let remoteComponents: Components
+  let localComponents: DefaultComponents
+  let remoteComponents: DefaultComponents
 
   let localPeerRecordUpdater: PeerRecordUpdater
 
@@ -107,10 +110,10 @@ describe('identify (push)', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // ensure connections are registered by connection manager
-    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: localToRemote
     }))
-    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: remoteToLocal
     }))
 
@@ -122,21 +125,21 @@ describe('identify (push)', () => {
     const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
     // should have protocols but not our new one
-    const identifiedProtocols = await remoteComponents.getPeerStore().protoBook.get(localComponents.getPeerId())
+    const identifiedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
     expect(identifiedProtocols).to.not.be.empty()
     expect(identifiedProtocols).to.not.include(updatedProtocol)
 
     // should have addresses but not our new one
-    const identifiedAddresses = await remoteComponents.getPeerStore().addressBook.get(localComponents.getPeerId())
+    const identifiedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
     expect(identifiedAddresses).to.not.be.empty()
     expect(identifiedAddresses.map(a => a.multiaddr.toString())).to.not.include(updatedAddress.toString())
 
     // update local data - change event will trigger push
-    await localComponents.getPeerStore().protoBook.add(localComponents.getPeerId(), [updatedProtocol])
-    await localComponents.getPeerStore().addressBook.add(localComponents.getPeerId(), [updatedAddress])
+    await localComponents.peerStore.protoBook.add(localComponents.peerId, [updatedProtocol])
+    await localComponents.peerStore.addressBook.add(localComponents.peerId, [updatedAddress])
 
     // needed to update the peer record and send our supported addresses
-    const addressManager = localComponents.getAddressManager()
+    const addressManager = localComponents.addressManager
     addressManager.getAddresses = () => {
       return [updatedAddress]
     }
@@ -148,7 +151,7 @@ describe('identify (push)', () => {
     await localPeerRecordUpdater.update()
 
     // wait for the remote peer store to notice the changes
-    const eventPromise = pEvent(remoteComponents.getPeerStore(), 'change:multiaddrs')
+    const eventPromise = pEvent(remoteComponents.peerStore, 'change:multiaddrs')
 
     // push updated peer record to connections
     await localIdentify.pushToPeerStore()
@@ -156,12 +159,12 @@ describe('identify (push)', () => {
     await eventPromise
 
     // should have new protocol
-    const updatedProtocols = await remoteComponents.getPeerStore().protoBook.get(localComponents.getPeerId())
+    const updatedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
     expect(updatedProtocols).to.not.be.empty()
     expect(updatedProtocols).to.include(updatedProtocol)
 
     // should have new address
-    const updatedAddresses = await remoteComponents.getPeerStore().addressBook.get(localComponents.getPeerId())
+    const updatedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
     expect(updatedAddresses.map(a => {
       return {
         multiaddr: a.multiaddr.toString(),
@@ -191,8 +194,8 @@ describe('identify (push)', () => {
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
     // replace existing handler with a really slow one
-    await remoteComponents.getRegistrar().unhandle(MULTICODEC_IDENTIFY_PUSH)
-    await remoteComponents.getRegistrar().handle(MULTICODEC_IDENTIFY_PUSH, ({ stream }) => {
+    await remoteComponents.registrar.unhandle(MULTICODEC_IDENTIFY_PUSH)
+    await remoteComponents.registrar.handle(MULTICODEC_IDENTIFY_PUSH, ({ stream }) => {
       void pipe(
         stream,
         async function * (source) {
@@ -238,10 +241,10 @@ describe('identify (push)', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // ensure connections are registered by connection manager
-    localComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: localToRemote
     }))
-    remoteComponents.getUpgrader().dispatchEvent(new CustomEvent('connection', {
+    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
       detail: remoteToLocal
     }))
 
@@ -253,39 +256,39 @@ describe('identify (push)', () => {
     const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
     // should have protocols but not our new one
-    const identifiedProtocols = await remoteComponents.getPeerStore().protoBook.get(localComponents.getPeerId())
+    const identifiedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
     expect(identifiedProtocols).to.not.be.empty()
     expect(identifiedProtocols).to.not.include(updatedProtocol)
 
     // should have addresses but not our new one
-    const identifiedAddresses = await remoteComponents.getPeerStore().addressBook.get(localComponents.getPeerId())
+    const identifiedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
     expect(identifiedAddresses).to.not.be.empty()
     expect(identifiedAddresses.map(a => a.multiaddr.toString())).to.not.include(updatedAddress.toString())
 
     // update local data - change event will trigger push
-    await localComponents.getPeerStore().protoBook.add(localComponents.getPeerId(), [updatedProtocol])
-    await localComponents.getPeerStore().addressBook.add(localComponents.getPeerId(), [updatedAddress])
+    await localComponents.peerStore.protoBook.add(localComponents.peerId, [updatedProtocol])
+    await localComponents.peerStore.addressBook.add(localComponents.peerId, [updatedAddress])
 
     // needed to send our supported addresses
-    const addressManager = localComponents.getAddressManager()
+    const addressManager = localComponents.addressManager
     addressManager.getAddresses = () => {
       return [updatedAddress]
     }
 
     // wait until remote peer store notices protocol list update
-    const waitForUpdate = pEvent(remoteComponents.getPeerStore(), 'change:protocols')
+    const waitForUpdate = pEvent(remoteComponents.peerStore, 'change:protocols')
 
     await localIdentify.pushToPeerStore()
 
     await waitForUpdate
 
     // should have new protocol
-    const updatedProtocols = await remoteComponents.getPeerStore().protoBook.get(localComponents.getPeerId())
+    const updatedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
     expect(updatedProtocols).to.not.be.empty()
     expect(updatedProtocols).to.include(updatedProtocol)
 
     // should have new address
-    const updatedAddresses = await remoteComponents.getPeerStore().addressBook.get(localComponents.getPeerId())
+    const updatedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
     expect(updatedAddresses.map(a => {
       return {
         multiaddr: a.multiaddr.toString(),

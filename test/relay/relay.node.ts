@@ -69,8 +69,8 @@ describe('Dialing (via relay, TCP)', () => {
     return await Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => await libp2p.stop()))
   })
 
-  it('should be able to connect to a peer over a relay', async () => {
-    const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0]
+  it('should be able to connect to a peer over a relay with active connections', async () => {
+    const relayAddr = relayLibp2p.components.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toString()
 
     await dstLibp2p.dial(relayAddr.encapsulate(`/p2p/${relayIdString}`))
@@ -100,8 +100,8 @@ describe('Dialing (via relay, TCP)', () => {
     echoStream.close()
   })
 
-  it('should fail to connect to a peer over a relay with no reservation', async () => {
-    const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0]
+  it('should fail to connect to a peer over a relay with inactive connections', async () => {
+    const relayAddr = relayLibp2p.components.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toString()
 
     const dialAddr = relayAddr
@@ -114,7 +114,7 @@ describe('Dialing (via relay, TCP)', () => {
   })
 
   it('should not stay connected to a relay when not already connected and HOP fails', async () => {
-    const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0]
+    const relayAddr = relayLibp2p.components.transportManager.getAddrs()[0]
     const relayIdString = relayLibp2p.peerId.toString()
 
     const dialAddr = relayAddr
@@ -126,13 +126,13 @@ describe('Dialing (via relay, TCP)', () => {
       .and.to.have.nested.property('.errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
     // We should not be connected to the relay, because we weren't before the dial
-    const srcToRelayConns = srcLibp2p.components.getConnectionManager().getConnections(relayLibp2p.peerId)
+    const srcToRelayConns = srcLibp2p.components.connectionManager.getConnections(relayLibp2p.peerId)
     expect(srcToRelayConns).to.be.empty()
   })
 
   it('dialer should stay connected to an already connected relay on hop failure', async () => {
     const relayIdString = relayLibp2p.peerId.toString()
-    const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0].encapsulate(`/p2p/${relayIdString}`)
+    const relayAddr = relayLibp2p.components.transportManager.getAddrs()[0].encapsulate(`/p2p/${relayIdString}`)
 
     const dialAddr = relayAddr
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toString()}`)
@@ -143,24 +143,24 @@ describe('Dialing (via relay, TCP)', () => {
       .to.eventually.be.rejected()
       .and.to.have.nested.property('.errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
 
-    const srcToRelayConn = srcLibp2p.components.getConnectionManager().getConnections(relayLibp2p.peerId)
+    const srcToRelayConn = srcLibp2p.components.connectionManager.getConnections(relayLibp2p.peerId)
     expect(srcToRelayConn).to.have.lengthOf(1)
     expect(srcToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
   })
 
   it('destination peer should stay connected to an already connected relay on hop failure', async () => {
     const relayIdString = relayLibp2p.peerId.toString()
-    const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0].encapsulate(`/p2p/${relayIdString}`)
+    const relayAddr = relayLibp2p.components.transportManager.getAddrs()[0].encapsulate(`/p2p/${relayIdString}`)
 
     const dialAddr = relayAddr
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toString()}`)
 
     // Connect the destination peer and the relay
-    const tcpAddrs = dstLibp2p.components.getTransportManager().getAddrs()
-    sinon.stub(dstLibp2p.components.getAddressManager(), 'getListenAddrs').returns([multiaddr(`${relayAddr.toString()}/p2p-circuit`)])
+    const tcpAddrs = dstLibp2p.components.transportManager.getAddrs()
+    sinon.stub(dstLibp2p.components.addressManager, 'getListenAddrs').returns([multiaddr(`${relayAddr.toString()}/p2p-circuit`)])
 
-    await dstLibp2p.components.getTransportManager().listen(dstLibp2p.components.getAddressManager().getListenAddrs())
-    expect(dstLibp2p.components.getTransportManager().getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
+    await dstLibp2p.components.transportManager.listen(dstLibp2p.components.addressManager.getListenAddrs())
+    expect(dstLibp2p.components.transportManager.getAddrs()).to.have.deep.members([...tcpAddrs, dialAddr.decapsulate('p2p')])
 
     // send an invalid relay message from the relay to the destination peer
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
@@ -172,7 +172,7 @@ describe('Dialing (via relay, TCP)', () => {
     streamHandler.close()
 
     // should still be connected
-    const dstToRelayConn = dstLibp2p.components.getConnectionManager().getConnections(relayLibp2p.peerId)
+    const dstToRelayConn = dstLibp2p.components.connectionManager.getConnections(relayLibp2p.peerId)
     expect(dstToRelayConn).to.have.lengthOf(1)
     expect(dstToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
   })
@@ -193,7 +193,7 @@ describe('Dialing (via relay, TCP)', () => {
       })
     })
 
-    const relayAddr = relayLibp2p.components.getTransportManager().getAddrs()[0]
+    const relayAddr = relayLibp2p.components.transportManager.getAddrs()[0]
     const dialAddr = relayAddr.encapsulate(`/p2p/${relayLibp2p.peerId.toString()}`)
 
     const connection = await srcLibp2p.dial(dialAddr)

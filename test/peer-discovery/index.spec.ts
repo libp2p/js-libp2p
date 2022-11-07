@@ -7,6 +7,8 @@ import { createPeerId } from '../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { Startable } from '@libp2p/interfaces/startable'
+import { stubInterface } from 'sinon-ts'
+import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
 
 describe('peer discovery', () => {
   describe('basic functions', () => {
@@ -25,46 +27,23 @@ describe('peer discovery', () => {
       sinon.reset()
     })
 
-    it('should stop discovery on libp2p start/stop', async () => {
-      let started = 0
-      let stopped = 0
-
-      class MockDiscovery implements Startable {
-        static tag = 'mock'
-
-        started = false
-
-        isStarted () {
-          return this.started
-        }
-
-        start () {
-          this.started = true
-          started++
-        }
-
-        stop () {
-          this.started = false
-          stopped++
-        }
-
-        addEventListener () {}
-        removeEventListener () {}
-      }
+    it('should start/stop startable discovery on libp2p start/stop', async () => {
+      const discovery = stubInterface<PeerDiscovery & Startable>()
 
       libp2p = await createLibp2pNode(createBaseOptions({
         peerId,
         peerDiscovery: [
-          new MockDiscovery()
+          () => discovery
         ]
       }))
 
       await libp2p.start()
-      expect(started).to.equal(1)
-      expect(stopped).to.equal(0)
+      expect(discovery.start.calledOnce).to.be.true()
+      expect(discovery.stop.called).to.be.false()
+
       await libp2p.stop()
-      expect(started).to.equal(1)
-      expect(stopped).to.equal(1)
+      expect(discovery.start.calledOnce).to.be.true()
+      expect(discovery.stop.calledOnce).to.be.true()
     })
   })
 })

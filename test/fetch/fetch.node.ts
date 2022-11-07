@@ -2,9 +2,9 @@
 
 import { expect } from 'aegir/chai'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Plaintext } from '../../src/insecure/index.js'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { codes } from '../../src/errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -16,14 +16,17 @@ async function createNode (peerId: PeerId) {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     streamMuxers: [
-      new Mplex()
+      mplex()
     ],
     connectionEncryption: [
-      new Plaintext()
-    ]
+      plaintext()
+    ],
+    nat: {
+      enabled: false
+    }
   })
 }
 
@@ -62,9 +65,6 @@ describe('Fetch', () => {
   })
 
   afterEach(async () => {
-    receiver.fetchService.unregisterLookupFunction(PREFIX_A)
-    receiver.fetchService.unregisterLookupFunction(PREFIX_B)
-
     await sender.stop()
     await receiver.stop()
   })

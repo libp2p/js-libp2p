@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -15,23 +17,25 @@ export namespace Exchange {
 
   export const codec = (): Codec<Exchange> => {
     if (_codec == null) {
-      _codec = message<Exchange>((obj, writer, opts = {}) => {
+      _codec = message<Exchange>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.id != null) {
-          writer.uint32(10)
-          writer.bytes(obj.id)
+          w.uint32(10)
+          w.bytes(obj.id)
         }
 
         if (obj.pubkey != null) {
-          writer.uint32(18)
-          PublicKey.codec().encode(obj.pubkey, writer)
+          w.uint32(18)
+          PublicKey.codec().encode(obj.pubkey, w, {
+            writeDefaults: false
+          })
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
         const obj: any = {}
@@ -99,30 +103,29 @@ export namespace PublicKey {
 
   export const codec = (): Codec<PublicKey> => {
     if (_codec == null) {
-      _codec = message<PublicKey>((obj, writer, opts = {}) => {
+      _codec = message<PublicKey>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.Type != null) {
-          writer.uint32(8)
-          KeyType.codec().encode(obj.Type, writer)
-        } else {
-          throw new Error('Protocol error: required field "Type" was not found in object')
+        if (opts.writeDefaults === true || (obj.Type != null && __KeyTypeValues[obj.Type] !== 0)) {
+          w.uint32(8)
+          KeyType.codec().encode(obj.Type, w)
         }
 
-        if (obj.Data != null) {
-          writer.uint32(18)
-          writer.bytes(obj.Data)
-        } else {
-          throw new Error('Protocol error: required field "Data" was not found in object')
+        if (opts.writeDefaults === true || (obj.Data != null && obj.Data.byteLength > 0)) {
+          w.uint32(18)
+          w.bytes(obj.Data)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          Type: KeyType.RSA,
+          Data: new Uint8Array(0)
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -140,14 +143,6 @@ export namespace PublicKey {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.Type == null) {
-          throw new Error('Protocol error: value for required field "Type" was not found in protobuf')
-        }
-
-        if (obj.Data == null) {
-          throw new Error('Protocol error: value for required field "Data" was not found in protobuf')
         }
 
         return obj

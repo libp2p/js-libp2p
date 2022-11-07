@@ -3,7 +3,8 @@ import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { Components } from '@libp2p/components'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 export interface AddressManagerInit {
   announceFilter?: AddressFilter
@@ -24,6 +25,11 @@ export interface AddressManagerInit {
   noAnnounce?: string[]
 }
 
+export interface DefaultAddressManagerComponents {
+  peerId: PeerId
+  transportManager: TransportManager
+}
+
 export interface AddressFilter {
   (addrs: Multiaddr[]): Multiaddr[]
 }
@@ -31,7 +37,7 @@ export interface AddressFilter {
 const defaultAddressFilter = (addrs: Multiaddr[]): Multiaddr[] => addrs
 
 export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
-  private readonly components: Components
+  private readonly components: DefaultAddressManagerComponents
   private readonly listen: Set<string>
   private readonly announce: Set<string>
   private readonly observed: Set<string>
@@ -43,7 +49,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
    * The listen addresses will be used by the libp2p transports to listen for new connections,
    * while the announce addresses will be used for the peer addresses' to other peers in the network.
    */
-  constructor (components: Components, init: AddressManagerInit) {
+  constructor (components: DefaultAddressManagerComponents, init: AddressManagerInit) {
     super()
 
     const { listen = [], announce = [] } = init
@@ -78,6 +84,23 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
 
   /**
    * Add peer observed addresses
+   * Signal that we have confidence an observed multiaddr is publicly dialable -
+   * this will make it appear in the output of getAddresses()
+   */
+  confirmObservedAddr (addr: Multiaddr): void {
+
+  }
+
+  /**
+   * Signal that we do not have confidence an observed multiaddr is publicly dialable -
+   * this will remove it from the output of getObservedAddrs()
+   */
+  removeObservedAddr (addr: Multiaddr): void {
+
+  }
+
+  /**
+   * Add peer observed addresses
    */
   addObservedAddr (addr: string | Multiaddr): void {
     let ma = multiaddr(addr)
@@ -88,8 +111,8 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
       const remotePeerId = peerIdFromString(remotePeer)
 
       // use same encoding for comparison
-      if (remotePeerId.equals(this.components.getPeerId())) {
-        ma = ma.decapsulate(multiaddr(`/p2p/${this.components.getPeerId().toString()}`))
+      if (remotePeerId.equals(this.components.peerId)) {
+        ma = ma.decapsulate(multiaddr(`/p2p/${this.components.peerId.toString()}`))
       }
     }
 
@@ -109,7 +132,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
 
     if (addrs.length === 0) {
       // no configured announce addrs, add configured listen addresses
-      addrs = this.components.getTransportManager().getAddrs().map(ma => ma.toString())
+      addrs = this.components.transportManager.getAddrs().map(ma => ma.toString())
     }
 
     addrs = addrs.concat(this.getObservedAddrs().map(ma => ma.toString()))
@@ -121,11 +144,11 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     return this.announceFilter(Array.from(addrSet)
       .map(str => multiaddr(str)))
       .map(ma => {
-        if (ma.getPeerId() === this.components.getPeerId().toString()) {
+        if (ma.getPeerId() === this.components.peerId.toString()) {
           return ma
         }
 
-        return ma.encapsulate(`/p2p/${this.components.getPeerId().toString()}`)
+        return ma.encapsulate(`/p2p/${this.components.peerId.toString()}`)
       })
   }
 }

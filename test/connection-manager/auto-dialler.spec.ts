@@ -5,8 +5,7 @@ import { AutoDialler } from '../../src/connection-manager/auto-dialler.js'
 import pWaitFor from 'p-wait-for'
 import delay from 'delay'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/components'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
 
@@ -37,11 +36,11 @@ describe('Auto-dialler', () => {
     const connectionManager = stubInterface<ConnectionManager>()
     connectionManager.getConnections.returns([])
 
-    const autoDialler = new AutoDialler(new Components({
+    const autoDialler = new AutoDialler({
       peerId: self.id,
       peerStore,
       connectionManager
-    }), {
+    }, {
       minConnections: 10
     })
 

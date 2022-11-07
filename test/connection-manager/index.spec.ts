@@ -6,16 +6,17 @@ import { createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import pWaitFor from 'p-wait-for'
 import { multiaddr } from '@multiformats/multiaddr'
-import { Components } from '@libp2p/components'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { Connection } from '@libp2p/interface-connection'
+import type { Upgrader } from '@libp2p/interface-transport'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const defaultOptions = {
   maxConnections: 10,
@@ -41,28 +42,26 @@ describe('Connection Manager', () => {
       started: false
     })
 
-    const spy = sinon.spy(libp2p.components.getConnectionManager() as DefaultConnectionManager, 'start')
+    const spy = sinon.spy(libp2p.connectionManager as DefaultConnectionManager, 'start')
 
     await libp2p.start()
     expect(spy).to.have.property('callCount', 1)
-    expect(libp2p.components.getMetrics()).to.not.exist()
+    expect(libp2p.metrics).to.not.exist()
   })
 
   it('should be able to create with metrics', async () => {
     libp2p = await createNode({
       config: createBaseOptions({
-        metrics: {
-          enabled: true
-        }
+        metrics: mockMetrics()
       }),
       started: false
     })
 
-    const spy = sinon.spy(libp2p.components.getConnectionManager() as DefaultConnectionManager, 'start')
+    const spy = sinon.spy(libp2p.connectionManager as DefaultConnectionManager, 'start')
 
     await libp2p.start()
     expect(spy).to.have.property('callCount', 1)
-    expect(libp2p.components.getMetrics()).to.exist()
+    expect(libp2p.metrics).to.exist()
   })
 
   it('should close connections with low tag values first', async () => {
@@ -79,7 +78,7 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
     const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
 
@@ -129,7 +128,7 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
     const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
 
     // Add 1 too many connections
@@ -164,7 +163,7 @@ describe('Connection Manager', () => {
       started: false
     })
 
-    const connectionManager = libp2p.components.getConnectionManager() as DefaultConnectionManager
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
     const connectionManagerOpenConnectionSpy = sinon.spy(connectionManager, 'openConnection')
 
     await libp2p.start()
@@ -187,6 +186,11 @@ describe('Connection Manager', () => {
   it('should deny connections from denylist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
     const connectionManager = new DefaultConnectionManager({
+      peerId: libp2p.peerId,
+      upgrader: stubInterface<Upgrader>(),
+      peerStore: stubInterface<PeerStore>(),
+      dialer: stubInterface<Dialer>()
+    }, {
       ...defaultOptions,
       deny: [
         '/ip4/83.13.55.32'
@@ -205,20 +209,18 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections when maxConnections is exceeded', async () => {
-    const connectionManager = new DefaultConnectionManager({
-      ...defaultOptions,
-      maxConnections: 1
-    })
-
     const dialer = stubInterface<Dialer>()
     dialer.dial.resolves(stubInterface<Connection>())
 
-    const components = new Components({
+    const connectionManager = new DefaultConnectionManager({
+      peerId: libp2p.peerId,
+      upgrader: stubInterface<Upgrader>(),
+      peerStore: stubInterface<PeerStore>(),
       dialer
+    }, {
+      ...defaultOptions,
+      maxConnections: 1
     })
-
-    // set mocks
-    connectionManager.init(components)
 
     // max out the connection limit
     await connectionManager.openConnection(await createEd25519PeerId())
@@ -236,20 +238,17 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
     const connectionManager = new DefaultConnectionManager({
+      peerId: libp2p.peerId,
+      upgrader: stubInterface<Upgrader>(),
+      peerStore: stubInterface<PeerStore>(),
+      dialer
+    }, {
       ...defaultOptions,
       inboundConnectionThreshold: 1
     })
-
-    const dialer = stubInterface<Dialer>()
-    dialer.dial.resolves(stubInterface<Connection>())
-
-    const components = new Components({
-      dialer
-    })
-
-    // set mocks
-    connectionManager.init(components)
 
     // an inbound connection is opened
     const remotePeer = await createEd25519PeerId()
@@ -271,23 +270,20 @@ describe('Connection Manager', () => {
 
   it('should allow connections from allowlist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
     const connectionManager = new DefaultConnectionManager({
+      peerId: libp2p.peerId,
+      upgrader: stubInterface<Upgrader>(),
+      peerStore: stubInterface<PeerStore>(),
+      dialer
+    }, {
       ...defaultOptions,
       maxConnections: 1,
       allow: [
         '/ip4/83.13.55.32'
       ]
     })
-
-    const dialer = stubInterface<Dialer>()
-    dialer.dial.resolves(stubInterface<Connection>())
-
-    const components = new Components({
-      dialer
-    })
-
-    // set mocks
-    connectionManager.init(components)
 
     // max out the connection limit
     await connectionManager.openConnection(await createEd25519PeerId())
@@ -302,6 +298,47 @@ describe('Connection Manager', () => {
     }, remotePeer)
 
     await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.true()
+  })
+
+  it('should limit the number of inbound pending connections', async () => {
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
+
+    const connectionManager = new DefaultConnectionManager({
+      peerId: await createEd25519PeerId(),
+      upgrader: stubInterface<Upgrader>(),
+      peerStore: stubInterface<PeerStore>(),
+      dialer
+    }, {
+      ...defaultOptions,
+      maxIncomingPendingConnections: 1
+    })
+
+    // start the upgrade
+    const maConn1 = mockMultiaddrConnection({
+      source: [],
+      sink: async () => {}
+    }, await createEd25519PeerId())
+
+    await expect(connectionManager.acceptIncomingConnection(maConn1))
+      .to.eventually.be.true()
+
+    // start the upgrade
+    const maConn2 = mockMultiaddrConnection({
+      source: [],
+      sink: async () => {}
+    }, await createEd25519PeerId())
+
+    // should be false because we have not completed the upgrade of maConn1
+    await expect(connectionManager.acceptIncomingConnection(maConn2))
+      .to.eventually.be.false()
+
+    // finish the maConn1 pending upgrade
+    connectionManager.afterUpgradeInbound()
+
+    // should be true because we have now completed the upgrade of maConn1
+    await expect(connectionManager.acceptIncomingConnection(maConn2))
       .to.eventually.be.true()
   })
 })

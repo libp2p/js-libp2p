@@ -1,12 +1,12 @@
 import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { WebRTCStar } from '@libp2p/webrtc-star'
+import { webSockets } from '@libp2p/websockets'
+import { webRTCStar } from '@libp2p/webrtc-star'
 import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
-import { Bootstrap } from '@libp2p/bootstrap'
+import { mplex } from '@libp2p/mplex'
+import { bootstrap } from '@libp2p/bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const webRtcStar = new WebRTCStar()
+  const wrtcStar = webRTCStar()
 
   // Create our libp2p node
   const libp2p = await createLibp2p({
@@ -20,14 +20,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       ]
     },
     transports: [
-      new WebSockets(),
-      webRtcStar
+      webSockets(),
+      wrtcStar.transport
     ],
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()],
+    connectionEncryption: [() => new Noise()],
+    streamMuxers: [mplex()],
     peerDiscovery: [
-      webRtcStar.discovery,
-      new Bootstrap({
+      wrtcStar.discovery,
+      bootstrap({
         list: [
           '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
           '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',

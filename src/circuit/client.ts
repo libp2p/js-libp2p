@@ -8,7 +8,6 @@ import {
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Connection } from '@libp2p/interface-connection'
-import type { Components } from '@libp2p/components'
 import sort from 'it-sort'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
@@ -117,7 +116,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
 
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
-      const connections = this.components.getConnectionManager().getConnections(peerId)
+      const connections = this.components.connectionManager.getConnections(peerId)
 
       const connection = connections[0]
 
@@ -174,7 +173,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
 
       // Get peer known addresses and sort them with public addresses first
       const remoteAddrs = await pipe(
-        await this.components.getPeerStore().addressBook.get(connection.remotePeer),
+        await this.components.peerStore.addressBook.get(connection.remotePeer),
         (source) => sort(source, this.addressSorter),
         async (source) => await all(source)
       )
@@ -192,7 +191,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
             multiaddr = multiaddr.encapsulate('/p2p-circuit')
 
             // Announce multiaddrs will update on listen success by TransportManager event being triggered
-            await this.components.getTransportManager().listen([multiaddr])
+            await this.components.transportManager.listen([multiaddr])
             return true
           } catch (err: any) {
             log.error('error listening on circuit address', err)
@@ -236,7 +235,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     }
 
     const knownHopsToDial = []
-    const peers = await this.components.getPeerStore().all()
+    const peers = await this.components.peerStore.all()
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
     for (const { id, protocols } of peers) {
@@ -260,7 +259,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
       }
       log.trace('Found peer with relay codec', id)
 
-      const connections = this.components.getConnectionManager().getConnections(id)
+      const connections = this.components.connectionManager.getConnections(id)
 
       // If not connected, store for possible later use.
       if (connections.length === 0) {
@@ -289,19 +288,19 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     // Try to find relays to hop on the network
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
-      for await (const provider of this.components.getContentRouting().findProviders(cid)) {
+      for await (const provider of this.components.contentRouting.findProviders(cid)) {
         if (provider.multiaddrs.length === 0) {
           continue
         }
 
         const peerId = provider.id
 
-        if (peerId.equals(this.components.getPeerId())) {
+        if (peerId.equals(this.components.peerId)) {
           // Skip the provider if it's us as dialing will fail
           continue
         }
 
-        await this.components.getPeerStore().addressBook.add(peerId, provider.multiaddrs)
+        await this.components.peerStore.addressBook.add(peerId, provider.multiaddrs)
 
         await this._tryToListenOnRelay(peerId)
 

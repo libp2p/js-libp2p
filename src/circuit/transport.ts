@@ -11,9 +11,8 @@ import { RELAY_V2_HOP_CODEC, RELAY_V1_CODEC, RELAY_V2_STOP_CODEC } from './multi
 import { createListener } from './listener.js'
 import { symbol } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { Components, Initializable } from '@libp2p/components'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -80,6 +79,10 @@ export class Circuit implements Transport, Initializable {
       .catch(err => {
         log.error(err)
       })
+  }
+
+  async stop () {
+    await this.components.registrar.unhandle(RELAY_CODEC)
   }
 
   hopEnabled () {
@@ -232,12 +235,12 @@ export class Circuit implements Transport, Initializable {
     const destinationPeer = peerIdFromString(destinationId)
 
     let disconnectOnFailure = false
-    const relayConnections = this.components.getConnectionManager().getConnections(relayPeer)
+    const relayConnections = this.components.connectionManager.getConnections(relayPeer)
     let relayConnection = relayConnections[0]
 
     if (relayConnection == null) {
-      await this.components.getPeerStore().addressBook.add(relayPeer, [relayAddr])
-      relayConnection = await this.components.getConnectionManager().openConnection(relayPeer, options)
+      await this.components.peerStore.addressBook.add(relayPeer, [relayAddr])
+      relayConnection = await this.components.connectionManager.openConnection(relayPeer, options)
       disconnectOnFailure = true
     }
 
@@ -354,8 +357,8 @@ export class Circuit implements Transport, Initializable {
     this.handler = options.handler
 
     return createListener({
-      connectionManager: this.components.getConnectionManager(),
-      peerStore: this.components.getPeerStore()
+      connectionManager: this.components.connectionManager,
+      peerStore: this.components.peerStore
     })
   }
 

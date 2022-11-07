@@ -37,8 +37,16 @@ export interface RelayInit {
   advertise: RelayAdvertiseConfig
 }
 
+export interface RelayComponents {
+  peerId: PeerId
+  contentRouting: ContentRouting
+  peerStore: PeerStore
+  connectionManager: ConnectionManager
+  transportManager: TransportManager
+}
+
 export class Relay implements Startable {
-  private readonly components: Components
+  private readonly components: RelayComponents
   private readonly init: RelayInit
   private timeout?: any
   private started: boolean
@@ -46,7 +54,7 @@ export class Relay implements Startable {
   /**
    * Creates an instance of Relay
    */
-  constructor (components: Components, init: RelayInit) {
+  constructor (components: RelayComponents, init: RelayInit) {
     this.components = components
     this.started = false
     this.init = init
@@ -88,7 +96,7 @@ export class Relay implements Startable {
   async _advertiseService () {
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
-      await this.components.getContentRouting().provide(cid)
+      await this.components.contentRouting.provide(cid)
     } catch (err: any) {
       if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
         log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)

@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -14,23 +16,23 @@ export namespace FetchRequest {
 
   export const codec = (): Codec<FetchRequest> => {
     if (_codec == null) {
-      _codec = message<FetchRequest>((obj, writer, opts = {}) => {
+      _codec = message<FetchRequest>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.identifier != null) {
-          writer.uint32(10)
-          writer.string(obj.identifier)
-        } else {
-          throw new Error('Protocol error: required field "identifier" was not found in object')
+        if (opts.writeDefaults === true || obj.identifier !== '') {
+          w.uint32(10)
+          w.string(obj.identifier)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          identifier: ''
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -45,10 +47,6 @@ export namespace FetchRequest {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.identifier == null) {
-          throw new Error('Protocol error: value for required field "identifier" was not found in protobuf')
         }
 
         return obj
@@ -95,30 +93,29 @@ export namespace FetchResponse {
 
   export const codec = (): Codec<FetchResponse> => {
     if (_codec == null) {
-      _codec = message<FetchResponse>((obj, writer, opts = {}) => {
+      _codec = message<FetchResponse>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
-        if (obj.status != null) {
-          writer.uint32(8)
-          FetchResponse.StatusCode.codec().encode(obj.status, writer)
-        } else {
-          throw new Error('Protocol error: required field "status" was not found in object')
+        if (opts.writeDefaults === true || (obj.status != null && __StatusCodeValues[obj.status] !== 0)) {
+          w.uint32(8)
+          FetchResponse.StatusCode.codec().encode(obj.status, w)
         }
 
-        if (obj.data != null) {
-          writer.uint32(18)
-          writer.bytes(obj.data)
-        } else {
-          throw new Error('Protocol error: required field "data" was not found in object')
+        if (opts.writeDefaults === true || (obj.data != null && obj.data.byteLength > 0)) {
+          w.uint32(18)
+          w.bytes(obj.data)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          status: StatusCode.OK,
+          data: new Uint8Array(0)
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -136,14 +133,6 @@ export namespace FetchResponse {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        if (obj.status == null) {
-          throw new Error('Protocol error: value for required field "status" was not found in protobuf')
-        }
-
-        if (obj.data == null) {
-          throw new Error('Protocol error: value for required field "data" was not found in protobuf')
         }
 
         return obj

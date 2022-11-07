@@ -8,7 +8,9 @@ import errCode from 'err-code'
 import { codes } from './errors.js'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/components'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 
 const log = logger('libp2p:nat')
 const DEFAULT_TTL = 7200
@@ -61,8 +63,14 @@ export interface NatManagerInit {
   gateway?: string
 }
 
+export interface NatManagerComponents {
+  peerId: PeerId
+  transportManager: TransportManager
+  addressManager: AddressManager
+}
+
 export class NatManager implements Startable {
-  private readonly components: Components
+  private readonly components: NatManagerComponents
   private readonly enabled: boolean
   private readonly externalAddress?: string
   private readonly localAddress?: string
@@ -73,14 +81,14 @@ export class NatManager implements Startable {
   private started: boolean
   private client?: NatAPI
 
-  constructor (components: Components, init: NatManagerInit) {
+  constructor (components: NatManagerComponents, init: NatManagerInit) {
     this.components = components
 
     this.started = false
     this.enabled = init.enabled
     this.externalAddress = init.externalAddress
     this.localAddress = init.localAddress
-    this.description = init.description ?? `${pkg.name}@${pkg.version} ${this.components.getPeerId().toString()}`
+    this.description = init.description ?? `${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`
     this.ttl = init.ttl ?? DEFAULT_TTL
     this.keepAlive = init.keepAlive ?? true
     this.gateway = init.gateway
@@ -116,7 +124,7 @@ export class NatManager implements Startable {
   }
 
   async _start () {
-    const addrs = this.components.getTransportManager().getAddrs()
+    const addrs = this.components.transportManager.getAddrs()
 
     for (const addr of addrs) {
       // try to open uPnP ports for each thin waist address
@@ -157,7 +165,7 @@ export class NatManager implements Startable {
         protocol: transport.toUpperCase() === 'TCP' ? 'TCP' : 'UDP'
       })
 
-      this.components.getAddressManager().addObservedAddr(fromNodeAddress({
+      this.components.addressManager.addObservedAddr(fromNodeAddress({
         family: 4,
         address: publicIp,
         port: publicPort

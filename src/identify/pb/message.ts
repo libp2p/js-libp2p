@@ -1,5 +1,7 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -20,59 +22,58 @@ export namespace Identify {
 
   export const codec = (): Codec<Identify> => {
     if (_codec == null) {
-      _codec = message<Identify>((obj, writer, opts = {}) => {
+      _codec = message<Identify>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          writer.fork()
+          w.fork()
         }
 
         if (obj.protocolVersion != null) {
-          writer.uint32(42)
-          writer.string(obj.protocolVersion)
+          w.uint32(42)
+          w.string(obj.protocolVersion)
         }
 
         if (obj.agentVersion != null) {
-          writer.uint32(50)
-          writer.string(obj.agentVersion)
+          w.uint32(50)
+          w.string(obj.agentVersion)
         }
 
         if (obj.publicKey != null) {
-          writer.uint32(10)
-          writer.bytes(obj.publicKey)
+          w.uint32(10)
+          w.bytes(obj.publicKey)
         }
 
         if (obj.listenAddrs != null) {
           for (const value of obj.listenAddrs) {
-            writer.uint32(18)
-            writer.bytes(value)
+            w.uint32(18)
+            w.bytes(value)
           }
-        } else {
-          throw new Error('Protocol error: required field "listenAddrs" was not found in object')
         }
 
         if (obj.observedAddr != null) {
-          writer.uint32(34)
-          writer.bytes(obj.observedAddr)
+          w.uint32(34)
+          w.bytes(obj.observedAddr)
         }
 
         if (obj.protocols != null) {
           for (const value of obj.protocols) {
-            writer.uint32(26)
-            writer.string(value)
+            w.uint32(26)
+            w.string(value)
           }
-        } else {
-          throw new Error('Protocol error: required field "protocols" was not found in object')
         }
 
         if (obj.signedPeerRecord != null) {
-          writer.uint32(66)
-          writer.bytes(obj.signedPeerRecord)
+          w.uint32(66)
+          w.bytes(obj.signedPeerRecord)
         }
 
         if (opts.lengthDelimited !== false) {
-          writer.ldelim()
+          w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {}
+        const obj: any = {
+          listenAddrs: [],
+          protocols: []
+        }
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -90,14 +91,12 @@ export namespace Identify {
               obj.publicKey = reader.bytes()
               break
             case 2:
-              obj.listenAddrs = obj.listenAddrs ?? []
               obj.listenAddrs.push(reader.bytes())
               break
             case 4:
               obj.observedAddr = reader.bytes()
               break
             case 3:
-              obj.protocols = obj.protocols ?? []
               obj.protocols.push(reader.string())
               break
             case 8:
@@ -107,17 +106,6 @@ export namespace Identify {
               reader.skipType(tag & 7)
               break
           }
-        }
-
-        obj.listenAddrs = obj.listenAddrs ?? []
-        obj.protocols = obj.protocols ?? []
-
-        if (obj.listenAddrs == null) {
-          throw new Error('Protocol error: value for required field "listenAddrs" was not found in protobuf')
-        }
-
-        if (obj.protocols == null) {
-          throw new Error('Protocol error: value for required field "protocols" was not found in protobuf')
         }
 
         return obj

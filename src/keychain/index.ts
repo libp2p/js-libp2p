@@ -11,9 +11,9 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Components } from '@libp2p/components'
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import type { Startable } from '@libp2p/interfaces/dist/src/startable'
+import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:keychain')
 
@@ -103,6 +103,11 @@ function DsInfoName (name: string) {
   return new Key(infoPrefix + name)
 }
 
+export interface KeyChainComponents {
+  peerId: PeerId
+  datastore: Datastore
+}
+
 /**
  * Manages the lifecycle of a key. Keys are encrypted at rest using PKCS #8.
  *
@@ -112,14 +117,14 @@ function DsInfoName (name: string) {
  *
  */
 export class KeyChain implements Startable {
-  private readonly components: Components
+  private readonly components: KeyChainComponents
   private init: KeyChainInit
   private started: boolean
 
   /**
    * Creates a new instance of a key chain
    */
-  constructor (components: Components, init: KeyChainInit) {
+  constructor (components: KeyChainComponents, init: KeyChainInit) {
     this.components = components
     this.init = mergeOptions(defaultOptions, init)
 
@@ -157,8 +162,8 @@ export class KeyChain implements Startable {
   async start () {
     const dsname = DsInfoName('self')
 
-    if (!(await this.components.getDatastore().has(dsname))) {
-      await this.importPeer('self', this.components.getPeerId())
+    if (!(await this.components.datastore.has(dsname))) {
+      await this.importPeer('self', this.components.peerId)
     }
 
     this.started = true
@@ -229,7 +234,7 @@ export class KeyChain implements Startable {
     }
 
     const dsname = DsName(name)
-    const exists = await this.components.getDatastore().has(dsname)
+    const exists = await this.components.datastore.has(dsname)
     if (exists) {
       await randomDelay()
       throw errCode(new Error('Key name already exists'), codes.ERR_KEY_ALREADY_EXISTS)
@@ -262,7 +267,7 @@ export class KeyChain implements Startable {
         name: name,
         id: kid
       }
-      const batch = this.components.getDatastore().batch()
+      const batch = this.components.datastore.batch()
       batch.put(dsname, uint8ArrayFromString(pem))
       batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
 
@@ -286,7 +291,7 @@ export class KeyChain implements Startable {
     }
 
     const info = []
-    for await (const value of this.components.getDatastore().query(query)) {
+    for await (const value of this.components.datastore.query(query)) {
       info.push(JSON.parse(uint8ArrayToString(value.value)))
     }
 
@@ -320,7 +325,7 @@ export class KeyChain implements Startable {
 
     const dsname = DsInfoName(name)
     try {
-      const res = await this.components.getDatastore().get(dsname)
+      const res = await this.components.datastore.get(dsname)
       return JSON.parse(uint8ArrayToString(res))
     } catch (err: any) {
       await randomDelay()
@@ -342,7 +347,7 @@ export class KeyChain implements Startable {
     }
     const dsname = DsName(name)
     const keyInfo = await this.findKeyByName(name)
-    const batch = this.components.getDatastore().batch()
+    const batch = this.components.datastore.batch()
     batch.delete(dsname)
     batch.delete(DsInfoName(name))
     await batch.commit()
@@ -370,19 +375,19 @@ export class KeyChain implements Startable {
     const oldInfoName = DsInfoName(oldName)
     const newInfoName = DsInfoName(newName)
 
-    const exists = await this.components.getDatastore().has(newDsname)
+    const exists = await this.components.datastore.has(newDsname)
     if (exists) {
       await randomDelay()
       throw errCode(new Error(`Key '${newName}' already exists`), codes.ERR_KEY_ALREADY_EXISTS)
     }
 
     try {
-      const pem = await this.components.getDatastore().get(oldDsname)
-      const res = await this.components.getDatastore().get(oldInfoName)
+      const pem = await this.components.datastore.get(oldDsname)
+      const res = await this.components.datastore.get(oldInfoName)
 
       const keyInfo = JSON.parse(uint8ArrayToString(res))
       keyInfo.name = newName
-      const batch = this.components.getDatastore().batch()
+      const batch = this.components.datastore.batch()
       batch.put(newDsname, pem)
       batch.put(newInfoName, uint8ArrayFromString(JSON.stringify(keyInfo)))
       batch.delete(oldDsname)
@@ -410,7 +415,7 @@ export class KeyChain implements Startable {
 
     const dsname = DsName(name)
     try {
-      const res = await this.components.getDatastore().get(dsname)
+      const res = await this.components.datastore.get(dsname)
       const pem = uint8ArrayToString(res)
       const cached = privates.get(this)
 
@@ -445,7 +450,7 @@ export class KeyChain implements Startable {
       throw errCode(new Error('PEM encoded key is required'), codes.ERR_PEM_REQUIRED)
     }
     const dsname = DsName(name)
-    const exists = await this.components.getDatastore().has(dsname)
+    const exists = await this.components.datastore.has(dsname)
     if (exists) {
       await randomDelay()
       throw errCode(new Error(`Key '${name}' already exists`), codes.ERR_KEY_ALREADY_EXISTS)
@@ -479,7 +484,7 @@ export class KeyChain implements Startable {
       name: name,
       id: kid
     }
-    const batch = this.components.getDatastore().batch()
+    const batch = this.components.datastore.batch()
     batch.put(dsname, uint8ArrayFromString(pem))
     batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
     await batch.commit()
@@ -505,7 +510,7 @@ export class KeyChain implements Startable {
       const privateKey = await unmarshalPrivateKey(peer.privateKey)
 
       const dsname = DsName(name)
-      const exists = await this.components.getDatastore().has(dsname)
+      const exists = await this.components.datastore.has(dsname)
       if (exists) {
         await randomDelay()
         throw errCode(new Error(`Key '${name}' already exists`), codes.ERR_KEY_ALREADY_EXISTS)
@@ -523,7 +528,7 @@ export class KeyChain implements Startable {
         name: name,
         id: peer.toString()
       }
-      const batch = this.components.getDatastore().batch()
+      const batch = this.components.datastore.batch()
       batch.put(dsname, uint8ArrayFromString(pem))
       batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
       await batch.commit()
@@ -545,7 +550,7 @@ export class KeyChain implements Startable {
 
     try {
       const dsname = DsName(name)
-      const res = await this.components.getDatastore().get(dsname)
+      const res = await this.components.datastore.get(dsname)
       return uint8ArrayToString(res)
     } catch (err: any) {
       await randomDelay()
@@ -590,14 +595,14 @@ export class KeyChain implements Startable {
     privates.set(this, { dek: newDek })
     const keys = await this.listKeys()
     for (const key of keys) {
-      const res = await this.components.getDatastore().get(DsName(key.name))
+      const res = await this.components.datastore.get(DsName(key.name))
       const pem = uint8ArrayToString(res)
       const privateKey = await importKey(pem, oldDek)
       const password = newDek.toString()
       const keyAsPEM = await privateKey.export(password)
 
       // Update stored key
-      const batch = this.components.getDatastore().batch()
+      const batch = this.components.datastore.batch()
       const keyInfo = {
         name: key.name,
         id: key.id

@@ -2,14 +2,15 @@ import { logger } from '@libp2p/logger'
 import pSettle from 'p-settle'
 import { codes } from './errors.js'
 import errCode from 'err-code'
-import type { Listener, Transport, TransportManager, TransportManagerEvents } from '@libp2p/interface-transport'
+import type { Listener, Transport, TransportManager, TransportManagerEvents, Upgrader } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/components'
 import { trackedMap } from '@libp2p/tracked-map'
+import type { Metrics } from '@libp2p/interface-metrics'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 
 const log = logger('libp2p:transports')
 
@@ -17,23 +18,28 @@ export interface TransportManagerInit {
   faultTolerance?: FaultTolerance
 }
 
+export interface DefaultTransportManagerComponents {
+  metrics?: Metrics
+  addressManager: AddressManager
+  upgrader: Upgrader
+}
+
 export class DefaultTransportManager extends EventEmitter<TransportManagerEvents> implements TransportManager, Startable {
-  private readonly components: Components
+  private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
   private readonly listeners: Map<string, Listener[]>
   private readonly faultTolerance: FaultTolerance
   private started: boolean
 
-  constructor (components: Components, init: TransportManagerInit = {}) {
+  constructor (components: DefaultTransportManagerComponents, init: TransportManagerInit = {}) {
     super()
 
     this.components = components
     this.started = false
     this.transports = new Map<string, Transport>()
     this.listeners = trackedMap({
-      component: 'transport-manager',
-      metric: 'listeners',
-      metrics: this.components.getMetrics()
+      name: 'libp2p_transport_manager_listeners',
+      metrics: this.components.metrics
     })
     this.faultTolerance = init.faultTolerance ?? FaultTolerance.FATAL_ALL
   }
@@ -67,7 +73,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
 
   async start () {
     // Listen on the provided transports for the provided addresses
-    const addrs = this.components.getAddressManager().getListenAddrs()
+    const addrs = this.components.addressManager.getListenAddrs()
 
     await this.listen(addrs)
 
@@ -114,7 +120,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     try {
       return await transport.dial(ma, {
         ...options,
-        upgrader: this.components.getUpgrader()
+        upgrader: this.components.upgrader
       })
     } catch (err: any) {
       if (err.code == null) {
@@ -177,7 +183,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
       for (const addr of supportedAddrs) {
         log('creating listener for %s on %s', key, addr)
         const listener = transport.createListener({
-          upgrader: this.components.getUpgrader()
+          upgrader: this.components.upgrader
         })
 
         let listeners = this.listeners.get(key)

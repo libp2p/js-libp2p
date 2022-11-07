@@ -14,7 +14,6 @@ import { Circuit } from '../../src/circuit/transport.js'
 import pDefer from 'p-defer'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { WebSockets } from '@libp2p/websockets'
 import { pEvent } from 'p-event'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit/multicodec.js'
@@ -106,7 +105,7 @@ describe('Dialing (resolvable addresses)', () => {
     // Use the last peer
     const peerId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.getPeerStore().protoBook.add(peerId, [RELAY_V2_HOP_CODEC])
+    await remoteLibp2p.components.peerStore.protoBook.add(peerId, [RELAY_V2_HOP_CODEC])
     const remoteId = remoteLibp2p.peerId
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
@@ -141,7 +140,7 @@ describe('Dialing (resolvable addresses)', () => {
     // Use the last peer
     const relayId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.getPeerStore().protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
+    await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
 
     // create reservation on relay
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -186,7 +185,7 @@ describe('Dialing (resolvable addresses)', () => {
     const deferred = pDefer()
 
     // Stub transport
-    const transport = getTransport(libp2p, WebSockets.prototype[Symbol.toStringTag])
+    const transport = getTransport(libp2p, '@libp2p/websockets')
     const stubTransport = sinon.stub(transport, 'dial')
     stubTransport.callsFake(async (multiaddr) => {
       expect(multiaddr.equals(dnsMa)).to.equal(true)
@@ -211,7 +210,7 @@ describe('Dialing (resolvable addresses)', () => {
     // Use the last peer
     const relayId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.getPeerStore().protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
+    await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
 
     // create reservation on relay
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -243,7 +242,7 @@ describe('Dialing (resolvable addresses)', () => {
     resolver.returns(Promise.reject(new Error()))
 
     // Stub transport
-    const transport = getTransport(libp2p, WebSockets.prototype[Symbol.toStringTag])
+    const transport = getTransport(libp2p, '@libp2p/websockets')
     const spy = sinon.spy(transport, 'dial')
 
     await expect(libp2p.dial(dialAddr))
@@ -254,7 +253,7 @@ describe('Dialing (resolvable addresses)', () => {
 })
 
 function getTransport (libp2p: Libp2pNode, tag: string) {
-  const transport = libp2p.components.getTransportManager().getTransports().find(t => {
+  const transport = libp2p.components.transportManager.getTransports().find(t => {
     return t[Symbol.toStringTag] === tag
   })
 
