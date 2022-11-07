@@ -3,7 +3,7 @@
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
 import fs from 'fs'
 import https from 'https'
@@ -34,7 +34,7 @@ const createNode = async (addresses = []) => {
         }
       })
     ],
-    connectionEncryption: [() => new Noise()],
+    connectionEncryption: [noise()],
     streamMuxers: [mplex()],
     connectionManager: {
       // Disable autoDial as it would fail because we are using a self-signed cert.

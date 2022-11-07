@@ -25,7 +25,6 @@ import { pEvent } from 'p-event'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { stubInterface } from 'sinon-ts'
 import type { Dialer } from '@libp2p/interface-connection-manager'
-import type { Metrics } from '@libp2p/interface-metrics'
 import { DefaultComponents } from '../../src/components.js'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
@@ -53,7 +52,6 @@ async function createComponents (index: number): Promise<DefaultComponents> {
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
     connectionGater: mockConnectionGater(),
-    metrics: stubInterface<Metrics>(),
     dialer: stubInterface<Dialer>()
   })
   components.peerStore = new PersistentPeerStore(components)

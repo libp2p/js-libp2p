@@ -37,17 +37,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
   },
-  metrics: {
-    enabled: false,
-    computeThrottleMaxQueueSize: 1000,
-    computeThrottleTimeout: 2000,
-    movingAverageIntervals: [
-      60 * 1000, // 1 minute
-      5 * 60 * 1000, // 5 minutes
-      15 * 60 * 1000 // 15 minutes
-    ],
-    maxOldPeersRetention: 50
-  },
   peerRouting: {
     refreshManager: {
       enabled: true,

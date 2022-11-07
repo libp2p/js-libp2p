@@ -27,15 +27,11 @@ import { getPeer } from '../../get-peer.js'
 import sort from 'it-sort'
 import map from 'it-map'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
-import type { ComponentMetricsTracker, Metrics } from '@libp2p/interface-metrics'
+import type { Metrics } from '@libp2p/interface-metrics'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { TransportManager } from '@libp2p/interface-transport'
 
 const log = logger('libp2p:dialer')
-
-const METRICS_COMPONENT = 'dialler'
-const METRICS_PENDING_DIALS = 'pending-dials'
-const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
 
 export interface DialTarget {
   id: string
@@ -84,7 +80,6 @@ export interface DialerInit {
    * Multiaddr resolvers to use when dialing
    */
   resolvers?: Record<string, Resolver>
-  metrics?: ComponentMetricsTracker
 }
 
 export interface DefaultDialerComponents {
@@ -115,13 +110,11 @@ export class DefaultDialer implements Startable, Dialer {
     this.tokens = [...new Array(init.maxParallelDials ?? MAX_PARALLEL_DIALS)].map((_, index) => index)
     this.components = components
     this.pendingDials = trackedMap({
-      component: METRICS_COMPONENT,
-      metric: METRICS_PENDING_DIALS,
-      metrics: init.metrics
+      name: 'libp2p_dialler_pending_dials',
+      metrics: components.metrics
     })
     this.pendingDialTargets = trackedMap({
-      component: METRICS_COMPONENT,
-      metric: METRICS_PENDING_DIAL_TARGETS,
+      name: 'libp2p_dialler_pending_dial_targets',
       metrics: components.metrics
     })
 

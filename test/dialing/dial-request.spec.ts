@@ -10,7 +10,6 @@ import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/int
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
-import type { Metrics } from '@libp2p/interface-metrics'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection'
@@ -30,7 +29,6 @@ describe('Dial Request', () => {
     const controller = new AbortController()
     const dialer = new DefaultDialer({
       peerId: await createEd25519PeerId(),
-      metrics: stubInterface<Metrics>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
@@ -66,7 +64,6 @@ describe('Dial Request', () => {
     const controller = new AbortController()
     const dialer = new DefaultDialer({
       peerId: await createEd25519PeerId(),
-      metrics: stubInterface<Metrics>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
@@ -117,7 +114,6 @@ describe('Dial Request', () => {
     const controller = new AbortController()
     const dialer = new DefaultDialer({
       peerId: await createEd25519PeerId(),
-      metrics: stubInterface<Metrics>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
@@ -163,7 +159,6 @@ describe('Dial Request', () => {
     const controller = new AbortController()
     const dialer = new DefaultDialer({
       peerId: await createEd25519PeerId(),
-      metrics: stubInterface<Metrics>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
@@ -215,7 +210,6 @@ describe('Dial Request', () => {
     const controller = new AbortController()
     const dialer = new DefaultDialer({
       peerId: await createEd25519PeerId(),
-      metrics: stubInterface<Metrics>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
@@ -274,7 +268,6 @@ describe('Dial Request', () => {
       addrs: Object.keys(actions).map(str => multiaddr(str)),
       dialer: new DefaultDialer({
         peerId: await createEd25519PeerId(),
-        metrics: stubInterface<Metrics>(),
         peerStore: stubInterface<PeerStore>(),
         transportManager: stubInterface<TransportManager>(),
         connectionGater: stubInterface<ConnectionGater>()
