@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.0...v6.0.1) (2022-11-07)
+
+
+### Bug Fixes
+
+* enable and fix browser tests ([#352](https://github.com/libp2p/js-libp2p-kad-dht/issues/352)) ([5244428](https://github.com/libp2p/js-libp2p-kad-dht/commit/5244428d0a6a7c3151f2fcb043400e61a4c78a36))
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v5.0.2...v6.0.0) (2022-11-05)
 
 
