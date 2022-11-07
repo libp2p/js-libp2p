@@ -97,11 +97,11 @@ describe('rpc', () => {
       }
     }
 
-    await rpc.onIncomingStream({
+    rpc.onIncomingStream({
       stream: mockStream(duplexStream),
       connection: stubInterface<Connection>()
     })
 
-    return await defer.promise
+    await defer.promise
   })
 })
