@@ -12,7 +12,7 @@ import { createListener } from './listener.js'
 import { symbol } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -25,6 +25,7 @@ import type { RelayConfig } from '../index.js'
 import { setMaxListeners } from 'events'
 import { abortableDuplex } from 'abortable-iterator'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Components } from '../components.js'
 
 const log = logger('libp2p:circuit')
 
@@ -41,21 +42,18 @@ interface ConnectOptions {
   ma: Multiaddr
   disconnectOnFailure: boolean
 }
-export class Circuit implements Transport, Initializable {
+export class Circuit implements Transport {
   private handler?: ConnectionHandler
-  private components: Components = new Components()
+  private readonly components: Components;
   private readonly reservationStore: ReservationStore
   private readonly _init: RelayConfig
 
-  constructor (options: RelayConfig) {
+  constructor (components: Components, options: RelayConfig) {
+    this.components = components
     this._init = options
     this.reservationStore = new ReservationStore(options.limit)
-  }
 
-  init (components: Components): void {
-    this.components = components
-
-    void this.components.getRegistrar().handle(RELAY_V1_CODEC, (data) => {
+    void this.components.registrar.handle(RELAY_V1_CODEC, (data) => {
       void this._onProtocolV1(data).catch(err => {
         log.error(err)
       })
@@ -63,7 +61,8 @@ export class Circuit implements Transport, Initializable {
       .catch(err => {
         log.error(err)
       })
-    void this.components.getRegistrar().handle(RELAY_V2_HOP_CODEC, (data) => {
+
+    void this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
       void this._onV2ProtocolHop(data).catch(err => {
         log.error(err)
       })
@@ -71,7 +70,7 @@ export class Circuit implements Transport, Initializable {
       .catch(err => {
         log.error(err)
       })
-    void this.components.getRegistrar().handle(RELAY_V2_STOP_CODEC, (data) => {
+    void this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this._onV2ProtocolStop(data).catch(err => {
         log.error(err)
       })
@@ -82,7 +81,9 @@ export class Circuit implements Transport, Initializable {
   }
 
   async stop () {
-    await this.components.registrar.unhandle(RELAY_CODEC)
+    await this.components.registrar.unhandle(RELAY_V1_CODEC)
+    await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
+    await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
   }
 
   hopEnabled () {
@@ -102,7 +103,7 @@ export class Circuit implements Transport, Initializable {
   }
 
   getPeerConnection (dstPeer: PeerId): Connection|undefined {
-    return this.components.getConnectionManager().getConnections(dstPeer)[0] ?? undefined
+    return this.components.connectionManager.getConnections(dstPeer)[0] ?? undefined
   }
 
   async _onProtocolV1 (data: IncomingStreamData) {
@@ -175,8 +176,8 @@ export class Circuit implements Transport, Initializable {
         connection,
         streamHandler,
         circuit: this,
-        relayPeer: this.components.getPeerId(),
-        relayAddrs: this.components.getAddressManager().getListenAddrs(),
+        relayPeer: this.components.peerId,
+        relayAddrs: this.components.addressManager.getListenAddrs(),
         reservationStore: this.reservationStore,
         request
       })
@@ -201,14 +202,14 @@ export class Circuit implements Transport, Initializable {
 
     if (mStream !== null && mStream !== undefined) {
       const remoteAddr = multiaddr(request.peer?.addrs?.[0])
-      const localAddr = this.components.getTransportManager().getAddrs()[0]
+      const localAddr = this.components.transportManager.getAddrs()[0]
       const maConn = streamToMaConnection({
         stream: mStream,
         remoteAddr,
         localAddr
       })
       log('new inbound connection %s', maConn.remoteAddr)
-      const conn = await this.components.getUpgrader().upgradeInbound(maConn)
+      const conn = await this.components.upgrader.upgradeInbound(maConn)
       log('%s connection %s upgraded', 'inbound', maConn.remoteAddr)
       this.handler?.(conn)
     }
@@ -287,8 +288,8 @@ export class Circuit implements Transport, Initializable {
       request: {
         type: CircuitV1.CircuitRelay.Type.HOP,
         srcPeer: {
-          id: this.components.getPeerId().toBytes(),
-          addrs: this.components.getAddressManager().getListenAddrs().map(addr => addr.bytes)
+          id: this.components.peerId.toBytes(),
+          addrs: this.components.addressManager.getListenAddrs().map(addr => addr.bytes)
         },
         dstPeer: {
           id: destinationPeer.toBytes(),
@@ -297,7 +298,7 @@ export class Circuit implements Transport, Initializable {
       }
     })
 
-    const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.getPeerId().toString()}`)
+    const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`)
     const maConn = streamToMaConnection({
       stream: virtualConnection,
       remoteAddr: ma,
@@ -305,7 +306,7 @@ export class Circuit implements Transport, Initializable {
     })
     log('new outbound connection %s', maConn.remoteAddr)
 
-    return await this.components.getUpgrader().upgradeOutbound(maConn)
+    return await this.components.upgrader.upgradeOutbound(maConn)
   }
 
   async connectV2 (
@@ -333,14 +334,14 @@ export class Circuit implements Transport, Initializable {
       // TODO: do something with limit and transient connection
 
       let localAddr = relayAddr
-      localAddr = localAddr.encapsulate(`/p2p-circuit/p2p/${this.components.getPeerId().toString()}`)
+      localAddr = localAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`)
       const maConn = streamToMaConnection({
         stream: streamHandler.rest(),
         remoteAddr: ma,
         localAddr
       })
       log('new outbound connection %s', maConn.remoteAddr)
-      const conn = await this.components.getUpgrader().upgradeOutbound(maConn)
+      const conn = await this.components.upgrader.upgradeOutbound(maConn)
       return conn
     } catch (/** @type {any} */ err) {
       log.error('Circuit relay dial failed', err)

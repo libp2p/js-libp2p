@@ -4,13 +4,21 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
-import sinon from 'sinon'
+import * as sinon from 'sinon'
 import { Circuit } from '../../../src/circuit/transport.js'
 import { handleHopProtocol } from '../../../src/circuit/v2/hop.js'
 import { HopMessage, Status, StopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
 import { StreamHandlerV2 } from '../../../src/circuit/v2/stream-handler.js'
+import { DefaultComponents } from '../../../src/components.js'
+import { DefaultConnectionManager } from '../../../src/connection-manager/index.js'
+import { DefaultRegistrar } from '../../../src/registrar.js'
+import { DefaultUpgrader } from '../../../src/upgrader.js'
 import * as peerUtils from '../../utils/creators/peer.js'
+import * as Constants from '../../../src/constants.js'
+import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 
 /* eslint-env mocha */
 
@@ -145,7 +153,34 @@ describe('Circuit v2 - hop protocol', function () {
       conn = await mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
       streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
       reservationStore = new ReservationStore()
-      circuit = new Circuit({
+      // components
+      const components = new DefaultComponents()
+      components.connectionManager = new DefaultConnectionManager(components,
+
+        {
+          maxConnections: 300,
+          minConnections: 50,
+          autoDial: true,
+          autoDialInterval: 10000,
+          maxParallelDials: Constants.MAX_PARALLEL_DIALS,
+          maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
+          dialTimeout: Constants.DIAL_TIMEOUT,
+          inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
+          resolvers: {
+            dnsaddr: dnsaddrResolver
+          },
+          addressSorter: publicAddressesFirst
+        }
+      )
+      components.peerStore = new PersistentPeerStore(components)
+      components.registrar = new DefaultRegistrar(components)
+      components.upgrader = new DefaultUpgrader(components, {
+        connectionEncryption: [],
+        muxers: [],
+        inboundUpgradeTimeout: 10000
+      })
+
+      circuit = new Circuit(components, {
         enabled: true,
         limit: 15,
         advertise: {

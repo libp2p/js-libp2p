@@ -11,7 +11,7 @@ import {
 } from './constants.js'
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/components'
+import type { Components } from '../components.js'
 
 const log = logger('libp2p:relay')
 
@@ -94,7 +94,7 @@ export class Relay implements Startable {
   async _advertiseService () {
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
-      await this.components.getContentRouting().provide(cid)
+      await this.components.contentRouting.provide(cid)
     } catch (err: any) {
       if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
         log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)

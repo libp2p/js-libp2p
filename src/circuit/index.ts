@@ -1,4 +1,8 @@
-import type { Components } from '@libp2p/components'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
 import {
