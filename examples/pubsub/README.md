@@ -23,20 +23,20 @@ First, let's update our libp2p configuration with a pubsub implementation.
 ```JavaScript
 import { createLibp2p } from 'libp2p'
 import { GossipSub } from '@chainsafe/libp2p-gossipsub'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
   const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()],
 	  // we add the Pubsub module we want
-	  pubsub: new GossipSub({ allowPublishToZeroPeers: true })
+	  pubsub: gossipsub({ allowPublishToZeroPeers: true })
   })
 
   await node.start()
@@ -93,7 +93,7 @@ node1 received: Bird bird bird, bird is the word!
 You can change the pubsub `emitSelf` option if you want the publishing node to receive its own messages.
 
 ```JavaScript
-new GossipSub({ allowPublishToZeroPeers: true, emitSelf: true })
+gossipsub({ allowPublishToZeroPeers: true, emitSelf: true })
 ```
 
 The output of the program should look like:

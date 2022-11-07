@@ -124,16 +124,16 @@ For Libp2p configurations and modules details read the [Configuration Document](
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
 async function main () {
   // specify options
   const options = {
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()]
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()]
   }
 
   // create libp2p
@@ -152,9 +152,9 @@ As an alternative, it is possible to create a Libp2p instance with the construct
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
 
 async function main () {
@@ -164,9 +164,9 @@ async function main () {
   // peerId is required when Libp2p is instantiated via the constructor
   const options = {
     peerId,
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()]
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()]
   }
 
   // create libp2p

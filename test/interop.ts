@@ -3,7 +3,7 @@ import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 import { createServer } from '@libp2p/daemon-server'
 import { createClient } from '@libp2p/daemon-client'
 import { createLibp2p, Libp2pOptions } from '../src/index.js'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { kadDHT } from '@libp2p/kad-dht'
@@ -95,7 +95,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp()],
     streamMuxers: [],
-    connectionEncryption: [() => new Noise()]
+    connectionEncryption: [noise()]
   }
 
   if (options.muxer === 'mplex') {

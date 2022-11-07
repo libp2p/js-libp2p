@@ -14,6 +14,8 @@ import { pipe } from 'it-pipe'
 import first from 'it-first'
 import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:fetch')
@@ -121,6 +123,8 @@ export class FetchService implements Startable {
       // make stream abortable
       const source = abortableDuplex(stream, signal)
 
+      log('fetch %s', key)
+
       const result = await pipe(
         [FetchRequest.encode({ identifier: key })],
         lp.encode(),
@@ -137,16 +141,20 @@ export class FetchService implements Startable {
 
           switch (response.status) {
             case (FetchResponse.StatusCode.OK): {
+              log('received status for %s ok', key)
               return response.data
             }
             case (FetchResponse.StatusCode.NOT_FOUND): {
+              log('received status for %s not found', key)
               return null
             }
             case (FetchResponse.StatusCode.ERROR): {
-              const errmsg = (new TextDecoder()).decode(response.data)
+              log('received status for %s error', key)
+              const errmsg = uint8arrayToString(response.data)
               throw errCode(new Error('Error in fetch protocol response: ' + errmsg), codes.ERR_INVALID_PARAMETERS)
             }
             default: {
+              log('received status for %s unknown', key)
               throw errCode(new Error('Unknown response status'), codes.ERR_INVALID_MESSAGE)
             }
           }
@@ -190,14 +198,18 @@ export class FetchService implements Startable {
         let response: FetchResponse
         const lookup = self._getLookupFunction(request.identifier)
         if (lookup != null) {
+          log('look up data with identifier %s', request.identifier)
           const data = await lookup(request.identifier)
           if (data != null) {
+            log('sending status for %s ok', request.identifier)
             response = { status: FetchResponse.StatusCode.OK, data }
           } else {
+            log('sending status for %s not found', request.identifier)
             response = { status: FetchResponse.StatusCode.NOT_FOUND, data: new Uint8Array(0) }
           }
         } else {
-          const errmsg = (new TextEncoder()).encode('No lookup function registered for key: ' + request.identifier)
+          log('sending status for %s error', request.identifier)
+          const errmsg = uint8arrayFromString(`No lookup function registered for key: ${request.identifier}`)
           response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
         }
 

@@ -39,9 +39,9 @@ Once you have a circuit relay node running, you can configure other nodes to use
 ```js
 import { multiaddr } from '@multiformats/multiaddr'
 import Libp2p from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const relayAddr = ...
 
@@ -50,13 +50,13 @@ const node = await createLibp2p({
     listen: [multiaddr(`${relayAddr}/p2p-circuit`)]
   },
   transports: [
-    new TCP()
+    tcp()
   ],
   streamMuxers: [
-    new Mplex()
+    mplex()
     ],
   connectionEncryption: [
-    new Noise()
+    noise()
   ]
   },
   config: {

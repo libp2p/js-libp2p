@@ -3,7 +3,7 @@
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { bootstrap } from '@libp2p/bootstrap'
 import bootstrapers from './bootstrappers.js'
 
@@ -14,7 +14,7 @@ import bootstrapers from './bootstrappers.js'
     },
     transports: [tcp()],
     streamMuxers: [mplex()],
-    connectionEncryption: [() => new Noise()],
+    connectionEncryption: [noise()],
     peerDiscovery: [
       bootstrap({
         interval: 60e3,

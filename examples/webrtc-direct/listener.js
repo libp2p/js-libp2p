@@ -1,7 +1,7 @@
 import { createLibp2p } from 'libp2p'
 import { WebRTCDirect } from '@libp2p/webrtc-direct'
 import { mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import wrtc from 'wrtc'
 
@@ -20,7 +20,7 @@ import wrtc from 'wrtc'
     },
     transports: [new WebRTCDirect({ wrtc })],
     streamMuxers: [mplex()],
-    connectionEncryption: [() => new Noise()]
+    connectionEncryption: [noise()]
   })
 
   node.connectionManager.addEventListener('peer:connect', (evt) => {

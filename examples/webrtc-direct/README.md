@@ -18,7 +18,7 @@ Listening on:
 Confirm that the above address is the same as the field `list` in `public/dialer.js`:
 ```js
     peerDiscovery: {
-      new Bootstrap({
+      bootstrap({
         // paste the address into `list`
         list: ['/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/QmUKQCzEUhhhobcNSrXU5uzxTqbvF1BjMCGNGZzZU14Kgd']
       })
