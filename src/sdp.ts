@@ -1,8 +1,10 @@
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error'
 import { logger } from '@libp2p/logger'
 import { Multiaddr } from '@multiformats/multiaddr'
-import * as multihashes from 'multihashes'
 import { bases } from 'multiformats/basics'
+import * as multihashes from 'multihashes'
+
+import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error.js'
+
 
 const log = logger('libp2p:webrtc:sdp')
 const CERTHASH_CODE: number = 466

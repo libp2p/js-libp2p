@@ -2,7 +2,8 @@ import { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/interf
 import { logger } from '@libp2p/logger'
 import { Multiaddr } from '@multiformats/multiaddr'
 import { Source, Sink } from 'it-stream-types'
-import { nopSink, nopSource } from './util'
+
+import { nopSink, nopSource } from './util.js'
 
 const log = logger('libp2p:webrtc:connection')
 
