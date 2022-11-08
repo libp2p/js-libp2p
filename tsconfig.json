@@ -1,16 +1,9 @@
 {
   "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "emitDeclarationOnly": true
   },
-  "include": [
-    "src",
-    "test"
-  ],
-  "exclude": [
-    "src/circuit/pb/index.js",
-    "src/fetch/pb/proto.js",
-    "src/identify/pb/message.js",
-    "src/insecure/pb/proto.js"
-  ]
+  "include": ["src", "test"],
+  "exclude": ["src/circuit/pb/index.js", "src/fetch/pb/proto.js", "src/identify/pb/message.js", "src/insecure/pb/proto.js"]
 }
