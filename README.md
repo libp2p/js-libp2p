@@ -16,7 +16,7 @@
 
 ## Structure
 
-- [`/packages/libp2p-peer-id`](./packages/libp2p-peer-id) Implementation of @libp2p/interface-peer-d
+- [`/packages/libp2p-peer-id`](./packages/libp2p-peer-id) Implementation of @libp2p/interface-peer-id
 - [`/packages/libp2p-peer-id-factory`](./packages/libp2p-peer-id-factory) Create PeerId instances
 
 ## License
