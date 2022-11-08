@@ -5,7 +5,6 @@ import * as multihashes from 'multihashes'
 
 import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error.js'
 
-
 const log = logger('libp2p:webrtc:sdp')
 const CERTHASH_CODE: number = 466
 
