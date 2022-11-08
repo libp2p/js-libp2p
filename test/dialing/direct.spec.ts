@@ -455,7 +455,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     // Wait for connection event to be emitted
     await connectionPromise
 
-    expect(identifySpy.callCount).to.equal(1)
+    expect(identifySpy.callCount).to.equal(2, 'should identify on inbound and outbound')
     await identifySpy.firstCall.returnValue
 
     expect(protobookSetSpy.callCount).to.equal(1)

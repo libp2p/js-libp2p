@@ -87,6 +87,8 @@ export class IdentifyService implements Startable {
   private readonly init: IdentifyServiceInit
   private started: boolean
 
+  private readonly identifiedPeers: Map<string, Promise<void>>
+
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
     this.components = components
     this.started = false
@@ -101,7 +103,9 @@ export class IdentifyService implements Startable {
       ...init.host
     }
 
-    // When a new connection happens, trigger identify
+    this.identifiedPeers = new Map()
+
+    // When a new inbound connection happens, trigger identify
     this.components.connectionManager.addEventListener('peer:connect', (evt) => {
       const connection = evt.detail
       this.identify(connection).catch(log.error)
@@ -291,12 +295,47 @@ export class IdentifyService implements Startable {
     }
   }
 
+  // TODO move to connection outbound close
+  clear (peer: PeerId) {
+    const id = peer.toString()
+    this.identifiedPeers.delete(id)
+  }
+
   /**
    * Requests the `Identify` message from peer associated with the given `connection`.
    * If the identified peer does not match the `PeerId` associated with the connection,
    * an error will be thrown.
    */
   async identify (connection: Connection, options: AbortOptions = {}): Promise<void> {
+    // console.log('IdentifyService.identify')
+
+    // TODO test dedupe, error on identifyDeduped
+    const id = connection.remotePeer.toString()
+    const pending = this.identifiedPeers.get(id)
+    if (pending != null) {
+      try {
+        // need to return the Promise
+        // TODO eslint-disable-next-line typescript-eslint/return-await
+        return pending // eslint-disable-line
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    const task = this._identifyDeduped(connection, options)
+    this.identifiedPeers.set(id, task)
+    try {
+      // need to return the Promise
+      return task // eslint-disable-line
+    } catch (err) {
+      console.error(err)
+    }
+
+    // TODO clean identifiedPeers on peer disconnect
+    // TODO clean identifiedPeers on identify error, before complete, to be able to retry identify
+  }
+
+  async _identifyDeduped (connection: Connection, options: AbortOptions = {}): Promise<void> {
     const message = await this._identify(connection, options)
 
     const {

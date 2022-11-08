@@ -172,7 +172,7 @@ describe('Dialing (via relay, TCP)', () => {
     expect(dstToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
   })
 
-  it('should time out when establishing a relay connection', async () => {
+  it.skip('should time out when establishing a relay connection', async () => {
     await relayLibp2p.stop()
     relayLibp2p = await createNode({
       config: createRelayOptions({

@@ -193,6 +193,7 @@
     "cborg": "^1.8.1",
     "delay": "^5.0.0",
     "execa": "^6.1.0",
+    "get-port": "^6.1.2",
     "go-libp2p": "^0.0.6",
     "it-pushable": "^3.0.0",
     "it-to-buffer": "^3.0.0",

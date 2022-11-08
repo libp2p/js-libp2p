@@ -345,12 +345,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return Array.from(peerSet)
   }
 
-  async dial (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+  async dial (peer: PeerId | Multiaddr | string, options: AbortOptions = {}): Promise<Connection> {
     const { id, multiaddrs } = getPeer(peer)
 
     await this.components.peerStore.addressBook.add(id, multiaddrs)
+    const connection = await this.components.connectionManager.openConnection(id, options)
+    await this.identifyService?.identify(connection)
 
-    return await this.components.connectionManager.openConnection(id, options)
+    return connection
   }
 
   async dialProtocol (peer: PeerId | Multiaddr, protocols: string | string[], options: AbortOptions = {}) {
@@ -377,6 +379,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     const { id } = getPeer(peer)
 
     await this.components.connectionManager.closeConnections(id)
+    // TODO test connect again, update identify?
+    this.identifyService?.clear(id)
   }
 
   /**

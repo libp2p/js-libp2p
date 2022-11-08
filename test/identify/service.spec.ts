@@ -61,7 +61,9 @@ describe('libp2p.dialer.identifyService', () => {
     // Wait for peer store to be updated
     // Dialer._createDialTarget (add), Identify (consume)
     await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 1 && peerStoreSpyAdd.callCount === 1)
-    expect(identityServiceIdentifySpy.callCount).to.equal(1)
+    expect(identityServiceIdentifySpy.callCount).to.equal(2, 'should identify on inbound and outbound')
+
+    // TODO assert identify called
 
     // The connection should have no open streams
     await pWaitFor(() => connection.streams.length === 0)
@@ -89,7 +91,7 @@ describe('libp2p.dialer.identifyService', () => {
     // Wait for peer store to be updated
     // Dialer._createDialTarget (add), Identify (consume)
     await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 1 && peerStoreSpyAdd.callCount === 1)
-    expect(identityServiceIdentifySpy.callCount).to.equal(1)
+    expect(identityServiceIdentifySpy.callCount).to.equal(2, 'should identify on inbound and outbound')
 
     // The connection should have no open streams
     await pWaitFor(() => connection.streams.length === 0)
