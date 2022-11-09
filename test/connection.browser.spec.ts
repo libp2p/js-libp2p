@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 
-//import {createConnectionPair, echoHandler} from "../test/util.js";
-//import { expect } from 'aegir/chai';
-//import { pipe } from 'it-pipe';
-//import first from 'it-first';
-//import {fromString} from 'uint8arrays/from-string';
-//import {v4} from 'uuid';
+// import {createConnectionPair, echoHandler} from "../test/util.js";
+// import { expect } from 'aegir/chai';
+// import { pipe } from 'it-pipe';
+// import first from 'it-first';
+// import {fromString} from 'uint8arrays/from-string';
+// import {v4} from 'uuid';
 
-//const echoProtocol = '/echo/1.0.0';
+// const echoProtocol = '/echo/1.0.0';
 
-//describe('connection browser tests', () => {
+// describe('connection browser tests', () => {
 //  it('can run the echo protocol (first)', async () => {
 //    let [{ connection: client }, server] = await createConnectionPair();
 //    let serverRegistrar = server.registrar;
@@ -43,6 +43,6 @@
 //    expect(responsed).to.be.true();
 //  });
 
-//});
+// });
 
-export {};
+export {}

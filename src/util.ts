@@ -1,6 +1,5 @@
-
 export const nopSource = {
-  async *[Symbol.asyncIterator]() {}
+  async * [Symbol.asyncIterator] () {}
 }
 
 export const nopSink = async (_: any) => {}

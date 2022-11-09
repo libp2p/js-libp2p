@@ -1,26 +1,27 @@
 // import {Components} from "@libp2p/components"
-import {Stream} from "@libp2p/interface-connection"
-import {StreamMuxer, StreamMuxerFactory, StreamMuxerInit} from "@libp2p/interface-stream-muxer"
-import {Source, Sink} from "it-stream-types"
-import {WebRTCStream} from "./stream.js"
-import {nopSink, nopSource} from "./util.js"
+import { Stream } from '@libp2p/interface-connection'
+import { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
+import { Source, Sink } from 'it-stream-types'
+
+import { WebRTCStream } from './stream.js'
+import { nopSink, nopSource } from './util.js'
 
 export class DataChannelMuxerFactory implements StreamMuxerFactory {
-  private peerConnection: RTCPeerConnection
+  private readonly peerConnection: RTCPeerConnection
   protocol: string = '/webrtc'
 
-  constructor(peerConnection: RTCPeerConnection) {
+  constructor (peerConnection: RTCPeerConnection) {
     this.peerConnection = peerConnection
   }
 
-  createStreamMuxer(init?: StreamMuxerInit | undefined): StreamMuxer {
+  createStreamMuxer (init?: StreamMuxerInit | undefined): StreamMuxer {
     return new DataChannelMuxer(this.peerConnection, init)
   }
 }
 
 export class DataChannelMuxer implements StreamMuxer {
   private readonly peerConnection: RTCPeerConnection
-  readonly protocol: string = "/webrtc"
+  readonly protocol: string = '/webrtc'
   streams: Stream[] = []
   init?: StreamMuxerInit
   close: (err?: Error | undefined) => void = () => {}
@@ -30,37 +31,35 @@ export class DataChannelMuxer implements StreamMuxer {
   source: Source<Uint8Array> = nopSource;
   sink: Sink<Uint8Array, Promise<void>> = nopSink;
 
-
-  constructor(peerConnection: RTCPeerConnection, init?: StreamMuxerInit) {
+  constructor (peerConnection: RTCPeerConnection, init?: StreamMuxerInit) {
     this.init = init
     this.peerConnection = peerConnection
-    this.peerConnection.ondatachannel = ({channel}) => {
+    this.peerConnection.ondatachannel = ({ channel }) => {
       const stream = new WebRTCStream({
         channel,
         stat: {
           direction: 'inbound',
           timeline: {
-            open: 0,
+            open: 0
           }
         },
         closeCb: init?.onStreamEnd
       })
-      if (init?.onIncomingStream) {
-        init.onIncomingStream!(stream)
+      if ((init?.onIncomingStream) != null) {
+        init.onIncomingStream(stream)
       }
     }
   }
 
-  newStream(name?: string | undefined): Stream {
-    const streamName = name || '';
-    const channel = this.peerConnection.createDataChannel(streamName)
+  newStream (name: string = ''): Stream {
+    const channel = this.peerConnection.createDataChannel(name)
     const stream = new WebRTCStream({
       channel,
       stat: {
         direction: 'outbound',
         timeline: {
-          open: 0,
-        },
+          open: 0
+        }
       },
       closeCb: this.init?.onStreamEnd
     })

@@ -95,7 +95,7 @@ jobs:
           flags: electron-main
 
   release:
-    needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-electron-main, test-electron-renderer]
+    needs: [test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-electron-main]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master' # with #262 - 'refs/heads/${{{ github.default_branch }}}'
     steps:
