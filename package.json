@@ -154,7 +154,7 @@
     "p-fifo": "^1.0.0",
     "p-retry": "^5.0.0",
     "p-settle": "^5.0.0",
-    "private-ip": "^2.3.3",
+    "private-ip": "^3.0.0",
     "protons-runtime": "^4.0.1",
     "rate-limiter-flexible": "^2.3.11",
     "retimer": "^3.0.0",
