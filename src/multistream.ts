@@ -13,6 +13,9 @@ import type { Source } from 'it-stream-types'
 import type { Reader } from 'it-reader'
 import type { MultistreamSelectInit } from '.'
 import { MAX_PROTOCOL_LENGTH } from './constants.js'
+import { logger } from '@libp2p/logger'
+
+const log = logger('libp2p:mss')
 
 const NewLine = uint8ArrayFromString('\n')
 
@@ -83,6 +86,7 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
   }
 
   if (buf.get(buf.byteLength - 1) !== NewLine[0]) {
+    log.error('Invalid mss message - missing newline - %s', buf.subarray())
     throw errCode(new Error('missing newline'), 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 
