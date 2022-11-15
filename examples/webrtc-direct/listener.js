@@ -18,7 +18,7 @@ import wrtc from 'wrtc'
     addresses: {
       listen: ['/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct']
     },
-    transports: [new webRTCDirect({ wrtc })],
+    transports: [webRTCDirect({ wrtc })],
     streamMuxers: [mplex()],
     connectionEncryption: [noise()]
   })
