@@ -1,11 +1,12 @@
+# File managed by web3-bot. DO NOT EDIT.
+# See https://github.com/protocol/.github/ for details.
+
 name: test & maybe release
 on:
   push:
     branches:
       - main # with #262 - ${{{ github.default_branch }}}
   pull_request:
-    branches:
-      - main # with #262 - ${{{ github.default_branch }}}
 
 jobs:
 
