@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.4...v1.0.5) (2022-11-16)
+
+
+### Bug Fixes
+
+* Close stream after sink ([#23](https://github.com/libp2p/js-libp2p-webtransport/issues/23)) ([a95720c](https://github.com/libp2p/js-libp2p-webtransport/commit/a95720c367c8061ae45b4ae4bc4180e3ceea61cc))
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.3...v1.0.4) (2022-11-01)
 
 
