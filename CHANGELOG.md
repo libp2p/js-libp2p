@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.0...v6.0.1) (2022-11-16)
+
+
+### Trivial Changes
+
+* **deps-dev:** bump @libp2p/interface-mocks from 7.1.0 to 8.0.1 ([#225](https://github.com/libp2p/js-libp2p-tcp/issues/225)) ([a271056](https://github.com/libp2p/js-libp2p-tcp/commit/a271056c8d8d179dd95399f9621d790a0f18b84a))
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v5.0.2...v6.0.0) (2022-11-05)
 
 
