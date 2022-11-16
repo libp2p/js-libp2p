@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/core/network"
 	webtransport "github.com/libp2p/go-libp2p/p2p/transport/webtransport"
 	"github.com/multiformats/go-multiaddr"
 )
@@ -21,6 +23,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	h.SetStreamHandler("echo", func(s network.Stream) {
+		io.Copy(s, s)
+		s.Close()
+	})
 
 	for _, a := range h.Addrs() {
 		withP2p := a.Encapsulate(multiaddr.StringCast("/p2p/" + h.ID().String()))

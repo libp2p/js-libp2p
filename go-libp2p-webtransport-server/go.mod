@@ -3,8 +3,8 @@ module github.com/libp2p/js-libp2p-webtransport/go-libp2p-webtransport-server/m/
 go 1.19
 
 require (
-	github.com/libp2p/go-libp2p v0.23.2
-	github.com/multiformats/go-multiaddr v0.7.0
+	github.com/libp2p/go-libp2p v0.23.4
+	github.com/multiformats/go-multiaddr v0.8.0
 )
 
 require (

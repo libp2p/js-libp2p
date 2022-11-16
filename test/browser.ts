@@ -24,9 +24,46 @@ describe('libp2p-webtransport', () => {
     })
 
     await node.start()
-    const res = await node.ping(ma)
-    console.log('Ping ', res)
-    expect(res).to.greaterThan(0)
+
+    // Ping many times
+    for (let index = 0; index < 100; index++) {
+      const now = Date.now()
+
+      // Note we're re-implementing the ping protocol here because as of this
+      // writing, go-libp2p will reset the stream instead of close it. The next
+      // version of go-libp2p v0.24.0 will have this fix. When that's released
+      // we can use the builtin ping system
+      const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
+
+      const data = new Uint8Array(32)
+      globalThis.crypto.getRandomValues(data)
+
+      const pong = new Promise<void>((resolve, reject) => {
+        (async () => {
+          for await (const chunk of stream.source) {
+            const v = chunk.subarray()
+            const byteMatches: boolean = v.every((byte: number, i: number) => byte === data[i])
+            if (byteMatches) {
+              resolve()
+            } else {
+              reject(new Error('Wrong pong'))
+            }
+          }
+        })().catch(reject)
+      })
+
+      let res = -1
+      await stream.sink((async function * () {
+        yield data
+        // Wait for the pong before we close the write side
+        await pong
+        res = Date.now() - now
+      })())
+
+      await stream.close()
+
+      expect(res).to.be.greaterThan(-1)
+    }
 
     await node.stop()
     const conns = node.connectionManager.getConnections()
@@ -48,6 +85,47 @@ describe('libp2p-webtransport', () => {
 
     const err = await expect(node.dial(ma)).to.eventually.be.rejected()
     expect(err.errors[0].toString()).to.contain('WebTransportError: Opening handshake failed.')
+
+    await node.stop()
+  })
+
+  it('Closes writes of streams after they have sunk a source', async () => {
+    // This is the behavor of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-stream-muxer-compliance-tests/src/close-test.ts)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const maStr: string = process.env.serverAddr!
+    const ma = multiaddr(maStr)
+    const node = await createLibp2p({
+      transports: [webTransport()],
+      connectionEncryption: [() => new Noise()]
+    })
+
+    async function * gen () {
+      yield new Uint8Array([0])
+      yield new Uint8Array([1, 2, 3, 4])
+      yield new Uint8Array([5, 6, 7])
+      yield new Uint8Array([8, 9, 10, 11])
+      yield new Uint8Array([12, 13, 14, 15])
+    }
+
+    await node.start()
+    const stream = await node.dialProtocol(ma, 'echo')
+
+    await stream.sink(gen())
+
+    let expectedNextNumber = 0
+    for await (const chunk of stream.source) {
+      for (const byte of chunk.subarray()) {
+        expect(byte).to.equal(expectedNextNumber++)
+      }
+    }
+    expect(expectedNextNumber).to.equal(16)
+
+    // Close read, we've should have closed the write side during sink
+    stream.closeRead()
+
+    expect(stream.stat.timeline.close).to.be.greaterThan(0)
+
+    await node.stop()
   })
 })
 

@@ -12,7 +12,6 @@ import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/i
 import { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:webtransport')
-
 declare global {
   interface Window {
     WebTransport: any
@@ -63,7 +62,13 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
   let writerClosed = false
   let readerClosed = false;
   (async function () {
-    await (writer.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
+    const err: Error | undefined = await writer.closed.catch((err: Error) => err)
+    if (err != null) {
+      const msg = err.message
+      if (!(msg.includes('aborted by the remote server') || msg.includes('STOP_SENDING'))) {
+        log.error(`WebTransport writer closed unexpectedly: streamId=${streamId} err=${err.message}`)
+      }
+    }
     writerClosed = true
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
@@ -73,7 +78,10 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
   });
 
   (async function () {
-    await (reader.closed.then((ok: any) => ({ ok })).catch((err: any) => ({ err })))
+    const err: Error | undefined = await reader.closed.catch((err: Error) => err)
+    if (err != null) {
+      log.error(`WebTransport reader closed unexpectedly: streamId=${streamId} err=${err.message}`)
+    }
     readerClosed = true
     if (writerClosed && readerClosed) {
       cleanupStreamFromActiveStreams()
@@ -82,6 +90,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     log.error('WebTransport failed to cleanup closed stream')
   })
 
+  let sinkSunk = false
   const stream: Stream = {
     id: streamId,
     abort (_err: Error) {
@@ -148,14 +157,22 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
       }
     })(),
     sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
-      for await (const chunks of source) {
-        if (chunks.constructor === Uint8Array) {
-          await writer.write(chunks)
-        } else {
-          for (const buf of chunks) {
-            await writer.write(buf)
+      if (sinkSunk) {
+        throw new Error('sink already called on stream')
+      }
+      sinkSunk = true
+      try {
+        for await (const chunks of source) {
+          if (chunks instanceof Uint8Array) {
+            await writer.write(chunks)
+          } else {
+            for (const buf of chunks) {
+              await writer.write(buf)
+            }
           }
         }
+      } finally {
+        stream.closeWrite()
       }
     }
   }
