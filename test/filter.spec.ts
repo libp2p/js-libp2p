@@ -6,6 +6,7 @@ import type { Transport } from '@libp2p/interface-transport'
 describe('filter addrs', () => {
   const base = '/ip4/127.0.0.1'
   const ipfs = '/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw'
+  const unix = '/tmp/some/file.sock'
 
   let transport: Transport
 
@@ -22,11 +23,13 @@ describe('filter addrs', () => {
     const ma6 = multiaddr('/ip4/127.0.0.1/tcp/9090/p2p-circuit' + ipfs)
     const ma7 = multiaddr('/dns4/libp2p.io/tcp/9090')
     const ma8 = multiaddr('/dnsaddr/libp2p.io/tcp/9090')
+    const ma9 = multiaddr('/unix' + unix)
 
-    const valid = transport.filter([ma1, ma2, ma3, ma4, ma5, ma6, ma7, ma8])
-    expect(valid.length).to.equal(4)
+    const valid = transport.filter([ma1, ma2, ma3, ma4, ma5, ma6, ma7, ma8, ma9])
+    expect(valid.length).to.equal(5)
     expect(valid[0]).to.deep.equal(ma1)
     expect(valid[1]).to.deep.equal(ma4)
+    expect(valid[4]).to.deep.equal(ma9)
   })
 
   it('filter a single addr for this transport', () => {
