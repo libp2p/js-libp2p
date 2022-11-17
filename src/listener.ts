@@ -83,7 +83,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
             addr = `${address.address}:${address.port}`
           }
 
-          context.metrics?.registerMetric(`libp2p_tcp_connections_${addr}_count`, {
+          context.metrics?.registerMetric(`libp2p_tcp_connections_${addr}_total`, {
             help: 'Current active connections in TCP listener',
             calculate: () => {
               return this.connections.size
@@ -91,14 +91,14 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
           })
 
           this.metrics = {
-            status: context.metrics.registerMetric(`libp2p_tcp_${addr}_server_status`, {
+            status: context.metrics.registerMetric(`libp2p_tcp_${addr}_server_status_info`, {
               help: 'Current status of the TCP server'
             }),
             errors: context.metrics.registerCounterGroup(`libp2p_tcp_${addr}_server_errors_total`, {
               label: 'error',
               help: 'Total count of TCP listener errors by error type'
             }),
-            events: context.metrics.registerCounterGroup(`libp2p_tcp_$${addr}_socket_events`, {
+            events: context.metrics.registerCounterGroup(`libp2p_tcp_${addr}_socket_events_total`, {
               label: 'event',
               help: 'Total count of TCP socket events by event'
             })
