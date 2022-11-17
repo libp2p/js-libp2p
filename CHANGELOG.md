@@ -1,3 +1,15 @@
+## [6.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.1...v6.0.2) (2022-11-17)
+
+
+### Bug Fixes
+
+* update metric names to follow prometheus naming guide ([#228](https://github.com/libp2p/js-libp2p-tcp/issues/228)) ([24c5b37](https://github.com/libp2p/js-libp2p-tcp/commit/24c5b37ab64429972f29af6ae4516c18232d1ff3))
+
+
+### Trivial Changes
+
+* add test for filtering unix socket address ([#229](https://github.com/libp2p/js-libp2p-tcp/issues/229)) ([efcfbb2](https://github.com/libp2p/js-libp2p-tcp/commit/efcfbb28a77192a489834c8b8ad832337539d62b)), closes [#132](https://github.com/libp2p/js-libp2p-tcp/issues/132)
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.0...v6.0.1) (2022-11-16)
 
 
