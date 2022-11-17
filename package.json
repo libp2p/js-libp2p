@@ -57,6 +57,7 @@
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
     "dep-check": "aegir dep-check",
+    "prepare": "npm run build",
     "release": "aegir release"
   },
   "devDependencies": {
