@@ -12,6 +12,7 @@
         "*",
         "dist/*",
         "dist/src/*",
+        "dist/proto_ts/*",
         "dist/src/*/index"
       ],
       "src/*": [
@@ -40,7 +41,9 @@
   },
   "files": [
     "src",
+    "proto_ts",
     "dist/src",
+    "dist/proto_ts",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -57,6 +60,7 @@
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
     "dep-check": "aegir dep-check",
+    "prepare": "npm run build",
     "release": "aegir release"
   },
   "devDependencies": {
