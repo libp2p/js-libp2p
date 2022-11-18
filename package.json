@@ -50,6 +50,7 @@
     "build": "aegir build",
     "test": "aegir test --target browser",
     "test:interop": "run-p --race start-ext-server wait-then-test",
+    "test:coverage": "aegir test --target browser --cov -f \"./dist/test/**/*.spec.js\" && npx c8 report",
     "start-ext-server": "rm -vf dist/test/server-multiaddr.js ; cd ../go-libp2p/ && go run examples/webrtc/main.go ../js-libp2p-webrtc/dist/test/ ",
     "wait-for-server": "wait-on --delay 1000 --timeout 10000 dist/test/server-multiaddr.js",
     "wait-then-test": "run-s wait-for-server test",

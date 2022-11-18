@@ -8,17 +8,46 @@ import { nopSink, nopSource } from './util.js'
 const log = logger('libp2p:webrtc:connection')
 
 interface WebRTCMultiaddrConnectionInit {
+  /**
+   * WebRTC Peer Connection
+   */
   peerConnection: RTCPeerConnection
+
+  /**
+   * The multiaddr address used to communicate with the remote peer
+   */
   remoteAddr: Multiaddr
+
+  /**
+   * Holds the relevant events timestamps of the connection
+   */
   timeline: MultiaddrConnectionTimeline
 }
 
 export class WebRTCMultiaddrConnection implements MultiaddrConnection {
+  /**
+   * WebRTC Peer Connection
+   */
   private readonly peerConnection: RTCPeerConnection;
+
+  /**
+   * The multiaddr address used to communicate with the remote peer
+   */
   remoteAddr: Multiaddr;
+
+  /**
+   * Holds the lifecycle times of the connection
+   */
   timeline: MultiaddrConnectionTimeline;
 
+  /**
+   * The stream source, a no-op as the transport natively supports multiplexing
+   */
   source: Source<Uint8Array> = nopSource
+
+  /**
+   * The stream destination, a no-op as the transport natively supports multiplexing
+   */
   sink: Sink<Uint8Array, Promise<void>> = nopSink;
 
   constructor (init: WebRTCMultiaddrConnectionInit) {
@@ -28,7 +57,10 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   }
 
   async close (err?: Error | undefined): Promise<void> {
-    log.error('error closing connection', err)
+    if (err !== undefined) {
+      log.error('error closing connection', err)
+    }
+
     this.peerConnection.close()
   }
 }

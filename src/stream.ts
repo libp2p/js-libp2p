@@ -12,6 +12,9 @@ import * as pb from '../proto_ts/message.js'
 
 const log = logger('libp2p:webrtc:stream')
 
+/**
+ * Constructs a default StreamStat
+ */
 export function defaultStat (dir: Direction): StreamStat {
   return {
     direction: dir,
@@ -23,9 +26,26 @@ export function defaultStat (dir: Direction): StreamStat {
 }
 
 interface StreamInitOpts {
+  /**
+   * The network channel used for bidirectional peer-to-peer transfers of arbitrary data
+   *
+   * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
+   */
   channel: RTCDataChannel
+
+  /**
+   * User defined stream metadata
+   */
   metadata?: Record<string, any>
+
+  /**
+   * Stats about this stream
+   */
   stat: StreamStat
+
+  /**
+   * Callback to invoke when the stream is closed.
+   */
   closeCb?: (stream: WebRTCStream) => void
 }
 
@@ -33,7 +53,18 @@ interface StreamInitOpts {
  * State transitions for a stream
  */
 interface StreamStateInput {
+  /**
+   * Outbound conections are opened by the local node, inbound streams are opened by the remote
+   */
   direction: 'inbound' | 'outbound'
+
+  /**
+   * Message flag from the protobuffs
+   *
+   * 0 = FIN
+   * 1 = STOP_SENDING
+   * 2 = RESET
+   */
   flag: pb.Message_Flag
 }
 
