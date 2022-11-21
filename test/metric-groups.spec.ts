@@ -137,4 +137,31 @@ describe('metric groups', () => {
 
     await expect(client.register.metrics()).to.eventually.not.include(metricKey, 'still included metric key')
   })
+
+  it('should allow use of the same metric group from multiple reporters', async () => {
+    const metricName = randomMetricName()
+    const metricKey1 = randomMetricName('key_')
+    const metricKey2 = randomMetricName('key_')
+    const metricLabel = randomMetricName('label_')
+    const metricValue1 = 5
+    const metricValue2 = 7
+    const metrics = prometheusMetrics()()
+    const metric1 = metrics.registerMetricGroup(metricName, {
+      label: metricLabel
+    })
+    metric1.update({
+      [metricKey1]: metricValue1
+    })
+    const metric2 = metrics.registerMetricGroup(metricName, {
+      label: metricLabel
+    })
+    metric2.update({
+      [metricKey2]: metricValue2
+    })
+
+    const reportedMetrics = await client.register.metrics()
+
+    expect(reportedMetrics).to.include(`${metricName}{${metricLabel}="${metricKey1}"} ${metricValue1}`, 'did not include updated metric')
+    expect(reportedMetrics).to.include(`${metricName}{${metricLabel}="${metricKey2}"} ${metricValue2}`, 'did not include updated metric')
+  })
 })

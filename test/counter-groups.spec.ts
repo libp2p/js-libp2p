@@ -90,4 +90,31 @@ describe('counter groups', () => {
 
     await expect(client.register.metrics()).to.eventually.not.include(metricKey, 'still included metric key')
   })
+
+  it('should allow use of the same counter group from multiple reporters', async () => {
+    const metricName = randomMetricName()
+    const metricKey1 = randomMetricName('key_')
+    const metricKey2 = randomMetricName('key_')
+    const metricLabel = randomMetricName('label_')
+    const metricValue1 = 5
+    const metricValue2 = 7
+    const metrics = prometheusMetrics()()
+    const metric1 = metrics.registerCounterGroup(metricName, {
+      label: metricLabel
+    })
+    metric1.increment({
+      [metricKey1]: metricValue1
+    })
+    const metric2 = metrics.registerCounterGroup(metricName, {
+      label: metricLabel
+    })
+    metric2.increment({
+      [metricKey2]: metricValue2
+    })
+
+    const reportedMetrics = await client.register.metrics()
+
+    expect(reportedMetrics).to.include(`${metricName}{${metricLabel}="${metricKey1}"} ${metricValue1}`, 'did not include updated metric')
+    expect(reportedMetrics).to.include(`${metricName}{${metricLabel}="${metricKey2}"} ${metricValue2}`, 'did not include updated metric')
+  })
 })

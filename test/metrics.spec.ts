@@ -93,4 +93,22 @@ describe('metrics', () => {
 
     await expect(client.register.metrics()).to.eventually.include(`${metricName} 0`, 'did not include updated metric')
   })
+
+  it('should allow use of the same metric from multiple reporters', async () => {
+    const metricName = randomMetricName()
+    const metricLabel = randomMetricName('label_')
+    const metricValue1 = 5
+    const metricValue2 = 7
+    const metrics = prometheusMetrics()()
+    const metric1 = metrics.registerMetric(metricName, {
+      label: metricLabel
+    })
+    metric1.update(metricValue1)
+    const metric2 = metrics.registerMetric(metricName, {
+      label: metricLabel
+    })
+    metric2.update(metricValue2)
+
+    await expect(client.register.metrics()).to.eventually.include(`${metricName} ${metricValue2}`)
+  })
 })

@@ -64,4 +64,22 @@ describe('counters', () => {
 
     await expect(client.register.metrics()).to.eventually.include(`${metricName} 0`, 'did not include updated metric')
   })
+
+  it('should allow use of the same counter from multiple reporters', async () => {
+    const metricName = randomMetricName()
+    const metricLabel = randomMetricName('label_')
+    const metricValue1 = 5
+    const metricValue2 = 7
+    const metrics = prometheusMetrics()()
+    const metric1 = metrics.registerCounter(metricName, {
+      label: metricLabel
+    })
+    metric1.increment(metricValue1)
+    const metric2 = metrics.registerCounter(metricName, {
+      label: metricLabel
+    })
+    metric2.increment(metricValue2)
+
+    await expect(client.register.metrics()).to.eventually.include(`${metricName} ${metricValue1 + metricValue2}`)
+  })
 })

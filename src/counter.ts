@@ -1,25 +1,29 @@
-import type { Counter } from '@libp2p/interface-metrics'
+import type { CalculateMetric, Counter } from '@libp2p/interface-metrics'
 import { CollectFunction, Counter as PromCounter } from 'prom-client'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
-import { normaliseString } from './utils.js'
+import { normaliseString, CalculatedMetric } from './utils.js'
 
-export class PrometheusCounter implements Counter {
+export class PrometheusCounter implements Counter, CalculatedMetric {
   private readonly counter: PromCounter
+  private readonly calculators: CalculateMetric[]
 
   constructor (name: string, opts: PrometheusCalculatedMetricOptions) {
     name = normaliseString(name)
     const help = normaliseString(opts.help ?? name)
     const labels = opts.label != null ? [normaliseString(opts.label)] : []
     let collect: CollectFunction<PromCounter<any>> | undefined
+    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      const calculate = opts.calculate
+      this.calculators.push(opts.calculate)
+      const self = this
 
       collect = async function () {
-        const value = await calculate()
+        const values = await Promise.all(self.calculators.map(async calculate => await calculate()))
+        const sum = values.reduce((acc, curr) => acc + curr, 0)
 
-        this.inc(value)
+        this.inc(sum)
       }
     }
 
@@ -30,6 +34,10 @@ export class PrometheusCounter implements Counter {
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
+  }
+
+  addCalculator (calculator: CalculateMetric) {
+    this.calculators.push(calculator)
   }
 
   increment (value: number = 1): void {

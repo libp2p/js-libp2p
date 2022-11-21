@@ -11,6 +11,9 @@ import { logger } from '@libp2p/logger'
 
 const log = logger('libp2p:prometheus-metrics')
 
+// prom-client metrics are global
+const metrics = new Map<string, any>()
+
 export interface PrometheusMetricsInit {
   /**
    * Use a custom registry to register metrics.
@@ -50,6 +53,7 @@ class PrometheusMetrics implements Metrics {
 
     if (init?.preserveExistingMetrics !== true) {
       log('Clearing existing metrics')
+      metrics.clear()
       ;(this.registry ?? register).clear()
     }
 
@@ -140,8 +144,22 @@ class PrometheusMetrics implements Metrics {
       throw new Error('Metric name is required')
     }
 
+    let metric = metrics.get(name)
+
+    if (metrics.has(name)) {
+      log('Reuse existing metric', name)
+
+      if (opts.calculate != null) {
+        metric.addCalculator(opts.calculate)
+      }
+
+      return metrics.get(name)
+    }
+
     log('Register metric', name)
-    const metric = new PrometheusMetric(name, { registry: this.registry, ...opts })
+    metric = new PrometheusMetric(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, metric)
 
     if (opts.calculate == null) {
       return metric
@@ -152,14 +170,28 @@ class PrometheusMetrics implements Metrics {
   registerMetricGroup (name: string, opts?: MetricOptions): MetricGroup
   registerMetricGroup (name: string, opts: any = {}): any {
     if (name == null ?? name.trim() === '') {
-      throw new Error('Metric name is required')
+      throw new Error('Metric group name is required')
+    }
+
+    let metricGroup = metrics.get(name)
+
+    if (metricGroup != null) {
+      log('Reuse existing metric group', name)
+
+      if (opts.calculate != null) {
+        metricGroup.addCalculator(opts.calculate)
+      }
+
+      return metricGroup
     }
 
     log('Register metric group', name)
-    const group = new PrometheusMetricGroup(name, { registry: this.registry, ...opts })
+    metricGroup = new PrometheusMetricGroup(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, metricGroup)
 
     if (opts.calculate == null) {
-      return group
+      return metricGroup
     }
   }
 
@@ -170,8 +202,22 @@ class PrometheusMetrics implements Metrics {
       throw new Error('Counter name is required')
     }
 
+    let counter = metrics.get(name)
+
+    if (counter != null) {
+      log('Reuse existing counter', name)
+
+      if (opts.calculate != null) {
+        counter.addCalculator(opts.calculate)
+      }
+
+      return metrics.get(name)
+    }
+
     log('Register counter', name)
-    const counter = new PrometheusCounter(name, { registry: this.registry, ...opts })
+    counter = new PrometheusCounter(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, counter)
 
     if (opts.calculate == null) {
       return counter
@@ -182,14 +228,28 @@ class PrometheusMetrics implements Metrics {
   registerCounterGroup (name: string, opts?: MetricOptions): CounterGroup
   registerCounterGroup (name: string, opts: any = {}): any {
     if (name == null ?? name.trim() === '') {
-      throw new Error('Metric name is required')
+      throw new Error('Counter group name is required')
+    }
+
+    let counterGroup = metrics.get(name)
+
+    if (counterGroup != null) {
+      log('Reuse existing counter group', name)
+
+      if (opts.calculate != null) {
+        counterGroup.addCalculator(opts.calculate)
+      }
+
+      return counterGroup
     }
 
     log('Register counter group', name)
-    const group = new PrometheusCounterGroup(name, { registry: this.registry, ...opts })
+    counterGroup = new PrometheusCounterGroup(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, counterGroup)
 
     if (opts.calculate == null) {
-      return group
+      return counterGroup
     }
   }
 }
