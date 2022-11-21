@@ -1,3 +1,15 @@
+## [1.1.0](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.0.1...v1.1.0) (2022-11-21)
+
+
+### Features
+
+* register metrics with custom registry ([#4](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/4)) ([5da2897](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/5da289702186b73862cce39ecd1752792e6f9751))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([351b00c](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/351b00cad878cd3269a18da3f725613f991a83ae))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.0.0...v1.0.1) (2022-11-05)
 
 
