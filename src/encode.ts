@@ -22,7 +22,7 @@ class Encoder {
     let offset = this._poolOffset
 
     varint.encode(msg.id << 3 | msg.type, pool, offset)
-    offset += varint.encode.bytes
+    offset += varint.encode.bytes ?? 0
 
     if ((msg.type === MessageTypes.NEW_STREAM || msg.type === MessageTypes.MESSAGE_INITIATOR || msg.type === MessageTypes.MESSAGE_RECEIVER) && msg.data != null) {
       varint.encode(msg.data.length, pool, offset)
@@ -30,7 +30,7 @@ class Encoder {
       varint.encode(0, pool, offset)
     }
 
-    offset += varint.encode.bytes
+    offset += varint.encode.bytes ?? 0
 
     const header = pool.subarray(this._poolOffset, offset)
 
