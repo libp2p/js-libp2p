@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.0...v7.0.1) (2022-11-21)
+
+
+### Bug Fixes
+
+* type errors ([#230](https://github.com/libp2p/js-libp2p-mplex/issues/230)) ([e9c390a](https://github.com/libp2p/js-libp2p-mplex/commit/e9c390a195c46718e31e1f3bd233b0ab7c1f76b0))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v6.0.2...v7.0.0) (2022-10-12)
 
 
