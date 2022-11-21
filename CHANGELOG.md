@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.0...v1.1.1) (2022-11-21)
+
+
+### Bug Fixes
+
+* allow multiple consumers of metrics ([#6](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/6)) ([92bde9b](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/92bde9b8d9a533c4e8aca6a98c02fa1bdc37156e))
+
 ## [1.1.0](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.0.1...v1.1.0) (2022-11-21)
 
 
