@@ -362,7 +362,7 @@ export class IdentifyService implements Startable {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      await this.components.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
+      await this.components.peerStore.addressBook.add(id, listenAddrs.map((addr) => multiaddr(addr)))
     } catch (err: any) {
       log.error('received invalid addrs', err)
     }
