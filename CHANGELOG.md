@@ -1,3 +1,10 @@
+## [6.0.4](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.3...v6.0.4) (2022-11-22)
+
+
+### Bug Fixes
+
+* use labels to differentiate interfaces for metrics ([#230](https://github.com/libp2p/js-libp2p-tcp/issues/230)) ([6c4c316](https://github.com/libp2p/js-libp2p-tcp/commit/6c4c316d080cde679c11a784c22284d6e1912b94))
+
 ## [6.0.3](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.2...v6.0.3) (2022-11-22)
 
 
