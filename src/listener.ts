@@ -11,7 +11,7 @@ import type { MultiaddrConnection, Connection } from '@libp2p/interface-connecti
 import type { Upgrader, Listener, ListenerEvents } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TCPCreateListenerOptions } from './index.js'
-import type { CounterGroup, Metric, Metrics } from '@libp2p/interface-metrics'
+import type { CounterGroup, MetricGroup, Metrics } from '@libp2p/interface-metrics'
 
 const log = logger('libp2p:tcp:listener')
 
@@ -39,7 +39,7 @@ const SERVER_STATUS_UP = 1
 const SERVER_STATUS_DOWN = 0
 
 export interface TCPListenerMetrics {
-  status: Metric
+  status: MetricGroup
   errors: CounterGroup
   events: CounterGroup
 }
@@ -52,12 +52,14 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   private readonly connections = new Set<MultiaddrConnection>()
   private status: Status = { started: false }
   private metrics?: TCPListenerMetrics
+  private addr: string
 
   constructor (private readonly context: Context) {
     super()
 
     context.keepAlive = context.keepAlive ?? true
 
+    this.addr = 'unknown'
     this.server = net.createServer(context, this.onSocket.bind(this))
 
     // https://nodejs.org/api/net.html#servermaxconnections
@@ -72,49 +74,56 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
         if (context.metrics != null) {
           // we are listening, register metrics for our port
           const address = this.server.address()
-          let addr: string
 
           if (address == null) {
-            addr = 'unknown'
+            this.addr = 'unknown'
           } else if (typeof address === 'string') {
             // unix socket
-            addr = address
+            this.addr = address
           } else {
-            addr = `${address.address}:${address.port}`
+            this.addr = `${address.address}:${address.port}`
           }
 
-          context.metrics?.registerMetric(`libp2p_tcp_connections_${addr}_total`, {
+          context.metrics?.registerMetricGroup('libp2p_tcp_inbound_connections_total', {
+            label: 'address',
             help: 'Current active connections in TCP listener',
             calculate: () => {
-              return this.connections.size
+              return {
+                [this.addr]: this.connections.size
+              }
             }
           })
 
           this.metrics = {
-            status: context.metrics.registerMetric(`libp2p_tcp_${addr}_server_status_info`, {
-              help: 'Current status of the TCP server'
+            status: context.metrics.registerMetricGroup('libp2p_tcp_listener_status_info', {
+              label: 'address',
+              help: 'Current status of the TCP listener socket'
             }),
-            errors: context.metrics.registerCounterGroup(`libp2p_tcp_${addr}_server_errors_total`, {
-              label: 'error',
-              help: 'Total count of TCP listener errors by error type'
+            errors: context.metrics.registerMetricGroup('libp2p_tcp_listener_errors_total', {
+              label: 'address',
+              help: 'Total count of TCP listener errors by type'
             }),
-            events: context.metrics.registerCounterGroup(`libp2p_tcp_${addr}_socket_events_total`, {
-              label: 'event',
-              help: 'Total count of TCP socket events by event'
+            events: context.metrics.registerMetricGroup('libp2p_tcp_listener_events_total', {
+              label: 'address',
+              help: 'Total count of TCP listener events by type'
             })
           }
 
-          this.metrics?.status.update(SERVER_STATUS_UP)
+          this.metrics?.status.update({
+            [this.addr]: SERVER_STATUS_UP
+          })
         }
 
         this.dispatchEvent(new CustomEvent('listening'))
       })
       .on('error', err => {
-        this.metrics?.errors.increment({ listen_error: true })
+        this.metrics?.errors.increment({ [`${this.addr} listen_error`]: true })
         this.dispatchEvent(new CustomEvent<Error>('error', { detail: err }))
       })
       .on('close', () => {
-        this.metrics?.status.update(SERVER_STATUS_DOWN)
+        this.metrics?.status.update({
+          [this.addr]: SERVER_STATUS_DOWN
+        })
         this.dispatchEvent(new CustomEvent('close'))
       })
   }
@@ -123,7 +132,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
       log('socket error', err)
-      this.metrics?.events.increment({ error: true })
+      this.metrics?.events.increment({ [`${this.addr} error`]: true })
     })
 
     let maConn: MultiaddrConnection
@@ -132,11 +141,12 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
         listeningAddr: this.status.started ? this.status.listeningAddr : undefined,
         socketInactivityTimeout: this.context.socketInactivityTimeout,
         socketCloseTimeout: this.context.socketCloseTimeout,
-        metrics: this.metrics?.events
+        metrics: this.metrics?.events,
+        metricPrefix: `${this.addr} `
       })
     } catch (err) {
       log.error('inbound connection failed', err)
-      this.metrics?.errors.increment({ inbound_to_connection: true })
+      this.metrics?.errors.increment({ [`${this.addr} inbound_to_connection`]: true })
       return
     }
 
@@ -144,7 +154,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     try {
       this.context.upgrader.upgradeInbound(maConn)
         .then((conn) => {
-          log('inbound connection %s upgraded', maConn.remoteAddr)
+          log('inbound connection upgraded %s', maConn.remoteAddr)
           this.connections.add(maConn)
 
           socket.once('close', () => {
@@ -159,7 +169,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
         })
         .catch(async err => {
           log.error('inbound connection failed', err)
-          this.metrics?.errors.increment({ inbound_upgrade: true })
+          this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
 
           await attemptClose(maConn)
         })
@@ -172,7 +182,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
       attemptClose(maConn)
         .catch(err => {
           log.error('closing inbound connection failed', err)
-          this.metrics?.errors.increment({ inbound_closing_failed: true })
+          this.metrics?.errors.increment({ [`${this.addr} inbound_closing_failed`]: true })
         })
     }
   }

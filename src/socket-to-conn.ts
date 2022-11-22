@@ -21,6 +21,7 @@ interface ToConnectionOptions {
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
   metrics?: CounterGroup
+  metricPrefix?: string
 }
 
 /**
@@ -29,6 +30,7 @@ interface ToConnectionOptions {
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions) => {
   const metrics = options.metrics
+  const metricPrefix = options.metricPrefix ?? ''
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
   const closeTimeout = options.socketCloseTimeout ?? CLOSE_TIMEOUT
 
@@ -63,7 +65,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
   socket.setTimeout(inactivityTimeout, () => {
     log('%s socket read timeout', lOptsStr)
-    metrics?.increment({ timeout: true })
+    metrics?.increment({ [`${metricPrefix}timeout`]: true })
 
     // only destroy with an error if the remote has not sent the FIN message
     let err: Error | undefined
@@ -78,7 +80,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
   socket.once('close', () => {
     log('%s socket read timeout', lOptsStr)
-    metrics?.increment({ close: true })
+    metrics?.increment({ [`${metricPrefix}close`]: true })
 
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
@@ -92,7 +94,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     // the remote sent a FIN packet which means no more data will be sent
     // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
     log('socket ended', maConn.remoteAddr.toString())
-    metrics?.increment({ end: true })
+    metrics?.increment({ [`${metricPrefix}end`]: true })
   })
 
   const maConn: MultiaddrConnection = {

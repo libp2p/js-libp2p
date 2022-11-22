@@ -62,7 +62,6 @@ export interface TCPComponents {
 
 export interface TCPMetrics {
   dialerEvents: CounterGroup
-  listenerEvents: CounterGroup
 }
 
 class TCP implements Transport {
@@ -76,13 +75,9 @@ class TCP implements Transport {
 
     if (components.metrics != null) {
       this.metrics = {
-        dialerEvents: components.metrics.registerCounterGroup('libp2p_tcp_dialer_errors_total', {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_tcp_dialer_events_total', {
           label: 'event',
-          help: 'Total count of TCP dialer errors by error type'
-        }),
-        listenerEvents: components.metrics.registerCounterGroup('libp2p_tcp_listener_errors_total', {
-          label: 'event',
-          help: 'Total count of TCP listener errors by error type'
+          help: 'Total count of TCP dialer events by type'
         })
       }
     }
@@ -115,7 +110,7 @@ class TCP implements Transport {
     })
     log('new outbound connection %s', maConn.remoteAddr)
     const conn = await options.upgrader.upgradeOutbound(maConn)
-    log('outbound connection %s upgraded', maConn.remoteAddr)
+    log('outbound connection upgraded %s', maConn.remoteAddr)
     return conn
   }
 
