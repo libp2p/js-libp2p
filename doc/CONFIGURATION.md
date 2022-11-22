@@ -69,10 +69,10 @@ Bear in mind that a **transport** and **connection encryption** module are **req
 Some available transports are:
 
 - [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) (not available in browsers)
-- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
-- [@libp2p/webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct)
 - [@libp2p/websockets](https://github.com/libp2p/js-libp2p-websockets)
 - [@libp2p/webtransport](https://github.com/libp2p/js-libp2p-webtransport) (Work in Progress)
+- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) ([Archived](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/README.md#%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F))
+- [@libp2p/webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) ([Archived](https://github.com/libp2p/js-libp2p-webrtc-direct/blob/master/README.md#%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F))
 
 If none of the available transports fulfills your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
 
@@ -123,7 +123,7 @@ Some available peer discovery modules are:
 - [@libp2p/mdns](https://github.com/libp2p/js-libp2p-mdns)
 - [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p-bootstrap)
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
-- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
+- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) ([Archived](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/README.md#%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F))
 - [@chainsafe/discv5](https://github.com/chainsafe/discv5)
 
 **Note**: `peer-discovery` services within transports (such as `js-libp2p-webrtc-star`) are automatically gathered from the `transport`, via it's `discovery` property. As such, they do not need to be added in the discovery modules. However, these transports can also be configured and disabled as the other ones.
