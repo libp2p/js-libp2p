@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.1...v1.1.2) (2022-11-22)
+
+
+### Bug Fixes
+
+* use collectDefaultMetrics option ([#7](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/7)) ([3e4f00c](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/3e4f00c539da19bdfd8a26d335f00a2457545b53))
+
 ## [1.1.1](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.0...v1.1.1) (2022-11-21)
 
 
