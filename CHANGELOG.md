@@ -1,3 +1,10 @@
+## [6.0.3](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.2...v6.0.3) (2022-11-22)
+
+
+### Bug Fixes
+
+* make metrics interface a dep instead of a dev dep ([#231](https://github.com/libp2p/js-libp2p-tcp/issues/231)) ([876ca13](https://github.com/libp2p/js-libp2p-tcp/commit/876ca132aa2b307315148628681cddfa0828b3ac))
+
 ## [6.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.1...v6.0.2) (2022-11-17)
 
 
