@@ -57,7 +57,7 @@ class PrometheusMetrics implements Metrics {
       ;(this.registry ?? register).clear()
     }
 
-    if (init?.preserveExistingMetrics !== false) {
+    if (init?.collectDefaultMetrics !== false) {
       log('Collecting default metrics')
       collectDefaultMetrics({ ...init?.defaultMetrics, register: this.registry ?? init?.defaultMetrics?.register })
     }
