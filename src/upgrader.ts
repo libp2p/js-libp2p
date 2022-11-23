@@ -1,7 +1,6 @@
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import * as mss from '@libp2p/multistream-select'
-import { pipe } from 'it-pipe'
 import { codes } from './errors.js'
 import { createConnection } from '@libp2p/connection'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
@@ -466,7 +465,12 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       }
 
       // Pipe all data through the muxer
-      pipe(upgradedConn, muxer, upgradedConn).catch(log.error)
+      void Promise.all([
+        muxer.sink(upgradedConn.source),
+        upgradedConn.sink(muxer.source)
+      ]).catch(err => {
+        log.error(err)
+      })
     }
 
     const _timeline = maConn.timeline
