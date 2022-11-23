@@ -1,3 +1,15 @@
+## [7.0.4](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.3...v7.0.4) (2022-11-23)
+
+
+### Dependencies
+
+* **dev:** bump it-map from 1.0.6 to 2.0.0 ([#225](https://github.com/libp2p/js-libp2p-mplex/issues/225)) ([a153108](https://github.com/libp2p/js-libp2p-mplex/commit/a15310817a325b5106112562d82739d86fa50a49))
+
+
+### Trivial Changes
+
+* update benchmark ([#232](https://github.com/libp2p/js-libp2p-mplex/issues/232)) ([d73381e](https://github.com/libp2p/js-libp2p-mplex/commit/d73381e00b5109505a15b10512e52d17b4b78dd6))
+
 ## [7.0.3](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.2...v7.0.3) (2022-11-23)
 
 
