@@ -3,11 +3,13 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { createLibp2pNode } from '../../src/libp2p.js'
+import { createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import pWaitFor from 'p-wait-for'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { Connection } from '@libp2p/interface-connection'
+import delay from 'delay'
 
 const LOCAL_PORT = 47321
 const REMOTE_PORT = 47322
@@ -89,6 +91,50 @@ describe('identify', () => {
     expect(peer.addresses).to.have.lengthOf(1)
     expect(peer.addresses[0].isCertified).to.be.true('did not receive certified address via identify')
     expect(peer.addresses[0].multiaddr.toString()).to.startWith('/dns4/localhost/', 'did not receive announce address via identify')
+  })
+
+  it('should identify connection on dial and get proper announce addresses', async () => {
+    const announceAddrs = [
+      '/dns4/peers1.com/tcp/433/wss',
+      '/dns4/peers2.com/tcp/433/wss'
+    ]
+    const port = 58322
+    const protocol = '/ipfs/bitswap/1.2.0'
+
+    const receiver = await createNode({
+      config: {
+        addresses: {
+          announce: announceAddrs,
+          listen: [`/ip4/127.0.0.1/tcp/${port}/ws`]
+        }
+      }
+    })
+    await receiver.handle(protocol, async () => {})
+
+    const sender = await createNode({
+      config: {
+        addresses: {
+          listen: ['/ip4/127.0.0.1/tcp/0/ws']
+        }
+      }
+    })
+
+    const connection = await sender.dial(multiaddr(`/ip4/127.0.0.1/tcp/${port}/ws/p2p/${receiver.peerId.toString()}`))
+
+    await delay(1000)
+
+    const stream = await connection.newStream(protocol)
+    const clientPeer = await sender.peerStore.get(receiver.peerId)
+
+    console.info(clientPeer.addresses)
+    expect(clientPeer.addresses).to.have.length(2)
+    expect(clientPeer.addresses[0].multiaddr.toString()).to.equal(announceAddrs[0].toString())
+    expect(clientPeer.addresses[1].multiaddr.toString()).to.equal(announceAddrs[1].toString())
+
+    await stream.close()
+    await connection.close()
+    await receiver.stop()
+    await sender.stop()
   })
 })
 
