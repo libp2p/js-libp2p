@@ -1,3 +1,10 @@
+## [7.0.2](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.1...v7.0.2) (2022-11-23)
+
+
+### Dependencies
+
+* **dev:** bump it-drain from 1.0.5 to 2.0.0 ([#228](https://github.com/libp2p/js-libp2p-mplex/issues/228)) ([263251f](https://github.com/libp2p/js-libp2p-mplex/commit/263251fe3a4b8f55f6b4f431bdbfdb5b1006b42a))
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.0...v7.0.1) (2022-11-21)
 
 
