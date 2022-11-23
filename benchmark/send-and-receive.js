@@ -9,22 +9,20 @@ import Benchmark from 'benchmark'
 import { pipe } from 'it-pipe'
 import { expect } from 'aegir/chai'
 import { pushable } from 'it-pushable'
-import { Mplex } from '../dist/src/index.js'
+import { mplex } from '../dist/src/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
-const factory = new Mplex()
+const factory = mplex()()
 const muxer = factory.createStreamMuxer()
 const stream1 = muxer.newStream('hello')
 const muxer2 = factory.createStreamMuxer({
   onIncomingStream: async (stream) => {
     await pipe(
       stream,
-      function transform (source) {
-        return (async function * () { // A generator is async iterable
-          for await (const chunk of source) {
-            yield chunk
-          }
-        })()
+      async function * transform (source) { // A generator is async iterable
+        for await (const chunk of source) {
+          yield chunk
+        }
       },
       stream
     )
