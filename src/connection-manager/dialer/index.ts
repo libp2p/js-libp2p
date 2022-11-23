@@ -235,7 +235,7 @@ export class DefaultDialer implements Startable, Dialer {
   async _createDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
     const _resolve = this._resolve.bind(this)
 
-    const addrs = await pipe(
+    let addrs = await pipe(
       await this.components.peerStore.addressBook.get(peer),
       (source) => filter(source, async (address) => {
         return !(await this.components.connectionGater.denyDialMultiaddr(peer, address.multiaddr))
@@ -258,6 +258,8 @@ export class DefaultDialer implements Startable, Dialer {
       }),
       async (source) => await all(source)
     )
+
+    addrs = [...new Set(addrs)]
 
     if (addrs.length > this.maxAddrsToDial) {
       await this.components.peerStore.delete(peer)

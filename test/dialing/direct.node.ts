@@ -1,37 +1,38 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
-import { plaintext } from '../../src/insecure/index.js'
+import { tcp } from '@libp2p/tcp'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import sinon from 'sinon'
+import { plaintext } from '../../src/insecure/index.js'
 
+import { Connection, isConnection } from '@libp2p/interface-connection'
+import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-mocks'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { AbortError } from '@libp2p/interfaces/errors'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
+import { pipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import pSettle, { PromiseResult } from 'p-settle'
 import pWaitFor from 'p-wait-for'
-import { pipe } from 'it-pipe'
-import { pushable } from 'it-pushable'
-import { Connection, isConnection } from '@libp2p/interface-connection'
-import { AbortError } from '@libp2p/interfaces/errors'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { DefaultComponents } from '../../src/components.js'
+import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
-import Peers from '../fixtures/peers.js'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { preSharedKey } from '../../src/pnet/index.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import Peers from '../fixtures/peers.js'
 import swarmKey from '../fixtures/swarm.key.js'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { DefaultComponents } from '../../src/components.js'
+import { getPeer } from '../../src/get-peer.js'
 
 const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -43,8 +44,10 @@ describe('Dialing (direct, TCP)', () => {
   let remoteAddr: Multiaddr
   let remoteComponents: DefaultComponents
   let localComponents: DefaultComponents
+  let resolver: sinon.SinonStub<[Multiaddr], Promise<string[]>>
 
   beforeEach(async () => {
+    resolver = sinon.stub<[Multiaddr], Promise<string[]>>()
     const [localPeerId, remotePeerId] = await Promise.all([
       createFromJSON(Peers[0]),
       createFromJSON(Peers[1])
@@ -97,6 +100,19 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
     const dialer = new DefaultDialer(localComponents)
+
+    const connection = await dialer.dial(remoteAddr)
+    expect(connection).to.exist()
+    await connection.close()
+  })
+
+  it('should be able to connect to remote node with duplicated addresses', async () => {
+    const dnsaddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteAddr.getPeerId() ?? ''}`)
+    await localComponents.peerStore.addressBook.add(getPeer(remoteAddr).id, [dnsaddr])
+    const dialer = new DefaultDialer(localComponents, { resolvers: { dnsaddr: resolver }, maxAddrsToDial: 1 })
+
+    // Resolver stub
+    resolver.onCall(1).resolves([remoteAddr.toString()])
 
     const connection = await dialer.dial(remoteAddr)
     expect(connection).to.exist()
