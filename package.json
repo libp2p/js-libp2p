@@ -168,7 +168,7 @@
     "cborg": "^1.8.1",
     "delay": "^5.0.0",
     "iso-random-stream": "^2.0.2",
-    "it-all": "^1.0.6",
+    "it-all": "^2.0.0",
     "it-drain": "^2.0.0",
     "it-foreach": "^0.1.1",
     "it-map": "^1.0.6",
