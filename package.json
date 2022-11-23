@@ -170,7 +170,7 @@
     "iso-random-stream": "^2.0.2",
     "it-all": "^2.0.0",
     "it-drain": "^2.0.0",
-    "it-foreach": "^0.1.1",
+    "it-foreach": "^1.0.0",
     "it-map": "^1.0.6",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0",
