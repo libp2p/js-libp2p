@@ -4,6 +4,7 @@ import type { Source } from 'it-stream-types'
 import type { Message } from './message-types.js'
 
 export const MAX_MSG_SIZE = 1 << 20 // 1MB
+export const MAX_MSG_QUEUE_SIZE = 4 << 20 // 4MB
 
 interface MessageHeader {
   id: number
@@ -16,11 +17,13 @@ class Decoder {
   private readonly _buffer: Uint8ArrayList
   private _headerInfo: MessageHeader | null
   private readonly _maxMessageSize: number
+  private readonly _maxUnprocessedMessageQueueSize: number
 
-  constructor (maxMessageSize: number = MAX_MSG_SIZE) {
+  constructor (maxMessageSize: number = MAX_MSG_SIZE, maxUnprocessedMessageQueueSize: number = MAX_MSG_QUEUE_SIZE) {
     this._buffer = new Uint8ArrayList()
     this._headerInfo = null
     this._maxMessageSize = maxMessageSize
+    this._maxUnprocessedMessageQueueSize = maxUnprocessedMessageQueueSize
   }
 
   write (chunk: Uint8Array) {
@@ -30,8 +33,8 @@ class Decoder {
 
     this._buffer.append(chunk)
 
-    if (this._buffer.byteLength > this._maxMessageSize) {
-      throw Object.assign(new Error('message size too large!'), { code: 'ERR_MSG_TOO_BIG' })
+    if (this._buffer.byteLength > this._maxUnprocessedMessageQueueSize) {
+      throw Object.assign(new Error('unprocessed message queue size too large!'), { code: 'ERR_MSG_QUEUE_TOO_BIG' })
     }
 
     const msgs: Message[] = []
@@ -40,7 +43,11 @@ class Decoder {
       if (this._headerInfo == null) {
         try {
           this._headerInfo = this._decodeHeader(this._buffer)
-        } catch (_) {
+        } catch (err: any) {
+          if (err.code === 'ERR_MSG_TOO_BIG') {
+            throw err
+          }
+
           break // We haven't received enough data yet
         }
       }
@@ -90,6 +97,11 @@ class Decoder {
       throw new Error(`Invalid type received: ${type}`)
     }
 
+    // test message type varint + data length
+    if (length > this._maxMessageSize) {
+      throw Object.assign(new Error('message size too large!'), { code: 'ERR_MSG_TOO_BIG' })
+    }
+
     // @ts-expect-error h is a number not a CODE
     return { id: h >> 3, type, offset: offset + end, length }
   }
@@ -128,9 +140,9 @@ function readVarInt (buf: Uint8ArrayList, offset: number = 0) {
 /**
  * Decode a chunk and yield an _array_ of decoded messages
  */
-export function decode (maxMessageSize: number = MAX_MSG_SIZE) {
+export function decode (maxMessageSize: number = MAX_MSG_SIZE, maxUnprocessedMessageQueueSize: number = MAX_MSG_QUEUE_SIZE) {
   return async function * decodeMessages (source: Source<Uint8Array>): Source<Message> {
-    const decoder = new Decoder(maxMessageSize)
+    const decoder = new Decoder(maxMessageSize, maxUnprocessedMessageQueueSize)
 
     for await (const chunk of source) {
       const msgs = decoder.write(chunk)

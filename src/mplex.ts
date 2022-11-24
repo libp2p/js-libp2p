@@ -203,7 +203,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       try {
         await pipe(
           source,
-          decode(this._init.maxMsgSize),
+          decode(this._init.maxMsgSize, this._init.maxUnprocessedMessageQueueSize),
           async source => {
             for await (const msg of source) {
               await this._handleIncoming(msg)

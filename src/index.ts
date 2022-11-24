@@ -5,9 +5,19 @@ export interface MplexInit {
   /**
    * The maximum size of message that can be sent in one go in bytes.
    * Messages larger than this will be split into multiple smaller
-   * messages (default: 1MB)
+   * messages. If we receive a message larger than this an error will
+   * be thrown and the connection closed. (default: 1MB)
    */
   maxMsgSize?: number
+
+  /**
+   * Constrains the size of the unprocessed message queue buffer.
+   * Before messages are deserialized, the raw bytes are buffered to ensure
+   * we have the complete message to deserialized. If the queue gets longer
+   * than this value an error will be thrown and the connection closed.
+   * (default: 4MB)
+   */
+  maxUnprocessedMessageQueueSize?: number
 
   /**
    * The maximum number of multiplexed streams that can be open at any
