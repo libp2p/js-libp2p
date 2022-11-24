@@ -7,18 +7,19 @@ import all from 'it-all'
 import drain from 'it-drain'
 import each from 'it-foreach'
 import { Message, MessageTypes } from '../src/message-types.js'
-import { restrictSize } from '../src/restrict-size.js'
+import { encode } from '../src/encode.js'
+import { decode } from '../src/decode.js'
 import { Uint8ArrayList } from 'uint8arraylist'
 
-describe('restrict-size', () => {
+describe('restrict size', () => {
   it('should throw when size is too big', async () => {
     const maxSize = 32
 
     const input: Message[] = [
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(8)) },
+      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(maxSize)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(64)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) }
+      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(64)) }
     ]
 
     const output: Message[] = []
@@ -26,7 +27,8 @@ describe('restrict-size', () => {
     try {
       await pipe(
         input,
-        restrictSize(maxSize),
+        encode,
+        decode(maxSize),
         (source) => each(source, chunk => {
           output.push(chunk)
         }),
@@ -51,7 +53,8 @@ describe('restrict-size', () => {
 
     const output = await pipe(
       input,
-      restrictSize(32),
+      encode,
+      decode(32),
       async (source) => await all(source)
     )
     expect(output).to.deep.equal(input)

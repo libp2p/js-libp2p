@@ -23,10 +23,8 @@ describe('coder', () => {
 
   it('should decode header', async () => {
     const source = [uint8ArrayFromString('8801023137', 'base16')]
-    for await (const msgs of decode(source)) {
-      expect(msgs.length).to.equal(1)
-
-      expect(messageWithBytes(msgs[0])).to.be.deep.equal({ id: 17, type: 0, data: uint8ArrayFromString('17') })
+    for await (const msg of decode()(source)) {
+      expect(messageWithBytes(msg)).to.be.deep.equal({ id: 17, type: 0, data: uint8ArrayFromString('17') })
     }
   })
 
@@ -67,8 +65,8 @@ describe('coder', () => {
     const source = [uint8ArrayFromString('88010231379801023139a801023231', 'base16')]
 
     const res = []
-    for await (const msgs of decode(source)) {
-      res.push(...msgs)
+    for await (const msg of decode()(source)) {
+      res.push(msg)
     }
 
     expect(res.map(messageWithBytes)).to.deep.equal([
@@ -89,9 +87,8 @@ describe('coder', () => {
   it('should decode zero length body msg', async () => {
     const source = [uint8ArrayFromString('880100', 'base16')]
 
-    for await (const msgs of decode(source)) {
-      expect(msgs.length).to.equal(1)
-      expect(messageWithBytes(msgs[0])).to.be.eql({ id: 17, type: 0, data: new Uint8Array(0) })
+    for await (const msg of decode()(source)) {
+      expect(messageWithBytes(msg)).to.be.eql({ id: 17, type: 0, data: new Uint8Array(0) })
     }
   })
 })

@@ -76,10 +76,10 @@ describe('mplex', () => {
 
     await muxer.sink(stream)
 
-    const messages = await all(decode(bufs))
+    const messages = await all(decode()(bufs))
 
-    expect(messages).to.have.nested.property('[0][0].id', 11, 'Did not specify the correct stream id')
-    expect(messages).to.have.nested.property('[0][0].type', MessageTypes.RESET_RECEIVER, 'Did not reset the stream that tipped us over the inbound stream limit')
+    expect(messages).to.have.nested.property('[0].id', 11, 'Did not specify the correct stream id')
+    expect(messages).to.have.nested.property('[0].type', MessageTypes.RESET_RECEIVER, 'Did not reset the stream that tipped us over the inbound stream limit')
   })
 
   it('should reset a stream that fills the message buffer', async () => {
@@ -103,7 +103,7 @@ describe('mplex', () => {
         const dataMessage: MessageInitiatorMessage = {
           id,
           type: MessageTypes.MESSAGE_INITIATOR,
-          data: new Uint8ArrayList(new Uint8Array(1024 * 1024))
+          data: new Uint8ArrayList(new Uint8Array(1024 * 1000))
         }
         yield dataMessage
 
@@ -144,9 +144,9 @@ describe('mplex', () => {
 
     // collect outgoing mplex messages
     const muxerFinished = pDefer()
-    let messages: Message[][] = []
+    let messages: Message[] = []
     void Promise.resolve().then(async () => {
-      messages = await all(decode(muxer.source))
+      messages = await all(decode()(muxer.source))
       muxerFinished.resolve()
     })
 
@@ -159,7 +159,7 @@ describe('mplex', () => {
 
     // should have sent reset message to peer for this stream
     await muxerFinished.promise
-    expect(messages).to.have.nested.property('[0][0].id', id)
-    expect(messages).to.have.nested.property('[0][0].type', MessageTypes.RESET_RECEIVER)
+    expect(messages).to.have.nested.property('[0].id', id)
+    expect(messages).to.have.nested.property('[0].type', MessageTypes.RESET_RECEIVER)
   })
 })

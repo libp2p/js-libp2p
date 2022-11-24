@@ -3,7 +3,6 @@ import { pushableV } from 'it-pushable'
 import { abortableSource } from 'abortable-iterator'
 import { encode } from './encode.js'
 import { decode } from './decode.js'
-import { restrictSize } from './restrict-size.js'
 import { MessageTypes, MessageTypeNames, Message } from './message-types.js'
 import { createStream } from './stream.js'
 import { toString as uint8ArrayToString } from 'uint8arrays'
@@ -204,8 +203,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       try {
         await pipe(
           source,
-          decode,
-          restrictSize(this._init.maxMsgSize),
+          decode(this._init.maxMsgSize),
           async source => {
             for await (const msg of source) {
               await this._handleIncoming(msg)

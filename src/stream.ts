@@ -1,7 +1,7 @@
 import { abortableSource } from 'abortable-iterator'
 import { pushable } from 'it-pushable'
 import errCode from 'err-code'
-import { MAX_MSG_SIZE } from './restrict-size.js'
+import { MAX_MSG_SIZE } from './decode.js'
 import { anySignal } from 'any-signal'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
