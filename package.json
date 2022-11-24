@@ -98,7 +98,6 @@
   },
   "dependencies": {
     "@achingbrain/nat-port-mapper": "^1.0.3",
-    "@libp2p/connection": "^4.0.2",
     "@libp2p/crypto": "^1.0.4",
     "@libp2p/interface-address-manager": "^2.0.0",
     "@libp2p/interface-connection": "^3.0.2",
@@ -175,6 +174,7 @@
     "@libp2p/floodsub": "^5.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.2",
     "@libp2p/interface-connection-encrypter-compliance-tests": "^3.0.0",
+    "@libp2p/interface-connection-compliance-tests": "^2.0.3",
     "@libp2p/interface-mocks": "^8.0.0",
     "@libp2p/interop": "^3.0.1",
     "@libp2p/kad-dht": "^6.0.0",
