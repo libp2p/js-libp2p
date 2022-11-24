@@ -109,7 +109,7 @@ describe('identify', () => {
         }
       }
     })
-    await receiver.handle(protocol, async () => {})
+    await receiver.handle(protocol, () => {})
 
     const sender = await createNode({
       config: {
@@ -126,7 +126,6 @@ describe('identify', () => {
     const stream = await connection.newStream(protocol)
     const clientPeer = await sender.peerStore.get(receiver.peerId)
 
-    console.info(clientPeer.addresses)
     expect(clientPeer.addresses).to.have.length(2)
     expect(clientPeer.addresses[0].multiaddr.toString()).to.equal(announceAddrs[0].toString())
     expect(clientPeer.addresses[1].multiaddr.toString()).to.equal(announceAddrs[1].toString())
