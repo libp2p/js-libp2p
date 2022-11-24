@@ -155,7 +155,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, MplexStream> }) {
     const { id, name, type, registry } = options
 
-    log('new %s stream %s %s', type, id)
+    log('new %s stream %s', type, id)
 
     if (type === 'initiator' && this._streams.initiators.size === (this._init.maxOutboundStreams ?? MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION)) {
       throw errCode(new Error('Too many outbound streams open'), 'ERR_TOO_MANY_OUTBOUND_STREAMS')

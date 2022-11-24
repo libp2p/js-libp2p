@@ -171,24 +171,15 @@ export function createStream (options: Options): MplexStream {
           send({ id, type: InitiatorMessageTypes.NEW_STREAM, data: new Uint8ArrayList(uint8ArrayFromString(streamName)) })
         }
 
-        const uint8ArrayList = new Uint8ArrayList()
-
-        for await (const data of source) {
-          if (data.length <= maxMsgSize) {
-            send({ id, type: Types.MESSAGE, data: data instanceof Uint8ArrayList ? data : new Uint8ArrayList(data) })
-          } else {
-            uint8ArrayList.append(data)
-
-            while (uint8ArrayList.length !== 0) {
-              // eslint-disable-next-line max-depth
-              if (uint8ArrayList.length <= maxMsgSize) {
-                send({ id, type: Types.MESSAGE, data: uint8ArrayList.sublist() })
-                uint8ArrayList.consume(uint8ArrayList.length)
-                break
-              }
-              send({ id, type: Types.MESSAGE, data: uint8ArrayList.sublist(0, maxMsgSize) })
-              uint8ArrayList.consume(maxMsgSize)
+        for await (let data of source) {
+          while (data.length > 0) {
+            if (data.length <= maxMsgSize) {
+              send({ id, type: Types.MESSAGE, data: data instanceof Uint8Array ? new Uint8ArrayList(data) : data })
+              break
             }
+            data = data instanceof Uint8Array ? new Uint8ArrayList(data) : data
+            send({ id, type: Types.MESSAGE, data: data.sublist(0, maxMsgSize) })
+            data.consume(maxMsgSize)
           }
         }
       } catch (err: any) {
