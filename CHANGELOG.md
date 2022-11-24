@@ -1,3 +1,12 @@
+## [7.0.5](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.4...v7.0.5) (2022-11-24)
+
+
+### Bug Fixes
+
+* apply message size limit before decoding message ([#231](https://github.com/libp2p/js-libp2p-mplex/issues/231)) ([279ad47](https://github.com/libp2p/js-libp2p-mplex/commit/279ad47517ae3d4bc99ab499bf1fd9ef67dbb74b))
+* limit unprocessed message queue size separately to message size ([#234](https://github.com/libp2p/js-libp2p-mplex/issues/234)) ([2297856](https://github.com/libp2p/js-libp2p-mplex/commit/2297856c3ffb05f9cabf52efc3b78ef96d3faf1e))
+* yield single buffers ([#233](https://github.com/libp2p/js-libp2p-mplex/issues/233)) ([31d3938](https://github.com/libp2p/js-libp2p-mplex/commit/31d3938f8fcdf56debbf8824ccbcbc057d5bd5be))
+
 ## [7.0.4](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.3...v7.0.4) (2022-11-23)
 
 
