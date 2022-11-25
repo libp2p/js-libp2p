@@ -1,8 +1,7 @@
-import { pipe } from 'it-pipe'
 import { pushableV } from 'it-pushable'
 import { abortableSource } from 'abortable-iterator'
 import { encode } from './encode.js'
-import { decode } from './decode.js'
+import { Decoder } from './decode.js'
 import { MessageTypes, MessageTypeNames, Message } from './message-types.js'
 import { createStream } from './stream.js'
 import { toString as uint8ArrayToString } from 'uint8arrays'
@@ -201,15 +200,13 @@ export class MplexStreamMuxer implements StreamMuxer {
       source = abortableSource(source, anySignal(abortSignals))
 
       try {
-        await pipe(
-          source,
-          decode(this._init.maxMsgSize, this._init.maxUnprocessedMessageQueueSize),
-          async source => {
-            for await (const msg of source) {
-              await this._handleIncoming(msg)
-            }
+        const decoder = new Decoder(this._init.maxMsgSize, this._init.maxUnprocessedMessageQueueSize)
+
+        for await (const chunk of source) {
+          for (const msg of decoder.write(chunk)) {
+            await this._handleIncoming(msg)
           }
-        )
+        }
 
         this._source.end()
       } catch (err: any) {

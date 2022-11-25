@@ -1,6 +1,5 @@
 import { MessageTypeNames, MessageTypes } from './message-types.js'
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { Source } from 'it-stream-types'
 import type { Message } from './message-types.js'
 
 export const MAX_MSG_SIZE = 1 << 20 // 1MB
@@ -13,7 +12,7 @@ interface MessageHeader {
   length: number
 }
 
-class Decoder {
+export class Decoder {
   private readonly _buffer: Uint8ArrayList
   private _headerInfo: MessageHeader | null
   private readonly _maxMessageSize: number
@@ -134,22 +133,5 @@ function readVarInt (buf: Uint8ArrayList, offset: number = 0) {
   return {
     value: res,
     offset
-  }
-}
-
-/**
- * Decode a chunk and yield an _array_ of decoded messages
- */
-export function decode (maxMessageSize: number = MAX_MSG_SIZE, maxUnprocessedMessageQueueSize: number = MAX_MSG_QUEUE_SIZE) {
-  return async function * decodeMessages (source: Source<Uint8Array>): Source<Message> {
-    const decoder = new Decoder(maxMessageSize, maxUnprocessedMessageQueueSize)
-
-    for await (const chunk of source) {
-      const msgs = decoder.write(chunk)
-
-      if (msgs.length > 0) {
-        yield * msgs
-      }
-    }
   }
 }

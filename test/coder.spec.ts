@@ -4,7 +4,7 @@
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encode } from '../src/encode.js'
-import { decode } from '../src/decode.js'
+import { decode } from './fixtures/decode.js'
 import all from 'it-all'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { messageWithBytes } from './fixtures/utils.js'

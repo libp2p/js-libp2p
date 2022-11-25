@@ -8,7 +8,7 @@ import drain from 'it-drain'
 import each from 'it-foreach'
 import { Message, MessageTypes } from '../src/message-types.js'
 import { encode } from '../src/encode.js'
-import { decode } from '../src/decode.js'
+import { decode } from './fixtures/decode.js'
 import { Uint8ArrayList } from 'uint8arraylist'
 import toBuffer from 'it-to-buffer'
 

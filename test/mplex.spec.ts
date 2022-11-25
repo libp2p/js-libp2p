@@ -11,7 +11,7 @@ import all from 'it-all'
 import type { Source } from 'it-stream-types'
 import delay from 'delay'
 import pDefer from 'p-defer'
-import { decode } from '../src/decode.js'
+import { decode } from './fixtures/decode.js'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 
@@ -135,8 +135,8 @@ describe('mplex', () => {
             streamSourceError.reject(new Error('Stream source did not error'))
           })
           .catch(err => {
-            // should have errored before all messages were sent
-            expect(sent).to.equal(2)
+            // should have errored before all 102 messages were sent
+            expect(sent).to.be.lessThan(10)
             streamSourceError.resolve(err)
           })
       }
