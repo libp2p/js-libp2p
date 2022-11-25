@@ -231,7 +231,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       onEnd
     })
 
-    return Object.assign(encode(source), {
+    return Object.assign(encode(source, this._init.minSendBytes), {
       push: source.push,
       end: source.end,
       return: source.return

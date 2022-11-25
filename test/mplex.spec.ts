@@ -67,14 +67,17 @@ describe('mplex', () => {
     stream.end()
 
     const bufs: Uint8Array[] = []
+    const sinkDone = pDefer()
 
     void Promise.resolve().then(async () => {
       for await (const buf of muxer.source) {
         bufs.push(buf)
       }
+      sinkDone.resolve()
     })
 
     await muxer.sink(stream)
+    await sinkDone.promise
 
     const messages = await all(decode()(bufs))
 
@@ -161,5 +164,61 @@ describe('mplex', () => {
     await muxerFinished.promise
     expect(messages).to.have.nested.property('[0].id', id)
     expect(messages).to.have.nested.property('[0].type', MessageTypes.RESET_RECEIVER)
+  })
+
+  it('should batch bytes to send', async () => {
+    const minSendBytes = 10
+
+    // input bytes, smaller than batch size
+    const input: Uint8Array[] = [
+      Uint8Array.from([0, 1, 2, 3, 4]),
+      Uint8Array.from([0, 1, 2, 3, 4]),
+      Uint8Array.from([0, 1, 2, 3, 4])
+    ]
+
+    // create the muxer
+    const factory = mplex({
+      minSendBytes
+    })()
+    const muxer = factory.createStreamMuxer({})
+
+    // collect outgoing mplex messages
+    const muxerFinished = pDefer()
+    let output: Uint8Array[] = []
+    void Promise.resolve().then(async () => {
+      output = await all(muxer.source)
+      muxerFinished.resolve()
+    })
+
+    // create a stream
+    const stream = await muxer.newStream()
+    const streamFinished = pDefer()
+    // send messages over the stream
+    void Promise.resolve().then(async () => {
+      await stream.sink(async function * () {
+        yield * input
+      }())
+      stream.close()
+      streamFinished.resolve()
+    })
+
+    // wait for all data to be sent over the stream
+    await streamFinished.promise
+
+    // close the muxer
+    await muxer.sink([])
+
+    // wait for all output to be collected
+    await muxerFinished.promise
+
+    // last message is unbatched
+    const closeMessage = output.pop()
+    expect(closeMessage).to.have.lengthOf(2)
+
+    // all other messages should be above or equal to the batch size
+    expect(output).to.have.lengthOf(2)
+    for (const buf of output) {
+      expect(buf).to.have.length.that.is.at.least(minSendBytes)
+    }
   })
 })

@@ -153,6 +153,7 @@
     "any-signal": "^3.0.0",
     "benchmark": "^2.1.4",
     "err-code": "^3.0.1",
+    "it-batched-bytes": "^1.0.0",
     "it-pushable": "^3.1.0",
     "it-stream-types": "^1.0.4",
     "rate-limiter-flexible": "^2.3.9",

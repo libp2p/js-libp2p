@@ -71,6 +71,7 @@ Creates a factory that can be used to create new muxers.
 
 - `maxMsgSize` - a number that defines how large mplex data messages can be in bytes, if messages are larger than this they will be sent as multiple messages (default: 1048576 - e.g. 1MB)
 - `maxUnprocessedMessageQueueSize` - a number that limits the size of the unprocessed input buffer (default: 4194304 - e.g. 4MB)
+- `minSendBytes` - if set, message bytes from the current tick will be batched up to this amount before being yielded by the muxer source, unless the next tick begins in which case all available bytes will be yielded
 - `maxInboundStreams` - a number that defines how many incoming streams are allowed per connection (default: 1024)
 - `maxOutboundStreams` - a number that defines how many outgoing streams are allowed per connection (default: 1024)
 - `maxStreamBufferSize` - a number that defines how large the message buffer is allowed to grow (default: 1024 \* 1024 \* 4 - e.g. 4MB)
