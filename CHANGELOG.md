@@ -1,3 +1,10 @@
+## [7.1.0](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.7...v7.1.0) (2022-11-25)
+
+
+### Features
+
+* add message byte batching ([#235](https://github.com/libp2p/js-libp2p-mplex/issues/235)) ([4e2a49d](https://github.com/libp2p/js-libp2p-mplex/commit/4e2a49df22430316140cd37a96fc3b6a8f95b76a))
+
 ## [7.0.7](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.6...v7.0.7) (2022-11-25)
 
 
