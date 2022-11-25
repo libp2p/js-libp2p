@@ -178,7 +178,7 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   /**
    * Disconnects all connections to the given `peer`
    */
-  hangUp: (peer: PeerId | Multiaddr | string) => Promise<void>
+  hangUp: (peer: PeerId | Multiaddr) => Promise<void>
 
   /**
    * Registers the `handler` for each protocol
@@ -194,12 +194,12 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   /**
    * Pings the given peer in order to obtain the operation latency
    */
-  ping: (peer: Multiaddr | PeerId, options?: AbortOptions) => Promise<number>
+  ping: (peer: PeerId | Multiaddr, options?: AbortOptions) => Promise<number>
 
   /**
    * Sends a request to fetch the value associated with the given key from the given peer.
    */
-  fetch: (peer: PeerId | Multiaddr | string, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
+  fetch: (peer: PeerId | Multiaddr, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type

@@ -11,6 +11,7 @@ import idl from './id-l.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { multiaddr } from '@multiformats/multiaddr'
 
 async function run() {
   const [dialerId, listenerId] = await Promise.all([
@@ -27,7 +28,7 @@ async function run() {
   })
 
   // Add peer to Dial (the listener) into the PeerStore
-  const listenerMultiaddr = '/ip4/127.0.0.1/tcp/10333/p2p/' + listenerId.toString()
+  const listenerMultiaddr = multiaddr('/ip4/127.0.0.1/tcp/10333/p2p/' + listenerId.toString())
 
   // Start the dialer libp2p node
   await dialerNode.start()
