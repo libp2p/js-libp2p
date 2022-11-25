@@ -43,11 +43,11 @@ describe('mplex', () => {
 
     // max out the streams for this connection
     for (let i = 0; i < maxInboundStreams; i++) {
-      const source: NewStreamMessage[] = [{
+      const source: NewStreamMessage[][] = [[{
         id: i,
         type: 0,
         data: new Uint8ArrayList(uint8ArrayFromString('17'))
-      }]
+      }]]
 
       const data = uint8ArrayConcat(await all(encode(source)))
 
@@ -55,11 +55,11 @@ describe('mplex', () => {
     }
 
     // simulate a new incoming stream
-    const source: NewStreamMessage[] = [{
+    const source: NewStreamMessage[][] = [[{
       id: 11,
       type: 0,
       data: new Uint8ArrayList(uint8ArrayFromString('17'))
-    }]
+    }]]
 
     const data = uint8ArrayConcat(await all(encode(source)))
 
@@ -89,13 +89,13 @@ describe('mplex', () => {
     const id = 17
 
     // simulate a new incoming stream that sends lots of data
-    const input: Source<Message> = (async function * send () {
+    const input: Source<Message[]> = (async function * send () {
       const newStreamMessage: NewStreamMessage = {
         id,
         type: MessageTypes.NEW_STREAM,
         data: new Uint8ArrayList(new Uint8Array(1024))
       }
-      yield newStreamMessage
+      yield [newStreamMessage]
 
       await delay(10)
 
@@ -105,7 +105,7 @@ describe('mplex', () => {
           type: MessageTypes.MESSAGE_INITIATOR,
           data: new Uint8ArrayList(new Uint8Array(1024 * 1000))
         }
-        yield dataMessage
+        yield [dataMessage]
 
         sent++
 
@@ -118,7 +118,7 @@ describe('mplex', () => {
         id,
         type: MessageTypes.CLOSE_INITIATOR
       }
-      yield closeMessage
+      yield [closeMessage]
     })()
 
     // create the muxer

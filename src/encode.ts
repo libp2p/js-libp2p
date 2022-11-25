@@ -55,15 +55,11 @@ const encoder = new Encoder()
 /**
  * Encode and yield one or more messages
  */
-export async function * encode (source: Source<Message | Message[]>) {
-  for await (const msg of source) {
+export async function * encode (source: Source<Message[]>) {
+  for await (const msgs of source) {
     const list = new Uint8ArrayList()
 
-    if (Array.isArray(msg)) {
-      for (const m of msg) {
-        encoder.write(m, list)
-      }
-    } else {
+    for (const msg of msgs) {
       encoder.write(msg, list)
     }
 

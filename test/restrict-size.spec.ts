@@ -16,11 +16,11 @@ describe('restrict size', () => {
   it('should throw when size is too big', async () => {
     const maxSize = 32
 
-    const input: Message[] = [
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(8)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(maxSize)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(64)) }
+    const input: Message[][] = [
+      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(8)) }],
+      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) }],
+      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(maxSize)) }],
+      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(64)) }]
     ]
 
     const output: Message[] = []
@@ -38,9 +38,9 @@ describe('restrict size', () => {
     } catch (err: any) {
       expect(err).to.have.property('code', 'ERR_MSG_TOO_BIG')
       expect(output).to.have.length(3)
-      expect(output[0]).to.deep.equal(input[0])
-      expect(output[1]).to.deep.equal(input[1])
-      expect(output[2]).to.deep.equal(input[2])
+      expect(output[0]).to.deep.equal(input[0][0])
+      expect(output[1]).to.deep.equal(input[1][0])
+      expect(output[2]).to.deep.equal(input[2][0])
       return
     }
     throw new Error('did not restrict size')
@@ -51,7 +51,7 @@ describe('restrict size', () => {
       id: 4,
       type: MessageTypes.CLOSE_RECEIVER
     }
-    const input: Message[] = [message]
+    const input: Message[][] = [[message]]
 
     const output = await pipe(
       input,
@@ -59,14 +59,14 @@ describe('restrict size', () => {
       decode(32),
       async (source) => await all(source)
     )
-    expect(output).to.deep.equal(input)
+    expect(output).to.deep.equal(input[0])
   })
 
   it('should throw when unprocessed message queue size is too big', async () => {
     const maxMessageSize = 32
     const maxUnprocessedMessageQueueSize = 64
 
-    const input: Message[] = [
+    const input: Message[][] = [[
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
@@ -74,7 +74,7 @@ describe('restrict size', () => {
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) }
-    ]
+    ]]
 
     const output: Message[] = []
 
