@@ -1,3 +1,10 @@
+## [7.0.7](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.6...v7.0.7) (2022-11-25)
+
+
+### Bug Fixes
+
+* only accept lists of messages in encoder ([#236](https://github.com/libp2p/js-libp2p-mplex/issues/236)) ([4175cac](https://github.com/libp2p/js-libp2p-mplex/commit/4175cacbc32a76a525beccfad8fc13f87733e725))
+
 ## [7.0.6](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.5...v7.0.6) (2022-11-25)
 
 
