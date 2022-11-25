@@ -1,3 +1,10 @@
+## [7.0.6](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.5...v7.0.6) (2022-11-25)
+
+
+### Bug Fixes
+
+* reduce async iterator loops per package in _createSink ([#224](https://github.com/libp2p/js-libp2p-mplex/issues/224)) ([e2a32ad](https://github.com/libp2p/js-libp2p-mplex/commit/e2a32ad1cc9bf396c95906e500c1f74acc134828)), closes [/github.com/libp2p/js-libp2p/issues/1420#issuecomment-1273272662](https://github.com/libp2p//github.com/libp2p/js-libp2p/issues/1420/issues/issuecomment-1273272662)
+
 ## [7.0.5](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.4...v7.0.5) (2022-11-24)
 
 
