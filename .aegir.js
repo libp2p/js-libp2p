@@ -53,7 +53,6 @@ export default {
         pipe(stream, stream)
           .catch() // sometimes connections are closed before multistream-select finishes which causes an error
       })
-      await libp2p.start()
 
       return {
         libp2p

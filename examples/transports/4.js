@@ -43,7 +43,6 @@ const createNode = async (addresses = []) => {
     }
   })
 
-  await node.start()
   return node
 }
 

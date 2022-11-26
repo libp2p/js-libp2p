@@ -53,8 +53,7 @@ const createNode = async (bootstrappers) => {
       }
     }
   })
-  console.log(`libp2p relay starting with id: ${relay.peerId.toString()}`)
-  await relay.start()
+  console.log(`libp2p relay started with id: ${relay.peerId.toString()}`)
 
   const relayMultiaddrs = relay.getMultiaddrs().map((m) => m.toString())
 
@@ -71,10 +70,4 @@ const createNode = async (bootstrappers) => {
     const peer = evt.detail
     console.log(`Peer ${node2.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
-
-  ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toString()}`))
-  await Promise.all([
-    node1.start(),
-    node2.start()
-  ])
 })()

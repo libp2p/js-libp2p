@@ -23,7 +23,6 @@ const createNode = async (transports, addresses = []) => {
     streamMuxers: [mplex()]
   })
 
-  await node.start()
   return node
 }
 

@@ -29,9 +29,6 @@ async function run () {
     streamToConsole(stream)
   })
 
-  // Start listening
-  await nodeListener.start()
-
   // Output listen addresses to the console
   console.log('Listener ready, listening on:')
   nodeListener.getMultiaddrs().forEach((ma) => {

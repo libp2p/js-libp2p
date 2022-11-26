@@ -29,7 +29,6 @@ async function main () {
     }
   })
 
-  await node.start()
   console.log(`Node started with id ${node.peerId.toString()}`)
 
   const conn = await node.dial(multiaddr(relayAddr))

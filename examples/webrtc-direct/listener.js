@@ -27,8 +27,6 @@ import wrtc from 'wrtc'
     console.info(`Connected to ${evt.detail.remotePeer.toString()}!`)
   })
 
-  await node.start()
-
   console.log('Listening on:')
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 })()

@@ -38,9 +38,4 @@ const createNode = async () => {
 
   node1.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
   node2.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
-
-  await Promise.all([
-    node1.start(),
-    node2.start()
-  ])
 })();

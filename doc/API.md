@@ -186,7 +186,7 @@ Required keys in the `options` object:
 
 ### start
 
-Starts the libp2p node.
+By default nodes are started when returned from `createLibp2p` - to override this, pass `start: false` as an option. You can then use `libp2p.start()` to start the node.
 
 `libp2p.start()`
 
@@ -203,7 +203,10 @@ import { createLibp2p } from 'libp2p'
 
 // ...
 
-const libp2p = await createLibp2p(options)
+const libp2p = await createLibp2p({
+  start: false,
+  ...options
+})
 
 // start libp2p
 await libp2p.start()

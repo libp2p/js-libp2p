@@ -25,8 +25,6 @@ const createNode = async () => {
 	  pubsub: gossipsub({ allowPublishToZeroPeers: true })
   })
 
-  await node.start()
-
   return node
 }
 ```

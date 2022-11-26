@@ -19,7 +19,6 @@ const createNode = async () => {
     pubsub: floodsub()
   })
 
-  await node.start()
   return node
 }
 

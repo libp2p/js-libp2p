@@ -30,8 +30,6 @@ async function main () {
     }
   })
 
-  await node.start()
-
   console.log(`Node started with id ${node.peerId.toString()}`)
   console.log('Listening on:')
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
