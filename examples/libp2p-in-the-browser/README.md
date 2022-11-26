@@ -46,6 +46,6 @@ Now, if you open a second browser tab to `http://localhost:1234`, you should dis
 
 This example uses public `libp2p-webrtc-star` servers. These servers should be used for experimenting and demos, they **MUST** not be used in production as there is no guarantee on availability.
 
-You can see how to deploy your own signaling server in [libp2p/js-libp2p-webrtc-star/DEPLOYMENT.md](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/DEPLOYMENT.md).
+You can see how to deploy your own signaling server in [libp2p/js-libp2p-webrtc-star/DEPLOYMENT.md](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/packages/webrtc-star-signalling-server/DEPLOYMENT.md).
 
 Once you have your own server running, you should add its listen address in your libp2p node configuration.

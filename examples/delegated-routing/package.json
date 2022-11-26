@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^9.0.0",
+    "@chainsafe/libp2p-noise": "^10.0.1",
     "ipfs-core": "^0.15.4",
     "ipfs-http-client": "^58.0.1",
     "libp2p": "../../",

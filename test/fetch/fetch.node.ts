@@ -13,7 +13,9 @@ async function createNode (peerId: PeerId) {
   return await createLibp2pNode({
     peerId,
     addresses: {
-      listen: ['/ip4/0.0.0.0/tcp/0']
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
     },
     transports: [
       tcp()
@@ -55,16 +57,10 @@ describe('Fetch', () => {
     await sender.start()
     await receiver.start()
 
-    await Promise.all([
-      ...sender.getMultiaddrs().map(async addr => await receiver.dial(addr)),
-      ...receiver.getMultiaddrs().map(async addr => await sender.dial(addr))
-    ])
+    await receiver.dial(sender.getMultiaddrs()[0])
   })
 
   afterEach(async () => {
-    receiver.fetchService.unregisterLookupFunction(PREFIX_A)
-    receiver.fetchService.unregisterLookupFunction(PREFIX_B)
-
     await sender.stop()
     await receiver.stop()
   })

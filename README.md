@@ -18,9 +18,7 @@
 <p align="center">
   <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/workflow/status/libp2p/js-libp2p/ci?label=ci&style=flat-square" /></a>
   <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/master.svg?style=flat-square"></a>
-  <a href="https://bundlephobia.com/result?p=ipfsd-ctl"><img src="https://flat.badgen.net/bundlephobia/minzip/ipfsd-ctl"></a>
   <br>
-  <a href="https://david-dm.org/libp2p/js-libp2p"><img src="https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square" /></a>
   <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
   <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
   <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
@@ -42,6 +40,7 @@ If you are looking for the documentation of the latest release, you can view the
 ## Table of Contents <!-- omit in toc -->
 
 - [Background](#background)
+- [Roadmap](#roadmap)
 - [Install](#install)
 - [Usage](#usage)
   - [Configuration](#configuration)
@@ -73,6 +72,14 @@ We are in the process of writing better documentation, blog posts, tutorials and
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
 To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
+
+## Roadmap
+
+The js-libp2p roadmap can be found here: https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md
+
+It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.
+
+It is complementary to the overarching libp2p project roadmap: https://github.com/libp2p/specs/blob/master/ROADMAP.md
 
 ## Install
 

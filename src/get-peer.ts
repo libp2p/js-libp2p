@@ -1,6 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import { multiaddr, isMultiaddr } from '@multiformats/multiaddr'
+import { isMultiaddr } from '@multiformats/multiaddr'
 import errCode from 'err-code'
 import { codes } from './errors.js'
 import { isPeerId } from '@libp2p/interface-peer-id'
@@ -28,19 +28,15 @@ function peerIdFromMultiaddr (ma: Multiaddr) {
 }
 
 /**
- * Converts the given `peer` to a `Peer` object.
+ * Converts the given `peer` to a `PeerInfo` object.
  */
-export function getPeer (peer: PeerId | Multiaddr | string): PeerInfo {
+export function getPeer (peer: PeerId | Multiaddr): PeerInfo {
   if (isPeerId(peer)) {
     return {
       id: peer,
       multiaddrs: [],
       protocols: []
     }
-  }
-
-  if (typeof peer === 'string') {
-    peer = multiaddr(peer)
   }
 
   let addr

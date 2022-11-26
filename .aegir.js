@@ -1,6 +1,6 @@
 import { webSockets } from '@libp2p/websockets'
 import { mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 
@@ -34,7 +34,7 @@ export default {
           mplex()
         ],
         connectionEncryption: [
-          () => () => new Noise(),
+          noise(),
           plaintext()
         ],
         relay: {
