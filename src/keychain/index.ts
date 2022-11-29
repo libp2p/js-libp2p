@@ -118,7 +118,7 @@ export interface KeyChainComponents {
  */
 export class KeyChain implements Startable {
   private readonly components: KeyChainComponents
-  private init: KeyChainInit
+  private readonly init: KeyChainInit
   private started: boolean
 
   /**
