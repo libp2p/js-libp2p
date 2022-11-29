@@ -233,13 +233,7 @@ export class DefaultDialer implements Startable, Dialer {
     addrs = (await Promise.all(
       addrs.map(async (ma) => await _resolve(ma, options))
     ))
-      // flatten
-      .reduce((acc, curr) => {
-        return [
-          ...acc,
-          ...curr
-        ]
-      }, [])
+      .flat()
       // Multiaddrs not supported by the available transports will be filtered out.
       .filter(ma => Boolean(this.components.transportManager.transportForMultiaddr(ma)))
 
