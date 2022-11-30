@@ -39,10 +39,10 @@ $ npm i @libp2p/mplex
 ## Usage
 
 ```js
-import { Mplex } from '@libp2p/mplex'
+import { mplex } from '@libp2p/mplex'
 import { pipe } from 'it-pipe'
 
-const factory = new Mplex()
+const factory = mplex()
 
 const muxer = factory.createStreamMuxer(components, {
   onStream: stream => { // Receive a duplex stream from the remote
@@ -63,7 +63,7 @@ pipe([1, 2, 3], stream)
 
 ## API
 
-### `const factory = new Mplex([options])`
+### `const factory = mplex([options])`
 
 Creates a factory that can be used to create new muxers.
 
@@ -84,11 +84,11 @@ Create a new *duplex* stream that can be piped together with a connection in ord
 e.g.
 
 ```js
-import { Mplex } from '@libp2p/mplex'
+import { mplex } from '@libp2p/mplex'
 import { pipe } from 'it-pipe'
 
 // Create a duplex muxer
-const muxer = new Mplex()
+const muxer = mplex()
 
 // Use the muxer in a pipeline
 pipe(conn, muxer, conn) // conn is duplex connection to another peer
@@ -109,12 +109,12 @@ pipe(conn, muxer, conn) // conn is duplex connection to another peer
       stream
     )
   }
-  const muxer = new Mplex({ onStream })
+  const muxer = mplex({ onStream })
   // ...
   ```
   **Note:** The `onStream` function can be passed in place of the `options` object. i.e.
   ```js
-  new Mplex(stream => { /* ... */ })
+  mplex(stream => { /* ... */ })
   ```
 - `onStreamEnd` - A function called when a stream ends
   ```js
@@ -128,7 +128,7 @@ pipe(conn, muxer, conn) // conn is duplex connection to another peer
 - `signal` - An [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) which can be used to abort the muxer, *including* all of it's multiplexed connections. e.g.
   ```js
   const controller = new AbortController()
-  const muxer = new Mplex({ signal: controller.signal })
+  const muxer = mplex({ signal: controller.signal })
 
   pipe(conn, muxer, conn)
 
