@@ -28,7 +28,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   /**
    * WebRTC Peer Connection
    */
-  private readonly peerConnection: RTCPeerConnection;
+  readonly peerConnection: RTCPeerConnection;
 
   /**
    * The multiaddr address used to communicate with the remote peer
@@ -61,6 +61,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
       log.error('error closing connection', err)
     }
 
+    this.timeline.close = new Date().getTime()
     this.peerConnection.close()
   }
 }
