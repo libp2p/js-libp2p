@@ -33,6 +33,4 @@ import bootstrapers from './bootstrappers.js'
     // No need to dial, autoDial is on
     console.log('Discovered:', peer.id.toString())
   })
-
-  await node.start()
 })();

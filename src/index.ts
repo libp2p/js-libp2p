@@ -208,12 +208,20 @@ export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
   getPublicKey: (peer: PeerId, options?: AbortOptions) => Promise<Uint8Array>
 }
 
-export type Libp2pOptions = RecursivePartial<Libp2pInit>
+export type Libp2pOptions = RecursivePartial<Libp2pInit> & { start?: boolean }
 
 /**
  * Returns a new instance of the Libp2p interface, generating a new PeerId
  * if one is not passed as part of the options.
+ *
+ * The node will be started unless `start: false` is passed as an option.
  */
 export async function createLibp2p (options: Libp2pOptions): Promise<Libp2p> {
-  return await createLibp2pNode(options)
+  const node = await createLibp2pNode(options)
+
+  if (options.start !== false) {
+    await node.start()
+  }
+
+  return node
 }

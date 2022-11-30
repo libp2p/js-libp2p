@@ -18,7 +18,6 @@ const createNode = async () => {
     dht: kadDHT()
   })
 
-  await node.start()
   return node
 }
 

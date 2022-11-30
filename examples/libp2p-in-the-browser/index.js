@@ -73,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     log(`Disconnected from ${connection.remotePeer.toString()}`)
   })
 
-  await libp2p.start()
   status.innerText = 'libp2p started!'
   log(`libp2p id is ${libp2p.peerId.toString()}`)
 

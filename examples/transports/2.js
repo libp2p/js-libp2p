@@ -21,7 +21,6 @@ const createNode = async () => {
     streamMuxers: [mplex()]
   })
 
-  await node.start()
   return node
 }
 

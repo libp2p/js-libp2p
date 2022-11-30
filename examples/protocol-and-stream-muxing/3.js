@@ -18,8 +18,6 @@ const createNode = async () => {
     connectionEncryption: [noise()]
   })
 
-  await node.start()
-
   return node
 }
 

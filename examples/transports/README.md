@@ -40,7 +40,6 @@ const createNode = async () => {
     ]
   })
 
-  await node.start()
   return node
 }
 ```
@@ -105,7 +104,6 @@ const createNode = async () => {
     streamMuxers: [mplex()] // <--- Add this line
   })
 
-  await node.start()
   return node
 }
 ```
@@ -194,7 +192,6 @@ const createNode = async (transports, addresses = []) => {
     streamMuxers: [mplex()]
   })
 
-  await node.start()
   return node
 }
 ```

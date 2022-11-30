@@ -21,11 +21,6 @@ generateKey(otherSwarmKey)
   const node2 = await privateLibp2pNode(swarmKey)
   // const node2 = await privateLibp2pNode(otherSwarmKey)
 
-  await Promise.all([
-    node1.start(),
-    node2.start()
-  ])
-
   console.log('nodes started...')
 
   // Add node 2 data to node1's PeerStore
