@@ -240,7 +240,6 @@ export class DefaultRegistrar implements Registrar {
         if (connection == null) {
           continue
         }
-        console.log('topology on connect')
         topology.onConnect(peerId, connection)
       }
     }
