@@ -12,13 +12,14 @@ import type { Connection, MultiaddrConnection } from '@libp2p/interface-connecti
 import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
 import * as STATUS from '@libp2p/interface-connection/status'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
-import { multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
+import { isMultiaddr, multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Upgrader } from '@libp2p/interface-transport'
+import { getPeer } from '../get-peer.js'
 
 const log = logger('libp2p:connection-manager')
 
@@ -494,7 +495,18 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     return conns
   }
 
-  async openConnection (peerId: PeerId, options: AbortOptions = {}): Promise<Connection> {
+  async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+    let peerId: PeerId
+
+    if (isPeerId(peerIdOrMultiaddr)) {
+      peerId = peerIdOrMultiaddr
+    } else if (isMultiaddr(peerIdOrMultiaddr)) {
+      const info = getPeer(peerIdOrMultiaddr)
+      peerId = info.id
+    } else {
+      throw errCode(new TypeError('Can only open connections to PeerIds or Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('dial to %p', peerId)
     const existingConnections = this.getConnections(peerId)
 
@@ -517,7 +529,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     try {
-      const connection = await this.components.dialer.dial(peerId, options)
+      const connection = await this.components.dialer.dial(peerIdOrMultiaddr, options)
       let peerConnections = this.connections.get(peerId.toString())
 
       if (peerConnections == null) {

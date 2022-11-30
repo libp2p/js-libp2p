@@ -177,7 +177,7 @@ describe('Dialing (direct, WebSockets)', () => {
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.addressBook.set(remotePeerId, Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`)))
 
-    await expect(dialer.dial(remoteAddr))
+    await expect(dialer.dial(remotePeerId))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_TOO_MANY_ADDRESSES)
   })
@@ -190,7 +190,7 @@ describe('Dialing (direct, WebSockets)', () => {
     ]
 
     const publicAddressesFirstSpy = sinon.spy(publicAddressesFirst)
-    const localTMDialStub = sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromString(ma.getPeerId() ?? ''))))
+    const localTMDialStub = sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
     const dialer = new DefaultDialer(localComponents, {
       addressSorter: publicAddressesFirstSpy,
@@ -300,8 +300,13 @@ describe('Dialing (direct, WebSockets)', () => {
   it('should cancel pending dial targets before proceeding', async () => {
     const dialer = new DefaultDialer(localComponents)
 
-    sinon.stub(dialer, '_createDialTarget').callsFake(async () => {
+    sinon.stub(dialer, '_createDialTarget').callsFake(async (addr, options) => {
       const deferredDial = pDefer<DialTarget>()
+
+      options.signal?.addEventListener('abort', () => {
+        deferredDial.reject(new AbortError())
+      })
+
       return await deferredDial.promise
     })
 
@@ -316,6 +321,63 @@ describe('Dialing (direct, WebSockets)', () => {
     await expect(dialPromise)
       .to.eventually.be.rejected()
       .and.to.have.property('code', 'ABORT_ERR')
+  })
+
+  it('should dial all multiaddrs for a passed peer id', async () => {
+    const addrs = [
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${remoteComponents.peerId.toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${remoteComponents.peerId.toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8002/ws/p2p/${remoteComponents.peerId.toString()}`)
+    ]
+
+    // Inject data into the AddressBook
+    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+
+    const dialer = new DefaultDialer(localComponents)
+    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
+
+    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+
+    // Perform dial
+    await dialer.dial(remoteComponents.peerId)
+    await dialer.stop()
+
+    expect(createDialTargetSpy.called).to.be.true()
+
+    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
+
+    expect(dialTarget).to.have.property('addrs').with.lengthOf(3)
+    expect(dialTarget.addrs).to.deep.equal(addrs)
+  })
+
+  it('should dial only the multiaddr that is passed', async () => {
+    const addrs = [
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${remoteComponents.peerId.toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${remoteComponents.peerId.toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8002/ws/p2p/${remoteComponents.peerId.toString()}`)
+    ]
+
+    // Inject data into the AddressBook
+    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+
+    // different address not in the address book, same peer id
+    const dialMultiaddr = multiaddr(`/ip4/0.0.0.0/tcp/8003/ws/p2p/${remoteComponents.peerId.toString()}`)
+
+    const dialer = new DefaultDialer(localComponents)
+    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
+
+    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+
+    // Perform dial
+    await dialer.dial(dialMultiaddr)
+    await dialer.stop()
+
+    expect(createDialTargetSpy.called).to.be.true()
+
+    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
+
+    expect(dialTarget).to.have.property('addrs').with.lengthOf(1)
+    expect(dialTarget.addrs[0]).to.equal(dialMultiaddr)
   })
 })
 
@@ -529,8 +591,13 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     })
 
     const dialer = libp2p.components.dialer as DefaultDialer
-    sinon.stub(dialer, '_createDialTarget').callsFake(async () => {
+    sinon.stub(dialer, '_createDialTarget').callsFake(async (addr, options) => {
       const deferredDial = pDefer<DialTarget>()
+
+      options.signal?.addEventListener('abort', () => {
+        deferredDial.reject(new AbortError())
+      })
+
       return await deferredDial.promise
     })
 
