@@ -140,33 +140,19 @@ describe('registrar', () => {
       await libp2p.components.registrar.register(protocol, topology)
 
       // Add connected peer with protocol to peerStore and registrar
-      await libp2p.peerStore.protoBook.add(remotePeerId, [protocol])
+      await libp2p.peerStore.protoBook.set(remotePeerId, [protocol])
 
       // remote peer connects
       await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
       }))
-
-      // identify completes
-      await libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
-        detail: {
-          peerId: conn.remotePeer,
-          protocols: [protocol],
-          oldProtocols: []
-        }
-      }))
-
+      await onConnectDefer.promise
       // remote peer disconnects
       await conn.close()
       await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
         detail: conn
       }))
-
-      // Wait for handlers to be called
-      return await Promise.all([
-        onConnectDefer.promise,
-        onDisconnectDefer.promise
-      ])
+      await onDisconnectDefer.promise
     })
 
     it('should call onConnect handler after register, once a peer is connected and protocols are updated', async () => {
@@ -194,9 +180,6 @@ describe('registrar', () => {
       // Add connected peer to peerStore and registrar
       await libp2p.peerStore.protoBook.set(remotePeerId, [])
 
-      // Add protocol to peer and update it
-      await libp2p.peerStore.protoBook.add(remotePeerId, [protocol])
-
       // remote peer connects
       await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
@@ -214,7 +197,13 @@ describe('registrar', () => {
       await onConnectDefer.promise
 
       // Peer no longer supports the protocol our topology is registered for
-      await libp2p.peerStore.protoBook.set(remotePeerId, [])
+      await libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+        detail: {
+          peerId: conn.remotePeer,
+          protocols: [],
+          oldProtocols: [protocol]
+        }
+      }))
 
       await onDisconnectDefer.promise
     })
