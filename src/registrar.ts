@@ -179,7 +179,7 @@ export class DefaultRegistrar implements Registrar {
   }
 
   /**
-   * On peer connected if we already have his protocols. Usually used for reconnects
+   * On peer connected if we already have their protocols. Usually used for reconnects
    * as change:protocols event won't be emitted due to identical protocols.
    */
   _onConnect (evt: CustomEvent<Connection>) {
