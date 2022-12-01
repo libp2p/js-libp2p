@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.7...v1.0.8) (2022-12-01)
+
+
+### Dependencies
+
+* **dev:** bump sinon from 14.0.2 to 15.0.0 ([#287](https://github.com/libp2p/js-libp2p-crypto/issues/287)) ([3aa22cd](https://github.com/libp2p/js-libp2p-crypto/commit/3aa22cdfdef028b3b451e62f9f5784000b2b0690))
+
 ## [1.0.7](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.6...v1.0.7) (2022-10-14)
 
 
