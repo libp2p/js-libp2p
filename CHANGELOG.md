@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.8...v1.0.9) (2022-12-01)
+
+
+### Bug Fixes
+
+* use node crypto for ed25519 signing and verification ([#289](https://github.com/libp2p/js-libp2p-crypto/issues/289)) ([1c623e7](https://github.com/libp2p/js-libp2p-crypto/commit/1c623e7d55ddfafbad0b65b261f55bbc6957df28))
+
 ## [1.0.8](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.7...v1.0.8) (2022-12-01)
 
 
