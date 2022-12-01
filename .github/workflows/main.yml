@@ -170,3 +170,7 @@ jobs:
             npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+        name: 'Generate Docs'
+      - run: npm run --if-present generate:docs
+
