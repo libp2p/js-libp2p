@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v5.0.0...v5.0.1) (2022-12-01)
+
+
+### Documentation
+
+* update readme ([#149](https://github.com/libp2p/js-libp2p-bootstrap/issues/149)) ([aba592f](https://github.com/libp2p/js-libp2p-bootstrap/commit/aba592f1c3e9e8687357aa9513de56ef6b22f812)), closes [#147](https://github.com/libp2p/js-libp2p-bootstrap/issues/147)
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v4.0.0...v5.0.0) (2022-10-12)
 
 
