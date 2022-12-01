@@ -90,13 +90,13 @@ describe('WebRTC Transport', () => {
   })
 })
 
-// @TODO(ddimaria): remove this test and remove related scripts in packageon
+// @TODO(ddimaria): remove this test and remove related scripts in package.json
 describe('WebRTC Transport Interoperability', () => {
   it('can connect to a server', async () => {
     // we do not test connecting to an external server, as we do not appear to have one
-    if (SERVER_MULTIADDR === '') {
-      return
-    }
+    // if (SERVER_MULTIADDR === '') {
+    //   return
+    // }
 
     const node = await createLibp2p({
       transports: [webRTC()],

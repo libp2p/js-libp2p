@@ -1,4 +1,3 @@
-// import {Components} from "@libp2p/components"
 import { Stream } from '@libp2p/interface-connection'
 import { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import { Source, Sink } from 'it-stream-types'
@@ -79,7 +78,7 @@ export class DataChannelMuxer implements StreamMuxer {
      * Fired when a data channel has been added to the connection has been
      * added by the remote peer.
      *
-     * {@link https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-ondatachannel}
+     * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/datachannel_event}
      */
     this.peerConnection.ondatachannel = ({ channel }) => {
       const stream = new WebRTCStream({
@@ -92,6 +91,7 @@ export class DataChannelMuxer implements StreamMuxer {
         },
         closeCb: init?.onStreamEnd
       })
+
       if ((init?.onIncomingStream) != null) {
         init.onIncomingStream(stream)
       }
