@@ -12,6 +12,7 @@
         "*",
         "dist/*",
         "dist/src/*",
+        "dist/proto_ts/*",
         "dist/src/*/index"
       ],
       "src/*": [
@@ -40,7 +41,9 @@
   },
   "files": [
     "src",
+    "proto_ts",
     "dist/src",
+    "dist/proto_ts",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -56,11 +59,11 @@
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
     "dep-check": "aegir dep-check",
+    "prepare": "npm run build",
     "release": "aegir release"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^3.0.3",
-    "@libp2p/interface-mocks": "^7.0.2",
+    "@libp2p/interface-mocks": "^8.0.1",
     "@libp2p/peer-id-factory": "^1.0.19",
     "@protobuf-ts/plugin": "^2.8.0",
     "@protobuf-ts/protoc": "^2.8.0",
