@@ -35,23 +35,23 @@ Clients that need constant connections to bootstrap nodes (e.g. browsers) can se
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { Bootstrap } from '@libp2p/bootstrap'
-import { TCP } from 'libp2p/tcp'
-import { Noise } from '@libp2p/noise'
-import { Mplex } from '@libp2p/mplex'
+import { bootstrap } from '@libp2p/bootstrap'
+import { tcp } from 'libp2p/tcp'
+import { noise } from '@libp2p/noise'
+import { mplex } from '@libp2p/mplex'
 
 let options = {
   transports: [
-    new TCP()
+    tcp()
   ],
   streamMuxers: [
-    new Mplex()
+    mplex()
   ],
   connectionEncryption: [
-    new Noise()
+    noise()
   ],
   peerDiscovery: [
-    new Bootstrap({
+    bootstrap({
       list: [ // a list of bootstrap peer multiaddrs to connect to on node startup
         "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
