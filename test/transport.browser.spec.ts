@@ -1,16 +1,9 @@
 import * as underTest from './../src/transport'
 import { expectError } from './util'
 import { UnimplementedError } from './../src/error'
-import { webRTC } from '../src/index'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { CreateListenerOptions, symbol } from '@libp2p/interface-transport'
 import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
-import { SERVER_MULTIADDR } from './server-multiaddr'
-import { noise } from '@chainsafe/libp2p-noise'
-import { createLibp2p } from 'libp2p'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { pipe } from 'it-pipe'
-import first from 'it-first'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect, assert } from 'chai'
 
@@ -87,31 +80,5 @@ describe('WebRTC Transport', () => {
       const expected = 'WebRTC transport error: There was a problem with the Multiaddr which was passed in: we need to have the remote\'s PeerId'
       expectError(error, expected)
     }
-  })
-})
-
-// @TODO(ddimaria): remove this test and remove related scripts in package.json
-describe('WebRTC Transport Interoperability', () => {
-  it('can connect to a server', async () => {
-    // we do not test connecting to an external server, as we do not appear to have one
-    // if (SERVER_MULTIADDR === '') {
-    //   return
-    // }
-
-    const node = await createLibp2p({
-      transports: [webRTC()],
-      connectionEncryption: [noise({})]
-    })
-
-    await node.start()
-
-    const ma = multiaddr(SERVER_MULTIADDR)
-    const stream = await node.dialProtocol(ma, ['/echo/1.0.0'])
-    const data = 'dataToBeEchoedBackToMe\n'
-    const response = await pipe([uint8arrayFromString(data)], stream, async (source) => await first(source))
-
-    expect(response?.subarray()).to.equal(uint8arrayFromString(data))
-
-    await node.stop()
   })
 })
