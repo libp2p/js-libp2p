@@ -34,12 +34,12 @@ export class DataChannelMuxer implements StreamMuxer {
    */
   private readonly peerConnection: RTCPeerConnection
   /**
-   * WebRTC Peer Connection
+   * The protocol as represented in the multiaddress
    */
   readonly protocol: string = '/webrtc'
 
   /**
-   * WebRTC Peer Connection
+   * Array of streams in the data channel
    */
   streams: Stream[] = []
 
