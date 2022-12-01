@@ -1,17 +1,33 @@
 /* eslint-disable no-console */
 // @ts-expect-error types are missing
-const forge = require('node-forge/lib/forge')
-const Benchmark = require('benchmark')
-const native = require('ed25519')
-const noble = require('@noble/ed25519')
+import forge from 'node-forge/lib/forge.js'
+import Benchmark from 'benchmark'
+import native from 'ed25519'
+import * as noble from '@noble/ed25519'
+import 'node-forge/lib/ed25519.js'
+import stable from '@stablelib/ed25519'
+import supercopWasm from 'supercop.wasm'
+import ed25519WasmPro from 'ed25519-wasm-pro'
+import * as libp2pCrypto from '../../dist/src/index.js'
+
 const { randomBytes } = noble.utils
-const { subtle } = require('crypto').webcrypto
-require('node-forge/lib/ed25519')
-const stable = require('@stablelib/ed25519')
-const supercopWasm = require('supercop.wasm')
-const ed25519WasmPro = require('ed25519-wasm-pro')
 
 const suite = new Benchmark.Suite('ed25519 implementations')
+
+suite.add('@libp2p/crypto', async (d) => {
+  const message = Buffer.from('hello world ' + Math.random())
+
+  const key = await libp2pCrypto.keys.generateKeyPair('Ed25519')
+
+  const signature = await key.sign(message)
+  const res = await key.public.verify(message, signature)
+
+  if (!res) {
+    throw new Error('could not verify @libp2p/crypto signature')
+  }
+
+  d.resolve()
+}, { defer: true })
 
 suite.add('@noble/ed25519', async (d) => {
   const message = Buffer.from('hello world ' + Math.random())
@@ -91,23 +107,6 @@ suite.add('ed25519 (native module)', async (d) => {
 
   if (!res) {
     throw new Error('could not verify native signature')
-  }
-
-  d.resolve()
-}, { defer: true })
-
-suite.add('node.js web-crypto', async (d) => {
-  const message = Buffer.from('hello world ' + Math.random())
-
-  const key = await subtle.generateKey({
-    name: 'NODE-ED25519',
-    namedCurve: 'NODE-ED25519'
-  }, true, ['sign', 'verify'])
-  const signature = await subtle.sign('NODE-ED25519', key.privateKey, message)
-  const res = await subtle.verify('NODE-ED25519', key.publicKey, signature, message)
-
-  if (!res) {
-    throw new Error('could not verify node.js signature')
   }
 
   d.resolve()

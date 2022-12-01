@@ -1,23 +1,38 @@
-import * as ed from '@noble/ed25519'
+import crypto from 'crypto'
+import { promisify } from 'util'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+
+const keypair = promisify(crypto.generateKeyPair)
 
 const PUBLIC_KEY_BYTE_LENGTH = 32
 const PRIVATE_KEY_BYTE_LENGTH = 64 // private key is actually 32 bytes but for historical reasons we concat private and public keys
 const KEYS_BYTE_LENGTH = 32
+const SIGNATURE_BYTE_LENGTH = 64
 
 export { PUBLIC_KEY_BYTE_LENGTH as publicKeyLength }
 export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 
-export async function generateKey () {
-  // the actual private key (32 bytes)
-  const privateKeyRaw = ed.utils.randomPrivateKey()
-  const publicKey = await ed.getPublicKey(privateKeyRaw)
+function derivePublicKey (privateKey: Uint8Array) {
+  const hash = crypto.createHash('sha512')
+  hash.update(privateKey)
+  return hash.digest().subarray(32)
+}
 
-  // concatenated the public key to the private key
-  const privateKey = concatKeys(privateKeyRaw, publicKey)
+export async function generateKey () {
+  const key = await keypair('ed25519', {
+    publicKeyEncoding: { type: 'spki', format: 'jwk' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'jwk' }
+  })
+
+  // @ts-expect-error node types are missing jwk as a format
+  const privateKeyRaw = uint8arrayFromString(key.privateKey.d, 'base64url')
+  // @ts-expect-error node types are missing jwk as a format
+  const publicKeyRaw = uint8arrayFromString(key.privateKey.x, 'base64url')
 
   return {
-    privateKey,
-    publicKey
+    privateKey: concatKeys(privateKeyRaw, publicKeyRaw),
+    publicKey: publicKeyRaw
   }
 }
 
@@ -32,25 +47,68 @@ export async function generateKeyFromSeed (seed: Uint8Array) {
   }
 
   // based on node forges algorithm, the seed is used directly as private key
-  const privateKeyRaw = seed
-  const publicKey = await ed.getPublicKey(privateKeyRaw)
-
-  const privateKey = concatKeys(privateKeyRaw, publicKey)
+  const publicKeyRaw = derivePublicKey(seed)
 
   return {
-    privateKey,
-    publicKey
+    privateKey: concatKeys(seed, publicKeyRaw),
+    publicKey: publicKeyRaw
   }
 }
 
-export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array) {
-  const privateKeyRaw = privateKey.slice(0, KEYS_BYTE_LENGTH)
+export async function hashAndSign (key: Uint8Array, msg: Uint8Array) {
+  if (!(key instanceof Uint8Array)) {
+    throw new TypeError('"key" must be a node.js Buffer, or Uint8Array.')
+  }
 
-  return await ed.sign(msg, privateKeyRaw)
+  let privateKey: Uint8Array
+  let publicKey: Uint8Array
+
+  if (key.byteLength === PRIVATE_KEY_BYTE_LENGTH) {
+    privateKey = key.subarray(0, 32)
+    publicKey = key.subarray(32)
+  } else if (key.byteLength === KEYS_BYTE_LENGTH) {
+    privateKey = key.subarray(0, 32)
+    publicKey = derivePublicKey(privateKey)
+  } else {
+    throw new TypeError('"key" must be 64 or 32 bytes in length.')
+  }
+
+  const obj = crypto.createPrivateKey({
+    format: 'jwk',
+    key: {
+      crv: 'Ed25519',
+      d: uint8arrayToString(privateKey, 'base64url'),
+      x: uint8arrayToString(publicKey, 'base64url'),
+      kty: 'OKP'
+    }
+  })
+
+  return crypto.sign(null, msg, obj)
 }
 
-export async function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array) {
-  return await ed.verify(sig, msg, publicKey)
+export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array) {
+  if (key.byteLength !== PUBLIC_KEY_BYTE_LENGTH) {
+    throw new TypeError('"key" must be 32 bytes in length.')
+  } else if (!(key instanceof Uint8Array)) {
+    throw new TypeError('"key" must be a node.js Buffer, or Uint8Array.')
+  }
+
+  if (sig.byteLength !== SIGNATURE_BYTE_LENGTH) {
+    throw new TypeError('"sig" must be 64 bytes in length.')
+  } else if (!(sig instanceof Uint8Array)) {
+    throw new TypeError('"sig" must be a node.js Buffer, or Uint8Array.')
+  }
+
+  const obj = crypto.createPublicKey({
+    format: 'jwk',
+    key: {
+      crv: 'Ed25519',
+      x: uint8arrayToString(key, 'base64url'),
+      kty: 'OKP'
+    }
+  })
+
+  return crypto.verify(null, msg, obj, sig)
 }
 
 function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array) {

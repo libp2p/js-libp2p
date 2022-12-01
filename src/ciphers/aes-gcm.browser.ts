@@ -46,9 +46,9 @@ export function create (opts?: CreateOptions) {
    * the encryption cipher.
    */
   async function decrypt (data: Uint8Array, password: string | Uint8Array) {
-    const salt = data.slice(0, saltLength)
-    const nonce = data.slice(saltLength, saltLength + nonceLength)
-    const ciphertext = data.slice(saltLength + nonceLength)
+    const salt = data.subarray(0, saltLength)
+    const nonce = data.subarray(saltLength, saltLength + nonceLength)
+    const ciphertext = data.subarray(saltLength + nonceLength)
     const aesGcm = { name: algorithm, iv: nonce }
 
     if (typeof password === 'string') {

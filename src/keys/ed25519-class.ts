@@ -110,14 +110,14 @@ export function unmarshalEd25519PrivateKey (bytes: Uint8Array) {
   // Try the old, redundant public key version
   if (bytes.length > crypto.privateKeyLength) {
     bytes = ensureKey(bytes, crypto.privateKeyLength + crypto.publicKeyLength)
-    const privateKeyBytes = bytes.slice(0, crypto.privateKeyLength)
-    const publicKeyBytes = bytes.slice(crypto.privateKeyLength, bytes.length)
+    const privateKeyBytes = bytes.subarray(0, crypto.privateKeyLength)
+    const publicKeyBytes = bytes.subarray(crypto.privateKeyLength, bytes.length)
     return new Ed25519PrivateKey(privateKeyBytes, publicKeyBytes)
   }
 
   bytes = ensureKey(bytes, crypto.privateKeyLength)
-  const privateKeyBytes = bytes.slice(0, crypto.privateKeyLength)
-  const publicKeyBytes = bytes.slice(crypto.publicKeyLength)
+  const privateKeyBytes = bytes.subarray(0, crypto.privateKeyLength)
+  const publicKeyBytes = bytes.subarray(crypto.publicKeyLength)
   return new Ed25519PrivateKey(privateKeyBytes, publicKeyBytes)
 }
 

@@ -118,15 +118,15 @@ function unmarshalPublicKey (curve: string, key: Uint8Array) {
 
   const byteLen = curveLengths[curve]
 
-  if (!uint8ArrayEquals(key.slice(0, 1), Uint8Array.from([4]))) {
+  if (!uint8ArrayEquals(key.subarray(0, 1), Uint8Array.from([4]))) {
     throw errcode(new Error('Cannot unmarshal public key - invalid key format'), 'ERR_INVALID_KEY_FORMAT')
   }
 
   return {
     kty: 'EC',
     crv: curve,
-    x: uint8ArrayToString(key.slice(1, byteLen + 1), 'base64url'),
-    y: uint8ArrayToString(key.slice(1 + byteLen), 'base64url'),
+    x: uint8ArrayToString(key.subarray(1, byteLen + 1), 'base64url'),
+    y: uint8ArrayToString(key.subarray(1 + byteLen), 'base64url'),
     ext: true
   }
 }

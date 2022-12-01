@@ -14,7 +14,7 @@ export function bigIntegerToUintBase64url (num: { abs: () => any}, len?: number)
   // byte if the most significant bit of the number is 1:
   // https://docs.microsoft.com/en-us/windows/win32/seccertenroll/about-integer
   // Our number will always be positive so we should remove the leading padding.
-  buf = buf[0] === 0 ? buf.slice(1) : buf
+  buf = buf[0] === 0 ? buf.subarray(1) : buf
 
   if (len != null) {
     if (buf.length > len) throw new Error('byte array longer than desired length')

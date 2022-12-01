@@ -55,9 +55,9 @@ export function create (opts?: CreateOptions) {
    */
   async function decryptWithKey (ciphertextAndNonce: Uint8Array, key: Uint8Array) { // eslint-disable-line require-await
     // Create Uint8Arrays of nonce, ciphertext and tag.
-    const nonce = ciphertextAndNonce.slice(0, nonceLength)
-    const ciphertext = ciphertextAndNonce.slice(nonceLength, ciphertextAndNonce.length - algorithmTagLength)
-    const tag = ciphertextAndNonce.slice(ciphertext.length + nonceLength)
+    const nonce = ciphertextAndNonce.subarray(0, nonceLength)
+    const ciphertext = ciphertextAndNonce.subarray(nonceLength, ciphertextAndNonce.length - algorithmTagLength)
+    const tag = ciphertextAndNonce.subarray(ciphertext.length + nonceLength)
 
     // Create the cipher instance.
     const cipher = crypto.createDecipheriv(algorithm, key, nonce)
@@ -79,8 +79,8 @@ export function create (opts?: CreateOptions) {
    */
   async function decrypt (data: Uint8Array, password: string | Uint8Array) { // eslint-disable-line require-await
     // Create Uint8Arrays of salt and ciphertextAndNonce.
-    const salt = data.slice(0, saltLength)
-    const ciphertextAndNonce = data.slice(saltLength)
+    const salt = data.subarray(0, saltLength)
+    const ciphertextAndNonce = data.subarray(saltLength)
 
     if (typeof password === 'string') {
       password = uint8ArrayFromString(password)

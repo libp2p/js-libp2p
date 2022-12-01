@@ -61,13 +61,13 @@ export async function keyStretcher (cipherType: 'AES-128' | 'AES-256' | 'Blowfis
 
   const half = resultLength / 2
   const resultBuffer = uint8ArrayConcat(result)
-  const r1 = resultBuffer.slice(0, half)
-  const r2 = resultBuffer.slice(half, resultLength)
+  const r1 = resultBuffer.subarray(0, half)
+  const r2 = resultBuffer.subarray(half, resultLength)
 
   const createKey = (res: Uint8Array) => ({
-    iv: res.slice(0, ivSize),
-    cipherKey: res.slice(ivSize, ivSize + cipherKeySize),
-    macKey: res.slice(ivSize + cipherKeySize)
+    iv: res.subarray(0, ivSize),
+    cipherKey: res.subarray(ivSize, ivSize + cipherKeySize),
+    macKey: res.subarray(ivSize + cipherKeySize)
   })
 
   return {
