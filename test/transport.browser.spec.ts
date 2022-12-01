@@ -37,14 +37,12 @@ describe('WebRTC Transport', () => {
     }
   })
 
-  // @TODO(ddimaria): determine if this test has value
   it('toString property getter', () => {
     const t = new underTest.WebRTCTransport(components)
     const s = t[Symbol.toStringTag]
     expect(s).to.equal('@libp2p/webrtc')
   })
 
-  // @TODO(ddimaria): determine if this test has value
   it('symbol property getter', () => {
     const t = new underTest.WebRTCTransport(components)
     const s = t[symbol]
