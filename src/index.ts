@@ -294,6 +294,10 @@ class WebTransport implements Transport {
 
     const { url, certhashes, remotePeer } = parseMultiaddr(ma)
 
+    if (certhashes.length === 0) {
+      throw new Error('Expected multiaddr to contain certhashes')
+    }
+
     const wt = new window.WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
       serverCertificateHashes: certhashes.map(certhash => ({
         algorithm: 'sha-256',

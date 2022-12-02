@@ -84,7 +84,7 @@ describe('libp2p-webtransport', () => {
     await node.start()
 
     const err = await expect(node.dial(ma)).to.eventually.be.rejected()
-    expect(err.errors[0].toString()).to.contain('WebTransportError: Opening handshake failed.')
+    expect(err.errors[0].toString()).to.contain('Expected multiaddr to contain certhashes')
 
     await node.stop()
   })
