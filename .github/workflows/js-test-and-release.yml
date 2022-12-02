@@ -2,10 +2,10 @@ name: test & maybe release
 on:
   push:
     branches:
-      - master # with #262 - ${{{ github.default_branch }}}
+      - main # with #262 - ${{{ github.default_branch }}}
   pull_request:
     branches:
-      - master # with #262 - ${{{ github.default_branch }}}
+      - main # with #262 - ${{{ github.default_branch }}}
       - develop
 
 jobs:
