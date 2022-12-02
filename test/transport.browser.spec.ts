@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 import * as underTest from './../src/transport'
 import { expectError } from './util'
 import { UnimplementedError } from './../src/error'
@@ -26,7 +28,16 @@ describe('WebRTC Transport', () => {
     expect(t.constructor.name).to.equal('WebRTCTransport')
   })
 
-  it('createListner does throw', () => {
+  it('can dial', async () => {
+    const ma = multiaddr('/ip4/1.2.3.4/udp/1234/webrtc/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd')
+    const transport = new underTest.WebRTCTransport(components)
+    const options = ignoredDialOption()
+
+    // don't await as this isn't an e2e test
+    transport.dial(ma, options)
+  })
+
+  it('createListner throws', () => {
     const t = new underTest.WebRTCTransport(components)
     try {
       t.createListener(ignoredDialOption())
