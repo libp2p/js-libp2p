@@ -26,7 +26,6 @@ describe('WebRTC Transport', () => {
     expect(t.constructor.name).to.equal('WebRTCTransport')
   })
 
-  // @TODO(ddimaria): determine if this test has value
   it('createListner does throw', () => {
     const t = new underTest.WebRTCTransport(components)
     try {

@@ -16,14 +16,14 @@ export enum codes {
 
 export class WebRTCTransportError extends Error {
   constructor (msg: string) {
-    super('WebRTC transport error: ' + msg)
+    super(`WebRTC transport error: ${msg}`)
     this.name = 'WebRTCTransportError'
   }
 }
 
 export class ConnectionClosedError extends WebRTCTransportError {
   constructor (state: RTCPeerConnectionState, msg: string) {
-    super(`peerconnection moved to state: ${state}:` + msg)
+    super(`peerconnection moved to state: ${state}: ${msg}`)
     this.name = 'WebRTC/ConnectionClosed'
   }
 }
@@ -33,8 +33,8 @@ export function connectionClosedError (state: RTCPeerConnectionState, msg: strin
 }
 
 export class DataChannelError extends WebRTCTransportError {
-  constructor (streamLabel: string, errorMessage: string) {
-    super(`[stream: ${streamLabel}] data channel error: ${errorMessage}`)
+  constructor (streamLabel: string, msg: string) {
+    super(`[stream: ${streamLabel}] data channel error: ${msg}`)
     this.name = 'WebRTC/DataChannelError'
   }
 }
@@ -45,7 +45,7 @@ export function dataChannelError (streamLabel: string, msg: string) {
 
 export class InappropriateMultiaddrError extends WebRTCTransportError {
   constructor (msg: string) {
-    super('There was a problem with the Multiaddr which was passed in: ' + msg)
+    super(`There was a problem with the Multiaddr which was passed in: ${msg}`)
     this.name = 'WebRTC/InappropriateMultiaddrError'
   }
 }
@@ -56,7 +56,7 @@ export function inappropriateMultiaddr (msg: string) {
 
 export class InvalidArgumentError extends WebRTCTransportError {
   constructor (msg: string) {
-    super('There was a problem with a provided argument: ' + msg)
+    super(`There was a problem with a provided argument: ${msg}`)
     this.name = 'WebRTC/InvalidArgumentError'
   }
 }
@@ -78,7 +78,7 @@ export function invalidFingerprint (fingerprint: string, source: string) {
 
 export class OperationAbortedError extends WebRTCTransportError {
   constructor (context: string, abortReason: string) {
-    super(`Signalled to abort because (${abortReason}})${context}`)
+    super(`Signalled to abort because (${abortReason}}) ${context}`)
     this.name = 'WebRTC/OperationAbortedError'
   }
 }
@@ -101,7 +101,7 @@ export function overStreamLimit (dir: Direction, proto: string) {
 
 export class UnimplementedError extends WebRTCTransportError {
   constructor (methodName: string) {
-    super('A method (' + methodName + ') was called though it has been intentionally left unimplemented.')
+    super(`A method (${methodName}) was called though it has been intentionally left unimplemented.`)
     this.name = 'WebRTC/UnimplementedError'
   }
 }
