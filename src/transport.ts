@@ -67,7 +67,7 @@ export class WebRTCTransport implements Transport {
   }
 
   /**
-   * Create transport listeners
+   * Create transport listeners no supported by browsers
    */
   createListener (options: CreateListenerOptions): Listener {
     throw unimplemented('WebRTCTransport.createListener')

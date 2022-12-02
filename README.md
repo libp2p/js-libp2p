@@ -3,8 +3,8 @@
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
-[![codecov](https://img.shields.io/codecov/c/github/little-bear-labs//js-libp2p-webrtc.svg?style=flat-square)](https://codecov.io/gh/little-bear-labs//js-libp2p-webrtc)
-[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/little-bear-labs//js-libp2p-webrtc/actions/workflows/js-test-and-release.yml)
+[![codecov](https://img.shields.io/codecov/c/github/little-bear-labs/js-libp2p-webrtc.svg?style=flat-square)](https://codecov.io/gh/little-bear-labs/js-libp2p-webrtc)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/little-bear-labs/js-libp2p-webrtc/actions/workflows/js-test-and-release.yml)
 
 > The browser implementation of the WebRTC module for libp2p.
 
@@ -12,13 +12,14 @@
 
 - [Install](#install)
 - [Usage](#usage)
-- [API](#api)
+- [Examples](#examples)
+- [Interfaces](#interfaces)
   - [Transport](#transport)
   - [Connection](#connection)
-- [Hacking](#hacking)
 - [Contribute](#contribute)
-- [Development](#development)
   - [Build](#build)
+  - [Protocol Buffers](#protocol-buffers)
+  - [Test](#test)
   - [Lint](#lint)
   - [Clean](#clean)
   - [Check Dependencies](#check-dependencies)
@@ -35,49 +36,81 @@ npm i @libp2p/webrtc
 ## Usage
 
 ```js
-import { createLibp2pNode } from 'libp2p'
-import { webRTC } from '@libp2p/webrtc'
-import { noise } from '@chainsafe/libp2p-noise'
+import { createLibp2p } from 'libp2p'
+import { Noise } from '@chainsafe/libp2p-noise'
 import { multiaddr } from '@multiformats/multiaddr'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
+import first from "it-first";
+import { pipe } from "it-pipe";
+import { fromString, toString } from "uint8arrays";
+import { webRTC } from 'js-libp2p-webrtc'
 
-const node = await createLibp2pNode({
-  transports: [
-    webRTC()
-  ],
-  connectionEncryption: [
-    noise()
-  ]
-})
+const node = await createLibp2p({
+  transports: [webRTC()],
+  connectionEncryption: [() => new Noise()],
+});
 
-const addr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
-const { stream } = await node.dialProtocol(addr, '/my-protocol/1.0.0')
-const values = await pipe(stream, all)
+await node.start()
+
+const ma =  multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
+const stream = await node.dialProtocol(ma, ['/my-protocol/1.0.0']) 
+const message = `Hello js-libp2p-webrtc\n`
+const response = await pipe([fromString(message)], stream, async (source) => await first(source))
+const responseDecoded = toString(response.slice(0, response.length))
 ```
-## API
+
+## Examples
+Examples can be found in the [examples folder](examples/README.md).
+
+## Interfaces
 
 ### Transport
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/libp2p-interfaces/src/transport/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport)
+![https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interface-transport](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/interface-transport/img/badge.png)
 
-`libp2p-webrtc` accepts WebRTC encapsulated addresses: `/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ`
+Browsers can only `dial`, so `listen` is not supported.
+
+```js
+interface Transport {
+  [Symbol.toStringTag]: string
+  [symbol]: true
+  dial: (ma: Multiaddr, options: DialOptions) => Promise<Connection>
+  createListener: (options: CreateListenerOptions) => Listener
+  filter: MultiaddrFilter
+}
+
+class WebRTCTransport implements Transport {
+
+  async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
+    const rawConn = await this._connect(ma, options)
+    log(`dialing address - ${ma.toString()}`)
+    return rawConn
+  }
+
+  createListener (options: CreateListenerOptions): Listener {
+    throw unimplemented('WebRTCTransport.createListener')
+  }
+}
+```
 
 ### Connection
 
-[![](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/libp2p-interfaces/src/connection/img/badge.png)](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/connection)
+![https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interface-connection](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/interface-connection/img/badge.png)
 
-## Hacking
+```js
+interface MultiaddrConnection extends Duplex<Uint8Array> {
+  close: (err?: Error) => Promise<void>
+  remoteAddr: Multiaddr
+  timeline: MultiaddrConnectionTimeline
+}
 
-Besides the usual `npm install` to get dependencies, `npm run build` to invoke tsc, and `npm run test` to execute unit tests...
-
-There is also `npm run autogen` which uses ProtoBuf's protoc to populate the generated code directory `proto_ts` based on `*.proto` files in src. Don't forget to run this step before `build` any time you make a change to any of the `*.proto` files.
+class WebRTCMultiaddrConnection implements MultiaddrConnection { }
+```
 
 ## Contribute
 
 Contributions are welcome! The libp2p implementation in JavaScript is a work in progress. As such, there's a few things you can do right now to help out:
 
-- [Check out the existing issues](//github.com/little-bear-labs//js-libp2p-webrtc/issues).
+- [Check out the existing issues](//github.com/little-bear-labs/js-libp2p-webrtc/issues).
 - **Perform code reviews**.
 - **Add tests**. There can never be enough tests.
 - Go through the modules and **check out existing issues**. This is especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
@@ -85,8 +118,6 @@ Contributions are welcome! The libp2p implementation in JavaScript is a work in 
 Please be aware that all interactions related to libp2p are subject to the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 
 Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
-
-## Development
 
 This module leans heavily on (Aegir)[https://github.com/ipfs/aegir] for most of the `package.json` scripts.
 
@@ -98,6 +129,30 @@ npm run build
 ```
 
 The build will be located in the `/dist` folder.
+
+### Protocol Buffers
+
+There is also `npm run generate:proto` script that uses protoc to populate the generated code directory `proto_ts` based on `*.proto` files in src. Don't forget to run this step before `build` any time you make a change to any of the `*.proto` files.
+
+### Test
+
+To run all tests:
+
+```shell
+npm test
+```
+
+To run tests for Chome only:
+
+```shell
+npm run test:chrome
+```
+
+To run tests for Firefox only:
+
+```shell
+npm run test:firefox
+```
 
 ### Lint
 Aegir is also used to lint the code, which follows the [Standard](https://github.com/standard/standard) JS linter.

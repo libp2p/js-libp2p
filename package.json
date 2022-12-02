@@ -48,11 +48,9 @@
     "!**/*.tsbuildinfo"
   ],
   "scripts": {
-    "autogen": "npx protoc --ts_out proto_ts --proto_path src src/*.proto",
-    "othergen": "./node_modules/.bin/proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=proto_ts/ src/*.proto",
+    "generate:proto": "npx protoc --ts_out proto_ts --proto_path src src/*.proto",
     "build": "aegir build",
     "test": "aegir test -t browser",
-    "test:interop": "run-p --race start-ext-server wait-then-test",
     "test:chrome": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" --cov",
     "test:firefox": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "lint": "aegir lint",
