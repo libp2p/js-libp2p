@@ -27,7 +27,8 @@ export function defaultStat (dir: Direction): StreamStat {
 
 interface StreamInitOpts {
   /**
-   * The network channel used for bidirectional peer-to-peer transfers of arbitrary data
+   * The network channel used for bidirectional peer-to-peer transfers of
+   * arbitrary data
    *
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
    */
@@ -54,7 +55,8 @@ interface StreamInitOpts {
  */
 interface StreamStateInput {
   /**
-   * Outbound conections are opened by the local node, inbound streams are opened by the remote
+   * Outbound conections are opened by the local node, inbound streams are
+   * opened by the remote
    */
   direction: 'inbound' | 'outbound'
 
@@ -251,10 +253,8 @@ export class WebRTCStream implements Stream {
        this._innersrc.push(new Uint8Array(data as ArrayBufferLike))
      }
 
-     // pipe framed protobuf messages through
-     // a length prefixed decoder, and surface
-     // data from the `Message.message` field
-     // through a source.
+     // pipe framed protobuf messages through a length prefixed decoder, and
+     // surface data from the `Message.message` field through a source.
      this._src = pipe(
        this._innersrc,
        lengthPrefixed.decode(),
@@ -269,18 +269,22 @@ export class WebRTCStream implements Stream {
      )
    }
 
-   // If user attempts to set a new source
-   // this should be a nop
-   set source (_src: Source<Uint8ArrayList>) {
-   }
+   // If user attempts to set a new source this should be a noop
+   set source (_src: Source<Uint8ArrayList>) { }
 
    get source (): Source<Uint8ArrayList> {
      return this._src
    }
 
+   /**
+    * Closable sink
+    */
    private async _sinkFn (src: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
      await this.opened.promise
-     if (this.streamState.state === StreamStates.CLOSED || this.streamState.state === StreamStates.WRITE_CLOSED) {
+
+     const isClosed = (state: StreamStates) => state === StreamStates.CLOSED || state === StreamStates.WRITE_CLOSED
+
+     if (isClosed(this.streamState.state)) {
        return
      }
 
@@ -293,21 +297,26 @@ export class WebRTCStream implements Stream {
      }
 
      for await (const buf of merge(closeWriteIterable, src)) {
-       const state = self.streamState.state
-       if (state === StreamStates.CLOSED || state === StreamStates.WRITE_CLOSED) {
+       if (isClosed(self.streamState.state)) {
          return
        }
+
        const msgbuf = pb.Message.toBinary({ message: buf.subarray() })
        const sendbuf = lengthPrefixed.encode.single(msgbuf)
+
        this.channel.send(sendbuf.subarray())
      }
    }
 
+   /**
+    * Handle incoming
+    */
    processIncomingProtobuf (buffer: Uint8Array): Uint8Array | undefined {
      const message = pb.Message.fromBinary(buffer)
 
      if (message.flag !== undefined) {
        const [currentState, nextState] = this.streamState.transition({ direction: 'inbound', flag: message.flag })
+
        if (currentState !== nextState) {
          // @TODO(ddimaria): determine if we need to check for StreamStates.OPEN
          switch (nextState) {
@@ -325,6 +334,7 @@ export class WebRTCStream implements Stream {
          }
        }
      }
+
      return message.message
    }
 
@@ -391,6 +401,7 @@ export class WebRTCStream implements Stream {
    reset (): void {
      this.stat = defaultStat(this.stat.direction)
      const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: pb.Message_Flag.RESET })
+
      if (currentState !== nextState) {
        this._sendFlag(pb.Message_Flag.RESET)
        this.close()
