@@ -17,12 +17,15 @@ This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_atta
 - [Transport specific limits](#transport-specific-limits)
   - [TCP](#tcp)
 - [Allow/deny lists](#allowdeny-lists)
+- [How much memory will be used for buffering?](#how-much-memory-will-be-used-for-buffering)
 
 ## Connection limits
 
 It's possible to limit the amount of incoming and outgoing connections a node is able to make.  When this limit is reached and an attempt to open a new connection is made, existing connections may be closed to make room for the new connection.
 
 We can also limit the number of connections in a "pending" state. These connections have been opened by a remote peer but peer IDs have yet to be exchanged and/or connection encryption and multiplexing negotiated. Once this limit is hit further connections will be closed unless the remote peer has an address in the [allow list](#allowdeny-lists).
+
+Note: there currently isn't a way to specify different limits for incoming vs. outgoing. Connection limits are applied across both incoming and outgoing connections combined. There is a backlog item for this [here](https://github.com/libp2p/js-libp2p/issues/1508).
 
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
 
@@ -136,11 +139,11 @@ libp2p stream multiplexers impose limits on the amount of streams that can be op
 
 These settings are done on a per-muxer basis, please see the README of the relevant muxer you are using.
 
-All fields are optional. The default values are defined in [@libp2p/mplex/src/mplex.ts](https://github.com/libp2p/js-libp2p-mplex/blob/master/src/mplex.ts) - please see that file for the current values.
-
 ### Mplex
 
-[@libp2p/mplex](https://github.com/libp2p/js-libp2p-mplex) supports the following:
+[@libp2p/mplex](https://github.com/libp2p/js-libp2p-mplex) supports the following.
+
+All fields are optional. The default values are defined in [@libp2p/mplex/src/mplex.ts](https://github.com/libp2p/js-libp2p-mplex/blob/master/src/mplex.ts) - please see that file for the current values.
 
 ```ts
 const node = await createLibp2pNode({
@@ -157,12 +160,12 @@ const node = await createLibp2pNode({
       maxOutboundStreams: number
 
       /**
-       * How much incoming data to buffer while attempting to parse messages - peers sending many small messages in batches may cause this buffer to grow
+       * How much incoming data in bytes to buffer while attempting to parse messages - peers sending many small messages in batches may cause this buffer to grow
        */
       maxUnprocessedMessageQueueSize: number
 
       /**
-       * How much message data to buffer after parsing - slow stream consumers may cause this buffer to grow
+       * How much message data in bytes to buffer after parsing - slow stream consumers may cause this buffer to grow
        */
       maxStreamBufferSize: number
 
@@ -291,4 +294,25 @@ const node = await createLibp2pNode({
     ]
   }
 })
+```
+
+## How much memory will be used for buffering?
+
+There is no a single config value to control the amount of memory js-libp2p uses.
+
+Important details for ascertaining this are:
+
+* Each connection has a multiplexer
+* Each multiplexer has a buffer for raw incoming data (`muxer.maxUnprocessedMessageQueueSize`)
+* The incoming data is parsed into messages for each stream and queued (`muxer.maxStreamBufferSize`)
+* Each multiplexer has a stream limit for number of streams (`muxer.maxInboundStreams`, `muxer.maxOutboundStreams`).
+
+As a result, the max amount of memory buffered by libp2p is approximately:
+
+```
+connectionManager.maxConnections *
+  (muxer.maxUnprocessedMessageQueueSize
+   + (muxer.maxInboundStreams * muxer.maxStreamBufferSize)
+   + (muxer.maxOutboundStreams * muxer.maxStreamBufferSize)
+  )
 ```
