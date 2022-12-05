@@ -19,53 +19,93 @@ import * as sdp from './sdp.js'
 import { WebRTCStream } from './stream.js'
 
 const log = logger('libp2p:webrtc:transport')
-const HANDSHAKE_TIMEOUT_MS = 10000
-const WEBRTC_CODE: number = 280
-const CERTHASH_CODE: number = 466
 
+/**
+ * The time to wait, in milliseconds, for the data channel handshake to complete
+ */
+const HANDSHAKE_TIMEOUT_MS = 10000
+
+/**
+ * Created by converting the hexadecimal protocol code to an integer.
+ *
+ * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
+ */
+export const WEBRTC_CODE: number = 280
+
+/**
+ * Created by converting the hexadecimal protocol code to an integer.
+ *
+ * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
+ */
+export const CERTHASH_CODE: number = 466
+
+/**
+ * The peer for this transport
+ */
+// @TODO(ddimaria): seems like an unnessary abstraction, consider removing
 export interface WebRTCTransportComponents {
   peerId: PeerId
 }
 
 export class WebRTCTransport implements Transport {
+  /**
+   * The peer for this transport
+   */
   private readonly components: WebRTCTransportComponents
 
   constructor (components: WebRTCTransportComponents) {
     this.components = components
   }
 
+  /**
+   * Dial a given multiaddr
+   */
   async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options)
     log(`dialing address - ${ma.toString()}`)
     return rawConn
   }
 
+  /**
+   * Create transport listeners no supported by browsers
+   */
   createListener (options: CreateListenerOptions): Listener {
     throw unimplemented('WebRTCTransport.createListener')
   }
 
-  // Filter out invalid multiaddrs
+  /**
+   * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
+   */
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(validMa)
   }
 
-  // Implement toString() for WebRTCTransport
+  /**
+   * Implement toString() for WebRTCTransport
+   */
   get [Symbol.toStringTag] (): string {
     return '@libp2p/webrtc'
   }
 
+  /**
+   * Symbol.for('@libp2p/transport')
+   */
   get [symbol] (): true {
     return true
   }
 
-  // Connect to a peer
+  /**
+   * Connect to a peer using a multiaddr
+   */
   async _connect (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rps = ma.getPeerId()
+
     if (rps === null) {
       throw inappropriateMultiaddr("we need to have the remote's PeerId")
     }
 
     const remoteCerthash = sdp.decodeCerthash(sdp.certhash(ma))
+
     // ECDSA is preferred over RSA here. From our testing we find that P-256 elliptic
     // curve is supported by Pion, webrtc-rs, as well as Chromium (P-228 and P-384
     // was not supported in Chromium). We use the same hash function as found in the
@@ -162,8 +202,10 @@ export class WebRTCTransport implements Transport {
     return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
   }
 
-  // Generate a noise prologue from the peer connection's certificate.
-  // noise prologue = bytes('libp2p-webrtc-noise:') + noise-responder fingerprint + noise-initiator fingerprint
+  /**
+   * Generate a noise prologue from the peer connection's certificate.
+   * noise prologue = bytes('libp2p-webrtc-noise:') + noise-responder fingerprint + noise-initiator fingerprint
+   */
   private generateNoisePrologue (pc: RTCPeerConnection, hashName: multihashes.HashName, ma: Multiaddr): Uint8Array {
     if (pc.getConfiguration().certificates?.length === 0) {
       throw invalidArgument('no local certificate')
@@ -191,6 +233,10 @@ export class WebRTCTransport implements Transport {
   }
 }
 
+/**
+ * Determine if a given multiaddr contains a WebRTC Code (280),
+ * a Certhash Code (466) and a PeerId
+ */
 function validMa (ma: Multiaddr): boolean {
   const codes = ma.protoCodes()
   return codes.includes(WEBRTC_CODE) && codes.includes(CERTHASH_CODE) && ma.getPeerId() != null

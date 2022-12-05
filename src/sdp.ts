@@ -4,11 +4,13 @@ import { bases } from 'multiformats/basics'
 import * as multihashes from 'multihashes'
 
 import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error.js'
+import { CERTHASH_CODE } from './transport.js'
 
 const log = logger('libp2p:webrtc:sdp')
-const CERTHASH_CODE: number = 466
 
-// Get base2 | identity decoders
+/**
+ * Get base2 | identity decoders
+ */
 export const mbdecoder: any = (function () {
   const decoders = Object.values(bases).map((b) => b.decoder)
   let acc = decoders[0].or(decoders[1])
@@ -16,7 +18,9 @@ export const mbdecoder: any = (function () {
   return acc
 })()
 
-// Extract the ipv from a multiaddr
+/**
+ * Get base2 | identity decoders
+ */
 function ipv (ma: Multiaddr): string {
   for (const proto of ma.protoNames()) {
     if (proto.startsWith('ip')) {
@@ -24,7 +28,7 @@ function ipv (ma: Multiaddr): string {
     }
   }
 
-  log('Warning: multiaddr does not appear to contain IP4 or IP6.', ma)
+  log('Warning: multiaddr does not appear to contain IP4 or IP6, defaulting to IP6', ma)
 
   return 'IP6'
 }
@@ -41,28 +45,34 @@ export function certhash (ma: Multiaddr): string {
   return certhash
 }
 
-// Convert a certhash into a multihash
+/**
+ * Convert a certhash into a multihash
+ */
 export function decodeCerthash (certhash: string) {
   const mbdecoded = mbdecoder.decode(certhash)
   return multihashes.decode(mbdecoded)
 }
 
-// Extract the fingerprint from a multiaddr
+/**
+ * Extract the fingerprint from a multiaddr
+ */
 export function ma2Fingerprint (ma: Multiaddr): string[] {
   // certhash_value is a multibase encoded multihash encoded string
   const mhdecoded = decodeCerthash(certhash(ma))
   const prefix = toSupportedHashFunction(mhdecoded.name)
-  const fp = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-  const sdp = fp.match(/.{1,2}/g)
+  const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+  const sdp = fingerprint.match(/.{1,2}/g)
 
   if (sdp == null) {
-    throw invalidFingerprint(fp, ma.toString())
+    throw invalidFingerprint(fingerprint, ma.toString())
   }
 
-  return [`${prefix.toUpperCase()} ${sdp.join(':').toUpperCase()}`, fp]
+  return [`${prefix.toUpperCase()} ${sdp.join(':').toUpperCase()}`, fingerprint]
 }
 
-// Normalize the hash name from a given multihash has name
+/**
+ * Normalize the hash name from a given multihash has name
+ */
 export function toSupportedHashFunction (name: multihashes.HashName): string {
   switch (name) {
     case 'sha1':
@@ -76,7 +86,9 @@ export function toSupportedHashFunction (name: multihashes.HashName): string {
   }
 }
 
-// Convert a multiaddr into a SDP
+/**
+ * Convert a multiaddr into a SDP
+ */
 function ma2sdp (ma: Multiaddr, ufrag: string): string {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
@@ -99,7 +111,9 @@ a=max-message-size:100000
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r\n`
 }
 
-// Create an answer SDP from a multiaddr
+/**
+ * Create an answer SDP from a multiaddr
+ */
 export function fromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   return {
     type: 'answer',
@@ -107,7 +121,9 @@ export function fromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescript
   }
 }
 
-// Replace the ufrag and password values in a SDP
+/**
+ * Replace (munge) the ufrag and password values in a SDP
+ */
 export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp === undefined) {
     throw invalidArgument("Can't munge a missing SDP")

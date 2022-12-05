@@ -1,16 +1,11 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 import * as underTest from './../src/transport'
 import { expectError } from './util'
 import { UnimplementedError } from './../src/error'
-import { webRTC } from '../src/index'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { CreateListenerOptions, symbol } from '@libp2p/interface-transport'
 import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
-import { SERVER_MULTIADDR } from './server-multiaddr'
-import { noise } from '@chainsafe/libp2p-noise'
-import { createLibp2p } from 'libp2p'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { pipe } from 'it-pipe'
-import first from 'it-first'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect, assert } from 'chai'
 
@@ -33,8 +28,16 @@ describe('WebRTC Transport', () => {
     expect(t.constructor.name).to.equal('WebRTCTransport')
   })
 
-  // @TODO(ddimaria): determine if this test has value
-  it('createListner does throw', () => {
+  it('can dial', async () => {
+    const ma = multiaddr('/ip4/1.2.3.4/udp/1234/webrtc/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd')
+    const transport = new underTest.WebRTCTransport(components)
+    const options = ignoredDialOption()
+
+    // don't await as this isn't an e2e test
+    transport.dial(ma, options)
+  })
+
+  it('createListner throws', () => {
     const t = new underTest.WebRTCTransport(components)
     try {
       t.createListener(ignoredDialOption())
@@ -44,14 +47,12 @@ describe('WebRTC Transport', () => {
     }
   })
 
-  // @TODO(ddimaria): determine if this test has value
   it('toString property getter', () => {
     const t = new underTest.WebRTCTransport(components)
     const s = t[Symbol.toStringTag]
     expect(s).to.equal('@libp2p/webrtc')
   })
 
-  // @TODO(ddimaria): determine if this test has value
   it('symbol property getter', () => {
     const t = new underTest.WebRTCTransport(components)
     const s = t[symbol]
@@ -87,31 +88,5 @@ describe('WebRTC Transport', () => {
       const expected = 'WebRTC transport error: There was a problem with the Multiaddr which was passed in: we need to have the remote\'s PeerId'
       expectError(error, expected)
     }
-  })
-})
-
-// @TODO(ddimaria): remove this test and remove related scripts in packageon
-describe('WebRTC Transport Interoperability', () => {
-  it('can connect to a server', async () => {
-    // we do not test connecting to an external server, as we do not appear to have one
-    if (SERVER_MULTIADDR === '') {
-      return
-    }
-
-    const node = await createLibp2p({
-      transports: [webRTC()],
-      connectionEncryption: [noise({})]
-    })
-
-    await node.start()
-
-    const ma = multiaddr(SERVER_MULTIADDR)
-    const stream = await node.dialProtocol(ma, ['/echo/1.0.0'])
-    const data = 'dataToBeEchoedBackToMe\n'
-    const response = await pipe([uint8arrayFromString(data)], stream, async (source) => await first(source))
-
-    expect(response?.subarray()).to.equal(uint8arrayFromString(data))
-
-    await node.stop()
   })
 })
