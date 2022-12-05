@@ -206,13 +206,14 @@ const modules = {
   peerRouting: [],
   peerDiscovery: [],
   dht: dhtImplementation,
-  pubsub: pubsubImplementation
-}
+  pubsub: pubsubImplementation,
+};
 ```
 
 Moreover, the majority of the modules can be customized via option parameters. This way, it is also possible to provide this options through a `config` object. This config object should have the property name of each building block to configure, the same way as the modules specification.
 
 Besides the `modules` and `config`, libp2p allows other internal options and configurations:
+
 - `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/js-ipfs-interfaces/tree/master/packages/interface-datastore) modules.
   - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
 - `peerId`: the identity of the node, an instance of [libp2p/js-peer-id](https://github.com/libp2p/js-peer-id).
@@ -235,26 +236,23 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 //   dht: kad-dht
 //   pubsub: gossipsub
 
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { webSockets } from '@libp2p/websockets'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
-import { mdns } from '@libp2p/mdns'
-import { kadDHT } from '@libp2p/kad-dht'
-import { gossipsub } from 'libp2p-gossipsub'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { webSockets } from "@libp2p/websockets";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
+import { mdns } from "@libp2p/mdns";
+import { kadDHT } from "@libp2p/kad-dht";
+import { gossipsub } from "libp2p-gossipsub";
 
 const node = await createLibp2p({
-  transports: [
-    tcp(),
-    webSockets()
-  ],
+  transports: [tcp(), webSockets()],
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
   peerDiscovery: [MulticastDNS],
   dht: kadDHT(),
-  pubsub: gossipsub()
-})
+  pubsub: gossipsub(),
+});
 ```
 
 #### Customizing Peer Discovery
@@ -295,29 +293,20 @@ const node = await createLibp2p({
 #### Setup webrtc transport and discovery
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { webRTCStar } from '@libp2p/webrtc-star'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
+import { createLibp2p } from "libp2p";
+import { webSockets } from "@libp2p/websockets";
+import { webRTCStar } from "@libp2p/webrtc-star";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
 
-const webRtc = webRTCStar()
+const webRtc = webRTCStar();
 
 const node = await createLibp2p({
-  transports: [
-    webSockets(),
-    webRtc.transport
-  ],
-  peerDiscovery: [
-    webRtc.discovery
-  ],
-  streamMuxers: [
-    mplex()
-  ],
-  connectionEncryption: [
-    noise()
-  ]
-})
+  transports: [webSockets(), webRtc.transport],
+  peerDiscovery: [webRtc.discovery],
+  streamMuxers: [mplex()],
+  connectionEncryption: [noise()],
+});
 ```
 
 #### Customizing Pubsub
@@ -351,101 +340,99 @@ const node = await createLibp2p({
 #### Customizing DHT
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
-import { kadDHT } from '@libp2p/kad-dht'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
+import { kadDHT } from "@libp2p/kad-dht";
 
 const node = await createLibp2p({
-  transports: [
-    tcp()
-  ],
-  streamMuxers: [
-    mplex()
-  ],
-  connectionEncryption: [
-    noise()
-  ],
+  transports: [tcp()],
+  streamMuxers: [mplex()],
+  connectionEncryption: [noise()],
   dht: kadDHT({
     kBucketSize: 20,
-    clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
-  })
-})
+    clientMode: false, // Whether to run the WAN DHT in client or server mode (default: client mode)
+  }),
+});
 ```
 
 #### Setup with Content and Peer Routing
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
-import { create as ipfsHttpClient } from 'ipfs-http-client'
-import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
-import { DelegatedContentRouting} from '@libp2p/delegated-content-routing'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
+import { create as ipfsHttpClient } from "ipfs-http-client";
+import { DelegatedPeerRouting } from "@libp2p/delegated-peer-routing";
+import { DelegatedContentRouting } from "@libp2p/delegated-content-routing";
 
 // create a peerId
-const peerId = await PeerId.create()
+const peerId = await PeerId.create();
 
-const delegatedPeerRouting = new DelegatedPeerRouting(ipfsHttpClient.create({
-  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
-  protocol: 'https',
-  port: 443
-}))
+const delegatedPeerRouting = new DelegatedPeerRouting(
+  ipfsHttpClient.create({
+    host: "node0.delegate.ipfs.io", // In production you should setup your own delegates
+    protocol: "https",
+    port: 443,
+  })
+);
 
-const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClient.create({
-  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
-  protocol: 'https',
-  port: 443
-}))
+const delegatedContentRouting = new DelegatedContentRouting(
+  peerId,
+  ipfsHttpClient.create({
+    host: "node0.delegate.ipfs.io", // In production you should setup your own delegates
+    protocol: "https",
+    port: 443,
+  })
+);
 
 const node = await createLibp2p({
   transports: [tcp()],
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
-  contentRouting: [
-    delegatedContentRouting
-  ],
-  peerRouting: [
-    delegatedPeerRouting
-  ],
+  contentRouting: [delegatedContentRouting],
+  peerRouting: [delegatedPeerRouting],
   peerId,
-  peerRouting: { // Peer routing configuration
-    refreshManager: { // Refresh known and connected closest peers
+  peerRouting: {
+    // Peer routing configuration
+    refreshManager: {
+      // Refresh known and connected closest peers
       enabled: true, // Should find the closest peers.
       interval: 6e5, // Interval for getting the new for closest peers of 10min
-      bootDelay: 10e3 // Delay for the initial query for closest peers
-    }
-  }
-})
+      bootDelay: 10e3, // Delay for the initial query for closest peers
+    },
+  },
+});
 ```
 
 #### Setup with Relay
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
 
 const node = await createLibp2p({
   transports: [tcp()],
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
-  relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
-    enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
+  relay: {
+    // Circuit Relay options (this config is part of libp2p core configurations)
+    enabled: true, // Allows you to dial and accept relayed connections. Does not make you a relay.
     hop: {
-      enabled: true,         // Allows you to be a relay for other peers
-      active: true           // You will attempt to dial destination peers if you are not connected to them
+      enabled: true, // Allows you to be a relay for other peers
+      active: true, // You will attempt to dial destination peers if you are not connected to them
     },
     advertise: {
       bootDelay: 15 * 60 * 1000, // Delay before HOP relay service is advertised on the network
-      enabled: true,          // Allows you to disable the advertise of the Hop service
-      ttl: 30 * 60 * 1000     // Delay Between HOP relay service advertisements on the network
-    }
-  }
-})
+      enabled: true, // Allows you to disable the advertise of the Hop service
+      ttl: 30 * 60 * 1000, // Delay Between HOP relay service advertisements on the network
+    },
+  },
+});
 ```
 
 #### Setup with Auto Relay
@@ -474,45 +461,45 @@ const node = await createLibp2p({
 
 Libp2p allows you to setup a secure keychain to manage your keys. The keychain configuration object should have the following properties:
 
-| Name | Type | Description |
-|------|------|-------------|
-| pass | `string` | Passphrase to use in the keychain (minimum of 20 characters). |
+| Name      | Type     | Description                                                                            |
+| --------- | -------- | -------------------------------------------------------------------------------------- |
+| pass      | `string` | Passphrase to use in the keychain (minimum of 20 characters).                          |
 | datastore | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) |
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
-import { LevelDatastore } from 'datastore-level'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
+import { LevelDatastore } from "datastore-level";
 
-const datastore = new LevelDatastore('path/to/store')
-await datastore.open()
+const datastore = new LevelDatastore("path/to/store");
+await datastore.open();
 
 const node = await createLibp2p({
   transports: [tcp()],
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
   keychain: {
-    pass: 'notsafepassword123456789',
+    pass: "notsafepassword123456789",
     datastore: dsInstant,
-  }
-})
+  },
+});
 ```
 
 #### Configuring Dialing
 
 Dialing in libp2p can be configured to limit the rate of dialing, and how long dials are allowed to take. The dialer configuration object should have the following properties:
 
-| Name | Type | Description |
-|------|------|-------------|
-| maxParallelDials | `number` | How many multiaddrs we can dial in parallel. |
-| maxAddrsToDial | `number` | How many multiaddrs is the dial allowed to dial for a single peer. |
-| maxDialsPerPeer | `number` | How many multiaddrs we can dial per peer, in parallel. |
-| dialTimeout | `number` | Second dial timeout per peer in ms. |
-| resolvers | `object` | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs |
-| addressSorter | `(Array<Address>) => Array<Address>` | Sort the known addresses of a peer before trying to dial. |
-| startupReconnectTimeout | `number` | When a node is restarted, we try to connect to any peers marked with the `keep-alive` tag up until to this timeout in ms is reached (default: 60000) |
+| Name                    | Type                                 | Description                                                                                                                                          |
+| ----------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| maxParallelDials        | `number`                             | How many multiaddrs we can dial in parallel.                                                                                                         |
+| maxAddrsToDial          | `number`                             | How many multiaddrs is the dial allowed to dial for a single peer.                                                                                   |
+| maxDialsPerPeer         | `number`                             | How many multiaddrs we can dial per peer, in parallel.                                                                                               |
+| dialTimeout             | `number`                             | Second dial timeout per peer in ms.                                                                                                                  |
+| resolvers               | `object`                             | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs                           |
+| addressSorter           | `(Array<Address>) => Array<Address>` | Sort the known addresses of a peer before trying to dial.                                                                                            |
+| startupReconnectTimeout | `number`                             | When a node is restarted, we try to connect to any peers marked with the `keep-alive` tag up until to this timeout in ms is reached (default: 60000) |
 
 The below configuration example shows how the dialer should be configured, with the current defaults:
 
@@ -546,27 +533,28 @@ const node = await createLibp2p({
 The Connection Manager prunes Connections in libp2p whenever certain limits are exceeded. If Metrics are enabled, you can also configure the Connection Manager to monitor the bandwidth of libp2p and prune connections as needed. You can read more about what Connection Manager does at [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md). The configuration values below show the defaults for Connection Manager. See [./CONNECTION_MANAGER.md](./CONNECTION_MANAGER.md#options) for a full description of the parameters.
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
 
 const node = await createLibp2p({
   transports: [tcp()],
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
   connectionManager: {
-    maxConnections: Infinity,
+    maxIncomingConnections: Infinity,
     minConnections: 0,
+    maxOutgoingConnections: Infinity,
     pollInterval: 2000,
     // The below values will only be taken into account when Metrics are enabled
     maxData: Infinity,
     maxSentData: Infinity,
     maxReceivedData: Infinity,
     maxEventLoopDelay: Infinity,
-    movingAverageInterval: 60000
-  }
-})
+    movingAverageInterval: 60000,
+  },
+});
 ```
 
 #### Configuring Connection Gater
@@ -695,33 +683,33 @@ const node = await createLibp2p({
 The Transport Manager is responsible for managing the libp2p transports life cycle. This includes starting listeners for the provided listen addresses, closing these listeners and dialing using the provided transports. By default, if a libp2p node has a list of multiaddrs for listening on and there are no valid transports for those multiaddrs, libp2p will throw an error on startup and shutdown. However, for some applications it is perfectly acceptable for libp2p nodes to start in dial only mode if all the listen multiaddrs failed. This error tolerance can be enabled as follows:
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
-import { FaultTolerance } from '@libp2p/interface-transport'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
+import { FaultTolerance } from "@libp2p/interface-transport";
 
 const node = await createLibp2p({
   transports: [tcp()],
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
   transportManager: {
-    faultTolerance: FaultTolerance.NO_FATAL
-  }
-})
+    faultTolerance: FaultTolerance.NO_FATAL,
+  },
+});
 ```
 
 #### Configuring Metrics
 
 Metrics are disabled in libp2p by default. You can enable and configure them as follows:
 
-| Name | Type | Description |
-|------|------|-------------|
-| enabled | `boolean` | Enabled metrics collection. |
-| computeThrottleMaxQueueSize | `number` | How many messages a stat will queue before processing. |
-| computeThrottleTimeout | `number` | Time in milliseconds a stat will wait, after the last item was added, before processing. |
-| movingAverageIntervals | `Array<number>` | The moving averages that will be computed. |
-| maxOldPeersRetention | `number` | How many disconnected peers we will retain stats for. |
+| Name                        | Type            | Description                                                                              |
+| --------------------------- | --------------- | ---------------------------------------------------------------------------------------- |
+| enabled                     | `boolean`       | Enabled metrics collection.                                                              |
+| computeThrottleMaxQueueSize | `number`        | How many messages a stat will queue before processing.                                   |
+| computeThrottleTimeout      | `number`        | Time in milliseconds a stat will wait, after the last item was added, before processing. |
+| movingAverageIntervals      | `Array<number>` | The moving averages that will be computed.                                               |
+| maxOldPeersRetention        | `number`        | How many disconnected peers we will retain stats for.                                    |
 
 The below configuration example shows how the metrics should be configured. Aside from enabled being `false` by default, the following default configuration options are listed below:
 
@@ -755,22 +743,22 @@ PeerStore persistence is disabled in libp2p by default. You can enable and confi
 
 The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
 
-| Name | Type | Description |
-|------|------|-------------|
-| persistence | `boolean` | Is persistence enabled. |
-| threshold | `number` | Number of dirty peers allowed. |
+| Name        | Type      | Description                    |
+| ----------- | --------- | ------------------------------ |
+| persistence | `boolean` | Is persistence enabled.        |
+| threshold   | `number`  | Number of dirty peers allowed. |
 
 The below configuration example shows how the PeerStore should be configured. Aside from persistence being `false` by default, the following default configuration options are listed below:
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
-import { LevelDatastore } from 'datastore-level'
+import { createLibp2p } from "libp2p";
+import { tcp } from "@libp2p/tcp";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
+import { LevelDatastore } from "datastore-level";
 
-const datastore = new LevelDatastore('path/to/store')
-await datastore.open() // level database must be ready before node boot
+const datastore = new LevelDatastore("path/to/store");
+await datastore.open(); // level database must be ready before node boot
 
 const node = await createLibp2p({
   datastore, // pass the opened datastore
@@ -779,9 +767,9 @@ const node = await createLibp2p({
   connectionEncryption: [noise()],
   peerStore: {
     persistence: true,
-    threshold: 5
-  }
-})
+    threshold: 5,
+  },
+});
 ```
 
 #### Customizing Transports
@@ -789,62 +777,47 @@ const node = await createLibp2p({
 Some Transports can be passed additional options when they are created. For example, `libp2p-webrtc-star` accepts an optional, custom `wrtc` implementation. In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { webRTCStar } from '@libp2p/webrtc-star'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
-import wrtc from 'wrtc'
+import { createLibp2p } from "libp2p";
+import { webRTCStar } from "@libp2p/webrtc-star";
+import { mplex } from "@libp2p/mplex";
+import { noise } from "@chainsafe/libp2p-noise";
+import wrtc from "wrtc";
 
 const webRTC = webRTCStar({
-  wrtc
-})
+  wrtc,
+});
 
 const node = await createLibp2p({
-  transports: [
-    webRTC.transport
-  ],
-  peerDiscovery: [
-    webRTC.discovery
-  ],
-  streamMuxers: [
-    mplex()
-  ],
-  connectionEncryption: [
-    noise()
-  ]
-})
+  transports: [webRTC.transport],
+  peerDiscovery: [webRTC.discovery],
+  streamMuxers: [mplex()],
+  connectionEncryption: [noise()],
+});
 ```
 
-During Libp2p startup, transport listeners will be created for the configured listen multiaddrs.  Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) transport listener supports the configuration of its underlying [simple-peer](https://github.com/feross/simple-peer) ice server(STUN/TURN) config as follows:
+During Libp2p startup, transport listeners will be created for the configured listen multiaddrs. Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) transport listener supports the configuration of its underlying [simple-peer](https://github.com/feross/simple-peer) ice server(STUN/TURN) config as follows:
 
 ```js
 const webRTC = webRTCStar({
   listenerOptions: {
     config: {
       iceServers: [
-        {"urls": ["turn:YOUR.TURN.SERVER:3478"], "username": "YOUR.USER", "credential": "YOUR.PASSWORD"},
-        {"urls": ["stun:YOUR.STUN.SERVER:3478"], "username": "", "credential": ""}]
-    }
-  }
-})
+        { urls: ["turn:YOUR.TURN.SERVER:3478"], username: "YOUR.USER", credential: "YOUR.PASSWORD" },
+        { urls: ["stun:YOUR.STUN.SERVER:3478"], username: "", credential: "" },
+      ],
+    },
+  },
+});
 
 const node = await createLibp2p({
-  transports: [
-    webRTC.transport
-  ],
-  peerDiscovery: [
-    webRTC.discovery
-  ],
-  streamMuxers: [
-    mplex()
-  ],
-  connectionEncryption: [
-    noise()
-  ],
+  transports: [webRTC.transport],
+  peerDiscovery: [webRTC.discovery],
+  streamMuxers: [mplex()],
+  connectionEncryption: [noise()],
   addresses: {
-    listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star'] // your webrtc dns multiaddr
-  }
-})
+    listen: ["/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star"], // your webrtc dns multiaddr
+  },
+});
 ```
 
 #### Configuring the NAT Manager
@@ -858,15 +831,15 @@ const node = await createLibp2p({
   config: {
     nat: {
       enabled: true, // defaults to true
-      description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
-      gateway: '192.168.1.1', // leave unset to auto-discover
-      externalIp: '80.1.1.1', // leave unset to auto-discover
-      localAddress: '129.168.1.123', // leave unset to auto-discover
+      description: "my-node", // set as the port mapping description on the router, defaults the current libp2p version and your peer id
+      gateway: "192.168.1.1", // leave unset to auto-discover
+      externalIp: "80.1.1.1", // leave unset to auto-discover
+      localAddress: "129.168.1.123", // leave unset to auto-discover
       ttl: 7200, // TTL for port mappings (min 20 minutes)
       keepAlive: true, // Refresh port mapping after TTL expires
-    }
-  }
-})
+    },
+  },
+});
 ```
 
 ##### Browser support
@@ -886,12 +859,12 @@ Changing the protocol name prefix can isolate default public network (IPFS) for 
 ```js
 const node = await createLibp2p({
   identify: {
-    protocolPrefix: 'ipfs' // default
+    protocolPrefix: "ipfs", // default
   },
   ping: {
-    protocolPrefix: 'ipfs' // default
-  }
-})
+    protocolPrefix: "ipfs", // default
+  },
+});
 /*
 protocols: [
   "/ipfs/id/1.0.0", // identify service protocol (if we have multiplexers)
