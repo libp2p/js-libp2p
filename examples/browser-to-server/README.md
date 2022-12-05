@@ -21,7 +21,7 @@ npm i && npm run start
 ```
 
 The browser window will automatically open.
-Using the copied multiaddress from the Go server, pasted that value into the `Server MultiAddress` input and click the `Connect` button.
+Using the copied multiaddress from the Go server, paste it into the `Server MultiAddress` input and click the `Connect` button.
 Once the peer is connected, click the message section will appear.  Enter a message and click the `Send` button.
 
 The output should look like:
