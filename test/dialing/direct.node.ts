@@ -79,7 +79,8 @@ describe('Dialing (direct, TCP)', () => {
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
-      maxConnections: 100,
+      maxIncomingConnections: 100,
+      maxOutgoingConnections: 100,
       minConnections: 50,
       autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000

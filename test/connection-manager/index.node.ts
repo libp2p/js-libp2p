@@ -57,8 +57,9 @@ describe('Connection Manager', () => {
       upgrader,
       peerStore
     }, {
-      maxConnections: 1000,
+      maxIncomingConnections: 1000,
       minConnections: 50,
+      maxOutgoingConnections: 1000,
       autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
     })
@@ -97,8 +98,9 @@ describe('Connection Manager', () => {
       upgrader,
       peerStore
     }, {
-      maxConnections: 1000,
+      maxIncomingConnections: 1000,
       minConnections: 50,
+      maxOutgoingConnections: 1000,
       autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
     })
@@ -233,7 +235,7 @@ describe('libp2p.connections', () => {
           },
           connectionManager: {
             minConnections,
-            maxConnections: 1
+            maxIncomingConnections: 1
           }
         }
       })
@@ -265,7 +267,7 @@ describe('libp2p.connections', () => {
           },
           connectionManager: {
             minConnections,
-            maxConnections: 1
+            maxIncomingConnections: 1
           }
         }
       })

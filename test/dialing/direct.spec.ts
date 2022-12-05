@@ -51,7 +51,8 @@ describe('Dialing (direct, WebSockets)', () => {
       addressFilter: localComponents.connectionGater.filterMultiaddrForPeer
     })
     localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
-      maxConnections: 100,
+      maxIncomingConnections: 100,
+      maxOutgoingConnections: 100,
       minConnections: 50,
       autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000

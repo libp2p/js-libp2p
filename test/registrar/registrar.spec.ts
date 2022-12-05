@@ -43,7 +43,8 @@ describe('registrar', () => {
       components.peerStore = new PersistentPeerStore(components)
       components.connectionManager = new DefaultConnectionManager(components, {
         minConnections: 50,
-        maxConnections: 1000,
+        maxOutgoingConnections: 1000,
+        maxIncomingConnections: 1000,
         autoDialInterval: 1000,
         inboundUpgradeTimeout: 1000
       })

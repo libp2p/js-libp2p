@@ -17,10 +17,12 @@ import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Upgrader } from '@libp2p/interface-transport'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import { codes as ErrorCodes } from '../../src/errors.js'
 
 const defaultOptions = {
-  maxConnections: 10,
+  maxIncomingConnections: 10,
   minConnections: 1,
+  maxOutgoingConnections: 10,
   autoDialInterval: Infinity,
   inboundUpgradeTimeout: 10000
 }
@@ -69,7 +71,7 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max,
+          maxIncomingConnections: max,
           minConnections: 2
         }
       }),
@@ -119,7 +121,7 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max,
+          maxIncomingConnections: max,
           minConnections: 2
         }
       }),
@@ -169,12 +171,77 @@ describe('Connection Manager', () => {
     expect(shortestLivedWithLowestTagSpy).to.have.property('callCount', 1)
   })
 
-  it('should close connection when the maximum has been reached even without tags', async () => {
+  it('should not close connection that is on the allowlist when pruning', async () => {
+    const max = 5
+    const remoteAddrPeerId = await createEd25519PeerId()
+
+    libp2p = await createNode({
+      config: createBaseOptions({
+        connectionManager: {
+          maxIncomingConnections: max,
+          minConnections: 0,
+          allow: [
+            '/ip4/83.13.55.32'
+          ]
+        }
+      }),
+      started: false
+    })
+
+    await libp2p.start()
+
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
+    const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
+
+    // Max out connections
+    for (let i = 1; i < max; i++) {
+      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+      const spy = sinon.spy(connection, 'close')
+      const value = i * 10
+      spies.set(value, spy)
+      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
+        value
+      })
+      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+    }
+
+    // Connect to the peer on the allowed list
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remoteAddrPeerId))
+
+    // Tag that allowed peer with lowest value
+    const value = 0 * 10
+    await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
+      value
+    })
+
+    await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+
+    // get the lowest value
+    const lowest = Array.from(spies.keys()).sort((a, b) => {
+      if (a > b) {
+        return 1
+      }
+
+      if (a < b) {
+        return -1
+      }
+
+      return 0
+    })[0]
+    const lowestSpy = spies.get(lowest)
+
+    expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(0)
+    // expect lowest value spy NOT to be called since the peer is in the allow list
+    expect(lowestSpy).to.have.property('callCount', 0)
+  })
+
+  it('should close connection when the maximum incoming has been reached even without tags', async () => {
     const max = 5
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max,
+          maxIncomingConnections: max,
           minConnections: 0
         }
       }),
@@ -198,16 +265,28 @@ describe('Connection Manager', () => {
     expect(spy).to.have.property('callCount', 1)
   })
 
-  it('should fail if the connection manager has mismatched connection limit options', async () => {
+  it('should fail if the connection manager has mismatched incoming connection limit options', async () => {
     await expect(createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: 5,
+          maxIncomingConnections: 5,
           minConnections: 6
         }
       }),
       started: false
-    })).to.eventually.rejected('maxConnections must be greater')
+    })).to.eventually.rejected('maxIncomingConnections must be greater')
+  })
+
+  it('should fail if the connection manager has mismatched outgoing connection limit options', async () => {
+    await expect(createNode({
+      config: createBaseOptions({
+        connectionManager: {
+          maxOutgoingConnections: 5,
+          minConnections: 6
+        }
+      }),
+      started: false
+    })).to.eventually.rejected('maxOutgoingConnections must be greater')
   })
 
   it('should reconnect to important peers on startup', async () => {
@@ -263,7 +342,7 @@ describe('Connection Manager', () => {
       .to.eventually.be.false()
   })
 
-  it('should deny connections when maxConnections is exceeded', async () => {
+  it('should deny connections when maxIncomingConnections is exceeded', async () => {
     const dialer = stubInterface<Dialer>()
     dialer.dial.resolves(stubInterface<Connection>())
 
@@ -274,7 +353,7 @@ describe('Connection Manager', () => {
       dialer
     }, {
       ...defaultOptions,
-      maxConnections: 1
+      maxIncomingConnections: 1
     })
 
     // max out the connection limit
@@ -290,6 +369,10 @@ describe('Connection Manager', () => {
 
     await expect(connectionManager.acceptIncomingConnection(maConn))
       .to.eventually.be.false()
+  })
+
+  it.skip('should deny connections when maxOutgoingConnections is exceeded', async () => {
+
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
@@ -334,7 +417,7 @@ describe('Connection Manager', () => {
       dialer
     }, {
       ...defaultOptions,
-      maxConnections: 1,
+      maxIncomingConnections: 1,
       allow: [
         '/ip4/83.13.55.32'
       ]
