@@ -12,7 +12,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   private readonly peerConnection: RTCPeerConnection
 
   /**
-   * The string representation of the protocol, requried by StreamMuxerFactory
+   * The string representation of the protocol, required by `StreamMuxerFactory`
    */
   protocol: string = '/webrtc'
 
