@@ -20,7 +20,7 @@ export interface AutoDiallerInit {
   enabled?: boolean
 
   /**
-   * The minimum number of connections to avoid pruning
+   * The minimum number of incoming connections to avoid pruning
    */
   minConnections?: number
 
@@ -107,7 +107,7 @@ export class AutoDialler implements Startable {
       this.autoDialTimeout.clear()
     }
 
-    const minConnections = this.options.minConnections
+    const { minConnections } = this.options
 
     // Already has enough connections
     if (this.components.connectionManager.getConnections().length >= minConnections) {

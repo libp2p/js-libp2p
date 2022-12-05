@@ -20,7 +20,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
     announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs
   },
   connectionManager: {
-    maxConnections: 300,
+    maxIncomingConnections: 300,
+    maxOutgoingConnections: 300,
     minConnections: 50,
     autoDial: true,
     autoDialInterval: 10000,
