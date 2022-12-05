@@ -556,7 +556,8 @@ const node = await createLibp2p({
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
   connectionManager: {
-    maxConnections: Infinity,
+    maxIncomingConnections: Infinity,
+    maxOutgoingConnections: Infinity,
     minConnections: 0,
     pollInterval: 2000,
     // The below values will only be taken into account when Metrics are enabled

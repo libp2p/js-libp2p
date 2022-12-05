@@ -23,8 +23,6 @@ This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_atta
 
 It's possible to limit the total amount of connections a node is able to make (combining incoming and outgoing). When this limit is reached and an attempt to open a new connection is made, existing connections may be closed to make room for the new connection (see [Closing connections][#closing-connections]).
 
-* Note: there currently isn't a way to specify different limits for incoming vs. outgoing. Connection limits are applied across both incoming and outgoing connections combined. There is a backlog item for this [here](https://github.com/libp2p/js-libp2p/issues/1508).
-
 We can also limit the number of connections in a "pending" state. These connections have been opened by a remote peer but peer IDs have yet to be exchanged and/or connection encryption and multiplexing negotiated. Once this limit is hit further connections will be closed unless the remote peer has an address in the [allow list](#allowdeny-lists).
 
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
@@ -33,9 +31,14 @@ All fields are optional. The default values are defined in [src/connection-manag
 const node = await createLibp2pNode({
   connectionManager: {
     /**
-     * The total number of connections allowed to be open at one time
+     * The total number of incoming connections allowed to be open at one time
      */
-    maxConnections: number
+    maxIncomingConnections: number
+
+    /**
+     * The total number of outgoing connections allowed to be open at one time
+    */
+    maxOutgoingConnections: number
 
     /**
      * If the number of open connections goes below this number, the node
@@ -255,9 +258,9 @@ const node = await createLibp2pNode({
       /**
        * Once this many connections are open on this listener any further connections
        * will be rejected - this will have no effect if it is larger than the value
-       * configured for the ConnectionManager maxConnections parameter
+       * configured for the ConnectionManager maxIncomingConnections parameter
        */
-      maxConnections: number
+      maxIncomingConnections: number
     })
   ]
 })
@@ -310,7 +313,7 @@ Important details for ascertaining this are:
 As a result, the max amount of memory buffered by libp2p is approximately:
 
 ```
-connectionManager.maxConnections *
+(connectionManager.maxOutgoingConnections + connectionManager.maxIncomingConnections) *
   (muxer.maxUnprocessedMessageQueueSize
    + (muxer.maxInboundStreams * muxer.maxStreamBufferSize)
    + (muxer.maxOutboundStreams * muxer.maxStreamBufferSize)
