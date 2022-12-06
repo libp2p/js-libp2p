@@ -182,6 +182,18 @@ List of packages currently in existence for libp2p
 | [`libp2p-nat-mgnr`](//github.com/libp2p/js-libp2p-nat-mgnr) | [![npm](https://img.shields.io/npm/v/libp2p-nat-mgnr.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-nat-mgnr/releases) | [![Deps](https://david-dm.org/libp2p/js-libp2p-nat-mgnr.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-nat-mgnr) | [![Travis CI](https://flat.badgen.net/travis/libp2p/js-libp2p-nat-mgnr/master)](https://travis-ci.com/libp2p/js-libp2p-nat-mgnr) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p-nat-mgnr/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-nat-mgnr) | N/A |
 | [`libp2p-utils`](//github.com/libp2p/js-libp2p-utils) | [![npm](https://img.shields.io/npm/v/libp2p-utils.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p-utils/releases) | [![Deps](https://david-dm.org/libp2p/js-libp2p-utils.svg?style=flat-square)](https://david-dm.org/libp2p/js-libp2p-utils) | [![Travis CI](https://flat.badgen.net/travis/libp2p/js-libp2p-utils/master)](https://travis-ci.com/libp2p/js-libp2p-utils) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p-utils/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-utils) | [Vasco Santos](mailto:santos.vasco10@gmail.com) |
 
+## Used by
+
+<div style="padding: 20px">
+  <p align="middle">
+    <a href="https://lodestar.chainsafe.io/"><img width="300" src="https://github.com/ChainSafe/lodestar/blob/unstable/assets/lodestar_icon_text_black_stroke.png?raw=true"></a>
+    <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo">
+    <a href="https:/https://js.ipfs.io/"><img src="https://ipfs.io/ipfs/Qme6KJdKcp85TYbLxuLV7oQzMiLremD7HMoXLZEmgo6Rnh/js-ipfs-sticker.png" alt="IPFS in JavaScript logo" width="150" /></a>
+  </p>
+</div>
+
+And [many others...](https://github.com/libp2p/js-libp2p/network/dependents)
+
 ## Contribute
 
 The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
