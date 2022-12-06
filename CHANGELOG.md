@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.5...v1.0.6) (2022-12-06)
+
+
+### Bug Fixes
+
+* Make a fix release with [#32](https://github.com/libp2p/js-libp2p-webtransport/issues/32) ([#34](https://github.com/libp2p/js-libp2p-webtransport/issues/34)) ([66a38f6](https://github.com/libp2p/js-libp2p-webtransport/commit/66a38f6e452e72042ad10ef8521544d8b5afecff))
+
 ## [1.0.5](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.4...v1.0.5) (2022-11-16)
 
 
