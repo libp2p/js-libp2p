@@ -1,3 +1,10 @@
+## [6.0.5](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.4...v6.0.5) (2022-12-06)
+
+
+### Dependencies
+
+* **dev:** bump sinon from 14.0.2 to 15.0.0 ([#233](https://github.com/libp2p/js-libp2p-tcp/issues/233)) ([72a79ab](https://github.com/libp2p/js-libp2p-tcp/commit/72a79ab81d79daaeb8a77656e98a19b70f132595))
+
 ## [6.0.4](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.3...v6.0.4) (2022-11-22)
 
 
