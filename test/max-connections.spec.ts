@@ -18,10 +18,10 @@ describe('maxConnections', () => {
     const port = 9900
 
     const seenRemoteConnections = new Set<string>()
-    const trasnport = tcp({ maxConnections })()
+    const transport = tcp({ maxConnections })()
 
     const upgrader = mockUpgrader()
-    const listener = trasnport.createListener({ upgrader })
+    const listener = transport.createListener({ upgrader })
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
@@ -33,7 +33,7 @@ describe('maxConnections', () => {
     const sockets: net.Socket[] = []
 
     for (let i = 0; i < socketCount; i++) {
-      const socket = net.connect({ port })
+      const socket = net.connect({ host: '127.0.0.1', port })
       sockets.push(socket)
 
       // eslint-disable-next-line @typescript-eslint/promise-function-async
