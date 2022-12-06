@@ -10,6 +10,30 @@
 
 
 
+## [0.41.0](https://www.github.com/libp2p/js-libp2p/compare/v0.40.0...v0.41.0) (2022-12-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* libp2p.hangUp and libp2p.fetch require PeerId or Multiaddr objects the same as other methods
+* the libp2p opts have changed to accept a metrics object factory function instead of a config object
+
+### Features
+
+* allow skipping upgrade steps for incoming connections ([#1502](https://www.github.com/libp2p/js-libp2p/issues/1502)) ([987c738](https://www.github.com/libp2p/js-libp2p/commit/987c7383a8493e89ccb9f91120940b1383334f1a))
+* configure metrics implementation as a module instead of shipping a built-in version ([#1471](https://www.github.com/libp2p/js-libp2p/issues/1471)) ([5e9dcf3](https://www.github.com/libp2p/js-libp2p/commit/5e9dcf3d404a975d01ee7171305cc2ab07ea7307))
+* start libp2p nodes by default ([#1500](https://www.github.com/libp2p/js-libp2p/issues/1500)) ([61fcc0b](https://www.github.com/libp2p/js-libp2p/commit/61fcc0b688214d3f8c84bc68bd6192738ae0fdfd)), closes [#1499](https://www.github.com/libp2p/js-libp2p/issues/1499)
+
+
+### Bug Fixes
+
+* allow listening on duplicate addresses ([#1472](https://www.github.com/libp2p/js-libp2p/issues/1472)) ([030dbc8](https://www.github.com/libp2p/js-libp2p/commit/030dbc81a8743b98bbc0542bd40aece099ed44f6))
+* dialling duplicated addresses ([#1489](https://www.github.com/libp2p/js-libp2p/issues/1489)) ([9fd58c8](https://www.github.com/libp2p/js-libp2p/commit/9fd58c84b963ae3ad021e0ec1d864105b1613f46)), closes [#1409](https://www.github.com/libp2p/js-libp2p/issues/1409)
+* pipe muxer/connection input/output streams in parallel ([#1491](https://www.github.com/libp2p/js-libp2p/issues/1491)) ([fb5fa3d](https://www.github.com/libp2p/js-libp2p/commit/fb5fa3d5b84e21c6e26407df7eb323d68038fe5d)), closes [#1342](https://www.github.com/libp2p/js-libp2p/issues/1342)
+* registrar is not calling topology on peer reconnect ([#1504](https://www.github.com/libp2p/js-libp2p/issues/1504)) ([5a62f4f](https://www.github.com/libp2p/js-libp2p/commit/5a62f4f22f3d9658ae7356568283d443a76df4ea)), closes [#1496](https://www.github.com/libp2p/js-libp2p/issues/1496)
+* remove strings from fetch and hangUp ([#1495](https://www.github.com/libp2p/js-libp2p/issues/1495)) ([bae32ba](https://www.github.com/libp2p/js-libp2p/commit/bae32bafce75a3801a7a96f77a9ccf43b3208f9c))
+* when passed a multiaddr, only dial that multiaddr ([#1498](https://www.github.com/libp2p/js-libp2p/issues/1498)) ([d01c37e](https://www.github.com/libp2p/js-libp2p/commit/d01c37e80fe18ca7f5752cdddc3a4415a8eb6471))
+
 ## [0.40.0](https://www.github.com/libp2p/js-libp2p/compare/v0.39.5...v0.40.0) (2022-10-17)
 
 
