@@ -163,6 +163,9 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - if: ${{ steps.release.outputs.release_created }}
+        name: Publish docs
+        run: npm run --if-present docs
       - if: ${{ !steps.release.outputs.release_created }}
         name: Run release rc
         run: |
@@ -171,6 +174,3 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - uses: ipfs/aegir/actions/cache-node-modules@master
-        name: 'Generate Docs'
-      - run: npm run --if-present generate:docs
-

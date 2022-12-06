@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="libp2p.io"><img width="250" src="https://github.com/libp2p/libp2p/blob/master/logo/black-bg-2.png?raw=true" alt="libp2p hex logo" /></a>
+  <a href="libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
 </h1>
 
 <h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
@@ -52,6 +52,7 @@ If you are looking for the documentation of the latest release, you can view the
   - [Tests](#tests)
     - [Run unit tests](#run-unit-tests)
   - [Packages](#packages)
+- [Used by](#used-by)
 - [Contribute](#contribute)
 - [License](#license)
   - [Contribution](#contribution)

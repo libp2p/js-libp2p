@@ -1,3 +1,27 @@
+/**
+ * @packageDocumentation
+ *
+ * Connection protection management for libp2p leveraging PSK encryption via XSalsa20.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { preSharedKey, generateKey } from 'libp2p/pnet'
+ *
+ * // Create a Uint8Array and write the swarm key to it
+ * const swarmKey = new Uint8Array(95)
+ * generateKey(swarmKey)
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   connectionProtector: preSharedKey({
+ *     psk: swarmKey
+ *   })
+ * })
+ * ```
+ */
+
 import { logger } from '@libp2p/logger'
 import { pipe } from 'it-pipe'
 import errCode from 'err-code'

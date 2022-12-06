@@ -1,3 +1,27 @@
+/**
+ * @packageDocumentation
+ *
+ * A connection encrypter that does no connection encryption.
+ *
+ * This should not be used in production should be used for research purposes only.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { plaintext } from 'libp2p/insecure'
+ *
+ * // Create a Uint8Array and write the swarm key to it
+ * const swarmKey = new Uint8Array(95)
+ * generateKey(swarmKey)
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   connectionEncryption: [plaintext()]
+ * })
+ * ```
+ */
+
 import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import * as lp from 'it-length-prefixed'
