@@ -371,8 +371,26 @@ describe('Connection Manager', () => {
       .to.eventually.be.false()
   })
 
-  it.skip('should deny connections when maxOutgoingConnections is exceeded', async () => {
+  it('should throw an error when attempting to connect and maxOutgoingConnections is exceeded', async () => {
+    const dialer = stubInterface<Dialer>()
+    dialer.dial.resolves(stubInterface<Connection>())
 
+    const connectionManager = new DefaultConnectionManager({
+      peerId: libp2p.peerId,
+      upgrader: stubInterface<Upgrader>(),
+      peerStore: stubInterface<PeerStore>(),
+      dialer
+    }, {
+      ...defaultOptions,
+      maxOutgoingConnections: 1
+    })
+
+    // max out the connection limit
+    await connectionManager.openConnection(await createEd25519PeerId())
+    expect(connectionManager.getConnections()).to.have.lengthOf(1)
+
+    await expect(connectionManager.openConnection(await createEd25519PeerId())).to.eventually.be.rejected()
+      .and.to.have.property('code', ErrorCodes.ERR_CONNECTION_DENIED)
   })
 
   it('should deny connections from peers that connect too frequently', async () => {

@@ -512,6 +512,13 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       }
     }
 
+    if ((this.getConnections().length + 1) > this.opts.maxOutgoingConnections) {
+      throw errCode(
+        new Error('Connection Manager maxOutgoing connections exceeded'),
+        codes.ERR_CONNECTION_DENIED
+      )
+    }
+
     let timeoutController: TimeoutController | undefined
 
     if (options?.signal == null) {
