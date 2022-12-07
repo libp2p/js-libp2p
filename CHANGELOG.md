@@ -1,3 +1,11 @@
+## [6.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.1...v6.0.2) (2022-12-07)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-mocks from 7.1.0 to 8.0.1 ([#399](https://github.com/libp2p/js-libp2p-kad-dht/issues/399)) ([26cbb88](https://github.com/libp2p/js-libp2p-kad-dht/commit/26cbb88772da0496b46909019ea4b371a7947b51))
+* **dev:** bump sinon from 14.0.2 to 15.0.0 ([#403](https://github.com/libp2p/js-libp2p-kad-dht/issues/403)) ([f78a0ea](https://github.com/libp2p/js-libp2p-kad-dht/commit/f78a0ea8d0f387906422797668697fb66d4b3749))
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.0...v6.0.1) (2022-11-07)
 
 
