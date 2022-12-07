@@ -64,7 +64,7 @@ export class ContentRouting {
     // Add peer as provider
     await this.providers.addProvider(key, this.components.peerId)
 
-    const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, key.bytes, 0)
+    const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, key.multihash.bytes, 0)
     msg.providerPeers = [{
       id: this.components.peerId,
       multiaddrs,

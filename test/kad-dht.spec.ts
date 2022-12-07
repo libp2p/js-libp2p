@@ -414,7 +414,7 @@ describe('KadDHT', () => {
 
       // Expect an ADD_PROVIDER message to be sent to each peer for each value
       const fn = dhts[3].lan.network.sendMessage
-      const valuesBuffs = values.map(v => v.cid.bytes)
+      const valuesBuffs = values.map(v => v.cid.multihash.bytes)
       // @ts-expect-error fn is a spy
       const calls = fn.getCalls().map(c => c.args)
 
