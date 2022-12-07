@@ -156,7 +156,7 @@
     "interface-datastore": "^7.0.0",
     "it-all": "^2.0.0",
     "it-filter": "^2.0.0",
-    "it-foreach": "^0.1.1",
+    "it-foreach": "^1.0.0",
     "it-map": "^2.0.0",
     "it-pipe": "^2.0.3",
     "multiformats": "^10.0.0",
