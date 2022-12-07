@@ -189,7 +189,7 @@
     "varint": "^6.0.0"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^7.0.1",
+    "@libp2p/interface-mocks": "^8.0.1",
     "@libp2p/peer-id-factory": "^1.0.18",
     "@libp2p/peer-store": "^5.0.0",
     "@types/lodash.random": "^3.2.6",
