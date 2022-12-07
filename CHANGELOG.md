@@ -1,3 +1,18 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.2...v3.0.3) (2022-12-07)
+
+
+### Bug Fixes
+
+* update project readme ([#66](https://github.com/libp2p/js-libp2p-utils/issues/66)) ([7e977a2](https://github.com/libp2p/js-libp2p-utils/commit/7e977a2739717225a4b1d74304e69500652a3386))
+
+
+### Dependencies
+
+* bump private-ip from 2.3.4 to 3.0.0 ([#63](https://github.com/libp2p/js-libp2p-utils/issues/63)) ([956f404](https://github.com/libp2p/js-libp2p-utils/commit/956f404bba12f2c712999046b19825496fe8be41)), closes [ChainSafe/is-ip#1](https://github.com/ChainSafe/is-ip/issues/1) [#19](https://github.com/libp2p/js-libp2p-utils/issues/19) [#21](https://github.com/libp2p/js-libp2p-utils/issues/21)
+* **dev:** bump it-all from 1.0.6 to 2.0.0 ([#62](https://github.com/libp2p/js-libp2p-utils/issues/62)) ([99cca25](https://github.com/libp2p/js-libp2p-utils/commit/99cca2505721f282ed557dcfd28d8b46d064d6e2)), closes [#28](https://github.com/libp2p/js-libp2p-utils/issues/28) [#28](https://github.com/libp2p/js-libp2p-utils/issues/28) [#27](https://github.com/libp2p/js-libp2p-utils/issues/27) [#24](https://github.com/libp2p/js-libp2p-utils/issues/24)
+* **dev:** bump it-map from 1.0.6 to 2.0.0 ([#61](https://github.com/libp2p/js-libp2p-utils/issues/61)) ([88b05b4](https://github.com/libp2p/js-libp2p-utils/commit/88b05b4a6223774cd6dbaaa4f97e1da318f89856))
+* **dev:** bump uint8arrays from 3.1.1 to 4.0.2 ([#60](https://github.com/libp2p/js-libp2p-utils/issues/60)) ([ca0b632](https://github.com/libp2p/js-libp2p-utils/commit/ca0b63243b0ae23b6fa9195387466516c9acce80)), closes [#41](https://github.com/libp2p/js-libp2p-utils/issues/41) [#40](https://github.com/libp2p/js-libp2p-utils/issues/40) [#28](https://github.com/libp2p/js-libp2p-utils/issues/28) [#41](https://github.com/libp2p/js-libp2p-utils/issues/41) [#40](https://github.com/libp2p/js-libp2p-utils/issues/40) [#28](https://github.com/libp2p/js-libp2p-utils/issues/28) [#41](https://github.com/libp2p/js-libp2p-utils/issues/41) [#40](https://github.com/libp2p/js-libp2p-utils/issues/40) [#28](https://github.com/libp2p/js-libp2p-utils/issues/28)
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.1...v3.0.2) (2022-09-21)
 
 
