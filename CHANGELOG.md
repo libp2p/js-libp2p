@@ -1,3 +1,10 @@
+## [6.0.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.3...v6.0.4) (2022-12-07)
+
+
+### Bug Fixes
+
+* use multihash bytes for provide message keys ([#405](https://github.com/libp2p/js-libp2p-kad-dht/issues/405)) ([d7e7b5d](https://github.com/libp2p/js-libp2p-kad-dht/commit/d7e7b5d56334ca6e9a305c9473e9d62468933f05)), closes [#381](https://github.com/libp2p/js-libp2p-kad-dht/issues/381)
+
 ## [6.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.2...v6.0.3) (2022-12-07)
 
 
