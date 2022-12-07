@@ -181,7 +181,7 @@
     "multiformats": "^10.0.0",
     "p-defer": "^4.0.0",
     "p-queue": "^7.2.0",
-    "private-ip": "^2.3.3",
+    "private-ip": "^3.0.0",
     "protons-runtime": "^4.0.1",
     "timeout-abort-controller": "^3.0.0",
     "uint8arraylist": "^2.0.0",
