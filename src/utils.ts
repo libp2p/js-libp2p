@@ -19,6 +19,16 @@ export function removePrivateAddresses (peer: PeerInfo): PeerInfo {
     multiaddrs: peer.multiaddrs.filter(multiaddr => {
       const [[type, addr]] = multiaddr.stringTuples()
 
+      // treat /dns, /dns4, and /dns6 addrs as public
+      if (type === 53 || type === 54 || type === 55) {
+        // localhost can be a dns address but it's private
+        if (addr === 'localhost') {
+          return false
+        }
+
+        return true
+      }
+
       if (type !== 4 && type !== 6) {
         return false
       }
@@ -45,6 +55,10 @@ export function removePublicAddresses (peer: PeerInfo): PeerInfo {
     multiaddrs: peer.multiaddrs.filter(multiaddr => {
       const [[type, addr]] = multiaddr.stringTuples()
 
+      if (addr === 'localhost') {
+        return true
+      }
+
       if (type !== 4 && type !== 6) {
         return false
       }
@@ -53,7 +67,14 @@ export function removePublicAddresses (peer: PeerInfo): PeerInfo {
         return false
       }
 
-      return isPrivateIp(addr)
+      const isPrivate = isPrivateIp(addr)
+
+      if (isPrivate == null) {
+        // not an ip address
+        return false
+      }
+
+      return isPrivate
     })
   }
 }
