@@ -1,3 +1,15 @@
+## [6.1.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.4...v6.1.0) (2022-12-07)
+
+
+### Features
+
+* allow passing ProvidersInit in KadDHT constructor ([#404](https://github.com/libp2p/js-libp2p-kad-dht/issues/404)) ([e64af85](https://github.com/libp2p/js-libp2p-kad-dht/commit/e64af85d6ef02d99521689ed8b60e0c3702efbc5))
+
+
+### Bug Fixes
+
+* treat /dns, /dns4, and /dns6 addrs as public ([#406](https://github.com/libp2p/js-libp2p-kad-dht/issues/406)) ([e27747a](https://github.com/libp2p/js-libp2p-kad-dht/commit/e27747ab9c32b6f72b04bb24cbc51e95384c1747)), closes [#377](https://github.com/libp2p/js-libp2p-kad-dht/issues/377)
+
 ## [6.0.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.3...v6.0.4) (2022-12-07)
 
 
