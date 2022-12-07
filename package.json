@@ -155,7 +155,7 @@
     "err-code": "^3.0.1",
     "interface-datastore": "^7.0.0",
     "it-all": "^1.0.6",
-    "it-filter": "^1.0.3",
+    "it-filter": "^2.0.0",
     "it-foreach": "^0.1.1",
     "it-map": "^2.0.0",
     "it-pipe": "^2.0.3",
