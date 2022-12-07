@@ -1,3 +1,10 @@
+## [6.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.2...v6.0.3) (2022-12-07)
+
+
+### Dependencies
+
+* bump private-ip from 2.3.4 to 3.0.0 ([#400](https://github.com/libp2p/js-libp2p-kad-dht/issues/400)) ([5a567e3](https://github.com/libp2p/js-libp2p-kad-dht/commit/5a567e31e46671c0e5bcb9a7859a2ca82e33e58a))
+
 ## [6.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.1...v6.0.2) (2022-12-07)
 
 
