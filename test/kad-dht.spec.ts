@@ -91,6 +91,20 @@ describe('KadDHT', () => {
       expect(dht).to.have.property('getMode')
       expect(dht).to.have.property('setMode')
     })
+
+    it('forward providers init options to providers component', async () => {
+      const dht = await tdht.spawn({
+        kBucketSize: 5,
+        providers: {
+          cleanupInterval: 60,
+          provideValidity: 60 * 10
+        }
+      })
+      expect(dht.lan.providers).to.have.property('cleanupInterval', 60)
+      expect(dht.lan.providers).to.have.property('provideValidity', 60 * 10)
+      expect(dht.wan.providers).to.have.property('cleanupInterval', 60)
+      expect(dht.wan.providers).to.have.property('provideValidity', 60 * 10)
+    })
   })
 
   describe('start and stop', () => {

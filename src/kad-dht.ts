@@ -82,7 +82,8 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
       pingTimeout,
       pingConcurrency,
       maxInboundStreams,
-      maxOutboundStreams
+      maxOutboundStreams,
+      providers: providersInit
     } = init
 
     this.running = false
@@ -102,7 +103,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
       protocol: this.protocol
     })
 
-    this.providers = new Providers(components)
+    this.providers = new Providers(components, providersInit ?? {})
 
     this.validators = {
       ...recordValidators,

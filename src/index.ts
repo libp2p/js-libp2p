@@ -1,5 +1,6 @@
 import { KadDHT as SingleKadDHT } from './kad-dht.js'
 import { DualKadDHT } from './dual-kad-dht.js'
+import type { ProvidersInit } from './providers.js'
 import type { Selectors, Validators } from '@libp2p/interface-dht'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { AddressManager } from '@libp2p/interface-address-manager'
@@ -62,6 +63,11 @@ export interface KadDHTInit {
    * How many parallel outgoing streams to allow on the DHT protocol per-connection
    */
   maxOutboundStreams?: number
+
+  /**
+   * Initialization options for the Providers component
+   */
+  providers?: ProvidersInit
 }
 
 export interface KadDHTComponents {
