@@ -194,6 +194,6 @@
     "it-pair": "^2.0.2",
     "it-pipe": "^2.0.2",
     "p-defer": "^4.0.0",
-    "uint8arrays": "^3.0.0"
+    "uint8arrays": "^4.0.2"
   }
 }
