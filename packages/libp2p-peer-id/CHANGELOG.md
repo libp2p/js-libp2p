@@ -1,3 +1,15 @@
+## [@libp2p/peer-id-v1.1.17](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.16...@libp2p/peer-id-v1.1.17) (2022-12-08)
+
+
+### Bug Fixes
+
+* human readable peer ids in console.log ([#36](https://github.com/libp2p/js-libp2p-peer-id/issues/36)) ([f80d1ea](https://github.com/libp2p/js-libp2p-peer-id/commit/f80d1ea0b6272692de69ed1d224e6cc16d9b84fb))
+
+
+### Trivial Changes
+
+* fix peer-d typo in readmes ([#31](https://github.com/libp2p/js-libp2p-peer-id/issues/31)) ([2276076](https://github.com/libp2p/js-libp2p-peer-id/commit/2276076650a0e1ecd0954be104eb7269e688b6ec))
+
 ## [@libp2p/peer-id-v1.1.16](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.15...@libp2p/peer-id-v1.1.16) (2022-10-12)
 
 
