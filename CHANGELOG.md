@@ -1,3 +1,18 @@
+## [5.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.0...v5.0.1) (2022-12-08)
+
+
+### Bug Fixes
+
+* cannot catch EADDRINUSE ([#198](https://github.com/libp2p/js-libp2p-websockets/issues/198)) ([c7312db](https://github.com/libp2p/js-libp2p-websockets/commit/c7312db639b37c767afe0651cab9d33a6f0246b3)), closes [#184](https://github.com/libp2p/js-libp2p-websockets/issues/184)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-mocks from 7.1.0 to 8.0.2 ([#199](https://github.com/libp2p/js-libp2p-websockets/issues/199)) ([daff533](https://github.com/libp2p/js-libp2p-websockets/commit/daff53335baec84ae97d937ab79779f475c8ab18)), closes [#318](https://github.com/libp2p/js-libp2p-websockets/issues/318) [#315](https://github.com/libp2p/js-libp2p-websockets/issues/315) [#313](https://github.com/libp2p/js-libp2p-websockets/issues/313) [#312](https://github.com/libp2p/js-libp2p-websockets/issues/312)
+* **dev:** bump it-all from 1.0.6 to 2.0.0 ([#193](https://github.com/libp2p/js-libp2p-websockets/issues/193)) ([6213f8f](https://github.com/libp2p/js-libp2p-websockets/commit/6213f8f6f113846622c53966478ae75c81fa5d14)), closes [#28](https://github.com/libp2p/js-libp2p-websockets/issues/28) [#28](https://github.com/libp2p/js-libp2p-websockets/issues/28) [#27](https://github.com/libp2p/js-libp2p-websockets/issues/27) [#24](https://github.com/libp2p/js-libp2p-websockets/issues/24)
+* **dev:** bump it-drain from 1.0.5 to 2.0.0 ([#191](https://github.com/libp2p/js-libp2p-websockets/issues/191)) ([e549691](https://github.com/libp2p/js-libp2p-websockets/commit/e549691e40577f9146355998cb504f071772e4e3)), closes [#28](https://github.com/libp2p/js-libp2p-websockets/issues/28) [#28](https://github.com/libp2p/js-libp2p-websockets/issues/28) [#27](https://github.com/libp2p/js-libp2p-websockets/issues/27) [#24](https://github.com/libp2p/js-libp2p-websockets/issues/24)
+* **dev:** bump it-take from 1.0.2 to 2.0.0 ([#192](https://github.com/libp2p/js-libp2p-websockets/issues/192)) ([4c037fc](https://github.com/libp2p/js-libp2p-websockets/commit/4c037fc3c116a3ed2ec39aec3fed776fcb6c9690)), closes [#28](https://github.com/libp2p/js-libp2p-websockets/issues/28)
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v4.0.1...v5.0.0) (2022-10-12)
 
 
