@@ -184,7 +184,7 @@
     "it-goodbye": "^4.0.1",
     "it-pipe": "^2.0.3",
     "it-stream-types": "^1.0.4",
-    "it-take": "^1.0.2",
+    "it-take": "^2.0.0",
     "p-wait-for": "^5.0.0",
     "uint8arraylist": "^2.3.2",
     "uint8arrays": "^4.0.2"
