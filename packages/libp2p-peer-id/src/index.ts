@@ -6,10 +6,12 @@ import { identity } from 'multiformats/hashes/identity'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { sha256 } from 'multiformats/hashes/sha2'
 import errcode from 'err-code'
-import { Ed25519PeerId, RSAPeerId, Secp256k1PeerId, symbol } from '@libp2p/interface-peer-id'
+import { Ed25519PeerId, PeerIdType, RSAPeerId, Secp256k1PeerId, symbol } from '@libp2p/interface-peer-id'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { PeerId } from '@libp2p/interface-peer-id'
+
+const inspect = Symbol.for('nodejs.util.inspect.custom')
 
 const baseDecoder = Object
   .values(bases)
@@ -24,7 +26,7 @@ const MARSHALLED_ED225519_PUBLIC_KEY_LENGTH = 36
 const MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH = 37
 
 interface PeerIdInit {
-  type: 'RSA' | 'Ed25519' | 'secp256k1'
+  type: PeerIdType
   multihash: MultihashDigest
   privateKey?: Uint8Array
 }
@@ -46,7 +48,7 @@ interface Secp256k1PeerIdInit {
 }
 
 class PeerIdImpl {
-  public type: 'RSA' | 'Ed25519' | 'secp256k1'
+  public type: PeerIdType
   public readonly multihash: MultihashDigest
   public readonly privateKey?: Uint8Array
   public readonly publicKey?: Uint8Array
@@ -111,6 +113,22 @@ class PeerIdImpl {
       throw new Error('not valid Id')
     }
   }
+
+  /**
+   * Returns PeerId as a human-readable string
+   * https://nodejs.org/api/util.html#utilinspectcustom
+   *
+   * @example
+   * ```js
+   * import { peerIdFromString } from '@libp2p/peer-id'
+   *
+   * console.info(peerIdFromString('QmFoo'))
+   * // 'PeerId(QmFoo)'
+   * ```
+   */
+  [inspect] (): string {
+    return `PeerId(${this.toString()})`
+  }
 }
 
 class RSAPeerIdImpl extends PeerIdImpl implements RSAPeerId {
@@ -146,8 +164,20 @@ class Secp256k1PeerIdImpl extends PeerIdImpl implements Secp256k1PeerId {
   }
 }
 
-export function createPeerId (init: PeerIdInit) {
-  return new PeerIdImpl(init)
+export function createPeerId (init: PeerIdInit): PeerId {
+  if (init.type === 'RSA') {
+    return new RSAPeerIdImpl(init)
+  }
+
+  if (init.type === 'Ed25519') {
+    return new Ed25519PeerIdImpl(init)
+  }
+
+  if (init.type === 'secp256k1') {
+    return new Secp256k1PeerIdImpl(init)
+  }
+
+  throw errcode(new Error('Type must be "RSA", "Ed25519" or "secp256k1"'), 'ERR_INVALID_PARAMETERS')
 }
 
 export function peerIdFromPeerId (other: any): PeerId {
