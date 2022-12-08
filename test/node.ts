@@ -2,6 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 
 import https from 'https'
+import http from 'http'
 import fs from 'fs'
 import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -100,6 +101,14 @@ describe('listen', () => {
       })
 
       void listener.listen(ma)
+    })
+
+    it('should error on starting two listeners on same address', async () => {
+      listener = ws.createListener({ upgrader })
+      const dumbServer = http.createServer()
+      await new Promise<void>(resolve => dumbServer.listen(ma.toOptions().port, resolve))
+      await expect(listener.listen(ma)).to.eventually.rejectedWith('listen EADDRINUSE')
+      await new Promise<void>(resolve => dumbServer.close(() => resolve()))
     })
 
     it('listen, check for the close event', (done) => {
