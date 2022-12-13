@@ -1,9 +1,9 @@
 export default {
   build: {
-    target: 'es2020'
+    target: 'es2022'
   },
   optimizeDeps: {
-    esbuildOptions: { target: 'es2020', supported: { bigint: true } }
+    esbuildOptions: { target: 'es2022', supported: { bigint: true } }
   },
   server: {
     open: true
