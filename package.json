@@ -1,26 +1,34 @@
 {
-  "name": "js-libp2p-webrtc",
-  "version": "1.0.0",
-  "description": "Dial peer using webrtc",
+  "name": "@libp2p/webrtc",
+  "version": "0.0.0",
+  "description": "A libp2p transport using WebRTC connections",
   "author": "",
-  "license": "Apache-2.0 or MIT",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-webrtc#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-webrtc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-webrtc/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/proto_ts/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo",
+    "proto_ts"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
     }
   },
   "eslintConfig": {
@@ -29,24 +37,91 @@
       "sourceType": "module"
     }
   },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
   },
-  "exports": {
-    ".": {
-      "types": "./src/index.d.ts",
-      "import": "./dist/src/index.js"
-    }
-  },
-  "files": [
-    "src",
-    "proto_ts",
-    "dist/src",
-    "dist/proto_ts",
-    "!dist/test",
-    "!**/*.tsbuildinfo"
-  ],
   "scripts": {
     "generate:proto": "npx protoc --ts_out proto_ts --proto_path src src/*.proto",
     "build": "aegir build",
@@ -59,32 +134,13 @@
     "dep-check": "aegir dep-check",
     "release": "aegir release"
   },
-  "devDependencies": {
-    "@libp2p/interface-mocks": "^8.0.1",
-    "@libp2p/peer-id-factory": "^1.0.19",
-    "@protobuf-ts/plugin": "^2.8.0",
-    "@protobuf-ts/protoc": "^2.8.0",
-    "@types/uuid": "^8.3.4",
-    "@typescript-eslint/parser": "^5.32.0",
-    "aegir": "^37.4.6",
-    "chai": "^4.3.6",
-    "chai-bytes": "^0.1.2",
-    "it-first": "^2.0.0",
-    "libp2p": "^0.40.0",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^2.7.1",
-    "typescript": "^4.7.4"
-  },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^10.0.0",
-    "@libp2p/components": "^3.0.2",
     "@libp2p/interface-connection": "^3.0.2",
     "@libp2p/interface-peer-id": "^1.0.5",
     "@libp2p/interface-stream-muxer": "^3.0.0",
     "@libp2p/interface-transport": "^2.0.0",
-    "@libp2p/interfaces": "^3.0.2",
     "@libp2p/logger": "^2.0.0",
-    "@libp2p/multistream-select": "^3.0.2",
     "@libp2p/peer-id": "^1.1.15",
     "@multiformats/multiaddr": "^11.0.3",
     "@protobuf-ts/runtime": "^2.8.0",
@@ -97,9 +153,18 @@
     "multiformats": "^10.0.0",
     "multihashes": "^4.0.3",
     "p-defer": "^4.0.0",
-    "timeout-abort-controller": "^3.0.0",
     "uint8arraylist": "^2.3.3",
     "uint8arrays": "^4.0.2",
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@libp2p/interface-mocks": "^8.0.1",
+    "@libp2p/peer-id-factory": "^1.0.19",
+    "@protobuf-ts/plugin": "^2.8.0",
+    "@protobuf-ts/protoc": "^2.8.0",
+    "@types/uuid": "^8.3.4",
+    "aegir": "^37.6.6",
+    "it-first": "^2.0.0",
+    "libp2p": "^0.40.0"
   }
 }

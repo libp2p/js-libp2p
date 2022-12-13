@@ -1,5 +1,5 @@
 import * as underTest from '../src/stream'
-import { expect, assert } from 'chai'
+import { expect, assert } from 'aegir/chai'
 
 function setup (): { peerConnection: RTCPeerConnection, datachannel: RTCDataChannel, webrtcStream: underTest.WebRTCStream } {
   const peerConnection = new RTCPeerConnection()

@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect } from 'aegir/chai'
 
 export const expectError = (error: unknown, message: string) => {
   if (error instanceof Error) {

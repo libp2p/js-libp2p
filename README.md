@@ -1,36 +1,43 @@
 # @libp2p/webrtc <!-- omit in toc -->
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
-[![codecov](https://img.shields.io/codecov/c/github/little-bear-labs/js-libp2p-webrtc.svg?style=flat-square)](https://codecov.io/gh/little-bear-labs/js-libp2p-webrtc)
-[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/little-bear-labs/js-libp2p-webrtc/actions/workflows/js-test-and-release.yml)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-webrtc.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-webrtc)
+[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-webrtc/test%20&%20maybe%20release/main?style=flat-square)](https://github.com/libp2p/js-libp2p-webrtc/actions/workflows/js-test-and-release.yml)
 
-> The browser implementation of the WebRTC module for libp2p.
+> A libp2p transport using WebRTC connections
 
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
+  - [Browser `<script>` tag](#browser-script-tag)
 - [Usage](#usage)
 - [Examples](#examples)
 - [Interfaces](#interfaces)
   - [Transport](#transport)
   - [Connection](#connection)
-- [Contribute](#contribute)
+- [Development](#development)
   - [Build](#build)
   - [Protocol Buffers](#protocol-buffers)
   - [Test](#test)
   - [Lint](#lint)
   - [Clean](#clean)
   - [Check Dependencies](#check-dependencies)
-  - [Build a Release](#build-a-release)
 - [License](#license)
-- [Contribution](#contribution)
+- [Contribute](#contribute)
 
 ## Install
 
-```shell
-npm i @libp2p/webrtc
+```console
+$ npm i @libp2p/webrtc
+```
+
+### Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `Libp2pWebrtc` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@libp2p/webrtc/dist/index.min.js"></script>
 ```
 
 ## Usage
@@ -52,13 +59,14 @@ const node = await createLibp2p({
 await node.start()
 
 const ma =  multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
-const stream = await node.dialProtocol(ma, ['/my-protocol/1.0.0']) 
+const stream = await node.dialProtocol(ma, ['/my-protocol/1.0.0'])
 const message = `Hello js-libp2p-webrtc\n`
 const response = await pipe([fromString(message)], stream, async (source) => await first(source))
 const responseDecoded = toString(response.slice(0, response.length))
 ```
 
 ## Examples
+
 Examples can be found in the [examples folder](examples/README.md).
 
 ## Interfaces
@@ -106,7 +114,7 @@ interface MultiaddrConnection extends Duplex<Uint8Array> {
 class WebRTCMultiaddrConnection implements MultiaddrConnection { }
 ```
 
-## Contribute
+## Development
 
 Contributions are welcome! The libp2p implementation in JavaScript is a work in progress. As such, there's a few things you can do right now to help out:
 
@@ -119,9 +127,10 @@ Please be aware that all interactions related to libp2p are subject to the IPFS 
 
 Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
-This module leans heavily on (Aegir)[https://github.com/ipfs/aegir] for most of the `package.json` scripts.
+This module leans heavily on (Aegir)\[<https://github.com/ipfs/aegir>] for most of the `package.json` scripts.
 
 ### Build
+
 The build script is a wrapper to `aegir build`.  To build this package:
 
 ```shell
@@ -142,7 +151,7 @@ To run all tests:
 npm test
 ```
 
-To run tests for Chome only:
+To run tests for Chrome only:
 
 ```shell
 npm run test:chrome
@@ -155,8 +164,9 @@ npm run test:firefox
 ```
 
 ### Lint
+
 Aegir is also used to lint the code, which follows the [Standard](https://github.com/standard/standard) JS linter.
-The VS Code plugin for this standard is located at https://marketplace.visualstudio.com/items?itemName=standard.vscode-standard.
+The VS Code plugin for this standard is located at <https://marketplace.visualstudio.com/items?itemName=standard.vscode-standard>.
 To lint this repo:
 
 ```shell
@@ -181,11 +191,6 @@ npm run clean
 npm run deps-check
 ```
 
-### Build a Release
-
-```shell
-npm run release
-```
 ## License
 
 Licensed under either of
@@ -193,6 +198,6 @@ Licensed under either of
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribution
+## Contribute
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

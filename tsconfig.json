@@ -1,17 +1,11 @@
 {
-	"extends": "aegir/src/config/tsconfig.aegir.json",
-	"compilerOptions": {
-		"allowJs": true,
-		"allowSyntheticDefaultImports": true,
-		"emitDeclarationOnly": false,
-		"importsNotUsedAsValues": "preserve",
-		"module": "ES2020",
-		"moduleResolution": "node",
-		"outDir": "dist"
-	},
-	"include": [
-		"src",
-		"test",
-		"proto_ts"
-	]
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test",
+    "proto_ts"
+  ]
 }

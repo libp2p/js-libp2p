@@ -1,11 +1,11 @@
-import { Stream, StreamStat, Direction } from '@libp2p/interface-connection'
+import type { Stream, StreamStat, Direction } from '@libp2p/interface-connection'
 import { logger } from '@libp2p/logger'
 import * as lengthPrefixed from 'it-length-prefixed'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import defer, { DeferredPromise } from 'p-defer'
-import { Source, Sink } from 'it-stream-types'
+import type { Source, Sink } from 'it-stream-types'
 import { Uint8ArrayList } from 'uint8arraylist'
 
 import * as pb from '../proto_ts/message.js'

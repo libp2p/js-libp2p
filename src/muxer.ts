@@ -1,6 +1,6 @@
-import { Stream } from '@libp2p/interface-connection'
-import { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
-import { Source, Sink } from 'it-stream-types'
+import type { Stream } from '@libp2p/interface-connection'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
+import type { Source, Sink } from 'it-stream-types'
 
 import { WebRTCStream } from './stream.js'
 import { nopSink, nopSource } from './util.js'

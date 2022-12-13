@@ -1,7 +1,7 @@
-import { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/interface-connection'
+import type { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/interface-connection'
 import { logger } from '@libp2p/logger'
-import { Multiaddr } from '@multiformats/multiaddr'
-import { Source, Sink } from 'it-stream-types'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Source, Sink } from 'it-stream-types'
 
 import { nopSink, nopSource } from './util.js'
 

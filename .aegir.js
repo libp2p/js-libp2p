@@ -3,6 +3,6 @@ export default {
     config: {
       platform: 'node'
     },
-    bundlesizeMax: '31KB'
+    bundlesizeMax: '117KB'
   }
 }

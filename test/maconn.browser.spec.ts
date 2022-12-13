@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 
 import { multiaddr } from '@multiformats/multiaddr'
-import { expect } from 'chai'
-import { WebRTCMultiaddrConnection } from './../src/maconn'
+import { expect } from 'aegir/chai'
+import { WebRTCMultiaddrConnection } from './../src/maconn.js'
 
 describe('Multiaddr Connection', () => {
   it('can open and close', async () => {

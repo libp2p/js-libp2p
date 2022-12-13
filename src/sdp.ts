@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import { bases } from 'multiformats/basics'
 import * as multihashes from 'multihashes'
 

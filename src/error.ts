@@ -1,5 +1,5 @@
 import errCode from 'err-code'
-import { Direction } from '@libp2p/interface-connection'
+import type { Direction } from '@libp2p/interface-connection'
 
 export enum codes {
   ERR_ALREADY_ABORTED = 'ERR_ALREADY_ABORTED',
