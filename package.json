@@ -148,7 +148,6 @@
     "@libp2p/utils": "^3.0.2",
     "@multiformats/mafmt": "^11.0.3",
     "@multiformats/multiaddr": "^11.0.0",
-    "abortable-iterator": "^4.0.2",
     "err-code": "^3.0.1",
     "stream-to-it": "^0.2.2"
   },
