@@ -1,3 +1,10 @@
+## [6.0.6](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.5...v6.0.6) (2022-12-13)
+
+
+### Bug Fixes
+
+* remove abortable-iterator and close socket directly on abort ([#220](https://github.com/libp2p/js-libp2p-tcp/issues/220)) ([28fe750](https://github.com/libp2p/js-libp2p-tcp/commit/28fe7500fa99c91f4f81d73671e885955b5d7e4a))
+
 ## [6.0.5](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.4...v6.0.5) (2022-12-06)
 
 
