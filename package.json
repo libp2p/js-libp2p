@@ -1,7 +1,7 @@
 {
   "name": "@libp2p/tcp",
   "version": "6.0.6",
-  "description": "Node.js implementation of the TCP module that libp2p uses, which implements the interface-connection and interface-transport interfaces",
+  "description": "A TCP transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-tcp#readme",
   "repository": {
@@ -28,7 +28,7 @@
   "types": "./dist/src/index.d.ts",
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -134,6 +134,7 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
+    "docs": "aegir docs",
     "test": "aegir test -t node -t electron-main",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
@@ -154,7 +155,7 @@
   "devDependencies": {
     "@libp2p/interface-mocks": "^8.0.1",
     "@libp2p/interface-transport-compliance-tests": "^3.0.0",
-    "aegir": "^37.5.3",
+    "aegir": "^37.7.3",
     "it-all": "^2.0.0",
     "it-pipe": "^2.0.3",
     "p-defer": "^4.0.0",
