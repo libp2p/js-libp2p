@@ -1,3 +1,10 @@
+## [6.0.7](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.6...v6.0.7) (2022-12-15)
+
+
+### Bug Fixes
+
+* publish tsdocs for this module ([#236](https://github.com/libp2p/js-libp2p-tcp/issues/236)) ([b4f88e7](https://github.com/libp2p/js-libp2p-tcp/commit/b4f88e7bfbe865eb00cfb1d99a4231b072b458a5))
+
 ## [6.0.6](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.5...v6.0.6) (2022-12-13)
 
 
