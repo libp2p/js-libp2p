@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-tracked-map/compare/v3.0.1...v3.0.2) (2022-12-16)
+
+
+### Documentation
+
+* update docs ([6ad441d](https://github.com/libp2p/js-libp2p-tracked-map/commit/6ad441df9be1a516a17d2c175218f11af204e559))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-tracked-map/compare/v3.0.0...v3.0.1) (2022-12-16)
 
 
