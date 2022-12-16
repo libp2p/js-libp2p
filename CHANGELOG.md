@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v5.0.0...v5.0.1) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#113](https://github.com/libp2p/js-libp2p-pubsub/issues/113)) ([bc20def](https://github.com/libp2p/js-libp2p-pubsub/commit/bc20defefafbe97defb64e18a7ae10527bff4ae6))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v4.0.1...v5.0.0) (2022-10-12)
 
 
