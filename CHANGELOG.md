@@ -1,3 +1,10 @@
+## [5.0.2](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.1...v5.0.2) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#201](https://github.com/libp2p/js-libp2p-websockets/issues/201)) ([722b03a](https://github.com/libp2p/js-libp2p-websockets/commit/722b03a7a57200505aebac018aeb06ba85219721))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.0...v5.0.1) (2022-12-08)
 
 
