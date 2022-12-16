@@ -26,7 +26,7 @@
   "types": "./dist/src/index.d.ts",
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -139,7 +139,8 @@
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release"
+    "release": "aegir release",
+    "docs": "aegir docs"
   },
   "dependencies": {
     "@libp2p/interfaces": "^3.0.2",
