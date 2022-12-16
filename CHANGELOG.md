@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v5.0.0...v5.0.1) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#51](https://github.com/libp2p/js-libp2p-peer-store/issues/51)) ([149e3b9](https://github.com/libp2p/js-libp2p-peer-store/commit/149e3b94746944d0a70f5fd1ff46743e3b4ef13f))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v4.0.0...v5.0.0) (2022-10-12)
 
 
