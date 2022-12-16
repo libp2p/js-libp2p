@@ -39,12 +39,19 @@ class TrackedMap<K, V> extends Map<K, V> {
   }
 }
 
-export interface CreateTrackedMapOptions {
+export interface CreateTrackedMapInit {
+  /**
+   * The metric name to use
+   */
   name: string
+
+  /**
+   * A metrics implementation
+   */
   metrics?: Metrics
 }
 
-export function trackedMap <K, V> (config: CreateTrackedMapOptions): Map<K, V> {
+export function trackedMap <K, V> (config: CreateTrackedMapInit): Map<K, V> {
   const { name, metrics } = config
   let map: Map<K, V>
 
