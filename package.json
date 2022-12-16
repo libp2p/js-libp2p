@@ -39,7 +39,7 @@
   },
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -163,7 +163,8 @@
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "build": "aegir build",
     "generate": "protons ./src/record.proto",
-    "release": "aegir release"
+    "release": "aegir release",
+    "docs": "aegir docs"
   },
   "dependencies": {
     "@libp2p/interface-dht": "^1.0.0",
