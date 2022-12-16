@@ -22,7 +22,7 @@
   "types": "./dist/src/index.d.ts",
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -140,7 +140,8 @@
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release"
+    "release": "aegir release",
+    "docs": "aegir docs"
   },
   "dependencies": {
     "@libp2p/interface-peer-id": "^1.0.4",
@@ -154,10 +155,10 @@
     "@multiformats/multiaddr": "^11.0.0",
     "err-code": "^3.0.1",
     "interface-datastore": "^7.0.0",
-    "it-all": "^1.0.6",
-    "it-filter": "^1.0.3",
-    "it-foreach": "^0.1.1",
-    "it-map": "^1.0.6",
+    "it-all": "^2.0.0",
+    "it-filter": "^2.0.0",
+    "it-foreach": "^1.0.0",
+    "it-map": "^2.0.0",
     "it-pipe": "^2.0.3",
     "mortice": "^3.0.0",
     "multiformats": "^10.0.0",
@@ -175,6 +176,6 @@
     "p-defer": "^4.0.0",
     "p-wait-for": "^5.0.0",
     "protons": "^6.0.0",
-    "sinon": "^14.0.0"
+    "sinon": "^15.0.1"
   }
 }
