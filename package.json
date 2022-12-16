@@ -203,7 +203,7 @@
     "p-wait-for": "^5.0.0",
     "protons": "^6.0.0",
     "rimraf": "^3.0.2",
-    "sinon": "^14.0.0",
+    "sinon": "^15.0.1",
     "sinon-ts": "^1.0.0"
   },
   "browser": {
