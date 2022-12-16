@@ -1,4 +1,7 @@
 
+/**
+ * Calls the passed map function on every entry of the passed iterable iterator
+ */
 export function mapIterable <T, R> (iter: IterableIterator<T>, map: (val: T) => R): IterableIterator<R> {
   const iterator: IterableIterator<R> = {
     [Symbol.iterator]: () => {
