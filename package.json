@@ -39,7 +39,7 @@
   },
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -149,14 +149,15 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "release": "aegir release"
+    "release": "aegir release",
+    "docs": "aegir docs"
   },
   "dependencies": {
     "@libp2p/interface-peer-id": "^1.0.4",
     "@libp2p/interface-registrar": "^2.0.3",
     "@libp2p/logger": "^2.0.1",
     "err-code": "^3.0.1",
-    "it-all": "^1.0.6"
+    "it-all": "^2.0.0"
   },
   "devDependencies": {
     "aegir": "^37.5.3"
