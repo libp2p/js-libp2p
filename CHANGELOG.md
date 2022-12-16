@@ -1,3 +1,10 @@
+## [5.0.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v5.0.1...v5.0.2) (2022-12-16)
+
+
+### Documentation
+
+* publish typedoc api docs ([#152](https://github.com/libp2p/js-libp2p-bootstrap/issues/152)) ([b0ff483](https://github.com/libp2p/js-libp2p-bootstrap/commit/b0ff4832751ef74eb012d5058d04e8b087894fe8))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v5.0.0...v5.0.1) (2022-12-01)
 
 
