@@ -42,7 +42,7 @@
   },
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -175,6 +175,7 @@
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
     "release": "aegir release",
+    "docs": "aegir docs",
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {

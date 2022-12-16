@@ -50,9 +50,9 @@ export async function hashAndSign (key: JsonWebKey, msg: Uint8Array) { // eslint
 }
 
 export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint8Array) { // eslint-disable-line require-await
-  // @ts-expect-error node types are missing jwk as a format
   return crypto.createVerify('RSA-SHA256')
     .update(msg)
+    // @ts-expect-error node types are missing jwk as a format
     .verify({ format: 'jwk', key }, sig)
 }
 
