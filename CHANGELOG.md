@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.9...v1.0.10) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#291](https://github.com/libp2p/js-libp2p-crypto/issues/291)) ([5ae970f](https://github.com/libp2p/js-libp2p-crypto/commit/5ae970f0190853470a24509c3e396cc949294d8e))
+
 ## [1.0.9](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.8...v1.0.9) (2022-12-01)
 
 
