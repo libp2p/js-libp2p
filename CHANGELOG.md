@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-topology/compare/v3.0.1...v3.0.2) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#16](https://github.com/libp2p/js-libp2p-topology/issues/16)) ([285caba](https://github.com/libp2p/js-libp2p-topology/commit/285caba282d75cb9156a298c7a1b6463d58e3064))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-topology/compare/v3.0.0...v3.0.1) (2022-09-21)
 
 
