@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.2.0...v2.2.1) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#14](https://github.com/libp2p/js-libp2p-peer-collections/issues/14)) ([f11b89a](https://github.com/libp2p/js-libp2p-peer-collections/commit/f11b89a3dec6431a34cfbbbde7c5e0e2878d440f))
+
 ## [2.2.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.1.0...v2.2.0) (2022-09-29)
 
 
