@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.2.1...v2.2.2) (2022-12-16)
+
+
+### Documentation
+
+* document mapIterable method ([5f2bc2c](https://github.com/libp2p/js-libp2p-peer-collections/commit/5f2bc2c22fbd1b53a715d28733dce6eb2daa4dab))
+
 ## [2.2.1](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.2.0...v2.2.1) (2022-12-16)
 
 
