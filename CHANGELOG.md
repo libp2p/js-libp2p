@@ -1,3 +1,16 @@
+## [3.1.2](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.1...v3.1.2) (2022-12-16)
+
+
+### Trivial Changes
+
+* log invalid buffer ([#30](https://github.com/libp2p/js-libp2p-multistream-select/issues/30)) ([1fce957](https://github.com/libp2p/js-libp2p-multistream-select/commit/1fce9579eefe32a81b9805edc6a348f37605ac7f))
+* update it-* deps ([#31](https://github.com/libp2p/js-libp2p-multistream-select/issues/31)) ([3caf904](https://github.com/libp2p/js-libp2p-multistream-select/commit/3caf904c20aab7dc4ca61f40420b18e84bbd2c49))
+
+
+### Documentation
+
+* publish api docs ([#35](https://github.com/libp2p/js-libp2p-multistream-select/issues/35)) ([c4c978a](https://github.com/libp2p/js-libp2p-multistream-select/commit/c4c978ac1eb84667d5568c5f68a6678cf460380f))
+
 ## [3.1.1](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.0...v3.1.1) (2022-10-31)
 
 
