@@ -1,7 +1,6 @@
 node_modules
-coverage
-.nyc_output
+dist
+.docs
+.coverage
 package-lock.json
 yarn.lock
-docs
-dist
