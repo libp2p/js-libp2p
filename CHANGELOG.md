@@ -1,3 +1,10 @@
+## [6.0.8](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.7...v6.0.8) (2022-12-16)
+
+
+### Documentation
+
+* fix build badge ([#238](https://github.com/libp2p/js-libp2p-tcp/issues/238)) ([8a94ced](https://github.com/libp2p/js-libp2p-tcp/commit/8a94cedc6e8806b597c650209b76b5ce38231146))
+
 ## [6.0.7](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.6...v6.0.7) (2022-12-15)
 
 
