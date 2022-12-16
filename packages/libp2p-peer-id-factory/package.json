@@ -22,7 +22,7 @@
   "types": "./dist/src/index.d.ts",
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -152,8 +152,11 @@
     "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
-    "aegir": "^37.0.7",
+    "aegir": "^37.7.5",
     "protons": "^6.0.0",
     "util": "^0.12.4"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
   }
 }
