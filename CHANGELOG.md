@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/libp2p/js-libp2p-record/compare/v2.0.3...v2.0.4) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#68](https://github.com/libp2p/js-libp2p-record/issues/68)) ([5a3dd41](https://github.com/libp2p/js-libp2p-record/commit/5a3dd419f13b67e27c19f3b23252937d80fc8b93))
+
 ## [2.0.3](https://github.com/libp2p/js-libp2p-record/compare/v2.0.2...v2.0.3) (2022-10-12)
 
 
