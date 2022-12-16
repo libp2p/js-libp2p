@@ -1,3 +1,15 @@
+## [5.1.1](https://github.com/libp2p/js-libp2p-mdns/compare/v5.1.0...v5.1.1) (2022-12-16)
+
+
+### Documentation
+
+* publish typedocs ([#176](https://github.com/libp2p/js-libp2p-mdns/issues/176)) ([7f3a41b](https://github.com/libp2p/js-libp2p-mdns/commit/7f3a41b59a85f618e0af8af9cbda77961edab334))
+
+
+### Trivial Changes
+
+* remove lockfile ([3c1b399](https://github.com/libp2p/js-libp2p-mdns/commit/3c1b39962442869f6f00a748d86d60f3aa204684))
+
 ## [5.1.0](https://github.com/libp2p/js-libp2p-mdns/compare/v5.0.0...v5.1.0) (2022-10-27)
 
 
