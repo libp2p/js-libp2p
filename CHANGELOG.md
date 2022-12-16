@@ -1,3 +1,10 @@
+## [7.1.1](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.0...v7.1.1) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#241](https://github.com/libp2p/js-libp2p-mplex/issues/241)) ([083f462](https://github.com/libp2p/js-libp2p-mplex/commit/083f462b36429ae0f326b79c253017f824fba6ed))
+
 ## [7.1.0](https://github.com/libp2p/js-libp2p-mplex/compare/v7.0.7...v7.1.0) (2022-11-25)
 
 
