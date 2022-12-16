@@ -1,3 +1,19 @@
+## [4.0.5](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.4...v4.0.5) (2022-12-16)
+
+
+### Dependencies
+
+* bump it-all from 1.0.6 to 2.0.0 ([#32](https://github.com/libp2p/js-libp2p-peer-record/issues/32)) ([fd1f6aa](https://github.com/libp2p/js-libp2p-peer-record/commit/fd1f6aaaeefa3991f9f9dd82342618faae92fbbc))
+* bump it-filter from 1.0.3 to 2.0.0 ([#31](https://github.com/libp2p/js-libp2p-peer-record/issues/31)) ([1369be9](https://github.com/libp2p/js-libp2p-peer-record/commit/1369be940ea2519950aeb0b6fc8969c50b2c0457)), closes [#28](https://github.com/libp2p/js-libp2p-peer-record/issues/28)
+* bump it-foreach from 0.1.1 to 1.0.0 ([#33](https://github.com/libp2p/js-libp2p-peer-record/issues/33)) ([64e2fc4](https://github.com/libp2p/js-libp2p-peer-record/commit/64e2fc4a9058b37a542e7571af9b6bf282ac907e)), closes [#28](https://github.com/libp2p/js-libp2p-peer-record/issues/28)
+* bump it-map from 1.0.6 to 2.0.0 ([#30](https://github.com/libp2p/js-libp2p-peer-record/issues/30)) ([eb307e4](https://github.com/libp2p/js-libp2p-peer-record/commit/eb307e478c8bf3a3daf1881312d6af6e18dccf14)), closes [#28](https://github.com/libp2p/js-libp2p-peer-record/issues/28)
+* **dev:** bump sinon from 14.0.2 to 15.0.0 ([#36](https://github.com/libp2p/js-libp2p-peer-record/issues/36)) ([bddbdb7](https://github.com/libp2p/js-libp2p-peer-record/commit/bddbdb7fd367540be8db48d5db32378dbe087e32))
+
+
+### Documentation
+
+* publish api docs ([#39](https://github.com/libp2p/js-libp2p-peer-record/issues/39)) ([4477f4b](https://github.com/libp2p/js-libp2p-peer-record/commit/4477f4bdb7fda01fc4a17d85d3e372e81c396674))
+
 ## [4.0.4](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.3...v4.0.4) (2022-10-12)
 
 
