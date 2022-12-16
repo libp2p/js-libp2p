@@ -43,7 +43,7 @@
   },
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -154,7 +154,7 @@
     "p-fifo": "^1.0.0",
     "p-retry": "^5.0.0",
     "p-settle": "^5.0.0",
-    "private-ip": "^2.3.3",
+    "private-ip": "^3.0.0",
     "protons-runtime": "^4.0.1",
     "rate-limiter-flexible": "^2.3.11",
     "retimer": "^3.0.0",
@@ -174,8 +174,8 @@
     "@libp2p/daemon-server": "^3.0.4",
     "@libp2p/floodsub": "^5.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.2",
-    "@libp2p/interface-connection-encrypter-compliance-tests": "^3.0.0",
     "@libp2p/interface-connection-compliance-tests": "^2.0.3",
+    "@libp2p/interface-connection-encrypter-compliance-tests": "^3.0.0",
     "@libp2p/interface-mocks": "^8.0.0",
     "@libp2p/interop": "^3.0.1",
     "@libp2p/kad-dht": "^6.0.0",
@@ -204,7 +204,7 @@
     "p-wait-for": "^5.0.0",
     "protons": "^6.0.0",
     "rimraf": "^3.0.2",
-    "sinon": "^14.0.0",
+    "sinon": "^15.0.1",
     "sinon-ts": "^1.0.0"
   },
   "browser": {

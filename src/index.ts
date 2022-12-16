@@ -1,3 +1,19 @@
+/**
+ * @packageDocumentation
+ *
+ * Use the `createLibp2p` function to create a libp2p node.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ * })
+ * ```
+ */
+
 import { createLibp2pNode } from './libp2p.js'
 import type { AbortOptions, RecursivePartial } from '@libp2p/interfaces'
 import type { EventEmitter } from '@libp2p/interfaces/events'

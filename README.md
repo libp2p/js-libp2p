@@ -45,7 +45,7 @@ If you are looking for the documentation of the latest release, you can view the
 - [Usage](#usage)
   - [Configuration](#configuration)
   - [Limits](#limits)
-  - [API](#api)
+  - [API Docs](#api-docs)
   - [Getting started](#getting-started)
   - [Tutorials and Examples](#tutorials-and-examples)
 - [Development](#development)
@@ -98,9 +98,9 @@ For all the information on how you can configure libp2p see [CONFIGURATION.md](.
 
 For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
 
-### API
+### API Docs
 
-The specification is available on [API.md](./doc/API.md).
+- <https://libp2p.github.io/js-libp2p>
 
 ### Getting started
 
