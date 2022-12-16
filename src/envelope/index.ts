@@ -10,7 +10,7 @@ import type { Record, Envelope } from '@libp2p/interface-record'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { unsigned } from 'uint8-varint'
 
-export interface EnvelopeInit {
+export interface RecordEnvelopeInit {
   peerId: PeerId
   payloadType: Uint8Array
   payload: Uint8Array
@@ -82,7 +82,7 @@ export class RecordEnvelope implements Envelope {
    * The Envelope is responsible for keeping an arbitrary signed record
    * by a libp2p peer.
    */
-  constructor (init: EnvelopeInit) {
+  constructor (init: RecordEnvelopeInit) {
     const { peerId, payloadType, payload, signature } = init
 
     this.peerId = peerId
