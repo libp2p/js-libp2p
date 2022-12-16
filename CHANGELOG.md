@@ -1,3 +1,10 @@
+## [6.1.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.1.0...v6.1.1) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#411](https://github.com/libp2p/js-libp2p-kad-dht/issues/411)) ([718e01b](https://github.com/libp2p/js-libp2p-kad-dht/commit/718e01b86299e69ac1f2fed12c77b0675aeee9cf))
+
 ## [6.1.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.0.4...v6.1.0) (2022-12-07)
 
 
