@@ -24,12 +24,12 @@ export interface Timeline {
   close?: number
 }
 
-interface StreamOptions {
+export interface StreamOptions {
   signal?: AbortSignal
 
 }
 
-interface StreamProperties {
+export interface StreamProperties {
   stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
   remoteAddr: Multiaddr
   localAddr: Multiaddr
