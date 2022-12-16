@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.3...v3.0.4) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#69](https://github.com/libp2p/js-libp2p-utils/issues/69)) ([044fd72](https://github.com/libp2p/js-libp2p-utils/commit/044fd7232eb0be2d8cd71fab6130c4f30190e22b))
+
 ## [3.0.3](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.2...v3.0.3) (2022-12-07)
 
 
