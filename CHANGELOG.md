@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.2...v1.1.3) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#14](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/14)) ([78e708f](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/78e708f4a4b5040988da90ecfb636a1e59a96ee4))
+
 ## [1.1.2](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.1...v1.1.2) (2022-11-22)
 
 
