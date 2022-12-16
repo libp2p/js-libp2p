@@ -1,18 +1,19 @@
 # @libp2p/bootstrap <!-- omit in toc -->
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![IRC](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-bootstrap.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-bootstrap)
-[![CI](https://img.shields.io/github/workflow/status/libp2p/js-libp2p-interfaces/test%20&%20maybe%20release/master?style=flat-square)](https://github.com/libp2p/js-libp2p-bootstrap/actions/workflows/js-test-and-release.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p-bootstrap/js-test-and-release.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p-bootstrap/actions/workflows/js-test-and-release.yml?query=branch%3Amaster)
 
 > Node.js IPFS Implementation of the railing process of a Node through a bootstrap peer list
 
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
+  - [Browser `<script>` tag](#browser-script-tag)
 - [Usage](#usage)
 - [Contribute](#contribute)
+- [API Docs](#api-docs)
 - [License](#license)
 - [Contribute](#contribute-1)
 
@@ -20,6 +21,14 @@
 
 ```console
 $ npm i @libp2p/bootstrap
+```
+
+### Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `Libp2pBootstrap` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@libp2p/bootstrap/dist/index.min.js"></script>
 ```
 
 ## Usage
@@ -85,6 +94,10 @@ The libp2p implementation in JavaScript is a work in progress. As such, there ar
 
 - Go through the modules and **check out existing issues**. This is especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
 - **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
+
+## API Docs
+
+- <https://libp2p.github.io/js-libp2p-bootstrap>
 
 ## License
 
