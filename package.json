@@ -38,7 +38,7 @@
   },
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -155,7 +155,8 @@
     "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
     "test:node": "aegir test -t node -f ./dist/test/node.js --cov",
     "test:electron-main": "aegir test -t electron-main -f ./dist/test/node.js --cov",
-    "release": "aegir release"
+    "release": "aegir release",
+    "docs": "aegir docs"
   },
   "dependencies": {
     "@libp2p/interface-connection": "^3.0.2",
