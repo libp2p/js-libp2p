@@ -9,6 +9,15 @@ import { mapIterable } from './util.js'
  *
  * PeerIds cache stringified versions of themselves so this
  * should be a cheap operation.
+ *
+ * @example
+ *
+ * ```JavaScript
+ * import { peerMap } from '@libp2p/peer-collections'
+ *
+ * const map = peerMap<string>()
+ * map.set(peerId, 'value')
+ * ```
  */
 export class PeerMap <T> {
   private readonly map: Map<string, T>
