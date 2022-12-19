@@ -9,10 +9,10 @@ import { codes } from '../errors.js'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
-import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager, ConnectionManagerEvents, Dialer } from '@libp2p/interface-connection-manager'
 import * as STATUS from '@libp2p/interface-connection/status'
-import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
-import { isMultiaddr, multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import { isMultiaddr, multiaddr, Multiaddr } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
@@ -20,149 +20,21 @@ import { RateLimiterMemory } from 'rate-limiter-flexible'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Upgrader } from '@libp2p/interface-transport'
 import { getPeer } from '../get-peer.js'
+import type { ConnectionManagerConfig } from '../index.js'
 
 const log = logger('libp2p:connection-manager')
 
-const defaultOptions: Partial<ConnectionManagerInit> = {
+const defaultOptions: Partial<ConnectionManagerConfig> = {
   maxConnections: Infinity,
   minConnections: 0,
-  maxData: Infinity,
-  maxSentData: Infinity,
-  maxReceivedData: Infinity,
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
   autoDialInterval: 10000,
-  movingAverageInterval: 60000,
   inboundConnectionThreshold: 5,
   maxIncomingPendingConnections: 10
 }
 
 const STARTUP_RECONNECT_TIMEOUT = 60000
-
-export interface ConnectionManagerInit {
-  /**
-   * The maximum number of connections to keep open
-   */
-  maxConnections: number
-
-  /**
-   * The minimum number of connections to keep open
-   */
-  minConnections: number
-
-  /**
-   * The max data (in and out), per average interval to allow
-   */
-  maxData?: number
-
-  /**
-   * The max outgoing data, per average interval to allow
-   */
-  maxSentData?: number
-
-  /**
-   * The max incoming data, per average interval to allow
-   */
-  maxReceivedData?: number
-
-  /**
-   * The upper limit the event loop can take to run
-   */
-  maxEventLoopDelay?: number
-
-  /**
-   * How often, in milliseconds, metrics and latency should be checked
-   */
-  pollInterval?: number
-
-  /**
-   * How often, in milliseconds, to compute averages
-   */
-  movingAverageInterval?: number
-
-  /**
-   * If true, try to connect to all discovered peers up to the connection manager limit
-   */
-  autoDial?: boolean
-
-  /**
-   * How long to wait between attempting to keep our number of concurrent connections
-   * above minConnections
-   */
-  autoDialInterval: number
-
-  /**
-   * Sort the known addresses of a peer before trying to dial
-   */
-  addressSorter?: AddressSorter
-
-  /**
-   * Number of max concurrent dials
-   */
-  maxParallelDials?: number
-
-  /**
-   * Number of max addresses to dial for a given peer
-   */
-  maxAddrsToDial?: number
-
-  /**
-   * How long a dial attempt is allowed to take, including DNS resolution
-   * of the multiaddr, opening a socket and upgrading it to a Connection.
-   */
-  dialTimeout?: number
-
-  /**
-   * When a new inbound connection is opened, the upgrade process (e.g. protect,
-   * encrypt, multiplex etc) must complete within this number of ms.
-   */
-  inboundUpgradeTimeout: number
-
-  /**
-   * Number of max concurrent dials per peer
-   */
-  maxDialsPerPeer?: number
-
-  /**
-   * Multiaddr resolvers to use when dialing
-   */
-  resolvers?: Record<string, Resolver>
-
-  /**
-   * On startup we try to dial any peer that has previously been
-   * tagged with KEEP_ALIVE up to this timeout in ms. (default: 60000)
-   */
-  startupReconnectTimeout?: number
-
-  /**
-   * A list of multiaddrs that will always be allowed (except if they are in the
-   * deny list) to open connections to this node even if we've reached maxConnections
-   */
-  allow?: string[]
-
-  /**
-   * A list of multiaddrs that will never be allowed to open connections to
-   * this node under any circumstances
-   */
-  deny?: string[]
-
-  /**
-   * If more than this many connections are opened per second by a single
-   * host, reject subsequent connections
-   */
-  inboundConnectionThreshold?: number
-
-  /**
-   * The maximum number of parallel incoming connections allowed that have yet to
-   * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc
-   */
-  maxIncomingPendingConnections?: number
-}
-
-export interface ConnectionManagerEvents {
-  'peer:connect': CustomEvent<PeerId>
-  'peer:disconnect': CustomEvent<PeerId>
-}
 
 export interface DefaultConnectionManagerComponents {
   peerId: PeerId
@@ -172,12 +44,14 @@ export interface DefaultConnectionManagerComponents {
   dialer: Dialer
 }
 
+export type ConnectionManagerInit = Required<ConnectionManagerConfig>
+
 /**
  * Responsible for managing known connections.
  */
 export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
   private readonly components: DefaultConnectionManagerComponents
-  private readonly opts: Required<ConnectionManagerInit>
+  private readonly opts: ConnectionManagerInit
   private readonly connections: Map<string, Connection[]>
   private started: boolean
   private readonly latencyMonitor: LatencyMonitor
@@ -189,7 +63,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly inboundConnectionRateLimiter: RateLimiterMemory
   private incomingPendingConnections: number
 
-  constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit) {
+  constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerConfig) {
     super()
 
     this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)

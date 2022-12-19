@@ -235,6 +235,13 @@ export class FetchService implements Startable {
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
    * share the same prefix
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
+   * ```
    */
   registerLookupFunction (prefix: string, lookup: LookupFunction) {
     if (this.lookupFunctions.has(prefix)) {
@@ -247,6 +254,13 @@ export class FetchService implements Startable {
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
    * share the same prefix.
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * libp2p.fetchService.unregisterLookupFunction('/prefix')
+   * ```
    */
   unregisterLookupFunction (prefix: string, lookup?: LookupFunction) {
     if (lookup != null) {
