@@ -106,6 +106,7 @@
     "@libp2p/interface-connection-manager": "^1.1.1",
     "@libp2p/interface-content-routing": "^1.0.2",
     "@libp2p/interface-dht": "^1.0.1",
+    "@libp2p/interface-libp2p": "^1.0.0",
     "@libp2p/interface-metrics": "^4.0.0",
     "@libp2p/interface-peer-discovery": "^1.0.1",
     "@libp2p/interface-peer-id": "^1.0.4",
