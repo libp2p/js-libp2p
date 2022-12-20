@@ -17,7 +17,7 @@ import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:keychain')
 
-export interface DekOptions {
+export interface DEKConfig {
   hash: string
   salt: string
   iterationCount: number
@@ -26,7 +26,7 @@ export interface DekOptions {
 
 export interface KeyChainInit {
   pass?: string
-  dek?: DekOptions
+  dek?: DEKConfig
 }
 
 /**
