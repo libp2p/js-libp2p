@@ -124,8 +124,8 @@ export interface ConnectionManagerConfig {
 }
 
 const defaultOptions: Partial<ConnectionManagerConfig> = {
-  maxConnections: Infinity,
-  minConnections: 0,
+  maxConnections: 300,
+  minConnections: 50,
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
   autoDialInterval: 10000,
@@ -143,7 +143,7 @@ export interface DefaultConnectionManagerComponents {
   dialer: Dialer
 }
 
-export type ConnectionManagerInit = Required<ConnectionManagerConfig>
+export type ConnectionManagerInit = ConnectionManagerConfig
 
 /**
  * Responsible for managing known connections.
@@ -579,6 +579,12 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number, toPrune: number = 1) {
     const limit = this.opts[name]
+
+    if (limit == null) {
+      log.trace('limit %s was not set so it cannot be applied', name)
+      return
+    }
+
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
       log('%s: limit exceeded: %p, %d/%d, pruning %d connection(s)', this.components.peerId, name, value, limit, toPrune)
