@@ -31,15 +31,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
-    addressSorter: publicAddressesFirst,
-    maxEventLoopDelay: Infinity,
-    pollInterval: Infinity,
-    maxAddrsToDial: Infinity,
-    startupReconnectTimeout: Infinity,
-    allow: [],
-    deny: [],
-    maxIncomingPendingConnections: Infinity,
-    inboundConnectionThreshold: Infinity
+    addressSorter: publicAddressesFirst
   },
   connectionGater: {},
   transportManager: {
@@ -50,8 +42,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
       enabled: true,
       interval: 6e5,
       bootDelay: 10e3
-    },
-    routers: []
+    }
   },
   nat: {
     enabled: true,
