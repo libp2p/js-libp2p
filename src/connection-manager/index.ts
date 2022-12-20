@@ -124,8 +124,8 @@ export interface ConnectionManagerConfig {
 }
 
 const defaultOptions: Partial<ConnectionManagerConfig> = {
-  maxConnections: 300,
-  minConnections: 50,
+  maxConnections: Infinity,
+  minConnections: 0,
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
   autoDialInterval: 10000,
