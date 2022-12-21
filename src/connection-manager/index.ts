@@ -153,7 +153,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly opts: ConnectionManagerInit
   private readonly connections: Map<string, Connection[]>
   private started: boolean
-  private readonly latencyMonitor: LatencyMonitor
+  private readonly latencyMonitor?: LatencyMonitor
   private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
   private readonly dialTimeout: number
@@ -182,10 +182,12 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.started = false
 
-    this.latencyMonitor = new LatencyMonitor({
-      latencyCheckIntervalMs: init.pollInterval,
-      dataEmitIntervalMs: init.pollInterval
-    })
+    if (init.maxEventLoopDelay != null && init.maxEventLoopDelay > 0 && init.maxEventLoopDelay !== Infinity) {
+      this.latencyMonitor = new LatencyMonitor({
+        latencyCheckIntervalMs: init.pollInterval,
+        dataEmitIntervalMs: init.pollInterval
+      })
+    }
 
     try {
       // This emitter gets listened to a lot
@@ -297,9 +299,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     // latency monitor
-    this.latencyMonitor.start()
+    this.latencyMonitor?.start()
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
-    this.latencyMonitor.addEventListener('data', this._onLatencyMeasure)
+    this.latencyMonitor?.addEventListener('data', this._onLatencyMeasure)
 
     this.started = true
     log('started')
@@ -361,8 +363,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * Stops the Connection Manager
    */
   async stop () {
-    this.latencyMonitor.removeEventListener('data', this._onLatencyMeasure)
-    this.latencyMonitor.stop()
+    this.latencyMonitor?.removeEventListener('data', this._onLatencyMeasure)
+    this.latencyMonitor?.stop()
 
     this.started = false
     await this._close()

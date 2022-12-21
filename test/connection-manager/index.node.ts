@@ -570,4 +570,43 @@ describe('libp2p.connections', () => {
       expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
     })
   })
+
+  describe('latency monitor', () => {
+    let libp2p: Libp2pNode
+
+    afterEach(async () => {
+      if (libp2p != null) {
+        await libp2p.stop()
+      }
+    })
+
+    it('should only start latency monitor if a limit is configured', async () => {
+      libp2p = await createNode({
+        config: createBaseOptions({
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          }
+        })
+      })
+
+      expect(libp2p).to.not.have.nested.property('connectionManager.latencyMonitor')
+
+      await libp2p.stop()
+
+      libp2p = await createNode({
+        config: createBaseOptions({
+          peerId: peerIds[0],
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          connectionManager: {
+            maxEventLoopDelay: 10000
+          }
+        })
+      })
+
+      expect(libp2p).to.have.nested.property('connectionManager.latencyMonitor')
+    })
+  })
 })
