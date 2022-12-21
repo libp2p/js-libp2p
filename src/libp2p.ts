@@ -132,6 +132,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     // Create the Connection Manager
     this.connectionManager = this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
 
+    // forward connection manager events
+    this.components.connectionManager.addEventListener('peer:disconnect', (event) => {
+      this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: event.detail }))
+    })
+    this.components.connectionManager.addEventListener('peer:connect', (event) => {
+      this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: event.detail }))
+    })
+
     // Create the Registrar
     this.registrar = this.components.registrar = new DefaultRegistrar(this.components)
 
