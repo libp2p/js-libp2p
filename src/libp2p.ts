@@ -373,6 +373,10 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return this.components.addressManager.getAddresses()
   }
 
+  getProtocols (): string[] {
+    return this.components.registrar.getProtocols()
+  }
+
   async hangUp (peer: PeerId | Multiaddr): Promise<void> {
     const { id } = getPeer(peer)
 
