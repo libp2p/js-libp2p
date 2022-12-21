@@ -2,7 +2,8 @@
 
 import { expect } from 'aegir/chai'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager, FaultTolerance } from '../../src/transport-manager.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { FaultTolerance } from '@libp2p/interface-transport'
 import { tcp } from '@libp2p/tcp'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { NatManager } from '../../src/nat-manager.js'

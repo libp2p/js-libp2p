@@ -59,10 +59,6 @@
     "./pnet": {
       "types": "./dist/src/pnet/index.d.ts",
       "import": "./dist/src/pnet/index.js"
-    },
-    "./transport-manager": {
-      "types": "./dist/src/transport-manager.d.ts",
-      "import": "./dist/src/transport-manager.js"
     }
   },
   "eslintConfig": {
@@ -116,7 +112,7 @@
     "@libp2p/interface-pubsub": "^3.0.0",
     "@libp2p/interface-registrar": "^2.0.3",
     "@libp2p/interface-stream-muxer": "^3.0.0",
-    "@libp2p/interface-transport": "^2.0.0",
+    "@libp2p/interface-transport": "^2.1.0",
     "@libp2p/interfaces": "^3.0.3",
     "@libp2p/logger": "^2.0.1",
     "@libp2p/multistream-select": "^3.0.0",
