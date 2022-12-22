@@ -136,6 +136,8 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
+  // libp2p nodes are started by default, pass false to override this
+  start: false,
   addresses: {
     listen: ['/ip4/127.0.0.1/tcp/8000/ws']
   },
@@ -219,9 +221,6 @@ node.addEventListener('peer:discovery', (evt) => {
 node.connectionManager.addEventListener('peer:connect', (evt) => {
   console.log('Connected to %s', evt.detail.remotePeer.toString()) // Log connected peer
 })
-
-// start libp2p
-await node.start()
 ```
 
 <details><summary>Read More</summary>

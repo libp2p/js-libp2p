@@ -3,7 +3,7 @@
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { floodsub } from '@libp2p/floodsub'
 import { bootstrap } from '@libp2p/bootstrap'
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
@@ -15,7 +15,7 @@ const createNode = async (bootstrappers) => {
     },
     transports: [tcp()],
     streamMuxers: [mplex()],
-    connectionEncryption: [() => new Noise()],
+    connectionEncryption: [noise()],
     pubsub: floodsub(),
     peerDiscovery: [
       bootstrap({
@@ -39,7 +39,7 @@ const createNode = async (bootstrappers) => {
     },
     transports: [tcp()],
     streamMuxers: [mplex()],
-    connectionEncryption: [() => new Noise()],
+    connectionEncryption: [noise()],
     pubsub: floodsub(),
     peerDiscovery: [
       pubsubPeerDiscovery({
@@ -53,8 +53,7 @@ const createNode = async (bootstrappers) => {
       }
     }
   })
-  console.log(`libp2p relay starting with id: ${relay.peerId.toString()}`)
-  await relay.start()
+  console.log(`libp2p relay started with id: ${relay.peerId.toString()}`)
 
   const relayMultiaddrs = relay.getMultiaddrs().map((m) => m.toString())
 
@@ -71,10 +70,4 @@ const createNode = async (bootstrappers) => {
     const peer = evt.detail
     console.log(`Peer ${node2.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
-
-  ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toString()}`))
-  await Promise.all([
-    node1.start(),
-    node2.start()
-  ])
 })()

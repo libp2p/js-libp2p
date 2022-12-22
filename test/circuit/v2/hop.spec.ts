@@ -182,7 +182,6 @@ describe('Circuit v2 - hop protocol', function () {
 
       circuit = new Circuit(components, {
         enabled: true,
-        limit: 15,
         advertise: {
           enabled: false
         },

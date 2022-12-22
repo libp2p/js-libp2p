@@ -50,7 +50,7 @@ export interface RefreshManagerInit {
 }
 
 export interface PeerRoutingInit {
-  routers: PeerRouting[]
+  routers?: PeerRouting[]
   refreshManager?: RefreshManagerInit
 }
 
@@ -69,7 +69,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
 
   constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit) {
     this.components = components
-    this.routers = init.routers
+    this.routers = init.routers ?? []
     this.refreshManagerInit = init.refreshManager ?? {}
     this.started = false
 

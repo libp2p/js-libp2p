@@ -15,15 +15,15 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
 import type { Connection, Stream } from '@libp2p/interface-connection'
+import type { RelayConfig } from './index.js'
+import { abortableDuplex } from 'abortable-iterator'
+import { TimeoutController } from 'timeout-abort-controller'
+import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { StreamHandlerV2 } from './v2/stream-handler.js'
 import { StreamHandlerV1 } from './v1/stream-handler.js'
 import * as CircuitV1Handler from './v1/index.js'
 import * as CircuitV2Handler from './v2/index.js'
-import { TimeoutController } from 'timeout-abort-controller'
-import type { RelayConfig } from '../index.js'
-import { setMaxListeners } from 'events'
-import { abortableDuplex } from 'abortable-iterator'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Components } from '../components.js'
 
@@ -51,7 +51,7 @@ export class Circuit implements Transport {
   constructor (components: Components, options: RelayConfig) {
     this.components = components
     this._init = options
-    this.reservationStore = new ReservationStore(options.limit)
+    this.reservationStore = new ReservationStore()
 
     void this.components.registrar.handle(RELAY_V1_CODEC, (data) => {
       void this._onProtocolV1(data).catch(err => {

@@ -14,8 +14,20 @@ import { codes } from '../errors.js'
 import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
-import type { HopConfig } from './relay.js'
 import { namespaceToCid } from './utils.js'
+
+export interface RelayConfig {
+  enabled: boolean
+  advertise: RelayAdvertiseConfig
+  hop: HopConfig
+  autoRelay: AutoRelayConfig
+}
+
+export interface HopConfig {
+  enabled?: boolean
+  active?: boolean
+  timeout: number
+}
 
 const log = logger('libp2p:relay')
 

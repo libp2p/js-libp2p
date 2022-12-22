@@ -237,7 +237,7 @@ describe('peer-routing', () => {
 
     beforeEach(async () => {
       delegate = stubInterface<PeerRouting>()
-      delegate.findPeer.returns(Promise.reject(new Error('Could not find peer')))
+      delegate.findPeer.rejects(new Error('Could not find peer'))
       delegate.getClosestPeers.returns(async function * () {}())
 
       node = await createNode({
@@ -575,6 +575,7 @@ describe('peer-routing', () => {
 
       node = await createNode({
         config: createRoutingOptions({
+          start: false,
           peerRouting: {
             refreshManager: {
               enabled: true,
@@ -630,6 +631,7 @@ describe('peer-routing', () => {
     it('should support being disabled', async () => {
       node = await createNode({
         config: createRoutingOptions({
+          start: false,
           peerRouting: {
             refreshManager: {
               bootDelay: 100,
@@ -664,6 +666,7 @@ describe('peer-routing', () => {
     it('should start and run on interval', async () => {
       node = await createNode({
         config: createRoutingOptions({
+          start: false,
           peerRouting: {
             refreshManager: {
               interval: 500,

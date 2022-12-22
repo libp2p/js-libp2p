@@ -9,75 +9,40 @@ import { codes } from '../errors.js'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
-import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager, ConnectionManagerEvents, Dialer } from '@libp2p/interface-connection-manager'
 import * as STATUS from '@libp2p/interface-connection/status'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
-import { multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
+import { isMultiaddr, multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Upgrader } from '@libp2p/interface-transport'
+import { getPeer } from '../get-peer.js'
 
 const log = logger('libp2p:connection-manager')
 
-const defaultOptions: Partial<ConnectionManagerInit> = {
-  maxConnections: Infinity,
-  minConnections: 0,
-  maxData: Infinity,
-  maxSentData: Infinity,
-  maxReceivedData: Infinity,
-  maxEventLoopDelay: Infinity,
-  pollInterval: 2000,
-  autoDialInterval: 10000,
-  movingAverageInterval: 60000,
-  inboundConnectionThreshold: 5,
-  maxIncomingPendingConnections: 10
-}
-
-const STARTUP_RECONNECT_TIMEOUT = 60000
-
-export interface ConnectionManagerInit {
+export interface ConnectionManagerConfig {
   /**
-   * The maximum number of connections to keep open
+   * The maximum number of connections libp2p is willing to have before it starts disconnecting. Defaults to `Infinity`
    */
   maxConnections: number
 
   /**
-   * The minimum number of connections to keep open
+   * The minimum number of connections below which libp2p not activate preemptive disconnections. Defaults to `0`.
    */
   minConnections: number
 
   /**
-   * The max data (in and out), per average interval to allow
-   */
-  maxData?: number
-
-  /**
-   * The max outgoing data, per average interval to allow
-   */
-  maxSentData?: number
-
-  /**
-   * The max incoming data, per average interval to allow
-   */
-  maxReceivedData?: number
-
-  /**
-   * The upper limit the event loop can take to run
+   * Sets the maximum event loop delay (measured in milliseconds) this node is willing to endure before it starts disconnecting peers. Defaults to `Infinity`.
    */
   maxEventLoopDelay?: number
 
   /**
-   * How often, in milliseconds, metrics and latency should be checked
+   * Sets the poll interval (in milliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `2000` (2 seconds).
    */
   pollInterval?: number
-
-  /**
-   * How often, in milliseconds, to compute averages
-   */
-  movingAverageInterval?: number
 
   /**
    * If true, try to connect to all discovered peers up to the connection manager limit
@@ -158,10 +123,17 @@ export interface ConnectionManagerInit {
   maxIncomingPendingConnections?: number
 }
 
-export interface ConnectionManagerEvents {
-  'peer:connect': CustomEvent<PeerId>
-  'peer:disconnect': CustomEvent<PeerId>
+const defaultOptions: Partial<ConnectionManagerConfig> = {
+  maxConnections: Infinity,
+  minConnections: 0,
+  maxEventLoopDelay: Infinity,
+  pollInterval: 2000,
+  autoDialInterval: 10000,
+  inboundConnectionThreshold: 5,
+  maxIncomingPendingConnections: 10
 }
+
+const STARTUP_RECONNECT_TIMEOUT = 60000
 
 export interface DefaultConnectionManagerComponents {
   peerId: PeerId
@@ -171,15 +143,17 @@ export interface DefaultConnectionManagerComponents {
   dialer: Dialer
 }
 
+export type ConnectionManagerInit = ConnectionManagerConfig
+
 /**
  * Responsible for managing known connections.
  */
 export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
   private readonly components: DefaultConnectionManagerComponents
-  private readonly opts: Required<ConnectionManagerInit>
+  private readonly opts: ConnectionManagerInit
   private readonly connections: Map<string, Connection[]>
   private started: boolean
-  private readonly latencyMonitor: LatencyMonitor
+  private readonly latencyMonitor?: LatencyMonitor
   private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
   private readonly dialTimeout: number
@@ -188,7 +162,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly inboundConnectionRateLimiter: RateLimiterMemory
   private incomingPendingConnections: number
 
-  constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit) {
+  constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerConfig) {
     super()
 
     this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
@@ -208,10 +182,12 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.started = false
 
-    this.latencyMonitor = new LatencyMonitor({
-      latencyCheckIntervalMs: init.pollInterval,
-      dataEmitIntervalMs: init.pollInterval
-    })
+    if (init.maxEventLoopDelay != null && init.maxEventLoopDelay > 0 && init.maxEventLoopDelay !== Infinity) {
+      this.latencyMonitor = new LatencyMonitor({
+        latencyCheckIntervalMs: init.pollInterval,
+        dataEmitIntervalMs: init.pollInterval
+      })
+    }
 
     try {
       // This emitter gets listened to a lot
@@ -323,9 +299,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     })
 
     // latency monitor
-    this.latencyMonitor.start()
+    this.latencyMonitor?.start()
     this._onLatencyMeasure = this._onLatencyMeasure.bind(this)
-    this.latencyMonitor.addEventListener('data', this._onLatencyMeasure)
+    this.latencyMonitor?.addEventListener('data', this._onLatencyMeasure)
 
     this.started = true
     log('started')
@@ -387,8 +363,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * Stops the Connection Manager
    */
   async stop () {
-    this.latencyMonitor.removeEventListener('data', this._onLatencyMeasure)
-    this.latencyMonitor.stop()
+    this.latencyMonitor?.removeEventListener('data', this._onLatencyMeasure)
+    this.latencyMonitor?.stop()
 
     this.started = false
     await this._close()
@@ -494,7 +470,18 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     return conns
   }
 
-  async openConnection (peerId: PeerId, options: AbortOptions = {}): Promise<Connection> {
+  async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+    let peerId: PeerId
+
+    if (isPeerId(peerIdOrMultiaddr)) {
+      peerId = peerIdOrMultiaddr
+    } else if (isMultiaddr(peerIdOrMultiaddr)) {
+      const info = getPeer(peerIdOrMultiaddr)
+      peerId = info.id
+    } else {
+      throw errCode(new TypeError('Can only open connections to PeerIds or Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+    }
+
     log('dial to %p', peerId)
     const existingConnections = this.getConnections(peerId)
 
@@ -517,7 +504,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     try {
-      const connection = await this.components.dialer.dial(peerId, options)
+      const connection = await this.components.dialer.dial(peerIdOrMultiaddr, options)
       let peerConnections = this.connections.get(peerId.toString())
 
       if (peerConnections == null) {
@@ -594,6 +581,12 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number, toPrune: number = 1) {
     const limit = this.opts[name]
+
+    if (limit == null) {
+      log.trace('limit %s was not set so it cannot be applied', name)
+      return
+    }
+
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
     if (value > limit) {
       log('%s: limit exceeded: %p, %d/%d, pruning %d connection(s)', this.components.peerId, name, value, limit, toPrune)

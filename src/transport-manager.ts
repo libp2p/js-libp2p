@@ -2,6 +2,7 @@ import { logger } from '@libp2p/logger'
 import pSettle from 'p-settle'
 import { codes } from './errors.js'
 import errCode from 'err-code'
+import { FaultTolerance } from '@libp2p/interface-transport'
 import type { Listener, Transport, TransportManager, TransportManagerEvents, Upgrader } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Connection } from '@libp2p/interface-connection'
@@ -269,19 +270,4 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
 
     await Promise.all(tasks)
   }
-}
-
-/**
- * Enum Transport Manager Fault Tolerance values
- */
-export enum FaultTolerance {
-  /**
-   * should be used for failing in any listen circumstance
-   */
-  FATAL_ALL = 0,
-
-  /**
-   * should be used for not failing when not listening
-   */
-  NO_FATAL
 }

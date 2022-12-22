@@ -1,9 +1,8 @@
 import { logger } from '@libp2p/logger'
 import errCode from 'err-code'
 import * as mss from '@libp2p/multistream-select'
-import { pipe } from 'it-pipe'
 import { codes } from './errors.js'
-import { createConnection } from '@libp2p/connection'
+import { createConnection } from './connection/index.js'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { MultiaddrConnection, Connection, Stream, ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
@@ -132,7 +131,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
   /**
    * Upgrades an inbound connection
    */
-  async upgradeInbound (maConn: MultiaddrConnection): Promise<Connection> {
+  async upgradeInbound (maConn: MultiaddrConnection, opts?: UpgraderOptions): Promise<Connection> {
     const accept = await this.components.connectionManager.acceptIncomingConnection(maConn)
 
     if (!accept) {
@@ -167,38 +166,56 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
       // Protect
       let protectedConn = maConn
-      const protector = this.components.connectionProtector
 
-      if (protector != null) {
-        log('protecting the inbound connection')
-        protectedConn = await protector.protect(maConn)
+      if (opts?.skipProtection !== true) {
+        const protector = this.components.connectionProtector
+
+        if (protector != null) {
+          log('protecting the inbound connection')
+          protectedConn = await protector.protect(maConn)
+        }
       }
 
       try {
         // Encrypt the connection
-        ({
-          conn: encryptedConn,
-          remotePeer,
-          protocol: cryptoProtocol
-        } = await this._encryptInbound(protectedConn))
+        encryptedConn = protectedConn
+        if (opts?.skipEncryption !== true) {
+          ({
+            conn: encryptedConn,
+            remotePeer,
+            protocol: cryptoProtocol
+          } = await this._encryptInbound(protectedConn))
 
-        if (await this.components.connectionGater.denyInboundEncryptedConnection(remotePeer, {
-          ...protectedConn,
-          ...encryptedConn
-        })) {
-          throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+          if (await this.components.connectionGater.denyInboundEncryptedConnection(remotePeer, {
+            ...protectedConn,
+            ...encryptedConn
+          })) {
+            throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+          }
+        } else {
+          const idStr = maConn.remoteAddr.getPeerId()
+
+          if (idStr == null) {
+            throw errCode(new Error('inbound connection that skipped encryption must have a peer id'), codes.ERR_INVALID_MULTIADDR)
+          }
+
+          const remotePeerId = peerIdFromString(idStr)
+
+          cryptoProtocol = 'native'
+          remotePeer = remotePeerId
         }
 
-        // Multiplex the connection
-        if (this.muxers.size > 0) {
+        upgradedConn = encryptedConn
+        if (opts?.muxerFactory != null) {
+          muxerFactory = opts.muxerFactory
+        } else if (this.muxers.size > 0) {
+          // Multiplex the connection
           const multiplexed = await this._multiplexInbound({
             ...protectedConn,
             ...encryptedConn
           }, this.muxers)
           muxerFactory = multiplexed.muxerFactory
           upgradedConn = multiplexed.stream
-        } else {
-          upgradedConn = encryptedConn
         }
       } catch (err: any) {
         log.error('Failed to upgrade inbound connection', err)
@@ -466,7 +483,12 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       }
 
       // Pipe all data through the muxer
-      pipe(upgradedConn, muxer, upgradedConn).catch(log.error)
+      void Promise.all([
+        muxer.sink(upgradedConn.source),
+        upgradedConn.sink(muxer.source)
+      ]).catch(err => {
+        log.error(err)
+      })
     }
 
     const _timeline = maConn.timeline

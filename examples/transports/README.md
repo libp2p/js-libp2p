@@ -22,8 +22,8 @@ First thing is to create our own libp2p node! Insert:
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -33,14 +33,13 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     connectionEncryption: [
-      new Noise()
+      noise()
     ]
   })
 
-  await node.start()
   return node
 }
 ```
@@ -87,7 +86,7 @@ And we also need to import the modules on our .js file:
 
 ```js
 import { pipe } from 'it-pipe'
-import { Mplex } from '@libp2p/mplex'
+import { mplex } from '@libp2p/mplex'
 import all from 'it-all'
 ```
 
@@ -100,12 +99,11 @@ const createNode = async () => {
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()] // <--- Add this line
+    transports: [tcp()],
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()] // <--- Add this line
   })
 
-  await node.start()
   return node
 }
 ```
@@ -190,11 +188,10 @@ const createNode = async (transports, addresses = []) => {
       listen: addresses
     },
     transports: transports,
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()]
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()]
   })
 
-  await node.start()
   return node
 }
 ```
@@ -204,13 +201,13 @@ As a rule, a libp2p node will only be capable of using a transport if: a) it has
 Let's update our flow to create nodes and see how they behave when dialing to each other:
 
 ```JavaScript
-import { WebSockets } from '@libp2p/websockets'
-import { TCP } from '@libp2p/tcp'
+import { webSockets } from '@libp2p/websockets'
+import { tcp } from '@libp2p/tcp'
 
 const [node1, node2, node3] = await Promise.all([
-  createNode([new TCP()], '/ip4/0.0.0.0/tcp/0'),
-  createNode([new TCP(), new WebSockets()], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
-  createNode([new WebSockets()], '/ip4/127.0.0.1/tcp/20000/ws')
+  createNode([tcp()], '/ip4/0.0.0.0/tcp/0'),
+  createNode([tcp(), webSockets()], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
+  createNode([webSockets()], '/ip4/127.0.0.1/tcp/20000/ws')
 ])
 
 printAddrs(node1, '1')

@@ -1,6 +1,6 @@
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
 
 async function main () {
@@ -14,7 +14,7 @@ async function main () {
       webSockets()
     ],
     connectionEncryption: [
-      () => new Noise()
+      noise()
     ],
     streamMuxers: [
       mplex()
@@ -29,8 +29,6 @@ async function main () {
       }
     }
   })
-
-  await node.start()
 
   console.log(`Node started with id ${node.peerId.toString()}`)
   console.log('Listening on:')

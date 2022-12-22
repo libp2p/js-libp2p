@@ -36,6 +36,7 @@ describe('Pubsub subsystem is configurable', () => {
     const peerId = await createPeerId()
 
     const customOptions = mergeOptions(pubsubSubsystemOptions, {
+      start: false,
       peerId
     })
 

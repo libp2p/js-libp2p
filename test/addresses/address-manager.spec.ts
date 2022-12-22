@@ -84,6 +84,25 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
   })
 
+  it('should allow duplicate listen addresses', () => {
+    const ma = multiaddr('/ip4/0.0.0.0/tcp/0')
+    const am = new DefaultAddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>()
+    }, {
+      announceFilter: stubInterface<AddressFilter>(),
+      listen: [
+        ma.toString(),
+        ma.toString()
+      ]
+    })
+
+    expect(am.getListenAddrs()).to.deep.equal([
+      ma,
+      ma
+    ])
+  })
+
   it('should dedupe added observed addresses', () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
     const am = new DefaultAddressManager({

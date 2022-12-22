@@ -14,23 +14,23 @@ First, we create our libp2p node.
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { Bootstrap } from '@libp2p/bootstrap'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { bootstrap } from '@libp2p/bootstrap'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [
-    new TCP()
+    tcp()
   ],
   streamMuxers: [
-    new Mplex()
+    mplex()
   ],
   connectionEncryption: [
-    new Noise()
+    noise()
   ],
   peerDiscovery: [
-    new Bootstrap({
+    bootstrap({
       interval: 60e3,
       list: bootstrapers
     })
@@ -55,20 +55,21 @@ Now, once we create and start the node, we can listen for events such as `peer:d
 
 ```JavaScript
 const node = await createLibp2p({
+  start: false,
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
   transports: [
-    new TCP()
+    tcp()
   ],
   streamMuxers: [
-    new Mplex()
+    mplex()
   ],
   connectionEncryption: [
-    new Noise()
+    noise()
   ],
   peerDiscovery: [
-    new Bootstrap({
+    bootstrap({
       interval: 60e3,
       list: bootstrapers
     })
@@ -113,10 +114,10 @@ Update your libp2p configuration to include MulticastDNS.
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { MulticastDNS } from '@libp2p/mdns'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { mdns } from '@libp2p/mdns'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const createNode = () => {
   return createLibp2p({
@@ -124,16 +125,16 @@ const createNode = () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     streamMuxers: [
-      new Mplex()
+      mplex()
     ],
     connectionEncryption: [
-      new Noise()
+      noise()
     ],
     peerDiscovery: [
-      new MulticastDNS({
+      mdns({
         interval: 20e3
       })
     ]
@@ -151,11 +152,6 @@ const [node1, node2] = await Promise.all([
 
 node1.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
 node2.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
-
-await Promise.all([
-  node1.start(),
-  node2.start()
-])
 ```
 
 If you run this example, you will see the other peers being discovered.
@@ -176,11 +172,11 @@ You can create your libp2p nodes as follows:
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 import { GossipSub } from '@chainsafe/libp2p-gossipsub'
-import { Bootstrap } from '@libp2p/bootstrap'
+import { bootstrap } from '@libp2p/bootstrap'
 import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 
 const createNode = async (bootstrapers) => {
@@ -189,17 +185,17 @@ const createNode = async (bootstrapers) => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     streamMuxers: [
-      new Mplex()
+      mplex()
     ],
     connectionEncryption: [
-      new Noise()
+      noise()
     ],
-    pubsub: new GossipSub({ allowPublishToZeroPeers: true }),
+    pubsub: gossipsub({ allowPublishToZeroPeers: true }),
     peerDiscovery: [
-      new Bootstrap({
+      bootstrap({
         interval: 60e3,
         list: bootstrapers
       }),
@@ -222,10 +218,10 @@ const relay = await createLibp2p({
         '/ip4/0.0.0.0/tcp/0'
       ]
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
-    pubsub: new GossipSub({ allowPublishToZeroPeers: true }),
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()],
+    pubsub: gossipsub({ allowPublishToZeroPeers: true }),
     peerDiscovery: [
       new PubSubPeerDiscovery({
         interval: 1000

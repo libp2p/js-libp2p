@@ -42,7 +42,7 @@ describe('Listening', () => {
     // Should get something like:
     //   /ip4/127.0.0.1/tcp/50866
     //   /ip4/192.168.1.2/tcp/50866
-    expect(addrs.length).to.be.at.least(2)
+    expect(addrs.length).to.be.at.least(1)
     for (const addr of addrs) {
       const opts = addr.toOptions()
       expect(opts.family).to.equal(4)

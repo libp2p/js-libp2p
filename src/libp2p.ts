@@ -134,6 +134,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     // Create the Connection Manager
     this.connectionManager = this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
 
+    // forward connection manager events
+    this.components.connectionManager.addEventListener('peer:disconnect', (event) => {
+      this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: event.detail }))
+    })
+    this.components.connectionManager.addEventListener('peer:connect', (event) => {
+      this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: event.detail }))
+    })
+
     // Create the Registrar
     this.registrar = this.components.registrar = new DefaultRegistrar(this.components)
 
@@ -382,7 +390,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return this.components.addressManager.getAddresses()
   }
 
-  async hangUp (peer: PeerId | Multiaddr | string): Promise<void> {
+  getProtocols (): string[] {
+    return this.components.registrar.getProtocols()
+  }
+
+  async hangUp (peer: PeerId | Multiaddr): Promise<void> {
     const { id } = getPeer(peer)
 
     await this.components.connectionManager.closeConnections(id)
@@ -427,7 +439,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     throw errCode(new Error(`Node not responding with its public key: ${peer.toString()}`), codes.ERR_INVALID_RECORD)
   }
 
-  async fetch (peer: PeerId | Multiaddr | string, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
+  async fetch (peer: PeerId | Multiaddr, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs != null) {
@@ -437,7 +449,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return await this.fetchService.fetch(id, key, options)
   }
 
-  async ping (peer: PeerId | Multiaddr | string, options: AbortOptions = {}): Promise<number> {
+  async ping (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<number> {
     const { id, multiaddrs } = getPeer(peer)
 
     if (multiaddrs.length > 0) {

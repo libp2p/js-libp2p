@@ -2,7 +2,7 @@
 
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -17,11 +17,10 @@ const createNode = async () => {
       tcp()
     ],
     connectionEncryption: [
-      () => new Noise()
+      noise()
     ]
   })
 
-  await node.start()
   return node
 }
 

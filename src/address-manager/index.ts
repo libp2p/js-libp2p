@@ -7,6 +7,10 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { TransportManager } from '@libp2p/interface-transport'
 
 export interface AddressManagerInit {
+  /**
+   * Pass an function in this field to override the list of addresses
+   * that are announced to the network
+   */
   announceFilter?: AddressFilter
 
   /**
@@ -30,6 +34,10 @@ export interface DefaultAddressManagerComponents {
   transportManager: TransportManager
 }
 
+/**
+ * A function that takes a list of multiaddrs and returns a list
+ * to announce
+ */
 export interface AddressFilter {
   (addrs: Multiaddr[]): Multiaddr[]
 }
@@ -38,7 +46,8 @@ const defaultAddressFilter = (addrs: Multiaddr[]): Multiaddr[] => addrs
 
 export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
   private readonly components: DefaultAddressManagerComponents
-  private readonly listen: Set<string>
+  // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
+  private readonly listen: string[]
   private readonly announce: Set<string>
   private readonly observed: Set<string>
   private readonly announceFilter: AddressFilter
@@ -55,7 +64,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     const { listen = [], announce = [] } = init
 
     this.components = components
-    this.listen = new Set(listen.map(ma => ma.toString()))
+    this.listen = listen.map(ma => ma.toString())
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.observed = new Set()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter

@@ -35,8 +35,10 @@ export class DefaultRegistrar implements Registrar {
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onProtocolChange = this._onProtocolChange.bind(this)
+    this._onConnect = this._onConnect.bind(this)
 
     this.components.connectionManager.addEventListener('peer:disconnect', this._onDisconnect)
+    this.components.connectionManager.addEventListener('peer:connect', this._onConnect)
 
     // happens after identify
     this.components.peerStore.addEventListener('change:protocols', this._onProtocolChange)
@@ -177,11 +179,37 @@ export class DefaultRegistrar implements Registrar {
   }
 
   /**
+   * On peer connected if we already have their protocols. Usually used for reconnects
+   * as change:protocols event won't be emitted due to identical protocols.
+   */
+  _onConnect (evt: CustomEvent<Connection>) {
+    const connection = evt.detail
+
+    void this.components.peerStore.protoBook.get(connection.remotePeer)
+      .then(peerProtocols => {
+        for (const protocol of peerProtocols) {
+          const topologies = this.topologies.get(protocol)
+
+          if (topologies == null) {
+            // no topologies are interested in this protocol
+            continue
+          }
+
+          for (const topology of topologies.values()) {
+            topology.onConnect(connection.remotePeer, connection)
+          }
+        }
+      })
+      .catch(err => {
+        log.error(err)
+      })
+  }
+
+  /**
    * Check if a new peer support the multicodecs for this topology
    */
   _onProtocolChange (evt: CustomEvent<PeerProtocolsChangeData>) {
     const { peerId, protocols, oldProtocols } = evt.detail
-
     const removed = oldProtocols.filter(protocol => !protocols.includes(protocol))
     const added = protocols.filter(protocol => !oldProtocols.includes(protocol))
 
@@ -212,7 +240,6 @@ export class DefaultRegistrar implements Registrar {
         if (connection == null) {
           continue
         }
-
         topology.onConnect(peerId, connection)
       }
     }

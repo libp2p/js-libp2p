@@ -3,7 +3,7 @@
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { mdns } from '@libp2p/mdns'
 
 const createNode = async () => {
@@ -18,7 +18,7 @@ const createNode = async () => {
       mplex()
     ],
     connectionEncryption: [
-      () => new Noise()
+      noise()
     ],
     peerDiscovery: [
       mdns({
@@ -38,9 +38,4 @@ const createNode = async () => {
 
   node1.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
   node2.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
-
-  await Promise.all([
-    node1.start(),
-    node2.start()
-  ])
 })();

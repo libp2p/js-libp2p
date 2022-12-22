@@ -3,9 +3,10 @@ import Peers from '../../fixtures/peers.js'
 import { createBaseOptions } from '../base-options.browser.js'
 import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
-import type { AddressesConfig, Libp2pOptions } from '../../../src/index.js'
 import pTimes from 'p-times'
+import type { Libp2pOptions } from '../../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AddressManagerInit } from '../../../src/address-manager/index.js'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -35,7 +36,7 @@ export async function createNode (options: CreatePeerOptions = {}): Promise<Libp
   const started = options.started ?? true
   const config = options.config ?? {}
   const peerId = await createPeerId({ fixture: options.fixture })
-  const addresses: AddressesConfig = started
+  const addresses: AddressManagerInit = started
     ? {
         listen: [listenAddr.toString()],
         announce: [],

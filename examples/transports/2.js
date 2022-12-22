@@ -2,7 +2,7 @@
 
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -17,11 +17,10 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    connectionEncryption: [() => new Noise()],
+    connectionEncryption: [noise()],
     streamMuxers: [mplex()]
   })
 
-  await node.start()
   return node
 }
 
