@@ -63,19 +63,17 @@ export class Circuit implements Transport, Startable {
   private readonly _init: RelayConfig
   private _started = false
 
-  constructor(components: CircuitComponents, options: RelayConfig) {
+  constructor (components: CircuitComponents, options: RelayConfig) {
     this.components = components
     this._init = options
     this.reservationStore = new ReservationStore()
-
-
   }
 
-  isStarted() {
+  isStarted () {
     return this._started
   }
 
-  async start(): Promise<void> {
+  async start (): Promise<void> {
     if (this._started) {
       return
     }
@@ -108,33 +106,33 @@ export class Circuit implements Transport, Startable {
       })
   }
 
-  async stop() {
+  async stop () {
     await this.components.registrar.unhandle(RELAY_V1_CODEC)
     await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
     await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
   }
 
-  hopEnabled() {
+  hopEnabled () {
     return true
   }
 
-  hopActive() {
+  hopActive () {
     return true
   }
 
-  get [symbol](): true {
+  get [symbol] (): true {
     return true
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag] () {
     return 'libp2p/circuit-relay-v2'
   }
 
-  getPeerConnection(dstPeer: PeerId): Connection | undefined {
+  getPeerConnection (dstPeer: PeerId): Connection | undefined {
     return this.components.connectionManager.getConnections(dstPeer)[0] ?? undefined
   }
 
-  async _onProtocolV1(data: IncomingStreamData) {
+  async _onProtocolV1 (data: IncomingStreamData) {
     const { connection, stream } = data
     const controller = new TimeoutController(this._init.hop.timeout)
 
@@ -176,7 +174,7 @@ export class Circuit implements Transport, Startable {
     }
   }
 
-  async _onV2ProtocolHop({ connection, stream }: IncomingStreamData) {
+  async _onV2ProtocolHop ({ connection, stream }: IncomingStreamData) {
     log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
     const controller = new TimeoutController(this._init.hop.timeout)
 
@@ -214,7 +212,7 @@ export class Circuit implements Transport, Startable {
     }
   }
 
-  async _onV2ProtocolStop({ connection, stream }: IncomingStreamData) {
+  async _onV2ProtocolStop ({ connection, stream }: IncomingStreamData) {
     const streamHandler = new StreamHandlerV2({ stream })
     const request = CircuitV2.StopMessage.decode(await streamHandler.read())
     log('received circuit v2 stop protocol request from %s', connection.remotePeer)
@@ -246,7 +244,7 @@ export class Circuit implements Transport, Startable {
   /**
    * Dial a peer over a relay
    */
-  async dial(ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+  async dial (ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
     const relayAddr = multiaddr(addrs[0])
@@ -306,7 +304,7 @@ export class Circuit implements Transport, Startable {
     }
   }
 
-  async connectV1({
+  async connectV1 ({
     stream, destinationPeer,
     destinationAddr, relayAddr, ma
   }: ConnectOptions
@@ -337,7 +335,7 @@ export class Circuit implements Transport, Startable {
     return await this.components.upgrader.upgradeOutbound(maConn)
   }
 
-  async connectV2(
+  async connectV2 (
     {
       stream, connection, destinationPeer,
       destinationAddr, relayAddr, ma,
@@ -381,7 +379,7 @@ export class Circuit implements Transport, Startable {
   /**
    * Create a listener
    */
-  createListener(options: CreateListenerOptions): Listener {
+  createListener (options: CreateListenerOptions): Listener {
     // Called on successful HOP and STOP requests
     this.handler = options.handler
 
@@ -397,7 +395,7 @@ export class Circuit implements Transport, Startable {
    * @param {Multiaddr[]} multiaddrs
    * @returns {Multiaddr[]}
    */
-  filter(multiaddrs: Multiaddr[]): Multiaddr[] {
+  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter((ma) => {
