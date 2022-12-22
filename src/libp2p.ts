@@ -56,7 +56,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public peerId: PeerId
   public dht: DualDHT
   public pubsub: PubSub
-  public identifyService?: IdentifyService
+  public identifyService: IdentifyService
   public fetchService: FetchService
   public pingService: PingService
   public components: Components
