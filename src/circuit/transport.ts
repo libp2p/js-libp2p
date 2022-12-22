@@ -9,10 +9,10 @@ import { codes } from '../errors.js'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { RELAY_V2_HOP_CODEC, RELAY_V1_CODEC, RELAY_V2_STOP_CODEC } from './multicodec.js'
 import { createListener } from './listener.js'
-import { symbol } from '@libp2p/interface-transport'
+import { symbol, TransportManager, Upgrader } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { RelayConfig } from './index.js'
@@ -25,12 +25,25 @@ import { StreamHandlerV1 } from './v1/stream-handler.js'
 import * as CircuitV1Handler from './v1/index.js'
 import * as CircuitV2Handler from './v2/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Components } from '../components.js'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Startable } from '@libp2p/interfaces/dist/src/startable'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 
 const log = logger('libp2p:circuit')
 
 export interface CircuitOptions {
   limit?: number
+}
+
+export interface CircuitComponents {
+  peerId: PeerId
+  peerStore: PeerStore
+  registrar: Registrar
+  connectionManager: ConnectionManager
+  upgrader: Upgrader
+  addressManager: AddressManager
+  transportManager: TransportManager
 }
 
 interface ConnectOptions {
@@ -42,18 +55,33 @@ interface ConnectOptions {
   ma: Multiaddr
   disconnectOnFailure: boolean
 }
-export class Circuit implements Transport {
+
+export class Circuit implements Transport, Startable {
   private handler?: ConnectionHandler
-  private readonly components: Components;
+  private readonly components: CircuitComponents
   private readonly reservationStore: ReservationStore
   private readonly _init: RelayConfig
+  private _started = false
 
-  constructor (components: Components, options: RelayConfig) {
+  constructor(components: CircuitComponents, options: RelayConfig) {
     this.components = components
     this._init = options
     this.reservationStore = new ReservationStore()
 
-    void this.components.registrar.handle(RELAY_V1_CODEC, (data) => {
+
+  }
+
+  isStarted() {
+    return this._started
+  }
+
+  async start(): Promise<void> {
+    if (this._started) {
+      return
+    }
+
+    this._started = true
+    await this.components.registrar.handle(RELAY_V1_CODEC, (data) => {
       void this._onProtocolV1(data).catch(err => {
         log.error(err)
       })
@@ -62,7 +90,7 @@ export class Circuit implements Transport {
         log.error(err)
       })
 
-    void this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
+    await this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
       void this._onV2ProtocolHop(data).catch(err => {
         log.error(err)
       })
@@ -70,7 +98,7 @@ export class Circuit implements Transport {
       .catch(err => {
         log.error(err)
       })
-    void this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
+    await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this._onV2ProtocolStop(data).catch(err => {
         log.error(err)
       })
@@ -80,40 +108,40 @@ export class Circuit implements Transport {
       })
   }
 
-  async stop () {
+  async stop() {
     await this.components.registrar.unhandle(RELAY_V1_CODEC)
     await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
     await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
   }
 
-  hopEnabled () {
+  hopEnabled() {
     return true
   }
 
-  hopActive () {
+  hopActive() {
     return true
   }
 
-  get [symbol] (): true {
+  get [symbol](): true {
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag]() {
     return 'libp2p/circuit-relay-v2'
   }
 
-  getPeerConnection (dstPeer: PeerId): Connection|undefined {
+  getPeerConnection(dstPeer: PeerId): Connection | undefined {
     return this.components.connectionManager.getConnections(dstPeer)[0] ?? undefined
   }
 
-  async _onProtocolV1 (data: IncomingStreamData) {
+  async _onProtocolV1(data: IncomingStreamData) {
     const { connection, stream } = data
     const controller = new TimeoutController(this._init.hop.timeout)
 
     try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, controller.signal)
-    } catch {}
+    } catch { }
 
     try {
       const source = abortableDuplex(stream, controller.signal)
@@ -148,14 +176,14 @@ export class Circuit implements Transport {
     }
   }
 
-  async _onV2ProtocolHop ({ connection, stream }: IncomingStreamData) {
+  async _onV2ProtocolHop({ connection, stream }: IncomingStreamData) {
     log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
     const controller = new TimeoutController(this._init.hop.timeout)
 
     try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, controller.signal)
-    } catch {}
+    } catch { }
 
     try {
       const source = abortableDuplex(stream, controller.signal)
@@ -186,7 +214,7 @@ export class Circuit implements Transport {
     }
   }
 
-  async _onV2ProtocolStop ({ connection, stream }: IncomingStreamData) {
+  async _onV2ProtocolStop({ connection, stream }: IncomingStreamData) {
     const streamHandler = new StreamHandlerV2({ stream })
     const request = CircuitV2.StopMessage.decode(await streamHandler.read())
     log('received circuit v2 stop protocol request from %s', connection.remotePeer)
@@ -218,7 +246,7 @@ export class Circuit implements Transport {
   /**
    * Dial a peer over a relay
    */
-  async dial (ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+  async dial(ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
     const relayAddr = multiaddr(addrs[0])
@@ -278,7 +306,7 @@ export class Circuit implements Transport {
     }
   }
 
-  async connectV1 ({
+  async connectV1({
     stream, destinationPeer,
     destinationAddr, relayAddr, ma
   }: ConnectOptions
@@ -309,7 +337,7 @@ export class Circuit implements Transport {
     return await this.components.upgrader.upgradeOutbound(maConn)
   }
 
-  async connectV2 (
+  async connectV2(
     {
       stream, connection, destinationPeer,
       destinationAddr, relayAddr, ma,
@@ -353,7 +381,7 @@ export class Circuit implements Transport {
   /**
    * Create a listener
    */
-  createListener (options: CreateListenerOptions): Listener {
+  createListener(options: CreateListenerOptions): Listener {
     // Called on successful HOP and STOP requests
     this.handler = options.handler
 
@@ -369,7 +397,7 @@ export class Circuit implements Transport {
    * @param {Multiaddr[]} multiaddrs
    * @returns {Multiaddr[]}
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  filter(multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter((ma) => {
