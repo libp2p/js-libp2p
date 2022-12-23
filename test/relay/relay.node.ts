@@ -166,7 +166,9 @@ describe('Dialing (via relay, TCP)', () => {
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
     const stream = await connections[0].newStream(RELAY_V2_HOP_CODEC)
     const streamHandler = new StreamHandlerV2({ stream })
-    streamHandler.write(new Uint8Array())
+    // empty messages are encoded as { type: RESERVE } for the hop codec,
+    // so we make the message invalid by adding a zeroed byte
+    streamHandler.write(new Uint8Array([0]))
     const res = HopMessage.decode(await streamHandler.read())
     expect(res?.status).to.equal(CircuitRelay.Status.MALFORMED_MESSAGE)
     streamHandler.close()

@@ -61,12 +61,13 @@ export class Circuit implements Transport, Startable {
   private readonly components: CircuitComponents
   private readonly reservationStore: ReservationStore
   private readonly _init: RelayConfig
-  private _started = false
+  private _started: boolean
 
   constructor (components: CircuitComponents, options: RelayConfig) {
     this.components = components
     this._init = options
     this.reservationStore = new ReservationStore()
+    this._started = false
   }
 
   isStarted () {
@@ -175,7 +176,7 @@ export class Circuit implements Transport, Startable {
   }
 
   async _onV2ProtocolHop ({ connection, stream }: IncomingStreamData) {
-    log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
+    // log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
     const controller = new TimeoutController(this._init.hop.timeout)
 
     try {
@@ -183,19 +184,13 @@ export class Circuit implements Transport, Startable {
       setMaxListeners?.(Infinity, controller.signal)
     } catch { }
 
+    const source = abortableDuplex(stream, controller.signal)
+    const streamHandler = new StreamHandlerV2({ stream: { ...stream, ...source } })
     try {
-      const source = abortableDuplex(stream, controller.signal)
-      const streamHandler = new StreamHandlerV2({ stream: { ...stream, ...source } })
       const request = CircuitV2.HopMessage.decode(await streamHandler.read())
 
       if (request?.type == null) {
-        log('request was invalid, could not read from stream')
-        streamHandler.write(CircuitV2.HopMessage.encode({
-          type: CircuitV2.HopMessage.Type.STATUS,
-          status: CircuitV2.Status.MALFORMED_MESSAGE
-        }))
-        streamHandler.close()
-        return
+        throw new Error('request was invalid, could not read from stream')
       }
 
       await CircuitV2Handler.handleHopProtocol({
@@ -207,6 +202,12 @@ export class Circuit implements Transport, Startable {
         reservationStore: this.reservationStore,
         request
       })
+    } catch (_err) {
+      streamHandler.write(CircuitV2.HopMessage.encode({
+        type: CircuitV2.HopMessage.Type.STATUS,
+        status: CircuitV2.Status.MALFORMED_MESSAGE
+      }))
+      streamHandler.close()
     } finally {
       controller.clear()
     }

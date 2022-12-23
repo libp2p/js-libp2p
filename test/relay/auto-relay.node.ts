@@ -5,7 +5,7 @@ import { pEvent } from 'p-event'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
-import { RELAY_V1_CODEC } from '../../src/circuit/multicodec.js'
+import { RELAY_V1_CODEC, RELAY_V2_HOP_CODEC } from '../../src/circuit/multicodec.js'
 import { createNode } from '../utils/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import type { Options as PWaitForOptions } from 'p-wait-for'
@@ -30,10 +30,7 @@ async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitFo
 async function discoveredRelayConfig (node: Libp2pNode, relay: Libp2pNode) {
   await pWaitFor(async () => {
     const peerData = await node.peerStore.get(relay.peerId)
-    const supportsRelay = peerData.protocols.includes(RELAY_V1_CODEC)
-    const supportsHop = peerData.metadata.has('hop_relay')
-
-    return supportsRelay && supportsHop
+    return peerData.protocols.includes(RELAY_V2_HOP_CODEC)
   })
 }
 
