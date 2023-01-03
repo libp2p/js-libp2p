@@ -7,16 +7,15 @@ import * as p from '@libp2p/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import * as multihashes from 'multihashes'
 import defer from 'p-defer'
-import { v4 as genUuid } from 'uuid'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { concat } from 'uint8arrays/concat'
-
 import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from './error.js'
 import { WebRTCMultiaddrConnection } from './maconn.js'
 import { DataChannelMuxerFactory } from './muxer.js'
 import type { WebRTCDialOptions } from './options.js'
 import * as sdp from './sdp.js'
 import { WebRTCStream } from './stream.js'
+import { genUfrag } from './util.js'
 
 const log = logger('libp2p:webrtc:transport')
 
@@ -142,7 +141,7 @@ export class WebRTCTransport implements Transport {
       dataChannelOpenPromise.reject(dataChannelError('data', error))
     }
 
-    const ufrag = 'libp2p+webrtc+v1/' + genUuid().replaceAll('-', '')
+    const ufrag = 'libp2p+webrtc+v1/' + genUfrag(32)
 
     // Create offer and munge sdp with ufrag = pwd. This allows the remote to
     // respond to STUN messages without performing an actual SDP exchange.

@@ -154,15 +154,13 @@
     "multihashes": "^4.0.3",
     "p-defer": "^4.0.0",
     "uint8arraylist": "^2.3.3",
-    "uint8arrays": "^4.0.2",
-    "uuid": "^9.0.0"
+    "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
     "@libp2p/interface-mocks": "^8.0.1",
     "@libp2p/peer-id-factory": "^1.0.19",
     "@protobuf-ts/plugin": "^2.8.0",
     "@protobuf-ts/protoc": "^2.8.0",
-    "@types/uuid": "^8.3.4",
     "aegir": "^37.6.6",
     "it-first": "^2.0.0",
     "libp2p": "^0.40.0"
