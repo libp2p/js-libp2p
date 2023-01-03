@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.0...v1.0.1) (2023-01-03)
+
+
+### Bug Fixes
+
+* remove uuid dependency ([#68](https://github.com/libp2p/js-libp2p-webrtc/issues/68)) ([fb14b88](https://github.com/libp2p/js-libp2p-webrtc/commit/fb14b880d1b1b278e1e826bb0d9939db358e6ccc))
+
 ## 1.0.0 (2022-12-13)
 
 
