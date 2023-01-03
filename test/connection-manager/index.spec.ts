@@ -192,9 +192,8 @@ describe('Connection Manager', () => {
       dialer: stubInterface<Dialer>()
     }, {
       ...defaultOptions,
-      deny: [
-        '/ip4/83.13.55.32'
-      ]
+      deny: [multiaddr('/ip4/83.13.55.32')]
+
     })
 
     const remotePeer = await createEd25519PeerId()
@@ -280,8 +279,7 @@ describe('Connection Manager', () => {
     }, {
       ...defaultOptions,
       maxConnections: 1,
-      allow: [
-        '/ip4/83.13.55.32'
+      allow: [multiaddr('/ip4/83.13.55.32')
       ]
     })
 

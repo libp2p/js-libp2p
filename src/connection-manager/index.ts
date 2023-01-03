@@ -138,13 +138,13 @@ export interface ConnectionManagerInit {
    * A list of multiaddrs that will always be allowed (except if they are in the
    * deny list) to open connections to this node even if we've reached maxConnections
    */
-  allow?: string[]
+  allow?: Multiaddr[]
 
   /**
    * A list of multiaddrs that will never be allowed to open connections to
    * this node under any circumstances
    */
-  deny?: string[]
+  deny?: Multiaddr[]
 
   /**
    * If more than this many connections are opened per second by a single
@@ -685,7 +685,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
     // check deny list
     const denyConnection = this.deny.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+      console.log('deny List address: ', ma)
+      console.log('connection ma ', maConn.remoteAddr)
+      return maConn.remoteAddr.equals(ma)
     })
 
     if (denyConnection) {
@@ -695,7 +697,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     // check allow list
     const allowConnection = this.allow.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+      return maConn.remoteAddr.equals(ma)
     })
 
     if (allowConnection) {
