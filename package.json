@@ -150,7 +150,7 @@
     "it-pipe": "^2.0.4",
     "it-pushable": "^3.1.0",
     "it-stream-types": "^1.0.4",
-    "multiformats": "^10.0.0",
+    "multiformats": "^11.0.0",
     "multihashes": "^4.0.3",
     "p-defer": "^4.0.0",
     "uint8arraylist": "^2.3.3",
