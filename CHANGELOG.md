@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.1...v1.0.2) (2023-01-04)
+
+
+### Dependencies
+
+* bump multiformats from 10.0.3 to 11.0.0 ([#70](https://github.com/libp2p/js-libp2p-webrtc/issues/70)) ([7dafe5a](https://github.com/libp2p/js-libp2p-webrtc/commit/7dafe5a126ca0ce2b6d887f6a84fabe55e36229d))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.0...v1.0.1) (2023-01-03)
 
 
