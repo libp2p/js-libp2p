@@ -163,6 +163,6 @@
     "@protobuf-ts/protoc": "^2.8.0",
     "aegir": "^37.6.6",
     "it-first": "^2.0.0",
-    "libp2p": "^0.40.0"
+    "libp2p": "^0.41.0"
   }
 }
