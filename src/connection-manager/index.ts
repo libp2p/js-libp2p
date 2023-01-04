@@ -631,6 +631,18 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         return -1
       }
 
+      // if the peers have an equal tag value then we want to close short-lived connections first
+      const connectionALifespan = a.stat.timeline.open
+      const connectionBLifespan = b.stat.timeline.open
+
+      if (connectionALifespan < connectionBLifespan) {
+        return 1
+      }
+
+      if (connectionALifespan > connectionBLifespan) {
+        return -1
+      }
+
       return 0
     })
 
