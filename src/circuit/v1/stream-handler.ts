@@ -1,12 +1,12 @@
 import { logger } from '@libp2p/logger'
 import * as lp from 'it-length-prefixed'
 import { Handshake, handshake } from 'it-handshake'
-import { CircuitRelay } from '../pb/index.js'
+import { CircuitRelay } from './pb/index.js'
 import type { Stream } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-const log = logger('libp2p:circuit:stream-handler')
+const log = logger('libp2p:circuitv1:stream-handler')
 
 export interface StreamHandlerOptions {
   /**
@@ -20,7 +20,7 @@ export interface StreamHandlerOptions {
   maxLength?: number
 }
 
-export class StreamHandler {
+export class StreamHandlerV1 {
   private readonly stream: Stream
   private readonly shake: Handshake<Uint8ArrayList | Uint8Array>
   private readonly decoder: Source<Uint8ArrayList>

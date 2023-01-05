@@ -14,6 +14,9 @@ import { Circuit } from '../../src/circuit/transport.js'
 import pDefer from 'p-defer'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { pEvent } from 'p-event'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit/multicodec.js'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -53,6 +56,9 @@ describe('Dialing (resolvable addresses)', () => {
           },
           relay: {
             enabled: true,
+            autoRelay: {
+              enabled: true
+            },
             hop: {
               enabled: false
             }
@@ -73,6 +79,9 @@ describe('Dialing (resolvable addresses)', () => {
           },
           relay: {
             enabled: true,
+            autoRelay: {
+              enabled: true
+            },
             hop: {
               enabled: false
             }
@@ -81,6 +90,8 @@ describe('Dialing (resolvable addresses)', () => {
         started: true
       })
     ])
+
+    await Promise.all([libp2p, remoteLibp2p].map(async n => await n.start()))
   })
 
   afterEach(async () => {
@@ -89,6 +100,12 @@ describe('Dialing (resolvable addresses)', () => {
   })
 
   it('resolves dnsaddr to ws local address', async () => {
+    const { default: Peers } = await import('../fixtures/peers.js')
+
+    // Use the last peer
+    const peerId = await createFromJSON(Peers[Peers.length - 1])
+    // ensure remote libp2p creates reservation on relay
+    await remoteLibp2p.components.peerStore.protoBook.add(peerId, [RELAY_V2_HOP_CODEC])
     const remoteId = remoteLibp2p.peerId
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
@@ -99,6 +116,10 @@ describe('Dialing (resolvable addresses)', () => {
 
     // Resolver stub
     resolver.onCall(0).returns(Promise.resolve(getDnsRelayedAddrStub(remoteId)))
+
+    // create reservation on relay
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await pEvent(remoteLibp2p.circuitService!, 'relay:reservation')
 
     // Dial with address resolve
     const connection = await libp2p.dial(dialAddr)
@@ -113,6 +134,17 @@ describe('Dialing (resolvable addresses)', () => {
     const remoteId = remoteLibp2p.peerId
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
+
+    const { default: Peers } = await import('../fixtures/peers.js')
+
+    // Use the last peer
+    const relayId = await createFromJSON(Peers[Peers.length - 1])
+    // ensure remote libp2p creates reservation on relay
+    await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
+
+    // create reservation on relay
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await pEvent(remoteLibp2p.circuitService!, 'relay:reservation')
 
     // Transport spy
     const transport = getTransport(libp2p, Circuit.prototype[Symbol.toStringTag])
@@ -172,6 +204,17 @@ describe('Dialing (resolvable addresses)', () => {
     const remoteId = remoteLibp2p.peerId
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
+
+    const { default: Peers } = await import('../fixtures/peers.js')
+
+    // Use the last peer
+    const relayId = await createFromJSON(Peers[Peers.length - 1])
+    // ensure remote libp2p creates reservation on relay
+    await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
+
+    // create reservation on relay
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await pEvent(remoteLibp2p.circuitService!, 'relay:reservation')
 
     // Transport spy
     const transport = getTransport(libp2p, Circuit.prototype[Symbol.toStringTag])

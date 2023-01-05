@@ -1,11 +1,11 @@
 import { multiaddr } from '@multiformats/multiaddr'
-import { CircuitRelay } from '../pb/index.js'
-import type { StreamHandler } from './stream-handler.js'
+import { CircuitRelay } from './pb/index.js'
+import type { StreamHandlerV1 } from './stream-handler.js'
 
 /**
  * Write a response
  */
-function writeResponse (streamHandler: StreamHandler, status: CircuitRelay.Status) {
+function writeResponse (streamHandler: StreamHandlerV1, status: CircuitRelay.Status) {
   streamHandler.write({
     type: CircuitRelay.Type.STATUS,
     code: status
@@ -15,7 +15,7 @@ function writeResponse (streamHandler: StreamHandler, status: CircuitRelay.Statu
 /**
  * Validate incomming HOP/STOP message
  */
-export function validateAddrs (msg: CircuitRelay, streamHandler: StreamHandler) {
+export function validateAddrs (msg: CircuitRelay, streamHandler: StreamHandlerV1) {
   try {
     if (msg.dstPeer?.addrs != null) {
       msg.dstPeer.addrs.forEach((addr) => {
