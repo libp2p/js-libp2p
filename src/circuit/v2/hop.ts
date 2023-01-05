@@ -49,7 +49,7 @@ export async function reserve (connection: Connection) {
     type: HopMessage.Type.RESERVE
   }))
 
-  let response: HopMessage|undefined
+  let response: HopMessage | undefined
   try {
     response = HopMessage.decode(await streamHandler.read())
   } catch (e: any) {
@@ -69,6 +69,7 @@ export async function reserve (connection: Connection) {
 async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs, limit, acl, reservationStore }: HopProtocolOptions) {
   log('hop reserve request from %s', connection.remotePeer)
 
+  /* eslint-disable-next-line no-warning-comments */
   // TODO: prevent reservation over relay address
 
   if ((await acl?.allowReserve?.(connection.remotePeer, connection.remoteAddr)) === false) {
@@ -92,7 +93,7 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
       {
         type: HopMessage.Type.STATUS,
         status: Status.OK,
-        reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, BigInt(result.expire || 0)),
+        reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, BigInt(result.expire ?? 0)),
         limit
       })
     log('sent confirmation response to %s', connection.remotePeer)
@@ -100,12 +101,14 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
     log.error('failed to send confirmation response to %s', connection.remotePeer)
     await reservationStore.removeReservation(connection.remotePeer)
   }
+
+  /* eslint-disable-next-line no-warning-comments */
   // TODO: how to ensure connection manager doesn't close reserved relay conn
 }
 
 type HopConnectOptions = Pick<
 HopProtocolOptions,
-'connection' | 'streamHandler' | 'request' | 'reservationStore' |'circuit' |'acl'
+'connection' | 'streamHandler' | 'request' | 'reservationStore' | 'circuit' | 'acl'
 >
 
 async function handleConnect (options: HopConnectOptions) {

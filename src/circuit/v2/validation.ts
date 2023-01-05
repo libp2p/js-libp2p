@@ -22,6 +22,7 @@ export function validateStopConnectRequest (request: StopMessage, streamHandler:
 }
 
 export function validateHopConnectRequest (request: HopMessage, streamHandler: StreamHandlerV2) {
+  /* eslint-disable-next-line no-warning-comments */
   // TODO: check if relay connection
 
   try {

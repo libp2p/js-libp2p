@@ -29,6 +29,7 @@ export async function handleStop ({
   }
   log('stop request is valid')
 
+  /* eslint-disable-next-line no-warning-comments */
   // TODO: go-libp2p marks connection transient if there is limit field present in request.
   // Cannot find any reference to transient connections in js-libp2p
 
