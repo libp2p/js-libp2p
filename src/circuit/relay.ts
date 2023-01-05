@@ -9,25 +9,9 @@ import { namespaceToCid } from './utils.js'
 import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
-import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
+import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { PeerId } from '@libp2p/interface-peer-id'
-
-export interface RelayConfig {
-  enabled: boolean
-  advertise: RelayAdvertiseConfig
-  hop: HopConfig
-  autoRelay: AutoRelayConfig
-}
-
-export interface HopConfig {
-  enabled?: boolean
-  active?: boolean
-  timeout: number
-}
+import type { Components } from '../components.js'
 
 const log = logger('libp2p:relay')
 
@@ -35,6 +19,11 @@ export interface RelayAdvertiseConfig {
   bootDelay?: number
   enabled?: boolean
   ttl?: number
+}
+
+export interface HopConfig {
+  enabled?: boolean
+  active?: boolean
 }
 
 export interface AutoRelayConfig {
@@ -46,20 +35,16 @@ export interface AutoRelayConfig {
   maxListeners: number
 }
 
-export interface RelayInit extends RelayConfig {
+export interface RelayInit {
   addressSorter?: AddressSorter
-}
-
-export interface RelayComponents {
-  peerId: PeerId
-  contentRouting: ContentRouting
-  peerStore: PeerStore
-  connectionManager: ConnectionManager
-  transportManager: TransportManager
+  maxListeners?: number
+  onError?: (error: Error, msg?: string) => void
+  hop: HopConfig
+  advertise: RelayAdvertiseConfig
 }
 
 export class Relay implements Startable {
-  private readonly components: RelayComponents
+  private readonly components: Components
   private readonly init: RelayInit
   private timeout?: any
   private started: boolean
@@ -67,7 +52,7 @@ export class Relay implements Startable {
   /**
    * Creates an instance of Relay
    */
-  constructor (components: RelayComponents, init: RelayInit) {
+  constructor (components: Components, init: RelayInit) {
     this.components = components
     this.started = false
     this.init = init

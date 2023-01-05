@@ -3,6 +3,7 @@ import Peers from '../../fixtures/peers.js'
 import { createBaseOptions } from '../base-options.browser.js'
 import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
+import pTimes from 'p-times'
 import type { Libp2pOptions } from '../../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressManagerInit } from '../../../src/address-manager/index.js'
@@ -72,10 +73,6 @@ export async function populateAddressBooks (peers: Libp2pNode[]) {
 }
 
 export interface CreatePeerIdOptions {
-  /**
-   * number of peers (default: 1)
-   */
-  number?: number
 
   /**
    * fixture index for peer-id generation (default: 0)
@@ -92,7 +89,7 @@ export interface CreatePeerIdOptions {
 }
 
 /**
- * Create Peer-ids
+ * Create Peer-id
  */
 export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<PeerId> {
   const opts = options.opts ?? {}
@@ -102,4 +99,16 @@ export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<
   }
 
   return await createFromJSON(Peers[options.fixture])
+}
+
+/**
+ * Create Peer-ids
+ */
+export async function createPeerIds (count: number, options: Omit<CreatePeerIdOptions, 'fixture'> = {}): Promise<PeerId[]> {
+  const opts = options.opts ?? {}
+
+  return await pTimes(count, async (i) => await createPeerId({
+    ...opts,
+    fixture: i
+  }))
 }
