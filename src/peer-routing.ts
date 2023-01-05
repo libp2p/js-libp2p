@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes, messages } from './errors.js'
 import {
   storeAddresses,
@@ -141,11 +141,11 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
    */
   async findPeer (id: PeerId, options?: AbortOptions): Promise<PeerInfo> {
     if (this.routers.length === 0) {
-      throw errCode(new Error('No peer routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     if (id.toString() === this.components.peerId.toString()) {
-      throw errCode(new Error('Should not try to find self'), codes.ERR_FIND_SELF)
+      throw new CodeError('Should not try to find self', codes.ERR_FIND_SELF)
     }
 
     const output = await pipe(
@@ -167,7 +167,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       return output
     }
 
-    throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
+    throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
   }
 
   /**
@@ -175,7 +175,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
    */
   async * getClosestPeers (key: Uint8Array, options?: AbortOptions): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
-      throw errCode(new Error('No peer routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     yield * pipe(

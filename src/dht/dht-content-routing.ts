@@ -1,5 +1,5 @@
 import drain from 'it-drain'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import type { DHT } from '@libp2p/interface-dht'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { CID } from 'multiformats/cid'
@@ -38,6 +38,6 @@ export class DHTContentRouting implements ContentRouting {
       }
     }
 
-    throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
+    throw new CodeError('Not found', 'ERR_NOT_FOUND')
   }
 }

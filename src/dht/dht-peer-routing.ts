@@ -1,4 +1,4 @@
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { messages, codes } from '../errors.js'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { DHT } from '@libp2p/interface-dht'
@@ -22,7 +22,7 @@ export class DHTPeerRouting implements PeerRouting {
       }
     }
 
-    throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
+    throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
   }
 
   async * getClosestPeers (key: Uint8Array, options: AbortOptions = {}) {

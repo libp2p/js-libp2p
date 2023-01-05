@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { isMultiaddr, Multiaddr, Resolver, multiaddr, resolvers } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
@@ -155,7 +155,7 @@ export class DefaultDialer implements Startable, Dialer {
 
     if (peerId != null) {
       if (this.components.peerId.equals(peerId)) {
-        throw errCode(new Error('Tried to dial self'), codes.ERR_DIALED_SELF)
+        throw new CodeError('Tried to dial self', codes.ERR_DIALED_SELF)
       }
 
       if (multiaddr != null) {
@@ -164,7 +164,7 @@ export class DefaultDialer implements Startable, Dialer {
       }
 
       if (await this.components.connectionGater.denyDialPeer(peerId)) {
-        throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
+        throw new CodeError('The dial request is blocked by gater.allowDialPeer', codes.ERR_PEER_DIAL_INTERCEPTED)
       }
     }
 
@@ -194,7 +194,7 @@ export class DefaultDialer implements Startable, Dialer {
     }
 
     if (dialTarget.addrs.length === 0) {
-      throw errCode(new Error('The dial request has no valid addresses'), codes.ERR_NO_VALID_ADDRESSES)
+      throw new CodeError('The dial request has no valid addresses', codes.ERR_NO_VALID_ADDRESSES)
     }
 
     // try to join an in-flight dial for this peer if one is available
@@ -266,7 +266,7 @@ export class DefaultDialer implements Startable, Dialer {
     addrs = [...new Set(addrs.map(ma => ma.toString()))].map(ma => multiaddr(ma))
 
     if (addrs.length > this.maxAddrsToDial) {
-      throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
+      throw new CodeError('dial with more addresses than allowed', codes.ERR_TOO_MANY_ADDRESSES)
     }
 
     const peerId = isPeerId(peerIdOrMultiaddr.peerId) ? peerIdOrMultiaddr.peerId : undefined
@@ -323,7 +323,7 @@ export class DefaultDialer implements Startable, Dialer {
      */
     const dialAction: DialAction = async (addr, options = {}) => {
       if (options.signal?.aborted === true) {
-        throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
+        throw new CodeError('already aborted', codes.ERR_ALREADY_ABORTED)
       }
 
       return await this.components.transportManager.dial(addr, options).catch(err => {

@@ -1,5 +1,5 @@
 import type { Multiaddr } from '@multiformats/multiaddr'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { OPEN, CLOSING, CLOSED } from '@libp2p/interface-connection/status'
 import { symbol } from '@libp2p/interface-connection'
 import type { Connection, ConnectionStat, Stream } from '@libp2p/interface-connection'
@@ -107,11 +107,11 @@ export class ConnectionImpl implements Connection {
    */
   async newStream (protocols: string | string[], options?: AbortOptions): Promise<Stream> {
     if (this.stat.status === CLOSING) {
-      throw errCode(new Error('the connection is being closed'), 'ERR_CONNECTION_BEING_CLOSED')
+      throw new CodeError('the connection is being closed', 'ERR_CONNECTION_BEING_CLOSED')
     }
 
     if (this.stat.status === CLOSED) {
-      throw errCode(new Error('the connection is closed'), 'ERR_CONNECTION_CLOSED')
+      throw new CodeError('the connection is closed', 'ERR_CONNECTION_CLOSED')
     }
 
     if (!Array.isArray(protocols)) {

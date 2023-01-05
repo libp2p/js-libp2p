@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from '../errors.js'
 import { randomBytes } from '@libp2p/crypto'
 import { pipe } from 'it-pipe'
@@ -119,7 +119,7 @@ export class PingService implements Startable {
       const end = Date.now()
 
       if (result == null || !uint8ArrayEquals(data, result.subarray())) {
-        throw errCode(new Error('Received wrong ping ack'), codes.ERR_WRONG_PING_ACK)
+        throw new CodeError('Received wrong ping ack', codes.ERR_WRONG_PING_ACK)
       }
 
       return end - start

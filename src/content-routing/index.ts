@@ -1,4 +1,4 @@
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { messages, codes } from '../errors.js'
 import {
   storeAddresses,
@@ -52,7 +52,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async * findProviders (key: CID, options: AbortOptions = {}) {
     if (this.routers.length === 0) {
-      throw errCode(new Error('No content this.routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('No content this.routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     yield * pipe(
@@ -71,7 +71,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async provide (key: CID, options: AbortOptions = {}) {
     if (this.routers.length === 0) {
-      throw errCode(new Error('No content routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('No content routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     await Promise.all(this.routers.map(async (router) => await router.provide(key, options)))
@@ -82,7 +82,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions) {
     if (!this.isStarted()) {
-      throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
+      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
 
     const dht = this.components.dht
@@ -98,7 +98,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
     if (!this.isStarted()) {
-      throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
+      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
 
     const dht = this.components.dht
@@ -111,7 +111,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       }
     }
 
-    throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
+    throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
   }
 
   /**
@@ -119,7 +119,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async * getMany (key: Uint8Array, nVals: number, options: AbortOptions) { // eslint-disable-line require-await
     if (!this.isStarted()) {
-      throw errCode(new Error(messages.NOT_STARTED_YET), codes.DHT_NOT_STARTED)
+      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
 
     if (nVals == null || nVals === 0) {
@@ -144,7 +144,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
     }
 
     if (gotValues === 0) {
-      throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
+      throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
     }
   }
 }

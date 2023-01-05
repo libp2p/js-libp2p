@@ -1,7 +1,7 @@
 import * as CircuitV2 from './pb/index.js'
 import { ReservationStore } from './reservation-store.js'
 import { logger } from '@libp2p/logger'
-import createError from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { codes } from '../errors.js'
@@ -208,7 +208,7 @@ export class Circuit implements Transport, Startable {
     if (relayId == null || destinationId == null) {
       const errMsg = 'Circuit relay dial failed as addresses did not have peer id'
       log.error(errMsg)
-      throw createError(new Error(errMsg), codes.ERR_RELAYED_DIAL)
+      throw new CodeError(errMsg, codes.ERR_RELAYED_DIAL)
     }
 
     const relayPeer = peerIdFromString(relayId)
@@ -262,7 +262,7 @@ export class Circuit implements Transport, Startable {
 
       const status = await hopstr.read()
       if (status.status !== CircuitV2.Status.OK) {
-        throw createError(new Error(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`), codes.ERR_HOP_REQUEST_FAILED)
+        throw new CodeError(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`, codes.ERR_HOP_REQUEST_FAILED)
       }
 
       // TODO: do something with limit and transient connection

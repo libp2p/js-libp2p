@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { isTopology, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-registrar'
 import merge from 'merge-options'
@@ -55,7 +55,7 @@ export class DefaultRegistrar implements Registrar {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
-      throw errCode(new Error(`No handler registered for protocol ${protocol}`), codes.ERR_NO_HANDLER_FOR_PROTOCOL)
+      throw new CodeError(`No handler registered for protocol ${protocol}`, codes.ERR_NO_HANDLER_FOR_PROTOCOL)
     }
 
     return handler
@@ -78,7 +78,7 @@ export class DefaultRegistrar implements Registrar {
    */
   async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
     if (this.handlers.has(protocol)) {
-      throw errCode(new Error(`Handler already registered for protocol ${protocol}`), codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
+      throw new CodeError(`Handler already registered for protocol ${protocol}`, codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
     }
 
     const options = merge.bind({ ignoreUndefined: true })({
@@ -116,7 +116,7 @@ export class DefaultRegistrar implements Registrar {
   async register (protocol: string, topology: Topology): Promise<string> {
     if (!isTopology(topology)) {
       log.error('topology must be an instance of interfaces/topology')
-      throw errCode(new Error('topology must be an instance of interfaces/topology'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('topology must be an instance of interfaces/topology', codes.ERR_INVALID_PARAMETERS)
     }
 
     // Create topology
