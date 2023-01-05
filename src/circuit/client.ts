@@ -19,7 +19,7 @@ import type { Components } from '../components.js'
 
 const log = logger('libp2p:circuit_client')
 
-const noop = () => {}
+const noop = () => { }
 
 export interface CircuitServiceInit {
   addressSorter?: AddressSorter
@@ -91,7 +91,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
    * If the protocol is supported, check if the peer supports **HOP** and add it as a listener if
    * inside the threshold.
    */
-  async _onProtocolChange ({ peerId, protocols }: {peerId: PeerId, protocols: string[]}) {
+  async _onProtocolChange ({ peerId, protocols }: { peerId: PeerId, protocols: string[] }) {
     const id = peerId.toString()
 
     if (peerId.equals(this.components.peerId)) {
@@ -217,6 +217,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
    */
   async _removeListenRelay (id: string) {
     if (this.relays.delete(id)) {
+      /* eslint-disable-next-line no-warning-comments */
       // TODO: this should be responsibility of the connMgr
       await this._listenOnAvailableHopRelays([id])
     }
@@ -245,10 +246,12 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
 
       // Continue to next if listening on this or peer to ignore
       if (this.relays.has(idStr)) {
+        /* eslint-disable-next-line no-continue */
         continue
       }
 
       if (peersToIgnore.includes(idStr)) {
+        /* eslint-disable-next-line no-continue */
         continue
       }
 
@@ -256,6 +259,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
 
       // Continue to next if it does not support Hop
       if (hasProtocol == null) {
+        /* eslint-disable-next-line no-continue */
         continue
       }
       log.trace('Found peer with relay codec', id)
@@ -265,6 +269,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
       // If not connected, store for possible later use.
       if (connections.length === 0) {
         knownHopsToDial.push(id)
+        /* eslint-disable-next-line no-continue */
         continue
       }
 
@@ -291,6 +296,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
       for await (const provider of this.components.contentRouting.findProviders(cid)) {
         if (provider.multiaddrs.length === 0) {
+          /* eslint-disable-next-line no-continue */
           continue
         }
 
@@ -298,6 +304,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
 
         if (peerId.equals(this.components.peerId)) {
           // Skip the provider if it's us as dialing will fail
+          /* eslint-disable-next-line no-continue */
           continue
         }
 
