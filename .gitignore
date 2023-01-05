@@ -4,3 +4,6 @@ dist
 .coverage
 package-lock.json
 yarn.lock
+
+.coverage
+.vscode
