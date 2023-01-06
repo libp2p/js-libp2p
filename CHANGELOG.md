@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v5.0.2...v6.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats to v11 (#153)
+
+### Bug Fixes
+
+* update multiformats to v11 ([#153](https://github.com/libp2p/js-libp2p-bootstrap/issues/153)) ([dca6305](https://github.com/libp2p/js-libp2p-bootstrap/commit/dca63051ef102e79ae712c8a786cb26fb42870d3))
+
 ## [5.0.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v5.0.1...v5.0.2) (2022-12-16)
 
 
