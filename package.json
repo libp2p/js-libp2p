@@ -138,7 +138,7 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interface-peer-id": "^1.0.2",
+    "@libp2p/interface-peer-id": "^2.0.0",
     "debug": "^4.3.3",
     "interface-datastore": "^7.0.0",
     "multiformats": "^11.0.0"
