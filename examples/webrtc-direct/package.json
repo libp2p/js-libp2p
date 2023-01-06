@@ -9,7 +9,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@libp2p/webrtc-direct": "^4.0.0",
+    "@libp2p/webrtc-direct": "^5.0.0",
     "@chainsafe/libp2p-noise": "^10.0.1",
     "@libp2p/bootstrap": "^5.0.0",
     "@libp2p/mplex": "^7.0.0",
