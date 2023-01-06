@@ -1,3 +1,19 @@
+## [@libp2p/peer-id-v2.0.0](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.18...@libp2p/peer-id-v2.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump multiformats from 10.0.3 to 11.0.0 and @libp2p/interface-peer-id from 1.0.0 to 2.0.0 (#41)
+
+### Trivial Changes
+
+* remove lerna ([#43](https://github.com/libp2p/js-libp2p-peer-id/issues/43)) ([d458051](https://github.com/libp2p/js-libp2p-peer-id/commit/d458051bfcb7ff83c42ed26e1c12ac3d07bee492))
+
+
+### Dependencies
+
+* bump multiformats from 10.0.3 to 11.0.0 and @libp2p/interface-peer-id from 1.0.0 to 2.0.0 ([#41](https://github.com/libp2p/js-libp2p-peer-id/issues/41)) ([2aa0f79](https://github.com/libp2p/js-libp2p-peer-id/commit/2aa0f799789b52758651c115b3a021ca67e5c407))
+
 ## [@libp2p/peer-id-v1.1.18](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.17...@libp2p/peer-id-v1.1.18) (2022-12-16)
 
 
