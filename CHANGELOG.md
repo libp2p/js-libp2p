@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.3...v2.0.4) (2023-01-06)
+
+
+### Dependencies
+
+* update @libp2p/interface-peer-id to 2.x.x ([#17](https://github.com/libp2p/js-libp2p-logger/issues/17)) ([9107f4e](https://github.com/libp2p/js-libp2p-logger/commit/9107f4ed0e8b5db713572b0c528b6860d6f572c3))
+
 ## [2.0.3](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.2...v2.0.3) (2023-01-06)
 
 
