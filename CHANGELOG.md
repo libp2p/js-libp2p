@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-topology/compare/v3.0.2...v4.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update to multiformats v11 (#17)
+
+### Bug Fixes
+
+* update to multiformats v11 ([#17](https://github.com/libp2p/js-libp2p-topology/issues/17)) ([e7d9c91](https://github.com/libp2p/js-libp2p-topology/commit/e7d9c91e1c0697ec885828c661e874dc15bd0919))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-topology/compare/v3.0.1...v3.0.2) (2022-12-16)
 
 
