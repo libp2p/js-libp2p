@@ -167,16 +167,16 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface-dht": "^1.0.0",
+    "@libp2p/interface-dht": "^2.0.0",
     "err-code": "^3.0.1",
-    "multiformats": "^10.0.0",
+    "multiformats": "^11.0.0",
     "protons-runtime": "^4.0.1",
     "uint8arraylist": "^2.1.1",
     "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^1.0.2",
-    "aegir": "^37.0.13",
+    "@libp2p/crypto": "^1.0.11",
+    "aegir": "^37.9.1",
     "protons": "^6.0.0"
   }
 }
