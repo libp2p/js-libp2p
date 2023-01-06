@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.4...v2.0.5) (2023-01-06)
+
+
+### Documentation
+
+* publish typedocs ([#18](https://github.com/libp2p/js-libp2p-logger/issues/18)) ([ff0a8ce](https://github.com/libp2p/js-libp2p-logger/commit/ff0a8ce535474bb30e7977fa7684bb4c17181ead))
+
 ## [2.0.4](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.3...v2.0.4) (2023-01-06)
 
 
