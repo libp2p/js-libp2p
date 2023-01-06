@@ -139,11 +139,11 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface-peer-id": "^1.0.4",
-    "@libp2p/peer-id": "^1.1.0"
+    "@libp2p/interface-peer-id": "^2.0.0",
+    "@libp2p/peer-id": "^2.0.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^1.0.0",
-    "aegir": "^37.0.7"
+    "@libp2p/peer-id-factory": "^2.0.0",
+    "aegir": "^37.9.1"
   }
 }
