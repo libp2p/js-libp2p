@@ -1,3 +1,14 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.1.1...v7.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump multiformats from 10.0.3 to 11.0.0 (#412)
+
+### Dependencies
+
+* bump multiformats from 10.0.3 to 11.0.0 ([#412](https://github.com/libp2p/js-libp2p-kad-dht/issues/412)) ([18c8276](https://github.com/libp2p/js-libp2p-kad-dht/commit/18c8276b8638c2e3a3733dae2c973c552f92303c))
+
 ## [6.1.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.1.0...v6.1.1) (2022-12-16)
 
 
