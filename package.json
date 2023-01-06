@@ -153,7 +153,7 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface-peer-id": "^1.0.4",
+    "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/interface-registrar": "^2.0.3",
     "@libp2p/logger": "^2.0.1",
     "err-code": "^3.0.1",
