@@ -1,3 +1,19 @@
+## [5.0.0](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.5...v5.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats to 11.x.x (#41)
+
+### Bug Fixes
+
+* update multiformats to 11.x.x ([#41](https://github.com/libp2p/js-libp2p-peer-record/issues/41)) ([1c1a4c6](https://github.com/libp2p/js-libp2p-peer-record/commit/1c1a4c6285cc03a7ee61d22a46d35c1b2dee5588))
+
+
+### Dependencies
+
+* update logger dep ([c9b6e92](https://github.com/libp2p/js-libp2p-peer-record/commit/c9b6e92d294e2e2f57b573cfaacea1006594c363))
+
 ## [4.0.5](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.4...v4.0.5) (2022-12-16)
 
 
