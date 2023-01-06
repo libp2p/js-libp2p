@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v5.1.1...v6.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats to v11.x.x (#178)
+
+### Bug Fixes
+
+* update multiformats to v11.x.x ([#178](https://github.com/libp2p/js-libp2p-mdns/issues/178)) ([e48b9b1](https://github.com/libp2p/js-libp2p-mdns/commit/e48b9b199a1a76893f888368b4a027df9ac0c4cf))
+
 ## [5.1.1](https://github.com/libp2p/js-libp2p-mdns/compare/v5.1.0...v5.1.1) (2022-12-16)
 
 
