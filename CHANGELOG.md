@@ -1,3 +1,19 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v5.0.0...v6.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats to v11 (#204)
+
+### Bug Fixes
+
+* update multiformats to v11 ([#204](https://github.com/libp2p/js-libp2p-floodsub/issues/204)) ([8a5c994](https://github.com/libp2p/js-libp2p-floodsub/commit/8a5c994daea9c36e5dc184ed0e9ee47ef4ce7a59))
+
+
+### Documentation
+
+* update readme ([3bb5712](https://github.com/libp2p/js-libp2p-floodsub/commit/3bb5712d05c03c7b2ec97898d555063a27ff0ca4))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v4.0.1...v5.0.0) (2022-10-12)
 
 
