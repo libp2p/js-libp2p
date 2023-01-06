@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.2.2...v3.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update to multiformats 11 (#15)
+
+### Bug Fixes
+
+* update to multiformats 11 ([#15](https://github.com/libp2p/js-libp2p-peer-collections/issues/15)) ([a503803](https://github.com/libp2p/js-libp2p-peer-collections/commit/a5038039b48f165b3c7c4f5e114038cd71583fe3))
+
 ## [2.2.2](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.2.1...v2.2.2) (2022-12-16)
 
 
