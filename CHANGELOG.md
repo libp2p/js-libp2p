@@ -1,3 +1,15 @@
+## [1.0.11](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.10...v1.0.11) (2023-01-06)
+
+
+### Dependencies
+
+* bump multiformats from 10.0.3 to 11.0.0 ([#292](https://github.com/libp2p/js-libp2p-crypto/issues/292)) ([f2d78f8](https://github.com/libp2p/js-libp2p-crypto/commit/f2d78f8012b459da0a62bb4a7c63c396f56d4976)), closes [#234](https://github.com/libp2p/js-libp2p-crypto/issues/234) [#226](https://github.com/libp2p/js-libp2p-crypto/issues/226) [#234](https://github.com/libp2p/js-libp2p-crypto/issues/234) [#226](https://github.com/libp2p/js-libp2p-crypto/issues/226) [#226](https://github.com/libp2p/js-libp2p-crypto/issues/226)
+
+
+### Trivial Changes
+
+* update bundlesize ([c2a1954](https://github.com/libp2p/js-libp2p-crypto/commit/c2a195431ba94fdeedfeb89e406b80a60f960dd7))
+
 ## [1.0.10](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.9...v1.0.10) (2022-12-16)
 
 
