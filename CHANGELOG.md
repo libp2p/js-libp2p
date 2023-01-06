@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v5.0.1...v6.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump multiformats from 10.0.3 to 11.0.0 (#52)
+
+### Dependencies
+
+* bump multiformats from 10.0.3 to 11.0.0 ([#52](https://github.com/libp2p/js-libp2p-peer-store/issues/52)) ([0b1335c](https://github.com/libp2p/js-libp2p-peer-store/commit/0b1335c1b6f01fc8e750704f0821523fdd2d1502))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v5.0.0...v5.0.1) (2022-12-16)
 
 
