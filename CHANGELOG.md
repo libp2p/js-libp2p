@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v5.0.1...v6.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats to v11 (#115)
+
+### Bug Fixes
+
+* update multiformats to v11 ([#115](https://github.com/libp2p/js-libp2p-pubsub/issues/115)) ([148f554](https://github.com/libp2p/js-libp2p-pubsub/commit/148f5548001896869caca90c3cad9d8d363638f0))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v5.0.0...v5.0.1) (2022-12-16)
 
 
