@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-record/compare/v2.0.4...v3.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats to 11.x.x (#70)
+
+### Bug Fixes
+
+* update multiformats to 11.x.x ([#70](https://github.com/libp2p/js-libp2p-record/issues/70)) ([594fc41](https://github.com/libp2p/js-libp2p-record/commit/594fc4171ec20f4fc1fbc36c99c61eed06aeab25))
+
 ## [2.0.4](https://github.com/libp2p/js-libp2p-record/compare/v2.0.3...v2.0.4) (2022-12-16)
 
 
