@@ -146,11 +146,11 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/crypto": "^1.0.0",
-    "@libp2p/interface-peer-id": "^1.0.2",
+    "@libp2p/crypto": "^1.0.11",
+    "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/interface-record": "^2.0.1",
     "@libp2p/logger": "^2.0.0",
-    "@libp2p/peer-id": "^1.1.13",
+    "@libp2p/peer-id": "^2.0.0",
     "@libp2p/utils": "^3.0.0",
     "@multiformats/multiaddr": "^11.0.0",
     "err-code": "^3.0.1",
@@ -160,7 +160,7 @@
     "it-foreach": "^1.0.0",
     "it-map": "^2.0.0",
     "it-pipe": "^2.0.3",
-    "multiformats": "^10.0.0",
+    "multiformats": "^11.0.0",
     "protons-runtime": "^4.0.1",
     "uint8-varint": "^1.0.2",
     "uint8arraylist": "^2.1.0",
@@ -169,9 +169,9 @@
   },
   "devDependencies": {
     "@libp2p/interface-record-compliance-tests": "^2.0.0",
-    "@libp2p/peer-id-factory": "^1.0.0",
+    "@libp2p/peer-id-factory": "^2.0.0",
     "@types/varint": "^6.0.0",
-    "aegir": "^37.3.0",
+    "aegir": "^37.9.1",
     "protons": "^6.0.0",
     "sinon": "^15.0.0"
   }
