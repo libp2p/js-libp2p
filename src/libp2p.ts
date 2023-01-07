@@ -32,7 +32,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PubSub } from '@libp2p/interface-pubsub'
-import type { Registrar, StreamHandler, StreamHandlerOptions } from '@libp2p/interface-registrar'
+import type { Registrar, StreamHandler, StreamHandlerOptions, Topology } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
@@ -472,6 +472,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
         await this.components.registrar.unhandle(protocol)
       })
     )
+  }
+
+  async register (protocol: string, topology: Topology): Promise<string> {
+    return await this.registrar.register(protocol, topology)
+  }
+
+  unregister (id: string) {
+    this.registrar.unregister(id)
   }
 
   /**
