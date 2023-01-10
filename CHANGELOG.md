@@ -10,6 +10,28 @@
 
 
 
+## [0.42.0](https://www.github.com/libp2p/js-libp2p/compare/v0.41.0...v0.42.0) (2023-01-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats (#1535)
+* the `FaultTolerance` enum should now be imported from `@libp2p/interface-transport`
+* the connection manager and registrar are internal types and as such not part of the libp2p interface, instead use the methods exposed on the root libp2p type for obtaining connections and protocols (see the upgrade guide)
+
+### Bug Fixes
+
+* add getProtocols method ([#1523](https://www.github.com/libp2p/js-libp2p/issues/1523)) ([57a56aa](https://www.github.com/libp2p/js-libp2p/commit/57a56aa9d32f81066667ad6641fda5980df8e1c3))
+* add register and unregister methods to root node object ([#1536](https://www.github.com/libp2p/js-libp2p/issues/1536)) ([bdf53ae](https://www.github.com/libp2p/js-libp2p/commit/bdf53ae0d8fcca93f20e6e3d22669aa725dcac70))
+* close short-lived connections first when pruning by tag value ([#1517](https://www.github.com/libp2p/js-libp2p/issues/1517)) ([40fe372](https://www.github.com/libp2p/js-libp2p/commit/40fe3725c5733fc2cb5072b7ad09858724f8d870)), closes [#1509](https://www.github.com/libp2p/js-libp2p/issues/1509)
+* expose identify service properties ([#1529](https://www.github.com/libp2p/js-libp2p/issues/1529)) ([43d0bc6](https://www.github.com/libp2p/js-libp2p/commit/43d0bc6c63eedbc72805d29aacb1378e43910dbf))
+* forward connection manager events on and update types ([#1524](https://www.github.com/libp2p/js-libp2p/issues/1524)) ([58cc480](https://www.github.com/libp2p/js-libp2p/commit/58cc4804827cae92a2fff3babb1201099577f671))
+* only configure the latency monitor if a limit is configured ([#1527](https://www.github.com/libp2p/js-libp2p/issues/1527)) ([1147550](https://www.github.com/libp2p/js-libp2p/commit/114755019b6c4d8ffe12ca6822c66fc46d9834e7))
+* remove transport manager from exports map ([#1525](https://www.github.com/libp2p/js-libp2p/issues/1525)) ([d77405c](https://www.github.com/libp2p/js-libp2p/commit/d77405c52f331a85325c0d24ef86874b2f5c4cd4))
+* revert config changes from [#1520](https://www.github.com/libp2p/js-libp2p/issues/1520) ([#1522](https://www.github.com/libp2p/js-libp2p/issues/1522)) ([2fa2893](https://www.github.com/libp2p/js-libp2p/commit/2fa28931025ffb93d985dad1269165f81709c048))
+* update docs ([#1520](https://www.github.com/libp2p/js-libp2p/issues/1520)) ([3e53c19](https://www.github.com/libp2p/js-libp2p/commit/3e53c199349ab99deeb745baff92c3aaa7647ca8))
+* update multiformats ([#1535](https://www.github.com/libp2p/js-libp2p/issues/1535)) ([ea8f279](https://www.github.com/libp2p/js-libp2p/commit/ea8f279d4f80f1986e53fb83637ac9852d50d8d4))
+
 ## [0.41.0](https://www.github.com/libp2p/js-libp2p/compare/v0.40.0...v0.41.0) (2022-12-06)
 
 
