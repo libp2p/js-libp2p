@@ -28,7 +28,7 @@ const createNode = async () => {
   const [node1, node2, node3] = await Promise.all([
     createNode(),
     createNode(),
-    createNode(),
+    createNode()
   ])
 
   // node1 conect to node2 and node2 conect to node3
@@ -38,7 +38,11 @@ const createNode = async () => {
   await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
   await node2.dial(node3.peerId)
 
-  //subscribe
+  // #TODO: Remove this, it's just for testing purposes until https://github.com/libp2p/js-libp2p/issues/1540 is resolved.
+  await node3.peerStore.addressBook.set(node1.peerId, node1.getMultiaddrs())
+  await node3.dial(node1.peerId)
+
+  // subscribe
   node1.pubsub.addEventListener('message', (evt) => {
     if (evt.detail.topic !== topic) {
       return
@@ -68,7 +72,10 @@ const createNode = async () => {
   node3.pubsub.subscribe(topic)
 
   // wait for subscriptions to propagate
-  await delay(1000)
+  while (!node1.pubsub.getSubscribers(topic).toString().includes(node2.peerId.toString()) || !node1.pubsub.getSubscribers(topic).toString().includes(node3.peerId.toString())) {
+    await delay(1000)
+    console.log('subscribers: ', node1.pubsub.getSubscribers(topic).toString())
+  }
 
   const validateFruit = (msgTopic, msg) => {
     const fruit = uint8ArrayToString(msg.data)
@@ -80,7 +87,7 @@ const createNode = async () => {
     }
   }
 
-  //validate fruit
+  // validate fruit
   node1.pubsub.topicValidators.set(topic, validateFruit)
   node2.pubsub.topicValidators.set(topic, validateFruit)
   node3.pubsub.topicValidators.set(topic, validateFruit)
