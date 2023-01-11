@@ -10,6 +10,13 @@
 
 
 
+### [0.42.1](https://www.github.com/libp2p/js-libp2p/compare/v0.42.0...v0.42.1) (2023-01-11)
+
+
+### Bug Fixes
+
+* update ci files to publish docs ([a61e401](https://www.github.com/libp2p/js-libp2p/commit/a61e40142f1393c53b83a1b11ded6b72c6b76615))
+
 ## [0.42.0](https://www.github.com/libp2p/js-libp2p/compare/v0.41.0...v0.42.0) (2023-01-10)
 
 
