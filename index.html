@@ -1,643 +1,553 @@
-<!doctype html>
-<html class="default no-js">
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>libp2p - v0.35.8</title>
-	<meta name="description" content="Documentation for libp2p - v0.35.8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="assets/css/main.css">
-	<script async src="assets/js/search.js" id="search-script"></script>
-</head>
-<body>
-<header>
-	<div class="tsd-page-toolbar">
-		<div class="container">
-			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
-					<div class="field">
-						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
-						<input id="tsd-search-field" type="text" />
-					</div>
-					<ul class="results">
-						<li class="state loading">Preparing search index...</li>
-						<li class="state failure">The search index is not available</li>
-					</ul>
-					<a href="index.html" class="title">libp2p - v0.35.8</a>
-				</div>
-				<div class="table-cell" id="tsd-widgets">
-					<div id="tsd-filter">
-						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
-						<div class="tsd-filter-group">
-							<div class="tsd-select" id="tsd-filter-visibility">
-								<span class="tsd-select-label">All</span>
-								<ul class="tsd-select-list">
-									<li data-value="public">Public</li>
-									<li data-value="protected">Public/Protected</li>
-									<li data-value="private" class="selected">All</li>
-								</ul>
-							</div>
-							<input type="checkbox" id="tsd-filter-inherited" checked />
-							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-							<input type="checkbox" id="tsd-filter-externals" checked />
-							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
-						</div>
-					</div>
-					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="tsd-page-title">
-		<div class="container">
-			<h1>libp2p - v0.35.8</h1>
-		</div>
-	</div>
-</header>
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>libp2p - v0.42.1</title><meta name="description" content="Documentation for libp2p - v0.42.1"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container">
+<div class="table-cell" id="tsd-search" data-base=".">
+<div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field">
+<div id="tsd-toolbar-links"></div></div>
+<ul class="results">
+<li class="state loading">Preparing search index...</li>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">libp2p - v0.42.1</a></div>
+<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
 <div class="container container-main">
-	<div class="row">
-		<div class="col-8 col-content">
-			<div class="tsd-panel tsd-typography">
-				<h1 align="center">
-					<a href="libp2p.io"><img width="250" src="https://github.com/libp2p/libp2p/blob/master/logo/black-bg-2.png?raw=true" alt="libp2p hex logo" /></a>
-				</h1>
-				<h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
-				<p align="center">
-					<a href="http://protocol.ai"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
-					<a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
-					<a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
-					<a href="https://riot.im/app/#/room/#libp2p:matrix.org"><img src="https://img.shields.io/badge/matrix-%23libp2p%3Apermaweb.io-blue.svg?style=flat-square" /> </a>
-					<a href="https://discord.gg/66KBrm2"><img src="https://img.shields.io/discord/475789330380488707?color=blueviolet&label=discord&style=flat-square" /></a>
-					<a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg" /></a>
-					<a href="https://www.npmjs.com/package/libp2p"><img src="https://img.shields.io/npm/dm/libp2p.svg" /></a>
-					<a href="https://www.jsdelivr.com/package/npm/libp2p"><img src="https://data.jsdelivr.com/v1/package/npm/libp2p/badge"/></a>
-				</p>
-				<p align="center">
-					<a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/workflow/status/libp2p/js-libp2p/ci?label=ci&style=flat-square" /></a>
-					<a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/master.svg?style=flat-square"></a>
-					<a href="https://bundlephobia.com/result?p=ipfsd-ctl"><img src="https://flat.badgen.net/bundlephobia/minzip/ipfsd-ctl"></a>
-					<br>
-					<a href="https://david-dm.org/libp2p/js-libp2p"><img src="https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square" /></a>
-					<a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
-					<a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
-					<a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
-					<a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
-					<br>
-				</p>
-				<a href="#project-status" id="project-status" style="color: inherit; text-decoration: none;">
-					<h3>Project status</h3>
-				</a>
-				<p>We&#39;ve come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..</p>
-				<p>The documentation in the master branch may contain changes from a pre-release.
-				If you are looking for the documentation of the latest release, you can view the latest release on <a href="https://www.npmjs.com/package/libp2p"><strong>npm</strong></a>, or select the tag in github that matches the version you are looking for.</p>
-				<p><strong>Want to get started?</strong> Check our <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide and <a href="/examples">examples folder</a>.</p>
-				<p><strong>Want to update libp2p in your project?</strong> Check our <a href="./doc/migrations">migrations folder</a>.</p>
-				<p><a href="https://github.com/libp2p/team-mgmt/issues/16"><strong><code>Weekly Core Dev Calls</code></strong></a></p>
-				<a href="#lead-maintainer" id="lead-maintainer" style="color: inherit; text-decoration: none;">
-					<h2>Lead Maintainer</h2>
-				</a>
-				<p><a href="https://github.com/jacobheun/">Jacob Heun</a></p>
-				<a href="#table-of-contents" id="table-of-contents" style="color: inherit; text-decoration: none;">
-					<h2>Table of Contents</h2>
-				</a>
-				<ul>
-					<li><a href="#background">Background</a></li>
-					<li><a href="#install">Install</a></li>
-					<li><a href="#usage">Usage</a><ul>
-							<li><a href="#configuration">Configuration</a></li>
-							<li><a href="#api">API</a></li>
-							<li><a href="#getting-started">Getting Started</a></li>
-							<li><a href="#tutorials-and-examples">Tutorials and Examples</a></li>
-						</ul>
-					</li>
-					<li><a href="#development">Development</a><ul>
-							<li><a href="#tests">Tests</a></li>
-							<li><a href="#packages">Packages</a></li>
-						</ul>
-					</li>
-					<li><a href="#contribute">Contribute</a></li>
-					<li><a href="#license">License</a></li>
-				</ul>
-				<a href="#background" id="background" style="color: inherit; text-decoration: none;">
-					<h2>Background</h2>
-				</a>
-				<p>libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.</p>
-				<p>We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:</p>
-				<ul>
-					<li><a href="https://libp2p.io">libp2p.io</a></li>
-					<li><a href="https://docs.libp2p.io">docs.libp2p.io</a></li>
-					<li><a href="https://github.com/libp2p/specs">Specification (WIP)</a></li>
-					<li><a href="https://discuss.libp2p.io">Discussion Forums</a></li>
-					<li>Talks<ul>
-							<li><a href="https://ethereumfoundation.org/devcon/?session=libp2p"><code>libp2p &lt;3 ethereum</code> at DEVCON2</a> <a href="https://www.youtube.com/watch?v=HxueJbeMVG4">📼 video</a> <a href="https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p-HEART-devp2p-IPFS-PLUS-Ethereum-networking.pdf">slides</a> <a href="https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo1-1.mp4">📼 demo-1</a> <a href="https://ethereumfoundation.org/devcon/wp-content/uploads/2016/10/libp2p_demo2-1.mp4">📼 demo-2</a></li>
-						</ul>
-					</li>
-					<li>Articles<ul>
-							<li><a href="https://github.com/libp2p/libp2p#description">The overview of libp2p</a></li>
-						</ul>
-					</li>
-				</ul>
-				<p>To sum up, libp2p is a &quot;network stack&quot; -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.</p>
-				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
-					<h2>Install</h2>
-				</a>
-				<pre><code class="language-sh"><span style="color: #000000">npm install libp2p</span>
-</code></pre>
-				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
-					<h2>Usage</h2>
-				</a>
-				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
-					<h3>Configuration</h3>
-				</a>
-				<p>For all the information on how you can configure libp2p see <a href="./doc/CONFIGURATION.md">CONFIGURATION.md</a>.</p>
-				<a href="#api" id="api" style="color: inherit; text-decoration: none;">
-					<h3>API</h3>
-				</a>
-				<p>The specification is available on <a href="./doc/API.md">API.md</a>.</p>
-				<a href="#getting-started" id="getting-started" style="color: inherit; text-decoration: none;">
-					<h3>Getting started</h3>
-				</a>
-				<p>If you are starting your journey with <code>js-libp2p</code>, read the <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide.</p>
-				<a href="#tutorials-and-examples" id="tutorials-and-examples" style="color: inherit; text-decoration: none;">
-					<h3>Tutorials and Examples</h3>
-				</a>
-				<p>You can find multiple examples on the <a href="./examples">examples folder</a> that will guide you through using libp2p for several scenarios.</p>
-				<a href="#development" id="development" style="color: inherit; text-decoration: none;">
-					<h2>Development</h2>
-				</a>
-				<p><strong>Clone and install dependencies:</strong></p>
-				<pre><code class="language-sh"><span style="color: #000000">&gt; git clone https://github.com/libp2p/js-libp2p.git</span>
-<span style="color: #000000">&gt; </span><span style="color: #795E26">cd</span><span style="color: #000000"> js-libp2p</span>
-<span style="color: #000000">&gt; npm install</span>
-</code></pre>
-				<a href="#tests" id="tests" style="color: inherit; text-decoration: none;">
-					<h3>Tests</h3>
-				</a>
-				<a href="#run-unit-tests" id="run-unit-tests" style="color: inherit; text-decoration: none;">
-					<h4>Run unit tests</h4>
-				</a>
-				<pre><code class="language-sh"><span style="color: #008000"># run all the unit tsts</span>
-<span style="color: #000000">&gt; npm </span><span style="color: #795E26">test</span>
+<div class="col-8 col-content">
+<div class="tsd-page-title">
+<h2>libp2p - v0.42.1</h2></div>
+<div class="tsd-panel tsd-typography"><h1 align="center">
+  <a href="libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
+</h1>
 
-<span style="color: #008000"># run just Node.js tests</span>
-<span style="color: #000000">&gt; npm run test:node</span>
+<h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
 
-<span style="color: #008000"># run just Browser tests (Chrome)</span>
-<span style="color: #000000">&gt; npm run test:browser</span>
+<p align="center">
+  <a href="http://protocol.ai"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
+  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
+  <a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
+  <a href="https://riot.im/app/#/room/#libp2p:matrix.org"><img src="https://img.shields.io/badge/matrix-%23libp2p%3Apermaweb.io-blue.svg?style=flat-square" /> </a>
+  <a href="https://discord.gg/66KBrm2"><img src="https://img.shields.io/discord/475789330380488707?color=blueviolet&label=discord&style=flat-square" /></a>
+  <a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg" /></a>
+  <a href="https://www.npmjs.com/package/libp2p"><img src="https://img.shields.io/npm/dm/libp2p.svg" /></a>
+  <a href="https://www.jsdelivr.com/package/npm/libp2p"><img src="https://data.jsdelivr.com/v1/package/npm/libp2p/badge"/></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/workflow/status/libp2p/js-libp2p/ci?label=ci&style=flat-square" /></a>
+  <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/master.svg?style=flat-square"></a>
+  <br>
+  <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
+  <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
+  <br>
+</p>
+
+
+<a href="#project-status" id="project-status" style="color: inherit; text-decoration: none;">
+  <h3>Project status</h3>
+</a>
+<p>We&#39;ve come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..</p>
+<p>The documentation in the master branch may contain changes from a pre-release.
+If you are looking for the documentation of the latest release, you can view the latest release on <a href="https://www.npmjs.com/package/libp2p"><strong>npm</strong></a>, or select the tag in github that matches the version you are looking for.</p>
+<p><strong>Want to get started?</strong> Check our <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide and <a href="/examples">examples folder</a>.</p>
+<p><strong>Want to update libp2p in your project?</strong> Check our <a href="./doc/migrations">migrations folder</a>.</p>
+
+<a href="#table-of-contents-" id="table-of-contents-" style="color: inherit; text-decoration: none;">
+  <h2>Table of Contents <!-- omit in toc --></h2>
+</a>
+<ul>
+<li><a href="#background">Background</a></li>
+<li><a href="#roadmap">Roadmap</a></li>
+<li><a href="#install">Install</a></li>
+<li><a href="#usage">Usage</a><ul>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#limits">Limits</a></li>
+<li><a href="#api-docs">API Docs</a></li>
+<li><a href="#getting-started">Getting started</a></li>
+<li><a href="#tutorials-and-examples">Tutorials and Examples</a></li>
+</ul>
+</li>
+<li><a href="#development">Development</a><ul>
+<li><a href="#tests">Tests</a><ul>
+<li><a href="#run-unit-tests">Run unit tests</a></li>
+</ul>
+</li>
+<li><a href="#packages">Packages</a></li>
+</ul>
+</li>
+<li><a href="#used-by">Used by</a></li>
+<li><a href="#contribute">Contribute</a></li>
+<li><a href="#license">License</a><ul>
+<li><a href="#contribution">Contribution</a></li>
+</ul>
+</li>
+</ul>
+
+<a href="#background" id="background" style="color: inherit; text-decoration: none;">
+  <h2>Background</h2>
+</a>
+<p>libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.</p>
+<p>We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:</p>
+<ul>
+<li><a href="https://libp2p.io">libp2p.io</a></li>
+<li><a href="https://docs.libp2p.io">docs.libp2p.io</a></li>
+<li><a href="https://github.com/libp2p/specs">Specification (WIP)</a></li>
+<li><a href="https://discuss.libp2p.io">Discussion Forums</a></li>
+<li>Talks<ul>
+<li><a href="https://archive.devcon.org/archive/watch/2/libp2p-devp2p-ipfs-and-ethereum-networking/"><code>libp2p &lt;3 ethereum</code> at DEVCON2</a></li>
+</ul>
+</li>
+<li>Articles<ul>
+<li><a href="https://github.com/libp2p/libp2p#description">The overview of libp2p</a></li>
+</ul>
+</li>
+</ul>
+<p>To sum up, libp2p is a &quot;network stack&quot; -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.</p>
+
+<a href="#roadmap" id="roadmap" style="color: inherit; text-decoration: none;">
+  <h2>Roadmap</h2>
+</a>
+<p>The js-libp2p roadmap can be found here: <a href="https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md">https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md</a></p>
+<p>It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.</p>
+<p>It is complementary to the overarching libp2p project roadmap: <a href="https://github.com/libp2p/specs/blob/master/ROADMAP.md">https://github.com/libp2p/specs/blob/master/ROADMAP.md</a></p>
+
+<a href="#install" id="install" style="color: inherit; text-decoration: none;">
+  <h2>Install</h2>
+</a>
+<pre><code class="language-sh"><span class="hl-0">npm </span><span class="hl-1">install</span><span class="hl-0"> </span><span class="hl-1">libp2p</span>
 </code></pre>
-				<a href="#packages" id="packages" style="color: inherit; text-decoration: none;">
-					<h3>Packages</h3>
-				</a>
-				<p>List of packages currently in existence for libp2p</p>
-				<blockquote>
-					<p>This table is generated using the module <code>package-table</code> with <code>package-table --data=package-list.json</code>.</p>
-				</blockquote>
-				<table>
-					<thead>
-						<tr>
-							<th>Package</th>
-							<th>Version</th>
-							<th>Deps</th>
-							<th>CI</th>
-							<th>Coverage</th>
-							<th>Lead Maintainer</th>
-						</tr>
-					</thead>
-					<tbody><tr>
-							<td><strong>libp2p</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p"><code>libp2p</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p/releases"><img src="https://img.shields.io/npm/v/libp2p.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p"><img src="https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://codecov.io/gh/libp2p/js-libp2p/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-daemon"><code>libp2p-daemon</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-daemon/releases"><img src="https://img.shields.io/npm/v/libp2p-daemon.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-daemon"><img src="https://david-dm.org/libp2p/js-libp2p-daemon.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-daemon"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-daemon/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-daemon"><img src="https://codecov.io/gh/libp2p/js-libp2p-daemon/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-daemon-client"><code>libp2p-daemon-client</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-daemon-client/releases"><img src="https://img.shields.io/npm/v/libp2p-daemon-client.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-daemon-client"><img src="https://david-dm.org/libp2p/js-libp2p-daemon-client.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-daemon-client"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-daemon-client/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-daemon-client"><img src="https://codecov.io/gh/libp2p/js-libp2p-daemon-client/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-interfaces"><code>libp2p-interfaces</code></a></td>
-							<td><a href="//github.com/libp2p/js-interfaces/releases"><img src="https://img.shields.io/npm/v/libp2p-interfaces.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-interfaces"><img src="https://david-dm.org/libp2p/js-interfaces.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-interfaces"><img src="https://flat.badgen.net/travis/libp2p/js-interfaces/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-interfaces"><img src="https://codecov.io/gh/libp2p/js-interfaces/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/interop"><code>interop-libp2p</code></a></td>
-							<td><a href="//github.com/libp2p/interop/releases"><img src="https://img.shields.io/npm/v/interop-libp2p.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/interop"><img src="https://david-dm.org/libp2p/interop.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/interop"><img src="https://flat.badgen.net/travis/libp2p/interop/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/interop"><img src="https://codecov.io/gh/libp2p/interop/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><strong>transports</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-tcp"><code>libp2p-tcp</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-tcp/releases"><img src="https://img.shields.io/npm/v/libp2p-tcp.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-tcp"><img src="https://david-dm.org/libp2p/js-libp2p-tcp.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-tcp"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-tcp/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-tcp"><img src="https://codecov.io/gh/libp2p/js-libp2p-tcp/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-webrtc-direct"><code>libp2p-webrtc-direct</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-webrtc-direct/releases"><img src="https://img.shields.io/npm/v/libp2p-webrtc-direct.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-webrtc-direct"><img src="https://david-dm.org/libp2p/js-libp2p-webrtc-direct.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-webrtc-direct"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-webrtc-direct/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-webrtc-direct"><img src="https://codecov.io/gh/libp2p/js-libp2p-webrtc-direct/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-webrtc-star"><code>libp2p-webrtc-star</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-webrtc-star/releases"><img src="https://img.shields.io/npm/v/libp2p-webrtc-star.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-webrtc-star"><img src="https://david-dm.org/libp2p/js-libp2p-webrtc-star.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-webrtc-star"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-webrtc-star/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star"><img src="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-websockets"><code>libp2p-websockets</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-websockets/releases"><img src="https://img.shields.io/npm/v/libp2p-websockets.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-websockets"><img src="https://david-dm.org/libp2p/js-libp2p-websockets.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-websockets"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-websockets/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-websockets"><img src="https://codecov.io/gh/libp2p/js-libp2p-websockets/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><strong>secure channels</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/NodeFactoryIo/js-libp2p-noise"><code>libp2p-noise</code></a></td>
-							<td><a href="//github.com/NodeFactoryIo/js-libp2p-noise/releases"><img src="https://img.shields.io/npm/v/libp2p-noise.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/NodeFactoryIo/js-libp2p-noise"><img src="https://david-dm.org/NodeFactoryIo/js-libp2p-noise.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/NodeFactoryIo/js-libp2p-noise"><img src="https://flat.badgen.net/travis/NodeFactoryIo/js-libp2p-noise/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/NodeFactoryIo/js-libp2p-noise"><img src="https://codecov.io/gh/NodeFactoryIo/js-libp2p-noise/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td>N/A</td>
-						</tr>
-						<tr>
-							<td><strong>stream multiplexers</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-mplex"><code>libp2p-mplex</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-mplex/releases"><img src="https://img.shields.io/npm/v/libp2p-mplex.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-mplex"><img src="https://david-dm.org/libp2p/js-libp2p-mplex.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-mplex"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-mplex/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-mplex"><img src="https://codecov.io/gh/libp2p/js-libp2p-mplex/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><strong>peer discovery</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-bootstrap"><code>libp2p-bootstrap</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-bootstrap/releases"><img src="https://img.shields.io/npm/v/libp2p-bootstrap.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-bootstrap"><img src="https://david-dm.org/libp2p/js-libp2p-bootstrap.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-bootstrap"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-bootstrap/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-bootstrap"><img src="https://codecov.io/gh/libp2p/js-libp2p-bootstrap/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-kad-dht"><code>libp2p-kad-dht</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-kad-dht/releases"><img src="https://img.shields.io/npm/v/libp2p-kad-dht.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-kad-dht"><img src="https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-kad-dht"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-kad-dht/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-kad-dht"><img src="https://codecov.io/gh/libp2p/js-libp2p-kad-dht/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-mdns"><code>libp2p-mdns</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-mdns/releases"><img src="https://img.shields.io/npm/v/libp2p-mdns.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-mdns"><img src="https://david-dm.org/libp2p/js-libp2p-mdns.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-mdns"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-mdns/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-mdns"><img src="https://codecov.io/gh/libp2p/js-libp2p-mdns/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-webrtc-star"><code>libp2p-webrtc-star</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-webrtc-star/releases"><img src="https://img.shields.io/npm/v/libp2p-webrtc-star.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-webrtc-star"><img src="https://david-dm.org/libp2p/js-libp2p-webrtc-star.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-webrtc-star"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-webrtc-star/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star"><img src="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/ChainSafe/discv5"><code>@chainsafe/discv5</code></a></td>
-							<td><a href="//github.com/ChainSafe/discv5/releases"><img src="https://img.shields.io/npm/v/@chainsafe/discv5.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/ChainSafe/discv5"><img src="https://david-dm.org/ChainSafe/discv5.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/ChainSafe/discv5"><img src="https://flat.badgen.net/travis/ChainSafe/discv5/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/ChainSafe/discv5"><img src="https://codecov.io/gh/ChainSafe/discv5/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:caymannava@gmail.com">Cayman Nava</a></td>
-						</tr>
-						<tr>
-							<td><strong>content routing</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-delegated-content-routing"><code>libp2p-delegated-content-routing</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-delegated-content-routing/releases"><img src="https://img.shields.io/npm/v/libp2p-delegated-content-routing.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-delegated-content-routing"><img src="https://david-dm.org/libp2p/js-libp2p-delegated-content-routing.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-delegated-content-routing"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-delegated-content-routing/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-delegated-content-routing"><img src="https://codecov.io/gh/libp2p/js-libp2p-delegated-content-routing/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-kad-dht"><code>libp2p-kad-dht</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-kad-dht/releases"><img src="https://img.shields.io/npm/v/libp2p-kad-dht.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-kad-dht"><img src="https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-kad-dht"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-kad-dht/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-kad-dht"><img src="https://codecov.io/gh/libp2p/js-libp2p-kad-dht/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><strong>peer routing</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-delegated-peer-routing"><code>libp2p-delegated-peer-routing</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-delegated-peer-routing/releases"><img src="https://img.shields.io/npm/v/libp2p-delegated-peer-routing.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-delegated-peer-routing"><img src="https://david-dm.org/libp2p/js-libp2p-delegated-peer-routing.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-delegated-peer-routing"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-delegated-peer-routing/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-delegated-peer-routing"><img src="https://codecov.io/gh/libp2p/js-libp2p-delegated-peer-routing/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-kad-dht"><code>libp2p-kad-dht</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-kad-dht/releases"><img src="https://img.shields.io/npm/v/libp2p-kad-dht.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-kad-dht"><img src="https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-kad-dht"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-kad-dht/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-kad-dht"><img src="https://codecov.io/gh/libp2p/js-libp2p-kad-dht/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><strong>utilities</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-crypto"><code>libp2p-crypto</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-crypto/releases"><img src="https://img.shields.io/npm/v/libp2p-crypto.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-crypto"><img src="https://david-dm.org/libp2p/js-libp2p-crypto.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-crypto"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-crypto/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-crypto"><img src="https://codecov.io/gh/libp2p/js-libp2p-crypto/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><strong>data types</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-peer-id"><code>peer-id</code></a></td>
-							<td><a href="//github.com/libp2p/js-peer-id/releases"><img src="https://img.shields.io/npm/v/peer-id.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-peer-id"><img src="https://david-dm.org/libp2p/js-peer-id.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-peer-id"><img src="https://flat.badgen.net/travis/libp2p/js-peer-id/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-peer-id"><img src="https://codecov.io/gh/libp2p/js-peer-id/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-record"><code>libp2p-record</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-record/releases"><img src="https://img.shields.io/npm/v/libp2p-record.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-record"><img src="https://david-dm.org/libp2p/js-libp2p-record.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-record"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-record/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-record"><img src="https://codecov.io/gh/libp2p/js-libp2p-record/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:santos.vasco10@gmail.com">Jacob Heun</a></td>
-						</tr>
-						<tr>
-							<td><strong>pubsub</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-floodsub"><code>libp2p-floodsub</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-floodsub/releases"><img src="https://img.shields.io/npm/v/libp2p-floodsub.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-floodsub"><img src="https://david-dm.org/libp2p/js-libp2p-floodsub.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-floodsub"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-floodsub/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-floodsub"><img src="https://codecov.io/gh/libp2p/js-libp2p-floodsub/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/ChainSafe/js-libp2p-gossipsub"><code>libp2p-gossipsub</code></a></td>
-							<td><a href="//github.com/ChainSafe/js-libp2p-gossipsub/releases"><img src="https://img.shields.io/npm/v/libp2p-gossipsub.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/ChainSafe/js-libp2p-gossipsub"><img src="https://david-dm.org/ChainSafe/js-libp2p-gossipsub.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/ChainSafe/js-libp2p-gossipsub"><img src="https://flat.badgen.net/travis/ChainSafe/js-libp2p-gossipsub/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/ChainSafe/js-libp2p-gossipsub"><img src="https://codecov.io/gh/ChainSafe/js-libp2p-gossipsub/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:caymannava@gmail.com">Cayman Nava</a></td>
-						</tr>
-						<tr>
-							<td><strong>extensions</strong></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-nat-mgnr"><code>libp2p-nat-mgnr</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-nat-mgnr/releases"><img src="https://img.shields.io/npm/v/libp2p-nat-mgnr.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-nat-mgnr"><img src="https://david-dm.org/libp2p/js-libp2p-nat-mgnr.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-nat-mgnr"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-nat-mgnr/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-nat-mgnr"><img src="https://codecov.io/gh/libp2p/js-libp2p-nat-mgnr/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td>N/A</td>
-						</tr>
-						<tr>
-							<td><a href="//github.com/libp2p/js-libp2p-utils"><code>libp2p-utils</code></a></td>
-							<td><a href="//github.com/libp2p/js-libp2p-utils/releases"><img src="https://img.shields.io/npm/v/libp2p-utils.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-							<td><a href="https://david-dm.org/libp2p/js-libp2p-utils"><img src="https://david-dm.org/libp2p/js-libp2p-utils.svg?style=flat-square" alt="Deps"></a></td>
-							<td><a href="https://travis-ci.com/libp2p/js-libp2p-utils"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-utils/master" alt="Travis CI"></a></td>
-							<td><a href="https://codecov.io/gh/libp2p/js-libp2p-utils"><img src="https://codecov.io/gh/libp2p/js-libp2p-utils/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
-							<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
-						</tr>
-				</tbody></table>
-				<a href="#contribute" id="contribute" style="color: inherit; text-decoration: none;">
-					<h2>Contribute</h2>
-				</a>
-				<p>The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:</p>
-				<ul>
-					<li>Go through the modules and <strong>check out existing issues</strong>. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.</li>
-					<li><strong>Perform code reviews</strong>. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.</li>
-					<li><strong>Add tests</strong>. There can never be enough tests.</li>
-				</ul>
-				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
-					<h2>License</h2>
-				</a>
-				<p><a href="LICENSE">MIT</a> © Protocol Labs</p>
-			</div>
-		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
-			<nav class="tsd-navigation primary">
-				<ul>
-					<li class=" ">
-						<a href="modules.html">Exports</a>
-					</li>
-				</ul>
-			</nav>
-			<nav class="tsd-navigation secondary menu-sticky">
-				<ul class="before-current">
-					<li class=" tsd-kind-class">
-						<a href="classes/Libp2p.html" class="tsd-kind-icon">Libp2p</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/CreateOptions.html" class="tsd-kind-icon">Create<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/DhtOptions.html" class="tsd-kind-icon">Dht<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/HandlerProps.html" class="tsd-kind-icon">Handler<wbr>Props</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/KeychainOptions.html" class="tsd-kind-icon">Keychain<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/Libp2pConfig.html" class="tsd-kind-icon">Libp2p<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/Libp2pModules.html" class="tsd-kind-icon">Libp2p<wbr>Modules</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/Libp2pOptions.html" class="tsd-kind-icon">Libp2p<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/MetricsOptions.html" class="tsd-kind-icon">Metrics<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/PeerStoreOptions.html" class="tsd-kind-icon">Peer<wbr>Store<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/PersistentPeerStoreOptions.html" class="tsd-kind-icon">Persistent<wbr>Peer<wbr>Store<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/PubsubLocalOptions.html" class="tsd-kind-icon">Pubsub<wbr>Local<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/RelayOptions.html" class="tsd-kind-icon">Relay<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/constructorOptions.html" class="tsd-kind-icon">constructor<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#Connection" class="tsd-kind-icon">Connection</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#ContentRoutingModule" class="tsd-kind-icon">Content<wbr>Routing<wbr>Module</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#Crypto" class="tsd-kind-icon">Crypto</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#Datastore" class="tsd-kind-icon">Datastore</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#MuxedStream" class="tsd-kind-icon">Muxed<wbr>Stream</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#MuxerFactory" class="tsd-kind-icon">Muxer<wbr>Factory</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#PeerDiscoveryFactory" class="tsd-kind-icon">Peer<wbr>Discovery<wbr>Factory</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#PeerRoutingModule" class="tsd-kind-icon">Peer<wbr>Routing<wbr>Module</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#Protector" class="tsd-kind-icon">Protector</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#Pubsub" class="tsd-kind-icon">Pubsub</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#PubsubOptions" class="tsd-kind-icon">Pubsub<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="modules.html#TransportFactory" class="tsd-kind-icon">Transport<wbr>Factory</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</div>
+
+<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+  <h2>Usage</h2>
+</a>
+
+<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
+  <h3>Configuration</h3>
+</a>
+<p>For all the information on how you can configure libp2p see <a href="./doc/CONFIGURATION.md">CONFIGURATION.md</a>.</p>
+
+<a href="#limits" id="limits" style="color: inherit; text-decoration: none;">
+  <h3>Limits</h3>
+</a>
+<p>For help configuring your node to resist malicious network peers, see <a href="./doc/LIMITS.md">LIMITS.md</a></p>
+
+<a href="#api-docs" id="api-docs" style="color: inherit; text-decoration: none;">
+  <h3>API Docs</h3>
+</a>
+<ul>
+<li><a href="https://libp2p.github.io/js-libp2p">https://libp2p.github.io/js-libp2p</a></li>
+</ul>
+
+<a href="#getting-started" id="getting-started" style="color: inherit; text-decoration: none;">
+  <h3>Getting started</h3>
+</a>
+<p>If you are starting your journey with <code>js-libp2p</code>, read the <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide.</p>
+
+<a href="#tutorials-and-examples" id="tutorials-and-examples" style="color: inherit; text-decoration: none;">
+  <h3>Tutorials and Examples</h3>
+</a>
+<p>You can find multiple examples on the <a href="./examples">examples folder</a> that will guide you through using libp2p for several scenarios.</p>
+
+<a href="#development" id="development" style="color: inherit; text-decoration: none;">
+  <h2>Development</h2>
+</a>
+<p><strong>Clone and install dependencies:</strong></p>
+<pre><code class="language-sh"><span class="hl-0">&gt; git clone https://github.com/libp2p/js-libp2p.git</span><br/><span class="hl-0">&gt; cd js-libp2p</span><br/><span class="hl-0">&gt; npm install</span><br/><span class="hl-0">&gt; npm run build</span>
+</code></pre>
+
+<a href="#tests" id="tests" style="color: inherit; text-decoration: none;">
+  <h3>Tests</h3>
+</a>
+
+<a href="#run-unit-tests" id="run-unit-tests" style="color: inherit; text-decoration: none;">
+  <h4>Run unit tests</h4>
+</a>
+<pre><code class="language-sh"><span class="hl-2"># run all the unit tsts</span><br/><span class="hl-0">&gt; npm test</span><br/><br/><span class="hl-2"># run just Node.js tests</span><br/><span class="hl-0">&gt; npm run test:node</span><br/><br/><span class="hl-2"># run just Browser tests (Chrome)</span><br/><span class="hl-0">&gt; npm run test:chrome</span>
+</code></pre>
+
+<a href="#packages" id="packages" style="color: inherit; text-decoration: none;">
+  <h3>Packages</h3>
+</a>
+<p>List of packages currently in existence for libp2p</p>
+<blockquote>
+<p>This table is generated using the module <code>package-table</code> with <code>package-table --data=package-list.json</code>.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Version</th>
+<th>Deps</th>
+<th>CI</th>
+<th>Coverage</th>
+<th>Lead Maintainer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>libp2p</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p"><code>libp2p</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p/releases"><img src="https://img.shields.io/npm/v/libp2p.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p"><img src="https://david-dm.org/libp2p/js-libp2p.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://codecov.io/gh/libp2p/js-libp2p/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-daemon"><code>libp2p-daemon</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-daemon/releases"><img src="https://img.shields.io/npm/v/libp2p-daemon.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-daemon"><img src="https://david-dm.org/libp2p/js-libp2p-daemon.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-daemon"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-daemon/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-daemon"><img src="https://codecov.io/gh/libp2p/js-libp2p-daemon/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-daemon-client"><code>libp2p-daemon-client</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-daemon-client/releases"><img src="https://img.shields.io/npm/v/libp2p-daemon-client.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-daemon-client"><img src="https://david-dm.org/libp2p/js-libp2p-daemon-client.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-daemon-client"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-daemon-client/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-daemon-client"><img src="https://codecov.io/gh/libp2p/js-libp2p-daemon-client/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-interfaces"><code>libp2p-interfaces</code></a></td>
+<td><a href="//github.com/libp2p/js-interfaces/releases"><img src="https://img.shields.io/npm/v/libp2p-interfaces.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-interfaces"><img src="https://david-dm.org/libp2p/js-interfaces.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-interfaces"><img src="https://flat.badgen.net/travis/libp2p/js-interfaces/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-interfaces"><img src="https://codecov.io/gh/libp2p/js-interfaces/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/interop"><code>interop-libp2p</code></a></td>
+<td><a href="//github.com/libp2p/interop/releases"><img src="https://img.shields.io/npm/v/interop-libp2p.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/interop"><img src="https://david-dm.org/libp2p/interop.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/interop"><img src="https://flat.badgen.net/travis/libp2p/interop/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/interop"><img src="https://codecov.io/gh/libp2p/interop/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><strong>transports</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-tcp"><code>libp2p-tcp</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-tcp/releases"><img src="https://img.shields.io/npm/v/libp2p-tcp.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-tcp"><img src="https://david-dm.org/libp2p/js-libp2p-tcp.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-tcp"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-tcp/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-tcp"><img src="https://codecov.io/gh/libp2p/js-libp2p-tcp/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-webrtc-direct"><code>libp2p-webrtc-direct</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-webrtc-direct/releases"><img src="https://img.shields.io/npm/v/libp2p-webrtc-direct.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-webrtc-direct"><img src="https://david-dm.org/libp2p/js-libp2p-webrtc-direct.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-webrtc-direct"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-webrtc-direct/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-webrtc-direct"><img src="https://codecov.io/gh/libp2p/js-libp2p-webrtc-direct/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-webrtc-star"><code>libp2p-webrtc-star</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-webrtc-star/releases"><img src="https://img.shields.io/npm/v/libp2p-webrtc-star.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-webrtc-star"><img src="https://david-dm.org/libp2p/js-libp2p-webrtc-star.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-webrtc-star"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-webrtc-star/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star"><img src="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-websockets"><code>libp2p-websockets</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-websockets/releases"><img src="https://img.shields.io/npm/v/libp2p-websockets.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-websockets"><img src="https://david-dm.org/libp2p/js-libp2p-websockets.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-websockets"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-websockets/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-websockets"><img src="https://codecov.io/gh/libp2p/js-libp2p-websockets/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><strong>secure channels</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/NodeFactoryIo/js-libp2p-noise"><code>libp2p-noise</code></a></td>
+<td><a href="//github.com/NodeFactoryIo/js-libp2p-noise/releases"><img src="https://img.shields.io/npm/v/libp2p-noise.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/NodeFactoryIo/js-libp2p-noise"><img src="https://david-dm.org/NodeFactoryIo/js-libp2p-noise.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/NodeFactoryIo/js-libp2p-noise"><img src="https://flat.badgen.net/travis/NodeFactoryIo/js-libp2p-noise/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/NodeFactoryIo/js-libp2p-noise"><img src="https://codecov.io/gh/NodeFactoryIo/js-libp2p-noise/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>stream multiplexers</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-mplex"><code>libp2p-mplex</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-mplex/releases"><img src="https://img.shields.io/npm/v/libp2p-mplex.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-mplex"><img src="https://david-dm.org/libp2p/js-libp2p-mplex.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-mplex"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-mplex/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-mplex"><img src="https://codecov.io/gh/libp2p/js-libp2p-mplex/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><strong>peer discovery</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-bootstrap"><code>libp2p-bootstrap</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-bootstrap/releases"><img src="https://img.shields.io/npm/v/libp2p-bootstrap.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-bootstrap"><img src="https://david-dm.org/libp2p/js-libp2p-bootstrap.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-bootstrap"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-bootstrap/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-bootstrap"><img src="https://codecov.io/gh/libp2p/js-libp2p-bootstrap/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-kad-dht"><code>libp2p-kad-dht</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-kad-dht/releases"><img src="https://img.shields.io/npm/v/libp2p-kad-dht.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-kad-dht"><img src="https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-kad-dht"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-kad-dht/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-kad-dht"><img src="https://codecov.io/gh/libp2p/js-libp2p-kad-dht/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-mdns"><code>libp2p-mdns</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-mdns/releases"><img src="https://img.shields.io/npm/v/libp2p-mdns.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-mdns"><img src="https://david-dm.org/libp2p/js-libp2p-mdns.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-mdns"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-mdns/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-mdns"><img src="https://codecov.io/gh/libp2p/js-libp2p-mdns/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-webrtc-star"><code>libp2p-webrtc-star</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-webrtc-star/releases"><img src="https://img.shields.io/npm/v/libp2p-webrtc-star.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-webrtc-star"><img src="https://david-dm.org/libp2p/js-libp2p-webrtc-star.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-webrtc-star"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-webrtc-star/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star"><img src="https://codecov.io/gh/libp2p/js-libp2p-webrtc-star/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/ChainSafe/discv5"><code>@chainsafe/discv5</code></a></td>
+<td><a href="//github.com/ChainSafe/discv5/releases"><img src="https://img.shields.io/npm/v/@chainsafe/discv5.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/ChainSafe/discv5"><img src="https://david-dm.org/ChainSafe/discv5.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/ChainSafe/discv5"><img src="https://flat.badgen.net/travis/ChainSafe/discv5/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/ChainSafe/discv5"><img src="https://codecov.io/gh/ChainSafe/discv5/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:caymannava@gmail.com">Cayman Nava</a></td>
+</tr>
+<tr>
+<td><strong>content routing</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-delegated-content-routing"><code>libp2p-delegated-content-routing</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-delegated-content-routing/releases"><img src="https://img.shields.io/npm/v/libp2p-delegated-content-routing.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-delegated-content-routing"><img src="https://david-dm.org/libp2p/js-libp2p-delegated-content-routing.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-delegated-content-routing"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-delegated-content-routing/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-delegated-content-routing"><img src="https://codecov.io/gh/libp2p/js-libp2p-delegated-content-routing/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-kad-dht"><code>libp2p-kad-dht</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-kad-dht/releases"><img src="https://img.shields.io/npm/v/libp2p-kad-dht.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-kad-dht"><img src="https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-kad-dht"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-kad-dht/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-kad-dht"><img src="https://codecov.io/gh/libp2p/js-libp2p-kad-dht/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><strong>peer routing</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-delegated-peer-routing"><code>libp2p-delegated-peer-routing</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-delegated-peer-routing/releases"><img src="https://img.shields.io/npm/v/libp2p-delegated-peer-routing.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-delegated-peer-routing"><img src="https://david-dm.org/libp2p/js-libp2p-delegated-peer-routing.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-delegated-peer-routing"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-delegated-peer-routing/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-delegated-peer-routing"><img src="https://codecov.io/gh/libp2p/js-libp2p-delegated-peer-routing/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-kad-dht"><code>libp2p-kad-dht</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-kad-dht/releases"><img src="https://img.shields.io/npm/v/libp2p-kad-dht.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-kad-dht"><img src="https://david-dm.org/libp2p/js-libp2p-kad-dht.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-kad-dht"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-kad-dht/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-kad-dht"><img src="https://codecov.io/gh/libp2p/js-libp2p-kad-dht/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><strong>utilities</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-crypto"><code>libp2p-crypto</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-crypto/releases"><img src="https://img.shields.io/npm/v/libp2p-crypto.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-crypto"><img src="https://david-dm.org/libp2p/js-libp2p-crypto.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-crypto"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-crypto/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-crypto"><img src="https://codecov.io/gh/libp2p/js-libp2p-crypto/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:jacobheun@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><strong>data types</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-peer-id"><code>peer-id</code></a></td>
+<td><a href="//github.com/libp2p/js-peer-id/releases"><img src="https://img.shields.io/npm/v/peer-id.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-peer-id"><img src="https://david-dm.org/libp2p/js-peer-id.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-peer-id"><img src="https://flat.badgen.net/travis/libp2p/js-peer-id/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-peer-id"><img src="https://codecov.io/gh/libp2p/js-peer-id/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-record"><code>libp2p-record</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-record/releases"><img src="https://img.shields.io/npm/v/libp2p-record.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-record"><img src="https://david-dm.org/libp2p/js-libp2p-record.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-record"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-record/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-record"><img src="https://codecov.io/gh/libp2p/js-libp2p-record/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:santos.vasco10@gmail.com">Jacob Heun</a></td>
+</tr>
+<tr>
+<td><strong>pubsub</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-floodsub"><code>libp2p-floodsub</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-floodsub/releases"><img src="https://img.shields.io/npm/v/libp2p-floodsub.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-floodsub"><img src="https://david-dm.org/libp2p/js-libp2p-floodsub.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-floodsub"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-floodsub/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-floodsub"><img src="https://codecov.io/gh/libp2p/js-libp2p-floodsub/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:vasco.santos@moxy.studio">Vasco Santos</a></td>
+</tr>
+<tr>
+<td><a href="//github.com/ChainSafe/js-libp2p-gossipsub"><code>libp2p-gossipsub</code></a></td>
+<td><a href="//github.com/ChainSafe/js-libp2p-gossipsub/releases"><img src="https://img.shields.io/npm/v/libp2p-gossipsub.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/ChainSafe/js-libp2p-gossipsub"><img src="https://david-dm.org/ChainSafe/js-libp2p-gossipsub.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/ChainSafe/js-libp2p-gossipsub"><img src="https://flat.badgen.net/travis/ChainSafe/js-libp2p-gossipsub/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/ChainSafe/js-libp2p-gossipsub"><img src="https://codecov.io/gh/ChainSafe/js-libp2p-gossipsub/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:caymannava@gmail.com">Cayman Nava</a></td>
+</tr>
+<tr>
+<td><strong>extensions</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-nat-mgnr"><code>libp2p-nat-mgnr</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-nat-mgnr/releases"><img src="https://img.shields.io/npm/v/libp2p-nat-mgnr.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-nat-mgnr"><img src="https://david-dm.org/libp2p/js-libp2p-nat-mgnr.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-nat-mgnr"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-nat-mgnr/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-nat-mgnr"><img src="https://codecov.io/gh/libp2p/js-libp2p-nat-mgnr/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><a href="//github.com/libp2p/js-libp2p-utils"><code>libp2p-utils</code></a></td>
+<td><a href="//github.com/libp2p/js-libp2p-utils/releases"><img src="https://img.shields.io/npm/v/libp2p-utils.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="https://david-dm.org/libp2p/js-libp2p-utils"><img src="https://david-dm.org/libp2p/js-libp2p-utils.svg?style=flat-square" alt="Deps"></a></td>
+<td><a href="https://travis-ci.com/libp2p/js-libp2p-utils"><img src="https://flat.badgen.net/travis/libp2p/js-libp2p-utils/master" alt="Travis CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-libp2p-utils"><img src="https://codecov.io/gh/libp2p/js-libp2p-utils/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="mailto:santos.vasco10@gmail.com">Vasco Santos</a></td>
+</tr>
+</tbody></table>
+
+<a href="#used-by" id="used-by" style="color: inherit; text-decoration: none;">
+  <h2>Used by</h2>
+</a>
+<div style="padding: 20px">
+  <p align="middle">
+    <a href="https://lodestar.chainsafe.io/"><img width="300" src="https://github.com/ChainSafe/lodestar/blob/unstable/assets/lodestar_icon_text_black_stroke.png?raw=true"></a>
+    <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo">
+    <a href="https:/https://js.ipfs.io/"><img src="https://ipfs.io/ipfs/Qme6KJdKcp85TYbLxuLV7oQzMiLremD7HMoXLZEmgo6Rnh/js-ipfs-sticker.png" alt="IPFS in JavaScript logo" width="150" /></a>
+  </p>
 </div>
-<footer>
-	<div class="container">
-		<h2>Legend</h2>
-		<div class="tsd-legend-group">
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
-			</ul>
-		</div>
-	</div>
-</footer>
-<div class="overlay"></div>
-<script src="assets/js/main.js"></script>
-</body>
-</html>
+
+<p>And <a href="https://github.com/libp2p/js-libp2p/network/dependents">many others...</a></p>
+
+<a href="#contribute" id="contribute" style="color: inherit; text-decoration: none;">
+  <h2>Contribute</h2>
+</a>
+<p>The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:</p>
+<ul>
+<li>Go through the modules and <strong>check out existing issues</strong>. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.</li>
+<li><strong>Perform code reviews</strong>. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.</li>
+<li><strong>Add tests</strong>. There can never be enough tests.</li>
+</ul>
+
+<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+  <h2>License</h2>
+</a>
+<p>Licensed under either of</p>
+<ul>
+<li>Apache 2.0, (<a href="LICENSE-APACHE">LICENSE-APACHE</a> / <a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>)</li>
+<li>MIT (<a href="LICENSE-MIT">LICENSE-MIT</a> / <a href="http://opensource.org/licenses/MIT">http://opensource.org/licenses/MIT</a>)</li>
+</ul>
+
+<a href="#contribution" id="contribution" style="color: inherit; text-decoration: none;">
+  <h3>Contribution</h3>
+</a>
+<p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.</p>
+</div></div>
+<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+<div class="tsd-navigation settings">
+<details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility">
+<h4 class="uppercase">Member Visibility</h4><form>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-private" name="private"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Private</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></form></div>
+<div class="tsd-theme-toggle">
+<h4 class="uppercase">Theme</h4><select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<nav class="tsd-navigation primary">
+<details class="tsd-index-accordion" open><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Modules</h3></summary>
+<div class="tsd-accordion-details">
+<ul>
+<li class="current selected"><a href="modules.html">libp2p -<wbr/> v0.42.1</a>
+<ul>
+<li class="tsd-kind-module"><a href="modules/index.html">index</a>
+<ul>
+<li class="tsd-kind-module tsd-parent-kind-module"><a href="modules/index._internal_.html">&lt;internal&gt;</a></li></ul></li>
+<li class="tsd-kind-module"><a href="modules/insecure.html">insecure</a></li>
+<li class="tsd-kind-module"><a href="modules/pnet.html">pnet</a></li></ul></li></ul></div></details></nav></div></div>
+<div class="overlay"></div><script src="assets/main.js"></script></body></html>
