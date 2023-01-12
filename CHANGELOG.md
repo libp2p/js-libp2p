@@ -1,3 +1,15 @@
+## [1.0.7](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.6...v1.0.7) (2023-01-12)
+
+
+### Dependencies
+
+* Update deps and add quic-v1 support ([#44](https://github.com/libp2p/js-libp2p-webtransport/issues/44)) ([d1613b1](https://github.com/libp2p/js-libp2p-webtransport/commit/d1613b10c1c8164fadcbe9a28175b7f0099d1645)), closes [#35](https://github.com/libp2p/js-libp2p-webtransport/issues/35)
+
+
+### Documentation
+
+* update project config to publish api docs ([#45](https://github.com/libp2p/js-libp2p-webtransport/issues/45)) ([bdbf402](https://github.com/libp2p/js-libp2p-webtransport/commit/bdbf4025b5f80d6cc8af49596da09386538dc791))
+
 ## [1.0.6](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.5...v1.0.6) (2022-12-06)
 
 
