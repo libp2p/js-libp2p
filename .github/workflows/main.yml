@@ -168,9 +168,11 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - if: ${{ steps.release.outputs.release_created }}
+      - if: ${{ !steps.release.outputs.release_created }}
         name: Publish docs
         run: npm run --if-present docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: ${{ !steps.release.outputs.release_created }}
         name: Run release rc
         run: |
