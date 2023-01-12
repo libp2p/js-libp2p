@@ -1,17 +1,17 @@
 import { webTransport } from '@libp2p/webtransport'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { createLibp2p, Libp2p } from 'libp2p'
 import { createBitswap } from 'ipfs-bitswap'
 import { MemoryBlockstore } from 'blockstore-core/memory'
 
 type Bitswap = ReturnType<typeof createBitswap>
 
-export async function setup (): Promise<{libp2p: Libp2p, bitswap: Bitswap}> {
+export async function setup (): Promise<{ libp2p: Libp2p, bitswap: Bitswap }> {
   const store = new MemoryBlockstore()
 
   const node = await createLibp2p({
     transports: [webTransport()],
-    connectionEncryption: [() => new Noise()]
+    connectionEncryption: [noise()]
   })
 
   await node.start()

@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { Transport, symbol, CreateListenerOptions, DialOptions, Listener } from '@libp2p/interface-transport'
 import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface-connection'
 import { Multiaddr, protocols } from '@multiformats/multiaddr'
@@ -200,6 +200,7 @@ function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDig
           seenHost: true
         }
       case protocols('quic').code:
+      case protocols('quic-v1').code:
       case protocols('webtransport').code:
         if (!state.seenHost || !state.seenPort) {
           throw new Error("Invalid multiaddr, Didn't see host and port, but saw quic/webtransport")
@@ -368,9 +369,9 @@ class WebTransport implements Transport {
       }
     }
 
-    const noise = new Noise()
+    const n = noise()()
 
-    const { remoteExtensions } = await noise.secureOutbound(localPeer, duplex, remotePeer)
+    const { remoteExtensions } = await n.secureOutbound(localPeer, duplex, remotePeer)
 
     // We're done with this authentication stream
     writer.close().catch((err: Error) => {

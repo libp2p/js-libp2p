@@ -3,7 +3,7 @@
 
 import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { webTransport, isSubset } from '../src/index'
 import { createLibp2p } from 'libp2p'
 
@@ -20,7 +20,7 @@ describe('libp2p-webtransport', () => {
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [() => new Noise()]
+      connectionEncryption: [noise()]
     })
 
     await node.start()
@@ -66,7 +66,7 @@ describe('libp2p-webtransport', () => {
     }
 
     await node.stop()
-    const conns = node.connectionManager.getConnections()
+    const conns = node.getConnections()
     expect(conns.length).to.equal(0)
   })
 
@@ -79,7 +79,7 @@ describe('libp2p-webtransport', () => {
 
     const node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [() => new Noise()]
+      connectionEncryption: [noise()]
     })
     await node.start()
 
@@ -96,7 +96,7 @@ describe('libp2p-webtransport', () => {
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [() => new Noise()]
+      connectionEncryption: [noise()]
     })
 
     async function * gen () {

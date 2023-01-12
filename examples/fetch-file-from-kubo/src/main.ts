@@ -26,10 +26,10 @@ declare global {
     await libp2p.dial(ma)
   }
 
-  libp2p.connectionManager.addEventListener('peer:connect', (_connection) => {
+  libp2p.addEventListener('peer:connect', (_connection) => {
     updateConnList()
   })
-  libp2p.connectionManager.addEventListener('peer:disconnect', (_connection) => {
+  libp2p.addEventListener('peer:disconnect', (_connection) => {
     updateConnList()
   })
 

@@ -19,7 +19,7 @@ func main() {
 		panic(err)
 	}
 
-	err = h.Network().Listen(multiaddr.StringCast("/ip4/127.0.0.1/udp/0/quic/webtransport"))
+	err = h.Network().Listen(multiaddr.StringCast("/ip4/127.0.0.1/udp/0/quic-v1/webtransport"))
 	if err != nil {
 		panic(err)
 	}

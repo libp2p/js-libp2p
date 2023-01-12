@@ -10,12 +10,12 @@
     "test": "npm run build && playwright test tests"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^9.0.0",
-    "@libp2p/webtransport": "1.0.2",
-    "@multiformats/multiaddr": "^11.0.3",
-    "blockstore-core": "^2.0.1",
-    "ipfs-bitswap": "^13.0.0",
-    "libp2p": "^0.40.0",
+    "@chainsafe/libp2p-noise": "^11.0.0",
+    "@libp2p/webtransport": "../..",
+    "@multiformats/multiaddr": "^11.1.5",
+    "blockstore-core": "^3.0.0",
+    "ipfs-bitswap": "^15.0.0",
+    "libp2p": "^0.42.0",
     "test-util-ipfs-example": "^1.0.2"
   },
   "devDependencies": {
