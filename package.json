@@ -38,7 +38,7 @@
   },
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
@@ -150,7 +150,8 @@
     "build": "aegir build",
     "test": "aegir test -t browser",
     "test:chrome": "aegir test -t browser --cov",
-    "release": "aegir release"
+    "release": "aegir release",
+    "docs": "aegir docs"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",
