@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-topology/compare/v4.0.0...v4.0.1) (2023-01-13)
+
+
+### Dependencies
+
+* remove err-code ([#18](https://github.com/libp2p/js-libp2p-topology/issues/18)) ([70cc52b](https://github.com/libp2p/js-libp2p-topology/commit/70cc52b0da883fba9288fab1de362d3f71707f28))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-topology/compare/v3.0.2...v4.0.0) (2023-01-06)
 
 
