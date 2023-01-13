@@ -5,7 +5,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { codes } from './errors.js'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 
 /**
  * Generate a random sequence number
@@ -68,7 +68,7 @@ export const ensureArray = function <T> (maybeArray: T | T[]) {
 
 export const toMessage = (message: PubSubRPCMessage): Message => {
   if (message.from == null) {
-    throw errcode(new Error('RPC message was missing from'), codes.ERR_MISSING_FROM)
+    throw new CodeError('RPC message was missing from', codes.ERR_MISSING_FROM)
   }
 
   if (message.sequenceNumber == null || message.from == null || message.signature == null || message.key == null) {

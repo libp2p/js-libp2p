@@ -1,6 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { pipe } from 'it-pipe'
 import Queue from 'p-queue'
 import { createTopology } from '@libp2p/topology'
@@ -447,22 +447,22 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     switch (signaturePolicy) {
       case 'StrictSign':
         if (msg.type !== 'signed') {
-          throw errcode(new Error('Message type should be "signed" when signature policy is StrictSign but it was not'), codes.ERR_MISSING_SIGNATURE)
+          throw new CodeError('Message type should be "signed" when signature policy is StrictSign but it was not', codes.ERR_MISSING_SIGNATURE)
         }
 
         if (msg.sequenceNumber == null) {
-          throw errcode(new Error('Need seqno when signature policy is StrictSign but it was missing'), codes.ERR_MISSING_SEQNO)
+          throw new CodeError('Need seqno when signature policy is StrictSign but it was missing', codes.ERR_MISSING_SEQNO)
         }
 
         if (msg.key == null) {
-          throw errcode(new Error('Need key when signature policy is StrictSign but it was missing'), codes.ERR_MISSING_KEY)
+          throw new CodeError('Need key when signature policy is StrictSign but it was missing', codes.ERR_MISSING_KEY)
         }
 
         return msgId(msg.key, msg.sequenceNumber)
       case 'StrictNoSign':
         return noSignMsgId(msg.data)
       default:
-        throw errcode(new Error('Cannot get message id: unhandled signature policy'), codes.ERR_UNHANDLED_SIGNATURE_POLICY)
+        throw new CodeError('Cannot get message id: unhandled signature policy', codes.ERR_UNHANDLED_SIGNATURE_POLICY)
     }
   }
 
@@ -528,51 +528,51 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     switch (signaturePolicy) {
       case 'StrictNoSign':
         if (message.type !== 'unsigned') {
-          throw errcode(new Error('Message type should be "unsigned" when signature policy is StrictNoSign but it was not'), codes.ERR_MISSING_SIGNATURE)
+          throw new CodeError('Message type should be "unsigned" when signature policy is StrictNoSign but it was not', codes.ERR_MISSING_SIGNATURE)
         }
 
         // @ts-expect-error should not be present
         if (message.signature != null) {
-          throw errcode(new Error('StrictNoSigning: signature should not be present'), codes.ERR_UNEXPECTED_SIGNATURE)
+          throw new CodeError('StrictNoSigning: signature should not be present', codes.ERR_UNEXPECTED_SIGNATURE)
         }
 
         // @ts-expect-error should not be present
         if (message.key != null) {
-          throw errcode(new Error('StrictNoSigning: key should not be present'), codes.ERR_UNEXPECTED_KEY)
+          throw new CodeError('StrictNoSigning: key should not be present', codes.ERR_UNEXPECTED_KEY)
         }
 
         // @ts-expect-error should not be present
         if (message.sequenceNumber != null) {
-          throw errcode(new Error('StrictNoSigning: seqno should not be present'), codes.ERR_UNEXPECTED_SEQNO)
+          throw new CodeError('StrictNoSigning: seqno should not be present', codes.ERR_UNEXPECTED_SEQNO)
         }
         break
       case 'StrictSign':
         if (message.type !== 'signed') {
-          throw errcode(new Error('Message type should be "signed" when signature policy is StrictSign but it was not'), codes.ERR_MISSING_SIGNATURE)
+          throw new CodeError('Message type should be "signed" when signature policy is StrictSign but it was not', codes.ERR_MISSING_SIGNATURE)
         }
 
         if (message.signature == null) {
-          throw errcode(new Error('StrictSigning: Signing required and no signature was present'), codes.ERR_MISSING_SIGNATURE)
+          throw new CodeError('StrictSigning: Signing required and no signature was present', codes.ERR_MISSING_SIGNATURE)
         }
 
         if (message.sequenceNumber == null) {
-          throw errcode(new Error('StrictSigning: Signing required and no sequenceNumber was present'), codes.ERR_MISSING_SEQNO)
+          throw new CodeError('StrictSigning: Signing required and no sequenceNumber was present', codes.ERR_MISSING_SEQNO)
         }
 
         if (!(await verifySignature(message, this.encodeMessage.bind(this)))) {
-          throw errcode(new Error('StrictSigning: Invalid message signature'), codes.ERR_INVALID_SIGNATURE)
+          throw new CodeError('StrictSigning: Invalid message signature', codes.ERR_INVALID_SIGNATURE)
         }
 
         break
       default:
-        throw errcode(new Error('Cannot validate message: unhandled signature policy'), codes.ERR_UNHANDLED_SIGNATURE_POLICY)
+        throw new CodeError('Cannot validate message: unhandled signature policy', codes.ERR_UNHANDLED_SIGNATURE_POLICY)
     }
 
     const validatorFn = this.topicValidators.get(message.topic)
     if (validatorFn != null) {
       const result = await validatorFn(from, message)
       if (result === TopicValidatorResult.Reject || result === TopicValidatorResult.Ignore) {
-        throw errcode(new Error('Message validation failed'), codes.ERR_TOPIC_VALIDATOR_REJECT)
+        throw new CodeError('Message validation failed', codes.ERR_TOPIC_VALIDATOR_REJECT)
       }
     }
   }
@@ -592,7 +592,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
           ...message
         })
       default:
-        throw errcode(new Error('Cannot build message: unhandled signature policy'), codes.ERR_UNHANDLED_SIGNATURE_POLICY)
+        throw new CodeError('Cannot build message: unhandled signature policy', codes.ERR_UNHANDLED_SIGNATURE_POLICY)
     }
   }
 
@@ -603,11 +603,11 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
    */
   getSubscribers (topic: string): PeerId[] {
     if (!this.started) {
-      throw errcode(new Error('not started yet'), 'ERR_NOT_STARTED_YET')
+      throw new CodeError('not started yet', 'ERR_NOT_STARTED_YET')
     }
 
     if (topic == null) {
-      throw errcode(new Error('topic is required'), 'ERR_NOT_VALID_TOPIC')
+      throw new CodeError('topic is required', 'ERR_NOT_VALID_TOPIC')
     }
 
     const peersInTopic = this.topics.get(topic.toString())
