@@ -1,4 +1,4 @@
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
@@ -66,7 +66,7 @@ export class RecordEnvelope implements Envelope {
     const valid = await envelope.validate(domain)
 
     if (!valid) {
-      throw errCode(new Error('envelope signature is not valid for the given domain'), codes.ERR_SIGNATURE_NOT_VALID)
+      throw new CodeError('envelope signature is not valid for the given domain', codes.ERR_SIGNATURE_NOT_VALID)
     }
 
     return envelope
