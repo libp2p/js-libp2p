@@ -19,6 +19,7 @@ jobs:
     - uses: ipfs/aegir/actions/cache-node-modules@master
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
+    - run: npm run --if-present doc-check
 
   test-node:
     needs: check
