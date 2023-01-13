@@ -1,4 +1,4 @@
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Selectors } from '@libp2p/interface-dht'
 
@@ -9,7 +9,7 @@ export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8A
   if (records.length === 0) {
     const errMsg = 'No records given'
 
-    throw errCode(new Error(errMsg), 'ERR_NO_RECORDS_RECEIVED')
+    throw new CodeError(errMsg, 'ERR_NO_RECORDS_RECEIVED')
   }
 
   const kStr = uint8ArrayToString(k)
@@ -18,7 +18,7 @@ export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8A
   if (parts.length < 3) {
     const errMsg = 'Record key does not have a selector function'
 
-    throw errCode(new Error(errMsg), 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY')
+    throw new CodeError(errMsg, 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY')
   }
 
   const selector = selectors[parts[1].toString()]
@@ -26,7 +26,7 @@ export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8A
   if (selector == null) {
     const errMsg = `Unrecognized key prefix: ${parts[1]}`
 
-    throw errCode(new Error(errMsg), 'ERR_UNRECOGNIZED_KEY_PREFIX')
+    throw new CodeError(errMsg, 'ERR_UNRECOGNIZED_KEY_PREFIX')
   }
 
   if (records.length === 1) {
