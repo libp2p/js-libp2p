@@ -6,7 +6,7 @@ import { MessageTypes, MessageTypeNames, Message } from './message-types.js'
 import { createStream } from './stream.js'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import type { Sink } from 'it-stream-types'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
@@ -157,7 +157,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     log('new %s stream %s', type, id)
 
     if (type === 'initiator' && this._streams.initiators.size === (this._init.maxOutboundStreams ?? MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION)) {
-      throw errCode(new Error('Too many outbound streams open'), 'ERR_TOO_MANY_OUTBOUND_STREAMS')
+      throw new CodeError('Too many outbound streams open', 'ERR_TOO_MANY_OUTBOUND_STREAMS')
     }
 
     if (registry.has(id)) {
@@ -303,7 +303,7 @@ export class MplexStreamMuxer implements StreamMuxer {
           })
 
           // Inform the stream consumer they are not fast enough
-          const error = errCode(new Error('Input buffer full - increase Mplex maxBufferSize to accommodate slow consumers'), 'ERR_STREAM_INPUT_BUFFER_FULL')
+          const error = new CodeError('Input buffer full - increase Mplex maxBufferSize to accommodate slow consumers', 'ERR_STREAM_INPUT_BUFFER_FULL')
           stream.abort(error)
 
           return

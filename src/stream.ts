@@ -1,6 +1,6 @@
 import { abortableSource } from 'abortable-iterator'
 import { pushable } from 'it-pushable'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { MAX_MSG_SIZE } from './decode.js'
 import { anySignal } from 'any-signal'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
@@ -143,7 +143,7 @@ export function createStream (options: Options): MplexStream {
 
     // Close immediately for reading and writing (remote error)
     reset: () => {
-      const err = errCode(new Error('stream reset'), ERR_STREAM_RESET)
+      const err = new CodeError('stream reset', ERR_STREAM_RESET)
       resetController.abort()
       streamSource.end(err)
       onSinkEnd(err)
@@ -151,13 +151,13 @@ export function createStream (options: Options): MplexStream {
 
     sink: async (source: Source<Uint8ArrayList | Uint8Array>) => {
       if (sinkSunk) {
-        throw errCode(new Error('sink already called on stream'), ERR_DOUBLE_SINK)
+        throw new CodeError('sink already called on stream', ERR_DOUBLE_SINK)
       }
 
       sinkSunk = true
 
       if (sinkEnded) {
-        throw errCode(new Error('stream closed for writing'), ERR_SINK_ENDED)
+        throw new CodeError('stream closed for writing', ERR_SINK_ENDED)
       }
 
       source = abortableSource(source, anySignal([
