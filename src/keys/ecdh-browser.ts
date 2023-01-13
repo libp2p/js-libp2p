@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import webcrypto from '../webcrypto.js'
 import { base64urlToBuffer } from '../util.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -17,7 +17,7 @@ const names = curveTypes.join(' / ')
 
 export async function generateEphmeralKeyPair (curve: string) {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
-    throw errcode(new Error(`Unknown curve: ${curve}. Must be ${names}`), 'ERR_INVALID_CURVE')
+    throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
   }
 
   const pair = await webcrypto.get().subtle.generateKey(
@@ -94,11 +94,11 @@ const curveLengths = {
 // go-ipfs uses)
 function marshalPublicKey (jwk: JsonWebKey) {
   if (jwk.crv == null || jwk.x == null || jwk.y == null) {
-    throw errcode(new Error('JWK was missing components'), 'ERR_INVALID_PARAMETERS')
+    throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }
 
   if (jwk.crv !== 'P-256' && jwk.crv !== 'P-384' && jwk.crv !== 'P-521') {
-    throw errcode(new Error(`Unknown curve: ${jwk.crv}. Must be ${names}`), 'ERR_INVALID_CURVE')
+    throw new CodeError(`Unknown curve: ${jwk.crv}. Must be ${names}`, 'ERR_INVALID_CURVE')
   }
 
   const byteLen = curveLengths[jwk.crv]
@@ -113,13 +113,13 @@ function marshalPublicKey (jwk: JsonWebKey) {
 // Unmarshal converts a point, serialized by Marshal, into an jwk encoded key
 function unmarshalPublicKey (curve: string, key: Uint8Array) {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
-    throw errcode(new Error(`Unknown curve: ${curve}. Must be ${names}`), 'ERR_INVALID_CURVE')
+    throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
   }
 
   const byteLen = curveLengths[curve]
 
   if (!uint8ArrayEquals(key.subarray(0, 1), Uint8Array.from([4]))) {
-    throw errcode(new Error('Cannot unmarshal public key - invalid key format'), 'ERR_INVALID_KEY_FORMAT')
+    throw new CodeError('Cannot unmarshal public key - invalid key format', 'ERR_INVALID_KEY_FORMAT')
   }
 
   return {

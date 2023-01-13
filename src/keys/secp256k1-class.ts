@@ -1,5 +1,5 @@
 import { sha256 } from 'multiformats/hashes/sha2'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as crypto from './secp256k1.js'
@@ -99,7 +99,7 @@ export class Secp256k1PrivateKey {
     if (format === 'libp2p-key') {
       return await exporter(this.bytes, password)
     } else {
-      throw errcode(new Error(`export format '${format}' is not supported`), 'ERR_INVALID_EXPORT_FORMAT')
+      throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
     }
   }
 }

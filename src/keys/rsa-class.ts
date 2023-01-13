@@ -1,6 +1,6 @@
 
 import { sha256 } from 'multiformats/hashes/sha2'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import 'node-forge/lib/sha512.js'
@@ -66,7 +66,7 @@ export class RsaPrivateKey {
 
   get public () {
     if (this._publicKey == null) {
-      throw errcode(new Error('public key not provided'), 'ERR_PUBKEY_NOT_PROVIDED')
+      throw new CodeError('public key not provided', 'ERR_PUBKEY_NOT_PROVIDED')
     }
 
     return new RsaPublicKey(this._publicKey)
@@ -128,7 +128,7 @@ export class RsaPrivateKey {
     } else if (format === 'libp2p-key') {
       return await exporter(this.bytes, password)
     } else {
-      throw errcode(new Error(`export format '${format}' is not supported`), 'ERR_INVALID_EXPORT_FORMAT')
+      throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
     }
   }
 }

@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import type { ECDHKey, ECDHKeyPair } from './interface.js'
 
 const curves = {
@@ -13,7 +13,7 @@ const names = curveTypes.join(' / ')
 
 export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> { // eslint-disable-line require-await
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
-    throw errcode(new Error(`Unknown curve: ${curve}. Must be ${names}`), 'ERR_INVALID_CURVE')
+    throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
   }
 
   const ecdh = crypto.createECDH(curves[curve])

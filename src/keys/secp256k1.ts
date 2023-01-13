@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import * as secp from '@noble/secp256k1'
 import { sha256 } from 'multiformats/hashes/sha2'
 
@@ -18,7 +18,7 @@ export async function hashAndSign (key: Uint8Array, msg: Uint8Array) {
   try {
     return await secp.sign(digest, key)
   } catch (err) {
-    throw errcode(err, 'ERR_INVALID_INPUT')
+    throw new CodeError(String(err), 'ERR_INVALID_INPUT')
   }
 }
 
@@ -30,7 +30,7 @@ export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint
     const { digest } = await sha256.digest(msg)
     return secp.verify(sig, digest, key)
   } catch (err) {
-    throw errcode(err, 'ERR_INVALID_INPUT')
+    throw new CodeError(String(err), 'ERR_INVALID_INPUT')
   }
 }
 
@@ -48,7 +48,7 @@ export function validatePrivateKey (key: Uint8Array) {
   try {
     secp.getPublicKey(key, true)
   } catch (err) {
-    throw errcode(err, 'ERR_INVALID_PRIVATE_KEY')
+    throw new CodeError(String(err), 'ERR_INVALID_PRIVATE_KEY')
   }
 }
 
@@ -56,7 +56,7 @@ export function validatePublicKey (key: Uint8Array) {
   try {
     secp.Point.fromHex(key)
   } catch (err) {
-    throw errcode(err, 'ERR_INVALID_PUBLIC_KEY')
+    throw new CodeError(String(err), 'ERR_INVALID_PUBLIC_KEY')
   }
 }
 
@@ -64,6 +64,6 @@ export function computePublicKey (privateKey: Uint8Array) {
   try {
     return secp.getPublicKey(privateKey, true)
   } catch (err) {
-    throw errcode(err, 'ERR_INVALID_PRIVATE_KEY')
+    throw new CodeError(String(err), 'ERR_INVALID_PRIVATE_KEY')
   }
 }

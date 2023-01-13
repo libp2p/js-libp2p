@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import randomBytes from '../random-bytes.js'
 import * as utils from './rsa-utils.js'
 import type { JWKKeyPair } from './interface.js'
@@ -28,7 +28,7 @@ export async function generateKey (bits: number): Promise<JWKKeyPair> { // eslin
 // Takes a jwk key
 export async function unmarshalPrivateKey (key: JsonWebKey): Promise<JWKKeyPair> { // eslint-disable-line require-await
   if (key == null) {
-    throw errcode(new Error('Missing key parameter'), 'ERR_MISSING_KEY')
+    throw new CodeError('Missing key parameter', 'ERR_MISSING_KEY')
   }
   return {
     privateKey: key,

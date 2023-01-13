@@ -4,7 +4,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as utils from './rsa-utils.js'
 import { jwk2pub, jwk2priv } from './jwk2pem.js'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 
 export { utils }
 
@@ -102,7 +102,7 @@ export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint
 
 async function exportKey (pair: CryptoKeyPair) {
   if (pair.privateKey == null || pair.publicKey == null) {
-    throw errcode(new Error('Private and public key are required'), 'ERR_INVALID_PARAMETERS')
+    throw new CodeError('Private and public key are required', 'ERR_INVALID_PARAMETERS')
   }
 
   return await Promise.all([

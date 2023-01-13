@@ -3,7 +3,7 @@ import 'node-forge/lib/asn1.js'
 import 'node-forge/lib/pbe.js'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { keyStretcher } from './key-stretcher.js'
 import generateEphemeralKeyPair from './ephemeral-keys.js'
@@ -27,7 +27,7 @@ export const supportedKeys = {
 
 function unsupportedKey (type: string) {
   const supported = Object.keys(supportedKeys).join(' / ')
-  return errcode(new Error(`invalid or unsupported key type ${type}. Must be ${supported}`), 'ERR_UNSUPPORTED_KEY_TYPE')
+  return new CodeError(`invalid or unsupported key type ${type}. Must be ${supported}`, 'ERR_UNSUPPORTED_KEY_TYPE')
 }
 
 function typeToKey (type: string) {
@@ -49,7 +49,7 @@ export async function generateKeyPair (type: KeyTypes, bits?: number): Promise<P
 // seed is a 32 byte uint8array
 export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array, bits?: number): Promise<PrivateKey> { // eslint-disable-line require-await
   if (type.toLowerCase() !== 'ed25519') {
-    throw errcode(new Error('Seed key derivation is unimplemented for RSA or secp256k1'), 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
+    throw new CodeError('Seed key derivation is unimplemented for RSA or secp256k1', 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
   }
 
   return await Ed25519.generateKeyPairFromSeed(seed)
@@ -121,7 +121,7 @@ export async function importKey (encryptedKey: string, password: string): Promis
   // Only rsa supports pem right now
   const key = forge.pki.decryptRsaPrivateKey(encryptedKey, password)
   if (key === null) {
-    throw errcode(new Error('Cannot read the key, most likely the password is wrong or not a RSA key'), 'ERR_CANNOT_DECRYPT_PEM')
+    throw new CodeError('Cannot read the key, most likely the password is wrong or not a RSA key', 'ERR_CANNOT_DECRYPT_PEM')
   }
   let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
   der = uint8ArrayFromString(der.getBytes(), 'ascii')

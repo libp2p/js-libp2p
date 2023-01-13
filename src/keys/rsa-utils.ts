@@ -5,7 +5,7 @@ import forge from 'node-forge/lib/forge.js'
 import { bigIntegerToUintBase64url, base64urlToBigInteger } from './../util.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 
 // Convert a PKCS#1 in ASN1 DER format to a JWK key
 export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {
@@ -30,7 +30,7 @@ export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {
 // Convert a JWK key into PKCS#1 in ASN1 DER format
 export function jwkToPkcs1 (jwk: JsonWebKey) {
   if (jwk.n == null || jwk.e == null || jwk.d == null || jwk.p == null || jwk.q == null || jwk.dp == null || jwk.dq == null || jwk.qi == null) {
-    throw errcode(new Error('JWK was missing components'), 'ERR_INVALID_PARAMETERS')
+    throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }
 
   const asn1 = forge.pki.privateKeyToAsn1({
@@ -62,7 +62,7 @@ export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
 // Convert a JWK key to PKCIX in ASN1 DER format
 export function jwkToPkix (jwk: JsonWebKey) {
   if (jwk.n == null || jwk.e == null) {
-    throw errcode(new Error('JWK was missing components'), 'ERR_INVALID_PARAMETERS')
+    throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }
 
   const asn1 = forge.pki.publicKeyToAsn1({

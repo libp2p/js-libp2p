@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { base58btc } from 'multiformats/bases/base58'
@@ -101,7 +101,7 @@ export class Ed25519PrivateKey {
     if (format === 'libp2p-key') {
       return await exporter(this.bytes, password)
     } else {
-      throw errcode(new Error(`export format '${format}' is not supported`), 'ERR_INVALID_EXPORT_FORMAT')
+      throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
     }
   }
 }
@@ -139,7 +139,7 @@ export async function generateKeyPairFromSeed (seed: Uint8Array) {
 function ensureKey (key: Uint8Array, length: number) {
   key = Uint8Array.from(key ?? [])
   if (key.length !== length) {
-    throw errcode(new Error(`Key must be a Uint8Array of length ${length}, got ${key.length}`), 'ERR_INVALID_KEY_TYPE')
+    throw new CodeError(`Key must be a Uint8Array of length ${length}, got ${key.length}`, 'ERR_INVALID_KEY_TYPE')
   }
   return key
 }

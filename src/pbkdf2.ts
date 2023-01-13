@@ -2,7 +2,7 @@
 import forgePbkdf2 from 'node-forge/lib/pbkdf2.js'
 // @ts-expect-error types are missing
 import forgeUtil from 'node-forge/lib/util.js'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 
 /**
  * Maps an IPFS hash name to its node-forge equivalent.
@@ -23,7 +23,7 @@ const hashName = {
 export default function pbkdf2 (password: string, salt: string, iterations: number, keySize: number, hash: string): string {
   if (hash !== 'sha1' && hash !== 'sha2-256' && hash !== 'sha2-512') {
     const types = Object.keys(hashName).join(' / ')
-    throw errcode(new Error(`Hash '${hash}' is unknown or not supported. Must be ${types}`), 'ERR_UNSUPPORTED_HASH_TYPE')
+    throw new CodeError(`Hash '${hash}' is unknown or not supported. Must be ${types}`, 'ERR_UNSUPPORTED_HASH_TYPE')
   }
 
   const hasher = hashName[hash]

@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as hmac from '../hmac/index.js'
@@ -27,11 +27,11 @@ export async function keyStretcher (cipherType: 'AES-128' | 'AES-256' | 'Blowfis
 
   if (cipher == null) {
     const allowed = Object.keys(cipherMap).join(' / ')
-    throw errcode(new Error(`unknown cipher type '${cipherType}'. Must be ${allowed}`), 'ERR_INVALID_CIPHER_TYPE')
+    throw new CodeError(`unknown cipher type '${cipherType}'. Must be ${allowed}`, 'ERR_INVALID_CIPHER_TYPE')
   }
 
   if (hash == null) {
-    throw errcode(new Error('missing hash type'), 'ERR_MISSING_HASH_TYPE')
+    throw new CodeError('missing hash type', 'ERR_MISSING_HASH_TYPE')
   }
 
   const cipherKeySize = cipher.keySize
