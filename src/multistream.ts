@@ -2,7 +2,7 @@
 import { Uint8ArrayList } from 'uint8arraylist'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import first from 'it-first'
 import { abortableSource } from 'abortable-iterator'
@@ -82,12 +82,12 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
   )
 
   if (buf == null || buf.length === 0) {
-    throw errCode(new Error('no buffer returned'), 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
+    throw new CodeError('no buffer returned', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 
   if (buf.get(buf.byteLength - 1) !== NewLine[0]) {
     log.error('Invalid mss message - missing newline - %s', buf.subarray())
-    throw errCode(new Error('missing newline'), 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
+    throw new CodeError('missing newline', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 
   return buf.sublist(0, -1) // Remove newline

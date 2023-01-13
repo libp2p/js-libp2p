@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import * as multistream from './multistream.js'
 import { handshake } from 'it-handshake'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -102,7 +102,7 @@ export async function select (stream: Duplex<any>, protocols: string | string[],
   }
 
   rest()
-  throw errCode(new Error('protocol selection failed'), 'ERR_UNSUPPORTED_PROTOCOL')
+  throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
 }
 
 /**
@@ -147,7 +147,7 @@ export function lazySelect (stream: Duplex<any>, protocol: string): ProtocolStre
           response = await multistream.readString(byteReader)
         }
         if (response !== protocol) {
-          throw errCode(new Error('protocol selection failed'), 'ERR_UNSUPPORTED_PROTOCOL')
+          throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
         }
         for await (const chunk of byteReader) {
           yield * chunk
