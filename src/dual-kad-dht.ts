@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import merge from 'it-merge'
 import { queryErrorEvent } from './query/events.js'
 import type { KadDHT } from './kad-dht.js'
@@ -136,13 +136,13 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
     }
 
     if (!queriedPeers) {
-      throw errCode(new Error('No peers found in routing table!'), 'ERR_NO_PEERS_IN_ROUTING_TABLE')
+      throw new CodeError('No peers found in routing table!', 'ERR_NO_PEERS_IN_ROUTING_TABLE')
     }
 
     if (!foundValue) {
       yield queryErrorEvent({
         from: this.components.peerId,
-        error: errCode(new Error('Not found'), 'ERR_NOT_FOUND')
+        error: new CodeError('Not found', 'ERR_NOT_FOUND')
       })
     }
   }
@@ -184,10 +184,10 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
     if (success === 0) {
       if (errors.length > 0) {
         // if all sends failed, throw an error to inform the caller
-        throw errCode(new Error(`Failed to provide to ${errors.length} of ${sent} peers`), 'ERR_PROVIDES_FAILED', { errors })
+        throw new CodeError(`Failed to provide to ${errors.length} of ${sent} peers`, 'ERR_PROVIDES_FAILED', { errors })
       }
 
-      throw errCode(new Error('Failed to provide - no peers found'), 'ERR_PROVIDES_FAILED')
+      throw new CodeError('Failed to provide - no peers found', 'ERR_PROVIDES_FAILED')
     }
   }
 
@@ -221,7 +221,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
     }
 
     if (!queriedPeers) {
-      throw errCode(new Error('Peer lookup failed'), 'ERR_LOOKUP_FAILED')
+      throw new CodeError('Peer lookup failed', 'ERR_LOOKUP_FAILED')
     }
   }
 

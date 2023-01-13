@@ -1,5 +1,5 @@
 import { Libp2pRecord } from '@libp2p/record'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { Message, MESSAGE_TYPE } from '../../message/index.js'
 import {
   MAX_RECORD_AGE
@@ -40,7 +40,7 @@ export class GetValueHandler implements DHTMessageHandler {
     log('%p asked for key %b', peerId, key)
 
     if (key == null || key.length === 0) {
-      throw errcode(new Error('Invalid key'), 'ERR_INVALID_KEY')
+      throw new CodeError('Invalid key', 'ERR_INVALID_KEY')
     }
 
     const response = new Message(MESSAGE_TYPE.GET_VALUE, key, msg.clusterLevel)
@@ -54,7 +54,7 @@ export class GetValueHandler implements DHTMessageHandler {
         const key = await this.components.peerStore.keyBook.get(idFromKey)
 
         if (key == null) {
-          throw errcode(new Error('No public key found in key book'), 'ERR_NOT_FOUND')
+          throw new CodeError('No public key found in key book', 'ERR_NOT_FOUND')
         }
 
         pubKey = key
@@ -114,7 +114,7 @@ export class GetValueHandler implements DHTMessageHandler {
     const record = Libp2pRecord.deserialize(rawRecord)
 
     if (record == null) {
-      throw errcode(new Error('Invalid record'), 'ERR_INVALID_RECORD')
+      throw new CodeError('Invalid record', 'ERR_INVALID_RECORD')
     }
 
     // Check validity: compare time received with max record age

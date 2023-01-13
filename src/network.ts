@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { pipe } from 'it-pipe'
 import * as lp from 'it-length-prefixed'
 import drain from 'it-drain'
@@ -183,7 +183,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
           return buf
         }
 
-        throw errcode(new Error('No message received'), 'ERR_NO_MESSAGE_RECEIVED')
+        throw new CodeError('No message received', 'ERR_NO_MESSAGE_RECEIVED')
       }
     )
 

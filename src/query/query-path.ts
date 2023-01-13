@@ -2,7 +2,7 @@ import Queue from 'p-queue'
 import { xor } from 'uint8arrays/xor'
 import { toString } from 'uint8arrays/to-string'
 import defer from 'p-defer'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
@@ -235,7 +235,7 @@ async function * toGenerator (queue: Queue, signal: AbortSignal, cleanUp: EventE
     cleanup()
 
     if (wasRunning) {
-      deferred.reject(errCode(new Error('Query aborted'), 'ERR_QUERY_ABORTED'))
+      deferred.reject(new CodeError('Query aborted', 'ERR_QUERY_ABORTED'))
     }
   })
 

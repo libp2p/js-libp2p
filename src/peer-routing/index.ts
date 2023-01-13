@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { verifyRecord } from '@libp2p/record/validators'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
@@ -116,18 +116,18 @@ export class PeerRouting {
 
         // compare hashes of the pub key
         if (!recPeer.equals(peer)) {
-          throw errcode(new Error('public key does not match id'), 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
+          throw new CodeError('public key does not match id', 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
         }
 
         if (recPeer.publicKey == null) {
-          throw errcode(new Error('public key missing'), 'ERR_PUBLIC_KEY_MISSING')
+          throw new CodeError('public key missing', 'ERR_PUBLIC_KEY_MISSING')
         }
 
         yield valueEvent({ from: peer, value: recPeer.publicKey })
       }
     }
 
-    throw errcode(new Error(`Node not responding with its public key: ${peer.toString()}`), 'ERR_INVALID_RECORD')
+    throw new CodeError(`Node not responding with its public key: ${peer.toString()}`, 'ERR_INVALID_RECORD')
   }
 
   /**
@@ -207,7 +207,7 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.components.peerId, error: errcode(new Error('Not found'), 'ERR_NOT_FOUND') })
+      yield queryErrorEvent({ from: this.components.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') })
     }
   }
 
@@ -270,7 +270,7 @@ export class PeerRouting {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
 
-            yield queryErrorEvent({ from: event.from, error: errcode(new Error(errMsg), 'ERR_INVALID_RECORD') })
+            yield queryErrorEvent({ from: event.from, error: new CodeError(errMsg, 'ERR_INVALID_RECORD') })
             continue
           }
         }
@@ -286,7 +286,7 @@ export class PeerRouting {
    */
   async _verifyRecordOnline (record: DHTRecord) {
     if (record.timeReceived == null) {
-      throw errcode(new Error('invalid record received'), 'ERR_INVALID_RECORD')
+      throw new CodeError('invalid record received', 'ERR_INVALID_RECORD')
     }
 
     await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived))

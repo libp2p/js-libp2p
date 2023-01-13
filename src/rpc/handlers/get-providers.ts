@@ -1,5 +1,5 @@
 import { CID } from 'multiformats/cid'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { Message } from '../../message/index.js'
 import {
   removePrivateAddresses,
@@ -45,7 +45,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
     try {
       cid = CID.decode(msg.key)
     } catch (err: any) {
-      throw errcode(new Error('Invalid CID'), 'ERR_INVALID_CID')
+      throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
     }
 
     log('%p asking for providers for %s', peerId, cid)

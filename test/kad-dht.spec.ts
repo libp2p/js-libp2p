@@ -4,7 +4,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { Libp2pRecord } from '@libp2p/record'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import drain from 'it-drain'
@@ -213,7 +213,7 @@ describe('KadDHT', () => {
       this.timeout(10 * 1000)
 
       const errCode = 'ERR_NOT_AVAILABLE'
-      const error = errcode(new Error('fake error'), errCode)
+      const error = new CodeError('fake error', errCode)
       const key = uint8ArrayFromString('/v/hello')
       const value = uint8ArrayFromString('world')
 
@@ -797,7 +797,7 @@ describe('KadDHT', () => {
       this.timeout(240 * 1000)
 
       const errCode = 'ERR_INVALID_RECORD_FAKE'
-      const error = errcode(new Error('fake error'), errCode)
+      const error = new CodeError('fake error', errCode)
 
       const [dhtA, dhtB] = await Promise.all([
         tdht.spawn(),

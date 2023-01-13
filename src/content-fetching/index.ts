@@ -1,4 +1,4 @@
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { Libp2pRecord } from '@libp2p/record'
 import { verifyRecord } from '@libp2p/record/validators'
@@ -126,7 +126,7 @@ export class ContentFetching {
       }
 
       if (!sentCorrection) {
-        yield queryErrorEvent({ from, error: errcode(new Error('value not put correctly'), 'ERR_PUT_VALUE_INVALID') })
+        yield queryErrorEvent({ from, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') })
       }
 
       this.log.error('Failed error correcting entry')
@@ -170,7 +170,7 @@ export class ContentFetching {
             }
 
             if (!(putEvent.record != null && uint8ArrayEquals(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
-              events.push(queryErrorEvent({ from: event.peer.id, error: errcode(new Error('value not put correctly'), 'ERR_PUT_VALUE_INVALID') }))
+              events.push(queryErrorEvent({ from: event.peer.id, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }))
             }
           }
 
@@ -225,7 +225,7 @@ export class ContentFetching {
     this.log('GetValue %b %b', key, best)
 
     if (best == null) {
-      throw errcode(new Error('best value was not found'), 'ERR_NOT_FOUND')
+      throw new CodeError('best value was not found', 'ERR_NOT_FOUND')
     }
 
     yield * this.sendCorrectionRecord(key, vals, best, options)
