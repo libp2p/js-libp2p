@@ -1,6 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { Key } from 'interface-datastore/key'
 import { base32 } from 'multiformats/bases/base32'
@@ -48,7 +48,7 @@ export class PersistentStore {
   _peerIdToDatastoreKey (peerId: PeerId) {
     if (peerId.type == null) {
       log.error('peerId must be an instance of peer-id to store data')
-      throw errcode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('peerId must be an instance of peer-id', codes.ERR_INVALID_PARAMETERS)
     }
 
     const b32key = peerId.toCID().toString()
@@ -90,7 +90,7 @@ export class PersistentStore {
   async save (peer: Peer) {
     if (peer.pubKey != null && peer.id.publicKey != null && !uint8arrayEquals(peer.pubKey, peer.id.publicKey)) {
       log.error('peer publicKey bytes do not match peer id publicKey bytes')
-      throw errcode(new Error('publicKey bytes do not match peer id publicKey bytes'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('publicKey bytes do not match peer id publicKey bytes', codes.ERR_INVALID_PARAMETERS)
     }
 
     // dedupe addresses

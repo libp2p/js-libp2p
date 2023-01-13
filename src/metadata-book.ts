@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -80,7 +80,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
 
     if (!(metadata instanceof Map)) {
       log.error('valid metadata must be provided to store data')
-      throw errcode(new Error('valid metadata must be provided'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('valid metadata must be provided', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('set await write lock')
@@ -123,7 +123,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
 
     if (typeof key !== 'string' || !(value instanceof Uint8Array)) {
       log.error('valid key and value must be provided to store data')
-      throw errcode(new Error('valid key and value must be provided'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('valid key and value must be provided', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('setValue await write lock')

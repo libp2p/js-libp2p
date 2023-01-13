@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { isMultiaddr } from '@multiformats/multiaddr'
 import { codes } from './errors.js'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
@@ -174,7 +174,7 @@ export class PeerStoreAddressBook {
 
     if (!Array.isArray(multiaddrs)) {
       log.error('multiaddrs must be an array of Multiaddrs')
-      throw errcode(new Error('multiaddrs must be an array of Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('multiaddrs must be an array of Multiaddrs', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('set await write lock')
@@ -244,7 +244,7 @@ export class PeerStoreAddressBook {
 
     if (!Array.isArray(multiaddrs)) {
       log.error('multiaddrs must be an array of Multiaddrs')
-      throw errcode(new Error('multiaddrs must be an array of Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('multiaddrs must be an array of Multiaddrs', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('add await write lock')
@@ -351,7 +351,7 @@ async function filterMultiaddrs (peerId: PeerId, multiaddrs: Multiaddr[], addres
     (source) => each(source, (multiaddr) => {
       if (!isMultiaddr(multiaddr)) {
         log.error('multiaddr must be an instance of Multiaddr')
-        throw errcode(new Error('multiaddr must be an instance of Multiaddr'), codes.ERR_INVALID_PARAMETERS)
+        throw new CodeError('multiaddr must be an instance of Multiaddr', codes.ERR_INVALID_PARAMETERS)
       }
     }),
     (source) => filter(source, async (multiaddr) => await addressFilter(peerId, multiaddr)),

@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { CustomEvent } from '@libp2p/interfaces/events'
@@ -50,7 +50,7 @@ export class PeerStoreProtoBook implements ProtoBook {
 
     if (!Array.isArray(protocols)) {
       log.error('protocols must be provided to store data')
-      throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('protocols must be provided', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('set await write lock')
@@ -99,7 +99,7 @@ export class PeerStoreProtoBook implements ProtoBook {
 
     if (!Array.isArray(protocols)) {
       log.error('protocols must be provided to store data')
-      throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('protocols must be provided', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('add await write lock')
@@ -149,7 +149,7 @@ export class PeerStoreProtoBook implements ProtoBook {
 
     if (!Array.isArray(protocols)) {
       log.error('protocols must be provided to store data')
-      throw errcode(new Error('protocols must be provided'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('protocols must be provided', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('remove await write lock')

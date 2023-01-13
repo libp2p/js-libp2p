@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
@@ -32,7 +32,7 @@ export class PeerStoreKeyBook implements KeyBook {
 
     if (!(publicKey instanceof Uint8Array)) {
       log.error('publicKey must be an instance of Uint8Array to store data')
-      throw errcode(new Error('publicKey must be an instance of PublicKey'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('publicKey must be an instance of PublicKey', codes.ERR_INVALID_PARAMETERS)
     }
 
     log.trace('set await write lock')

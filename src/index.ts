@@ -7,7 +7,7 @@ import { PeerStoreProtoBook } from './proto-book.js'
 import { PersistentStore, Store } from './store.js'
 import type { PeerStore, AddressBook, KeyBook, MetadataBook, ProtoBook, PeerStoreEvents, PeerStoreInit, Peer, TagOptions } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { Tag, Tags } from './pb/tags.js'
 import type { Datastore } from 'interface-datastore'
 
@@ -125,7 +125,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
     const ttl = options.ttl ?? undefined
 
     if (value !== providedValue || value < 0 || value > 100) {
-      throw errCode(new Error('Tag value must be between 0-100'), 'ERR_TAG_VALUE_OUT_OF_BOUNDS')
+      throw new CodeError('Tag value must be between 0-100', 'ERR_TAG_VALUE_OUT_OF_BOUNDS')
     }
 
     const buf = await this.metadataBook.getValue(peerId, 'tags')
@@ -137,7 +137,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
 
     for (const t of tags) {
       if (t.name === tag) {
-        throw errCode(new Error('Peer already tagged'), 'ERR_DUPLICATE_TAG')
+        throw new CodeError('Peer already tagged', 'ERR_DUPLICATE_TAG')
       }
     }
 
