@@ -168,7 +168,6 @@
     "@multiformats/multiaddr": "^11.0.0",
     "@multiformats/multiaddr-to-uri": "^9.0.2",
     "abortable-iterator": "^4.0.2",
-    "err-code": "^3.0.1",
     "it-ws": "^5.0.6",
     "p-defer": "^4.0.0",
     "p-timeout": "^6.0.0",
