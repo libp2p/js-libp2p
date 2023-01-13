@@ -5,7 +5,7 @@ import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { sha256 } from 'multiformats/hashes/sha2'
-import errcode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { Ed25519PeerId, PeerIdType, RSAPeerId, Secp256k1PeerId, symbol } from '@libp2p/interface-peer-id'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -177,7 +177,7 @@ export function createPeerId (init: PeerIdInit): PeerId {
     return new Secp256k1PeerIdImpl(init)
   }
 
-  throw errcode(new Error('Type must be "RSA", "Ed25519" or "secp256k1"'), 'ERR_INVALID_PARAMETERS')
+  throw new CodeError('Type must be "RSA", "Ed25519" or "secp256k1"', 'ERR_INVALID_PARAMETERS')
 }
 
 export function peerIdFromPeerId (other: any): PeerId {
@@ -193,7 +193,7 @@ export function peerIdFromPeerId (other: any): PeerId {
     return new Secp256k1PeerIdImpl(other)
   }
 
-  throw errcode(new Error('Not a PeerId'), 'ERR_INVALID_PARAMETERS')
+  throw new CodeError('Not a PeerId', 'ERR_INVALID_PARAMETERS')
 }
 
 export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): PeerId {

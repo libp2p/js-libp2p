@@ -139,7 +139,7 @@
   },
   "dependencies": {
     "@libp2p/interface-peer-id": "^2.0.0",
-    "err-code": "^3.0.1",
+    "@libp2p/interfaces": "^3.2.0",
     "multiformats": "^11.0.0",
     "uint8arrays": "^4.0.2"
   },
