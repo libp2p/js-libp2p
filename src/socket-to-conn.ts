@@ -4,7 +4,7 @@ import toIterable from 'stream-to-it'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import type { Socket } from 'net'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
@@ -49,7 +49,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     if (socket.remoteAddress == null || socket.remotePort == null) {
       // this can be undefined if the socket is destroyed (for example, if the client disconnected)
       // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketremoteaddress
-      throw errCode(new Error('Could not determine remote address or port'), 'ERR_NO_REMOTE_ADDRESS')
+      throw new CodeError('Could not determine remote address or port', 'ERR_NO_REMOTE_ADDRESS')
     }
 
     remoteAddr = toMultiaddr(socket.remoteAddress, socket.remotePort)
@@ -68,7 +68,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     // only destroy with an error if the remote has not sent the FIN message
     let err: Error | undefined
     if (socket.readable) {
-      err = errCode(new Error('Socket read timeout'), 'ERR_SOCKET_READ_TIMEOUT')
+      err = new CodeError('Socket read timeout', 'ERR_SOCKET_READ_TIMEOUT')
     }
 
     // if the socket times out due to inactivity we must manually close the connection
@@ -140,7 +140,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             log('%s socket close timeout after %dms, destroying it manually', lOptsStr, Date.now() - start)
 
             // will trigger 'error' and 'close' events that resolves promise
-            socket.destroy(errCode(new Error('Socket close timeout'), 'ERR_SOCKET_CLOSE_TIMEOUT'))
+            socket.destroy(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
           }
         }, closeTimeout).unref()
 
