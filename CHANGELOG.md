@@ -1,3 +1,10 @@
+## [5.0.3](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.2...v5.0.3) (2023-01-13)
+
+
+### Dependencies
+
+* remove err-code ([#202](https://github.com/libp2p/js-libp2p-websockets/issues/202)) ([40ce006](https://github.com/libp2p/js-libp2p-websockets/commit/40ce0060918cb390b343a748036af4aee43b2146))
+
 ## [5.0.2](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.1...v5.0.2) (2022-12-16)
 
 
