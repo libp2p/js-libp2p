@@ -19,28 +19,35 @@ export async function test () {
     all: true
   })
 
+  let output = ''
+
+  const expected = [
+    'node2 received: banana',
+    'node2 received: apple',
+    'node2 received: orange',
+    'node3 received: banana',
+    'node3 received: apple',
+    'node3 received: orange'
+  ]
+
   proc.all.on('data', async (data) => {
     process.stdout.write(data)
-    const line = uint8ArrayToString(data)
+    output += uint8ArrayToString(data)
 
-    // End
-    if (line.includes('all messages sent')) {
-      if (messages.car > 0) {
-        defer.reject(new Error('Message validation failed - peers failed to filter car messages'))
-      }
-
-      for (const fruit of ['banana', 'apple', 'orange']) {
-        if (messages[fruit] !== 2) {
-          defer.reject(new Error(`Not enough ${fruit} messages - received ${messages[fruit] ?? 0}, expected 2`))
-        }
-      }
-
-      defer.resolve()
+    if (output.includes('received: car')) {
+      defer.reject(new Error('Message validation failed - peers failed to filter car messages'))
     }
 
-    if (line.includes('received:')) {
-      const fruit = line.split('received:')[1].trim()
-      messages[fruit] = (messages[fruit] ?? 0) + 1
+    let allMessagesReceived = true
+
+    expected.forEach(message => {
+      if (!output.includes(message)) {
+        allMessagesReceived = false
+      }
+    })
+
+    if (allMessagesReceived) {
+      defer.resolve()
     }
   })
 
