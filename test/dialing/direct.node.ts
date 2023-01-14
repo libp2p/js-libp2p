@@ -32,7 +32,10 @@ import { preSharedKey } from '../../src/pnet/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import Peers from '../fixtures/peers.js'
 import swarmKey from '../fixtures/swarm.key.js'
-import { getPeer } from '../../src/get-peer.js'
+import os from 'node:os'
+import path from 'node:path'
+import fs from 'node:fs'
+import { peerIdFromString } from '@libp2p/peer-id'
 
 const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -108,7 +111,7 @@ describe('Dialing (direct, TCP)', () => {
 
   it('should be able to connect to remote node with duplicated addresses', async () => {
     const dnsaddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteAddr.getPeerId() ?? ''}`)
-    await localComponents.peerStore.addressBook.add(getPeer(remoteAddr).id, [dnsaddr])
+    await localComponents.peerStore.addressBook.add(peerIdFromString(remoteAddr.getPeerId() ?? ''), [dnsaddr])
     const dialer = new DefaultDialer(localComponents, { resolvers: { dnsaddr: resolver }, maxAddrsToDial: 1 })
 
     // Resolver stub
@@ -275,26 +278,6 @@ describe('libp2p.dialer (direct, TCP)', () => {
     if (remoteLibp2p != null) {
       await remoteLibp2p.stop()
     }
-  })
-
-  it('should fail if no peer id is provided', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
-      transports: [
-        tcp()
-      ],
-      streamMuxers: [
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-
-    await libp2p.start()
-
-    await expect(libp2p.dial(remoteLibp2p.components.transportManager.getAddrs()[0])).to.eventually.be.rejected()
-      .with.property('code', ErrorCodes.ERR_INVALID_MULTIADDR)
   })
 
   it('should use the dialer for connecting to a multiaddr', async () => {
@@ -521,12 +504,13 @@ describe('libp2p.dialer (direct, TCP)', () => {
     await libp2p.start()
 
     const dials = 10
-    const fullAddress = remoteAddr.encapsulate(`/p2p/${remoteLibp2p.peerId.toString()}`)
+    // PeerId should be in multiaddr
+    expect(remoteAddr.getPeerId()).to.equal(remoteLibp2p.peerId.toString())
 
     await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
     const dialResults = await Promise.all([...new Array(dials)].map(async (_, index) => {
       if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
-      return await libp2p.dial(fullAddress)
+      return await libp2p.dial(remoteAddr)
     }))
 
     // All should succeed and we should have ten results
@@ -583,5 +567,55 @@ describe('libp2p.dialer (direct, TCP)', () => {
     // 1 connection, because we know the peer in the multiaddr
     expect(libp2p.getConnections()).to.have.lengthOf(0)
     expect(remoteLibp2p.getConnections()).to.have.lengthOf(0)
+  })
+
+  it('should dial a unix socket', async () => {
+    if (remoteLibp2p != null) {
+      await remoteLibp2p.stop()
+    }
+
+    const unixAddr = path.join(os.tmpdir(), `test-${Math.random()}.sock`)
+    const unixMultiaddr = multiaddr('/unix' + unixAddr)
+
+    remoteLibp2p = await createLibp2pNode({
+      peerId: remotePeerId,
+      addresses: {
+        listen: [
+          unixMultiaddr.toString()
+        ]
+      },
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        mplex()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    await remoteLibp2p.start()
+
+    expect(fs.existsSync(unixAddr)).to.be.true()
+
+    libp2p = await createLibp2pNode({
+      peerId,
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        mplex()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    await libp2p.start()
+
+    const connection = await libp2p.dial(unixMultiaddr)
+
+    expect(connection.remotePeer.toString()).to.equal(remotePeerId.toString())
   })
 })
