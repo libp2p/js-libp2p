@@ -570,6 +570,10 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should dial a unix socket', async () => {
+    if (os.platform() === 'win32') {
+      return
+    }
+
     if (remoteLibp2p != null) {
       await remoteLibp2p.stop()
     }
