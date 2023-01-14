@@ -26,7 +26,7 @@ export function getPeerAddress (peer: PeerId | Multiaddr): { peerId?: PeerId, mu
   }
 
   throw errCode(
-    new Error(`${peer} is not a PeerId or a Multiaddr`),
+    new Error(`${peer} is not a PeerId or a Multiaddr`), // eslint-disable-line @typescript-eslint/restrict-template-expressions
     codes.ERR_INVALID_MULTIADDR
   )
 }
