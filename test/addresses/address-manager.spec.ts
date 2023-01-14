@@ -179,6 +179,24 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma)
   })
+
+  it('should not add our peer id to path multiaddrs', () => {
+    const ma = '/unix/foo/bar/baz'
+    const transportManager = stubInterface<TransportManager>()
+    const am = new DefaultAddressManager({
+      peerId,
+      transportManager
+    }, {
+      listen: [ma],
+      announce: []
+    })
+
+    transportManager.getAddrs.returns([multiaddr(ma)])
+
+    const addrs = am.getAddresses()
+    expect(addrs).to.have.lengthOf(1)
+    expect(addrs[0].toString()).to.not.include(`/p2p/${peerId.toString()}`)
+  })
 })
 
 describe('libp2p.addressManager', () => {
