@@ -699,7 +699,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
-import { FaultTolerance } from 'libp2p/transport-manager'
+import { FaultTolerance } from '@libp2p/interface-transport'
 
 const node = await createLibp2p({
   transports: [tcp()],
