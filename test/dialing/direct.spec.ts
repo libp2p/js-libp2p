@@ -377,7 +377,7 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialTarget = await createDialTargetSpy.getCall(0).returnValue
 
     expect(dialTarget).to.have.property('addrs').with.lengthOf(1)
-    expect(dialTarget.addrs[0]).to.equal(dialMultiaddr)
+    expect(dialTarget.addrs[0].toString()).to.equal(dialMultiaddr.toString())
   })
 })
 

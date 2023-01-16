@@ -12,14 +12,14 @@ import type { Connection, MultiaddrConnection } from '@libp2p/interface-connecti
 import type { ConnectionManager, ConnectionManagerEvents, Dialer } from '@libp2p/interface-connection-manager'
 import * as STATUS from '@libp2p/interface-connection/status'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
-import { isMultiaddr, multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
+import { multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Upgrader } from '@libp2p/interface-transport'
-import { getPeer } from '../get-peer.js'
+import { getPeerAddress } from '../get-peer.js'
 
 const log = logger('libp2p:connection-manager')
 
@@ -471,24 +471,22 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   }
 
   async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
-    let peerId: PeerId
+    const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (isPeerId(peerIdOrMultiaddr)) {
-      peerId = peerIdOrMultiaddr
-    } else if (isMultiaddr(peerIdOrMultiaddr)) {
-      const info = getPeer(peerIdOrMultiaddr)
-      peerId = info.id
-    } else {
+    if (peerId == null && multiaddr == null) {
       throw errCode(new TypeError('Can only open connections to PeerIds or Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
     }
 
-    log('dial to %p', peerId)
-    const existingConnections = this.getConnections(peerId)
+    if (peerId != null) {
+      log('dial to', peerId)
 
-    if (existingConnections.length > 0) {
-      log('had an existing connection to %p', peerId)
+      const existingConnections = this.getConnections(peerId)
 
-      return existingConnections[0]
+      if (existingConnections.length > 0) {
+        log('had an existing connection to %p', peerId)
+
+        return existingConnections[0]
+      }
     }
 
     let timeoutController: TimeoutController | undefined
@@ -505,11 +503,11 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     try {
       const connection = await this.components.dialer.dial(peerIdOrMultiaddr, options)
-      let peerConnections = this.connections.get(peerId.toString())
+      let peerConnections = this.connections.get(connection.remotePeer.toString())
 
       if (peerConnections == null) {
         peerConnections = []
-        this.connections.set(peerId.toString(), peerConnections)
+        this.connections.set(connection.remotePeer.toString(), peerConnections)
       }
 
       // we get notified of connections via the Upgrader emitting "connection"

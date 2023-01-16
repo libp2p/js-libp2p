@@ -2,11 +2,10 @@ import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { Startable, isStartable } from '@libp2p/interfaces/startable'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { isMultiaddr, Multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { CompoundContentRouting } from './content-routing/index.js'
-import { getPeer } from './get-peer.js'
 import { codes } from './errors.js'
 import { DefaultAddressManager } from './address-manager/index.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
@@ -49,6 +48,7 @@ import { DummyDHT } from './dht/dummy-dht.js'
 import { DummyPubSub } from './pubsub/dummy-pubsub.js'
 import { PeerSet } from '@libp2p/peer-collections'
 import { DefaultDialer } from './connection-manager/dialer/index.js'
+import { peerIdFromString } from '@libp2p/peer-id'
 
 const log = logger('libp2p')
 
@@ -354,11 +354,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   async dial (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
-    const { id, multiaddrs } = getPeer(peer)
-
-    await this.components.peerStore.addressBook.add(id, multiaddrs)
-
-    return await this.components.connectionManager.openConnection(id, options)
+    return await this.components.connectionManager.openConnection(peer, options)
   }
 
   async dialProtocol (peer: PeerId | Multiaddr, protocols: string | string[], options: AbortOptions = {}) {
@@ -386,9 +382,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   async hangUp (peer: PeerId | Multiaddr): Promise<void> {
-    const { id } = getPeer(peer)
+    if (isMultiaddr(peer)) {
+      peer = peerIdFromString(peer.getPeerId() ?? '')
+    }
 
-    await this.components.connectionManager.closeConnections(id)
+    await this.components.connectionManager.closeConnections(peer)
   }
 
   /**
@@ -431,23 +429,23 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   async fetch (peer: PeerId | Multiaddr, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
-    const { id, multiaddrs } = getPeer(peer)
-
-    if (multiaddrs != null) {
-      await this.components.peerStore.addressBook.add(id, multiaddrs)
+    if (isMultiaddr(peer)) {
+      const peerId = peerIdFromString(peer.getPeerId() ?? '')
+      await this.components.peerStore.addressBook.add(peerId, [peer])
+      peer = peerId
     }
 
-    return await this.fetchService.fetch(id, key, options)
+    return await this.fetchService.fetch(peer, key, options)
   }
 
   async ping (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<number> {
-    const { id, multiaddrs } = getPeer(peer)
-
-    if (multiaddrs.length > 0) {
-      await this.components.peerStore.addressBook.add(id, multiaddrs)
+    if (isMultiaddr(peer)) {
+      const peerId = peerIdFromString(peer.getPeerId() ?? '')
+      await this.components.peerStore.addressBook.add(peerId, [peer])
+      peer = peerId
     }
 
-    return await this.pingService.ping(id, options)
+    return await this.pingService.ping(peer, options)
   }
 
   async handle (protocols: string | string[], handler: StreamHandler, options?: StreamHandlerOptions): Promise<void> {
