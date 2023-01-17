@@ -67,7 +67,7 @@ export class Circuit implements Transport, Startable {
       void this._onProtocol(data).catch(err => {
         log.error(err)
       })
-    })
+    }, { ...this._init })
       .catch(err => {
         log.error(err)
       })

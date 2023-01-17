@@ -16,8 +16,9 @@ import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { StreamHandlerOptions } from '@libp2p/interface-registrar'
 
-export interface RelayConfig {
+export interface RelayConfig extends StreamHandlerOptions {
   enabled: boolean
   advertise: RelayAdvertiseConfig
   hop: HopConfig
