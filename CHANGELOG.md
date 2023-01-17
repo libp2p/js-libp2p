@@ -10,6 +10,18 @@
 
 
 
+### [0.42.2](https://www.github.com/libp2p/js-libp2p/compare/v0.42.1...v0.42.2) (2023-01-17)
+
+
+### Bug Fixes
+
+* allow configuring circuit stream limits ([#1542](https://www.github.com/libp2p/js-libp2p/issues/1542)) ([f82e6b8](https://www.github.com/libp2p/js-libp2p/commit/f82e6b86e375b86e71cd339660a348ecba4bf68d))
+* allow dialing multiaddrs without peer ids ([#1548](https://www.github.com/libp2p/js-libp2p/issues/1548)) ([398e231](https://www.github.com/libp2p/js-libp2p/commit/398e231337c3db1ccd5b4254fb18ab1903aa68b2))
+* allow exporting PeerIds from the keychain ([#1546](https://www.github.com/libp2p/js-libp2p/issues/1546)) ([141e072](https://www.github.com/libp2p/js-libp2p/commit/141e0722ee2cd92b2b928767710de7443b5a4c56))
+* allow reading PeerId from keychain ([#1552](https://www.github.com/libp2p/js-libp2p/issues/1552)) ([0831cd9](https://www.github.com/libp2p/js-libp2p/commit/0831cd960d423545ee60b457d66a6a996888804b))
+* do not append peer id to path addresses ([#1547](https://www.github.com/libp2p/js-libp2p/issues/1547)) ([bd2bdf7](https://www.github.com/libp2p/js-libp2p/commit/bd2bdf7ca0d87ab63b2e9acf7edf7a5752e0559c))
+* improve pubsub example ([#1549](https://www.github.com/libp2p/js-libp2p/issues/1549)) ([ba8527c](https://www.github.com/libp2p/js-libp2p/commit/ba8527c317b9f1f31f5066b6204fda35d393058f))
+
 ### [0.42.1](https://www.github.com/libp2p/js-libp2p/compare/v0.42.0...v0.42.1) (2023-01-11)
 
 
