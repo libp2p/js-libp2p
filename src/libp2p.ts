@@ -49,6 +49,7 @@ import { DummyPubSub } from './pubsub/dummy-pubsub.js'
 import { PeerSet } from '@libp2p/peer-collections'
 import { DefaultDialer } from './connection-manager/dialer/index.js'
 import { peerIdFromString } from '@libp2p/peer-id'
+import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p')
 
@@ -510,6 +511,30 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
  */
 export async function createLibp2pNode (options: Libp2pOptions): Promise<Libp2pNode> {
   if (options.peerId == null) {
+    const datastore = options.datastore as Datastore | undefined
+
+    if (datastore != null) {
+      try {
+        // try load the peer id from the keychain
+        // @ts-expect-error missing the peer id property
+        const keyChain = new KeyChain({
+          datastore
+        }, {
+          ...KeyChain.generateOptions(),
+          ...(options.keychain ?? {})
+        })
+
+        options.peerId = await keyChain.exportPeerId('self')
+      } catch (err: any) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
+      }
+    }
+  }
+
+  if (options.peerId == null) {
+    // no peer id in the keychain, create a new peer id
     options.peerId = await createEd25519PeerId()
   }
 
