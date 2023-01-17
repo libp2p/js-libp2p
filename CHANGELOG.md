@@ -1,3 +1,15 @@
+## [6.0.9](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.8...v6.0.9) (2023-01-17)
+
+
+### Bug Fixes
+
+* increase default socket close timeout ([#242](https://github.com/libp2p/js-libp2p-tcp/issues/242)) ([a64ba41](https://github.com/libp2p/js-libp2p-tcp/commit/a64ba41f485f3bde28b58827c8a2ce5bf94f711a)), closes [#239](https://github.com/libp2p/js-libp2p-tcp/issues/239)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#240](https://github.com/libp2p/js-libp2p-tcp/issues/240)) ([5c44562](https://github.com/libp2p/js-libp2p-tcp/commit/5c445628e97a1462c64a48253efd9ccb3441c399)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+
 ## [6.0.8](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.7...v6.0.8) (2022-12-16)
 
 
