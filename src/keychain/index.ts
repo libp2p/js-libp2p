@@ -14,6 +14,8 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 import type { Datastore } from 'interface-datastore'
+import { peerIdFromKeys } from '@libp2p/peer-id'
+import type { KeyTypes } from '@libp2p/crypto/keys'
 
 const log = logger('libp2p:keychain')
 
@@ -222,7 +224,7 @@ export class KeyChain implements Startable {
    * @param {string} type - One of the key types; 'rsa'.
    * @param {number} [size = 2048] - The key size in bits. Used for rsa keys only
    */
-  async createKey (name: string, type: 'RSA' | 'Ed25519', size = 2048): Promise<KeyInfo> {
+  async createKey (name: string, type: KeyTypes, size = 2048): Promise<KeyInfo> {
     if (!validateKeyName(name) || name === 'self') {
       await randomDelay()
       throw errCode(new Error('Invalid key name'), codes.ERR_INVALID_KEY_NAME)
@@ -430,6 +432,17 @@ export class KeyChain implements Startable {
       await randomDelay()
       throw err
     }
+  }
+
+  /**
+   * Export an existing key as a PeerId
+   */
+  async exportPeerId (name: string) {
+    const password = 'temporary-password'
+    const pem = await this.exportKey(name, password)
+    const privateKey = await importKey(pem, password)
+
+    return await peerIdFromKeys(privateKey.public.bytes, privateKey.bytes)
   }
 
   /**

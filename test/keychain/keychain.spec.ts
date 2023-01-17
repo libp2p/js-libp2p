@@ -373,6 +373,14 @@ describe('keychain', () => {
       expect(key.id).to.equal(alice.toString())
     })
 
+    it('private key can be exported', async () => {
+      const alice2 = await ks.exportPeerId('alice')
+
+      expect(alice.equals(alice2)).to.be.true()
+      expect(alice2).to.have.property('privateKey').that.is.ok()
+      expect(alice2).to.have.property('publicKey').that.is.ok()
+    })
+
     it('private key import requires a valid name', async () => {
       // @ts-expect-error invalid parameters
       await expect(ks.importPeer(undefined, alice)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
@@ -395,6 +403,36 @@ describe('keychain', () => {
       expect(key).to.exist()
       expect(key).to.have.property('name', 'alice')
       expect(key).to.have.property('id', alice.toString())
+    })
+
+    it('can create Ed25519 peer id', async () => {
+      const name = 'ed-key'
+      await ks.createKey(name, 'Ed25519')
+      const peer = await ks.exportPeerId(name)
+
+      expect(peer).to.have.property('type', 'Ed25519')
+      expect(peer).to.have.property('privateKey').that.is.ok()
+      expect(peer).to.have.property('publicKey').that.is.ok()
+    })
+
+    it('can create RSA peer id', async () => {
+      const name = 'rsa-key'
+      await ks.createKey(name, 'RSA', 2048)
+      const peer = await ks.exportPeerId(name)
+
+      expect(peer).to.have.property('type', 'RSA')
+      expect(peer).to.have.property('privateKey').that.is.ok()
+      expect(peer).to.have.property('publicKey').that.is.ok()
+    })
+
+    it('can create secp256k1 peer id', async () => {
+      const name = 'secp256k1-key'
+      await ks.createKey(name, 'secp256k1')
+      const peer = await ks.exportPeerId(name)
+
+      expect(peer).to.have.property('type', 'secp256k1')
+      expect(peer).to.have.property('privateKey').that.is.ok()
+      expect(peer).to.have.property('publicKey').that.is.ok()
     })
   })
 

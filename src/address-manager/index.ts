@@ -153,6 +153,11 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     return this.announceFilter(Array.from(addrSet)
       .map(str => multiaddr(str)))
       .map(ma => {
+        // do not append our peer id to a path multiaddr as it will become invalid
+        if (ma.protos().pop()?.path === true) {
+          return ma
+        }
+
         if (ma.getPeerId() === this.components.peerId.toString()) {
           return ma
         }

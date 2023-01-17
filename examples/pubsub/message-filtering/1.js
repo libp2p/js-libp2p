@@ -68,7 +68,8 @@ const createNode = async () => {
   node3.pubsub.subscribe(topic)
 
   // wait for subscriptions to propagate
-  await delay(1000)
+  await hasSubscription(node1, node2, topic)
+  await hasSubscription(node2, node3, topic)
 
   const validateFruit = (msgTopic, msg) => {
     const fruit = uint8ArrayToString(msg.data)
@@ -91,8 +92,6 @@ const createNode = async () => {
     await node1.pubsub.publish(topic, uint8ArrayFromString(fruit))
   }
 
-  // wait a few seconds for messages to be received
-  await delay(5000)
   console.log('############## all messages sent ##############')
 })()
 
@@ -100,4 +99,20 @@ async function delay (ms) {
   await new Promise((resolve) => {
     setTimeout(() => resolve(), ms)
   })
+}
+
+/**
+ * Wait for node1 to see that node2 has subscribed to the topic
+ */
+async function hasSubscription (node1, node2, topic) {
+  while (true) {
+    const subs = await node1.pubsub.getSubscribers(topic)
+
+    if (subs.map(peer => peer.toString()).includes(node2.peerId.toString())) {
+      return
+    }
+
+    // wait for subscriptions to propagate
+    await delay(100)
+  }
 }

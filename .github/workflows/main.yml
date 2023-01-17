@@ -161,8 +161,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - if: ${{ steps.release.outputs.release_created }}
-        name: Generate docs
-        run: npm run docs
+        name: Generate typedoc URLs
+        run: npm --if-present run docs -- --publish false
       - if: ${{ steps.release.outputs.release_created }}
         name: Run release version
         run: npm publish
@@ -171,6 +171,8 @@ jobs:
       - if: ${{ steps.release.outputs.release_created }}
         name: Publish docs
         run: npm run --if-present docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: ${{ !steps.release.outputs.release_created }}
         name: Run release rc
         run: |
