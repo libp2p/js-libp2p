@@ -18,7 +18,7 @@ import type { Connection, ConnectionGater } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
-import { getPeer } from '../../get-peer.js'
+import { getPeerAddress } from '../../get-peer.js'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Dialer } from '@libp2p/interface-connection-manager'
@@ -151,24 +151,24 @@ export class DefaultDialer implements Startable, Dialer {
    * will be used.
    */
   async dial (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
-    const { id, multiaddrs } = getPeer(peerIdOrMultiaddr)
+    const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (this.components.peerId.equals(id)) {
-      throw errCode(new Error('Tried to dial self'), codes.ERR_DIALED_SELF)
+    if (peerId != null) {
+      if (this.components.peerId.equals(peerId)) {
+        throw errCode(new Error('Tried to dial self'), codes.ERR_DIALED_SELF)
+      }
+
+      if (multiaddr != null) {
+        log('storing multiaddrs %p', peerId, multiaddr)
+        await this.components.peerStore.addressBook.add(peerId, [multiaddr])
+      }
+
+      if (await this.components.connectionGater.denyDialPeer(peerId)) {
+        throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
+      }
     }
 
-    log('check multiaddrs %p', id)
-
-    if (multiaddrs != null && multiaddrs.length > 0) {
-      log('storing multiaddrs %p', id, multiaddrs)
-      await this.components.peerStore.addressBook.add(id, multiaddrs)
-    }
-
-    if (await this.components.connectionGater.denyDialPeer(id)) {
-      throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
-    }
-
-    log('creating dial target for %p', id)
+    log('creating dial target for %p', peerId)
 
     // resolving multiaddrs can involve dns lookups so allow them to be aborted
     const controller = new AbortController()
@@ -184,7 +184,7 @@ export class DefaultDialer implements Startable, Dialer {
     let dialTarget: DialTarget
 
     try {
-      dialTarget = await this._createDialTarget(peerIdOrMultiaddr, {
+      dialTarget = await this._createDialTarget({ peerId, multiaddr }, {
         ...options,
         signal
       })
@@ -198,7 +198,7 @@ export class DefaultDialer implements Startable, Dialer {
     }
 
     // try to join an in-flight dial for this peer if one is available
-    const pendingDial = this.pendingDials.get(dialTarget.id.toString()) ?? this._createPendingDial(dialTarget, options)
+    const pendingDial = this.pendingDials.get(dialTarget.id) ?? this._createPendingDial(dialTarget, options)
 
     try {
       const connection = await pendingDial.promise
@@ -225,26 +225,33 @@ export class DefaultDialer implements Startable, Dialer {
    *
    * Multiaddrs not supported by the available transports will be filtered out.
    */
-  async _createDialTarget (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions): Promise<DialTarget> {
-    const _resolve = this._resolve.bind(this)
+  async _createDialTarget (peerIdOrMultiaddr: { peerId?: PeerId, multiaddr?: Multiaddr }, options: AbortOptions): Promise<DialTarget> {
+    let addrs: Multiaddr[] = []
 
-    let addrs = isMultiaddr(peerIdOrMultiaddr) ? [peerIdOrMultiaddr] : await this._loadAddresses(peerIdOrMultiaddr)
+    if (isMultiaddr(peerIdOrMultiaddr.multiaddr)) {
+      addrs.push(peerIdOrMultiaddr.multiaddr)
+    }
+
+    // only load addresses if a peer id was passed, otherwise only dial the passed multiaddr
+    if (!isMultiaddr(peerIdOrMultiaddr.multiaddr) && isPeerId(peerIdOrMultiaddr.peerId)) {
+      addrs.push(...await this._loadAddresses(peerIdOrMultiaddr.peerId))
+    }
 
     addrs = (await Promise.all(
-      addrs.map(async (ma) => await _resolve(ma, options))
+      addrs.map(async (ma) => await this._resolve(ma, options))
     ))
       .flat()
       // Multiaddrs not supported by the available transports will be filtered out.
       .filter(ma => Boolean(this.components.transportManager.transportForMultiaddr(ma)))
 
     // deduplicate addresses
-    addrs = [...new Set(addrs)]
+    addrs = [...new Set(addrs.map(ma => ma.toString()))].map(ma => multiaddr(ma))
 
     if (addrs.length > this.maxAddrsToDial) {
       throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
     }
 
-    const peerId = isPeerId(peerIdOrMultiaddr) ? peerIdOrMultiaddr : undefined
+    const peerId = isPeerId(peerIdOrMultiaddr.peerId) ? peerIdOrMultiaddr.peerId : undefined
 
     if (peerId != null) {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`

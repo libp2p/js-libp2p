@@ -250,18 +250,18 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    */
   async upgradeOutbound (maConn: MultiaddrConnection, opts?: UpgraderOptions): Promise<Connection> {
     const idStr = maConn.remoteAddr.getPeerId()
-    if (idStr == null) {
-      throw errCode(new Error('outbound connection must have a peer id'), codes.ERR_INVALID_MULTIADDR)
-    }
+    let remotePeerId: PeerId | undefined
 
-    const remotePeerId = peerIdFromString(idStr)
+    if (idStr != null) {
+      remotePeerId = peerIdFromString(idStr)
 
-    if (await this.components.connectionGater.denyOutboundConnection(remotePeerId, maConn)) {
-      throw errCode(new Error('The multiaddr connection is blocked by connectionGater.denyOutboundConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      if (await this.components.connectionGater.denyOutboundConnection(remotePeerId, maConn)) {
+        throw errCode(new Error('The multiaddr connection is blocked by connectionGater.denyOutboundConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      }
     }
 
     let encryptedConn
-    let remotePeer
+    let remotePeer: PeerId
     let upgradedConn
     let cryptoProtocol
     let muxerFactory
@@ -300,6 +300,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
         }
       } else {
+        if (remotePeerId == null) {
+          throw errCode(new Error('Encryption was skipped but no peer id was passed'), codes.ERR_INVALID_PEER)
+        }
+
         cryptoProtocol = 'native'
         remotePeer = remotePeerId
       }
@@ -593,7 +597,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * Attempts to encrypt the given `connection` with the provided connection encrypters.
    * The first `ConnectionEncrypter` module to succeed will be used
    */
-  async _encryptOutbound (connection: MultiaddrConnection, remotePeerId: PeerId): Promise<CryptoResult> {
+  async _encryptOutbound (connection: MultiaddrConnection, remotePeerId?: PeerId): Promise<CryptoResult> {
     const protocols = Array.from(this.connectionEncryption.keys())
     log('selecting outbound crypto protocol', protocols)
 
