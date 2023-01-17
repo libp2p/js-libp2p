@@ -699,7 +699,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
-import { FaultTolerance } from 'libp2p/transport-manager'
+import { FaultTolerance } from '@libp2p/interface-transport'
 
 const node = await createLibp2p({
   transports: [tcp()],
@@ -857,8 +857,8 @@ The NAT manager can be configured as follows:
 const node = await createLibp2p({
   config: {
     nat: {
-      description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
       enabled: true, // defaults to true
+      description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
       gateway: '192.168.1.1', // leave unset to auto-discover
       externalIp: '80.1.1.1', // leave unset to auto-discover
       localAddress: '129.168.1.123', // leave unset to auto-discover

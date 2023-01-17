@@ -7,6 +7,10 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { TransportManager } from '@libp2p/interface-transport'
 
 export interface AddressManagerInit {
+  /**
+   * Pass an function in this field to override the list of addresses
+   * that are announced to the network
+   */
   announceFilter?: AddressFilter
 
   /**
@@ -30,6 +34,10 @@ export interface DefaultAddressManagerComponents {
   transportManager: TransportManager
 }
 
+/**
+ * A function that takes a list of multiaddrs and returns a list
+ * to announce
+ */
 export interface AddressFilter {
   (addrs: Multiaddr[]): Multiaddr[]
 }
@@ -145,6 +153,11 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     return this.announceFilter(Array.from(addrSet)
       .map(str => multiaddr(str)))
       .map(ma => {
+        // do not append our peer id to a path multiaddr as it will become invalid
+        if (ma.protos().pop()?.path === true) {
+          return ma
+        }
+
         if (ma.getPeerId() === this.components.peerId.toString()) {
           return ma
         }

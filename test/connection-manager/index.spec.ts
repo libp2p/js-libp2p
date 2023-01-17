@@ -114,6 +114,61 @@ describe('Connection Manager', () => {
     expect(lowestSpy).to.have.property('callCount', 1)
   })
 
+  it('should close shortest-lived connection if the tag values are equal', async () => {
+    const max = 5
+    libp2p = await createNode({
+      config: createBaseOptions({
+        connectionManager: {
+          maxConnections: max,
+          minConnections: 2
+        }
+      }),
+      started: false
+    })
+
+    await libp2p.start()
+
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
+    const spies = new Map<string, sinon.SinonSpy<[], Promise<void>>>()
+
+    const createConnection = async (value: number, open: number = Date.now(), peerTag: string = 'test-tag') => {
+      // #TODO: Mock the connection timeline to simulate an older connection
+      const connection = mockConnection(mockMultiaddrConnection({ ...mockDuplex(), timeline: { open } }, await createEd25519PeerId()))
+      const spy = sinon.spy(connection, 'close')
+
+      // The lowest tag value will have the longest connection
+      spies.set(peerTag, spy)
+      await libp2p.peerStore.tagPeer(connection.remotePeer, peerTag, {
+        value
+      })
+
+      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+    }
+
+    // Create one short of enough connections to iniate pruning
+    for (let i = 1; i < max; i++) {
+      const value = i * 10
+      await createConnection(value)
+    }
+
+    const value = 0 * 10
+    // Add a connection with the lowest tag value BUT the longest lived connection
+    await createConnection(value, 18000, 'longest')
+    // Add one more connection with the lowest tag value BUT the shortest-lived connection
+    await createConnection(value, Date.now(), 'shortest')
+
+    // get the lowest tagged value, but this would be also the longest lived connection
+    const longestLivedWithLowestTagSpy = spies.get('longest')
+
+    // Get lowest tagged connection but with a shorter-lived connection
+    const shortestLivedWithLowestTagSpy = spies.get('shortest')
+
+    expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(1)
+    expect(longestLivedWithLowestTagSpy).to.have.property('callCount', 0)
+    expect(shortestLivedWithLowestTagSpy).to.have.property('callCount', 1)
+  })
+
   it('should close connection when the maximum has been reached even without tags', async () => {
     const max = 5
     libp2p = await createNode({

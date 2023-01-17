@@ -149,9 +149,14 @@ export class NatManager implements Startable {
 
       const client = await this._getClient()
       const publicIp = this.externalAddress ?? await client.externalIp()
+      const isPrivate = isPrivateIp(publicIp)
 
-      if (isPrivateIp(publicIp)) {
+      if (isPrivate === true) {
         throw new Error(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`)
+      }
+
+      if (isPrivate == null) {
+        throw new Error(`${publicIp} is not an IP address`)
       }
 
       const publicPort = highPort()

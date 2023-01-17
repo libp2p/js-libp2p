@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { AddressesOptions } from './utils.js'
 import { createNode } from '../utils/creators/peer.js'
@@ -104,7 +104,7 @@ describe('libp2p.multiaddrs', () => {
         ...AddressesOptions,
         addresses: {
           listen: listenAddresses,
-          announceFilter: (multiaddrs) => multiaddrs.filter(m => !isLoopback(m))
+          announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.filter(m => !isLoopback(m))
         }
       }
     })
@@ -133,7 +133,7 @@ describe('libp2p.multiaddrs', () => {
         addresses: {
           listen: listenAddresses,
           announce: announceAddreses,
-          announceFilter: (multiaddrs) => multiaddrs.filter(m => !isLoopback(m))
+          announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.filter(m => !isLoopback(m))
         }
       }
     })

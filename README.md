@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="libp2p.io"><img width="250" src="https://github.com/libp2p/libp2p/blob/master/logo/black-bg-2.png?raw=true" alt="libp2p hex logo" /></a>
+  <a href="libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
 </h1>
 
 <h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
@@ -45,13 +45,14 @@ If you are looking for the documentation of the latest release, you can view the
 - [Usage](#usage)
   - [Configuration](#configuration)
   - [Limits](#limits)
-  - [API](#api)
+  - [API Docs](#api-docs)
   - [Getting started](#getting-started)
   - [Tutorials and Examples](#tutorials-and-examples)
 - [Development](#development)
   - [Tests](#tests)
     - [Run unit tests](#run-unit-tests)
   - [Packages](#packages)
+- [Used by](#used-by)
 - [Contribute](#contribute)
 - [License](#license)
   - [Contribution](#contribution)
@@ -97,9 +98,9 @@ For all the information on how you can configure libp2p see [CONFIGURATION.md](.
 
 For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
 
-### API
+### API Docs
 
-The specification is available on [API.md](./doc/API.md).
+- <https://libp2p.github.io/js-libp2p>
 
 ### Getting started
 

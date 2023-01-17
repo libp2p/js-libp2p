@@ -79,7 +79,7 @@ export class IdentifyService implements Startable {
   private readonly components: IdentifyServiceComponents
   private readonly identifyProtocolStr: string
   private readonly identifyPushProtocolStr: string
-  private readonly host: {
+  public readonly host: {
     protocolVersion: string
     agentVersion: string
   }

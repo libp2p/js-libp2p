@@ -12,11 +12,24 @@ import {
 } from './constants.js'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { RelayConfig } from '../index.js'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { StreamHandlerOptions } from '@libp2p/interface-registrar'
+
+export interface RelayConfig extends StreamHandlerOptions {
+  enabled: boolean
+  advertise: RelayAdvertiseConfig
+  hop: HopConfig
+  autoRelay: AutoRelayConfig
+}
+
+export interface HopConfig {
+  enabled?: boolean
+  active?: boolean
+  timeout: number
+}
 
 const log = logger('libp2p:relay')
 
