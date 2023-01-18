@@ -22,7 +22,7 @@ import type { DefaultConnectionManager } from '../../src/connection-manager/inde
 import * as lp from 'it-length-prefixed'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
-import { Components, DefaultComponents } from '../../src/components.js'
+import { Components, defaultComponents } from '../../src/components.js'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 
@@ -55,7 +55,7 @@ describe('autonat', () => {
     transportManager = stubInterface<TransportManager>()
     peerStore = stubInterface<PeerStore>()
 
-    components = new DefaultComponents({
+    components = defaultComponents({
       peerId: await createEd25519PeerId(),
       peerRouting,
       registrar,

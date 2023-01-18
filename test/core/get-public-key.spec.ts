@@ -4,17 +4,18 @@ import { expect } from 'aegir/chai'
 import { webSockets } from '@libp2p/websockets'
 import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
-import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
-import type { Libp2pOptions } from '../../src/index.js'
+import { createLibp2pNode } from '../../src/libp2p.js'
 import sinon from 'sinon'
 import { kadDHT } from '@libp2p/kad-dht'
+import type { DHT } from '@libp2p/interface-dht'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('getPublicKey', () => {
-  let libp2p: Libp2pNode
+  let libp2p: Libp2p<{ dht: DHT }>
 
   beforeEach(async () => {
     const peerId = await createPeerId()
-    const config: Libp2pOptions = {
+    libp2p = await createLibp2pNode({
       peerId,
       transports: [
         webSockets()
@@ -22,9 +23,10 @@ describe('getPublicKey', () => {
       connectionEncryption: [
         plaintext()
       ],
-      dht: kadDHT()
-    }
-    libp2p = await createLibp2pNode(config)
+      services: {
+        dht: kadDHT()
+      }
+    })
 
     await libp2p.start()
   })
@@ -64,11 +66,11 @@ describe('getPublicKey', () => {
       throw new Error('Public key was missing')
     }
 
-    if (libp2p.dht == null) {
+    if (libp2p.services.dht == null) {
       throw new Error('DHT was not configured')
     }
 
-    libp2p.dht.get = sinon.stub().returns([{
+    libp2p.services.dht.get = sinon.stub().returns([{
       name: 'VALUE',
       value: otherPeer.publicKey
     }])

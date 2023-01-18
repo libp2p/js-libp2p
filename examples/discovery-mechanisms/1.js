@@ -28,8 +28,8 @@ import bootstrappers from './bootstrappers.js'
   })
 
   node.addEventListener('peer:discovery', (evt) => {
-    const peerId = evt.detail
+    const peerInfo = evt.detail
 
-    console.log('Discovered:', peerId.toString())
+    console.log('Discovered:', peerInfo.id.toString())
   })
 })();

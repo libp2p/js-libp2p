@@ -3,8 +3,6 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { CID, Version } from 'multiformats'
-import type { Libp2pOptions } from '../../src/index.js'
-import { createBaseOptions } from '../utils/base-options.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Libp2p } from '@libp2p/interface-libp2p'
@@ -13,16 +11,6 @@ import pWaitFor from 'p-wait-for'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const listenAddr = '/ip4/127.0.0.1/tcp/0'
-
-export function createNodeOptions (...overrides: Libp2pOptions[]): Libp2pOptions {
-  return createBaseOptions({
-    addresses: {
-      listen: [listenAddr]
-    }
-  }, ...overrides)
-}
 
 export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay

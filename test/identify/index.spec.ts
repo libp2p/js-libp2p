@@ -6,7 +6,7 @@ import sinon from 'sinon'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../../src/errors.js'
-import { IdentifyService, IdentifyServiceInit, Message } from '../../src/identify/index.js'
+import { identifyService, IdentifyServiceInit, Message } from '../../src/identify/index.js'
 import Peers from '../fixtures/peers.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
@@ -27,7 +27,7 @@ import { start, stop } from '@libp2p/interfaces/startable'
 import { TimeoutController } from 'timeout-abort-controller'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 
@@ -35,9 +35,7 @@ const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 const defaultInit: IdentifyServiceInit = {
   protocolPrefix: 'ipfs',
-  host: {
-    agentVersion: 'v1.0.0'
-  },
+  agentVersion: 'v1.0.0',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
   maxPushIncomingStreams: 1,
@@ -47,11 +45,11 @@ const defaultInit: IdentifyServiceInit = {
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
-async function createComponents (index: number): Promise<DefaultComponents> {
+async function createComponents (index: number): Promise<Components> {
   const peerId = await createFromJSON(Peers[index])
 
   const events = new EventEmitter()
-  const components = new DefaultComponents({
+  const components = defaultComponents({
     peerId,
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
@@ -81,8 +79,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
 }
 
 describe('identify', () => {
-  let localComponents: DefaultComponents
-  let remoteComponents: DefaultComponents
+  let localComponents: Components
+  let remoteComponents: Components
 
   beforeEach(async () => {
     localComponents = await createComponents(0)
@@ -104,8 +102,8 @@ describe('identify', () => {
   })
 
   it('should be able to identify another peer', async () => {
-    const localIdentify = new IdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -127,8 +125,8 @@ describe('identify', () => {
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
-    const localIdentify = new IdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -170,13 +168,11 @@ describe('identify', () => {
 
   it('should store own host data and protocol version into metadataBook on start', async () => {
     const agentVersion = 'js-project/1.0.0'
-    const localIdentify = new IdentifyService(localComponents, {
+    const localIdentify = identifyService({
       ...defaultInit,
       protocolPrefix: 'ipfs',
-      host: {
-        agentVersion
-      }
-    })
+      agentVersion
+    })(localComponents)
 
     const peer = await localComponents.peerStore.get(localComponents.peerId)
     expect(peer.metadata.get('AgentVersion')).to.be.undefined()
@@ -192,8 +188,8 @@ describe('identify', () => {
   })
 
   it('should time out during identify', async () => {
-    const localIdentify = new IdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -238,10 +234,10 @@ describe('identify', () => {
   it('should limit incoming identify message sizes', async () => {
     const deferred = pDefer()
 
-    const remoteIdentify = new IdentifyService(remoteComponents, {
+    const remoteIdentify = identifyService({
       ...defaultInit,
       maxIdentifyMessageSize: 100
-    })
+    })(remoteComponents)
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')
@@ -284,10 +280,10 @@ describe('identify', () => {
   it('should time out incoming identify messages', async () => {
     const deferred = pDefer()
 
-    const remoteIdentify = new IdentifyService(remoteComponents, {
+    const remoteIdentify = identifyService({
       ...defaultInit,
       timeout: 100
-    })
+    })(remoteComponents)
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')
