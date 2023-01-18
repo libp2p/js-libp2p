@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-factory-v2.0.1](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v2.0.0...@libp2p/peer-id-factory-v2.0.1) (2023-01-18)
+
+
+### Dependencies
+
+* bump aegir from 37.12.1 to 38.1.0 ([#46](https://github.com/libp2p/js-libp2p-peer-id/issues/46)) ([ba54f6a](https://github.com/libp2p/js-libp2p-peer-id/commit/ba54f6a4a35de20528d4c60a2a532c553b9a9a34))
+
 ## [@libp2p/peer-id-factory-v2.0.0](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v1.0.20...@libp2p/peer-id-factory-v2.0.0) (2023-01-06)
 
 
