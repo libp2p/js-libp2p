@@ -169,7 +169,72 @@ describe('Connection Manager', () => {
     expect(shortestLivedWithLowestTagSpy).to.have.property('callCount', 1)
   })
 
-  it('should close connection when the maximum has been reached even without tags', async () => {
+  it('should not close connection that is on the allowlist when pruning', async () => {
+    const max = 5
+    const remoteAddrPeerId = await createEd25519PeerId()
+
+    libp2p = await createNode({
+      config: createBaseOptions({
+        connectionManager: {
+          maxConnections: max,
+          minConnections: 0,
+          allow: [
+            '/ip4/83.13.55.32'
+          ]
+        }
+      }),
+      started: false
+    })
+
+    await libp2p.start()
+
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
+    const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
+
+    // Max out connections
+    for (let i = 1; i < max; i++) {
+      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+      const spy = sinon.spy(connection, 'close')
+      const value = i * 10
+      spies.set(value, spy)
+      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
+        value
+      })
+      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+    }
+
+    // Connect to the peer on the allowed list
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remoteAddrPeerId))
+
+    // Tag that allowed peer with lowest value
+    const value = 0 * 10
+    await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
+      value
+    })
+
+    await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+
+    // get the lowest value
+    const lowest = Array.from(spies.keys()).sort((a, b) => {
+      if (a > b) {
+        return 1
+      }
+
+      if (a < b) {
+        return -1
+      }
+
+      return 0
+    })[0]
+    const lowestSpy = spies.get(lowest)
+
+    expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(0)
+    // expect lowest value spy NOT to be called since the peer is in the allow list
+    expect(lowestSpy).to.have.property('callCount', 0)
+  })
+
+  it('should close connection when the maximum connections has been reached even without tags', async () => {
     const max = 5
     libp2p = await createNode({
       config: createBaseOptions({
