@@ -54,7 +54,7 @@ export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1P
   })
 }
 
-export async function createFromProtobuf (buf: Uint8Array) {
+export async function createFromProtobuf (buf: Uint8Array): Promise<PeerId> {
   const {
     id,
     privKey,
@@ -68,7 +68,7 @@ export async function createFromProtobuf (buf: Uint8Array) {
   )
 }
 
-export async function createFromJSON (obj: { id: string, privKey?: string, pubKey?: string }) {
+export async function createFromJSON (obj: { id: string, privKey?: string, pubKey?: string }): Promise<PeerId> {
   return await createFromParts(
     uint8ArrayFromString(obj.id, 'base58btc'),
     obj.privKey != null ? uint8ArrayFromString(obj.privKey, 'base64pad') : undefined,
@@ -76,13 +76,13 @@ export async function createFromJSON (obj: { id: string, privKey?: string, pubKe
   )
 }
 
-async function createFromParts (multihash: Uint8Array, privKey?: Uint8Array, pubKey?: Uint8Array) {
+async function createFromParts (multihash: Uint8Array, privKey?: Uint8Array, pubKey?: Uint8Array): Promise<PeerId> {
   if (privKey != null) {
     const key = await unmarshalPrivateKey(privKey)
 
     return await createFromPrivKey(key)
   } else if (pubKey != null) {
-    const key = await unmarshalPublicKey(pubKey)
+    const key = unmarshalPublicKey(pubKey)
 
     return await createFromPubKey(key)
   }

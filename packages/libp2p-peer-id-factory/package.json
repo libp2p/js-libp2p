@@ -152,7 +152,7 @@
     "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
-    "aegir": "^37.9.0",
+    "aegir": "^38.1.0",
     "protons": "^6.0.0",
     "util": "^0.12.4"
   },

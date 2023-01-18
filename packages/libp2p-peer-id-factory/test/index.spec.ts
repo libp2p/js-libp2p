@@ -40,7 +40,7 @@ describe('PeerId', () => {
 
   it('can be created for a secp256k1 key', async () => {
     const id = await PeerIdFactory.createSecp256k1PeerId()
-    const expB58 = base58btc.encode((await identity.digest(id.publicKey)).bytes).slice(1)
+    const expB58 = base58btc.encode((identity.digest(id.publicKey)).bytes).slice(1)
     expect(id.toString()).to.equal(expB58)
   })
 
@@ -154,33 +154,33 @@ describe('PeerId', () => {
 
   it('recreate from embedded ed25519 key', async () => {
     const key = '12D3KooWRm8J3iL796zPFi2EtGGtUJn58AG67gcqzMFHZnnsTzqD'
-    const id = await peerIdFromString(key)
+    const id = peerIdFromString(key)
     expect(id.toString()).to.equal(key)
 
     if (id.publicKey == null) {
       throw new Error('No pubic key found on Ed25519 key')
     }
 
-    const expB58 = base58btc.encode((await identity.digest(id.publicKey)).bytes).slice(1)
+    const expB58 = base58btc.encode((identity.digest(id.publicKey)).bytes).slice(1)
     expect(id.toString()).to.equal(expB58)
   })
 
   it('recreate from embedded secp256k1 key', async () => {
     const key = '16Uiu2HAm5qw8UyXP2RLxQUx5KvtSN8DsTKz8quRGqGNC3SYiaB8E'
-    const id = await peerIdFromString(key)
+    const id = peerIdFromString(key)
     expect(id.toString()).to.equal(key)
 
     if (id.publicKey == null) {
       throw new Error('No pubic key found on secp256k1 key')
     }
 
-    const expB58 = base58btc.encode((await identity.digest(id.publicKey)).bytes).slice(1)
+    const expB58 = base58btc.encode((identity.digest(id.publicKey)).bytes).slice(1)
     expect(id.toString()).to.equal(expB58)
   })
 
   it('recreate from string key', async () => {
     const key = 'QmRsooYQasV5f5r834NSpdUtmejdQcpxXkK6qsozZWEihC'
-    const id = await peerIdFromString(key)
+    const id = peerIdFromString(key)
     expect(id.toString()).to.equal(key)
   })
 
@@ -192,7 +192,7 @@ describe('PeerId', () => {
       throw new Error('No public key found on peer id created from secp256k1 public key')
     }
 
-    const expB58 = base58btc.encode((await identity.digest(id.publicKey)).bytes).slice(1)
+    const expB58 = base58btc.encode((identity.digest(id.publicKey)).bytes).slice(1)
     expect(id.toString()).to.equal(expB58)
   })
 
@@ -204,7 +204,7 @@ describe('PeerId', () => {
       throw new Error('No public key found on peer id created from secp256k1 private key')
     }
 
-    const expB58 = base58btc.encode((await identity.digest(id.publicKey)).bytes).slice(1)
+    const expB58 = base58btc.encode((identity.digest(id.publicKey)).bytes).slice(1)
     expect(id.toString()).to.equal(expB58)
   })
 

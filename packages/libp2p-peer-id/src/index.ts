@@ -66,15 +66,15 @@ class PeerIdImpl {
     })
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): string {
     return `PeerId(${this.toString()})`
   }
 
-  get [symbol] () {
+  get [symbol] (): boolean {
     return true
   }
 
-  toString () {
+  toString (): string {
     if (this.string == null) {
       this.string = base58btc.encode(this.multihash.bytes).slice(1)
     }
@@ -84,18 +84,18 @@ class PeerIdImpl {
 
   // return self-describing String representation
   // in default format from RFC 0001: https://github.com/libp2p/specs/pull/209
-  toCID () {
+  toCID (): CID {
     return CID.createV1(LIBP2P_KEY_CODE, this.multihash)
   }
 
-  toBytes () {
+  toBytes (): Uint8Array {
     return this.multihash.bytes
   }
 
   /**
-   * Returns Multiaddr as a JSON encoded object
+   * Returns Multiaddr as a JSON string
    */
-  toJSON () {
+  toJSON (): string {
     return this.toString()
   }
 
@@ -216,7 +216,7 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
   return peerIdFromBytes(baseDecoder.decode(str))
 }
 
-export function peerIdFromBytes (buf: Uint8Array) {
+export function peerIdFromBytes (buf: Uint8Array): PeerId {
   try {
     const multihash = Digest.decode(buf)
 
