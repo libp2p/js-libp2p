@@ -479,6 +479,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   }
 
   async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
+    if (!this.isStarted()) {
+      throw new CodeError('Not started', codes.ERR_NODE_NOT_STARTED)
+    }
+
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null) {

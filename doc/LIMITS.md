@@ -29,7 +29,7 @@ We can also limit the number of connections in a "pending" state. These connecti
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
+const node = await createLibp2p({
   connectionManager: {
     /**
      * The total number of connections allowed to be open at one time
@@ -69,7 +69,7 @@ To prevent individual peers from opening multiple connections to a node, an `inb
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
+const node = await createLibp2p({
   connectionManager: {
     /**
      * A remote peer may attempt to open up to this many connections per second,
@@ -93,7 +93,7 @@ These settings are done on a per-muxer basis, please see the README of the relev
 All fields are optional. The default values are defined in [@libp2p/mplex/src/mplex.ts](https://github.com/libp2p/js-libp2p-mplex/blob/master/src/mplex.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
+const node = await createLibp2p({
   muxers: [
     mplex({
       /**
@@ -133,7 +133,7 @@ const node = await createLibp2pNode({
 All fields are optional. The default values are defined in [@chainsafe/libp2p-yamux/src/config.ts](https://github.com/ChainSafe/js-libp2p-yamux/blob/master/src/config.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
+const node = await createLibp2p({
   muxers: [
     yamux({
       /**
@@ -186,7 +186,7 @@ The [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) transport allows addi
 All fields are optional. The full list of options is defined in [@libp2p/tcp/src/index.ts](https://github.com/libp2p/js-libp2p-tcp/blob/master/src/index.ts) - please see that file for more details.
 
 ```ts
-const node = await createLibp2pNode({
+const node = await createLibp2p({
   transports: [
     tcp({
       /**
@@ -215,7 +215,7 @@ const node = await createLibp2pNode({
 It is possible to configure some hosts to always accept connections from and some to always reject connections from.
 
 ```js
-const node = await createLibp2pNode({
+const node = await createLibp2p({
   connectionManager: {
     /**
      * A list of multiaddrs, any connection with a `remoteAddress` property

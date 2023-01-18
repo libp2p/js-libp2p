@@ -6,10 +6,8 @@ import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
-import { createNode } from '../utils/creators/peer.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
-import { createNodeOptions, discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
-import { circuitRelayServer, circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
+import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { tcp } from '@libp2p/tcp'
 import { Uint8ArrayList } from 'uint8arraylist'
 import delay from 'delay'
@@ -18,59 +16,103 @@ import { pbStream } from 'it-pb-stream'
 import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import { createLibp2p } from '../../src/index.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { mplex } from '@libp2p/mplex'
+import { identifyService } from '../../src/identify/index.js'
 
 describe('circuit-relay', () => {
   describe('flows with 1 listener', () => {
     let local: Libp2p
-    let relay1: Libp2p
-    let relay2: Libp2p
-    let relay3: Libp2p
+    let relay1: Libp2p<{ relay: CircuitRelayService }>
+    let relay2: Libp2p<{ relay: CircuitRelayService }>
+    let relay3: Libp2p<{ relay: CircuitRelayService }>
 
     beforeEach(async () => {
       // create 1 node and 3 relays
       [local, relay1, relay2, relay3] = await Promise.all([
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ]
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ],
-            relay: circuitRelayServer()
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ],
-            relay: circuitRelayServer()
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ],
-            relay: circuitRelayServer()
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
         })
       ])
     })
@@ -292,64 +334,114 @@ describe('circuit-relay', () => {
   describe('flows with 2 listeners', () => {
     let local: Libp2p
     let remote: Libp2p
-    let relay1: Libp2p
-    let relay2: Libp2p
-    let relay3: Libp2p
+    let relay1: Libp2p<{ relay: CircuitRelayService }>
+    let relay2: Libp2p<{ relay: CircuitRelayService }>
+    let relay3: Libp2p<{ relay: CircuitRelayService }>
 
     beforeEach(async () => {
       [local, remote, relay1, relay2, relay3] = await Promise.all([
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ]
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ]
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ],
-            relay: circuitRelayServer()
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ],
-            relay: circuitRelayServer()
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ],
-            relay: circuitRelayServer()
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
         })
       ])
     })
@@ -515,43 +607,76 @@ describe('circuit-relay', () => {
   })
 
   describe('flows with data limit', () => {
-    let local: Libp2pNode
-    let remote: Libp2pNode
-    let relay: Libp2pNode
+    let local: Libp2p
+    let remote: Libp2p
+    let relay: Libp2p<{ relay: CircuitRelayService }>
 
     beforeEach(async () => {
       [local, remote, relay] = await Promise.all([
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ]
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ]
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp()
-            ],
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
             relay: circuitRelayServer({
               reservations: {
                 defaultDataLimit: 1024n
               }
-            })
-          })
+            }),
+            identify: identifyService()
+          }
         })
       ])
     })
@@ -610,43 +735,76 @@ describe('circuit-relay', () => {
   })
 
   describe('flows with duration limit', () => {
-    let local: Libp2pNode
-    let remote: Libp2pNode
-    let relay: Libp2pNode
+    let local: Libp2p
+    let remote: Libp2p
+    let relay: Libp2p<{ relay: CircuitRelayService }>
 
     beforeEach(async () => {
       [local, remote, relay] = await Promise.all([
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ]
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport({
-                discoverRelays: 1
-              })
-            ]
-          })
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp()
-            ],
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
             relay: circuitRelayServer({
               reservations: {
                 defaultDurationLimit: 1000
               }
-            })
-          })
+            }),
+            identify: identifyService()
+          }
         })
       ])
     })
@@ -706,40 +864,67 @@ describe('circuit-relay', () => {
   describe('preconfigured relay address', () => {
     let local: Libp2p
     let remote: Libp2p
-    let relay: Libp2p
+    let relay: Libp2p<{ relay: CircuitRelayService }>
 
     beforeEach(async () => {
-      relay = await createNode({
-        config: createNodeOptions({
+      relay = await createLibp2p({
+        addresses: {
+          listen: ['/ip4/127.0.0.1/tcp/0']
+        },
+        transports: [
+          tcp(),
+          circuitRelayTransport()
+        ],
+        streamMuxers: [
+          mplex()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ],
+        services: {
+          relay: circuitRelayServer(),
+          identify: identifyService()
+        }
+      })
+
+      ;[local, remote] = await Promise.all([
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
           transports: [
             tcp(),
             circuitRelayTransport()
           ],
-          relay: circuitRelayServer()
-        })
-      })
-
-      ;[local, remote] = await Promise.all([
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport()
-            ]
-          })
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            addresses: {
-              listen: [
-                `${relay.getMultiaddrs()[0].toString()}/p2p-circuit`
-              ]
-            },
-            transports: [
-              tcp(),
-              circuitRelayTransport()
+        createLibp2p({
+          addresses: {
+            listen: [
+              `${relay.getMultiaddrs()[0].toString()}/p2p-circuit`
             ]
-          })
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport()
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         })
       ])
     })
@@ -763,40 +948,67 @@ describe('circuit-relay', () => {
   describe('preconfigured relay without a peer id', () => {
     let local: Libp2p
     let remote: Libp2p
-    let relay: Libp2p
+    let relay: Libp2p<{ relay: CircuitRelayService }>
 
     beforeEach(async () => {
-      relay = await createNode({
-        config: createNodeOptions({
+      relay = await createLibp2p({
+        addresses: {
+          listen: ['/ip4/127.0.0.1/tcp/0']
+        },
+        transports: [
+          tcp(),
+          circuitRelayTransport()
+        ],
+        streamMuxers: [
+          mplex()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ],
+        services: {
+          relay: circuitRelayServer(),
+          identify: identifyService()
+        }
+      })
+
+      ;[local, remote] = await Promise.all([
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
           transports: [
             tcp(),
             circuitRelayTransport()
           ],
-          relay: circuitRelayServer()
-        })
-      })
-
-      ;[local, remote] = await Promise.all([
-        createNode({
-          config: createNodeOptions({
-            transports: [
-              tcp(),
-              circuitRelayTransport()
-            ]
-          })
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         }),
-        createNode({
-          config: createNodeOptions({
-            addresses: {
-              listen: [
-                `${relay.getMultiaddrs()[0].toString().split('/p2p')[0]}/p2p-circuit`
-              ]
-            },
-            transports: [
-              tcp(),
-              circuitRelayTransport()
+        createLibp2p({
+          addresses: {
+            listen: [
+              `${relay.getMultiaddrs()[0].toString().split('/p2p')[0]}/p2p-circuit`
             ]
-          })
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport()
+          ],
+          streamMuxers: [
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            identify: identifyService()
+          }
         })
       ])
     })

@@ -12,7 +12,7 @@ import sinon from 'sinon'
 import Peers from '../fixtures/peers.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
 import { EventEmitter } from '@libp2p/interfaces/events'
 
 const addrs = [
@@ -23,7 +23,7 @@ const addrs = [
 describe('Transport Manager (TCP)', () => {
   let tm: DefaultTransportManager
   let localPeer: PeerId
-  let components: DefaultComponents
+  let components: Components
 
   before(async () => {
     localPeer = await createFromJSON(Peers[0])
@@ -31,7 +31,7 @@ describe('Transport Manager (TCP)', () => {
 
   beforeEach(() => {
     const events = new EventEmitter()
-    components = new DefaultComponents({
+    components = defaultComponents({
       peerId: localPeer,
       events,
       datastore: new MemoryDatastore(),

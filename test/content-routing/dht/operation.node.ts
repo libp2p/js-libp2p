@@ -5,17 +5,22 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { subsystemMulticodecs, createSubsystemOptions } from './utils.js'
+import { subsystemMulticodecs } from './utils.js'
 import { createPeerId } from '../../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
-import { start } from '@libp2p/interfaces/startable'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { DualDHT } from '@libp2p/interface-dht'
+import { createLibp2p } from '../../../src/index.js'
+import { kadDHT } from '@libp2p/kad-dht'
+import { tcp } from '@libp2p/tcp'
+import { plaintext } from '../../../src/insecure/index.js'
+import { mplex } from '@libp2p/mplex'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
 
-async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2pNode): Promise<Multiaddr> {
-  const { addresses } = await libp2p.components.peerStore.get(remotePeerId)
+async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2p): Promise<Multiaddr> {
+  const { addresses } = await libp2p.peerStore.get(remotePeerId)
 
   if (addresses.length === 0) {
     throw new Error('No addrs found')
@@ -29,8 +34,8 @@ async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2pNode): Promise
 describe('DHT subsystem operates correctly', () => {
   let peerId: PeerId
   let remotePeerId: PeerId
-  let libp2p: Libp2pNode
-  let remoteLibp2p: Libp2pNode
+  let libp2p: Libp2p<{ dht: DualDHT }>
+  let remoteLibp2p: Libp2p<{ dht: DualDHT }>
   let remAddr: Multiaddr
 
   beforeEach(async () => {
@@ -42,26 +47,50 @@ describe('DHT subsystem operates correctly', () => {
 
   describe('dht started before connect', () => {
     beforeEach(async () => {
-      libp2p = await createLibp2pNode(createSubsystemOptions({
+      libp2p = await createLibp2p({
         peerId,
         addresses: {
           listen: [listenAddr.toString()]
+        },
+        transports: [
+          tcp()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ],
+        streamMuxers: [
+          mplex()
+        ],
+        services: {
+          dht: kadDHT()
         }
-      }))
+      })
 
-      remoteLibp2p = await createLibp2pNode(createSubsystemOptions({
+      remoteLibp2p = await createLibp2p({
         peerId: remotePeerId,
         addresses: {
           listen: [remoteListenAddr.toString()]
+        },
+        transports: [
+          tcp()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ],
+        streamMuxers: [
+          mplex()
+        ],
+        services: {
+          dht: kadDHT()
         }
-      }))
+      })
 
       await Promise.all([
         libp2p.start(),
         remoteLibp2p.start()
       ])
 
-      await libp2p.components.peerStore.patch(remotePeerId, {
+      await libp2p.peerStore.patch(remotePeerId, {
         multiaddrs: [remoteListenAddr]
       })
       remAddr = await getRemoteAddr(remotePeerId, libp2p)
@@ -83,8 +112,8 @@ describe('DHT subsystem operates correctly', () => {
       expect(stream).to.exist()
 
       return await Promise.all([
-        pWaitFor(() => libp2p.dht.lan.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p.dht.lan.routingTable.size === 1)
+        pWaitFor(() => libp2p.services.dht.lan.routingTable.size === 1),
+        pWaitFor(() => remoteLibp2p.services.dht.lan.routingTable.size === 1)
       ])
     })
 
@@ -94,87 +123,13 @@ describe('DHT subsystem operates correctly', () => {
 
       await libp2p.dialProtocol(remotePeerId, subsystemMulticodecs)
       await Promise.all([
-        pWaitFor(() => libp2p.dht.lan.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p.dht.lan.routingTable.size === 1)
+        pWaitFor(() => libp2p.services.dht.lan.routingTable.size === 1),
+        pWaitFor(() => remoteLibp2p.services.dht.lan.routingTable.size === 1)
       ])
 
-      await libp2p.components.contentRouting.put(key, value)
+      await libp2p.contentRouting.put(key, value)
 
-      const fetchedValue = await remoteLibp2p.components.contentRouting.get(key)
-      expect(fetchedValue).to.equalBytes(value)
-    })
-  })
-
-  describe('dht started after connect', () => {
-    beforeEach(async () => {
-      libp2p = await createLibp2pNode(createSubsystemOptions({
-        peerId,
-        addresses: {
-          listen: [listenAddr.toString()]
-        }
-      }))
-
-      remoteLibp2p = await createLibp2pNode(createSubsystemOptions({
-        peerId: remotePeerId,
-        addresses: {
-          listen: [remoteListenAddr.toString()]
-        }
-      }))
-
-      await libp2p.start()
-      await remoteLibp2p.start()
-
-      await libp2p.components.peerStore.patch(remotePeerId, {
-        multiaddrs: [remoteListenAddr]
-      })
-      remAddr = await getRemoteAddr(remotePeerId, libp2p)
-    })
-
-    afterEach(async () => {
-      if (libp2p != null) {
-        await libp2p.stop()
-      }
-
-      if (remoteLibp2p != null) {
-        await remoteLibp2p.stop()
-      }
-    })
-
-    // TODO: we pre-fill the routing tables on dht startup with artificial peers so this test
-    // doesn't really work as intended.  We should be testing that a connected peer can change
-    // it's supported protocols and we should notice that change so there may be something to
-    // salvage from here, though it could be better as identify protocol tests.
-    it.skip('should get notified of connected peers after starting', async () => {
-      const connection = await libp2p.dial(remAddr)
-
-      expect(connection).to.exist()
-      expect(libp2p.dht.lan.routingTable).to.be.empty()
-
-      const dht = remoteLibp2p.dht
-
-      await start(dht)
-
-      // should be 0 directly after start - TODO this may be susceptible to timing bugs, we should have
-      // the ability to report stats on the DHT routing table instead of reaching into it's heart like this
-      expect(remoteLibp2p.dht.lan.routingTable).to.be.empty()
-
-      await pWaitFor(() => libp2p.dht.lan.routingTable.size === 1)
-    })
-
-    it('should put on a peer and get from the other', async () => {
-      await libp2p.dial(remAddr)
-
-      const key = uint8ArrayFromString('hello')
-      const value = uint8ArrayFromString('world')
-
-      const dht = remoteLibp2p.dht
-
-      await start(dht)
-
-      await pWaitFor(() => libp2p.dht.lan.routingTable.size === 1)
-      await libp2p.components.contentRouting.put(key, value)
-
-      const fetchedValue = await remoteLibp2p.components.contentRouting.get(key)
+      const fetchedValue = await remoteLibp2p.contentRouting.get(key)
       expect(fetchedValue).to.equalBytes(value)
     })
   })
