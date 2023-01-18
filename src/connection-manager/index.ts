@@ -105,7 +105,7 @@ export interface ConnectionManagerConfig {
 
   /**
    * A list of multiaddrs that will always be allowed (except if they are in the
-   * deny list) to open connections to this node even if we've reached maxIncomingConnections
+   * deny list) to open connections to this node even if we've reached maxnOutgoingConnections
    */
   allow?: string[]
 
@@ -126,12 +126,6 @@ export interface ConnectionManagerConfig {
    * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc
    */
   maxIncomingPendingConnections?: number
-
-  /**
-   * The maximum number of parallel outgoing connections allowed that have yet to
-   * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc
-   */
-  maxOutgoingPendingConnections?: number
 }
 
 const defaultOptions: Partial<ConnectionManagerConfig> = {
@@ -214,7 +208,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     try {
       // This emitter gets listened to a lot
       setMaxListeners?.(Infinity, this)
-    } catch { }
+    } catch {}
 
     this.onConnect = this.onConnect.bind(this)
     this.onDisconnect = this.onDisconnect.bind(this)
@@ -222,8 +216,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.startupReconnectTimeout = init.startupReconnectTimeout ?? STARTUP_RECONNECT_TIMEOUT
     this.dialTimeout = init.dialTimeout ?? 30000
 
-    this.allow = (init.allow ?? []).map((ma) => multiaddr(ma))
-    this.deny = (init.deny ?? []).map((ma) => multiaddr(ma))
+    this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
+    this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
 
     this.inboundConnectionRateLimiter = new RateLimiterMemory({
       points: this.opts.inboundConnectionThreshold,
@@ -340,7 +334,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
         for (const peer of await this.components.peerStore.all()) {
           const tags = await this.components.peerStore.getTags(peer.id)
-          const hasKeepAlive = tags.filter((tag) => tag.name === KEEP_ALIVE).length > 0
+          const hasKeepAlive = tags.filter(tag => tag.name === KEEP_ALIVE).length > 0
 
           if (hasKeepAlive) {
             keepAlivePeers.push(peer.id)
@@ -353,19 +347,20 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         try {
           // fails on node < 15.4
           setMaxListeners?.(Infinity, this.connectOnStartupController.signal)
-        } catch { }
+        } catch {}
 
         await Promise.all(
-          keepAlivePeers.map(async (peer) => {
+          keepAlivePeers.map(async peer => {
             await this.openConnection(peer, {
               signal: this.connectOnStartupController?.signal
-            }).catch((err) => {
-              log.error(err)
             })
+              .catch(err => {
+                log.error(err)
+              })
           })
         )
       })
-      .catch((err) => {
+      .catch(err => {
         log.error(err)
       })
       .finally(() => {
@@ -400,15 +395,13 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const tasks: Array<Promise<void>> = []
     for (const connectionList of this.connections.values()) {
       for (const connection of connectionList) {
-        tasks.push(
-          (async () => {
-            try {
-              await connection.close()
-            } catch (err) {
-              log.error(err)
-            }
-          })()
-        )
+        tasks.push((async () => {
+          try {
+            await connection.close()
+          } catch (err) {
+            log.error(err)
+          }
+        })())
       }
     }
 
@@ -418,7 +411,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   }
 
   onConnect (evt: CustomEvent<Connection>) {
-    void this._onConnect(evt).catch((err) => {
+    void this._onConnect(evt).catch(err => {
       log.error(err)
     })
   }
@@ -450,9 +443,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     const numConnections = this.getConnections().length
-    const toPrune = numConnections - this.opts.maxIncomingConnections
+    const toPrune = numConnections - this.opts.maxOutgoingConnections
 
-    await this._checkMaxLimit('maxIncomingConnections', numConnections, toPrune)
+    await this._checkMaxLimit('maxOutgoingConnections', numConnections, toPrune)
     this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
   }
 
@@ -528,7 +521,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       try {
         // fails on node < 15.4
         setMaxListeners?.(Infinity, timeoutController.signal)
-      } catch { }
+      } catch {}
     }
 
     try {
@@ -567,7 +560,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const connections = this.connections.get(peerId.toString()) ?? []
 
     await Promise.all(
-      connections.map(async (connection) => {
+      connections.map(async connection => {
         return await connection.close()
       })
     )
@@ -586,7 +579,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     // Return all open connections
     if (connections != null) {
-      return connections.filter((connection) => connection.stat.status === STATUS.OPEN)
+      return connections.filter(connection => connection.stat.status === STATUS.OPEN)
     }
 
     return []
@@ -598,9 +591,10 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   _onLatencyMeasure (evt: CustomEvent<SummaryObject>) {
     const { detail: summary } = evt
 
-    this._checkMaxLimit('maxEventLoopDelay', summary.avgMs, 1).catch((err) => {
-      log.error(err)
-    })
+    this._checkMaxLimit('maxEventLoopDelay', summary.avgMs, 1)
+      .catch(err => {
+        log.error(err)
+      })
   }
 
   /**
@@ -640,12 +634,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       const tags = await this.components.peerStore.getTags(remotePeer)
 
       // sum all tag values
-      peerValues.set(
-        remotePeer,
-        tags.reduce((acc, curr) => {
-          return acc + curr.value
-        }, 0)
-      )
+      peerValues.set(remotePeer, tags.reduce((acc, curr) => {
+        return acc + curr.value
+      }, 0))
     }
 
     // sort by value, lowest to highest
@@ -681,15 +672,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     for (const connection of sortedConnections) {
       log('too many connections open - closing a connection to %p', connection.remotePeer)
-      // check allow list
-      const connectionInAllowList = this.allow.some((ma) => {
-        return ma.getPeerId() === connection.remotePeer.toString()
-      })
-
-      // Connections in the allow list should be excluded from pruning
-      if (!connectionInAllowList) {
-        toClose.push(connection)
-      }
+      toClose.push(connection)
 
       if (toClose.length === toPrune) {
         break
@@ -698,7 +681,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     // close connections
     await Promise.all(
-      toClose.map(async (connection) => {
+      toClose.map(async connection => {
         try {
           await connection.close()
         } catch (err) {
@@ -706,18 +689,16 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         }
 
         // TODO: should not need to invoke this manually
-        this.onDisconnect(
-          new CustomEvent<Connection>('connectionEnd', {
-            detail: connection
-          })
-        )
+        this.onDisconnect(new CustomEvent<Connection>('connectionEnd', {
+          detail: connection
+        }))
       })
     )
   }
 
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
     // check deny list
-    const denyConnection = this.deny.some((ma) => {
+    const denyConnection = this.deny.some(ma => {
       return maConn.remoteAddr.toString().startsWith(ma.toString())
     })
 
@@ -727,7 +708,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     // check allow list
-    const allowConnection = this.allow.some((ma) => {
+    const allowConnection = this.allow.some(ma => {
       return maConn.remoteAddr.toString().startsWith(ma.toString())
     })
 
@@ -760,7 +741,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       return true
     }
 
-    log('connection from %s refused - maxIncomingConnections exceeded', maConn.remoteAddr)
+    log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
     return false
   }
 
