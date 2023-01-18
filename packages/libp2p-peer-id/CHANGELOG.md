@@ -1,3 +1,15 @@
+## [@libp2p/peer-id-v2.0.1](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v2.0.0...@libp2p/peer-id-v2.0.1) (2023-01-18)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#45](https://github.com/libp2p/js-libp2p-peer-id/issues/45)) ([06e39f0](https://github.com/libp2p/js-libp2p-peer-id/commit/06e39f0a8ca9e25cd3d055023ae61cde510183f8)), closes [#1269](https://github.com/libp2p/js-libp2p-peer-id/issues/1269)
+
+
+### Dependencies
+
+* bump aegir from 37.12.1 to 38.1.0 ([#46](https://github.com/libp2p/js-libp2p-peer-id/issues/46)) ([ba54f6a](https://github.com/libp2p/js-libp2p-peer-id/commit/ba54f6a4a35de20528d4c60a2a532c553b9a9a34))
+
 ## [@libp2p/peer-id-v2.0.0](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v1.1.18...@libp2p/peer-id-v2.0.0) (2023-01-06)
 
 
