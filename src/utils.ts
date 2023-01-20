@@ -6,7 +6,9 @@ import path from 'path'
 
 const ProtoFamily = { ip4: 'IPv4', ip6: 'IPv6' }
 
-export function multiaddrToNetConfig (addr: Multiaddr): ListenOptions | (IpcSocketConnectOpts & TcpSocketConnectOpts) {
+export type NetConfig = ListenOptions | (IpcSocketConnectOpts & TcpSocketConnectOpts)
+
+export function multiaddrToNetConfig (addr: Multiaddr): NetConfig {
   const listenPath = addr.getPath()
 
   // unix socket listening
