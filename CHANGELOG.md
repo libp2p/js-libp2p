@@ -1,3 +1,15 @@
+## [6.1.0](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.9...v6.1.0) (2023-01-21)
+
+
+### Features
+
+* close server on maxConnections ([#218](https://github.com/libp2p/js-libp2p-tcp/issues/218)) ([bff54fa](https://github.com/libp2p/js-libp2p-tcp/commit/bff54fa5d40be44f421924e21b11d8c37fc53b1e))
+
+
+### Bug Fixes
+
+* specify host explicitly in node tests ([#247](https://github.com/libp2p/js-libp2p-tcp/issues/247)) ([d7e5a69](https://github.com/libp2p/js-libp2p-tcp/commit/d7e5a69d917850b756a0fd47760552e0b2fb0feb))
+
 ## [6.0.9](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.8...v6.0.9) (2023-01-17)
 
 
