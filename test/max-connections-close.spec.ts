@@ -32,7 +32,7 @@ describe('close server on maxConnections', () => {
     })
 
     function createSocket (): net.Socket {
-      const socket = net.connect({ port })
+      const socket = net.connect({ host: '127.0.0.1', port })
 
       // eslint-disable-next-line @typescript-eslint/promise-function-async
       afterEachCallbacks.unshift(async () => {
