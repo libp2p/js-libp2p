@@ -173,16 +173,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
 
-    if (this.opts.maxIncomingConnections < this.opts.minConnections) {
+    if ((this.opts.maxIncomingConnections + this.opts.maxOutgoingConnections) < this.opts.minConnections) {
       throw errCode(
-        new Error('Connection Manager maxIncomingConnections must be greater than minConnections'),
-        codes.ERR_INVALID_PARAMETERS
-      )
-    }
-
-    if (this.opts.maxOutgoingConnections < this.opts.minConnections) {
-      throw errCode(
-        new Error('Connection Manager maxOutgoingConnections must be greater than minConnections'),
+        new Error('Connection Manager maxIncomingConnections + maxOutgoingConnections must be greater than minConnections'),
         codes.ERR_INVALID_PARAMETERS
       )
     }
@@ -442,10 +435,24 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       await this.components.peerStore.keyBook.set(peerId, peerId.publicKey)
     }
 
-    const numConnections = this.getConnections().length
-    const toPrune = numConnections - this.opts.maxOutgoingConnections
+    let [outboundConnections, inboundConnections] = [0, 0]
 
-    await this._checkMaxLimit('maxOutgoingConnections', numConnections, toPrune)
+    const connections = this.getConnections()
+
+    connections.forEach(connection => {
+      if (connection.stat.direction === 'inbound') {
+        inboundConnections++
+      } else {
+        outboundConnections++
+      }
+    })
+
+    const numIncomingToPrune = inboundConnections - this.opts.maxIncomingConnections
+    const numOutgoingToPrune = outboundConnections - this.opts.maxOutgoingConnections
+
+    await this._checkMaxLimit('maxOutgoingConnections', outboundConnections, numOutgoingToPrune)
+    await this._checkMaxLimit('maxIncomingConnections', inboundConnections, numIncomingToPrune)
+
     this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
   }
 
@@ -505,9 +512,12 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       }
     }
 
-    if ((this.getConnections().length + 1) > this.opts.maxOutgoingConnections) {
+    const connections = this.getConnections()
+    const totalOutboundConnections = connections.filter(connection => connection.stat.direction === 'outbound').length
+
+    if ((totalOutboundConnections + 1) > this.opts.maxOutgoingConnections) {
       throw errCode(
-        new Error('Connection Manager maxOutgoing connections exceeded'),
+        new Error('Connection Manager max connections exceeded'),
         codes.ERR_CONNECTION_DENIED
       )
     }
@@ -547,6 +557,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       if (!trackedConnection) {
         peerConnections.push(connection)
       }
+
+      connection.stat.direction = 'outbound'
 
       return connection
     } finally {
@@ -707,23 +719,27 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       return false
     }
 
+    // check pending connections
+    if (this.incomingPendingConnections >= Number(this.opts.maxIncomingPendingConnections)) {
+      log('connection from %s refused - incomingPendingConnections exceeded by peer %s', maConn.remoteAddr)
+      return false
+    }
+
+    const connections = this.getConnections()
+
+    const totalIncomingConnections = connections.filter(connection => connection.stat.direction === 'inbound').length
+
     // check allow list
     const allowConnection = this.allow.some(ma => {
       return maConn.remoteAddr.toString().startsWith(ma.toString())
     })
 
-    if (allowConnection) {
-      this.incomingPendingConnections++
-
-      return true
-    }
-
-    // check pending connections
-    if (this.incomingPendingConnections === this.opts.maxIncomingPendingConnections) {
-      log('connection from %s refused - incomingPendingConnections exceeded by peer %s', maConn.remoteAddr)
+    if ((totalIncomingConnections + 1 > this.opts.maxIncomingConnections) && !allowConnection) {
+      log('connection from %s refused - maxIncomingConnections exceeded', maConn.remoteAddr)
       return false
     }
 
+    // Check the rate limiter
     if (maConn.remoteAddr.isThinWaistAddress()) {
       const host = maConn.remoteAddr.nodeAddress().address
 
@@ -735,14 +751,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       }
     }
 
-    if (this.getConnections().length < this.opts.maxIncomingConnections) {
-      this.incomingPendingConnections++
+    this.incomingPendingConnections++
 
-      return true
-    }
-
-    log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
-    return false
+    return true
   }
 
   afterUpgradeInbound () {

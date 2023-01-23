@@ -265,28 +265,17 @@ describe('Connection Manager', () => {
     expect(spy).to.have.property('callCount', 1)
   })
 
-  it('should fail if the connection manager has mismatched incoming connection limit options', async () => {
+  it('should fail if the connection manager has mismatched incoming + outgoing connection limit options', async () => {
     await expect(createNode({
       config: createBaseOptions({
         connectionManager: {
           maxIncomingConnections: 5,
-          minConnections: 6
+          maxOutgoingConnections: 1,
+          minConnections: 7
         }
       }),
       started: false
     })).to.eventually.rejected('maxIncomingConnections must be greater')
-  })
-
-  it('should fail if the connection manager has mismatched outgoing connection limit options', async () => {
-    await expect(createNode({
-      config: createBaseOptions({
-        connectionManager: {
-          maxOutgoingConnections: 5,
-          minConnections: 6
-        }
-      }),
-      started: false
-    })).to.eventually.rejected('maxOutgoingConnections must be greater')
   })
 
   it('should reconnect to important peers on startup', async () => {
@@ -343,31 +332,34 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections when maxIncomingConnections is exceeded', async () => {
-    const dialer = stubInterface<Dialer>()
-    dialer.dial.resolves(stubInterface<Connection>())
-
-    const connectionManager = new DefaultConnectionManager({
-      peerId: libp2p.peerId,
-      upgrader: stubInterface<Upgrader>(),
-      peerStore: stubInterface<PeerStore>(),
-      dialer
-    }, {
-      ...defaultOptions,
-      maxIncomingConnections: 1
+    libp2p = await createNode({
+      config: createBaseOptions({
+        connectionManager: {
+          maxIncomingConnections: 1
+        }
+      }),
+      started: false
     })
 
-    // max out the connection limit
-    await connectionManager.openConnection(await createEd25519PeerId())
+    await libp2p.start()
+
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+
+    // max out the connection limit by having an inbound connection already
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    connection.stat.direction = 'inbound'
+    await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+
     expect(connectionManager.getConnections()).to.have.lengthOf(1)
 
-    // an inbound connection is opened
-    const remotePeer = await createEd25519PeerId()
-    const maConn = mockMultiaddrConnection({
+    // another inbound connection is opened
+    const remotePeer2 = await createEd25519PeerId()
+    const maConn2 = mockMultiaddrConnection({
       source: [],
       sink: async () => {}
-    }, remotePeer)
+    }, remotePeer2)
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
+    await expect(connectionManager.acceptIncomingConnection(maConn2))
       .to.eventually.be.false()
   })
 
