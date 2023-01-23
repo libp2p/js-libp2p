@@ -11,12 +11,8 @@ const log = logger('libp2p:webrtc:sdp')
 /**
  * Get base2 | identity decoders
  */
-export const mbdecoder: any = (function () {
-  const decoders = Object.values(bases).map((b) => b.decoder)
-  let acc = decoders[0].or(decoders[1])
-  decoders.slice(2).forEach((d) => (acc = acc.or(d)))
-  return acc
-})()
+// @ts-expect-error - Not easy to combine these types.
+export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
 /**
  * Get base2 | identity decoders
@@ -57,7 +53,6 @@ export function decodeCerthash (certhash: string) {
  * Extract the fingerprint from a multiaddr
  */
 export function ma2Fingerprint (ma: Multiaddr): string[] {
-  // certhash_value is a multibase encoded multihash encoded string
   const mhdecoded = decodeCerthash(certhash(ma))
   const prefix = toSupportedHashFunction(mhdecoded.name)
   const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')

@@ -8,11 +8,11 @@
     "go-libp2p-server": "cd ../go-libp2p-server && go build && ./go-libp2p-server"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^9.0.0",
+    "@chainsafe/libp2p-noise": "^11.0.0",
     "@multiformats/multiaddr": "^11.0.5",
-    "js-libp2p-webrtc": "github:little-bear-labs/js-libp2p-webrtc#libp2p-demo-2022",
+    "js-libp2p-webrtc": "../../",
     "it-pushable": "^3.1.0",
-    "libp2p": "^0.40.0",
+    "libp2p": "^0.42.0",
     "vite": "^3.1.0"
   }
 }

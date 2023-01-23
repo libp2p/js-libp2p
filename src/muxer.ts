@@ -98,12 +98,9 @@ export class DataChannelMuxer implements StreamMuxer {
     }
   }
 
-  /**
-   * Initiate a new stream with the given name. If no name is
-   * provided, the id of the stream will be used.
-   */
-  newStream (name: string = ''): Stream {
-    const channel = this.peerConnection.createDataChannel(name)
+  newStream (): Stream {
+    // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
+    const channel = this.peerConnection.createDataChannel('')
     const stream = new WebRTCStream({
       channel,
       stat: {

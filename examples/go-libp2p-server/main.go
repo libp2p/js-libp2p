@@ -53,11 +53,10 @@ func echoHandler(stream network.Stream) {
 		}
 		log.Printf("echo: %s", str)
 		_, err = stream.Write([]byte(str))
-		log.Printf("err: %s", err)
 		if err != nil {
+			log.Printf("err: %v", err)
 			return
 		}
-
 	}
 }
 
