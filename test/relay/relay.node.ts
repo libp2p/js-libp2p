@@ -182,9 +182,7 @@ describe('Dialing (via relay, TCP)', () => {
     relayLibp2p = await createNode({
       config: createRelayOptions({
         relay: {
-          autoRelay: {
-            enabled: false
-          },
+          enabled: true,
           hop: {
             // very short timeout
             timeout: 5
@@ -197,8 +195,11 @@ describe('Dialing (via relay, TCP)', () => {
     const dialAddr = relayAddr.encapsulate(`/p2p/${relayLibp2p.peerId.toString()}`)
 
     const connection = await srcLibp2p.dial(dialAddr)
+    // this should succeed as the timeout is only effective after
+    // multistream select negotiates the protocol
     const stream = await connection.newStream(RELAY_V2_HOP_CODEC)
 
+    // TODO(ckousik): does this need to be awaited?
     await stream.sink(async function * () {
       // delay for longer than the timeout
       await delay(1000)
