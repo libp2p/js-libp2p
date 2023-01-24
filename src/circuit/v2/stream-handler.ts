@@ -4,7 +4,7 @@ import { Handshake, handshake } from 'it-handshake'
 import type { Stream } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
 
-const log = logger('libp2p:circuitv2:stream-handler')
+const log = logger('libp2p:circuit:v2:stream-handler')
 
 export interface StreamHandlerOptions {
   /**

@@ -15,7 +15,7 @@ import { stop } from './stop.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 
-const log = logger('libp2p:circuitv2:hop')
+const log = logger('libp2p:circuit:v2:hop')
 
 export interface HopProtocolOptions {
   connection: Connection
@@ -117,7 +117,7 @@ async function handleConnect (options: HopConnectOptions) {
   // Validate the HOP connect request has the required input
   try {
     validateHopConnectRequest(request, streamHandler)
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     log.error('invalid hop connect request via peer %s', connection.remotePeer, err)
     writeErrorResponse(streamHandler, Status.MALFORMED_MESSAGE)
     return
@@ -161,7 +161,7 @@ async function handleConnect (options: HopConnectOptions) {
     }
   })
 
-  if (destinationStream === undefined || destinationStream === null) {
+  if (!destinationStream) {
     log.error('failed to open stream to destination peer %s', destinationConnection?.remotePeer)
     writeErrorResponse(streamHandler, Status.CONNECTION_FAILED)
     return

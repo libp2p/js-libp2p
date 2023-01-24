@@ -6,7 +6,7 @@ import type { Stream } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-const log = logger('libp2p:circuitv1:stream-handler')
+const log = logger('libp2p:circuit:v1:stream-handler')
 
 export interface StreamHandlerOptions {
   /**
