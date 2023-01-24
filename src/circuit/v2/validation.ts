@@ -15,7 +15,7 @@ export function validateStopConnectRequest (request: StopMessage, streamHandler:
     } else {
       throw new Error('Missing peer info in stop request')
     }
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     writeStopMessageResponse(streamHandler, Status.MALFORMED_MESSAGE)
     throw err
   }
@@ -33,7 +33,7 @@ export function validateHopConnectRequest (request: HopMessage, streamHandler: S
     } else {
       throw new Error('Missing peer info in hop connect request')
     }
-  } catch (/** @type {any} */ err) {
+  } catch (err: any) {
     writeHopMessageResponse(streamHandler, Status.MALFORMED_MESSAGE)
     throw err
   }

@@ -8,7 +8,7 @@ import type { Duplex } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-const log = logger('libp2p:circuit:stop')
+const log = logger('libp2p:circuit:v1:stop')
 
 export interface HandleStopOptions {
   connection: Connection

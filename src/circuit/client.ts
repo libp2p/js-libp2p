@@ -17,7 +17,7 @@ import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '../components.js'
 
-const log = logger('libp2p:circuit_client')
+const log = logger('libp2p:circuit:client')
 
 const noop = () => { }
 
@@ -40,7 +40,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
   private readonly onError: (error: Error, msg?: string) => void
   private started: boolean
 
-  constructor (components: Components, init: CircuitServiceInit) {
+  constructor(components: Components, init: CircuitServiceInit) {
     super()
     this.started = false
     this.components = components
@@ -63,21 +63,18 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
       this._onPeerDisconnected(evt)
     })
 
-    this.components.connectionManager.addEventListener('peer:connect', (evt) => {
-      log.trace('Connected', evt.detail.remotePeer.toString(), this.components.peerId.toString())
-    })
   }
 
-  isStarted () {
+  isStarted() {
     return this.started
   }
 
-  start () {
-    void this._listenOnAvailableHopRelays()
+  start() {
+    void this._listenOnAvailableHopRelays().catch(err => { log.error('error listening on relays', err) })
     this.started = true
   }
 
-  async stop () {
+  async stop() {
     for (const timer of this.reservationMap.values()) {
       clearTimeout(timer)
     }
@@ -91,7 +88,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
    * If the protocol is supported, check if the peer supports **HOP** and add it as a listener if
    * inside the threshold.
    */
-  async _onProtocolChange ({ peerId, protocols }: { peerId: PeerId, protocols: string[] }) {
+  async _onProtocolChange({ peerId, protocols }: { peerId: PeerId, protocols: string[] }) {
     const id = peerId.toString()
 
     if (peerId.equals(this.components.peerId)) {
@@ -99,11 +96,11 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     }
 
     // Check if it has the protocol
-    const hasProtocol = protocols.find(protocol => protocol === RELAY_V2_HOP_CODEC)
-    log.trace(`Peer ${peerId.toString()} protocol change`, this.components.peerId.toString())
+    const hasProtocol = protocols.includes(RELAY_V2_HOP_CODEC)
+    log.trace(`Peer %p protocol change %p`, peerId, this.components.peerId)
 
     // If no protocol, check if we were keeping the peer before as a listenRelay
-    if (hasProtocol == null) {
+    if (hasProtocol) {
       if (this.relays.has(id)) {
         await this._removeListenRelay(id)
       }
@@ -141,7 +138,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
   /**
    * Peer disconnects
    */
-  _onPeerDisconnected (evt: CustomEvent<Connection>) {
+  _onPeerDisconnected(evt: CustomEvent<Connection>) {
     const connection = evt.detail
     const peerId = connection.remotePeer
     const id = peerId.toString()
@@ -161,7 +158,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
   /**
    * Attempt to listen on the given relay connection
    */
-  async _addListenRelay (connection: Connection, peerId: PeerId): Promise<void> {
+  async _addListenRelay(connection: Connection, peerId: PeerId): Promise<void> {
     const id = peerId.toString()
     log.trace(`Peer ${peerId.toString()} is being added as relay`)
     try {
@@ -215,7 +212,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
   /**
    * Remove listen relay
    */
-  async _removeListenRelay (id: string) {
+  async _removeListenRelay(id: string) {
     if (this.relays.delete(id)) {
       /* eslint-disable-next-line no-warning-comments */
       // TODO: this should be responsibility of the connMgr
@@ -230,50 +227,32 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
    * 2. Dial and try to listen on the peers we know that support hop but are not connected.
    * 3. Search the network.
    */
-  async _listenOnAvailableHopRelays (peersToIgnore: string[] = []) {
+  async _listenOnAvailableHopRelays(peersToIgnore: string[] = []) {
     // Check if already listening on enough relays
     if (this.relays.size >= this.maxReservations) {
       return
     }
 
-    const knownHopsToDial = []
-    const peers = await this.components.peerStore.all()
+    const knownHopsToDial: PeerId[] = []
+    const peers = (await this.components.peerStore.all())
+      // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
+      .filter(({ id, protocols }) =>
+        protocols.includes(RELAY_V2_HOP_CODEC) && !this.relays.has(id.toString()) && peersToIgnore.includes(id.toString()))
+      .map(({ id }) => {
+        const connections = this.components.connectionManager.getConnections(id)
+        if (connections.length === 0) {
+          knownHopsToDial.push(id)
+          return [id, null]
+        }
+        return [id, connections[0]]
+      })
+      .filter(([id, conn]) => { conn })
+      .sort(() => Math.random() - 0.5)
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
-    for (const { id, protocols } of peers) {
-      const idStr = id.toString()
-      log.trace('Checking if peer relay', idStr, protocols, { me: this.components.peerId.toString() })
+    for (const [id, conn] of peers) {
 
-      // Continue to next if listening on this or peer to ignore
-      if (this.relays.has(idStr)) {
-        /* eslint-disable-next-line no-continue */
-        continue
-      }
-
-      if (peersToIgnore.includes(idStr)) {
-        /* eslint-disable-next-line no-continue */
-        continue
-      }
-
-      const hasProtocol = protocols.find(protocol => protocol === RELAY_V2_HOP_CODEC)
-
-      // Continue to next if it does not support Hop
-      if (hasProtocol == null) {
-        /* eslint-disable-next-line no-continue */
-        continue
-      }
-      log.trace('Found peer with relay codec', id)
-
-      const connections = this.components.connectionManager.getConnections(id)
-
-      // If not connected, store for possible later use.
-      if (connections.length === 0) {
-        knownHopsToDial.push(id)
-        /* eslint-disable-next-line no-continue */
-        continue
-      }
-
-      await this._addListenRelay(connections[0], id)
+      await this._addListenRelay(conn as Connection, id as PeerId)
 
       // Check if already listening on enough relays
       if (this.relays.size >= this.maxReservations) {
@@ -283,12 +262,13 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
 
     // Try to listen on known peers that are not connected
     for (const peerId of knownHopsToDial) {
-      await this._tryToListenOnRelay(peerId)
-
       // Check if already listening on enough relays
       if (this.relays.size >= this.maxReservations) {
         return
       }
+
+      await this._tryToListenOnRelay(peerId)
+
     }
 
     // Try to find relays to hop on the network
@@ -322,7 +302,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     }
   }
 
-  async _tryToListenOnRelay (peerId: PeerId) {
+  async _tryToListenOnRelay(peerId: PeerId) {
     try {
       if (peerId.equals(this.components.peerId)) {
         log.trace('Skipping dialling self', peerId.toString())

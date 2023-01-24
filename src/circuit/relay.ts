@@ -13,7 +13,7 @@ import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '../components.js'
 
-const log = logger('libp2p:relay')
+const log = logger('libp2p:circuit:relay')
 
 export interface RelayAdvertiseConfig {
   bootDelay?: number
@@ -24,15 +24,6 @@ export interface RelayAdvertiseConfig {
 export interface HopConfig {
   enabled?: boolean
   active?: boolean
-}
-
-export interface AutoRelayConfig {
-  enabled?: boolean
-
-  /**
-   * maximum number of relays to listen
-   */
-  maxListeners: number
 }
 
 export interface RelayInit {

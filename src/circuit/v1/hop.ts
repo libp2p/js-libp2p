@@ -7,7 +7,7 @@ import type { Stream } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-const log = logger('libp2p:circuit:hop')
+const log = logger('libp2p:circuit:v1:hop')
 export interface HopConfig {
   stream: Stream
   request: CircuitRelay

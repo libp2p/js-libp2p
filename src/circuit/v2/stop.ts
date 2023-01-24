@@ -7,7 +7,7 @@ import { StreamHandlerV2 } from './stream-handler.js'
 import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
 import { validateStopConnectRequest } from './validation.js'
 
-const log = logger('libp2p:circuitv2:stop')
+const log = logger('libp2p:circuit:v2:stop')
 
 export interface HandleStopOptions {
   connection: Connection
