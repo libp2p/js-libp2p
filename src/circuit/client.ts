@@ -236,8 +236,10 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     const knownHopsToDial: PeerId[] = []
     const peers = (await this.components.peerStore.all())
       // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
-      .filter(({ id, protocols }) =>
-        protocols.includes(RELAY_V2_HOP_CODEC) && !this.relays.has(id.toString()) && peersToIgnore.includes(id.toString()))
+      .filter(({ id, protocols }) => {
+        const idString = id.toString()
+        return protocols.includes(RELAY_V2_HOP_CODEC) && !this.relays.has(idString) && !peersToIgnore.includes(idString)
+      })
       .map(({ id }) => {
         const connections = this.components.connectionManager.getConnections(id)
         if (connections.length === 0) {
@@ -246,7 +248,6 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
         }
         return [id, connections[0]]
       })
-      .filter(([id, conn]) => { conn })
       .sort(() => Math.random() - 0.5)
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
