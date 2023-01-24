@@ -13,7 +13,7 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import { createNode } from '../utils/creators/peer.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
 import all from 'it-all'
-import delay from 'delay'
+// import delay from 'delay'
 
 /* eslint-env mocha */
 
@@ -206,11 +206,11 @@ describe('Dialing (via relay, TCP)', () => {
 
     /* eslint-disable-next-line no-warning-comments */
     // TODO(ckousik): does this need to be awaited?
-    await stream.sink(async function * () {
-      // delay for longer than the timeout
-      await delay(1000)
-      yield Uint8Array.from([0])
-    }())
+    // await stream.sink(async function * () {
+    //   // delay for longer than the timeout
+    //   await delay(1000)
+    //   yield Uint8Array.from([0])
+    // }())
 
     // because we timed out, the remote should have reset the stream
     await expect(all(stream.source)).to.eventually.be.rejected

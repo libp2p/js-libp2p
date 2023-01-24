@@ -20,7 +20,6 @@ import { setMaxListeners } from 'events'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { RELAY_V2_HOP_CODEC } from './circuit/multicodec.js'
 
 const log = logger('libp2p:upgrader')
 
@@ -387,10 +386,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               const streamCount = countStreams(protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
-                if (protocol === RELAY_V2_HOP_CODEC) {
-                  /* eslint-disable-next-line no-console */
-                  console.log(`too many incoming streams: protocol ${protocol}, streamCount: ${streamCount}, limit: ${incomingLimit}`)
-                }
                 muxedStream.abort(errCode(new Error(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`), codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS))
 
                 return
@@ -453,10 +448,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           const streamCount = countStreams(protocol, 'outbound', connection)
 
           if (streamCount === outgoingLimit) {
-            if (protocol === RELAY_V2_HOP_CODEC) {
-              /* eslint-disable-next-line no-console */
-              console.log(`too many outgoing streams: protocol ${protocol}, streamCount: ${streamCount}, limit: ${outgoingLimit}`)
-            }
             const err = errCode(new Error(`Too many outbound protocol streams for protocol "${protocol}" - limit ${outgoingLimit}`), codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
             muxedStream.abort(err)
 
