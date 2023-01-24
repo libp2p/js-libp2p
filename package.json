@@ -92,7 +92,8 @@
     "test:firefox": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:examples": "cd examples && npm run test:all",
-    "test:interop": "aegir test -t node -f dist/test/interop.js"
+    "test:interop": "aegir test -t node -f dist/test/interop.js",
+    "test:relay": "aegir test -t node -f \"./dist/test/**/auto-relay.{node,spec}.js\" --cov"
   },
   "dependencies": {
     "@achingbrain/nat-port-mapper": "^1.0.3",

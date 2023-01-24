@@ -202,6 +202,7 @@ describe('auto-relay', () => {
       // Disconnect from peer used for relay
       const disconnectPromise = pEvent(relayLibp2p1.connectionManager, 'peer:disconnect', { timeout: 500 })
       await relayLibp2p2.stop()
+      console.log('disconnected')
       const event = await disconnectPromise
       expect(event.detail.remotePeer.toString()).to.equal(relayLibp2p2.peerId.toString())
 
@@ -210,6 +211,7 @@ describe('auto-relay', () => {
         timeout: 1000
       })).to.eventually.be.rejected()
 
+      console.log('abc')
       // Wait for other peer connected to be added as listen addr
       await usingAsRelay(relayLibp2p1, relayLibp2p3)
     })

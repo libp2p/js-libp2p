@@ -6,6 +6,8 @@ import { logger } from '@libp2p/logger'
 import { StreamHandlerV2 } from './stream-handler.js'
 import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
 import { validateStopConnectRequest } from './validation.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:circuit:v2:stop')
 
@@ -24,7 +26,7 @@ export async function handleStop ({
   // Validate the STOP request has the required input
   try {
     validateStopConnectRequest(request, streamHandler)
-  } catch (/** @type {any} */ err) {
+  } catch (err) {
     return log.error('invalid stop connect request via peer %s', connection.remotePeer, err)
   }
   log('stop request is valid')
@@ -54,7 +56,7 @@ export interface StopOptions {
 export async function stop ({
   connection,
   request
-}: StopOptions) {
+}: StopOptions): Promise<Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> | undefined> {
   const stream = await connection.newStream([RELAY_V2_STOP_CODEC])
   log('starting circuit relay v2 stop request to %s', connection.remotePeer)
   const streamHandler = new StreamHandlerV2({ stream })
@@ -62,13 +64,13 @@ export async function stop ({
   let response
   try {
     response = StopMessage.decode(await streamHandler.read())
-  } catch (/** @type {any} */ err) {
+  } catch (err) {
     log.error('error parsing stop message response from %s', connection.remotePeer)
   }
 
   if (response == null) {
     streamHandler.close()
-    return undefined
+    return
   }
   if (response.status === Status.OK) {
     log('stop request to %s was successful', connection.remotePeer)
@@ -77,5 +79,5 @@ export async function stop ({
 
   log('stop request failed with code %d', response.status)
   streamHandler.close()
-  return undefined
+  return
 }
