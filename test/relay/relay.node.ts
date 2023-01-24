@@ -177,6 +177,8 @@ describe('Dialing (via relay, TCP)', () => {
     expect(dstToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
   })
 
+  // TODO(ckousik): This test seems to fail on windows and macos on CI with a 
+  // stream reset in mplex.
   it('should time out when establishing a relay connection', async () => {
     await relayLibp2p.stop()
     relayLibp2p = await createNode({
