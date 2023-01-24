@@ -80,7 +80,7 @@ export class Circuit implements Transport, Startable {
     }
 
     this._started = true
-    void this.components.registrar.handle(RELAY_V1_CODEC, (data) => {
+    await this.components.registrar.handle(RELAY_V1_CODEC, (data) => {
       void this._onProtocolV1(data).catch(err => {
         log.error(err)
       })
@@ -89,7 +89,7 @@ export class Circuit implements Transport, Startable {
         log.error(err)
       })
 
-    void this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
+    await this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
       void this._onV2ProtocolHop(data).catch(err => {
         log.error(err)
       })
@@ -97,7 +97,7 @@ export class Circuit implements Transport, Startable {
       .catch(err => {
         log.error(err)
       })
-    void this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
+    await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this._onV2ProtocolStop(data).catch(err => {
         log.error(err)
       })
@@ -105,14 +105,14 @@ export class Circuit implements Transport, Startable {
       .catch(err => {
         log.error(err)
       })
-    void this.reservationStore.start()
+    this.reservationStore.start()
   }
 
   async stop () {
-    void this.components.registrar.unhandle(RELAY_V1_CODEC)
-    void this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
-    void this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
-    void this.reservationStore.stop()
+    this.reservationStore.stop()
+    await this.components.registrar.unhandle(RELAY_V1_CODEC)
+    await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
+    await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
   }
 
   hopEnabled () {
