@@ -558,8 +558,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         peerConnections.push(connection)
       }
 
-      connection.stat.direction = 'outbound'
-
       return connection
     } finally {
       if (timeoutController != null) {

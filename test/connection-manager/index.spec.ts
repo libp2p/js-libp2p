@@ -364,23 +364,27 @@ describe('Connection Manager', () => {
   })
 
   it('should throw an error when attempting to connect and maxOutgoingConnections is exceeded', async () => {
-    const dialer = stubInterface<Dialer>()
-    dialer.dial.resolves(stubInterface<Connection>())
-
-    const connectionManager = new DefaultConnectionManager({
-      peerId: libp2p.peerId,
-      upgrader: stubInterface<Upgrader>(),
-      peerStore: stubInterface<PeerStore>(),
-      dialer
-    }, {
-      ...defaultOptions,
-      maxOutgoingConnections: 1
+    libp2p = await createNode({
+      config: createBaseOptions({
+        connectionManager: {
+          maxOutgoingConnections: 1
+        }
+      }),
+      started: false
     })
 
-    // max out the connection limit
-    await connectionManager.openConnection(await createEd25519PeerId())
+    await libp2p.start()
+
+    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+
+    // max out the connection limit by having an inbound connection already
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    connection.stat.direction = 'outbound'
+    await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+
     expect(connectionManager.getConnections()).to.have.lengthOf(1)
 
+    // another outbound connection is opened
     await expect(connectionManager.openConnection(await createEd25519PeerId())).to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_CONNECTION_DENIED)
   })
