@@ -5,9 +5,9 @@ import type { Connection } from '@libp2p/interface-connection'
 import { logger } from '@libp2p/logger'
 import { StreamHandlerV2 } from './stream-handler.js'
 import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
-import { validateStopConnectRequest } from './validation.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Duplex } from 'it-stream-types'
+import { multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:circuit:v2:stop')
 
@@ -17,6 +17,17 @@ export interface HandleStopOptions {
   streamHandler: StreamHandlerV2
 }
 
+const isValidStop = (request: StopMessage): boolean => {
+  if (request.peer == null) {
+    return false
+  }
+  try {
+    request.peer.addrs.forEach(multiaddr)
+  } catch (_err) {
+    return false
+  }
+  return true
+}
 export async function handleStop ({
   connection,
   request,
@@ -24,12 +35,16 @@ export async function handleStop ({
 }: HandleStopOptions) {
   log('new circuit relay v2 stop stream from %s', connection.remotePeer)
   // Validate the STOP request has the required input
-  try {
-    validateStopConnectRequest(request, streamHandler)
-  } catch (err) {
-    return log.error('invalid stop connect request via peer %s', connection.remotePeer, err)
+  if (request.type !== StopMessage.Type.CONNECT) {
+    log.error('invalid stop connect request via peer %s', connection.remotePeer)
+    streamHandler.write(StopMessage.encode({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }))
+    return
   }
-  log('stop request is valid')
+  if (!isValidStop(request)) {
+    log.error('invalid stop connect request via peer %s', connection.remotePeer)
+    streamHandler.write(StopMessage.encode({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }))
+    return
+  }
 
   /* eslint-disable-next-line no-warning-comments */
   // TODO: go-libp2p marks connection transient if there is limit field present in request.
@@ -69,6 +84,7 @@ export async function stop ({
   }
 
   if (response == null) {
+    log.error('could not read response from %s', connection.remotePeer)
     streamHandler.close()
     return
   }
@@ -79,5 +95,4 @@ export async function stop ({
 
   log('stop request failed with code %d', response.status)
   streamHandler.close()
-  return
 }
