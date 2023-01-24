@@ -149,7 +149,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, timeoutController.signal)
-    } catch {}
+    } catch { }
 
     try {
       const abortableStream = abortableDuplex(maConn, timeoutController.signal)
@@ -386,6 +386,8 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               const streamCount = countStreams(protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
+                /* eslint-disable-next-line no-console */
+                console.log(`too many incoming streams: protocol ${protocol}, streamCount: ${streamCount}, limit: ${incomingLimit}`)
                 muxedStream.abort(errCode(new Error(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`), codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS))
 
                 return
@@ -439,7 +441,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             try {
               // fails on node < 15.4
               setMaxListeners?.(Infinity, controller.signal)
-            } catch {}
+            } catch { }
           }
 
           const { stream, protocol } = await mss.select(muxedStream, protocols, options)
@@ -448,6 +450,8 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           const streamCount = countStreams(protocol, 'outbound', connection)
 
           if (streamCount === outgoingLimit) {
+            /* eslint-disable-next-line no-console */
+            console.log(`too many outgoing streams: protocol ${protocol}, streamCount: ${streamCount}, limit: ${outgoingLimit}`)
             const err = errCode(new Error(`Too many outbound protocol streams for protocol "${protocol}" - limit ${outgoingLimit}`), codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
             muxedStream.abort(err)
 
@@ -626,7 +630,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * Selects one of the given muxers via multistream-select. That
    * muxer will be used for all future streams on the connection.
    */
-  async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory}> {
+  async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
     log('outbound selecting muxer %s', protocols)
     try {
@@ -646,7 +650,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * Registers support for one of the given muxers via multistream-select. The
    * selected muxer will be used for all future streams on the connection.
    */
-  async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory}> {
+  async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
     log('inbound handling muxers %s', protocols)
     try {
