@@ -203,8 +203,6 @@ describe('Dialing (via relay, TCP)', () => {
     // this should succeed as the timeout is only effective after
     // multistream select negotiates the protocol
     const stream = await connection.newStream([RELAY_V2_HOP_CODEC])
-    /* eslint-disable-next-line no-console */
-    console.log('>>>>>> stream created')
 
     /* eslint-disable-next-line no-warning-comments */
     // TODO(ckousik): does this need to be awaited?
