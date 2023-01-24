@@ -5,15 +5,14 @@ import { pipe } from 'it-pipe'
 import type { Connection } from '@libp2p/interface-connection'
 import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
 import { StreamHandlerV2 } from './stream-handler.js'
-import type { Circuit } from '../transport.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { Acl, ReservationStore } from './interfaces.js'
 import { RELAY_V2_HOP_CODEC } from '../multicodec.js'
-import { validateHopConnectRequest } from './validation.js'
 import { stop } from './stop.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import { peerIdFromBytes } from '@libp2p/peer-id'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:circuit:v2:hop')
 
@@ -21,12 +20,12 @@ export interface HopProtocolOptions {
   connection: Connection
   request: HopMessage
   streamHandler: StreamHandlerV2
-  circuit: Circuit
   relayPeer: PeerId
   relayAddrs: Multiaddr[]
   limit?: Limit
   acl?: Acl
   reservationStore: ReservationStore
+  connectionManager: ConnectionManager
 }
 
 export async function handleHopProtocol (options: HopProtocolOptions) {
@@ -58,7 +57,7 @@ export async function reserve (connection: Connection) {
     throw e
   }
 
-  if (response.status === Status.OK && response.reservation !== null) {
+  if (response.status === Status.OK && (response.reservation != null)) {
     return response.reservation
   }
   const errMsg = `reservation failed with status ${response.status ?? 'undefined'}`
@@ -106,25 +105,39 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
   // TODO: how to ensure connection manager doesn't close reserved relay conn
 }
 
-type HopConnectOptions = Pick<
-HopProtocolOptions,
-'connection' | 'streamHandler' | 'request' | 'reservationStore' | 'circuit' | 'acl'
->
+const validateHopConnect = (request: HopMessage): Status => {
+  if (request.peer == null) {
+    log.error('no peer info in hop connect request')
+    return Status.MALFORMED_MESSAGE
+  }
+  try {
+    request.peer.addrs.forEach(multiaddr)
+  } catch (_err) {
+    return Status.MALFORMED_MESSAGE
+  }
+  return Status.OK
+}
 
-async function handleConnect (options: HopConnectOptions) {
-  const { connection, streamHandler, request, reservationStore, circuit, acl } = options
+async function handleConnect (options: HopProtocolOptions) {
+  const { connection, streamHandler, request, reservationStore, connectionManager, acl } = options
   log('hop connect request from %s', connection.remotePeer)
   // Validate the HOP connect request has the required input
-  try {
-    validateHopConnectRequest(request, streamHandler)
-  } catch (err: any) {
-    log.error('invalid hop connect request via peer %s', connection.remotePeer, err)
-    writeErrorResponse(streamHandler, Status.MALFORMED_MESSAGE)
+  const status = validateHopConnect(request)
+  if (status !== Status.OK) {
+    log.error('invalid hop connect request via peer %s', connection.remotePeer)
+    writeErrorResponse(streamHandler, status)
     return
   }
 
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
-  const dstPeer = peerIdFromBytes(request.peer!.id)
+  let dstPeer: PeerId
+  try {
+    dstPeer = peerIdFromBytes(request.peer!.id)
+  } catch (err) {
+    log.error('invalid hop connect request via peer %s', connection.remotePeer)
+    writeErrorResponse(streamHandler, status)
+    return
+  }
 
   if (acl?.allowConnect !== undefined) {
     const status = await acl.allowConnect(connection.remotePeer, connection.remoteAddr, dstPeer)
@@ -141,13 +154,13 @@ async function handleConnect (options: HopConnectOptions) {
     return
   }
 
-  const destinationConnection = circuit.getPeerConnection(dstPeer)
-  if (destinationConnection === undefined || destinationConnection === null) {
+  const connections = connectionManager.getConnections(dstPeer)
+  if (connections.length === 0) {
     log('hop connect denied for %s as there is no destination connection', connection.remotePeer)
     writeErrorResponse(streamHandler, Status.NO_RESERVATION)
     return
   }
-
+  const destinationConnection = connections[0]
   log('hop connect request from %s to %s is valid', connection.remotePeer, dstPeer)
 
   const destinationStream = await stop({
@@ -161,7 +174,7 @@ async function handleConnect (options: HopConnectOptions) {
     }
   })
 
-  if (!destinationStream) {
+  if (destinationStream == null) {
     log.error('failed to open stream to destination peer %s', destinationConnection?.remotePeer)
     writeErrorResponse(streamHandler, Status.CONNECTION_FAILED)
     return

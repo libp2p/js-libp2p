@@ -196,7 +196,7 @@ export class Circuit implements Transport, Startable {
       await CircuitV2Handler.handleHopProtocol({
         connection,
         streamHandler,
-        circuit: this,
+        connectionManager: this.components.connectionManager,
         relayPeer: this.components.peerId,
         relayAddrs: this.components.addressManager.getListenAddrs(),
         reservationStore: this.reservationStore,

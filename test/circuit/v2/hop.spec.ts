@@ -9,7 +9,7 @@ import { handleHopProtocol } from '../../../src/circuit/v2/hop.js'
 import { HopMessage, Status, StopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
 import { StreamHandlerV2 } from '../../../src/circuit/v2/stream-handler.js'
-import { DefaultComponents } from '../../../src/components.js'
+import { Components, DefaultComponents } from '../../../src/components.js'
 import { DefaultConnectionManager } from '../../../src/connection-manager/index.js'
 import { DefaultRegistrar } from '../../../src/registrar.js'
 import { DefaultUpgrader } from '../../../src/upgrader.js'
@@ -64,7 +64,7 @@ describe('Circuit v2 - hop protocol', function () {
         connection: conn,
         streamHandler,
         relayPeer,
-        circuit: sinon.stub() as any,
+        connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
@@ -87,7 +87,7 @@ describe('Circuit v2 - hop protocol', function () {
         connection: conn,
         streamHandler,
         relayPeer,
-        circuit: sinon.stub() as any,
+        connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore,
         acl: { allowReserve: async function () { return false }, allowConnect: sinon.stub() as any }
@@ -109,7 +109,7 @@ describe('Circuit v2 - hop protocol', function () {
         connection: conn,
         streamHandler,
         relayPeer,
-        circuit: sinon.stub() as any,
+        connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
@@ -134,7 +134,7 @@ describe('Circuit v2 - hop protocol', function () {
         connection: conn,
         streamHandler,
         relayPeer,
-        circuit: sinon.stub() as any,
+        connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
@@ -146,7 +146,7 @@ describe('Circuit v2 - hop protocol', function () {
 
   describe('connect', function () {
     let relayPeer: PeerId, dstPeer: PeerId, conn: Connection, streamHandler: StreamHandlerV2, reservationStore: ReservationStore,
-      circuit: Circuit
+      circuit: Circuit, components: Components
 
     beforeEach(async () => {
       [, relayPeer, dstPeer] = await peerUtils.createPeerIds(3)
@@ -154,7 +154,7 @@ describe('Circuit v2 - hop protocol', function () {
       streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
       reservationStore = new ReservationStore()
       // components
-      const components = new DefaultComponents()
+      components = new DefaultComponents()
       components.connectionManager = new DefaultConnectionManager(components,
 
         {
@@ -216,8 +216,8 @@ describe('Circuit v2 - hop protocol', function () {
         type: StopMessage.Type.STATUS,
         status: Status.OK
       }))
-      const stub = sinon.stub(circuit, 'getPeerConnection')
-      stub.returns(dstConn)
+      const stub = sinon.stub(components.connectionManager, 'getConnections')
+      stub.returns([dstConn])
       await handleHopProtocol({
         connection: conn,
         streamHandler,
@@ -231,7 +231,7 @@ describe('Circuit v2 - hop protocol', function () {
         relayPeer: relayPeer,
         relayAddrs: [],
         reservationStore,
-        circuit
+        connectionManager: components.connectionManager
       })
       const response = HopMessage.decode(await streamHandler.read())
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
@@ -296,7 +296,7 @@ describe('Circuit v2 - hop protocol', function () {
         relayPeer: relayPeer,
         relayAddrs: [],
         reservationStore,
-        circuit
+        connectionManager: components.connectionManager
       })
       const response = HopMessage.decode(await streamHandler.read())
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
@@ -306,8 +306,8 @@ describe('Circuit v2 - hop protocol', function () {
     it('should fail to connect - no connection', async function () {
       const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
       hasReservationStub.resolves(true)
-      const stub = sinon.stub(circuit, 'getPeerConnection')
-      stub.returns(undefined)
+      const stub = sinon.stub(components.connectionManager, 'getConnections')
+      stub.returns([])
       await handleHopProtocol({
         connection: conn,
         streamHandler,
@@ -321,7 +321,7 @@ describe('Circuit v2 - hop protocol', function () {
         relayPeer: relayPeer,
         relayAddrs: [],
         reservationStore,
-        circuit
+        connectionManager: components.connectionManager
       })
       const response = HopMessage.decode(await streamHandler.read())
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
