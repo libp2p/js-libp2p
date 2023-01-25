@@ -755,10 +755,10 @@ PeerStore persistence is disabled in libp2p by default. You can enable and confi
 
 The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
 
-| Name        | Type      | Description                    |
-| ----------- | --------- | ------------------------------ |
-| persistence | `boolean` | Is persistence enabled.        |
-| threshold   | `number`  | Number of dirty peers allowed. |
+| Name | Type | Description |
+|------|------|-------------|
+| persistence | `boolean` | Is persistence enabled. |
+| threshold | `number` | Number of dirty peers allowed. |
 
 The below configuration example shows how the PeerStore should be configured. Aside from persistence being `false` by default, the following default configuration options are listed below:
 
