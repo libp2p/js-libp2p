@@ -93,7 +93,7 @@
     "test:firefox-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:examples": "cd examples && npm run test:all",
     "test:interop": "aegir test -t node -f dist/test/interop.js",
-    "test:relay": "aegir test -t node -f \"./dist/test/**/relay.{node,spec}.js\"",
+    "test:relay": "aegir test -t node -f \"./dist/test/**/{hop,stop,reservation-store,relay,auto-relay}.{node,spec}.js\"",
     "lint:fix": "aegir lint --fix"
   },
   "dependencies": {
