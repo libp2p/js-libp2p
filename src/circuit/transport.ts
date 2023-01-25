@@ -21,7 +21,6 @@ import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { StreamHandlerV2 } from './v2/stream-handler.js'
-import { StreamHandlerV1 } from './v1/stream-handler.js'
 import * as CircuitV1Handler from './v1/index.js'
 import * as CircuitV2Handler from './v2/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -80,18 +79,11 @@ export class Circuit implements Transport, Startable {
     }
 
     this._started = true
-    await this.components.registrar.handle(RELAY_V1_CODEC, (data) => {
-      void this._onProtocolV1(data).catch(err => {
-        log.error(err)
-      })
-    })
-      .catch(err => {
-        log.error(err)
-      })
 
+    // only handle hop if enabled
     if (this._init.hop.enabled === true) {
       await this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
-        void this._onV2ProtocolHop(data).catch(err => {
+        void this.onHop(data).catch(err => {
           log.error(err)
         })
       })
@@ -101,7 +93,7 @@ export class Circuit implements Transport, Startable {
     }
 
     await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
-      void this._onV2ProtocolStop(data).catch(err => {
+      void this.onStop(data).catch(err => {
         log.error(err)
       })
     })
@@ -119,15 +111,10 @@ export class Circuit implements Transport, Startable {
       this.reservationStore.stop()
       await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
     }
-    await this.components.registrar.unhandle(RELAY_V1_CODEC)
     await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
   }
 
   hopEnabled () {
-    return this._init.hop.enabled ?? false
-  }
-
-  hopActive () {
     return this._init.hop.enabled ?? false
   }
 
@@ -143,49 +130,7 @@ export class Circuit implements Transport, Startable {
     return this.components.connectionManager.getConnections(dstPeer)[0] ?? undefined
   }
 
-  async _onProtocolV1 (data: IncomingStreamData) {
-    const { connection, stream } = data
-    const controller = new TimeoutController(this._init.hop.timeout)
-
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, controller.signal)
-    } catch { }
-
-    try {
-      const source = abortableDuplex(stream, controller.signal)
-      const streamHandler = new StreamHandlerV1({ stream: { ...stream, ...source } })
-      const request = await streamHandler.read()
-
-      if (request == null) {
-        log('request was invalid, could not read from stream')
-        CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.MALFORMED_MESSAGE)
-        return
-      }
-
-      switch (request.type) {
-        case CircuitV1.CircuitRelay.Type.CAN_HOP:
-        case CircuitV1.CircuitRelay.Type.HOP: {
-          log('received circuit v1 hop request from %p', connection.remotePeer)
-          CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.HOP_CANT_SPEAK_RELAY)
-          break
-        }
-        case CircuitV1.CircuitRelay.Type.STOP: {
-          log('received circuit v1 stop request from %p', connection.remotePeer)
-          CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.STOP_RELAY_REFUSED)
-          break
-        }
-        default: {
-          log('Request of type %s not supported', request.type)
-          CircuitV1Handler.handleCircuitV1Error(streamHandler, CircuitV1.CircuitRelay.Status.MALFORMED_MESSAGE)
-        }
-      }
-    } finally {
-      controller.clear()
-    }
-  }
-
-  async _onV2ProtocolHop ({ connection, stream }: IncomingStreamData) {
+  async onHop ({ connection, stream }: IncomingStreamData) {
     // log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
     const controller = new TimeoutController(this._init.hop.timeout)
 
@@ -223,7 +168,7 @@ export class Circuit implements Transport, Startable {
     }
   }
 
-  async _onV2ProtocolStop ({ connection, stream }: IncomingStreamData) {
+  async onStop ({ connection, stream }: IncomingStreamData) {
     const streamHandler = new StreamHandlerV2({ stream })
     const request = CircuitV2.StopMessage.decode(await streamHandler.read())
     log('received circuit v2 stop protocol request from %s', connection.remotePeer)
