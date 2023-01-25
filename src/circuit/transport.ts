@@ -109,13 +109,17 @@ export class Circuit implements Transport, Startable {
         log.error(err)
       })
 
-    this.reservationStore.start()
+    if (this._init.hop.enabled === true) {
+      this.reservationStore.start()
+    }
   }
 
   async stop () {
-    this.reservationStore.stop()
+    if (this._init.hop.enabled === true) {
+      this.reservationStore.stop()
+      await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
+    }
     await this.components.registrar.unhandle(RELAY_V1_CODEC)
-    await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
     await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
   }
 

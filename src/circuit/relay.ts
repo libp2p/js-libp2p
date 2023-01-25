@@ -3,7 +3,7 @@ import { codes } from '../errors.js'
 import {
   setDelayedInterval,
   clearDelayedInterval
-// @ts-expect-error set-delayed-interval does not export types
+  // @ts-expect-error set-delayed-interval does not export types
 } from 'set-delayed-interval'
 import { namespaceToCid } from './utils.js'
 import {
@@ -62,9 +62,9 @@ export class Relay implements Startable {
    * Stop Relay service
    */
   async stop () {
-    if (this.timeout != null) {
+    try {
       clearDelayedInterval(this.timeout)
-    }
+    } catch (err) { }
 
     this.started = false
   }
