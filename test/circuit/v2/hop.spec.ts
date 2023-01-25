@@ -187,12 +187,11 @@ describe('Circuit v2 - hop protocol', function () {
         },
         hop: {
           enabled: true,
-          active: false,
           timeout: 30000
         },
-        autoRelay: {
+        service: {
           enabled: false,
-          maxListeners: 2
+          maxReservations: 2
         }
       })
     })

@@ -3,6 +3,7 @@ import { RELAY_V2_HOP_CODEC } from './multicodec.js'
 import { getExpiration, namespaceToCid } from './utils.js'
 import {
   CIRCUIT_PROTO_CODE,
+  DEFAULT_MAX_RESERVATIONS,
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -16,14 +17,25 @@ import { reserve } from './v2/index.js'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '../components.js'
+import type { CircuitServiceConfig } from './index.js'
 
 const log = logger('libp2p:circuit:client')
 
 const noop = () => { }
 
-export interface CircuitServiceInit {
+/**
+ * CircuitServiceInit initializes the circuit service using values
+ * from the provided config and an @type{AddressSorter}.
+ */
+export interface CircuitServiceInit extends CircuitServiceConfig {
+  /**
+   * Allows prioritizing addresses from the peerstore for dialing. The
+   * default behavior is to prioritise public addresses.
+   */
   addressSorter?: AddressSorter
-  maxReservations?: number
+  /**
+   * A callback to invoke when an error occurs in the circuit service.
+   */
   onError?: (error: Error, msg?: string) => void
 }
 
@@ -31,6 +43,10 @@ export interface CircuitServiceEvents {
   'relay:reservation': CustomEvent
 }
 
+/**
+ * CircuitService automatically makes a circuit v2 reservation on any connected
+ * peers that support the circuit v2 HOP protocol.
+ */
 export class CircuitService extends EventEmitter<CircuitServiceEvents> implements Startable {
   private readonly components: Components
   private readonly addressSorter: AddressSorter
@@ -45,7 +61,7 @@ export class CircuitService extends EventEmitter<CircuitServiceEvents> implement
     this.started = false
     this.components = components
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
-    this.maxReservations = init.maxReservations ?? 1
+    this.maxReservations = init.maxReservations ?? DEFAULT_MAX_RESERVATIONS
     this.relays = new Set()
     this.reservationMap = new Map()
     this.onError = init.onError ?? noop

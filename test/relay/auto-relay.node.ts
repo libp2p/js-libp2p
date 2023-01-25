@@ -364,9 +364,9 @@ describe('auto-relay', () => {
                 ttl: 1000,
                 enabled: true
               },
-              autoRelay: {
+              service: {
                 enabled: true,
-                maxListeners: 1
+                maxReservations: 1
               }
             },
             contentRouters: [

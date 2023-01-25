@@ -181,10 +181,10 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     })
     this.configureComponent(this.identifyService)
 
-    if (init.relay.autoRelay.enabled === true) {
+    if (init.relay.service.enabled === true) {
       this.circuitService = new CircuitService(this.components, {
         addressSorter: init.connectionManager.addressSorter,
-        ...init.relay.autoRelay
+        ...init.relay.service
       })
       this.services.push(this.circuitService)
     }

@@ -12,19 +12,9 @@ import {
 import type { AddressSorter } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '../components.js'
+import type { HopConfig, RelayAdvertiseConfig } from './index.js'
 
 const log = logger('libp2p:circuit:relay')
-
-export interface RelayAdvertiseConfig {
-  bootDelay?: number
-  enabled?: boolean
-  ttl?: number
-}
-
-export interface HopConfig {
-  enabled?: boolean
-  active?: boolean
-}
 
 export interface RelayInit {
   addressSorter?: AddressSorter
@@ -58,8 +48,8 @@ export class Relay implements Startable {
    * Start Relay service
    */
   async start () {
-    // Advertise service if HOP enabled
-    if (this.init.hop.enabled !== false && this.init.advertise.enabled !== false) {
+    // Advertise service if HOP enabled and advertising enabled
+    if (this.init.hop.enabled === true && this.init.advertise.enabled === true) {
       this.timeout = setDelayedInterval(
         this._advertiseService, this.init.advertise.ttl, this.init.advertise.bootDelay
       )

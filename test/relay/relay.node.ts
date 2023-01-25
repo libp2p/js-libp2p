@@ -5,9 +5,6 @@ import { pEvent } from 'p-event'
 import * as sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit/multicodec.js'
-import { CircuitRelay } from '../../src/circuit/v1/pb/index.js'
-import { HopMessage } from '../../src/circuit/v2/pb/index.js'
-import { StreamHandlerV2 } from '../../src/circuit/v2/stream-handler.js'
 import { codes as Errors } from '../../src/errors.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { createNode } from '../utils/creators/peer.js'
@@ -28,7 +25,7 @@ describe('Dialing (via relay, TCP)', () => {
       createNode({
         config: createNodeOptions({
           relay: {
-            autoRelay: {
+            service: {
               enabled: false
             }
           }
@@ -37,7 +34,7 @@ describe('Dialing (via relay, TCP)', () => {
       createNode({
         config: createRelayOptions({
           relay: {
-            autoRelay: {
+            service: {
               enabled: false
             }
           }
@@ -46,7 +43,7 @@ describe('Dialing (via relay, TCP)', () => {
       createNode({
         config: createNodeOptions({
           relay: {
-            autoRelay: {
+            service: {
               enabled: true
             }
           }
@@ -162,14 +159,11 @@ describe('Dialing (via relay, TCP)', () => {
 
     // send an invalid relay message from the relay to the destination peer
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
-    const stream = await connections[0].newStream(RELAY_V2_HOP_CODEC)
-    const streamHandler = new StreamHandlerV2({ stream })
+    // this should fail as the destination peer has HOP disabled
+    await expect(connections[0].newStream(RELAY_V2_HOP_CODEC))
+      .to.be.rejected()
     // empty messages are encoded as { type: RESERVE } for the hop codec,
     // so we make the message invalid by adding a zeroed byte
-    streamHandler.write(new Uint8Array([0]))
-    const res = HopMessage.decode(await streamHandler.read())
-    expect(res?.status).to.equal(CircuitRelay.Status.MALFORMED_MESSAGE)
-    streamHandler.close()
 
     // should still be connected
     const dstToRelayConn = dstLibp2p.components.connectionManager.getConnections(relayLibp2p.peerId)

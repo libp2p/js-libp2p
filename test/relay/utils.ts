@@ -15,9 +15,9 @@ export function createNodeOptions (...overrides: Libp2pOptions[]): Libp2pOptions
       hop: {
         enabled: false
       },
-      autoRelay: {
+      service: {
         enabled: true,
-        maxListeners: 1
+        maxReservations: 1
       }
     }
   }, ...overrides)

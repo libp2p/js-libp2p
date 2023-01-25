@@ -58,12 +58,11 @@ const DefaultConfig: Partial<Libp2pInit> = {
     },
     hop: {
       enabled: false,
-      active: false,
       timeout: 30000
     },
-    autoRelay: {
+    service: {
       enabled: false,
-      maxListeners: 2
+      maxReservations: 2
     }
   },
   identify: {

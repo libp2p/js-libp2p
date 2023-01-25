@@ -89,14 +89,17 @@ export class Circuit implements Transport, Startable {
         log.error(err)
       })
 
-    await this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
-      void this._onV2ProtocolHop(data).catch(err => {
-        log.error(err)
+    if (this._init.hop.enabled === true) {
+      await this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
+        void this._onV2ProtocolHop(data).catch(err => {
+          log.error(err)
+        })
       })
-    })
-      .catch(err => {
-        log.error(err)
-      })
+        .catch(err => {
+          log.error(err)
+        })
+    }
+
     await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this._onV2ProtocolStop(data).catch(err => {
         log.error(err)
@@ -105,6 +108,7 @@ export class Circuit implements Transport, Startable {
       .catch(err => {
         log.error(err)
       })
+
     this.reservationStore.start()
   }
 
@@ -116,11 +120,11 @@ export class Circuit implements Transport, Startable {
   }
 
   hopEnabled () {
-    return true
+    return this._init.hop.enabled ?? false
   }
 
   hopActive () {
-    return true
+    return this._init.hop.enabled ?? false
   }
 
   get [symbol] (): true {

@@ -2,21 +2,36 @@ export interface RelayConfig {
   enabled: boolean
   advertise: RelayAdvertiseConfig
   hop: HopConfig
-  autoRelay: AutoRelayConfig
+  service: CircuitServiceConfig
 }
 
-export interface AutoRelayConfig {
+/**
+ * CircuitServiceConfig allows the node to automatically listen
+ * on any discovered relays upto a specified maximum.
+ */
+export interface CircuitServiceConfig {
+  /**
+   * enable or disable autorelay (default: false)
+   */
   enabled?: boolean
 
   /**
-   * maximum number of relays to listen
+   * maximum number of relays to listen (default: 1)
    */
-  maxListeners: number
+  maxReservations?: number
 }
 
+/**
+ * Configures using the node as a HOP relay
+ */
 export interface HopConfig {
+  /**
+   *
+   */
   enabled?: boolean
-  active?: boolean
+  /**
+   * timeout for hop requests to complete
+   */
   timeout: number
 }
 
