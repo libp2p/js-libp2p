@@ -77,7 +77,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   })
 
   socket.once('close', () => {
-    log('%s socket read timeout', lOptsStr)
+    log('%s socket close', lOptsStr)
     metrics?.increment({ [`${metricPrefix}close`]: true })
 
     // In instances where `close` was not explicitly called,
@@ -91,7 +91,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   socket.once('end', () => {
     // the remote sent a FIN packet which means no more data will be sent
     // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
-    log('socket ended', maConn.remoteAddr.toString())
+    log('%s socket end', lOptsStr)
     metrics?.increment({ [`${metricPrefix}end`]: true })
   })
 
