@@ -121,11 +121,6 @@ export class AutoDialler implements Startable {
         return false
       }
 
-      // do not dial peers without public keys
-      if (peer.id.publicKey == null) {
-        return false
-      }
-
       // do not dial peers without multiaddrs
       if (peer.addresses.length === 0) {
         return false
@@ -137,9 +132,14 @@ export class AutoDialler implements Startable {
     // shuffle the peers
     peers = peers.sort(() => Math.random() > 0.5 ? 1 : -1)
 
-    // dial peers with the most protocols first
     peers = peers.sort((a, b) => {
+      // dial peers with the most protocols first
       if (b.protocols.length > a.protocols.length) {
+        return 1
+      }
+
+      // dial peers with public keys first
+      if (b.id.publicKey != null && a.id.publicKey == null) {
         return 1
       }
 
