@@ -1,3 +1,10 @@
+## [6.1.1](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.0...v6.1.1) (2023-01-26)
+
+
+### Bug Fixes
+
+* update log message when socket closes ([#249](https://github.com/libp2p/js-libp2p-tcp/issues/249)) ([f95bbf1](https://github.com/libp2p/js-libp2p-tcp/commit/f95bbf11aa59a184106ea1b1288442160dd0b373))
+
 ## [6.1.0](https://github.com/libp2p/js-libp2p-tcp/compare/v6.0.9...v6.1.0) (2023-01-21)
 
 
