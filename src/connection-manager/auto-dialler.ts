@@ -2,10 +2,6 @@ import { logger } from '@libp2p/logger'
 import mergeOptions from 'merge-options'
 // @ts-expect-error retimer does not have types
 import retimer from 'retimer'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
-import filter from 'it-filter'
-import sort from 'it-sort'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
@@ -117,22 +113,38 @@ export class AutoDialler implements Startable {
     }
 
     // Sort peers on whether we know protocols or public keys for them
-    const allPeers = await this.components.peerStore.all()
+    let peers = await this.components.peerStore.all()
 
-    const peers = await pipe(
-      // shuffle the peers
-      allPeers.sort(() => Math.random() > 0.5 ? 1 : -1),
-      (source) => filter(source, (peer) => !peer.id.equals(this.components.peerId)),
-      (source) => sort(source, (a, b) => {
-        if (b.protocols.length > a.protocols.length) {
-          return 1
-        } else if (b.id.publicKey != null && a.id.publicKey == null) {
-          return 1
-        }
-        return -1
-      }),
-      async (source) => await all(source)
-    )
+    peers = peers.filter((peer) => {
+      // do not dial ourselves
+      if (peer.id.equals(this.components.peerId)) {
+        return false
+      }
+
+      // do not dial peers without public keys
+      if (peer.id.publicKey == null) {
+        return false
+      }
+
+      // do not dial peers without multiaddrs
+      if (peer.addresses.length === 0) {
+        return false
+      }
+
+      return true
+    })
+
+    // shuffle the peers
+    peers = peers.sort(() => Math.random() > 0.5 ? 1 : -1)
+
+    // dial peers with the most protocols first
+    peers = peers.sort((a, b) => {
+      if (b.protocols.length > a.protocols.length) {
+        return 1
+      }
+
+      return -1
+    })
 
     for (let i = 0; this.running && i < peers.length && this.components.connectionManager.getConnections().length < minConnections; i++) {
       // Connection Manager was stopped during async dial
