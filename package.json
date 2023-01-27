@@ -1,76 +1,164 @@
 {
-  "name": "libp2p-keychain",
-  "version": "0.6.1",
+  "name": "@libp2p/keychain",
+  "version": "0.6.2",
   "description": "Key management and cryptographically protected messages",
-  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
-  "main": "src/index.js",
-  "scripts": {
-    "lint": "aegir lint",
-    "build": "aegir build",
-    "coverage": "nyc --reporter=text --reporter=lcov npm run test:node",
-    "test": "aegir test -t node -t browser",
-    "test:node": "aegir test -t node",
-    "test:browser": "aegir test -t browser",
-    "release": "aegir release",
-    "release-minor": "aegir release --type minor",
-    "release-major": "aegir release --type major"
-  },
-  "pre-push": [
-    "lint"
-  ],
-  "engines": {
-    "node": ">=10.0.0",
-    "npm": ">=3.0.0"
-  },
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p-keychain.git"
   },
-  "keywords": [
-    "IPFS",
-    "libp2p",
-    "keys",
-    "encryption",
-    "secure",
-    "crypto"
-  ],
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p-keychain/issues"
   },
-  "homepage": "https://github.com/libp2p/js-libp2p-keychain#readme",
+  "keywords": [
+    "IPFS",
+    "crypto",
+    "encryption",
+    "keys",
+    "libp2p",
+    "secure"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release",
+    "docs": "aegir docs"
+  },
   "dependencies": {
-    "err-code": "^2.0.0",
-    "interface-datastore": "^1.0.2",
-    "libp2p-crypto": "^0.17.1",
-    "merge-options": "^2.0.0",
-    "node-forge": "^0.9.1",
-    "sanitize-filename": "^1.6.1"
+    "@libp2p/crypto": "^1.0.11",
+    "@libp2p/interface-keychain": "^2.0.3",
+    "@libp2p/interface-peer-id": "^2.0.1",
+    "@libp2p/logger": "^2.0.5",
+    "@libp2p/peer-id": "^2.0.1",
+    "err-code": "^3.0.1",
+    "interface-datastore": "^7.0.3",
+    "merge-options": "^3.0.4",
+    "sanitize-filename": "^1.6.3",
+    "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
-    "aegir": "^22.0.0",
-    "chai": "^4.2.0",
-    "chai-string": "^1.5.0",
-    "datastore-fs": "^1.0.0",
-    "datastore-level": "^1.0.0",
-    "dirty-chai": "^2.0.1",
-    "level": "^6.0.0",
-    "multihashes": "^0.4.15",
-    "peer-id": "^0.13.5",
-    "promisify-es6": "^1.0.3",
-    "rimraf": "^3.0.0"
-  },
-  "contributors": [
-    "Vasco Santos <vasco.santos@moxy.studio>",
-    "Richard Schneider <makaretu@gmail.com>",
-    "David Dias <daviddias.p@gmail.com>",
-    "Alan Shaw <alan.shaw@protocol.ai>",
-    "Alex Potsides <alex@achingbrain.net>",
-    "Alberto Elias <hi@albertoelias.me>",
-    "Masahiro Saito <camelmasa@gmail.com>",
-    "Maciej Krüger <mkg20001@gmail.com>",
-    "Jacob Heun <jacobheun@gmail.com>",
-    "Hugo Dias <mail@hugodias.me>",
-    "Victor Bjelkholm <victorbjelkholm@gmail.com>"
-  ]
+    "@libp2p/peer-id-factory": "^2.0.1",
+    "aegir": "^38.1.0",
+    "datastore-core": "^8.0.4",
+    "multiformats": "^11.0.1"
+  }
 }
