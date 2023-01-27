@@ -189,7 +189,7 @@ describe('Circuit v2 - hop protocol', function () {
           enabled: true,
           timeout: 30000
         },
-        service: {
+        reservationManager: {
           enabled: false,
           maxReservations: 2
         }

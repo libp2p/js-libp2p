@@ -1,4 +1,4 @@
-import { CircuitService } from './circuit/client.js'
+import { RelayReservationManager } from './circuit/client.js'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
@@ -59,7 +59,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public dht: DualDHT
   public pubsub: PubSub
   public identifyService: IdentifyService
-  public circuitService?: CircuitService
+  public circuitService?: RelayReservationManager
   public fetchService: FetchService
   public pingService: PingService
   public components: Components
@@ -181,10 +181,10 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     })
     this.configureComponent(this.identifyService)
 
-    if (init.relay.service.enabled === true) {
-      this.circuitService = new CircuitService(this.components, {
+    if (init.relay.reservationManager.enabled === true) {
+      this.circuitService = new RelayReservationManager(this.components, {
         addressSorter: init.connectionManager.addressSorter,
-        ...init.relay.service
+        ...init.relay.reservationManager
       })
       this.services.push(this.circuitService)
     }

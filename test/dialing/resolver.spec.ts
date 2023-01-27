@@ -56,7 +56,7 @@ describe('Dialing (resolvable addresses)', () => {
           },
           relay: {
             enabled: true,
-            service: {
+            reservationManager: {
               enabled: true
             },
             hop: {
@@ -79,7 +79,7 @@ describe('Dialing (resolvable addresses)', () => {
           },
           relay: {
             enabled: true,
-            service: {
+            reservationManager: {
               enabled: true
             },
             hop: {

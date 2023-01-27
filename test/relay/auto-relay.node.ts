@@ -364,7 +364,7 @@ describe('auto-relay', () => {
                 ttl: 1000,
                 enabled: true
               },
-              service: {
+              reservationManager: {
                 enabled: true,
                 maxReservations: 1
               }

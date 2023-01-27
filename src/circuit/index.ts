@@ -1,15 +1,22 @@
+/**
+ * RelayConfig configures the circuit v2 relay transport.
+ */
 export interface RelayConfig {
+  /**
+   * Enable dialing a client over a relay and receiving relayed
+   * connections. This in itself does not enable the node to act as a relay.
+   */
   enabled: boolean
   advertise: RelayAdvertiseConfig
   hop: HopConfig
-  service: CircuitServiceConfig
+  reservationManager: RelayReservationManagerConfig
 }
 
 /**
- * CircuitServiceConfig allows the node to automatically listen
+ * RelayReservationManagerConfig allows the node to automatically listen
  * on any discovered relays upto a specified maximum.
  */
-export interface CircuitServiceConfig {
+export interface RelayReservationManagerConfig {
   /**
    * enable or disable autorelay (default: false)
    */

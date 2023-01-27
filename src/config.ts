@@ -60,7 +60,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
       enabled: false,
       timeout: 30000
     },
-    service: {
+    reservationManager: {
       enabled: false,
       maxReservations: 2
     }

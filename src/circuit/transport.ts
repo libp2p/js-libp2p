@@ -114,20 +114,12 @@ export class Circuit implements Transport, Startable {
     await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
   }
 
-  hopEnabled () {
-    return this._init.hop.enabled ?? false
-  }
-
   get [symbol] (): true {
     return true
   }
 
   get [Symbol.toStringTag] () {
     return 'libp2p/circuit-relay-v2'
-  }
-
-  getPeerConnection (dstPeer: PeerId): Connection | undefined {
-    return this.components.connectionManager.getConnections(dstPeer)[0] ?? undefined
   }
 
   async onHop ({ connection, stream }: IncomingStreamData) {

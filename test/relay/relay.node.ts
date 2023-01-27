@@ -25,7 +25,7 @@ describe('Dialing (via relay, TCP)', () => {
       createNode({
         config: createNodeOptions({
           relay: {
-            service: {
+            reservationManager: {
               enabled: false
             }
           }
@@ -34,7 +34,7 @@ describe('Dialing (via relay, TCP)', () => {
       createNode({
         config: createRelayOptions({
           relay: {
-            service: {
+            reservationManager: {
               enabled: false
             }
           }
@@ -43,7 +43,7 @@ describe('Dialing (via relay, TCP)', () => {
       createNode({
         config: createNodeOptions({
           relay: {
-            service: {
+            reservationManager: {
               enabled: true
             }
           }

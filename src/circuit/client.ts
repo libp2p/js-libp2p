@@ -17,7 +17,7 @@ import { reserve } from './v2/index.js'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Components } from '../components.js'
-import type { CircuitServiceConfig } from './index.js'
+import type { RelayReservationManagerConfig } from './index.js'
 
 const log = logger('libp2p:circuit:client')
 
@@ -27,7 +27,7 @@ const noop = () => { }
  * CircuitServiceInit initializes the circuit service using values
  * from the provided config and an @type{AddressSorter}.
  */
-export interface CircuitServiceInit extends CircuitServiceConfig {
+export interface CircuitServiceInit extends RelayReservationManagerConfig {
   /**
    * Allows prioritizing addresses from the peerstore for dialing. The
    * default behavior is to prioritise public addresses.
@@ -39,15 +39,15 @@ export interface CircuitServiceInit extends CircuitServiceConfig {
   onError?: (error: Error, msg?: string) => void
 }
 
-export interface CircuitServiceEvents {
+export interface RelayReservationManagerEvents {
   'relay:reservation': CustomEvent
 }
 
 /**
- * CircuitService automatically makes a circuit v2 reservation on any connected
+ * ReservationManager automatically makes a circuit v2 reservation on any connected
  * peers that support the circuit v2 HOP protocol.
  */
-export class CircuitService extends EventEmitter<CircuitServiceEvents> implements Startable {
+export class RelayReservationManager extends EventEmitter<RelayReservationManagerEvents> implements Startable {
   private readonly components: Components
   private readonly addressSorter: AddressSorter
   private readonly maxReservations: number

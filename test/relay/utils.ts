@@ -15,7 +15,7 @@ export function createNodeOptions (...overrides: Libp2pOptions[]): Libp2pOptions
       hop: {
         enabled: false
       },
-      service: {
+      reservationManager: {
         enabled: true,
         maxReservations: 1
       }
