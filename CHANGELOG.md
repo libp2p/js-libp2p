@@ -1,3 +1,19 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-keychain/compare/v0.6.1...v1.0.0) (2023-01-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* this module is now typescript and does not store the self key on startup. cms operations have also been moved to [@libp2p/cms](https://www.npmjs.com/@libp2p/cms)
+
+### Features
+
+* convert to typescript ([#53](https://github.com/libp2p/js-libp2p-keychain/issues/53)) ([3544df7](https://github.com/libp2p/js-libp2p-keychain/commit/3544df7c119b8cebded3f5c483e9f44bf499280f))
+
+
+### Trivial Changes
+
+* add deprecation notice ([#50](https://github.com/libp2p/js-libp2p-keychain/issues/50)) ([2a9b99c](https://github.com/libp2p/js-libp2p-keychain/commit/2a9b99cd402ed7260ebcac49d9e44905697beee0))
+
 <a name="0.6.1"></a>
 ## [0.6.1](https://github.com/libp2p/js-libp2p-keychain/compare/v0.6.0...v0.6.1) (2020-06-09)
 
@@ -147,6 +163,3 @@ Co-Authored-By: Vasco Santos <vasco.santos@moxy.studio>
 
 * move bits from https://github.com/richardschneider/ipfs-encryption ([1a96ae8](https://github.com/libp2p/js-libp2p-keychain/commit/1a96ae8))
 * use libp2p-crypto ([#18](https://github.com/libp2p/js-libp2p-keychain/issues/18)) ([c1627a9](https://github.com/libp2p/js-libp2p-keychain/commit/c1627a9))
-
-
-
