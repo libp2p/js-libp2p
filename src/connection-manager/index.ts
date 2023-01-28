@@ -651,7 +651,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       log('too many connections open - closing a connection to %p', connection.remotePeer)
       toClose.push(connection)
 
-      if (toClose.length === toPrune) {
+      if (toClose.length >= toPrune) {
         break
       }
     }
