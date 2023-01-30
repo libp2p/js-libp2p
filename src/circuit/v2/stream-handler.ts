@@ -50,7 +50,7 @@ export class StreamHandlerV2 {
   }
 
   write (msg: Uint8Array) {
-    this.shake.write(lp.encode.single(msg).slice())
+    this.shake.write(lp.encode.single(msg))
   }
 
   /**

@@ -194,20 +194,18 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
       // Attempt to listen on relay
       const result = await Promise.all(
         remoteAddrs.map(async addr => {
+          let multiaddr = addr.multiaddr
+
+          if (multiaddr.getPeerId() == null) {
+            multiaddr = multiaddr.encapsulate(`/p2p/${connection.remotePeer.toString()}`)
+          }
+          multiaddr = multiaddr.encapsulate('/p2p-circuit')
           try {
-            let multiaddr = addr.multiaddr
-
-            if (multiaddr.getPeerId() == null) {
-              multiaddr = multiaddr.encapsulate(`/p2p/${connection.remotePeer.toString()}`)
-            }
-
-            multiaddr = multiaddr.encapsulate('/p2p-circuit')
-
             // Announce multiaddrs will update on listen success by TransportManager event being triggered
             await this.components.transportManager.listen([multiaddr])
             return true
           } catch (err: any) {
-            log.error('error listening on circuit address', err)
+            log.error('error listening on circuit address', multiaddr, err)
             this.onError(err)
           }
 

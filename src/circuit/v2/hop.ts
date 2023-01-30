@@ -44,11 +44,10 @@ export async function reserve (connection: Connection) {
   log('requesting reservation from %s', connection.remotePeer)
   const stream = await connection.newStream([RELAY_V2_HOP_CODEC])
   const streamHandler = new StreamHandlerV2({ stream })
-  streamHandler.write(HopMessage.encode({
-    type: HopMessage.Type.RESERVE
-  }))
+  const buf = HopMessage.encode({ type: HopMessage.Type.RESERVE })
+  streamHandler.write(buf)
 
-  let response: HopMessage | undefined
+  let response: HopMessage
   try {
     response = HopMessage.decode(await streamHandler.read())
   } catch (e: any) {

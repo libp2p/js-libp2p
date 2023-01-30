@@ -318,7 +318,7 @@ export class Circuit implements Transport, Startable {
       log('new outbound connection %s', maConn.remoteAddr)
       const conn = await this.components.upgrader.upgradeOutbound(maConn)
       return conn
-    } catch (/** @type {any} */ err) {
+    } catch (err) {
       log.error('Circuit relay dial failed', err)
       disconnectOnFailure && await connection.close()
       throw err

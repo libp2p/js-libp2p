@@ -7,7 +7,8 @@ message HopMessage {
     STATUS = 2;
   }
 
-  Type type = 1;
+  // the presence of this field is enforced at application level
+  optional Type type = 1;
 
   optional Peer peer = 2;
   optional Reservation reservation = 3;
@@ -22,7 +23,8 @@ message StopMessage {
     STATUS = 1;
   }
 
-  Type type = 1;
+  // the presence of this field is enforced at application level
+  optional Type type = 1;
 
   optional Peer peer = 2;
   optional Limit limit = 3;
@@ -47,6 +49,7 @@ message Limit {
 }
 
 enum Status {
+  UNUSED = 0;
   OK                      = 100;
   RESERVATION_REFUSED     = 200;
   RESOURCE_LIMIT_EXCEEDED = 201;

@@ -2,13 +2,14 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
 export interface HopMessage {
-  type: HopMessage.Type
+  type?: HopMessage.Type
   peer?: Peer
   reservation?: Reservation
   limit?: Limit
@@ -29,7 +30,7 @@ export namespace HopMessage {
   }
 
   export namespace Type {
-    export const codec = () => {
+    export const codec = (): Codec<Type> => {
       return enumeration<Type>(__TypeValues)
     }
   }
@@ -43,7 +44,7 @@ export namespace HopMessage {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.type != null && __TypeValues[obj.type] !== 0)) {
+        if (obj.type != null) {
           w.uint32(8)
           HopMessage.Type.codec().encode(obj.type, w)
         }
@@ -78,9 +79,7 @@ export namespace HopMessage {
           w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {
-          type: Type.RESERVE
-        }
+        const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -126,7 +125,7 @@ export namespace HopMessage {
 }
 
 export interface StopMessage {
-  type: StopMessage.Type
+  type?: StopMessage.Type
   peer?: Peer
   limit?: Limit
   status?: Status
@@ -144,7 +143,7 @@ export namespace StopMessage {
   }
 
   export namespace Type {
-    export const codec = () => {
+    export const codec = (): Codec<Type> => {
       return enumeration<Type>(__TypeValues)
     }
   }
@@ -158,7 +157,7 @@ export namespace StopMessage {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.type != null && __TypeValues[obj.type] !== 0)) {
+        if (obj.type != null) {
           w.uint32(8)
           StopMessage.Type.codec().encode(obj.type, w)
         }
@@ -186,9 +185,7 @@ export namespace StopMessage {
           w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {
-          type: Type.CONNECT
-        }
+        const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -445,6 +442,7 @@ export namespace Limit {
 }
 
 export enum Status {
+  UNUSED = 'UNUSED',
   OK = 'OK',
   RESERVATION_REFUSED = 'RESERVATION_REFUSED',
   RESOURCE_LIMIT_EXCEEDED = 'RESOURCE_LIMIT_EXCEEDED',
@@ -456,6 +454,7 @@ export enum Status {
 }
 
 enum __StatusValues {
+  UNUSED = 0,
   OK = 100,
   RESERVATION_REFUSED = 200,
   RESOURCE_LIMIT_EXCEEDED = 201,
@@ -467,7 +466,7 @@ enum __StatusValues {
 }
 
 export namespace Status {
-  export const codec = () => {
+  export const codec = (): Codec<Status> => {
     return enumeration<Status>(__StatusValues)
   }
 }
