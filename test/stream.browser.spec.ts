@@ -1,5 +1,8 @@
 import * as underTest from '../src/stream'
 import { expect, assert } from 'aegir/chai'
+import { bytes } from 'multiformats'
+import * as pb from '../proto_ts/message.js'
+const TEST_MESSAGE = 'test_messgae'
 
 function setup (): { peerConnection: RTCPeerConnection, datachannel: RTCDataChannel, webrtcStream: underTest.WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
@@ -7,6 +10,14 @@ function setup (): { peerConnection: RTCPeerConnection, datachannel: RTCDataChan
   const webrtcStream = new underTest.WebRTCStream({ channel: datachannel, stat: underTest.defaultStat('outbound') })
 
   return { peerConnection, datachannel, webrtcStream }
+}
+
+function generatePbByFlag (flag?: pb.Message_Flag): Uint8Array {
+  const testPb: pb.Message = {
+    flag: flag,
+    message: bytes.fromString(TEST_MESSAGE)
+  }
+  return pb.Message.toBinary(testPb)
 }
 
 describe('Stream Stats', () => {
@@ -64,5 +75,48 @@ describe('Stream Stats', () => {
     webrtcStream.reset() // only resets the write side
     expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
     expect(datachannel.readyState).to.be.oneOf(['closing', 'closed'])
+  })
+})
+
+describe('Stream Read Stats Transition By Incoming Flag', () => {
+  const webrtcStream = setup().webrtcStream
+  it('no flag, no transition', () => {
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
+    const IncomingBuffer = generatePbByFlag()
+    const message = webrtcStream.processIncomingProtobuf(IncomingBuffer)
+    expect(message).not.equal(undefined)
+    if (message != null) {
+      expect(bytes.toString(message)).to.equal(TEST_MESSAGE)
+    }
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
+  })
+
+  it('open to read-close by flag:FIN', () => {
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
+    const IncomingBuffer = generatePbByFlag(pb.Message_Flag.FIN)
+    webrtcStream.processIncomingProtobuf(IncomingBuffer)
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.READ_CLOSED)
+  })
+
+  it('read-close to close by flag:STOP_SENDING', () => {
+    const IncomingBuffer = generatePbByFlag(pb.Message_Flag.STOP_SENDING)
+    webrtcStream.processIncomingProtobuf(IncomingBuffer)
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
+  })
+})
+
+describe('Stream Write Stats Transition By Incoming Flag', () => {
+  const webrtcStream = setup().webrtcStream
+  it('open to write-close by flag:STOP_SENDING', () => {
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
+    const IncomingBuffer = generatePbByFlag(pb.Message_Flag.STOP_SENDING)
+    webrtcStream.processIncomingProtobuf(IncomingBuffer)
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.WRITE_CLOSED)
+  })
+
+  it('write-close to close by flag:FIN', () => {
+    const IncomingBuffer = generatePbByFlag(pb.Message_Flag.FIN)
+    webrtcStream.processIncomingProtobuf(IncomingBuffer)
+    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
   })
 })
