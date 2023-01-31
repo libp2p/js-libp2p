@@ -3,7 +3,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { sha256 } from 'multiformats/hashes/sha2'
 import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { codes } from './errors.js'
 import { CodeError } from '@libp2p/interfaces/errors'
 
@@ -66,12 +66,30 @@ export const ensureArray = function <T> (maybeArray: T | T[]) {
   return maybeArray
 }
 
-export const toMessage = (message: PubSubRPCMessage): Message => {
+const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
+  if ((message.sequenceNumber == null) || (message.from == null) || (message.signature == null)) {
+    return false
+  }
+  // if a public key is present in the `from` field, the message should be signed
+  const fromID = peerIdFromBytes(message.from)
+  if (fromID.publicKey != null) {
+    return true
+  }
+
+  if (message.key != null) {
+    const signingID = await peerIdFromKeys(message.key)
+    return signingID.equals(fromID)
+  }
+
+  return false
+}
+
+export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => {
   if (message.from == null) {
     throw new CodeError('RPC message was missing from', codes.ERR_MISSING_FROM)
   }
 
-  if (message.sequenceNumber == null || message.from == null || message.signature == null || message.key == null) {
+  if (!await isSigned(message)) {
     return {
       type: 'unsigned',
       topic: message.topic ?? '',
@@ -83,9 +101,10 @@ export const toMessage = (message: PubSubRPCMessage): Message => {
     type: 'signed',
     from: peerIdFromBytes(message.from),
     topic: message.topic ?? '',
-    sequenceNumber: bigIntFromBytes(message.sequenceNumber),
+    sequenceNumber: bigIntFromBytes(message.sequenceNumber ?? new Uint8Array(0)),
     data: message.data ?? new Uint8Array(0),
-    signature: message.signature,
+    signature: message.signature ?? new Uint8Array(0),
+    // @ts-expect-error key need not be defined
     key: message.key
   }
 }

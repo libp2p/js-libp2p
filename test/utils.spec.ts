@@ -3,6 +3,7 @@ import * as utils from '../src/utils.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
+import * as PeerIdFactory from '@libp2p/peer-id-factory'
 
 describe('utils', () => {
   it('randomSeqno', () => {
@@ -93,5 +94,39 @@ describe('utils', () => {
     values.forEach(val => {
       expect(utils.bigIntFromBytes(utils.bigIntToBytes(val))).to.equal(val)
     })
+  })
+
+  it('ensures message is signed if public key is extractable', async () => {
+    const dummyPeerID = await PeerIdFactory.createRSAPeerId()
+
+    const cases: PubSubRPCMessage[] = [
+      {
+        from: (await PeerIdFactory.createSecp256k1PeerId()).toBytes(),
+        topic: 'test',
+        data: new Uint8Array(0),
+        sequenceNumber: utils.bigIntToBytes(1n),
+        signature: new Uint8Array(0)
+      },
+      {
+        from: peerIdFromString('QmPNdSYk5Rfpo5euNqwtyizzmKXMNHdXeLjTQhcN4yfX22').toBytes(),
+        topic: 'test',
+        data: new Uint8Array(0),
+        sequenceNumber: utils.bigIntToBytes(1n),
+        signature: new Uint8Array(0)
+      },
+      {
+        from: dummyPeerID.toBytes(),
+        topic: 'test',
+        data: new Uint8Array(0),
+        sequenceNumber: utils.bigIntToBytes(1n),
+        signature: new Uint8Array(0),
+        key: dummyPeerID.publicKey
+      }
+    ]
+    const expected = ['signed', 'unsigned', 'signed']
+
+    const actual = (await Promise.all(cases.map(utils.toMessage))).map(m => m.type)
+
+    expect(actual).to.deep.equal(expected)
   })
 })
