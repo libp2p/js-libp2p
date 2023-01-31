@@ -1,27 +1,35 @@
-import { interopTests } from '@libp2p/interop'
-import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
-import { createServer } from '@libp2p/daemon-server'
-import { createClient } from '@libp2p/daemon-client'
-import { createLibp2p, Libp2pOptions } from '../src/index.js'
-import { noise } from '@chainsafe/libp2p-noise'
-import { tcp } from '@libp2p/tcp'
-import { multiaddr } from '@multiformats/multiaddr'
-import { kadDHT } from '@libp2p/kad-dht'
-import { path as p2pd } from 'go-libp2p'
-import { execa } from 'execa'
+import {interopTests} from '@libp2p/interop'
+import type {SpawnOptions, Daemon, DaemonFactory} from '@libp2p/interop'
+import {createServer} from '@libp2p/daemon-server'
+import {createClient} from '@libp2p/daemon-client'
+import {createLibp2p, Libp2pOptions} from '../src/index.js'
+import {noise} from '@chainsafe/libp2p-noise'
+import {tcp} from '@libp2p/tcp'
+import {multiaddr} from '@multiformats/multiaddr'
+import {kadDHT} from '@libp2p/kad-dht'
+// import { path as p2pd } from 'go-libp2p'
+import {execa} from 'execa'
 import pDefer from 'p-defer'
-import { logger } from '@libp2p/logger'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import {logger} from '@libp2p/logger'
+import {mplex} from '@libp2p/mplex'
+import {yamux} from '@chainsafe/libp2p-yamux'
 import fs from 'fs'
-import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { peerIdFromKeys } from '@libp2p/peer-id'
-import { floodsub } from '@libp2p/floodsub'
+import {unmarshalPrivateKey} from '@libp2p/crypto/keys'
+import type {PeerId} from '@libp2p/interface-peer-id'
+import {peerIdFromKeys} from '@libp2p/peer-id'
+import {floodsub} from '@libp2p/floodsub'
+import {RELAY_V2_HOP_CODEC} from '../src/circuit/multicodec.js'
+import {handshake} from 'it-handshake'
+import {HopMessage, Status} from '../src/circuit/v2/pb/index.js'
+import * as lp from 'it-length-prefixed'
 
 // IPFS_LOGGING=debug DEBUG=libp2p*,go-libp2p:* npm run test:interop
 
-async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
+// testing only:
+const p2pd = () => `/home/ckousik/projects/libp2p/go-libp2p-daemon/p2pd/p2pd`
+
+
+async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
   const apiAddr = multiaddr(`/ip4/0.0.0.0/tcp/${controlPort}`)
 
@@ -29,8 +37,13 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   const opts = [
     `-listen=${apiAddr.toString()}`,
-    '-hostAddrs=/ip4/0.0.0.0/tcp/0'
   ]
+
+  if (options.noListen === true) {
+    opts.push('-noListenAddrs')
+  } else {
+    opts.push('-hostAddrs=/ip4/0.0.0.0/tcp/0')
+  }
 
   if (options.noise === true) {
     opts.push('-noise=true')
@@ -38,6 +51,10 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.dht === true) {
     opts.push('-dhtServer')
+  }
+
+  if (options.relay === true) {
+    opts.push('-relay')
   }
 
   if (options.pubsub === true) {
@@ -52,8 +69,18 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     opts.push(`-id=${options.key}`)
   }
 
+  if (options.muxer === 'mplex') {
+    opts.push('-muxer=mplex')
+  } else {
+    opts.push('-muxer=yamux')
+  }
+
   const deferred = pDefer()
-  const proc = execa(p2pd(), opts)
+  const proc = execa(p2pd(), opts, {
+    env: {
+      'GOLOG_LOG_LEVEL': 'debug',
+    },
+  })
 
   proc.stdout?.on('data', (buf: Buffer) => {
     const str = buf.toString()
@@ -79,7 +106,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   }
 }
 
-async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
+async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
   let peerId: PeerId | undefined
 
   if (options.key != null) {
@@ -91,11 +118,11 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   const opts: Libp2pOptions = {
     peerId,
     addresses: {
-      listen: ['/ip4/0.0.0.0/tcp/0']
+      listen: options.noListen === true ? [] : ['/ip4/0.0.0.0/tcp/0'],
     },
     transports: [tcp()],
     streamMuxers: [],
-    connectionEncryption: [noise()]
+    connectionEncryption: [noise()],
   }
 
   if (options.muxer === 'mplex') {
@@ -109,6 +136,16 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       opts.pubsub = floodsub()
     } else {
       opts.pubsub = floodsub()
+    }
+  }
+
+  opts.relay = {
+    enabled: true,
+    hop: {
+      enabled: options.relay === true,
+    },
+    reservationManager: {
+      enabled: false,
     }
   }
 
@@ -148,14 +185,33 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 }
 
-async function main () {
+async function main() {
   const factory: DaemonFactory = {
-    async spawn (options: SpawnOptions) {
+    async spawn(options: SpawnOptions) {
       if (options.type === 'go') {
         return await createGoPeer(options)
       }
 
       return await createJsPeer(options)
+    },
+    relay: {
+      async reserve(d: Daemon, id: PeerId) {
+        const stream = await d.client.openStream(id, RELAY_V2_HOP_CODEC)
+        const shake = handshake(stream)
+        const decoder = lp.decode.fromReader(shake.reader)
+        const request = HopMessage.encode({ type: HopMessage.Type.RESERVE })
+        shake.write(lp.encode.single(request).subarray())
+        // @ts-expect-error
+        const raw = await decoder.next()
+        if (!raw.value) {
+          throw Error('could not read response')
+        }
+        const response = HopMessage.decode(raw.value)
+        if (response.status !== Status.OK) {
+          console.log("request: ", request)
+          throw Error('reservation failed: status: ' + response.status)
+        }
+      },
     }
   }
 
