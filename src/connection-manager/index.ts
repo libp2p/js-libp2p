@@ -167,11 +167,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
 
-    if (this.opts.maxConnections < this.opts.minConnections) {
-      throw errCode(new Error('Connection Manager maxConnections must be greater than minConnections'), codes.ERR_INVALID_PARAMETERS)
-    }
-
     log('options: %o', this.opts)
+
+    this.validateLimits()
 
     this.components = components
 
@@ -350,6 +348,20 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       .finally(() => {
         this.connectOnStartupController?.clear()
       })
+  }
+
+  validateLimits () {
+    if (this.opts.minConnections < 0 || !Number.isInteger(this.opts.minConnections)) {
+      throw errCode(new Error('Connection Manager minConnections must be a positive integer'), codes.ERR_INVALID_PARAMETERS)
+    }
+
+    if (this.opts.maxConnections < 0 || !Number.isInteger(this.opts.maxConnections)) {
+      throw errCode(new Error('Connection Manager maxConnections must be a positive integer'), codes.ERR_INVALID_PARAMETERS)
+    }
+
+    if (this.opts.maxConnections < this.opts.minConnections) {
+      throw errCode(new Error('Connection Manager maxConnections must be greater than minConnections'), codes.ERR_INVALID_PARAMETERS)
+    }
   }
 
   async beforeStop () {

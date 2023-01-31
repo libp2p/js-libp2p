@@ -17,6 +17,7 @@ import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Upgrader } from '@libp2p/interface-transport'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import { codes } from '../../src/errors.js'
 
 const defaultOptions = {
   maxConnections: 10,
@@ -196,6 +197,42 @@ describe('Connection Manager', () => {
 
     expect(connectionManagerMaybeDisconnectOneSpy.callCount).to.equal(1)
     expect(spy).to.have.property('callCount', 1)
+  })
+
+  it('should fail if the connection manager has negative maxConnections limit', async () => {
+    await expect(createNode({
+      config: createBaseOptions({
+        connectionManager: { maxConnections: -5 }
+      }),
+      started: false
+    })).to.eventually.rejected('maxConnections must be greater than 0').with.property('code', codes.ERR_INVALID_PARAMETERS)
+  })
+
+  it('should fail if the connection manager has negative minConnections limit', async () => {
+    await expect(createNode({
+      config: createBaseOptions({
+        connectionManager: { minConnections: -5 }
+      }),
+      started: false
+    })).to.eventually.rejected('minConnections must be greater than 0').with.property('code', codes.ERR_INVALID_PARAMETERS)
+  })
+
+  it('should fail if the connection manager has non-integer maxConnections limit', async () => {
+    await expect(createNode({
+      config: createBaseOptions({
+        connectionManager: { maxConnections: 1.5 }
+      }),
+      started: false
+    })).to.eventually.rejected('maxConnections must be an integer').with.property('code', codes.ERR_INVALID_PARAMETERS)
+  })
+
+  it('should fail if the connection manager has non-integer minConnections limit', async () => {
+    await expect(createNode({
+      config: createBaseOptions({
+        connectionManager: { minConnections: 1.5 }
+      }),
+      started: false
+    })).to.eventually.rejected('minConnections must be an integer').with.property('code', codes.ERR_INVALID_PARAMETERS)
   })
 
   it('should fail if the connection manager has mismatched connection limit options', async () => {
