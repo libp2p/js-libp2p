@@ -1,3 +1,15 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.0...v6.0.1) (2023-01-31)
+
+
+### Bug Fixes
+
+* allow `key` field to be unset ([#118](https://github.com/libp2p/js-libp2p-pubsub/issues/118)) ([2567a45](https://github.com/libp2p/js-libp2p-pubsub/commit/2567a454c9f4c91ab7d55e6a90c79e816d527a30))
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#116](https://github.com/libp2p/js-libp2p-pubsub/issues/116)) ([e121e4b](https://github.com/libp2p/js-libp2p-pubsub/commit/e121e4b18ab9bca90ee4b596928a1de84fb412f7)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v5.0.1...v6.0.0) (2023-01-06)
 
 
