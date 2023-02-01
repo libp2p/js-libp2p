@@ -18,10 +18,6 @@ import {unmarshalPrivateKey} from '@libp2p/crypto/keys'
 import type {PeerId} from '@libp2p/interface-peer-id'
 import {peerIdFromKeys} from '@libp2p/peer-id'
 import {floodsub} from '@libp2p/floodsub'
-import {RELAY_V2_HOP_CODEC} from '../src/circuit/multicodec.js'
-import {handshake} from 'it-handshake'
-import {HopMessage, Status} from '../src/circuit/v2/pb/index.js'
-import * as lp from 'it-length-prefixed'
 
 // IPFS_LOGGING=debug DEBUG=libp2p*,go-libp2p:* npm run test:interop
 
@@ -194,25 +190,6 @@ async function main() {
 
       return await createJsPeer(options)
     },
-    relay: {
-      async reserve(d: Daemon, id: PeerId) {
-        const stream = await d.client.openStream(id, RELAY_V2_HOP_CODEC)
-        const shake = handshake(stream)
-        const decoder = lp.decode.fromReader(shake.reader)
-        const request = HopMessage.encode({ type: HopMessage.Type.RESERVE })
-        shake.write(lp.encode.single(request).subarray())
-        // @ts-expect-error
-        const raw = await decoder.next()
-        if (!raw.value) {
-          throw Error('could not read response')
-        }
-        const response = HopMessage.decode(raw.value)
-        if (response.status !== Status.OK) {
-          console.log("request: ", request)
-          throw Error('reservation failed: status: ' + response.status)
-        }
-      },
-    }
   }
 
   await interopTests(factory)
