@@ -28,8 +28,8 @@ import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import { pbStream } from 'it-pb-stream'
-import type {Duplex} from 'it-stream-types'
-import type {Uint8ArrayList} from 'uint8arraylist'
+import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit')
 

@@ -19,7 +19,7 @@ import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { AclStatus } from '../../../src/circuit/v2/interfaces.js'
-import {pbStream} from 'it-pb-stream'
+import { pbStream } from 'it-pb-stream'
 
 /* eslint-env mocha */
 

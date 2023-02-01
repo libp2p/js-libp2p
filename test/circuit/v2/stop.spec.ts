@@ -7,7 +7,7 @@ import { Status, StopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
-import {pbStream, ProtobufStream} from 'it-pb-stream'
+import { pbStream, ProtobufStream } from 'it-pb-stream'
 
 /* eslint-env mocha */
 

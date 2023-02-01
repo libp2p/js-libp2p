@@ -1,13 +1,13 @@
 
-import {Status, StopMessage} from './pb/index.js'
-import type {Connection} from '@libp2p/interface-connection'
+import { Status, StopMessage } from './pb/index.js'
+import type { Connection } from '@libp2p/interface-connection'
 
-import {logger} from '@libp2p/logger'
-import {RELAY_V2_STOP_CODEC} from '../multicodec.js'
-import {multiaddr} from '@multiformats/multiaddr'
-import {pbStream, ProtobufStream} from 'it-pb-stream'
-import type {Uint8ArrayList} from 'uint8arraylist'
-import type {Duplex} from 'it-stream-types'
+import { logger } from '@libp2p/logger'
+import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
+import { multiaddr } from '@multiformats/multiaddr'
+import { pbStream, ProtobufStream } from 'it-pb-stream'
+import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:circuit:v2:stop')
 
@@ -28,29 +28,29 @@ const isValidStop = (request: StopMessage): boolean => {
   }
   return true
 }
-export async function handleStop({
+export async function handleStop ({
   connection,
   request,
-  pbstr,
+  pbstr
 }: HandleStopOptions) {
   const stopstr = pbstr.pb(StopMessage)
   log('new circuit relay v2 stop stream from %s', connection.remotePeer)
   // Validate the STOP request has the required input
   if (request.type !== StopMessage.Type.CONNECT) {
     log.error('invalid stop connect request via peer %s', connection.remotePeer)
-    stopstr.write({type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE})
+    stopstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
     return
   }
   if (!isValidStop(request)) {
     log.error('invalid stop connect request via peer %s', connection.remotePeer)
-    stopstr.write({type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE})
+    stopstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
     return
   }
 
   // TODO: go-libp2p marks connection transient if there is limit field present in request.
   // Cannot find any reference to transient connections in js-libp2p
 
-  stopstr.write({type: StopMessage.Type.STATUS, status: Status.OK})
+  stopstr.write({ type: StopMessage.Type.STATUS, status: Status.OK })
   return pbstr.unwrap()
 }
 
@@ -63,7 +63,7 @@ export interface StopOptions {
  * Creates a STOP request
  *
  */
-export async function stop({
+export async function stop ({
   connection,
   request
 }: StopOptions): Promise<Duplex<Uint8ArrayList, Uint8Array> | undefined> {

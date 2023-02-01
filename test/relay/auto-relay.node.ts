@@ -79,7 +79,7 @@ describe('auto-relay', () => {
 
     beforeEach(async () => {
       // Create 4 nodes, and turn HOP on for the relay
-      ;[libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3] = await Promise.all([
+      [libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3] = await Promise.all([
         createNode({ config: createNodeOptions() }),
         createNode({ config: createRelayOptions() }),
         createNode({ config: createRelayOptions() }),
