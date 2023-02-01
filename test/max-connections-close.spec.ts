@@ -45,7 +45,7 @@ describe('close server on maxConnections', () => {
       return socket
     }
 
-    async function assertConnectedSocket (i: number) {
+    async function assertConnectedSocket (i: number): Promise<net.Socket> {
       const socket = createSocket()
 
       await new Promise<void>((resolve, reject) => {
@@ -61,7 +61,7 @@ describe('close server on maxConnections', () => {
       return socket
     }
 
-    async function assertRefusedSocket (i: number) {
+    async function assertRefusedSocket (i: number): Promise<void> {
       const socket = createSocket()
 
       await new Promise<void>((resolve, reject) => {
@@ -79,7 +79,7 @@ describe('close server on maxConnections', () => {
       })
     }
 
-    async function assertServerConnections (connections: number) {
+    async function assertServerConnections (connections: number): Promise<void> {
       // Expect server connections but allow time for sockets to connect or disconnect
       for (let i = 0; i < 100; i++) {
         // eslint-disable-next-line @typescript-eslint/dot-notation

@@ -92,7 +92,7 @@ class TCP implements Transport {
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): string {
     return '@libp2p/tcp'
   }
 
@@ -114,7 +114,7 @@ class TCP implements Transport {
       metrics: this.metrics?.dialerEvents
     })
 
-    const onAbort = () => {
+    const onAbort = (): void => {
       maConn.close().catch(err => {
         log.error('Error closing maConn after abort', err)
       })
@@ -138,7 +138,7 @@ class TCP implements Transport {
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: TCPDialOptions) {
+  async _connect (ma: Multiaddr, options: TCPDialOptions): Promise<Socket> {
     if (options.signal?.aborted === true) {
       throw new AbortError()
     }
@@ -151,14 +151,14 @@ class TCP implements Transport {
       log('dialing %j', cOpts)
       const rawSocket = net.connect(cOpts)
 
-      const onError = (err: Error) => {
+      const onError = (err: Error): void => {
         err.message = `connection error ${cOptsStr}: ${err.message}`
         this.metrics?.dialerEvents.increment({ error: true })
 
         done(err)
       }
 
-      const onTimeout = () => {
+      const onTimeout = (): void => {
         log('connection timeout %s', cOptsStr)
         this.metrics?.dialerEvents.increment({ timeout: true })
 
@@ -167,20 +167,20 @@ class TCP implements Transport {
         rawSocket.emit('error', err)
       }
 
-      const onConnect = () => {
+      const onConnect = (): void => {
         log('connection opened %j', cOpts)
         this.metrics?.dialerEvents.increment({ connect: true })
         done()
       }
 
-      const onAbort = () => {
+      const onAbort = (): void => {
         log('connection aborted %j', cOpts)
         this.metrics?.dialerEvents.increment({ abort: true })
         rawSocket.destroy()
         done(new AbortError())
       }
 
-      const done = (err?: any) => {
+      const done = (err?: any): void => {
         rawSocket.removeListener('error', onError)
         rawSocket.removeListener('timeout', onTimeout)
         rawSocket.removeListener('connect', onConnect)
@@ -190,7 +190,7 @@ class TCP implements Transport {
         }
 
         if (err != null) {
-          return reject(err)
+          reject(err); return
         }
 
         resolve(rawSocket)

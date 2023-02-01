@@ -19,7 +19,7 @@ const log = logger('libp2p:tcp:listener')
 /**
  * Attempts to close the given maConn. If a failure occurs, it will be logged
  */
-async function attemptClose (maConn: MultiaddrConnection) {
+async function attemptClose (maConn: MultiaddrConnection): Promise<void> {
   try {
     await maConn.close()
   } catch (err) {
@@ -54,7 +54,7 @@ export interface TCPListenerMetrics {
   events: CounterGroup
 }
 
-type Status = {started: false} | {
+type Status = { started: false } | {
   started: true
   listeningAddr: Multiaddr
   peerId: string | null
@@ -150,7 +150,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
       })
   }
 
-  private onSocket (socket: net.Socket) {
+  private onSocket (socket: net.Socket): void {
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
       log('socket error', err)
@@ -230,7 +230,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     }
   }
 
-  getAddrs () {
+  getAddrs (): Multiaddr[] {
     if (!this.status.started) {
       return []
     }
@@ -262,7 +262,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     return addrs.map(ma => peerId != null ? ma.encapsulate(`/p2p/${peerId}`) : ma)
   }
 
-  async listen (ma: Multiaddr) {
+  async listen (ma: Multiaddr): Promise<void> {
     if (this.status.started) {
       throw Error('server is already listening')
     }
@@ -280,9 +280,9 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     await this.netListen()
   }
 
-  async close () {
+  async close (): Promise<void> {
     await Promise.all(
-      Array.from(this.connections.values()).map(async maConn => await attemptClose(maConn))
+      Array.from(this.connections.values()).map(async maConn => { await attemptClose(maConn) })
     )
 
     // netClose already checks if server.listening

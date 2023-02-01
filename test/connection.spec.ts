@@ -21,7 +21,7 @@ describe('valid localAddr and remoteAddr', () => {
     let handled: (conn: Connection) => void
     const handlerPromise = new Promise<Connection>(resolve => { handled = resolve })
 
-    const handler = (conn: Connection) => handled(conn)
+    const handler = (conn: Connection): void => { handled(conn) }
 
     // Create a listener with the handler
     const listener = transport.createListener({
@@ -52,7 +52,7 @@ describe('valid localAddr and remoteAddr', () => {
     let handled: (conn: Connection) => void
     const handlerPromise = new Promise<Connection>(resolve => { handled = resolve })
 
-    const handler = (conn: Connection) => handled(conn)
+    const handler = (conn: Connection): void => { handled(conn) }
 
     // Create a listener with the handler
     const listener = transport.createListener({
@@ -76,7 +76,7 @@ describe('valid localAddr and remoteAddr', () => {
 
     // Close the dialer with two simultaneous calls to `close`
     await Promise.race([
-      new Promise((resolve, reject) => setTimeout(() => reject(new Error('Timed out waiting for connection close')), 500)),
+      new Promise((resolve, reject) => setTimeout(() => { reject(new Error('Timed out waiting for connection close')) }, 500)),
       await Promise.all([
         dialerConn.close(),
         dialerConn.close()

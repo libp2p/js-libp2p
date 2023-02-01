@@ -5,7 +5,7 @@ import { toMultiaddrConnection } from '../src/socket-to-conn.js'
 import os from 'os'
 import type { ServerOpts, SocketConstructorOpts } from 'net'
 
-async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }) {
+async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }): Promise<{ server: Server, serverSocket: Socket, clientSocket: Socket }> {
   const serverListening = defer()
 
   const server = createServer(opts?.server)

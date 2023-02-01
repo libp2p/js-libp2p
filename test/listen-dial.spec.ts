@@ -259,7 +259,7 @@ describe('dial', () => {
         // let multistream select finish before closing
         setTimeout(() => {
           void conn.close()
-            .then(() => handled())
+            .then(() => { handled() })
         }, 100)
       },
       upgrader
@@ -272,7 +272,7 @@ describe('dial', () => {
       upgrader
     })
     const stream = await conn.newStream([protocol])
-    await pipe(stream)
+    pipe(stream)
 
     await handledPromise
     await conn.close()
@@ -340,7 +340,7 @@ describe('dial', () => {
 
       // take a long time to give us time to abort the dial
       await new Promise<void>((resolve) => {
-        setTimeout(() => resolve(), 100)
+        setTimeout(() => { resolve() }, 100)
       })
     }
 
@@ -352,7 +352,7 @@ describe('dial', () => {
     const abortController = new AbortController()
 
     // abort once the upgrade process has started
-    void maConnPromise.promise.then(() => abortController.abort())
+    void maConnPromise.promise.then(() => { abortController.abort() })
 
     await expect(transport.dial(ma, {
       upgrader,

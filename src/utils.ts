@@ -25,19 +25,19 @@ export function multiaddrToNetConfig (addr: Multiaddr): NetConfig {
   return addr.toOptions()
 }
 
-export function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number) {
-  const toMa = (ip: string) => multiaddr(`/${proto}/${ip}/tcp/${port}`)
+export function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number): Multiaddr[] {
+  const toMa = (ip: string): Multiaddr => multiaddr(`/${proto}/${ip}/tcp/${port}`)
   return (isAnyAddr(ip) ? getNetworkAddrs(ProtoFamily[proto]) : [ip]).map(toMa)
 }
 
-export function isAnyAddr (ip: string) {
+export function isAnyAddr (ip: string): boolean {
   return ['0.0.0.0', '::'].includes(ip)
 }
 
 const networks = os.networkInterfaces()
 
-function getNetworkAddrs (family: string) {
-  const addresses = []
+function getNetworkAddrs (family: string): string[] {
+  const addresses: string[] = []
 
   for (const [, netAddrs] of Object.entries(networks)) {
     if (netAddrs != null) {

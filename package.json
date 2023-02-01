@@ -154,7 +154,7 @@
   "devDependencies": {
     "@libp2p/interface-mocks": "^9.1.1",
     "@libp2p/interface-transport-compliance-tests": "^3.0.0",
-    "aegir": "^37.7.3",
+    "aegir": "^38.1.0",
     "it-all": "^2.0.0",
     "it-pipe": "^2.0.3",
     "p-defer": "^4.0.0",

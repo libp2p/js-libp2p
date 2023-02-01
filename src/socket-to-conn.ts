@@ -26,7 +26,7 @@ interface ToConnectionOptions {
  * Convert a socket into a MultiaddrConnection
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions) => {
+export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
