@@ -37,7 +37,7 @@ export interface CircuitServiceInit extends RelayReservationManagerConfig {
   /**
    * A callback to invoke when an error occurs in the circuit service.
    */
-  onError?: (error: Error, msg?: string) => void
+  onError?: (error: Error) => void
 }
 
 export interface RelayReservationManagerEvents {
@@ -54,7 +54,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
   private readonly maxReservations: number
   private readonly relays: PeerSet
   private readonly reservationMap: PeerMap<ReturnType<typeof setTimeout>>
-  private readonly onError: (error: Error, msg?: string) => void
+  private readonly onError: (error: Error) => void
   private started: boolean
 
   constructor (components: Components, init: CircuitServiceInit) {
@@ -142,6 +142,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
 
       await this._addListenRelay(connection, peerId)
     } catch (err: any) {
+      log.error('could not add %p as relay', peerId)
       this.onError(err)
     }
   }
@@ -212,6 +213,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
       }
     } catch (err: any) {
       this.relays.delete(peerId)
+      log.error('error adding relay for %p %s', peerId, err)
       this.onError(err)
     }
   }
@@ -297,6 +299,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
         }
       }
     } catch (err: any) {
+      log.error('failed when finding relays on the network', err)
       this.onError(err)
     }
   }
@@ -304,14 +307,14 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
   async _tryToListenOnRelay (peerId: PeerId) {
     try {
       if (peerId.equals(this.components.peerId)) {
-        log.trace('Skipping dialling self', peerId.toString())
+        log.trace('Skipping dialling self %p', peerId.toString())
         return
       }
       const connection = await this.components.connectionManager.openConnection(peerId)
       await this._addListenRelay(connection, peerId)
     } catch (err: any) {
-      log.error('Could not use %p as relay', peerId, err)
-      this.onError(err, `could not connect and listen on known hop relay ${peerId.toString()}`)
+      log.error('Could not connect and listen on relay %p', peerId, err)
+      this.onError(err)
     }
   }
 
