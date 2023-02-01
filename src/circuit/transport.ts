@@ -20,7 +20,6 @@ import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { StreamHandlerV2 } from './v2/stream-handler.js'
 import * as CircuitV1Handler from './v1/index.js'
 import * as CircuitV2Handler from './v2/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -28,6 +27,9 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import { pbStream } from 'it-pb-stream'
+import type {Duplex} from 'it-stream-types'
+import type {Uint8ArrayList} from 'uint8arraylist'
 
 const log = logger('libp2p:circuit')
 
@@ -123,7 +125,7 @@ export class Circuit implements Transport, Startable {
   }
 
   async onHop ({ connection, stream }: IncomingStreamData) {
-    // log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
+    log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
     const controller = new TimeoutController(this._init.hop.timeout)
 
     try {
@@ -132,9 +134,9 @@ export class Circuit implements Transport, Startable {
     } catch { }
 
     const source = abortableDuplex(stream, controller.signal)
-    const streamHandler = new StreamHandlerV2({ stream: { ...stream, ...source } })
+    const pbstr = pbStream({ ...stream, ...source })
     try {
-      const request = CircuitV2.HopMessage.decode(await streamHandler.read())
+      const request = await pbstr.pb(CircuitV2.HopMessage).read()
 
       if (request?.type == null) {
         throw new Error('request was invalid, could not read from stream')
@@ -142,7 +144,7 @@ export class Circuit implements Transport, Startable {
 
       await CircuitV2Handler.handleHopProtocol({
         connection,
-        streamHandler,
+        pbstr,
         connectionManager: this.components.connectionManager,
         relayPeer: this.components.peerId,
         relayAddrs: this.components.addressManager.getListenAddrs(),
@@ -150,19 +152,19 @@ export class Circuit implements Transport, Startable {
         request
       })
     } catch (_err) {
-      streamHandler.write(CircuitV2.HopMessage.encode({
+      pbstr.pb(CircuitV2.HopMessage).write({
         type: CircuitV2.HopMessage.Type.STATUS,
         status: CircuitV2.Status.MALFORMED_MESSAGE
-      }))
-      streamHandler.close()
+      })
+      stream.close()
     } finally {
       controller.clear()
     }
   }
 
   async onStop ({ connection, stream }: IncomingStreamData) {
-    const streamHandler = new StreamHandlerV2({ stream })
-    const request = CircuitV2.StopMessage.decode(await streamHandler.read())
+    const pbstr = pbStream(stream)
+    const request = await pbstr.readPB(CircuitV2.StopMessage)
     log('received circuit v2 stop protocol request from %s', connection.remotePeer)
     if (request?.type === undefined) {
       return
@@ -170,15 +172,15 @@ export class Circuit implements Transport, Startable {
 
     const mStream = await CircuitV2Handler.handleStop({
       connection,
-      streamHandler,
+      pbstr,
       request
     })
 
-    if (mStream !== null && mStream !== undefined) {
+    if (mStream != null) {
       const remoteAddr = multiaddr(request.peer?.addrs?.[0])
       const localAddr = this.components.transportManager.getAddrs()[0]
       const maConn = streamToMaConnection({
-        stream: mStream,
+        stream: mStream as any,
         remoteAddr,
         localAddr
       })
@@ -291,16 +293,17 @@ export class Circuit implements Transport, Startable {
     }: ConnectOptions
   ) {
     try {
-      const streamHandler = new StreamHandlerV2({ stream })
-      streamHandler.write(CircuitV2.HopMessage.encode({
+      const pbstr = pbStream(stream)
+      const hopstr = pbstr.pb(CircuitV2.HopMessage)
+      hopstr.write({
         type: CircuitV2.HopMessage.Type.CONNECT,
         peer: {
           id: destinationPeer.toBytes(),
           addrs: [multiaddr(destinationAddr).bytes]
         }
-      }))
+      })
 
-      const status = CircuitV2.HopMessage.decode(await streamHandler.read())
+      const status = await hopstr.read()
       if (status.status !== CircuitV2.Status.OK) {
         throw createError(new Error(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`), codes.ERR_HOP_REQUEST_FAILED)
       }
@@ -310,7 +313,7 @@ export class Circuit implements Transport, Startable {
       let localAddr = relayAddr
       localAddr = localAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`)
       const maConn = streamToMaConnection({
-        stream: streamHandler.rest(),
+        stream: pbstr.unwrap() as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>,
         remoteAddr: ma,
         localAddr
       })

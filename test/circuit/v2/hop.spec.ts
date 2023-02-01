@@ -1,4 +1,4 @@
-import type { Connection } from '@libp2p/interface-connection'
+import type { Connection, Stream } from '@libp2p/interface-connection'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { expect } from 'aegir/chai'
@@ -8,7 +8,6 @@ import { Circuit } from '../../../src/circuit/transport.js'
 import { handleHopProtocol } from '../../../src/circuit/v2/hop.js'
 import { HopMessage, Status, StopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { ReservationStore } from '../../../src/circuit/v2/reservation-store.js'
-import { StreamHandlerV2 } from '../../../src/circuit/v2/stream-handler.js'
 import { Components, DefaultComponents } from '../../../src/components.js'
 import { DefaultConnectionManager } from '../../../src/connection-manager/index.js'
 import { DefaultRegistrar } from '../../../src/registrar.js'
@@ -20,57 +19,60 @@ import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { AclStatus } from '../../../src/circuit/v2/interfaces.js'
+import {pbStream} from 'it-pb-stream'
 
 /* eslint-env mocha */
 
 describe('Circuit v2 - hop protocol', function () {
   describe('reserve', function () {
-    let relayPeer: PeerId, conn: Connection, streamHandler: StreamHandlerV2, reservationStore: ReservationStore
+    let relayPeer: PeerId, conn: Connection, stream: Stream, reservationStore: ReservationStore
 
     beforeEach(async () => {
       [, relayPeer] = await peerUtils.createPeerIds(2)
       conn = mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
-      streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
+      stream = mockStream(pair<any>())
       reservationStore = new ReservationStore()
     })
 
     this.afterEach(async function () {
-      streamHandler.close()
       await conn.close()
     })
-    it('error on unknow message type', async function () {
-      const streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
+
+    it('error on unknown message type', async function () {
+      const stream = mockStream(pair<any>())
+      const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: mockConnection(mockMultiaddrConnection(mockDuplex(), await peerUtils.createPeerId())),
-        streamHandler,
+        pbstr,
         request: {},
         relayPeer,
         relayAddrs: [],
         reservationStore,
         connectionManager: sinon.stub() as any
       })
-      const msg = HopMessage.decode(await streamHandler.read())
+      const msg = await pbstr.pb(HopMessage).read()
       expect(msg.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(msg.status).to.be.equal(Status.MALFORMED_MESSAGE)
+      expect(msg.status).to.be.equal(Status.UNEXPECTED_MESSAGE)
     })
 
     it('should reserve slot', async function () {
       const expire: number = 123
       const reserveStub = sinon.stub(reservationStore, 'reserve')
       reserveStub.resolves({ status: Status.OK, expire })
+      const pbstr = pbStream(stream)
       await handleHopProtocol({
         request: {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        streamHandler,
+        pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
       expect(reserveStub.calledOnceWith(conn.remotePeer, conn.remoteAddr)).to.be.true()
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.limit).to.be.undefined()
       expect(response.status).to.be.equal(Status.OK)
@@ -81,12 +83,13 @@ describe('Circuit v2 - hop protocol', function () {
 
     it('should fail to reserve slot - acl denied', async function () {
       const reserveStub = sinon.stub(reservationStore, 'reserve')
+      const pbstr = pbStream(stream)
       await handleHopProtocol({
         request: {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        streamHandler,
+        pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -94,7 +97,7 @@ describe('Circuit v2 - hop protocol', function () {
         acl: { allowReserve: async function () { return false }, allowConnect: sinon.stub() as any }
       })
       expect(reserveStub.notCalled).to.be.true()
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.limit).to.be.undefined()
       expect(response.status).to.be.equal(Status.PERMISSION_DENIED)
@@ -103,19 +106,20 @@ describe('Circuit v2 - hop protocol', function () {
     it('should fail to reserve slot - resource exceeded', async function () {
       const reserveStub = sinon.stub(reservationStore, 'reserve')
       reserveStub.resolves({ status: Status.RESERVATION_REFUSED })
+      const pbstr = pbStream(stream)
       await handleHopProtocol({
         request: {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        streamHandler,
+        pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
         reservationStore
       })
       expect(reserveStub.calledOnce).to.be.true()
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.limit).to.be.undefined()
       expect(response.status).to.be.equal(Status.RESERVATION_REFUSED)
@@ -126,14 +130,15 @@ describe('Circuit v2 - hop protocol', function () {
       const removeReservationStub = sinon.stub(reservationStore, 'removeReservation')
       reserveStub.resolves({ status: Status.OK, expire: 123 })
       removeReservationStub.resolves()
-      const backup = streamHandler.write
-      streamHandler.write = function () { throw new Error('connection reset') }
+      const pbstr = pbStream(stream)
+      const backup = pbstr.write
+      pbstr.write = function () { throw new Error('connection reset') }
       await handleHopProtocol({
         request: {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        streamHandler,
+        pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -141,18 +146,18 @@ describe('Circuit v2 - hop protocol', function () {
       })
       expect(reserveStub.calledOnce).to.be.true()
       expect(removeReservationStub.calledOnce).to.be.true()
-      streamHandler.write = backup
+      pbstr.write = backup
     })
   })
 
   describe('connect', function () {
-    let relayPeer: PeerId, dstPeer: PeerId, conn: Connection, streamHandler: StreamHandlerV2, reservationStore: ReservationStore,
+    let relayPeer: PeerId, dstPeer: PeerId, conn: Connection, stream: Stream, reservationStore: ReservationStore,
       circuit: Circuit, components: Components
 
     beforeEach(async () => {
       [, relayPeer, dstPeer] = await peerUtils.createPeerIds(3)
       conn = mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
-      streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
+      stream = mockStream(pair<any>())
       reservationStore = new ReservationStore()
       // components
       components = new DefaultComponents()
@@ -198,7 +203,6 @@ describe('Circuit v2 - hop protocol', function () {
     })
 
     this.afterEach(async function () {
-      streamHandler.close()
       await conn.close()
     })
 
@@ -211,16 +215,17 @@ describe('Circuit v2 - hop protocol', function () {
       const streamStub = sinon.stub(dstConn, 'newStream')
       const dstStream = mockStream(pair<any>())
       streamStub.resolves(dstStream)
-      const dstStreamHandler = new StreamHandlerV2({ stream: dstStream })
-      dstStreamHandler.write(StopMessage.encode({
+      const dstStreamHandler = pbStream(dstStream)
+      dstStreamHandler.pb(StopMessage).write({
         type: StopMessage.Type.STATUS,
         status: Status.OK
-      }))
+      })
+      const pbstr = pbStream(stream)
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
       await handleHopProtocol({
         connection: conn,
-        streamHandler,
+        pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -233,15 +238,16 @@ describe('Circuit v2 - hop protocol', function () {
         reservationStore,
         connectionManager: components.connectionManager
       })
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.status).to.be.equal(Status.OK)
     })
 
     it('should fail to connect - invalid request', async function () {
+      const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        streamHandler,
+        pbstr: pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           // @ts-expect-error {} is missing the following properties from peer: id, addrs
@@ -250,19 +256,20 @@ describe('Circuit v2 - hop protocol', function () {
         reservationStore,
         circuit
       })
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
     })
 
     it('should failed to connect - acl denied', async function () {
+      const pbstr = pbStream(stream)
       const acl = {
         allowConnect: async () => await Promise.resolve(Status.PERMISSION_DENIED as AclStatus),
         allowReserve: async () => await Promise.resolve(false)
       }
       await handleHopProtocol({
         connection: conn,
-        streamHandler,
+        pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -276,7 +283,7 @@ describe('Circuit v2 - hop protocol', function () {
         connectionManager: components.connectionManager,
         acl
       })
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.status).to.be.equal(Status.PERMISSION_DENIED)
     })
@@ -284,9 +291,10 @@ describe('Circuit v2 - hop protocol', function () {
     it('should fail to connect - no reservation', async function () {
       const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
       hasReservationStub.resolves(false)
+      const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        streamHandler,
+        pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -299,7 +307,7 @@ describe('Circuit v2 - hop protocol', function () {
         reservationStore,
         connectionManager: components.connectionManager
       })
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.status).to.be.equal(Status.NO_RESERVATION)
     })
@@ -309,9 +317,10 @@ describe('Circuit v2 - hop protocol', function () {
       hasReservationStub.resolves(true)
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([])
+      const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        streamHandler,
+        pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -324,7 +333,7 @@ describe('Circuit v2 - hop protocol', function () {
         reservationStore,
         connectionManager: components.connectionManager
       })
-      const response = HopMessage.decode(await streamHandler.read())
+      const response = await pbstr.pb(HopMessage).read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.status).to.be.equal(Status.NO_RESERVATION)
       expect(stub.calledOnce).to.be.true()

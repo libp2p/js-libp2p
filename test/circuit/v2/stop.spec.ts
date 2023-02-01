@@ -1,5 +1,4 @@
 import { pair } from 'it-pair'
-import { StreamHandlerV2 } from './../../../src/circuit/v2/stream-handler.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createPeerIds } from '../../utils/creators/peer.js'
@@ -8,44 +7,44 @@ import { Status, StopMessage } from '../../../src/circuit/v2/pb/index.js'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
+import {pbStream, ProtobufStream} from 'it-pb-stream'
 
 /* eslint-env mocha */
 
 describe('Circuit v2 - stop protocol', function () {
-  let srcPeer: PeerId, relayPeer: PeerId, conn: Connection, streamHandler: StreamHandlerV2
+  let srcPeer: PeerId, relayPeer: PeerId, conn: Connection, pbstr: ProtobufStream
 
   beforeEach(async () => {
     [srcPeer, relayPeer] = await createPeerIds(2)
-    conn = await mockConnection(mockMultiaddrConnection(pair<Uint8Array>(), relayPeer))
-    streamHandler = new StreamHandlerV2({ stream: mockStream(pair<any>()) })
+    conn = mockConnection(mockMultiaddrConnection(pair<Uint8Array>(), relayPeer))
+    pbstr = pbStream(mockStream(pair<any>()))
   })
 
   this.afterEach(async function () {
-    streamHandler.close()
     await conn.close()
   })
 
   it('handle stop - success', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } }, streamHandler })
-    const response = StopMessage.decode(await streamHandler.read())
+    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } }, pbstr })
+    const response = await pbstr.pb(StopMessage).read()
     expect(response.status).to.be.equal(Status.OK)
   })
 
   it('handle stop error - invalid request - wrong type', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.STATUS, peer: { id: srcPeer.toBytes(), addrs: [] } }, streamHandler })
-    const response = StopMessage.decode(await streamHandler.read())
+    await handleStop({ connection: conn, request: { type: StopMessage.Type.STATUS, peer: { id: srcPeer.toBytes(), addrs: [] } }, pbstr })
+    const response = await pbstr.pb(StopMessage).read()
     expect(response.status).to.be.equal(Status.UNEXPECTED_MESSAGE)
   })
 
   it('handle stop error - invalid request - missing peer', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT }, streamHandler })
-    const response = StopMessage.decode(await streamHandler.read())
+    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT }, pbstr })
+    const response = await pbstr.pb(StopMessage).read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - invalid request - invalid peer addr', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [new Uint8Array(32)] } }, streamHandler })
-    const response = StopMessage.decode(await streamHandler.read())
+    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [new Uint8Array(32)] } }, pbstr })
+    const response = await pbstr.pb(StopMessage).read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
@@ -53,16 +52,13 @@ describe('Circuit v2 - stop protocol', function () {
     const streamStub = sinon.stub(conn, 'newStream')
     streamStub.resolves(mockStream(pair<any>()))
     await stop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } } })
-    streamHandler.write(StopMessage.encode({
-      type: StopMessage.Type.STATUS,
-      status: Status.OK
-    }))
+    pbstr.pb(StopMessage).write({ type: StopMessage.Type.STATUS, status: Status.OK })
   })
 
   it('send stop - should not fall apart with invalid status response', async function () {
     const streamStub = sinon.stub(conn, 'newStream')
     streamStub.resolves(mockStream(pair<any>()))
     await stop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } } })
-    streamHandler.write(new Uint8Array(10))
+    pbstr.write(new Uint8Array(10))
   })
 })

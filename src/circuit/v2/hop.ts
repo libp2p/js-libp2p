@@ -1,25 +1,28 @@
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { RecordEnvelope } from '@libp2p/peer-record'
-import { logger } from '@libp2p/logger'
-import { pipe } from 'it-pipe'
-import type { Connection } from '@libp2p/interface-connection'
-import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
-import { StreamHandlerV2 } from './stream-handler.js'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { multiaddr } from '@multiformats/multiaddr'
-import type { Acl, ReservationStore } from './interfaces.js'
-import { RELAY_V2_HOP_CODEC } from '../multicodec.js'
-import { stop } from './stop.js'
-import { ReservationVoucherRecord } from './reservation-voucher.js'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type {PeerId} from '@libp2p/interface-peer-id'
+import {RecordEnvelope} from '@libp2p/peer-record'
+import {logger} from '@libp2p/logger'
+import {pipe} from 'it-pipe'
+import type {Connection} from '@libp2p/interface-connection'
+import {HopMessage, Limit, Reservation, Status, StopMessage} from './pb/index.js'
+import type {Multiaddr} from '@multiformats/multiaddr'
+import {multiaddr} from '@multiformats/multiaddr'
+import type {Acl, ReservationStore} from './interfaces.js'
+import {RELAY_V2_HOP_CODEC} from '../multicodec.js'
+import {stop} from './stop.js'
+import {ReservationVoucherRecord} from './reservation-voucher.js'
+import {peerIdFromBytes} from '@libp2p/peer-id'
+import type {ConnectionManager} from '@libp2p/interface-connection-manager'
+import type {ProtobufStream} from 'it-pb-stream'
+import {pbStream} from 'it-pb-stream'
+import type {Uint8ArrayList} from 'uint8arraylist'
+import type {Duplex} from 'it-stream-types'
 
 const log = logger('libp2p:circuit:v2:hop')
 
 export interface HopProtocolOptions {
   connection: Connection
   request: HopMessage
-  streamHandler: StreamHandlerV2
+  pbstr: ProtobufStream
   relayPeer: PeerId
   relayAddrs: Multiaddr[]
   limit?: Limit
@@ -28,31 +31,32 @@ export interface HopProtocolOptions {
   connectionManager: ConnectionManager
 }
 
-export async function handleHopProtocol (options: HopProtocolOptions) {
-  switch (options.request.type) {
+export async function handleHopProtocol(options: HopProtocolOptions) {
+  const {pbstr, request} = options;
+  log("received hop message")
+  switch (request.type) {
     case HopMessage.Type.RESERVE: await handleReserve(options); break
     case HopMessage.Type.CONNECT: await handleConnect(options); break
     default: {
       log.error('invalid hop request type %s via peer %s', options.request.type, options.connection.remotePeer)
-      writeErrorResponse(options.streamHandler, Status.MALFORMED_MESSAGE)
-      options.streamHandler.close()
+      pbstr.pb(HopMessage).write({type: HopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE})
     }
   }
 }
 
-export async function reserve (connection: Connection) {
+export async function reserve(connection: Connection) {
   log('requesting reservation from %s', connection.remotePeer)
   const stream = await connection.newStream([RELAY_V2_HOP_CODEC])
-  const streamHandler = new StreamHandlerV2({ stream })
-  const buf = HopMessage.encode({ type: HopMessage.Type.RESERVE })
-  streamHandler.write(buf)
+  const pbstr = pbStream(stream)
+  const hopstr = pbstr.pb(HopMessage)
+  hopstr.write({type: HopMessage.Type.RESERVE})
 
   let response: HopMessage
   try {
-    response = HopMessage.decode(await streamHandler.read())
+    response = await hopstr.read()
   } catch (e: any) {
     log.error('error passing reserve message response from %s because', connection.remotePeer, e.message)
-    streamHandler.close()
+    stream.close()
     throw e
   }
 
@@ -64,35 +68,32 @@ export async function reserve (connection: Connection) {
   throw new Error(errMsg)
 }
 
-async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs, limit, acl, reservationStore }: HopProtocolOptions) {
+async function handleReserve({connection, pbstr, relayPeer, relayAddrs, limit, acl, reservationStore}: HopProtocolOptions) {
+  const hopstr = pbstr.pb(HopMessage)
   log('hop reserve request from %s', connection.remotePeer)
 
   // TODO: prevent reservation over relay address
 
   if ((await acl?.allowReserve?.(connection.remotePeer, connection.remoteAddr)) === false) {
     log.error('acl denied reservation to %s', connection.remotePeer)
-    writeErrorResponse(streamHandler, Status.PERMISSION_DENIED)
-    streamHandler.close()
+    hopstr.write({type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED})
     return
   }
 
   const result = await reservationStore.reserve(connection.remotePeer, connection.remoteAddr)
 
   if (result.status !== Status.OK) {
-    writeErrorResponse(streamHandler, result.status)
-    streamHandler.close()
+    hopstr.write({type: HopMessage.Type.STATUS, status: result.status})
     return
   }
 
   try {
-    writeResponse(
-      streamHandler,
-      {
-        type: HopMessage.Type.STATUS,
-        status: Status.OK,
-        reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, BigInt(result.expire ?? 0)),
-        limit
-      })
+    hopstr.write({
+      type: HopMessage.Type.STATUS,
+      status: Status.OK,
+      reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, BigInt(result.expire ?? 0)),
+      limit
+    })
     log('sent confirmation response to %s', connection.remotePeer)
   } catch (err) {
     log.error('failed to send confirmation response to %s', connection.remotePeer)
@@ -102,8 +103,10 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
   // TODO: how to ensure connection manager doesn't close reserved relay conn
 }
 
-async function handleConnect (options: HopProtocolOptions) {
-  const { connection, streamHandler, request, reservationStore, connectionManager, acl } = options
+async function handleConnect(options: HopProtocolOptions) {
+  const {connection, pbstr, request, reservationStore, connectionManager, acl} = options
+  const hopstr = pbstr.pb(HopMessage)
+
   log('hop connect request from %s', connection.remotePeer)
 
   let dstPeer: PeerId
@@ -116,7 +119,7 @@ async function handleConnect (options: HopProtocolOptions) {
     dstPeer = peerIdFromBytes(request.peer.id)
   } catch (err) {
     log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
-    writeErrorResponse(streamHandler, Status.MALFORMED_MESSAGE)
+    hopstr.write({type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE})
     return
   }
 
@@ -124,21 +127,21 @@ async function handleConnect (options: HopProtocolOptions) {
     const status = await acl.allowConnect(connection.remotePeer, connection.remoteAddr, dstPeer)
     if (status !== Status.OK) {
       log.error('hop connect denied for %s with status %s', connection.remotePeer, status)
-      writeErrorResponse(streamHandler, status)
+      hopstr.write({type: HopMessage.Type.STATUS, status: status})
       return
     }
   }
 
   if (!await reservationStore.hasReservation(dstPeer)) {
     log.error('hop connect denied for %s with status %s', connection.remotePeer, Status.NO_RESERVATION)
-    writeErrorResponse(streamHandler, Status.NO_RESERVATION)
+    hopstr.write({type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION})
     return
   }
 
   const connections = connectionManager.getConnections(dstPeer)
   if (connections.length === 0) {
     log('hop connect denied for %s as there is no destination connection', connection.remotePeer)
-    writeErrorResponse(streamHandler, Status.NO_RESERVATION)
+    hopstr.write({type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION})
     return
   }
   const destinationConnection = connections[0]
@@ -157,23 +160,35 @@ async function handleConnect (options: HopProtocolOptions) {
 
   if (destinationStream == null) {
     log.error('failed to open stream to destination peer %s', destinationConnection?.remotePeer)
-    writeErrorResponse(streamHandler, Status.CONNECTION_FAILED)
+    hopstr.write({type: HopMessage.Type.STATUS, status: Status.CONNECTION_FAILED})
     return
   }
 
-  writeResponse(streamHandler, { type: HopMessage.Type.STATUS, status: Status.OK })
+  hopstr.write({type: HopMessage.Type.STATUS, status: Status.OK})
+  const sourceStream = pbstr.unwrap()
 
-  const sourceStream = streamHandler.rest()
   log('connection to destination established, short circuiting streams...')
   // Short circuit the two streams to create the relayed connection
   return await pipe(
-    sourceStream,
-    destinationStream,
-    sourceStream
+    sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>,
+    // adapt uint8arraylist to uint8array
+    // async function * (src) {
+    //   for await(const buf of src) {
+    //     yield buf.subarray()
+    //   }
+    // },
+    destinationStream as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>,
+    // adapt uint8arraylist to uint8array
+    // async function * (src) {
+    //   for await(const buf of src) {
+    //     yield buf.subarray()
+    //   }
+    // },
+    sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>,
   )
 }
 
-async function makeReservation (
+async function makeReservation(
   relayAddrs: Multiaddr[],
   relayPeerId: PeerId,
   remotePeer: PeerId,
@@ -196,24 +211,4 @@ async function makeReservation (
     expire,
     voucher: voucher.marshal()
   }
-}
-
-/**
- * Write an error response and closes stream
- *
- */
-function writeErrorResponse (streamHandler: StreamHandlerV2, status: Status) {
-  writeResponse(streamHandler, {
-    type: HopMessage.Type.STATUS,
-    status
-  })
-  streamHandler.close()
-}
-
-/**
- * Write a response
- *
- */
-function writeResponse (streamHandler: StreamHandlerV2, msg: HopMessage) {
-  streamHandler.write(HopMessage.encode(msg))
 }

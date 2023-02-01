@@ -144,6 +144,7 @@
     "it-map": "^2.0.0",
     "it-merge": "^2.0.0",
     "it-pair": "^2.0.2",
+    "it-pb-stream": "^2.0.3",
     "it-pipe": "^2.0.3",
     "it-sort": "^2.0.0",
     "it-stream-types": "^1.0.4",
