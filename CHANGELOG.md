@@ -1,3 +1,11 @@
+## [6.1.2](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.1...v6.1.2) (2023-02-01)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-mocks from 8.0.5 to 9.1.1 ([#246](https://github.com/libp2p/js-libp2p-tcp/issues/246)) ([6f01bd1](https://github.com/libp2p/js-libp2p-tcp/commit/6f01bd1859eca7f5eccfb79b459424dd25e210a2))
+* **dev:** bump aegir from 37.12.1 to 38.1.0 ([#243](https://github.com/libp2p/js-libp2p-tcp/issues/243)) ([e7eea28](https://github.com/libp2p/js-libp2p-tcp/commit/e7eea28df2c315a62c8281955bd5cb3a6c3816d0))
+
 ## [6.1.1](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.0...v6.1.1) (2023-01-26)
 
 
