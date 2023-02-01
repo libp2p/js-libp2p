@@ -10,7 +10,7 @@ export interface ReservationStore {
   hasReservation: (dst: PeerId) => Promise<boolean>
 }
 
-type AclStatus = Status.OK | Status.RESOURCE_LIMIT_EXCEEDED | Status.PERMISSION_DENIED
+export type AclStatus = Status.OK | Status.RESOURCE_LIMIT_EXCEEDED | Status.PERMISSION_DENIED
 
 export interface Acl {
   allowReserve: (peer: PeerId, addr: Multiaddr) => Promise<boolean>

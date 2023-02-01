@@ -10,7 +10,6 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import { createNode } from '../utils/creators/peer.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
 import all from 'it-all'
-// import delay from 'delay'
 
 /* eslint-env mocha */
 
@@ -70,8 +69,10 @@ describe('Dialing (via relay, TCP)', () => {
 
     await dstLibp2p.dial(relayAddr.encapsulate(`/p2p/${relayIdString}`))
     // make sure we have reservation before trying to dial. Previously relay initiated connection.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await pEvent(dstLibp2p.circuitService!, 'relay:reservation')
+    if (dstLibp2p.circuitService == null) {
+      throw new Error('remote libp2p has no circuit service')
+    }
+    await pEvent(dstLibp2p.circuitService, 'relay:reservation')
     const dialAddr = relayAddr
       .encapsulate(`/p2p/${relayIdString}`)
       .encapsulate(`/p2p-circuit/p2p/${dstLibp2p.peerId.toString()}`)
@@ -161,7 +162,7 @@ describe('Dialing (via relay, TCP)', () => {
     const connections = relayLibp2p.getConnections(dstLibp2p.peerId)
     // this should fail as the destination peer has HOP disabled
     await expect(connections[0].newStream(RELAY_V2_HOP_CODEC))
-      .to.be.rejected()
+      .to.be.rejectedWith(/protocol selection failed/)
     // empty messages are encoded as { type: RESERVE } for the hop codec,
     // so we make the message invalid by adding a zeroed byte
 
@@ -171,7 +172,6 @@ describe('Dialing (via relay, TCP)', () => {
     expect(dstToRelayConn).to.have.nested.property('[0].stat.status', 'OPEN')
   })
 
-  /* eslint-disable-next-line no-warning-comments */
   // TODO(ckousik): This test seems to fail on windows and macos on CI with a
   // stream reset in mplex.
   it.skip('should time out when establishing a relay connection', async () => {
@@ -196,7 +196,6 @@ describe('Dialing (via relay, TCP)', () => {
     // multistream select negotiates the protocol
     const stream = await connection.newStream([RELAY_V2_HOP_CODEC])
 
-    /* eslint-disable-next-line no-warning-comments */
     // TODO(ckousik): does this need to be awaited?
     // await stream.sink(async function * () {
     //   // delay for longer than the timeout

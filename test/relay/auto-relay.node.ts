@@ -17,13 +17,8 @@ import type { ContentRouting } from '@libp2p/interface-content-routing'
 async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions<boolean>) {
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
-    for (const addr of node.getMultiaddrs()) {
-      if (addr.toString().includes(`${relay.peerId.toString()}/p2p-circuit`)) {
-        return true
-      }
-    }
-
-    return false
+    const search = `${relay.peerId.toString()}/p2p-circuit`
+    return node.getMultiaddrs().find(addr => addr.toString().includes(search)) !== undefined
   }, opts)
 }
 
@@ -97,7 +92,7 @@ describe('auto-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => await libp2p.stop()))
+      await Promise.all([libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => await libp2p.stop()))
     })
 
     it('should ask if node supports hop on protocol change (relay protocol) and add to listen multiaddrs', async () => {

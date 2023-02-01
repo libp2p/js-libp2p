@@ -19,7 +19,7 @@ const log = logger('libp2p:circuit:relay')
 export interface RelayInit {
   addressSorter?: AddressSorter
   maxListeners?: number
-  onError?: (error: Error, msg?: string) => void
+  onError?: (error: Error) => void
   hop: HopConfig
   advertise: RelayAdvertiseConfig
 }
@@ -79,7 +79,6 @@ export class Relay implements Startable {
     } catch (err: any) {
       if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
         log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)
-        // Stop the advertise
         await this.stop()
       } else {
         log.error(err)

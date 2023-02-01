@@ -305,7 +305,6 @@ export class Circuit implements Transport, Startable {
         throw createError(new Error(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`), codes.ERR_HOP_REQUEST_FAILED)
       }
 
-      /* eslint-disable-next-line no-warning-comments */
       // TODO: do something with limit and transient connection
 
       let localAddr = relayAddr

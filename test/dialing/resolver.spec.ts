@@ -118,8 +118,10 @@ describe('Dialing (resolvable addresses)', () => {
     resolver.onCall(0).returns(Promise.resolve(getDnsRelayedAddrStub(remoteId)))
 
     // create reservation on relay
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await pEvent(remoteLibp2p.circuitService!, 'relay:reservation')
+    if (remoteLibp2p.circuitService == null) {
+      throw new Error('remote libp2p has no circuit service')
+    }
+    await pEvent(remoteLibp2p.circuitService, 'relay:reservation')
 
     // Dial with address resolve
     const connection = await libp2p.dial(dialAddr)
@@ -143,8 +145,10 @@ describe('Dialing (resolvable addresses)', () => {
     await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
 
     // create reservation on relay
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await pEvent(remoteLibp2p.circuitService!, 'relay:reservation')
+    if (remoteLibp2p.circuitService == null) {
+      throw new Error('remote libp2p has no circuit service')
+    }
+    await pEvent(remoteLibp2p.circuitService, 'relay:reservation')
 
     // Transport spy
     const transport = getTransport(libp2p, Circuit.prototype[Symbol.toStringTag])
@@ -213,8 +217,10 @@ describe('Dialing (resolvable addresses)', () => {
     await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
 
     // create reservation on relay
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await pEvent(remoteLibp2p.circuitService!, 'relay:reservation')
+    if (remoteLibp2p.circuitService == null) {
+      throw new Error('remote libp2p has no circuit service')
+    }
+    await pEvent(remoteLibp2p.circuitService, 'relay:reservation')
 
     // Transport spy
     const transport = getTransport(libp2p, Circuit.prototype[Symbol.toStringTag])

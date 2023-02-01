@@ -67,7 +67,6 @@ export async function reserve (connection: Connection) {
 async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs, limit, acl, reservationStore }: HopProtocolOptions) {
   log('hop reserve request from %s', connection.remotePeer)
 
-  /* eslint-disable-next-line no-warning-comments */
   // TODO: prevent reservation over relay address
 
   if ((await acl?.allowReserve?.(connection.remotePeer, connection.remoteAddr)) === false) {
@@ -100,41 +99,24 @@ async function handleReserve ({ connection, streamHandler, relayPeer, relayAddrs
     await reservationStore.removeReservation(connection.remotePeer)
   }
 
-  /* eslint-disable-next-line no-warning-comments */
   // TODO: how to ensure connection manager doesn't close reserved relay conn
-}
-
-const validateHopConnect = (request: HopMessage): Status => {
-  if (request.peer == null) {
-    log.error('no peer info in hop connect request')
-    return Status.MALFORMED_MESSAGE
-  }
-  try {
-    request.peer.addrs.forEach(multiaddr)
-  } catch (_err) {
-    return Status.MALFORMED_MESSAGE
-  }
-  return Status.OK
 }
 
 async function handleConnect (options: HopProtocolOptions) {
   const { connection, streamHandler, request, reservationStore, connectionManager, acl } = options
   log('hop connect request from %s', connection.remotePeer)
-  // Validate the HOP connect request has the required input
-  const status = validateHopConnect(request)
-  if (status !== Status.OK) {
-    log.error('invalid hop connect request via peer %s', connection.remotePeer)
-    writeErrorResponse(streamHandler, status)
-    return
-  }
 
-  /* eslint-disable @typescript-eslint/no-non-null-assertion */
   let dstPeer: PeerId
   try {
-    dstPeer = peerIdFromBytes(request.peer!.id)
+    if (request.peer == null) {
+      log.error('no peer info in hop connect request')
+      throw new Error('no peer info in request')
+    }
+    request.peer.addrs.forEach(multiaddr)
+    dstPeer = peerIdFromBytes(request.peer.id)
   } catch (err) {
-    log.error('invalid hop connect request via peer %s', connection.remotePeer)
-    writeErrorResponse(streamHandler, status)
+    log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
+    writeErrorResponse(streamHandler, Status.MALFORMED_MESSAGE)
     return
   }
 

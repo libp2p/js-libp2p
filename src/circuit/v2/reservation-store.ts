@@ -3,6 +3,7 @@ import type { ReservationStore as IReservationStore, ReservationStatus } from '.
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
+import { PeerMap } from '@libp2p/peer-collections'
 
 interface Reservation {
   addr: Multiaddr
@@ -10,7 +11,7 @@ interface Reservation {
 }
 
 export class ReservationStore implements IReservationStore, Startable {
-  private readonly reservations = new Map<string, Reservation>()
+  private readonly reservations = new PeerMap<Reservation>()
   private _started = false;
   private interval: any
 
@@ -48,20 +49,20 @@ export class ReservationStore implements IReservationStore, Startable {
   }
 
   async reserve (peer: PeerId, addr: Multiaddr): Promise<{ status: ReservationStatus, expire?: number }> {
-    if (this.reservations.size >= this.limit && !this.reservations.has(peer.toString())) {
+    if (this.reservations.size >= this.limit && !this.reservations.has(peer)) {
       return { status: Status.RESERVATION_REFUSED, expire: undefined }
     }
     const expire = new Date()
     expire.setHours(expire.getHours() + 12)
-    this.reservations.set(peer.toString(), { addr, expire })
+    this.reservations.set(peer, { addr, expire })
     return { status: Status.OK, expire: expire.getTime() }
   }
 
   async removeReservation (peer: PeerId) {
-    this.reservations.delete(peer.toString())
+    this.reservations.delete(peer)
   }
 
   async hasReservation (dst: PeerId) {
-    return this.reservations.has(dst.toString())
+    return this.reservations.has(dst)
   }
 }
