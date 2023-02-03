@@ -5,7 +5,7 @@ name: test & maybe release
 on:
   push:
     branches:
-      - master # with #262 - ${{{ github.default_branch }}}
+      - master
   pull_request:
 
 jobs:
@@ -127,7 +127,7 @@ jobs:
   release:
     needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-electron-main, test-electron-renderer]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' # with #262 - 'refs/heads/${{{ github.default_branch }}}'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v3
         with:
