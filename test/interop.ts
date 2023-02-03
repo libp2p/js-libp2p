@@ -97,7 +97,7 @@ async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
   return {
     client: createClient(apiAddr),
     stop: async () => {
-      await proc.kill()
+      proc.kill('SIGKILL')
     }
   }
 }
@@ -169,7 +169,7 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
 
   const node = await createLibp2p(opts)
 
-  const server = await createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
+  const server = createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
   await server.start()
 
   return {
@@ -197,5 +197,4 @@ async function main() {
 
 main().catch(err => {
   console.error(err) // eslint-disable-line no-console
-  process.exit(1)
 })
