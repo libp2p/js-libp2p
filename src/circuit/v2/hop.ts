@@ -16,6 +16,7 @@ import type { ProtobufStream } from 'it-pb-stream'
 import { pbStream } from 'it-pb-stream'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Duplex } from 'it-stream-types'
+import { CIRCUIT_PROTO_CODE } from '../constants.js'
 
 const log = logger('libp2p:circuit:v2:hop')
 
@@ -68,11 +69,17 @@ export async function reserve (connection: Connection) {
   throw new Error(errMsg)
 }
 
+const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
+
 async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit, acl, reservationStore }: HopProtocolOptions) {
   const hopstr = pbstr.pb(HopMessage)
   log('hop reserve request from %s', connection.remotePeer)
 
-  // TODO: prevent reservation over relay address
+  if (isRelayAddr(connection.remoteAddr)) {
+    log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
+    hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+    return
+  }
 
   if ((await acl?.allowReserve?.(connection.remotePeer, connection.remoteAddr)) === false) {
     log.error('acl denied reservation to %s', connection.remotePeer)

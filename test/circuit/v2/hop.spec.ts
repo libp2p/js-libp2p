@@ -35,6 +35,7 @@ describe('Circuit v2 - hop protocol', function () {
     })
 
     this.afterEach(async function () {
+      sinon.restore()
       await conn.close()
     })
 
@@ -79,6 +80,29 @@ describe('Circuit v2 - hop protocol', function () {
       expect(response.reservation?.expire).to.be.equal(BigInt(expire))
       expect(response.reservation?.voucher).to.not.be.undefined()
       expect(response.reservation?.addrs?.length).to.be.greaterThan(0)
+    })
+
+    it('should fail to reserve slot - relayed connection', async function () {
+      const reserveStub = sinon.stub(reservationStore, 'reserve')
+      const connStub = sinon.stub(conn, 'remoteAddr')
+      connStub.value(multiaddr('/ip4/127.0.0.1/tcp/1234/p2p-circuit'))
+      const pbstr = pbStream(stream)
+      await handleHopProtocol({
+        request: {
+          type: HopMessage.Type.RESERVE
+        },
+        connection: conn,
+        pbstr,
+        relayPeer,
+        connectionManager: sinon.stub() as any,
+        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
+        reservationStore
+      })
+      expect(reserveStub.notCalled).to.be.true()
+      const response = await pbstr.pb(HopMessage).read()
+      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
+      expect(response.limit).to.be.undefined()
+      expect(response.status).to.be.equal(Status.PERMISSION_DENIED)
     })
 
     it('should fail to reserve slot - acl denied', async function () {
