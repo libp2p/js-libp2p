@@ -84,7 +84,7 @@ export class Circuit implements Transport, Startable {
 
     // only handle hop if enabled
     if (this._init.hop.enabled === true) {
-      await this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
+      void this.components.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
         void this.onHop(data).catch(err => {
           log.error(err)
         })
@@ -94,7 +94,7 @@ export class Circuit implements Transport, Startable {
         })
     }
 
-    await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
+    void this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this.onStop(data).catch(err => {
         log.error(err)
       })
@@ -104,7 +104,7 @@ export class Circuit implements Transport, Startable {
       })
 
     if (this._init.hop.enabled === true) {
-      this.reservationStore.start()
+      void this.reservationStore.start()
     }
   }
 
