@@ -95,7 +95,8 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp()],
     streamMuxers: [],
-    connectionEncryption: [noise()]
+    connectionEncryption: [noise()],
+    relay: { enabled: false },
   }
 
   if (options.muxer === 'mplex') {
