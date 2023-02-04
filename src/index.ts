@@ -185,11 +185,12 @@ export type Libp2pOptions = RecursivePartial<Libp2pInit> & { start?: boolean }
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'
  * import { noise } from '@chainsafe/libp2p-noise'
+ * import { yamux } from '@chainsafe/libp2p-yamux'
  *
  * // specify options
  * const options = {
  *   transports: [tcp()],
- *   streamMuxers: [mplex()],
+ *   streamMuxers: [mplex(), yamux()],
  *   connectionEncryption: [noise()]
  * }
  *

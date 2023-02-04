@@ -3,6 +3,7 @@ import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
 import { createFromJSON } from '@libp2p/peer-id-factory'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
@@ -31,7 +32,8 @@ export default {
           webSockets()
         ],
         streamMuxers: [
-          mplex()
+          mplex(),
+          yamux()
         ],
         connectionEncryption: [
           noise(),

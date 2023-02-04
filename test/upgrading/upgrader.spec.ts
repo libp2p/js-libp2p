@@ -33,6 +33,7 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import { DefaultComponents } from '../../src/components.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -42,10 +43,12 @@ const addrs = [
 describe('Upgrader', () => {
   let localUpgrader: Upgrader
   let localMuxerFactory: StreamMuxerFactory
+  let localYamuxerFactory: StreamMuxerFactory
   let localConnectionEncrypter: ConnectionEncrypter
   let localConnectionProtector: StubbedInstance<ConnectionProtector>
   let remoteUpgrader: Upgrader
   let remoteMuxerFactory: StreamMuxerFactory
+  let remotreYamuxerFactory: StreamMuxerFactory
   let remoteConnectionEncrypter: ConnectionEncrypter
   let remoteConnectionProtector: StubbedInstance<ConnectionProtector>
   let localPeer: PeerId
@@ -75,13 +78,15 @@ describe('Upgrader', () => {
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
     localMuxerFactory = mplex()()
+    localYamuxerFactory = yamux()()
     localConnectionEncrypter = plaintext()()
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
         localConnectionEncrypter
       ],
       muxers: [
-        localMuxerFactory
+        localMuxerFactory,
+        localYamuxerFactory
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -99,13 +104,15 @@ describe('Upgrader', () => {
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
     remoteMuxerFactory = mplex()()
+    remotreYamuxerFactory = yamux()()
     remoteConnectionEncrypter = plaintext()()
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
         remoteConnectionEncrypter
       ],
       muxers: [
-        remoteMuxerFactory
+        remoteMuxerFactory,
+        remotreYamuxerFactory
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -305,7 +312,8 @@ describe('Upgrader', () => {
         plaintext()()
       ],
       muxers: [
-        mplex()()
+        mplex()(),
+        yamux()()
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -565,7 +573,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -587,7 +596,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -603,7 +613,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -634,7 +645,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -648,7 +660,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -693,7 +706,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -707,7 +721,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -755,7 +770,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -769,7 +785,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()

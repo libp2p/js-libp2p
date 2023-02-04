@@ -8,6 +8,7 @@ import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { codes } from '../../src/errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 async function createNode (peerId: PeerId) {
   return await createLibp2pNode({
@@ -21,7 +22,8 @@ async function createNode (peerId: PeerId) {
       tcp()
     ],
     streamMuxers: [
-      mplex()
+      mplex(),
+      yamux()
     ],
     connectionEncryption: [
       plaintext()

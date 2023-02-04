@@ -4,6 +4,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { pipe } from 'it-pipe'
@@ -18,7 +19,7 @@ const createNode = async () => {
     },
     transports: [tcp()],
     connectionEncryption: [noise()],
-    streamMuxers: [mplex()]
+    streamMuxers: [mplex(), yamux()]
   })
 
   return node
@@ -29,7 +30,7 @@ function printAddrs (node, number) {
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
 
-;(async () => {
+(async () => {
   const [node1, node2] = await Promise.all([
     createNode(),
     createNode()
@@ -58,4 +59,4 @@ function printAddrs (node, number) {
     ['Hello', ' ', 'p2p', ' ', 'world', '!'].map(str => uint8ArrayFromString(str)),
     stream
   )
-})();
+})()

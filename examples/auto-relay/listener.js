@@ -3,6 +3,7 @@ import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
 import { multiaddr } from '@multiformats/multiaddr'
+import { yamux } from '@chainsafe/libp2p-yamux/dist/src'
 
 async function main () {
   const relayAddr = process.argv[2]
@@ -18,7 +19,8 @@ async function main () {
       noise()
     ],
     streamMuxers: [
-      mplex()
+      mplex(),
+      yamux()
     ],
     relay: {
       enabled: true,

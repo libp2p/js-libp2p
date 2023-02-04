@@ -243,13 +243,14 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { mdns } from '@libp2p/mdns'
 import { kadDHT } from '@libp2p/kad-dht'
 import { gossipsub } from 'libp2p-gossipsub'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   transports: [
     tcp(),
     webSockets()
   ],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(),yamux()],
   connectionEncryption: [noise()],
   peerDiscovery: [MulticastDNS],
   dht: kadDHT(),
@@ -263,13 +264,14 @@ const node = await createLibp2p({
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mdns } from '@libp2p/mdns'
 import { bootstrap } from '@libp2p/bootstrap'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(),yamux()],
   connectionEncryption: [noise()],
   peerDiscovery: [
     mdns({
@@ -299,6 +301,7 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { webRTCStar } from '@libp2p/webrtc-star'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const webRtc = webRTCStar()
@@ -312,7 +315,8 @@ const node = await createLibp2p({
     webRtc.discovery
   ],
   streamMuxers: [
-    mplex()
+    mplex(),
+    yamux()
   ],
   connectionEncryption: [
     noise()
@@ -326,6 +330,7 @@ const node = await createLibp2p({
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
 import { SignaturePolicy } from '@libp2p/interface-pubsub'
@@ -335,7 +340,8 @@ const node = await createLibp2p({
       tcp()
     ],
     streamMuxers: [
-      mplex()
+      mplex(),
+      yamux()
     ],
     connectionEncryption: [
       noise()
@@ -380,6 +386,7 @@ const node = await createLibp2p({
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
@@ -402,7 +409,7 @@ const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClie
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()],
   contentRouting: [
     delegatedContentRouting
@@ -427,11 +434,12 @@ const node = await createLibp2p({
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()],
   relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
     enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
@@ -454,11 +462,12 @@ const node = await createLibp2p({
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()]
   relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
     enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
@@ -474,15 +483,16 @@ const node = await createLibp2p({
 
 Libp2p allows you to setup a secure keychain to manage your keys. The keychain configuration object should have the following properties:
 
-| Name | Type | Description |
-|------|------|-------------|
-| pass | `string` | Passphrase to use in the keychain (minimum of 20 characters). |
+| Name      | Type     | Description                                                                            |
+| --------- | -------- | -------------------------------------------------------------------------------------- |
+| pass      | `string` | Passphrase to use in the keychain (minimum of 20 characters).                          |
 | datastore | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) |
 
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { LevelDatastore } from 'datastore-level'
 
@@ -491,7 +501,7 @@ await datastore.open()
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()],
   keychain: {
     pass: 'notsafepassword123456789',
@@ -504,15 +514,15 @@ const node = await createLibp2p({
 
 Dialing in libp2p can be configured to limit the rate of dialing, and how long dials are allowed to take. The dialer configuration object should have the following properties:
 
-| Name | Type | Description |
-|------|------|-------------|
-| maxParallelDials | `number` | How many multiaddrs we can dial in parallel. |
-| maxAddrsToDial | `number` | How many multiaddrs is the dial allowed to dial for a single peer. |
-| maxDialsPerPeer | `number` | How many multiaddrs we can dial per peer, in parallel. |
-| dialTimeout | `number` | Second dial timeout per peer in ms. |
-| resolvers | `object` | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs |
-| addressSorter | `(Array<Address>) => Array<Address>` | Sort the known addresses of a peer before trying to dial. |
-| startupReconnectTimeout | `number` | When a node is restarted, we try to connect to any peers marked with the `keep-alive` tag up until to this timeout in ms is reached (default: 60000) |
+| Name                    | Type                                 | Description                                                                                                                                          |
+| ----------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| maxParallelDials        | `number`                             | How many multiaddrs we can dial in parallel.                                                                                                         |
+| maxAddrsToDial          | `number`                             | How many multiaddrs is the dial allowed to dial for a single peer.                                                                                   |
+| maxDialsPerPeer         | `number`                             | How many multiaddrs we can dial per peer, in parallel.                                                                                               |
+| dialTimeout             | `number`                             | Second dial timeout per peer in ms.                                                                                                                  |
+| resolvers               | `object`                             | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs                           |
+| addressSorter           | `(Array<Address>) => Array<Address>` | Sort the known addresses of a peer before trying to dial.                                                                                            |
+| startupReconnectTimeout | `number`                             | When a node is restarted, we try to connect to any peers marked with the `keep-alive` tag up until to this timeout in ms is reached (default: 60000) |
 
 The below configuration example shows how the dialer should be configured, with the current defaults:
 
@@ -520,6 +530,7 @@ The below configuration example shows how the dialer should be configured, with 
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
@@ -527,7 +538,7 @@ import { publicAddressesFirst } from '@libp2p-utils/address-sort'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()],
   dialer: {
     maxParallelDials: 100,
@@ -549,11 +560,12 @@ The Connection Manager prunes Connections in libp2p whenever certain limits are 
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()],
   connectionManager: {
     maxConnections: Infinity,
@@ -698,12 +710,13 @@ The Transport Manager is responsible for managing the libp2p transports life cyc
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { FaultTolerance } from '@libp2p/interface-transport'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()],
   transportManager: {
     faultTolerance: FaultTolerance.NO_FATAL
@@ -715,13 +728,13 @@ const node = await createLibp2p({
 
 Metrics are disabled in libp2p by default. You can enable and configure them as follows:
 
-| Name | Type | Description |
-|------|------|-------------|
-| enabled | `boolean` | Enabled metrics collection. |
-| computeThrottleMaxQueueSize | `number` | How many messages a stat will queue before processing. |
-| computeThrottleTimeout | `number` | Time in milliseconds a stat will wait, after the last item was added, before processing. |
-| movingAverageIntervals | `Array<number>` | The moving averages that will be computed. |
-| maxOldPeersRetention | `number` | How many disconnected peers we will retain stats for. |
+| Name                        | Type            | Description                                                                              |
+| --------------------------- | --------------- | ---------------------------------------------------------------------------------------- |
+| enabled                     | `boolean`       | Enabled metrics collection.                                                              |
+| computeThrottleMaxQueueSize | `number`        | How many messages a stat will queue before processing.                                   |
+| computeThrottleTimeout      | `number`        | Time in milliseconds a stat will wait, after the last item was added, before processing. |
+| movingAverageIntervals      | `Array<number>` | The moving averages that will be computed.                                               |
+| maxOldPeersRetention        | `number`        | How many disconnected peers we will retain stats for.                                    |
 
 The below configuration example shows how the metrics should be configured. Aside from enabled being `false` by default, the following default configuration options are listed below:
 
@@ -729,11 +742,12 @@ The below configuration example shows how the metrics should be configured. Asid
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()]
   metrics: {
     enabled: true,
@@ -755,10 +769,10 @@ PeerStore persistence is disabled in libp2p by default. You can enable and confi
 
 The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
 
-| Name | Type | Description |
-|------|------|-------------|
-| persistence | `boolean` | Is persistence enabled. |
-| threshold | `number` | Number of dirty peers allowed. |
+| Name        | Type      | Description                    |
+| ----------- | --------- | ------------------------------ |
+| persistence | `boolean` | Is persistence enabled.        |
+| threshold   | `number`  | Number of dirty peers allowed. |
 
 The below configuration example shows how the PeerStore should be configured. Aside from persistence being `false` by default, the following default configuration options are listed below:
 
@@ -766,6 +780,7 @@ The below configuration example shows how the PeerStore should be configured. As
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { LevelDatastore } from 'datastore-level'
 
@@ -775,7 +790,7 @@ await datastore.open() // level database must be ready before node boot
 const node = await createLibp2p({
   datastore, // pass the opened datastore
   transports: [tcp()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   connectionEncryption: [noise()],
   peerStore: {
     persistence: true,
@@ -792,6 +807,7 @@ Some Transports can be passed additional options when they are created. For exam
 import { createLibp2p } from 'libp2p'
 import { webRTCStar } from '@libp2p/webrtc-star'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import wrtc from 'wrtc'
 
@@ -807,7 +823,8 @@ const node = await createLibp2p({
     webRTC.discovery
   ],
   streamMuxers: [
-    mplex()
+    mplex(),
+    yamux()
   ],
   connectionEncryption: [
     noise()
@@ -836,7 +853,8 @@ const node = await createLibp2p({
     webRTC.discovery
   ],
   streamMuxers: [
-    mplex()
+    mplex(),
+    yamux()
   ],
   connectionEncryption: [
     noise()

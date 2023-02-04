@@ -2,6 +2,7 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 async function main () {
   const node = await createLibp2p({
@@ -17,7 +18,8 @@ async function main () {
       noise()
     ],
     streamMuxers: [
-      mplex()
+      mplex(),
+      yamux()
     ],
     relay: {
       enabled: true,
@@ -25,7 +27,7 @@ async function main () {
         enabled: true
       },
       advertise: {
-        enabled: true,
+        enabled: true
       }
     }
   })

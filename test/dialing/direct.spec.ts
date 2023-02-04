@@ -31,6 +31,7 @@ import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
 import { DefaultComponents } from '../../src/components.js'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
@@ -407,7 +408,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -461,7 +463,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -494,7 +497,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -534,7 +538,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -562,7 +567,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -583,7 +589,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -625,7 +632,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -651,7 +659,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()

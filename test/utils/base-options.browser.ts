@@ -5,6 +5,7 @@ import { mplex } from '@libp2p/mplex'
 import { plaintext } from '../../src/insecure/index.js'
 import type { Libp2pOptions } from '../../src'
 import mergeOptions from 'merge-options'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 export function createBaseOptions (overrides?: Libp2pOptions): Libp2pOptions {
   const options: Libp2pOptions = {
@@ -14,7 +15,8 @@ export function createBaseOptions (overrides?: Libp2pOptions): Libp2pOptions {
       })
     ],
     streamMuxers: [
-      mplex()
+      mplex(),
+      yamux()
     ],
     connectionEncryption: [
       plaintext()

@@ -20,11 +20,12 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux',
 
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0/ws']
     // TODO check "What is next?" section
@@ -81,7 +82,7 @@ if (!relayAddr) {
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex()],
+  streamMuxers: [mplex(), yamux()],
   relay: {
     enabled: true,
     autoRelay: {
@@ -135,6 +136,7 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux',
 
 const autoRelayNodeAddr = process.argv[2]
 if (!autoRelayNodeAddr) {
@@ -144,7 +146,7 @@ if (!autoRelayNodeAddr) {
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex()]
+  streamMuxers: [mplex(), yamux()]
 })
 
 console.log(`Node started with id ${node.peerId.toString()}`)

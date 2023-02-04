@@ -21,6 +21,7 @@ import { webSockets } from '@libp2p/websockets'
 import { mplex } from '@libp2p/mplex'
 import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
 import { DefaultComponents } from '../../src/components.js'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const protocol = '/test/1.0.0'
 
@@ -215,7 +216,8 @@ describe('registrar', () => {
           webSockets()
         ],
         streamMuxers: [
-          mplex()
+          mplex(),
+          yamux()
         ],
         connectionEncryption: [
           plaintext()

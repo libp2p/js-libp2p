@@ -3,6 +3,7 @@
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { kadDHT } from '@libp2p/kad-dht'
 import delay from 'delay'
@@ -13,7 +14,7 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    streamMuxers: [mplex()],
+    streamMuxers: [mplex(), yamux()],
     connectionEncryption: [noise()],
     dht: kadDHT()
   })
@@ -43,4 +44,4 @@ const createNode = async () => {
 
   console.log('Found it, multiaddrs are:')
   peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
-})();
+})()

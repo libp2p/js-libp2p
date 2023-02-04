@@ -36,6 +36,7 @@ import os from 'node:os'
 import path from 'node:path'
 import fs from 'node:fs'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -254,7 +255,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -287,7 +289,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -314,7 +317,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -343,7 +347,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -407,7 +412,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -456,7 +462,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -494,7 +501,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -531,7 +539,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -592,7 +601,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -609,7 +619,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
-        mplex()
+        mplex(),
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
