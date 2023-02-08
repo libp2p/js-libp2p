@@ -158,7 +158,9 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
           .catch((err) => log.error('handling reconnect failed', err))
       },
       (err) => {
-        log.error('could not fetch protocols for new connection: %p', connection.remotePeer, err)
+        // this is not necessarily an error as we will only have the protocols stored
+        // in case of a reconnect
+        log.trace('could not fetch protocols for peer: %p', connection.remotePeer, err)
       })
   }
 
