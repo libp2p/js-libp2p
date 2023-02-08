@@ -69,6 +69,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
 
     this._onProtocolChange = this._onProtocolChange.bind(this)
     this._onPeerDisconnected = this._onPeerDisconnected.bind(this)
+    this._onPeerConnect = this._onPeerConnect.bind(this)
 
     this.components.peerStore.addEventListener('change:protocols', (evt) => {
       void this._onProtocolChange(evt.detail).catch(err => {
@@ -77,7 +78,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
     })
 
     this.components.connectionManager.addEventListener('peer:disconnect', this._onPeerDisconnected)
-    this.components.connectionManager.addEventListener('peer:connect', () => {})
+    this.components.connectionManager.addEventListener('peer:connect', this._onPeerConnect)
   }
 
   isStarted () {
@@ -155,6 +156,9 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
       .then((protocols) => {
         void this._onProtocolChange({ peerId: connection.remotePeer, protocols })
           .catch((err) => log.error('handling reconnect failed', err))
+      },
+      (err) => {
+        log.error('could not fetch protocols for new connection: %p', connection.remotePeer, err)
       })
   }
 
