@@ -1,4 +1,3 @@
-import * as CircuitV1 from './v1/pb/index.js'
 import * as CircuitV2 from './v2/pb/index.js'
 import { ReservationStore } from './v2/reservation-store.js'
 import { logger } from '@libp2p/logger'
@@ -7,7 +6,7 @@ import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { codes } from '../errors.js'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
-import { RELAY_V2_HOP_CODEC, RELAY_V1_CODEC, RELAY_V2_STOP_CODEC } from './multicodec.js'
+import { RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from './multicodec.js'
 import { createListener } from './listener.js'
 import { symbol, TransportManager, Upgrader } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -20,7 +19,6 @@ import { abortableDuplex } from 'abortable-iterator'
 import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import * as CircuitV1Handler from './v1/index.js'
 import * as CircuitV2Handler from './v2/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerStore } from '@libp2p/interface-peer-store'
@@ -222,67 +220,21 @@ export class Circuit implements Transport, Startable {
     }
 
     try {
-      const stream = await relayConnection.newStream([RELAY_V2_HOP_CODEC, RELAY_V1_CODEC])
-
-      switch (stream.stat.protocol) {
-        case RELAY_V1_CODEC: return await this.connectV1({
-          stream,
-          connection: relayConnection,
-          destinationPeer,
-          destinationAddr,
-          relayAddr,
-          ma,
-          disconnectOnFailure
-        })
-        case RELAY_V2_HOP_CODEC: return await this.connectV2({
-          stream,
-          connection: relayConnection,
-          destinationPeer,
-          destinationAddr,
-          relayAddr,
-          ma,
-          disconnectOnFailure
-        })
-        default:
-          stream.reset()
-          throw new Error('Unexpected stream protocol')
-      }
+      const stream = await relayConnection.newStream([RELAY_V2_HOP_CODEC])
+      return await this.connectV2({
+        stream,
+        connection: relayConnection,
+        destinationPeer,
+        destinationAddr,
+        relayAddr,
+        ma,
+        disconnectOnFailure
+      })
     } catch (err: any) {
       log.error('Circuit relay dial failed', err)
       disconnectOnFailure && await relayConnection.close()
       throw err
     }
-  }
-
-  async connectV1 ({
-    stream, destinationPeer,
-    destinationAddr, relayAddr, ma
-  }: ConnectOptions
-  ) {
-    const virtualConnection = await CircuitV1Handler.hop({
-      stream,
-      request: {
-        type: CircuitV1.CircuitRelay.Type.HOP,
-        srcPeer: {
-          id: this.components.peerId.toBytes(),
-          addrs: this.components.addressManager.getListenAddrs().map(addr => addr.bytes)
-        },
-        dstPeer: {
-          id: destinationPeer.toBytes(),
-          addrs: [multiaddr(destinationAddr).bytes]
-        }
-      }
-    })
-
-    const localAddr = relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`)
-    const maConn = streamToMaConnection({
-      stream: virtualConnection,
-      remoteAddr: ma,
-      localAddr
-    })
-    log('new outbound connection %s', maConn.remoteAddr)
-
-    return await this.components.upgrader.upgradeOutbound(maConn)
   }
 
   async connectV2 (

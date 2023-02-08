@@ -72,13 +72,12 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
 
     this.components.peerStore.addEventListener('change:protocols', (evt) => {
       void this._onProtocolChange(evt.detail).catch(err => {
-        log.error(err)
+        log.error('handling protocol change failed', err)
       })
     })
 
-    this.components.connectionManager.addEventListener('peer:disconnect', (evt) => {
-      this._onPeerDisconnected(evt)
-    })
+    this.components.connectionManager.addEventListener('peer:disconnect', this._onPeerDisconnected)
+    this.components.connectionManager.addEventListener('peer:connect', () => {})
   }
 
   isStarted () {
@@ -145,6 +144,18 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
       log.error('could not add %p as relay', peerId)
       this.onError(err)
     }
+  }
+
+  /**
+   * Handle case when peer connects. If we already have the peer in the protobook,
+   * we treat this event as an `onProtocolChange`.
+   */
+  _onPeerConnect ({ detail: connection }: CustomEvent<Connection>) {
+    void this.components.peerStore.protoBook.get(connection.remotePeer)
+      .then((protocols) => {
+        void this._onProtocolChange({ peerId: connection.remotePeer, protocols })
+          .catch((err) => log.error('handling reconnect failed', err))
+      })
   }
 
   /**
