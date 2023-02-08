@@ -80,7 +80,6 @@
     "build": "aegir build",
     "docs": "aegir docs",
     "generate": "run-s generate:proto:*",
-    "generate:proto:circuit:v1": "protons ./src/circuit/v1/pb/index.proto",
     "generate:proto:circuit:v2": "protons ./src/circuit/v2/pb/index.proto",
     "generate:proto:fetch": "protons ./src/fetch/pb/proto.proto",
     "generate:proto:identify": "protons ./src/identify/pb/message.proto",
