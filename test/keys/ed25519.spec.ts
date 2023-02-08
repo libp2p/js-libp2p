@@ -148,6 +148,15 @@ describe('ed25519', function () {
     expect(valid).to.eql(true)
   })
 
+  it('sign and verify from seed', async () => {
+    const seed = new Uint8Array(32).fill(1)
+    const seededkey = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed)
+    const data = uint8ArrayFromString('hello world')
+    const sig = await seededkey.sign(data)
+    const valid = await seededkey.public.verify(data, sig)
+    expect(valid).to.eql(true)
+  })
+
   it('fails to verify for different data', async () => {
     const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)

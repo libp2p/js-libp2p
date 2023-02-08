@@ -13,10 +13,25 @@ const SIGNATURE_BYTE_LENGTH = 64
 export { PUBLIC_KEY_BYTE_LENGTH as publicKeyLength }
 export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 
-function derivePublicKey (privateKey: Uint8Array) {
-  const hash = crypto.createHash('sha512')
-  hash.update(privateKey)
-  return hash.digest().subarray(32)
+function derivePublicKey (privateKey: Uint8Array): Uint8Array {
+  const keyObject = crypto.createPrivateKey({
+    format: 'jwk',
+    key: {
+      crv: 'Ed25519',
+      x: '',
+      d: uint8arrayToString(privateKey, 'base64url'),
+      kty: 'OKP'
+    }
+  })
+  const jwk = keyObject.export({
+    format: 'jwk'
+  })
+
+  if (jwk.x == null || jwk.x === '') {
+    throw new Error('Could not export JWK public key')
+  }
+
+  return uint8arrayFromString(jwk.x, 'base64url')
 }
 
 export async function generateKey () {
