@@ -1,3 +1,15 @@
+## [1.0.12](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.11...v1.0.12) (2023-02-08)
+
+
+### Bug Fixes
+
+* derive ed25519 public key from private key using node crypto ([#300](https://github.com/libp2p/js-libp2p-crypto/issues/300)) ([874f820](https://github.com/libp2p/js-libp2p-crypto/commit/874f8201c157a76a5fd9d3828c1f44358bce2f48)), closes [#295](https://github.com/libp2p/js-libp2p-crypto/issues/295)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#293](https://github.com/libp2p/js-libp2p-crypto/issues/293)) ([4398cf6](https://github.com/libp2p/js-libp2p-crypto/commit/4398cf6c719fc7cb051cb3071cad9fc86b858752)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+
 ## [1.0.11](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.10...v1.0.11) (2023-01-06)
 
 
