@@ -62,7 +62,7 @@ export class PeerRecord {
   /**
    * Marshal a record to be used in an envelope
    */
-  marshal () {
+  marshal (): Uint8Array {
     if (this.marshaled == null) {
       this.marshaled = Protobuf.encode({
         peerId: this.peerId.toBytes(),
@@ -79,7 +79,7 @@ export class PeerRecord {
   /**
    * Returns true if `this` record equals the `other`
    */
-  equals (other: unknown) {
+  equals (other: unknown): boolean {
     if (!(other instanceof PeerRecord)) {
       return false
     }

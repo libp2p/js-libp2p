@@ -21,11 +21,11 @@ class TestRecord implements Record {
     this.data = data
   }
 
-  marshal () {
+  marshal (): Uint8Array {
     return uint8arrayFromString(this.data)
   }
 
-  equals (other: Record) {
+  equals (other: Record): boolean {
     return uint8ArrayEquals(this.marshal(), other.marshal())
   }
 }
