@@ -29,7 +29,7 @@ message CircuitRelay {
   }
 
   message Peer {
-    required bytes id = 1;    // peer id
+    bytes id = 1;    // peer id
     repeated bytes addrs = 2; // peer's known addresses
   }
 

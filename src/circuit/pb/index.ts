@@ -1,7 +1,11 @@
 /* eslint-disable import/export */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { enumeration, encodeMessage, decodeMessage, message, bytes } from 'protons-runtime'
+import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
 export interface CircuitRelay {
@@ -51,8 +55,8 @@ export namespace CircuitRelay {
   }
 
   export namespace Status {
-    export const codec = () => {
-      return enumeration<typeof Status>(__StatusValues)
+    export const codec = (): Codec<Status> => {
+      return enumeration<Status>(__StatusValues)
     }
   }
 
@@ -71,8 +75,8 @@ export namespace CircuitRelay {
   }
 
   export namespace Type {
-    export const codec = () => {
-      return enumeration<typeof Type>(__TypeValues)
+    export const codec = (): Codec<Type> => {
+      return enumeration<Type>(__TypeValues)
     }
   }
 
@@ -82,36 +86,145 @@ export namespace CircuitRelay {
   }
 
   export namespace Peer {
+    let _codec: Codec<Peer>
+
     export const codec = (): Codec<Peer> => {
-      return message<Peer>({
-        1: { name: 'id', codec: bytes },
-        2: { name: 'addrs', codec: bytes, repeats: true }
-      })
+      if (_codec == null) {
+        _codec = message<Peer>((obj, w, opts = {}) => {
+          if (opts.lengthDelimited !== false) {
+            w.fork()
+          }
+
+          if (opts.writeDefaults === true || (obj.id != null && obj.id.byteLength > 0)) {
+            w.uint32(10)
+            w.bytes(obj.id)
+          }
+
+          if (obj.addrs != null) {
+            for (const value of obj.addrs) {
+              w.uint32(18)
+              w.bytes(value)
+            }
+          }
+
+          if (opts.lengthDelimited !== false) {
+            w.ldelim()
+          }
+        }, (reader, length) => {
+          const obj: any = {
+            id: new Uint8Array(0),
+            addrs: []
+          }
+
+          const end = length == null ? reader.len : reader.pos + length
+
+          while (reader.pos < end) {
+            const tag = reader.uint32()
+
+            switch (tag >>> 3) {
+              case 1:
+                obj.id = reader.bytes()
+                break
+              case 2:
+                obj.addrs.push(reader.bytes())
+                break
+              default:
+                reader.skipType(tag & 7)
+                break
+            }
+          }
+
+          return obj
+        })
+      }
+
+      return _codec
     }
 
     export const encode = (obj: Peer): Uint8Array => {
       return encodeMessage(obj, Peer.codec())
     }
 
-    export const decode = (buf: Uint8Array): Peer => {
+    export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
       return decodeMessage(buf, Peer.codec())
     }
   }
 
+  let _codec: Codec<CircuitRelay>
+
   export const codec = (): Codec<CircuitRelay> => {
-    return message<CircuitRelay>({
-      1: { name: 'type', codec: CircuitRelay.Type.codec(), optional: true },
-      2: { name: 'srcPeer', codec: CircuitRelay.Peer.codec(), optional: true },
-      3: { name: 'dstPeer', codec: CircuitRelay.Peer.codec(), optional: true },
-      4: { name: 'code', codec: CircuitRelay.Status.codec(), optional: true }
-    })
+    if (_codec == null) {
+      _codec = message<CircuitRelay>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if (obj.type != null) {
+          w.uint32(8)
+          CircuitRelay.Type.codec().encode(obj.type, w)
+        }
+
+        if (obj.srcPeer != null) {
+          w.uint32(18)
+          CircuitRelay.Peer.codec().encode(obj.srcPeer, w, {
+            writeDefaults: false
+          })
+        }
+
+        if (obj.dstPeer != null) {
+          w.uint32(26)
+          CircuitRelay.Peer.codec().encode(obj.dstPeer, w, {
+            writeDefaults: false
+          })
+        }
+
+        if (obj.code != null) {
+          w.uint32(32)
+          CircuitRelay.Status.codec().encode(obj.code, w)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {}
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.type = CircuitRelay.Type.codec().decode(reader)
+              break
+            case 2:
+              obj.srcPeer = CircuitRelay.Peer.codec().decode(reader, reader.uint32())
+              break
+            case 3:
+              obj.dstPeer = CircuitRelay.Peer.codec().decode(reader, reader.uint32())
+              break
+            case 4:
+              obj.code = CircuitRelay.Status.codec().decode(reader)
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
   }
 
   export const encode = (obj: CircuitRelay): Uint8Array => {
     return encodeMessage(obj, CircuitRelay.codec())
   }
 
-  export const decode = (buf: Uint8Array): CircuitRelay => {
+  export const decode = (buf: Uint8Array | Uint8ArrayList): CircuitRelay => {
     return decodeMessage(buf, CircuitRelay.codec())
   }
 }

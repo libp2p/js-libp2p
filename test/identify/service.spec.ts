@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import Peers from '../fixtures/peers.js'
 import { createLibp2pNode } from '../../src/libp2p.js'
@@ -128,11 +128,19 @@ describe('libp2p.dialer.identifyService', () => {
     await identityServiceIdentifySpy.firstCall.returnValue
     sinon.stub(libp2p, 'isStarted').returns(true)
 
+    // Cause supported protocols to change
     await libp2p.handle('/echo/2.0.0', () => {})
+
+    // Wait for push to complete
+    await pWaitFor(() => identityServicePushSpy.callCount === 1)
+    await identityServicePushSpy.firstCall.returnValue
+
+    // Cause supported protocols to change back
     await libp2p.unhandle('/echo/2.0.0')
 
-    // the protocol change event listener in the identity service is async
+    // Wait for push to complete a second time
     await pWaitFor(() => identityServicePushSpy.callCount === 2)
+    await identityServicePushSpy.secondCall.returnValue
 
     // Verify the remote peer is notified of both changes
     expect(identityServicePushSpy.callCount).to.equal(2)
@@ -220,7 +228,7 @@ describe('libp2p.dialer.identifyService', () => {
     await identityServiceIdentifySpy.firstCall.returnValue
     sinon.stub(libp2p, 'isStarted').returns(true)
 
-    await libp2p.peerStore.addressBook.add(libp2p.peerId, [new Multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
+    await libp2p.peerStore.addressBook.add(libp2p.peerId, [multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
 
     // the protocol change event listener in the identity service is async
     await pWaitFor(() => identityServicePushSpy.callCount === 1)

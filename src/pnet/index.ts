@@ -1,3 +1,27 @@
+/**
+ * @packageDocumentation
+ *
+ * Connection protection management for libp2p leveraging PSK encryption via XSalsa20.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { preSharedKey, generateKey } from 'libp2p/pnet'
+ *
+ * // Create a Uint8Array and write the swarm key to it
+ * const swarmKey = new Uint8Array(95)
+ * generateKey(swarmKey)
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   connectionProtector: preSharedKey({
+ *     psk: swarmKey
+ *   })
+ * })
+ * ```
+ */
+
 import { logger } from '@libp2p/logger'
 import { pipe } from 'it-pipe'
 import errCode from 'err-code'
@@ -13,6 +37,7 @@ import {
 import { handshake } from 'it-handshake'
 import { NONCE_LENGTH } from './key-generator.js'
 import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface-connection'
+import map from 'it-map'
 
 const log = logger('libp2p:pnet')
 
@@ -23,7 +48,7 @@ export interface ProtectorInit {
   psk: Uint8Array
 }
 
-export class PreSharedKeyConnectionProtector implements ConnectionProtector {
+class PreSharedKeyConnectionProtector implements ConnectionProtector {
   public tag: string
   private readonly psk: Uint8Array
   private readonly enabled: boolean
@@ -83,6 +108,7 @@ export class PreSharedKeyConnectionProtector implements ConnectionProtector {
       // Encrypt all outbound traffic
       createBoxStream(localNonce, this.psk),
       shake.stream,
+      (source) => map(source, (buf) => buf.subarray()),
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
       external
@@ -93,4 +119,8 @@ export class PreSharedKeyConnectionProtector implements ConnectionProtector {
       ...internal
     }
   }
+}
+
+export function preSharedKey (init: ProtectorInit): () => ConnectionProtector {
+  return () => new PreSharedKeyConnectionProtector(init)
 }

@@ -30,9 +30,6 @@ async function run() {
   // back to itself (an echo)
   await listenerNode.handle('/echo/1.0.0', ({ stream }) => pipe(stream.source, stream.sink))
 
-  // Start listening
-  await listenerNode.start()
-
   console.log('Listener ready, listening on:')
   listenerNode.getMultiaddrs().forEach((ma) => {
     console.log(ma.toString())

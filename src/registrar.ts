@@ -4,14 +4,21 @@ import { codes } from './errors.js'
 import { isTopology, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-registrar'
 import merge from 'merge-options'
 import type { Registrar, StreamHandler, Topology } from '@libp2p/interface-registrar'
-import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
+import type { PeerProtocolsChangeData, PeerStore } from '@libp2p/interface-peer-store'
 import type { Connection } from '@libp2p/interface-connection'
-import type { Components } from '@libp2p/components'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:registrar')
 
-export const DEFAULT_MAX_INBOUND_STREAMS = 1
-export const DEFAULT_MAX_OUTBOUND_STREAMS = 1
+export const DEFAULT_MAX_INBOUND_STREAMS = 32
+export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
+
+export interface RegistrarComponents {
+  peerId: PeerId
+  connectionManager: ConnectionManager
+  peerStore: PeerStore
+}
 
 /**
  * Responsible for notifying registered protocols of events in the network.
@@ -19,20 +26,22 @@ export const DEFAULT_MAX_OUTBOUND_STREAMS = 1
 export class DefaultRegistrar implements Registrar {
   private readonly topologies: Map<string, Map<string, Topology>>
   private readonly handlers: Map<string, StreamHandlerRecord>
-  private readonly components: Components
+  private readonly components: RegistrarComponents
 
-  constructor (components: Components) {
+  constructor (components: RegistrarComponents) {
     this.topologies = new Map()
     this.handlers = new Map()
     this.components = components
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onProtocolChange = this._onProtocolChange.bind(this)
+    this._onConnect = this._onConnect.bind(this)
 
-    this.components.getConnectionManager().addEventListener('peer:disconnect', this._onDisconnect)
+    this.components.connectionManager.addEventListener('peer:disconnect', this._onDisconnect)
+    this.components.connectionManager.addEventListener('peer:connect', this._onConnect)
 
     // happens after identify
-    this.components.getPeerStore().addEventListener('change:protocols', this._onProtocolChange)
+    this.components.peerStore.addEventListener('change:protocols', this._onProtocolChange)
   }
 
   getProtocols () {
@@ -83,7 +92,7 @@ export class DefaultRegistrar implements Registrar {
     })
 
     // Add new protocols to self protocols in the Protobook
-    await this.components.getPeerStore().protoBook.add(this.components.getPeerId(), [protocol])
+    await this.components.peerStore.protoBook.add(this.components.peerId, [protocol])
   }
 
   /**
@@ -98,7 +107,7 @@ export class DefaultRegistrar implements Registrar {
     })
 
     // Remove protocols from self protocols in the Protobook
-    await this.components.getPeerStore().protoBook.remove(this.components.getPeerId(), protocolList)
+    await this.components.peerStore.protoBook.remove(this.components.peerId, protocolList)
   }
 
   /**
@@ -149,7 +158,7 @@ export class DefaultRegistrar implements Registrar {
   _onDisconnect (evt: CustomEvent<Connection>) {
     const connection = evt.detail
 
-    void this.components.getPeerStore().protoBook.get(connection.remotePeer)
+    void this.components.peerStore.protoBook.get(connection.remotePeer)
       .then(peerProtocols => {
         for (const protocol of peerProtocols) {
           const topologies = this.topologies.get(protocol)
@@ -170,11 +179,37 @@ export class DefaultRegistrar implements Registrar {
   }
 
   /**
+   * On peer connected if we already have their protocols. Usually used for reconnects
+   * as change:protocols event won't be emitted due to identical protocols.
+   */
+  _onConnect (evt: CustomEvent<Connection>) {
+    const connection = evt.detail
+
+    void this.components.peerStore.protoBook.get(connection.remotePeer)
+      .then(peerProtocols => {
+        for (const protocol of peerProtocols) {
+          const topologies = this.topologies.get(protocol)
+
+          if (topologies == null) {
+            // no topologies are interested in this protocol
+            continue
+          }
+
+          for (const topology of topologies.values()) {
+            topology.onConnect(connection.remotePeer, connection)
+          }
+        }
+      })
+      .catch(err => {
+        log.error(err)
+      })
+  }
+
+  /**
    * Check if a new peer support the multicodecs for this topology
    */
   _onProtocolChange (evt: CustomEvent<PeerProtocolsChangeData>) {
     const { peerId, protocols, oldProtocols } = evt.detail
-
     const removed = oldProtocols.filter(protocol => !protocols.includes(protocol))
     const added = protocols.filter(protocol => !oldProtocols.includes(protocol))
 
@@ -200,12 +235,11 @@ export class DefaultRegistrar implements Registrar {
       }
 
       for (const topology of topologies.values()) {
-        const connection = this.components.getConnectionManager().getConnections(peerId)[0]
+        const connection = this.components.connectionManager.getConnections(peerId)[0]
 
         if (connection == null) {
           continue
         }
-
         topology.onConnect(peerId, connection)
       }
     }

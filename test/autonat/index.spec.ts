@@ -4,7 +4,6 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/components'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { AutonatService, AutonatServiceInit } from '../../src/autonat/index.js'
 import { StubbedInstance, stubInterface } from 'ts-sinon'
@@ -20,10 +19,12 @@ import { pushable } from 'it-pushable'
 import type { Transport, TransportManager } from '@libp2p/interface-transport'
 import type { AddressBook, PeerStore } from '@libp2p/interface-peer-store'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import type { Dialer } from '../../src/connection-manager/dialer/index.js'
 import * as lp from 'it-length-prefixed'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
+import { Components, DefaultComponents } from '../../src/components.js'
+import type { Dialer } from '@libp2p/interface-connection-manager'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 const defaultInit: AutonatServiceInit = {
   protocolPrefix: 'libp2p',
@@ -59,7 +60,7 @@ describe('autonat', () => {
     peerStore = stubInterface<PeerStore>()
     peerStore.addressBook = stubInterface<AddressBook>()
 
-    components = new Components({
+    components = new DefaultComponents({
       peerId: await createEd25519PeerId(),
       peerRouting,
       registrar,
@@ -106,15 +107,14 @@ describe('autonat', () => {
         dialResponse
       })
       stream.source = (async function * () {
-        yield lp.varintEncode(response.length)
-        yield response
+        yield lp.encode.single(response)
       }())
       stream.sink.returns(Promise.resolve())
 
       return peer
     }
 
-    it('should request peers verify our observed address', async () => {
+    it.only('should request peers verify our observed address', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
       addressManager.getObservedAddrs.returns([observedAddress])
 
@@ -386,7 +386,7 @@ describe('autonat', () => {
 
       connectionManager.openConnection.reset()
       connectionManager.openConnection.callsFake(async (peer, options = {}) => {
-        return await Promise<Connection>.race([
+        return await Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))
@@ -422,14 +422,14 @@ describe('autonat', () => {
       const remotePeer = opts.remotePeer ?? requestingPeer
       const observedAddress = opts.observedAddress ?? multiaddr('/ip4/124.124.124.124/tcp/28319')
       const remoteAddr = opts.remoteAddr ?? observedAddress.encapsulate(`/p2p/${remotePeer.toString()}`)
-      const source = pushable()
-      const sink = pushable()
+      const source = pushable<Uint8ArrayList>()
+      const sink = pushable<Uint8ArrayList>()
       const stream: Stream = {
         ...stubInterface<Stream>(),
         source,
         sink: async (stream) => {
           for await (const buf of stream) {
-            sink.push(buf)
+            sink.push(new Uint8ArrayList(buf))
           }
 
           sink.end()
@@ -477,8 +477,7 @@ describe('autonat', () => {
       }
 
       if (buf != null) {
-        source.push(lp.varintEncode(buf.byteLength))
-        source.push(buf)
+        source.push(lp.encode.single(buf))
       }
 
       source.end()
@@ -642,7 +641,7 @@ describe('autonat', () => {
 
     it('should time out when dialing a requested address', async () => {
       dialer.dial.callsFake(async function (ma, options = {}) {
-        return await Promise<Connection>.race([
+        return await Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))

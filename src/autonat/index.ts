@@ -1,28 +1,26 @@
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { Startable } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { abortableDuplex } from 'abortable-iterator'
+import { setMaxListeners } from 'events'
+import first from 'it-first'
+import * as lp from 'it-length-prefixed'
+import map from 'it-map'
+import parallel from 'it-parallel'
+import { pipe } from 'it-pipe'
+import isPrivateIp from 'private-ip'
+import { TimeoutController } from 'timeout-abort-controller'
+import type { Components } from '../components.js'
 import {
   PROTOCOL
 } from './constants.js'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/components'
-import { TimeoutController } from 'timeout-abort-controller'
-import { abortableDuplex } from 'abortable-iterator'
 import { Message } from './pb/index.js'
-import { pipe } from 'it-pipe'
-import first from 'it-first'
-import isPrivateIp from 'private-ip'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { DefaultConnectionManager } from '../connection-manager/index.js'
-import type { Connection } from '@libp2p/interface-connection'
-import parallel from 'it-parallel'
-import map from 'it-map'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { DefaultAddressManager } from '../address-manager/index.js'
-import * as lp from 'it-length-prefixed'
-import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:autonat')
 
@@ -69,15 +67,22 @@ export interface AutonatServiceInit {
   maxOutboundStreams: number
 }
 
+export type DefaultAutonatComponents = Pick<
+Components,
+'registrar' | 'addressManager' |
+'transportManager' | 'dialer' |
+'peerId' | 'connectionManager' | 'peerRouting'
+>
+
 export class AutonatService implements Startable {
-  private readonly components: Components
+  private readonly components: DefaultAutonatComponents
   private readonly _init: AutonatServiceInit
   private readonly startupDelay: number
   private readonly refreshInterval: number
   private verifyAddressTimeout?: ReturnType<typeof setTimeout>
   private started: boolean
 
-  constructor (components: Components, init: AutonatServiceInit) {
+  constructor (components: DefaultAutonatComponents, init: AutonatServiceInit) {
     this.components = components
     this.started = false
     this._init = init
@@ -96,7 +101,7 @@ export class AutonatService implements Startable {
       return
     }
 
-    await this.components.getRegistrar().handle(PROTOCOL, (data) => {
+    await this.components.registrar.handle(PROTOCOL, (data) => {
       void this.handleIncomingAutonatStream(data)
         .catch(err => {
           log.error(err)
@@ -112,7 +117,7 @@ export class AutonatService implements Startable {
   }
 
   async stop () {
-    await this.components.getRegistrar().unhandle(PROTOCOL)
+    await this.components.registrar.unhandle(PROTOCOL)
     clearTimeout(this.verifyAddressTimeout)
 
     this.started = false
@@ -131,7 +136,7 @@ export class AutonatService implements Startable {
       setMaxListeners?.(Infinity, controller.signal)
     } catch {}
 
-    const ourHosts = this.components.getAddressManager().getAddresses()
+    const ourHosts = this.components.addressManager.getAddresses()
       .map(ma => ma.toOptions().host)
 
     try {
@@ -253,7 +258,7 @@ export class AutonatService implements Startable {
             })
             .filter(ma => {
               const host = ma.toOptions().host
-              const isPublicIp = !isPrivateIp(host)
+              const isPublicIp = !(isPrivateIp(host) ?? false)
 
               log.trace('Host %s was public %s', host, isPublicIp)
               // don't try to dial private addresses
@@ -268,7 +273,7 @@ export class AutonatService implements Startable {
               return isNotOurHost
             })
             .filter(ma => {
-              const isSupportedTransport = Boolean(self.components.getTransportManager().transportForMultiaddr(ma))
+              const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
 
               log.trace('Transport for %s is supported %s', ma, isSupportedTransport)
               // skip any Multiaddrs that have transports we do not support
@@ -310,8 +315,7 @@ export class AutonatService implements Startable {
             try {
               // use the dialer so we can dial a specific multiaddr instead of every known
               // multiaddr for the peer
-              const dialer = (self.components.getConnectionManager() as DefaultConnectionManager).dialer
-              connection = await dialer.dial(multiaddr, {
+              connection = await self.components.dialer.dial(multiaddr, {
                 signal: controller.signal
               })
 
@@ -378,13 +382,13 @@ export class AutonatService implements Startable {
       return
     }
 
-    const addressManager = this.components.getAddressManager() as DefaultAddressManager
+    const addressManager = this.components.addressManager
 
     const multiaddrs = addressManager.getObservedAddrs()
       .filter(ma => {
         const options = ma.toOptions()
 
-        return !isPrivateIp(options.host)
+        return !(isPrivateIp(options.host) ?? false)
       })
 
     if (multiaddrs.length === 0) {
@@ -412,12 +416,11 @@ export class AutonatService implements Startable {
         type: Message.MessageType.DIAL,
         dial: {
           peer: {
-            id: this.components.getPeerId().toBytes(),
+            id: this.components.peerId.toBytes(),
             addrs: multiaddrs.map(map => map.bytes)
           }
         }
       })
-
       // find some random peers
       const randomPeer = await createEd25519PeerId()
       const randomCid = randomPeer.toBytes()
@@ -429,7 +432,7 @@ export class AutonatService implements Startable {
         try {
           log('Asking %p to verify multiaddr', peer.id)
 
-          const connection = await self.components.getConnectionManager().openConnection(peer.id, {
+          const connection = await self.components.connectionManager.openConnection(peer.id, {
             signal: controller.signal
           })
 
@@ -445,12 +448,10 @@ export class AutonatService implements Startable {
             lp.decode(),
             async (stream) => await first(stream)
           )
-
           if (buf == null) {
             log('No response received from %s', connection.remotePeer)
             return undefined
           }
-
           const response = Message.decode(buf)
 
           if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
@@ -488,7 +489,7 @@ export class AutonatService implements Startable {
         }
       }
 
-      for await (const dialResponse of parallel(map(this.components.getPeerRouting().getClosestPeers(randomCid, {
+      for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
         signal: controller.signal
       }), (peer) => async () => await verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS

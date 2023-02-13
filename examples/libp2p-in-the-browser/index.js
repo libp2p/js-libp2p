@@ -1,12 +1,12 @@
 import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { WebRTCStar } from '@libp2p/webrtc-star'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
-import { Bootstrap } from '@libp2p/bootstrap'
+import { webSockets } from '@libp2p/websockets'
+import { webRTCStar } from '@libp2p/webrtc-star'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
+import { bootstrap } from '@libp2p/bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const webRtcStar = new WebRTCStar()
+  const wrtcStar = webRTCStar()
 
   // Create our libp2p node
   const libp2p = await createLibp2p({
@@ -20,14 +20,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       ]
     },
     transports: [
-      new WebSockets(),
-      webRtcStar
+      webSockets(),
+      wrtcStar.transport
     ],
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()],
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()],
     peerDiscovery: [
-      webRtcStar.discovery,
-      new Bootstrap({
+      wrtcStar.discovery,
+      bootstrap({
         list: [
           '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
           '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
@@ -54,6 +54,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   libp2p.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
     log(`Found peer ${peer.id.toString()}`)
+
+    // dial them when we discover them
+    libp2p.dial(evt.detail.id).catch(err => {
+      log(`Could not dial ${evt.detail.id}`, err)
+    })
   })
 
   // Listen for new connections to peers
@@ -68,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     log(`Disconnected from ${connection.remotePeer.toString()}`)
   })
 
-  await libp2p.start()
   status.innerText = 'libp2p started!'
   log(`libp2p id is ${libp2p.peerId.toString()}`)
 

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from './libp2p.js'
 import { stdinToStream, streamToConsole } from './stream.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -21,9 +21,6 @@ async function run () {
     }
   })
 
-  // Start the libp2p host
-  await nodeDialer.start()
-
   // Output this node's address
   console.log('Dialer ready, listening on:')
   nodeDialer.getMultiaddrs().forEach((ma) => {
@@ -31,7 +28,7 @@ async function run () {
   })
 
   // Dial to the remote peer (the "listener")
-  const listenerMa = new Multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toString()}`)
+  const listenerMa = multiaddr(`/ip4/127.0.0.1/tcp/10333/p2p/${idListener.toString()}`)
   const stream = await nodeDialer.dialProtocol(listenerMa, '/chat/1.0.0')
 
   console.log('Dialer dialed to listener on protocol: /chat/1.0.0')

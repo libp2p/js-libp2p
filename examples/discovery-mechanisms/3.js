@@ -1,27 +1,27 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { FloodSub } from '@libp2p/floodsub'
-import { Bootstrap } from '@libp2p/bootstrap'
-import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
+import { floodsub } from '@libp2p/floodsub'
+import { bootstrap } from '@libp2p/bootstrap'
+import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 
 const createNode = async (bootstrappers) => {
   const node = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
-    pubsub: new FloodSub(),
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()],
+    pubsub: floodsub(),
     peerDiscovery: [
-      new Bootstrap({
+      bootstrap({
         list: bootstrappers
       }),
-      new PubSubPeerDiscovery({
+      pubsubPeerDiscovery({
         interval: 1000
       })
     ]
@@ -37,12 +37,12 @@ const createNode = async (bootstrappers) => {
         '/ip4/0.0.0.0/tcp/0'
       ]
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
-    pubsub: new FloodSub(),
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()],
+    pubsub: floodsub(),
     peerDiscovery: [
-      new PubSubPeerDiscovery({
+      pubsubPeerDiscovery({
         interval: 1000
       })
     ],
@@ -53,8 +53,7 @@ const createNode = async (bootstrappers) => {
       }
     }
   })
-  console.log(`libp2p relay starting with id: ${relay.peerId.toString()}`)
-  await relay.start()
+  console.log(`libp2p relay started with id: ${relay.peerId.toString()}`)
 
   const relayMultiaddrs = relay.getMultiaddrs().map((m) => m.toString())
 
@@ -67,14 +66,8 @@ const createNode = async (bootstrappers) => {
     const peer = evt.detail
     console.log(`Peer ${node1.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
-  node2.addEventListener('peer:discovery',(evt) => {
+  node2.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
     console.log(`Peer ${node2.peerId.toString()} discovered: ${peer.id.toString()}`)
   })
-
-  ;[node1, node2].forEach((node, index) => console.log(`Node ${index} starting with id: ${node.peerId.toString()}`))
-  await Promise.all([
-    node1.start(),
-    node2.start()
-  ])
-})();
+})()

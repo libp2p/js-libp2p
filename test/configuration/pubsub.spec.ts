@@ -8,7 +8,7 @@ import { createLibp2p, Libp2p } from '../../src/index.js'
 import { baseOptions, pubsubSubsystemOptions } from './utils.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { FloodSub } from '@libp2p/floodsub'
+import { floodsub } from '@libp2p/floodsub'
 import type { PubSub } from '@libp2p/interface-pubsub'
 
 describe('Pubsub subsystem is configurable', () => {
@@ -36,6 +36,7 @@ describe('Pubsub subsystem is configurable', () => {
     const peerId = await createPeerId()
 
     const customOptions = mergeOptions(pubsubSubsystemOptions, {
+      start: false,
       peerId
     })
 
@@ -61,7 +62,7 @@ describe('Pubsub subscription handlers adapter', () => {
 
     libp2p = await createLibp2p(mergeOptions(pubsubSubsystemOptions, {
       peerId,
-      pubsub: new FloodSub({
+      pubsub: floodsub({
         emitSelf: true
       })
     }))

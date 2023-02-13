@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { pipe } from 'it-pipe'
@@ -16,12 +16,11 @@ const createNode = async () => {
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()]
+    transports: [tcp()],
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()]
   })
 
-  await node.start()
   return node
 }
 
@@ -42,6 +41,11 @@ function printAddrs (node, number) {
   node2.handle('/print', async ({ stream }) => {
     const result = await pipe(
       stream,
+      async function * (source) {
+        for await (const list of source) {
+          yield list.subarray()
+        }
+      },
       toBuffer
     )
     console.log(uint8ArrayToString(result))

@@ -10,10 +10,26 @@ import { namespaceToCid } from './utils.js'
 import {
   RELAY_RENDEZVOUS_NS
 } from './constants.js'
-import type { AddressSorter } from '@libp2p/interface-peer-store'
+import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { Components } from '@libp2p/components'
-import type { RelayConfig } from '../index.js'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { StreamHandlerOptions } from '@libp2p/interface-registrar'
+
+export interface RelayConfig extends StreamHandlerOptions {
+  enabled: boolean
+  advertise: RelayAdvertiseConfig
+  hop: HopConfig
+  autoRelay: AutoRelayConfig
+}
+
+export interface HopConfig {
+  enabled?: boolean
+  active?: boolean
+  timeout: number
+}
 
 const log = logger('libp2p:relay')
 
@@ -36,8 +52,16 @@ export interface RelayInit extends RelayConfig {
   addressSorter?: AddressSorter
 }
 
+export interface RelayComponents {
+  peerId: PeerId
+  contentRouting: ContentRouting
+  peerStore: PeerStore
+  connectionManager: ConnectionManager
+  transportManager: TransportManager
+}
+
 export class Relay implements Startable {
-  private readonly components: Components
+  private readonly components: RelayComponents
   private readonly init: RelayInit
   // @ts-expect-error this field isn't used anywhere?
   private readonly autoRelay?: AutoRelay
@@ -47,7 +71,7 @@ export class Relay implements Startable {
   /**
    * Creates an instance of Relay
    */
-  constructor (components: Components, init: RelayInit) {
+  constructor (components: RelayComponents, init: RelayInit) {
     this.components = components
     // Create autoRelay if enabled
     this.autoRelay = init.autoRelay?.enabled !== false
@@ -97,7 +121,7 @@ export class Relay implements Startable {
   async _advertiseService () {
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
-      await this.components.getContentRouting().provide(cid)
+      await this.components.contentRouting.provide(cid)
     } catch (err: any) {
       if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
         log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)

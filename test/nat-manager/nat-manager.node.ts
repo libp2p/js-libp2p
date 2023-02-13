@@ -2,19 +2,20 @@
 
 import { expect } from 'aegir/chai'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager, FaultTolerance } from '../../src/transport-manager.js'
-import { TCP } from '@libp2p/tcp'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { FaultTolerance } from '@libp2p/interface-transport'
+import { tcp } from '@libp2p/tcp'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { NatManager } from '../../src/nat-manager.js'
 import delay from 'delay'
 import Peers from '../fixtures/peers.js'
 import { codes } from '../../src/errors.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { Components } from '@libp2p/components'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { multiaddr } from '@multiformats/multiaddr'
+import { DefaultComponents } from '../../src/components.js'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -25,15 +26,15 @@ describe('Nat Manager (TCP)', () => {
   const teardown: Array<() => Promise<void>> = []
   let client: StubbedInstance<NatAPI>
 
-  async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}) {
-    const components = new Components({
+  async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: NatManager, components: DefaultComponents }> {
+    const components: any = {
       peerId: await createFromJSON(Peers[0]),
       upgrader: mockUpgrader()
-    })
-    components.setAddressManager(new DefaultAddressManager(components, { listen: addrs }))
-    components.setTransportManager(new DefaultTransportManager(components, {
+    }
+    components.addressManager = new DefaultAddressManager(components, { listen: addrs })
+    components.transportManager = new DefaultTransportManager(components, {
       faultTolerance: FaultTolerance.NO_FATAL
-    }))
+    })
 
     const natManager = new NatManager(components, {
       enabled: true,
@@ -47,12 +48,12 @@ describe('Nat Manager (TCP)', () => {
       return client
     }
 
-    components.getTransportManager().add(new TCP())
-    await components.getTransportManager().listen(components.getAddressManager().getListenAddrs())
+    components.transportManager.add(tcp()())
+    await components.transportManager.listen(components.addressManager.getListenAddrs())
 
     teardown.push(async () => {
       await stop(natManager)
-      await components.getTransportManager().removeAll()
+      await components.transportManager.removeAll()
     })
 
     return {
@@ -71,21 +72,21 @@ describe('Nat Manager (TCP)', () => {
 
     let addressChangedEventFired = false
 
-    components.getAddressManager().addEventListener('change:addresses', () => {
+    components.addressManager.addEventListener('change:addresses', () => {
       addressChangedEventFired = true
     })
 
     client.externalIp.resolves('82.3.1.5')
 
-    let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     await start(natManager)
 
-    observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.not.be.empty()
 
-    const internalPorts = components.getTransportManager().getAddrs()
+    const internalPorts = components.transportManager.getAddrs()
       .filter(ma => ma.isThinWaistAddress())
       .map(ma => ma.toOptions())
       .filter(({ host, transport }) => host !== '127.0.0.1' && transport === 'tcp')
@@ -101,7 +102,7 @@ describe('Nat Manager (TCP)', () => {
     })
 
     // simulate autonat having run
-    components.getAddressManager().confirmObservedAddr(multiaddr('/ip4/82.3.1.5/tcp/4002'))
+    components.addressManager.confirmObservedAddr(multiaddr('/ip4/82.3.1.5/tcp/4002'))
 
     expect(addressChangedEventFired).to.be.true()
   })
@@ -114,12 +115,12 @@ describe('Nat Manager (TCP)', () => {
 
     client.externalIp.resolves('192.168.1.1')
 
-    let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     await expect(natManager._start()).to.eventually.be.rejectedWith(/double NAT/)
 
-    observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     expect(client.map.called).to.be.false()
@@ -148,12 +149,12 @@ describe('Nat Manager (TCP)', () => {
       '/ip6/::/tcp/0'
     ])
 
-    let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     await start(natManager)
 
-    observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
   })
 
@@ -165,12 +166,12 @@ describe('Nat Manager (TCP)', () => {
       '/ip6/::1/tcp/0'
     ])
 
-    let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     await start(natManager)
 
-    observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
   })
 
@@ -182,12 +183,12 @@ describe('Nat Manager (TCP)', () => {
       '/ip4/0.0.0.0/utp'
     ])
 
-    let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     await start(natManager)
 
-    observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
   })
 
@@ -199,12 +200,12 @@ describe('Nat Manager (TCP)', () => {
       '/ip4/127.0.0.1/tcp/0'
     ])
 
-    let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     await start(natManager)
 
-    observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
   })
 
@@ -216,12 +217,12 @@ describe('Nat Manager (TCP)', () => {
       '/ip4/0.0.0.0/tcp/0/sctp/0'
     ])
 
-    let observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
     await start(natManager)
 
-    observed = components.getAddressManager().getObservedAddrs().map(ma => ma.toString())
+    observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
   })
 
@@ -229,8 +230,7 @@ describe('Nat Manager (TCP)', () => {
     const peerId = await createFromJSON(Peers[0])
 
     expect(() => {
-      // @ts-expect-error invalid parameters
-      new NatManager(new Components({ peerId }), { ttl: 5 }) // eslint-disable-line no-new
+      new NatManager(new DefaultComponents({ peerId }), { ttl: 5, enabled: true, keepAlive: true }) // eslint-disable-line no-new
     }).to.throw().with.property('code', codes.ERR_INVALID_PARAMETERS)
   })
 })

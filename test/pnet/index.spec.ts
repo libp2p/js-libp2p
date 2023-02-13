@@ -3,10 +3,10 @@ import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { PreSharedKeyConnectionProtector, generateKey } from '../../src/pnet/index.js'
+import { preSharedKey, generateKey } from '../../src/pnet/index.js'
 import { INVALID_PSK } from '../../src/pnet/errors.js'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 const swarmKeyBuffer = new Uint8Array(95)
@@ -18,24 +18,24 @@ generateKey(wrongSwarmKeyBuffer)
 
 describe('private network', () => {
   it('should accept a valid psk buffer', () => {
-    const protector = new PreSharedKeyConnectionProtector({
+    const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })
+    })()
 
-    expect(protector.tag).to.equal('/key/swarm/psk/1.0.0/')
+    expect(protector).to.have.property('tag', '/key/swarm/psk/1.0.0/')
   })
 
   it('should protect a simple connection', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ],
       remotePeer: await createEd25519PeerId()
     })
-    const protector = new PreSharedKeyConnectionProtector({
+    const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })
+    })()
 
     const [aToB, bToA] = await Promise.all([
       protector.protect(inbound),
@@ -63,18 +63,18 @@ describe('private network', () => {
   it('should not be able to share correct data with different keys', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ],
       remotePeer: await createEd25519PeerId()
     })
-    const protector = new PreSharedKeyConnectionProtector({
+    const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })
-    const protectorB = new PreSharedKeyConnectionProtector({
+    })()
+    const protectorB = preSharedKey({
       enabled: true,
       psk: wrongSwarmKeyBuffer
-    })
+    })()
 
     const [aToB, bToA] = await Promise.all([
       protector.protect(inbound),
@@ -97,17 +97,17 @@ describe('private network', () => {
   describe('invalid psks', () => {
     it('should not accept a bad psk', () => {
       expect(() => {
-        return new PreSharedKeyConnectionProtector({
+        return preSharedKey({
           psk: uint8ArrayFromString('not-a-key')
-        })
+        })()
       }).to.throw(INVALID_PSK)
     })
 
     it('should not accept a psk of incorrect length', () => {
       expect(() => {
-        return new PreSharedKeyConnectionProtector({
+        return preSharedKey({
           psk: uint8ArrayFromString('/key/swarm/psk/1.0.0/\n/base16/\ndffb7e')
-        })
+        })()
       }).to.throw(INVALID_PSK)
     })
   })

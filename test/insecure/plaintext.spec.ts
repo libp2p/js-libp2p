@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import Peers from '../fixtures/peers.js'
-import { Plaintext } from '../../src/insecure/index.js'
+import { plaintext } from '../../src/insecure/index.js'
 import {
   InvalidCryptoExchangeError,
   UnexpectedPeerError
@@ -12,14 +12,14 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 
 describe('plaintext', () => {
   let localPeer: PeerId
   let remotePeer: PeerId
   let wrongPeer: PeerId
-  let plaintext: ConnectionEncrypter
+  let encrypter: ConnectionEncrypter
 
   beforeEach(async () => {
     [localPeer, remotePeer, wrongPeer] = await Promise.all([
@@ -28,7 +28,7 @@ describe('plaintext', () => {
       createFromJSON(Peers[2])
     ])
 
-    plaintext = new Plaintext()
+    encrypter = plaintext()()
   })
 
   afterEach(() => {
@@ -39,14 +39,14 @@ describe('plaintext', () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ]
     })
 
     await Promise.all([
-      plaintext.secureInbound(remotePeer, inbound),
-      plaintext.secureOutbound(localPeer, outbound, wrongPeer)
+      encrypter.secureInbound(remotePeer, inbound),
+      encrypter.secureOutbound(localPeer, outbound, wrongPeer)
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
       expect(err).to.have.property('code', UnexpectedPeerError.code)
@@ -60,14 +60,14 @@ describe('plaintext', () => {
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
       addrs: [
-        new Multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        new Multiaddr('/ip4/127.0.0.1/tcp/1235')
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
       ]
     })
 
     await expect(Promise.all([
-      plaintext.secureInbound(localPeer, inbound),
-      plaintext.secureOutbound(remotePeer, outbound, localPeer)
+      encrypter.secureInbound(localPeer, inbound),
+      encrypter.secureOutbound(remotePeer, outbound, localPeer)
     ]))
       .to.eventually.be.rejected.with.property('code', InvalidCryptoExchangeError.code)
   })

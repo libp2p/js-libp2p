@@ -13,11 +13,11 @@ import {
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressSorter, PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
 import type { Connection } from '@libp2p/interface-connection'
-import type { Components } from '@libp2p/components'
 import sort from 'it-sort'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import type { RelayComponents } from './index.js'
 
 const log = logger('libp2p:auto-relay')
 
@@ -30,13 +30,13 @@ export interface AutoRelayInit {
 }
 
 export class AutoRelay {
-  private readonly components: Components
+  private readonly components: RelayComponents
   private readonly addressSorter: AddressSorter
   private readonly maxListeners: number
   private readonly listenRelays: Set<string>
   private readonly onError: (error: Error, msg?: string) => void
 
-  constructor (components: Components, init: AutoRelayInit) {
+  constructor (components: RelayComponents, init: AutoRelayInit) {
     this.components = components
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
     this.maxListeners = init.maxListeners ?? 1
@@ -46,12 +46,12 @@ export class AutoRelay {
     this._onProtocolChange = this._onProtocolChange.bind(this)
     this._onPeerDisconnected = this._onPeerDisconnected.bind(this)
 
-    this.components.getPeerStore().addEventListener('change:protocols', (evt) => {
+    this.components.peerStore.addEventListener('change:protocols', (evt) => {
       void this._onProtocolChange(evt).catch(err => {
         log.error(err)
       })
     })
-    this.components.getConnectionManager().addEventListener('peer:disconnect', this._onPeerDisconnected)
+    this.components.connectionManager.addEventListener('peer:disconnect', this._onPeerDisconnected)
   }
 
   /**
@@ -85,7 +85,7 @@ export class AutoRelay {
 
     // If protocol, check if can hop, store info in the metadataBook and listen on it
     try {
-      const connections = this.components.getConnectionManager().getConnections(peerId)
+      const connections = this.components.connectionManager.getConnections(peerId)
 
       if (connections.length === 0) {
         return
@@ -102,7 +102,7 @@ export class AutoRelay {
       const supportsHop = await canHop({ connection })
 
       if (supportsHop) {
-        await this.components.getPeerStore().metadataBook.setValue(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
+        await this.components.peerStore.metadataBook.setValue(peerId, HOP_METADATA_KEY, uint8ArrayFromString(HOP_METADATA_VALUE))
         await this._addListenRelay(connection, id)
       }
     } catch (err: any) {
@@ -140,7 +140,7 @@ export class AutoRelay {
 
       // Get peer known addresses and sort them with public addresses first
       const remoteAddrs = await pipe(
-        await this.components.getPeerStore().addressBook.get(connection.remotePeer),
+        await this.components.peerStore.addressBook.get(connection.remotePeer),
         (source) => sort(source, this.addressSorter),
         async (source) => await all(source)
       )
@@ -158,7 +158,7 @@ export class AutoRelay {
             multiaddr = multiaddr.encapsulate('/p2p-circuit')
 
             // Announce multiaddrs will update on listen success by TransportManager event being triggered
-            await this.components.getTransportManager().listen([multiaddr])
+            await this.components.transportManager.listen([multiaddr])
             return true
           } catch (err: any) {
             log.error('error listening on circuit address', err)
@@ -203,7 +203,7 @@ export class AutoRelay {
     }
 
     const knownHopsToDial = []
-    const peers = await this.components.getPeerStore().all()
+    const peers = await this.components.peerStore.all()
 
     // Check if we have known hop peers to use and attempt to listen on the already connected
     for (const { id, metadata } of peers) {
@@ -225,7 +225,7 @@ export class AutoRelay {
         continue
       }
 
-      const connections = this.components.getConnectionManager().getConnections(id)
+      const connections = this.components.connectionManager.getConnections(id)
 
       // If not connected, store for possible later use.
       if (connections.length === 0) {
@@ -254,13 +254,19 @@ export class AutoRelay {
     // Try to find relays to hop on the network
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
-      for await (const provider of this.components.getContentRouting().findProviders(cid)) {
+      for await (const provider of this.components.contentRouting.findProviders(cid)) {
         if (provider.multiaddrs.length === 0) {
           continue
         }
 
         const peerId = provider.id
-        await this.components.getPeerStore().addressBook.add(peerId, provider.multiaddrs)
+
+        if (peerId.equals(this.components.peerId)) {
+          // Skip the provider if it's us as dialing will fail
+          continue
+        }
+
+        await this.components.peerStore.addressBook.add(peerId, provider.multiaddrs)
 
         await this._tryToListenOnRelay(peerId)
 
@@ -276,7 +282,7 @@ export class AutoRelay {
 
   async _tryToListenOnRelay (peerId: PeerId) {
     try {
-      const connection = await this.components.getConnectionManager().openConnection(peerId)
+      const connection = await this.components.connectionManager.openConnection(peerId)
       await this._addListenRelay(connection, peerId.toString())
     } catch (err: any) {
       log.error('Could not use %p as relay', peerId, err)

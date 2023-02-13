@@ -28,7 +28,7 @@ export function streamToConsole(stream) {
     // Decode length-prefixed data
     lp.decode(),
     // Turn buffers into strings
-    (source) => map(source, (buf) => uint8ArrayToString(buf)),
+    (source) => map(source, (buf) => uint8ArrayToString(buf.subarray())),
     // Sink function
     async function (source) {
       // For each chunk of data

@@ -14,35 +14,37 @@ First, let's update our config to support Peer Routing and Content Routing.
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { KadDHT } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
-const node = await createLibp2p({
-  addresses: {
-    listen: ['/ip4/0.0.0.0/tcp/0']
-  },
-  transports: [
-    new TCP()
-  ],
-  streamMuxers: [
-    new Mplex()
-  ],
-  connEncryption: [
-    new Noise()
-  ],
-  // we add the DHT module that will enable Peer and Content Routing
-  dht: KadDHT
-})
+const createNode = async () => {
+  const node = await createLibp2p({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()],
+    dht: kadDHT()
+  })
+
+  return node
+}
 ```
 
 Once that is done, we can use the createNode function we developed in the previous example to create 3 nodes. Connect node 1 to node 2 and node 2 to node 3. We will use node 2 as a way to find the whereabouts of node 3
 
 ```JavaScript
-const node1 = nodes[0]
-const node2 = nodes[1]
-const node3 = nodes[2]
+const [node1, node2, node3] = await Promise.all([
+  createNode(),
+  createNode(),
+  createNode()
+])
 
-await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
 
 await Promise.all([
   node1.dial(node2.peerId),
@@ -50,12 +52,12 @@ await Promise.all([
 ])
 
 // Set up of the cons might take time
-await delay(100)
+await new Promise(resolve => setTimeout(resolve, 100))
 
 const peer = await node1.peerRouting.findPeer(node3.peerId)
 
 console.log('Found it, multiaddrs are:')
-peer.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${peer.id.toB58String()}`))
+peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
 ```
 
 You should see the output being something like:
@@ -78,12 +80,17 @@ You can find this example completed in [2.js](./2.js), however as you will see i
 Instead of calling `peerRouting.findPeer`, we will use `contentRouting.provide` and `contentRouting.findProviders`.
 
 ```JavaScript
+import { CID } from 'multiformats/cid'
+import all from 'it-all'
+
+const cid = CID.parse('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
 await node1.contentRouting.provide(cid)
-console.log('Node %s is providing %s', node1.peerId.toB58String(), cid.toString())
 
-const provs = await all(node3.contentRouting.findProviders(cid, { timeout: 5000 }))
+console.log('Node %s is providing %s', node1.peerId.toString(), cid.toString())
 
-console.log('Found provider:', providers[0].id.toB58String())
+const providers = await all(node3.contentRouting.findProviders(cid, { timeout: 5000 }))
+
+console.log('Found provider:', providers[0].id.toString())
 ```
 
 The output of your program should look like:

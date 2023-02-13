@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { WebSockets } from '@libp2p/websockets'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { webSockets } from '@libp2p/websockets'
+import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { Libp2pOptions } from '../../src/index.js'
 import sinon from 'sinon'
-import { KadDHT } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 
 describe('getPublicKey', () => {
   let libp2p: Libp2pNode
@@ -17,12 +17,12 @@ describe('getPublicKey', () => {
     const config: Libp2pOptions = {
       peerId,
       transports: [
-        new WebSockets()
+        webSockets()
       ],
       connectionEncryption: [
-        NOISE
+        plaintext()
       ],
-      dht: new KadDHT()
+      dht: kadDHT()
     }
     libp2p = await createLibp2pNode(config)
 

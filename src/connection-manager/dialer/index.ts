@@ -1,11 +1,7 @@
 import { logger } from '@libp2p/logger'
-import all from 'it-all'
-import filter from 'it-filter'
-import { pipe } from 'it-pipe'
 import errCode from 'err-code'
-import { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import { isMultiaddr, Multiaddr, Resolver, multiaddr, resolvers } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
-import { AbortError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'events'
 import { DialAction, DialRequest } from './dial-request.js'
@@ -18,22 +14,17 @@ import {
   MAX_PER_PEER_DIALS,
   MAX_ADDRS_TO_DIAL
 } from '../../constants.js'
-import type { Connection } from '@libp2p/interface-connection'
+import type { Connection, ConnectionGater } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { getPeer } from '../../get-peer.js'
-import sort from 'it-sort'
-import { Components, Initializable } from '@libp2p/components'
-import map from 'it-map'
-import type { AddressSorter } from '@libp2p/interface-peer-store'
-import type { ComponentMetricsTracker } from '@libp2p/interface-metrics'
+import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
+import { getPeerAddress } from '../../get-peer.js'
+import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
+import type { Metrics } from '@libp2p/interface-metrics'
+import type { Dialer } from '@libp2p/interface-connection-manager'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 const log = logger('libp2p:dialer')
-
-const METRICS_COMPONENT = 'dialler'
-const METRICS_PENDING_DIALS = 'pending-dials'
-const METRICS_PENDING_DIAL_TARGETS = 'pending-dial-targets'
 
 export interface DialTarget {
   id: string
@@ -82,45 +73,47 @@ export interface DialerInit {
    * Multiaddr resolvers to use when dialing
    */
   resolvers?: Record<string, Resolver>
-  metrics?: ComponentMetricsTracker
 }
 
-export class Dialer implements Startable, Initializable {
-  private components: Components = new Components()
+export interface DefaultDialerComponents {
+  peerId: PeerId
+  metrics?: Metrics
+  peerStore: PeerStore
+  transportManager: TransportManager
+  connectionGater: ConnectionGater
+}
+
+export class DefaultDialer implements Startable, Dialer {
+  private readonly components: DefaultDialerComponents
   private readonly addressSorter: AddressSorter
   private readonly maxAddrsToDial: number
   private readonly timeout: number
   private readonly maxDialsPerPeer: number
   public tokens: number[]
   public pendingDials: Map<string, PendingDial>
-  public pendingDialTargets: Map<string, PendingDialTarget>
+  public pendingDialTargets: Map<string, AbortController>
   private started: boolean
 
-  constructor (init: DialerInit = {}) {
+  constructor (components: DefaultDialerComponents, init: DialerInit = {}) {
     this.started = false
     this.addressSorter = init.addressSorter ?? publicAddressesFirst
     this.maxAddrsToDial = init.maxAddrsToDial ?? MAX_ADDRS_TO_DIAL
     this.timeout = init.dialTimeout ?? DIAL_TIMEOUT
     this.maxDialsPerPeer = init.maxDialsPerPeer ?? MAX_PER_PEER_DIALS
     this.tokens = [...new Array(init.maxParallelDials ?? MAX_PARALLEL_DIALS)].map((_, index) => index)
+    this.components = components
     this.pendingDials = trackedMap({
-      component: METRICS_COMPONENT,
-      metric: METRICS_PENDING_DIALS,
-      metrics: init.metrics
+      name: 'libp2p_dialler_pending_dials',
+      metrics: components.metrics
     })
     this.pendingDialTargets = trackedMap({
-      component: METRICS_COMPONENT,
-      metric: METRICS_PENDING_DIAL_TARGETS,
-      metrics: init.metrics
+      name: 'libp2p_dialler_pending_dial_targets',
+      metrics: components.metrics
     })
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      Multiaddr.resolvers.set(key, value)
+      resolvers.set(key, value)
     }
-  }
-
-  init (components: Components): void {
-    this.components = components
   }
 
   isStarted () {
@@ -147,7 +140,7 @@ export class Dialer implements Startable, Initializable {
     this.pendingDials.clear()
 
     for (const pendingTarget of this.pendingDialTargets.values()) {
-      pendingTarget.reject(new AbortError('Dialer was destroyed'))
+      pendingTarget.abort()
     }
     this.pendingDialTargets.clear()
   }
@@ -157,32 +150,54 @@ export class Dialer implements Startable, Initializable {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    */
-  async dial (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
-    const { id, multiaddrs } = getPeer(peer)
+  async dial (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+    const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (this.components.getPeerId().equals(id)) {
-      throw errCode(new Error('Tried to dial self'), codes.ERR_DIALED_SELF)
+    if (peerId != null) {
+      if (this.components.peerId.equals(peerId)) {
+        throw errCode(new Error('Tried to dial self'), codes.ERR_DIALED_SELF)
+      }
+
+      if (multiaddr != null) {
+        log('storing multiaddrs %p', peerId, multiaddr)
+        await this.components.peerStore.addressBook.add(peerId, [multiaddr])
+      }
+
+      if (await this.components.connectionGater.denyDialPeer(peerId)) {
+        throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
+      }
     }
 
-    log('check multiaddrs %p', id)
+    log('creating dial target for %p', peerId)
 
-    if (multiaddrs != null && multiaddrs.length > 0) {
-      log('storing multiaddrs %p', id, multiaddrs)
-      await this.components.getPeerStore().addressBook.add(id, multiaddrs)
+    // resolving multiaddrs can involve dns lookups so allow them to be aborted
+    const controller = new AbortController()
+    const controllerId = randomId()
+    this.pendingDialTargets.set(controllerId, controller)
+    let signal = controller.signal
+
+    // merge with the passed signal, if any
+    if (options.signal != null) {
+      signal = anySignal([signal, options.signal])
     }
 
-    if (await this.components.getConnectionGater().denyDialPeer(id)) {
-      throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
+    let dialTarget: DialTarget
+
+    try {
+      dialTarget = await this._createDialTarget({ peerId, multiaddr }, {
+        ...options,
+        signal
+      })
+    } finally {
+      // done resolving the multiaddrs so remove the abort controller
+      this.pendingDialTargets.delete(controllerId)
     }
-
-    log('creating dial target for %p', id)
-
-    const dialTarget = await this._createCancellableDialTarget(id, options)
 
     if (dialTarget.addrs.length === 0) {
       throw errCode(new Error('The dial request has no valid addresses'), codes.ERR_NO_VALID_ADDRESSES)
     }
 
+    // try to join an in-flight dial for this peer if one is available
     const pendingDial = this.pendingDials.get(dialTarget.id) ?? this._createPendingDial(dialTarget, options)
 
     try {
@@ -203,72 +218,81 @@ export class Dialer implements Startable, Initializable {
   }
 
   /**
-   * Connects to a given `peer` by dialing all of its known addresses.
-   * The dial to the first address that is successfully able to upgrade a connection
-   * will be used.
+   * Creates a DialTarget. The DialTarget is used to create and track
+   * the DialRequest to a given peer.
+   *
+   * If a multiaddr is received it should be the only address attempted.
+   *
+   * Multiaddrs not supported by the available transports will be filtered out.
    */
-  async _createCancellableDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
-    // Make dial target promise cancellable
-    const id = `${(parseInt(String(Math.random() * 1e9), 10)).toString()}${Date.now()}`
-    const cancellablePromise = new Promise<DialTarget>((resolve, reject) => {
-      this.pendingDialTargets.set(id, { resolve, reject })
-    })
+  async _createDialTarget (peerIdOrMultiaddr: { peerId?: PeerId, multiaddr?: Multiaddr }, options: AbortOptions): Promise<DialTarget> {
+    let addrs: Multiaddr[] = []
 
-    try {
-      const dialTarget = await Promise.race([
-        this._createDialTarget(peer, options),
-        cancellablePromise
-      ])
+    if (isMultiaddr(peerIdOrMultiaddr.multiaddr)) {
+      addrs.push(peerIdOrMultiaddr.multiaddr)
+    }
 
-      return dialTarget
-    } finally {
-      this.pendingDialTargets.delete(id)
+    // only load addresses if a peer id was passed, otherwise only dial the passed multiaddr
+    if (!isMultiaddr(peerIdOrMultiaddr.multiaddr) && isPeerId(peerIdOrMultiaddr.peerId)) {
+      addrs.push(...await this._loadAddresses(peerIdOrMultiaddr.peerId))
+    }
+
+    addrs = (await Promise.all(
+      addrs.map(async (ma) => await this._resolve(ma, options))
+    ))
+      .flat()
+      // Multiaddrs not supported by the available transports will be filtered out.
+      .filter(ma => Boolean(this.components.transportManager.transportForMultiaddr(ma)))
+
+    // deduplicate addresses
+    addrs = [...new Set(addrs.map(ma => ma.toString()))].map(ma => multiaddr(ma))
+
+    if (addrs.length > this.maxAddrsToDial) {
+      throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
+    }
+
+    const peerId = isPeerId(peerIdOrMultiaddr.peerId) ? peerIdOrMultiaddr.peerId : undefined
+
+    if (peerId != null) {
+      const peerIdMultiaddr = `/p2p/${peerId.toString()}`
+      addrs = addrs.map(addr => {
+        const addressPeerId = addr.getPeerId()
+
+        if (addressPeerId == null || !peerId.equals(addressPeerId)) {
+          return addr.encapsulate(peerIdMultiaddr)
+        }
+
+        return addr
+      })
+    }
+
+    return {
+      id: peerId == null ? randomId() : peerId.toString(),
+      addrs
     }
   }
 
   /**
-   * Creates a DialTarget. The DialTarget is used to create and track
-   * the DialRequest to a given peer.
-   * If a multiaddr is received it should be the first address attempted.
-   * Multiaddrs not supported by the available transports will be filtered out.
+   * Loads a list of addresses from the peer store for the passed peer id
    */
-  async _createDialTarget (peer: PeerId, options: AbortOptions): Promise<DialTarget> {
-    const knownAddrs = await pipe(
-      await this.components.getPeerStore().addressBook.get(peer),
-      (source) => filter(source, async (address) => {
-        return !(await this.components.getConnectionGater().denyDialMultiaddr(peer, address.multiaddr))
-      }),
-      (source) => sort(source, this.addressSorter),
-      (source) => map(source, (address) => {
-        const ma = address.multiaddr
+  async _loadAddresses (peer: PeerId): Promise<Multiaddr[]> {
+    const addresses = await this.components.peerStore.addressBook.get(peer)
 
-        if (peer.toString() === ma.getPeerId()) {
-          return ma
+    return (await Promise.all(
+      addresses.map(async address => {
+        const deny = await this.components.connectionGater.denyDialMultiaddr(peer, address.multiaddr)
+
+        if (deny) {
+          return false
         }
 
-        return ma.encapsulate(`/p2p/${peer.toString()}`)
-      }),
-      async (source) => await all(source)
-    )
-
-    const addrs: Multiaddr[] = []
-    for (const a of knownAddrs) {
-      const resolvedAddrs = await this._resolve(a, options)
-      resolvedAddrs.forEach(ra => addrs.push(ra))
-    }
-
-    // Multiaddrs not supported by the available transports will be filtered out.
-    const supportedAddrs = addrs.filter(a => this.components.getTransportManager().transportForMultiaddr(a))
-
-    if (supportedAddrs.length > this.maxAddrsToDial) {
-      await this.components.getPeerStore().delete(peer)
-      throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
-    }
-
-    return {
-      id: peer.toString(),
-      addrs: supportedAddrs
-    }
+        return address
+      })
+    ))
+      .filter(isTruthy)
+      // Sort addresses so, for example, we try certified public address first
+      .sort(this.addressSorter)
+      .map(address => address.multiaddr)
   }
 
   /**
@@ -284,7 +308,10 @@ export class Dialer implements Startable, Initializable {
         throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
       }
 
-      return await this.components.getTransportManager().dial(addr, options)
+      return await this.components.transportManager.dial(addr, options).catch(err => {
+        log.error('dial to %s failed', addr, err)
+        throw err
+      })
     }
 
     const dialRequest = new DialRequest({
@@ -370,7 +397,7 @@ export class Dialer implements Startable, Initializable {
    */
   async _resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
     try {
-      ma = new Multiaddr(ma.toString()) // Use current multiaddr module
+      ma = multiaddr(ma.toString()) // Use current multiaddr module
       const multiaddrs = await ma.resolve(options)
       return multiaddrs
     } catch (err) {
@@ -378,4 +405,18 @@ export class Dialer implements Startable, Initializable {
       return []
     }
   }
+}
+
+/**
+ * Type safe version of `list.filter(Boolean)`
+ */
+function isTruthy <T> (e: T | false | null | undefined): e is T {
+  return Boolean(e)
+}
+
+/**
+ * Returns a random string
+ */
+function randomId (): string {
+  return `${(parseInt(String(Math.random() * 1e9), 10)).toString()}${Date.now()}`
 }

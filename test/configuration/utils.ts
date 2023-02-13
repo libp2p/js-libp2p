@@ -1,7 +1,7 @@
-import { PubSubBaseProtocol } from '@libp2p/pubsub'
-import { Plaintext } from '../../src/insecure/index.js'
-import { Mplex } from '@libp2p/mplex'
-import { WebSockets } from '@libp2p/websockets'
+import { PubSubBaseProtocol, PubSubComponents } from '@libp2p/pubsub'
+import { plaintext } from '../../src/insecure/index.js'
+import { mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import mergeOptions from 'merge-options'
@@ -9,20 +9,18 @@ import type { Message, PublishResult, PubSubInit, PubSubRPC, PubSubRPCMessage } 
 import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import * as cborg from 'cborg'
-import { peerIdFromString } from '@libp2p/peer-id'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
 export const baseOptions: Partial<Libp2pInit> = {
-  peerId: peerIdFromString('12D3KooWJKCJW8Y26pRFNv78TCMGLNTfyN8oKaFswMRYXTzSbSst'),
-  transports: [new WebSockets()],
-  streamMuxers: [new Mplex()],
-  connectionEncryption: [new Plaintext()]
+  transports: [webSockets()],
+  streamMuxers: [mplex()],
+  connectionEncryption: [plaintext()]
 }
 
 class MockPubSub extends PubSubBaseProtocol {
-  constructor (init?: PubSubInit) {
-    super({
+  constructor (components: PubSubComponents, init?: PubSubInit) {
+    super(components, {
       multicodecs: ['/mock-pubsub'],
       ...init
     })
@@ -53,7 +51,7 @@ class MockPubSub extends PubSubBaseProtocol {
     }
 
     peers.forEach(id => {
-      if (this.components.getPeerId().equals(id)) {
+      if (this.components.peerId.equals(id)) {
         return
       }
 
@@ -70,11 +68,11 @@ class MockPubSub extends PubSubBaseProtocol {
 }
 
 export const pubsubSubsystemOptions: Libp2pOptions = mergeOptions(baseOptions, {
-  pubsub: new MockPubSub(),
+  pubsub: (components: PubSubComponents) => new MockPubSub(components),
   addresses: {
     listen: [`${relayAddr.toString()}/p2p-circuit`]
   },
   transports: [
-    new WebSockets({ filter: filters.all })
+    webSockets({ filter: filters.all })
   ]
 })

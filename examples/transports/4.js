@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 import fs from 'fs'
 import https from 'https'
 import { pipe } from 'it-pipe'
@@ -26,16 +26,16 @@ const createNode = async (addresses = []) => {
       listen: addresses
     },
     transports: [
-      new TCP(),
-      new WebSockets({
+      tcp(),
+      webSockets({
         server: httpServer,
         websocket: {
           rejectUnauthorized: false
         }
       })
     ],
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()],
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()],
     connectionManager: {
       // Disable autoDial as it would fail because we are using a self-signed cert.
       // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
@@ -43,7 +43,6 @@ const createNode = async (addresses = []) => {
     }
   })
 
-  await node.start()
   return node
 }
 
@@ -57,7 +56,7 @@ function print ({ stream }) {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(uint8ArrayToString(msg))
+        console.log(uint8ArrayToString(msg.subarray()))
       }
     }
   )

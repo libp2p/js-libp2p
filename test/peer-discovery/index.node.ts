@@ -3,11 +3,11 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import defer from 'p-defer'
-import { Bootstrap } from '@libp2p/bootstrap'
+import { bootstrap } from '@libp2p/bootstrap'
 import { randomBytes } from '@libp2p/crypto'
-import { KadDHT } from '@libp2p/kad-dht'
-import { MulticastDNS } from '@libp2p/mdns'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { kadDHT } from '@libp2p/kad-dht'
+import { mdns } from '@libp2p/mdns'
+import { multiaddr } from '@multiformats/multiaddr'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createPeerId } from '../utils/creators/peer.js'
@@ -16,7 +16,7 @@ import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('peer discovery scenarios', () => {
   let peerId: PeerId, remotePeerId1: PeerId, remotePeerId2: PeerId
@@ -40,7 +40,7 @@ describe('peer discovery scenarios', () => {
     libp2p = await createLibp2pNode(createBaseOptions({
       peerId,
       peerDiscovery: [
-        new MulticastDNS()
+        mdns()
       ]
     }))
 
@@ -77,7 +77,7 @@ describe('peer discovery scenarios', () => {
         autoDial: false
       },
       peerDiscovery: [
-        new Bootstrap({
+        bootstrap({
           list: bootstrappers
         })
       ]
@@ -117,7 +117,7 @@ describe('peer discovery scenarios', () => {
         ]
       },
       peerDiscovery: [
-        new MulticastDNS({
+        mdns({
           interval: 200, // discover quickly
           serviceTag
         })
@@ -172,7 +172,7 @@ describe('peer discovery scenarios', () => {
       connectionManager: {
         autoDial: false
       },
-      dht: new KadDHT()
+      dht: kadDHT()
     })
 
     const localConfig = getConfig(peerId)

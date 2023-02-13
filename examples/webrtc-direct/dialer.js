@@ -1,18 +1,18 @@
 import { createLibp2p } from 'libp2p'
-import { WebRTCDirect } from '@libp2p/webrtc-direct'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Bootstrap } from '@libp2p/bootstrap'
+import { webRTCDirect } from '@libp2p/webrtc-direct'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
+import { bootstrap } from '@libp2p/bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
   // use the same peer id as in `listener.js` to avoid copy-pasting of listener's peer id into `peerDiscovery`
   const hardcodedPeerId = '12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m'
   const libp2p = await createLibp2p({
-    transports: [new WebRTCDirect()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
+    transports: [webRTCDirect()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()],
     peerDiscovery: [
-      new Bootstrap({
+      bootstrap({
         list: [`/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/${hardcodedPeerId}`]
       })
     ]
@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Listen for new peers
   libp2p.addEventListener('peer:discovery', (evt) => {
     log(`Found peer ${evt.detail.id.toString()}`)
+
+    // dial them when we discover them
+    libp2p.dial(evt.detail.id).catch(err => {
+      log(`Could not dial ${evt.detail.id}`, err)
+    })
   })
 
   // Listen for new connections to peers
@@ -43,7 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     log(`Disconnected from ${evt.detail.remotePeer.toString()}`)
   })
 
-  await libp2p.start()
   status.innerText = 'libp2p started!'
   log(`libp2p id is ${libp2p.peerId.toString()}`)
 })

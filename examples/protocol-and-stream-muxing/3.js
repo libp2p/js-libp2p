@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -13,12 +13,10 @@ const createNode = async () => {
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()]
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()]
   })
-
-  await node.start()
 
   return node
 }
@@ -37,7 +35,7 @@ const createNode = async () => {
       stream,
       async function (source) {
         for await (const msg of source) {
-          console.log(uint8ArrayToString(msg))
+          console.log(uint8ArrayToString(msg.subarray()))
         }
       }
     )
@@ -48,7 +46,7 @@ const createNode = async () => {
       stream,
       async function (source) {
         for await (const msg of source) {
-          console.log(uint8ArrayToString(msg))
+          console.log(uint8ArrayToString(msg.subarray()))
         }
       }
     )

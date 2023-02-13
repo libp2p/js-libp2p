@@ -4,7 +4,7 @@ import * as Constants from './constants.js'
 import { AGENT_VERSION } from './identify/consts.js'
 import * as RelayConstants from './circuit/constants.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
-import { FaultTolerance } from './transport-manager.js'
+import { FaultTolerance } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pInit } from './index.js'
 import { codes, messages } from './errors.js'
@@ -36,17 +36,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
   connectionGater: {},
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
-  },
-  metrics: {
-    enabled: false,
-    computeThrottleMaxQueueSize: 1000,
-    computeThrottleTimeout: 2000,
-    movingAverageIntervals: [
-      60 * 1000, // 1 minute
-      5 * 60 * 1000, // 5 minutes
-      15 * 60 * 1000 // 15 minutes
-    ],
-    maxOldPeersRetention: 50
   },
   peerRouting: {
     refreshManager: {

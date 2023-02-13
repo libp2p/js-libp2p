@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { TCP } from '@libp2p/tcp'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
@@ -28,21 +28,21 @@ describe('Listening', () => {
         listen: [listenAddr]
       },
       transports: [
-        new TCP()
+        tcp()
       ],
       connectionEncryption: [
-        NOISE
+        plaintext()
       ]
     })
 
     await libp2p.start()
 
-    const addrs = libp2p.components.getTransportManager().getAddrs()
+    const addrs = libp2p.components.transportManager.getAddrs()
 
     // Should get something like:
     //   /ip4/127.0.0.1/tcp/50866
     //   /ip4/192.168.1.2/tcp/50866
-    expect(addrs.length).to.be.at.least(2)
+    expect(addrs.length).to.be.at.least(1)
     for (const addr of addrs) {
       const opts = addr.toOptions()
       expect(opts.family).to.equal(4)

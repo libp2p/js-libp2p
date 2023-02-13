@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 import { CID } from 'multiformats/cid'
-import { KadDHT } from '@libp2p/kad-dht'
+import { kadDHT } from '@libp2p/kad-dht'
 import all from 'it-all'
 import delay from 'delay'
 
@@ -14,13 +14,12 @@ const createNode = async () => {
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    streamMuxers: [new Mplex()],
-    connectionEncryption: [new Noise()],
-    dht: new KadDHT()
+    transports: [tcp()],
+    streamMuxers: [mplex()],
+    connectionEncryption: [noise()],
+    dht: kadDHT()
   })
 
-  await node.start()
   return node
 }
 
@@ -40,7 +39,7 @@ const createNode = async () => {
   ])
 
   // Wait for onConnect handlers in the DHT
-  await delay(100)
+  await delay(1000)
 
   const cid = CID.parse('QmTp9VkYvnHyrqKQuFPiuZkiX9gPcqj6x5LJ1rmWuSySnL')
   await node1.contentRouting.provide(cid)

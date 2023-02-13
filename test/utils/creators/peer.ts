@@ -1,12 +1,13 @@
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import Peers from '../../fixtures/peers.js'
 import { createBaseOptions } from '../base-options.browser.js'
 import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
-import type { AddressesConfig, Libp2pOptions } from '../../../src/index.js'
+import type { Libp2pOptions } from '../../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AddressManagerInit } from '../../../src/address-manager/index.js'
 
-const listenAddr = new Multiaddr('/ip4/127.0.0.1/tcp/0')
+const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 export interface CreatePeerOptions {
   /**
@@ -34,7 +35,7 @@ export async function createNode (options: CreatePeerOptions = {}): Promise<Libp
   const started = options.started ?? true
   const config = options.config ?? {}
   const peerId = await createPeerId({ fixture: options.fixture })
-  const addresses: AddressesConfig = started
+  const addresses: AddressManagerInit = started
     ? {
         listen: [listenAddr.toString()],
         announce: [],
@@ -64,7 +65,7 @@ export async function populateAddressBooks (peers: Libp2pNode[]) {
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
-        await peers[i].components.getPeerStore().addressBook.set(peers[j].peerId, peers[j].components.getAddressManager().getAddresses())
+        await peers[i].components.peerStore.addressBook.set(peers[j].peerId, peers[j].components.addressManager.getAddresses())
       }
     }
   }

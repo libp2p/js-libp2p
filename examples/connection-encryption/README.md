@@ -14,16 +14,16 @@ To add them to your libp2p configuration, all you have to do is:
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
   return await createLibp2p({
-    transports: [ new TCP() ],
-    streamMuxers: [ new Mplex() ],
+    transports: [ tcp() ],
+    streamMuxers: [ mplex() ],
     // Attach noise as the crypto channel to use
-    conectionEncrypters: [ new Noise() ]
+    conectionEncrypters: [ noise() ]
   })
 }
 ```

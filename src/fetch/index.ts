@@ -7,14 +7,16 @@ import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Stream } from '@libp2p/interface-connection'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
-import type { Components } from '@libp2p/components'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
 import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:fetch')
 
@@ -38,6 +40,11 @@ export interface LookupFunction {
   (key: string): Promise<Uint8Array | null>
 }
 
+export interface FetchServiceComponents {
+  registrar: Registrar
+  connectionManager: ConnectionManager
+}
+
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
  * Developers can register one or more lookup function for retrieving the value corresponding to
@@ -46,12 +53,12 @@ export interface LookupFunction {
  */
 export class FetchService implements Startable {
   public readonly protocol: string
-  private readonly components: Components
+  private readonly components: FetchServiceComponents
   private readonly lookupFunctions: Map<string, LookupFunction>
   private started: boolean
   private readonly init: FetchServiceInit
 
-  constructor (components: Components, init: FetchServiceInit) {
+  constructor (components: FetchServiceComponents, init: FetchServiceInit) {
     this.started = false
     this.components = components
     this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
@@ -61,7 +68,7 @@ export class FetchService implements Startable {
   }
 
   async start () {
-    await this.components.getRegistrar().handle(this.protocol, (data) => {
+    await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
         .catch(err => {
           log.error(err)
@@ -77,7 +84,7 @@ export class FetchService implements Startable {
   }
 
   async stop () {
-    await this.components.getRegistrar().unhandle(this.protocol)
+    await this.components.registrar.unhandle(this.protocol)
     this.started = false
   }
 
@@ -91,13 +98,14 @@ export class FetchService implements Startable {
   async fetch (peer: PeerId, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
     log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.getConnectionManager().openConnection(peer, options)
+    const connection = await this.components.connectionManager.openConnection(peer, options)
     let timeoutController
     let signal = options.signal
     let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
+      log('using default timeout of %d ms', this.init.timeout)
       timeoutController = new TimeoutController(this.init.timeout)
       signal = timeoutController.signal
 
@@ -108,12 +116,14 @@ export class FetchService implements Startable {
     }
 
     try {
-      stream = await connection.newStream([this.protocol], {
+      stream = await connection.newStream(this.protocol, {
         signal
       })
 
       // make stream abortable
       const source = abortableDuplex(stream, signal)
+
+      log('fetch %s', key)
 
       const result = await pipe(
         [FetchRequest.encode({ identifier: key })],
@@ -131,16 +141,20 @@ export class FetchService implements Startable {
 
           switch (response.status) {
             case (FetchResponse.StatusCode.OK): {
+              log('received status for %s ok', key)
               return response.data
             }
             case (FetchResponse.StatusCode.NOT_FOUND): {
+              log('received status for %s not found', key)
               return null
             }
             case (FetchResponse.StatusCode.ERROR): {
-              const errmsg = (new TextDecoder()).decode(response.data)
+              log('received status for %s error', key)
+              const errmsg = uint8arrayToString(response.data)
               throw errCode(new Error('Error in fetch protocol response: ' + errmsg), codes.ERR_INVALID_PARAMETERS)
             }
             default: {
+              log('received status for %s unknown', key)
               throw errCode(new Error('Unknown response status'), codes.ERR_INVALID_MESSAGE)
             }
           }
@@ -184,14 +198,18 @@ export class FetchService implements Startable {
         let response: FetchResponse
         const lookup = self._getLookupFunction(request.identifier)
         if (lookup != null) {
+          log('look up data with identifier %s', request.identifier)
           const data = await lookup(request.identifier)
           if (data != null) {
+            log('sending status for %s ok', request.identifier)
             response = { status: FetchResponse.StatusCode.OK, data }
           } else {
+            log('sending status for %s not found', request.identifier)
             response = { status: FetchResponse.StatusCode.NOT_FOUND, data: new Uint8Array(0) }
           }
         } else {
-          const errmsg = (new TextEncoder()).encode('No lookup function registered for key: ' + request.identifier)
+          log('sending status for %s error', request.identifier)
+          const errmsg = uint8arrayFromString(`No lookup function registered for key: ${request.identifier}`)
           response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
         }
 
@@ -217,6 +235,13 @@ export class FetchService implements Startable {
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
    * share the same prefix
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
+   * ```
    */
   registerLookupFunction (prefix: string, lookup: LookupFunction) {
     if (this.lookupFunctions.has(prefix)) {
@@ -229,6 +254,13 @@ export class FetchService implements Startable {
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
    * share the same prefix.
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * libp2p.fetchService.unregisterLookupFunction('/prefix')
+   * ```
    */
   unregisterLookupFunction (prefix: string, lookup?: LookupFunction) {
     if (lookup != null) {

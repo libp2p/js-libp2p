@@ -1,3 +1,27 @@
+/**
+ * @packageDocumentation
+ *
+ * A connection encrypter that does no connection encryption.
+ *
+ * This should not be used in production should be used for research purposes only.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { plaintext } from 'libp2p/insecure'
+ *
+ * // Create a Uint8Array and write the swarm key to it
+ * const swarmKey = new Uint8Array(95)
+ * generateKey(swarmKey)
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   connectionEncryption: [plaintext()]
+ * })
+ * ```
+ */
+
 import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import * as lp from 'it-length-prefixed'
@@ -7,6 +31,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { Duplex } from 'it-stream-types'
+import map from 'it-map'
 
 const log = logger('libp2p:plaintext')
 const PROTOCOL = '/plaintext/2.0.0'
@@ -39,7 +64,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
         Type: type,
         Data: localId.publicKey ?? new Uint8Array(0)
       }
-    }).slice()
+    }).subarray()
   )
 
   log('write pubkey exchange to peer %p', remoteId)
@@ -47,7 +72,7 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
   // Get the Exchange message
   // @ts-expect-error needs to be generator
   const response = (await lp.decode.fromReader(shake.reader).next()).value
-  const id = Exchange.decode(response.slice())
+  const id = Exchange.decode(response)
   log('read pubkey exchange from peer %p', remoteId)
 
   let peerId
@@ -81,21 +106,28 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
   log('plaintext key exchange completed successfully with peer %p', peerId)
 
   shake.rest()
+
   return {
-    conn: shake.stream,
-    remotePeer: peerId,
-    remoteEarlyData: new Uint8Array()
+    conn: {
+      sink: shake.stream.sink,
+      source: map(shake.stream.source, (buf) => buf.subarray())
+    },
+    remotePeer: peerId
   }
 }
 
-export class Plaintext implements ConnectionEncrypter {
+class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
 
   async secureInbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
     return await encrypt(localId, conn, remoteId)
   }
 
-  async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId: PeerId): Promise<SecuredConnection> {
+  async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
     return await encrypt(localId, conn, remoteId)
   }
+}
+
+export function plaintext (): () => ConnectionEncrypter {
+  return () => new Plaintext()
 }

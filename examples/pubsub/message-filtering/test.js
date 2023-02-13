@@ -1,34 +1,16 @@
 import path from 'path'
-import execa from 'execa'
+import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const stdout = [
-  {
-    topic: 'banana',
-    messageCount: 2
-  },
-  {
-    topic: 'apple',
-    messageCount: 2
-  },
-  {
-    topic: 'car',
-    messageCount: 0
-  },
-  {
-    topic: 'orange',
-    messageCount: 2
-  },
-]
+// holds messages received by peers
+const messages = {}
 
 export async function test () {
   const defer = pDefer()
-  let topicCount = 0
-  let topicMessageCount = 0
 
   process.stdout.write('message-filtering/1.js\n')
 
@@ -37,27 +19,35 @@ export async function test () {
     all: true
   })
 
+  let output = ''
+
+  const expected = [
+    'node2 received: banana',
+    'node2 received: apple',
+    'node2 received: orange',
+    'node3 received: banana',
+    'node3 received: apple',
+    'node3 received: orange'
+  ]
+
   proc.all.on('data', async (data) => {
-    // End
-    if (topicCount === stdout.length) {
-      defer.resolve()
-      proc.all.removeAllListeners('data')
+    process.stdout.write(data)
+    output += uint8ArrayToString(data)
+
+    if (output.includes('received: car')) {
+      defer.reject(new Error('Message validation failed - peers failed to filter car messages'))
     }
 
-    process.stdout.write(data)
-    const line = uint8ArrayToString(data)
+    let allMessagesReceived = true
 
-    if (stdout[topicCount] && line.includes(stdout[topicCount].topic)) {
-      // Validate previous number of messages
-      if (topicCount > 0 && topicMessageCount > stdout[topicCount - 1].messageCount) {
-        defer.reject()
-        throw new Error(`topic ${stdout[topicCount - 1].topic} had ${topicMessageCount} messages instead of ${stdout[topicCount - 1].messageCount}`)
+    expected.forEach(message => {
+      if (!output.includes(message)) {
+        allMessagesReceived = false
       }
+    })
 
-      topicCount++
-      topicMessageCount = 0
-    } else {
-      topicMessageCount++
+    if (allMessagesReceived) {
+      defer.resolve()
     }
   })
 

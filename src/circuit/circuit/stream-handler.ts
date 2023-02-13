@@ -4,6 +4,7 @@ import { Handshake, handshake } from 'it-handshake'
 import { CircuitRelay } from '../pb/index.js'
 import type { Stream } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit:stream-handler')
 
@@ -21,8 +22,8 @@ export interface StreamHandlerOptions {
 
 export class StreamHandler {
   private readonly stream: Stream
-  private readonly shake: Handshake
-  private readonly decoder: Source<Uint8Array>
+  private readonly shake: Handshake<Uint8ArrayList | Uint8Array>
+  private readonly decoder: Source<Uint8ArrayList>
 
   constructor (options: StreamHandlerOptions) {
     const { stream, maxLength = 4096 } = options
@@ -40,7 +41,7 @@ export class StreamHandler {
     const msg = await this.decoder.next()
 
     if (msg.value != null) {
-      const value = CircuitRelay.decode(msg.value.slice())
+      const value = CircuitRelay.decode(msg.value)
       log('read message type', value.type)
       return value
     }
@@ -55,7 +56,7 @@ export class StreamHandler {
    */
   write (msg: CircuitRelay) {
     log('write message type %s', msg.type)
-    this.shake.write(lp.encode.single(CircuitRelay.encode(msg)).slice())
+    this.shake.write(lp.encode.single(CircuitRelay.encode(msg)))
   }
 
   /**

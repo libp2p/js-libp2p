@@ -1,6 +1,6 @@
 ### Webrtc-direct example
 
-An example that uses [js-libp2p-webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) for connecting
+An example that uses [@libp2p/webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) for connecting
 nodejs libp2p and browser libp2p clients. To run the example:
 
 ## 0. Run a nodejs libp2p listener
@@ -18,7 +18,7 @@ Listening on:
 Confirm that the above address is the same as the field `list` in `public/dialer.js`:
 ```js
     peerDiscovery: {
-      new Bootstrap({
+      bootstrap({
         // paste the address into `list`
         list: ['/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/QmUKQCzEUhhhobcNSrXU5uzxTqbvF1BjMCGNGZzZU14Kgd']
       })

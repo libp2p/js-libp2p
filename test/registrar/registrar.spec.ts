@@ -11,21 +11,21 @@ import { createPeerId, createNode } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { Components } from '@libp2p/components'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import type { Connection } from '@libp2p/interface-connection'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { Plaintext } from '../../src/insecure/index.js'
-import { WebSockets } from '@libp2p/websockets'
-import { Mplex } from '@libp2p/mplex'
+import { plaintext } from '../../src/insecure/index.js'
+import { webSockets } from '@libp2p/websockets'
+import { mplex } from '@libp2p/mplex'
 import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
+import { DefaultComponents } from '../../src/components.js'
 
 const protocol = '/test/1.0.0'
 
 describe('registrar', () => {
-  let components: Components
+  let components: DefaultComponents
   let registrar: Registrar
   let peerId: PeerId
 
@@ -35,17 +35,17 @@ describe('registrar', () => {
 
   describe('errors', () => {
     beforeEach(() => {
-      components = new Components({
+      components = new DefaultComponents({
         peerId,
         datastore: new MemoryDatastore(),
-        upgrader: mockUpgrader(),
-        peerStore: new PersistentPeerStore(),
-        connectionManager: new DefaultConnectionManager({
-          minConnections: 50,
-          maxConnections: 1000,
-          autoDialInterval: 1000,
-          inboundUpgradeTimeout: 1000
-        })
+        upgrader: mockUpgrader()
+      })
+      components.peerStore = new PersistentPeerStore(components)
+      components.connectionManager = new DefaultConnectionManager(components, {
+        minConnections: 50,
+        maxConnections: 1000,
+        autoDialInterval: 1000,
+        inboundUpgradeTimeout: 1000
       })
       registrar = new DefaultRegistrar(components)
     })
@@ -83,12 +83,12 @@ describe('registrar', () => {
         onDisconnect: () => { }
       })
 
-      expect(libp2p.components.getRegistrar().getTopologies(protocol)).to.have.lengthOf(0)
+      expect(libp2p.components.registrar.getTopologies(protocol)).to.have.lengthOf(0)
 
-      const identifier = await libp2p.components.getRegistrar().register(protocol, topology)
+      const identifier = await libp2p.components.registrar.register(protocol, topology)
 
       expect(identifier).to.exist()
-      expect(libp2p.components.getRegistrar().getTopologies(protocol)).to.have.lengthOf(1)
+      expect(libp2p.components.registrar.getTopologies(protocol)).to.have.lengthOf(1)
     })
 
     it('should be able to unregister a protocol', async () => {
@@ -97,19 +97,19 @@ describe('registrar', () => {
         onDisconnect: () => { }
       })
 
-      expect(libp2p.components.getRegistrar().getTopologies(protocol)).to.have.lengthOf(0)
+      expect(libp2p.components.registrar.getTopologies(protocol)).to.have.lengthOf(0)
 
-      const identifier = await libp2p.components.getRegistrar().register(protocol, topology)
+      const identifier = await libp2p.components.registrar.register(protocol, topology)
 
-      expect(libp2p.components.getRegistrar().getTopologies(protocol)).to.have.lengthOf(1)
+      expect(libp2p.components.registrar.getTopologies(protocol)).to.have.lengthOf(1)
 
-      libp2p.components.getRegistrar().unregister(identifier)
+      libp2p.components.registrar.unregister(identifier)
 
-      expect(libp2p.components.getRegistrar().getTopologies(protocol)).to.have.lengthOf(0)
+      expect(libp2p.components.registrar.getTopologies(protocol)).to.have.lengthOf(0)
     })
 
     it('should not error if unregistering unregistered topology handler', () => {
-      libp2p.components.getRegistrar().unregister('bad-identifier')
+      libp2p.components.registrar.unregister('bad-identifier')
     })
 
     it('should call onConnect handler for connected peers after register', async () => {
@@ -137,36 +137,22 @@ describe('registrar', () => {
       await libp2p.start()
 
       // Register protocol
-      await libp2p.components.getRegistrar().register(protocol, topology)
+      await libp2p.components.registrar.register(protocol, topology)
 
       // Add connected peer with protocol to peerStore and registrar
-      await libp2p.peerStore.protoBook.add(remotePeerId, [protocol])
+      await libp2p.peerStore.protoBook.set(remotePeerId, [protocol])
 
       // remote peer connects
-      await libp2p.components.getUpgrader().dispatchEvent(new CustomEvent<Connection>('connection', {
+      await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
       }))
-
-      // identify completes
-      await libp2p.components.getPeerStore().dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
-        detail: {
-          peerId: conn.remotePeer,
-          protocols: [protocol],
-          oldProtocols: []
-        }
-      }))
-
+      await onConnectDefer.promise
       // remote peer disconnects
       await conn.close()
-      await libp2p.components.getUpgrader().dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
+      await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
         detail: conn
       }))
-
-      // Wait for handlers to be called
-      return await Promise.all([
-        onConnectDefer.promise,
-        onDisconnectDefer.promise
-      ])
+      await onDisconnectDefer.promise
     })
 
     it('should call onConnect handler after register, once a peer is connected and protocols are updated', async () => {
@@ -189,21 +175,18 @@ describe('registrar', () => {
       await libp2p.start()
 
       // Register protocol
-      await libp2p.components.getRegistrar().register(protocol, topology)
+      await libp2p.components.registrar.register(protocol, topology)
 
       // Add connected peer to peerStore and registrar
       await libp2p.peerStore.protoBook.set(remotePeerId, [])
 
-      // Add protocol to peer and update it
-      await libp2p.peerStore.protoBook.add(remotePeerId, [protocol])
-
       // remote peer connects
-      await libp2p.components.getUpgrader().dispatchEvent(new CustomEvent<Connection>('connection', {
+      await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
       }))
 
       // identify completes
-      await libp2p.components.getPeerStore().dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+      await libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
         detail: {
           peerId: conn.remotePeer,
           protocols: [protocol],
@@ -214,7 +197,13 @@ describe('registrar', () => {
       await onConnectDefer.promise
 
       // Peer no longer supports the protocol our topology is registered for
-      await libp2p.peerStore.protoBook.set(remotePeerId, [])
+      await libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+        detail: {
+          peerId: conn.remotePeer,
+          protocols: [],
+          oldProtocols: [protocol]
+        }
+      }))
 
       await onDisconnectDefer.promise
     })
@@ -223,17 +212,17 @@ describe('registrar', () => {
       libp2p = await createLibp2pNode({
         peerId: await createEd25519PeerId(),
         transports: [
-          new WebSockets()
+          webSockets()
         ],
         streamMuxers: [
-          new Mplex()
+          mplex()
         ],
         connectionEncryption: [
-          new Plaintext()
+          plaintext()
         ]
       })
 
-      const registrar = libp2p.components.getRegistrar()
+      const registrar = libp2p.components.registrar
 
       expect(registrar.getProtocols()).to.not.have.any.keys(['/echo/1.0.0', '/echo/1.0.1'])
 

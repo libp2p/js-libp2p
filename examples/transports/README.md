@@ -13,7 +13,7 @@ When using libp2p, you need properly configure it, that is, pick your set of mod
 You will need 4 dependencies total, so go ahead and install all of them with:
 
 ```bash
-> npm install libp2p libp2p-tcp @chainsafe/libp2p-noise
+> npm install libp2p @libp2p/tcp @chainsafe/libp2p-noise
 ```
 
 Then, in your favorite text editor create a file with the `.js` extension. I've called mine `1.js`.
@@ -22,8 +22,8 @@ First thing is to create our own libp2p node! Insert:
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { TCP } from '@libp2p/tcp'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { noise } from '@chainsafe/libp2p-noise'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -33,14 +33,13 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     connectionEncryption: [
-      new Noise()
+      noise()
     ]
   })
 
-  await node.start()
   return node
 }
 ```
@@ -58,7 +57,7 @@ console.log('node has started (true/false):', node.isStarted())
 // 0, which means "listen in any network interface and pick
 // a port for me
 console.log('listening on:')
-node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 ```
 
 Running this should result in something like:
@@ -80,15 +79,15 @@ Now that we have our `createNode` function, let's create two nodes and make them
 For this step, we will need some more dependencies.
 
 ```bash
-> npm install it-pipe it-to-buffer @libp2p/mplex
+> npm install it-pipe it-all @libp2p/mplex
 ```
 
 And we also need to import the modules on our .js file:
 
 ```js
 import { pipe } from 'it-pipe'
-import toBuffer from 'it-to-buffer'
-import { Mplex } from '@libp2p/mplex'
+import { mplex } from '@libp2p/mplex'
+import all from 'it-all'
 ```
 
 We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`.
@@ -100,12 +99,11 @@ const createNode = async () => {
       // the multiaddr format, a self describable address
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
-    transports: [new TCP()],
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()] // <--- Add this line
+    transports: [tcp()],
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()] // <--- Add this line
   })
 
-  await node.start()
   return node
 }
 ```
@@ -114,38 +112,39 @@ We will also make things simpler by creating another function to print the multi
 ```JavaScript
 function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
-  node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+  node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
 ```
 
 Then add,
 
 ```js
-(async () => {
-  const [node1, node2] = await Promise.all([
-    createNode(),
-    createNode()
-  ])
+import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
+import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 
-  printAddrs(node1, '1')
-  printAddrs(node2, '2')
+const [node1, node2] = await Promise.all([
+  createNode(),
+  createNode()
+])
 
-  node2.handle('/print', async ({ stream }) => {
-    const result = await pipe(
-      stream,
-      toBuffer
-    )
-    console.log(result.toString())
-  })
+printAddrs(node1, '1')
+printAddrs(node2, '2')
 
-  await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-  const stream = await node1.dialProtocol(node2.peerId, '/print')
-
-  await pipe(
-    ['Hello', ' ', 'p2p', ' ', 'world', '!'],
-    stream
+node2.handle('/print', async ({ stream }) => {
+  const result = await pipe(
+    stream,
+    all
   )
-})();
+  console.log(result.map(buf => uint8ArrayToString(buf.subarray())).join(""))
+})
+
+await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+const stream = await node1.dialProtocol(node2.peerId, '/print')
+
+await pipe(
+  ['Hello', ' ', 'p2p', ' ', 'world', '!'].map(str => uint8ArrayFromString(str)),
+  stream
+)
 ```
 For more information refer to the [docs](https://github.com/libp2p/js-libp2p/blob/master/doc/API.md).
 
@@ -168,10 +167,10 @@ Next, we want nodes to have multiple transports available to increase their chan
 
 What we are going to do in this step is to create 3 nodes: one with TCP, another with TCP+WebSockets and another one with just WebSockets. The full solution can be found on [3.js](./3.js).
 
-In this example, we will need to also install `libp2p-websockets`:
+In this example, we will need to also install `@libp2p/websockets`:
 
 ```bash
-> npm install libp2p-websockets
+> npm install @libp2p/websockets
 ```
 
 We want to create 3 nodes: one with TCP, one with TCP+WebSockets and one with just WebSockets. We need to update our `createNode` function to accept WebSocket connections as well. Moreover, let's upgrade our function to enable us to pick the addresses over which a node will start a listener:
@@ -188,12 +187,11 @@ const createNode = async (transports, addresses = []) => {
     addresses: {
       listen: addresses
     },
-    transport: transports,
-    connectionEncryption: [new Noise()],
-    streamMuxers: [new Mplex()]
+    transports: transports,
+    connectionEncryption: [noise()],
+    streamMuxers: [mplex()]
   })
 
-  await node.start()
   return node
 }
 ```
@@ -203,13 +201,13 @@ As a rule, a libp2p node will only be capable of using a transport if: a) it has
 Let's update our flow to create nodes and see how they behave when dialing to each other:
 
 ```JavaScript
-import { WebSockets } from '@libp2p/websockets'
-import { TCP } from '@libp2p/tcp'
+import { webSockets } from '@libp2p/websockets'
+import { tcp } from '@libp2p/tcp'
 
 const [node1, node2, node3] = await Promise.all([
-  createNode([TCP], '/ip4/0.0.0.0/tcp/0'),
-  createNode([TCP, WebSockets], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
-  createNode([WebSockets], '/ip4/127.0.0.1/tcp/20000/ws')
+  createNode([tcp()], '/ip4/0.0.0.0/tcp/0'),
+  createNode([tcp(), webSockets()], ['/ip4/0.0.0.0/tcp/0', '/ip4/127.0.0.1/tcp/10000/ws']),
+  createNode([webSockets()], '/ip4/127.0.0.1/tcp/20000/ws')
 ])
 
 printAddrs(node1, '1')
@@ -220,21 +218,21 @@ node1.handle('/print', print)
 node2.handle('/print', print)
 node3.handle('/print', print)
 
-await node1.peerStore.addressBook.set(node2.peerId, node2.multiaddrs)
-await node2.peerStore.addressBook.set(node3.peerId, node3.multiaddrs)
-await node3.peerStore.addressBook.set(node1.peerId, node1.multiaddrs)
+await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
+await node3.peerStore.addressBook.set(node1.peerId, node1.getMultiaddrs())
 
 // node 1 (TCP) dials to node 2 (TCP+WebSockets)
 const stream = await node1.dialProtocol(node2.peerId, '/print')
 await pipe(
-  ['node 1 dialed to node 2 successfully'],
+  ['node 1 dialed to node 2 successfully'].map(str => uint8ArrayFromString(str)),
   stream
 )
 
 // node 2 (TCP+WebSockets) dials to node 3 (WebSockets)
 const stream2 = await node2.dialProtocol(node3.peerId, '/print')
 await pipe(
-  ['node 2 dialed to node 3 successfully'],
+  ['node 2 dialed to node 3 successfully'].map(str => uint8ArrayFromString(str)),
   stream2
 )
 
@@ -254,7 +252,7 @@ function print ({ stream }) {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(msg.toString())
+        console.log(uint8ArrayToString(msg.subarray()))
       }
     }
   )

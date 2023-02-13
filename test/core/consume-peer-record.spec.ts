@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
-import { WebSockets } from '@libp2p/websockets'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { webSockets } from '@libp2p/websockets'
+import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { Libp2pOptions } from '../../src/index.js'
 
@@ -15,10 +15,10 @@ describe('Consume peer record', () => {
     const config: Libp2pOptions = {
       peerId,
       transports: [
-        new WebSockets()
+        webSockets()
       ],
       connectionEncryption: [
-        NOISE
+        plaintext()
       ]
     }
     libp2p = await createLibp2pNode(config)
@@ -31,7 +31,7 @@ describe('Consume peer record', () => {
   it('should consume peer record when observed addrs are confirmed', async () => {
     let done: () => void
 
-    libp2p.components.getPeerStore().addressBook.consumePeerRecord = async () => {
+    libp2p.components.peerStore.addressBook.consumePeerRecord = async () => {
       done()
       return true
     }
@@ -42,7 +42,7 @@ describe('Consume peer record', () => {
 
     await libp2p.start()
 
-    libp2p.components.getAddressManager().confirmObservedAddr(new Multiaddr('/ip4/123.123.123.123/tcp/3983'))
+    libp2p.components.addressManager.confirmObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/3983'))
 
     await p
 

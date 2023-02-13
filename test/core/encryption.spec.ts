@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { WebSockets } from '@libp2p/websockets'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { webSockets } from '@libp2p/websockets'
+import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2p, Libp2pOptions } from '../../src/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createPeerId } from '../utils/creators/peer.js'
@@ -19,7 +19,7 @@ describe('Connection encryption configuration', () => {
     const config = {
       peerId,
       transports: [
-        new WebSockets()
+        webSockets()
       ]
     }
 
@@ -31,7 +31,7 @@ describe('Connection encryption configuration', () => {
     const config = {
       peerId,
       transports: [
-        new WebSockets()
+        webSockets()
       ],
       connectionEncryption: []
     }
@@ -42,11 +42,12 @@ describe('Connection encryption configuration', () => {
   it('can be created', async () => {
     const config: Libp2pOptions = {
       peerId,
+      start: false,
       transports: [
-        new WebSockets()
+        webSockets()
       ],
       connectionEncryption: [
-        NOISE
+        plaintext()
       ]
     }
     await createLibp2p(config)

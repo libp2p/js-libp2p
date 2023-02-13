@@ -9,11 +9,11 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^6.2.0",
-    "@libp2p/bootstrap": "^2.0.0",
-    "@libp2p/mplex": "^3.0.0",
-    "@libp2p/webrtc-star": "^2.0.1",
-    "@libp2p/websockets": "^3.0.0",
+    "@chainsafe/libp2p-noise": "^11.0.0",
+    "@libp2p/bootstrap": "^6.0.0",
+    "@libp2p/mplex": "^7.0.0",
+    "@libp2p/webrtc-star": "^6.0.0",
+    "@libp2p/websockets": "^5.0.0",
     "libp2p": "../../"
   },
   "devDependencies": {

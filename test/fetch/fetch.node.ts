@@ -2,9 +2,9 @@
 
 import { expect } from 'aegir/chai'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
-import { TCP } from '@libp2p/tcp'
-import { Mplex } from '@libp2p/mplex'
-import { NOISE } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { mplex } from '@libp2p/mplex'
+import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { codes } from '../../src/errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -13,16 +13,18 @@ async function createNode (peerId: PeerId) {
   return await createLibp2pNode({
     peerId,
     addresses: {
-      listen: ['/ip4/0.0.0.0/tcp/0']
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
     },
     transports: [
-      new TCP()
+      tcp()
     ],
     streamMuxers: [
-      new Mplex()
+      mplex()
     ],
     connectionEncryption: [
-      NOISE
+      plaintext()
     ]
   })
 }
@@ -55,16 +57,10 @@ describe('Fetch', () => {
     await sender.start()
     await receiver.start()
 
-    await Promise.all([
-      ...sender.getMultiaddrs().map(async addr => await receiver.dial(addr)),
-      ...receiver.getMultiaddrs().map(async addr => await sender.dial(addr))
-    ])
+    await receiver.dial(sender.getMultiaddrs()[0])
   })
 
   afterEach(async () => {
-    receiver.fetchService.unregisterLookupFunction(PREFIX_A)
-    receiver.fetchService.unregisterLookupFunction(PREFIX_B)
-
     await sender.stop()
     await receiver.stop()
   })

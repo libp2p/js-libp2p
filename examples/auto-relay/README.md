@@ -17,14 +17,14 @@ The relay node will need to have its relay subsystem enabled, as well as its HOP
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 
 const node = await createLibp2p({
-  transports: [new WebSockets()],
-  connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()]
+  transports: [webSockets()],
+  connectionEncryption: [noise()],
+  streamMuxers: [mplex()],
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0/ws']
     // TODO check "What is next?" section
@@ -41,11 +41,9 @@ const node = await createLibp2p({
   }
 })
 
-await node.start()
-
-console.log(`Node started with id ${node.peerId.toB58String()}`)
+console.log(`Node started with id ${node.peerId.toString()}`)
 console.log('Listening on:')
-node.multiaddrs.forEach((ma) => console.log(`${ma.toString()}/p2p/${node.peerId.toB58String()}`))
+node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 ```
 
 The Relay HOP advertise functionality is **NOT** required to be enabled. However, if you are interested in advertising on the network that this node is available to be used as a HOP Relay you can enable it. A content router module or Rendezvous needs to be configured to leverage this option.
@@ -71,9 +69,9 @@ One of the typical use cases for Auto Relay is nodes behind a NAT or browser nod
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 
 const relayAddr = process.argv[2]
 if (!relayAddr) {
@@ -81,9 +79,9 @@ if (!relayAddr) {
 }
 
 const node = await createLibp2p({
-  transports: [new WebSockets()],
-  connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()],
+  transports: [webSockets()],
+  connectionEncryption: [noise()],
+  streamMuxers: [mplex()],
   relay: {
     enabled: true,
     autoRelay: {
@@ -93,18 +91,17 @@ const node = await createLibp2p({
   }
 })
 
-await node.start()
-console.log(`Node started with id ${node.peerId.toB58String()}`)
+console.log(`Node started with id ${node.peerId.toString()}`)
 
 const conn = await node.dial(relayAddr)
 
 console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`)
 
 // Wait for connection and relay to be bind for the example purpose
-node.peerStore.on('change:multiaddrs', ({ peerId }) => {
+node.peerStore.addEventListener('change:multiaddrs', (evt) => {
   // Updated self multiaddrs?
-  if (peerId.equals(node.peerId)) {
-    console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
+  if (evt.detail.peerId.equals(node.peerId)) {
+    console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
   }
 })
 ```
@@ -135,9 +132,9 @@ Now that you have a relay node and a node bound to that relay, you can test conn
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 
 const autoRelayNodeAddr = process.argv[2]
 if (!autoRelayNodeAddr) {
@@ -145,13 +142,12 @@ if (!autoRelayNodeAddr) {
 }
 
 const node = await createLibp2p({
-  transports: [new WebSockets()],
-  connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()]
+  transports: [webSockets()],
+  connectionEncryption: [noise()],
+  streamMuxers: [mplex()]
 })
 
-await node.start()
-console.log(`Node started with id ${node.peerId.toB58String()}`)
+console.log(`Node started with id ${node.peerId.toString()}`)
 
 const conn = await node.dial(autoRelayNodeAddr)
 console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`)

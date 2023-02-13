@@ -1,5 +1,5 @@
 import path from 'path'
-import execa from 'execa'
+import { execa } from 'execa'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fileURLToPath } from 'url'
@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export async function test () {
-  let discoveredNodes = 0
+  const discoveredPeers = []
 
   process.stdout.write('3.js\n')
 
@@ -19,15 +19,20 @@ export async function test () {
   proc.all.on('data', async (data) => {
     process.stdout.write(data)
     const str = uint8ArrayToString(data)
-
+    const discoveredPeersRegex = /Peer\s+(?<Peer1>[^\s]+)\s+discovered:\s+(?<Peer2>[^\s]+)/
     str.split('\n').forEach(line => {
-      if (line.includes('discovered:')) {
-        discoveredNodes++
+      const peers = line.match(discoveredPeersRegex)
+      if (peers != null) {
+        // sort so we don't count reversed pair twice
+        const match = [peers.groups.Peer1, peers.groups.Peer2].sort().join(',')
+        if (!discoveredPeers.includes(match)) {
+          discoveredPeers.push(match)
+        }
       }
     })
   })
 
-  await pWaitFor(() => discoveredNodes > 3)
+  await pWaitFor(() => discoveredPeers.length > 2, 600000)
 
   proc.kill()
 }

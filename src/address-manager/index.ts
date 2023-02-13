@@ -1,11 +1,16 @@
 import type { AddressManagerEvents } from '@libp2p/interface-address-manager'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
-import { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { Components } from '@libp2p/components'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 export interface AddressManagerInit {
+  /**
+   * Pass an function in this field to override the list of addresses
+   * that are announced to the network
+   */
   announceFilter?: AddressFilter
 
   /**
@@ -24,6 +29,15 @@ export interface AddressManagerInit {
   noAnnounce?: string[]
 }
 
+export interface DefaultAddressManagerComponents {
+  peerId: PeerId
+  transportManager: TransportManager
+}
+
+/**
+ * A function that takes a list of multiaddrs and returns a list
+ * to announce
+ */
 export interface AddressFilter {
   (addrs: Multiaddr[]): Multiaddr[]
 }
@@ -43,7 +57,7 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId) {
 
     // use same encoding for comparison
     if (peerId.equals(peerId)) {
-      ma = ma.decapsulate(new Multiaddr(`/p2p/${peerId.toString()}`))
+      ma = ma.decapsulate(multiaddr(`/p2p/${peerId.toString()}`))
     }
   }
 
@@ -51,8 +65,9 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId) {
 }
 
 export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
-  private readonly components: Components
-  private readonly listen: Set<string>
+  private readonly components: DefaultAddressManagerComponents
+  // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
+  private readonly listen: string[]
   private readonly announce: Set<string>
   private readonly observed: Map<string, ObservedAddressMetadata>
   private readonly announceFilter: AddressFilter
@@ -63,13 +78,13 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
    * The listen addresses will be used by the libp2p transports to listen for new connections,
    * while the announce addresses will be used for the peer addresses' to other peers in the network.
    */
-  constructor (components: Components, init: AddressManagerInit) {
+  constructor (components: DefaultAddressManagerComponents, init: AddressManagerInit) {
     super()
 
     const { listen = [], announce = [] } = init
 
     this.components = components
-    this.listen = new Set(listen.map(ma => ma.toString()))
+    this.listen = listen.map(ma => ma.toString())
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.observed = new Map()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
@@ -79,31 +94,43 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
    * Get peer listen multiaddrs
    */
   getListenAddrs (): Multiaddr[] {
-    return Array.from(this.listen).map((a) => new Multiaddr(a))
+    return Array.from(this.listen).map((a) => multiaddr(a))
   }
 
   /**
    * Get peer announcing multiaddrs
    */
   getAnnounceAddrs (): Multiaddr[] {
-    return Array.from(this.announce).map((a) => new Multiaddr(a))
+    return Array.from(this.announce).map((a) => multiaddr(a))
   }
 
   /**
    * Get observed multiaddrs
    */
   getObservedAddrs (): Multiaddr[] {
-    return Array.from(this.observed)
-      .map(([ma]) => new Multiaddr(ma))
+    return Array.from(this.observed).map(([a]) => multiaddr(a))
   }
 
   /**
    * Add peer observed addresses
    */
-  addObservedAddr (addr: Multiaddr): void {
-    addr = stripPeerId(addr, this.components.getPeerId())
-    const addrString = addr.toString()
+  addObservedAddr (addr: string | Multiaddr): void {
+    let ma = multiaddr(addr)
+    const remotePeer = ma.getPeerId()
 
+    // strip our peer id if it has been passed
+    if (remotePeer != null) {
+      const remotePeerId = peerIdFromString(remotePeer)
+
+      // use same encoding for comparison
+      if (remotePeerId.equals(this.components.peerId)) {
+        ma = ma.decapsulate(multiaddr(`/p2p/${this.components.peerId.toString()}`))
+      }
+    }
+
+    const addrString = ma.toString()
+
+    // do not trigger the change:addresses event if we already know about this address
     if (this.observed.has(addrString)) {
       return
     }
@@ -114,7 +141,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
   }
 
   confirmObservedAddr (addr: Multiaddr) {
-    addr = stripPeerId(addr, this.components.getPeerId())
+    addr = stripPeerId(addr, this.components.peerId)
     const addrString = addr.toString()
 
     const metadata = this.observed.get(addrString) ?? {
@@ -134,7 +161,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
   }
 
   removeObservedAddr (addr: Multiaddr) {
-    addr = stripPeerId(addr, this.components.getPeerId())
+    addr = stripPeerId(addr, this.components.peerId)
     const addrString = addr.toString()
 
     this.observed.delete(addrString)
@@ -145,7 +172,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
 
     if (addrs.length === 0) {
       // no configured announce addrs, add configured listen addresses
-      addrs = this.components.getTransportManager().getAddrs().map(ma => ma.toString())
+      addrs = this.components.transportManager.getAddrs().map(ma => ma.toString())
     }
 
     // add observed addresses we are confident in
@@ -160,13 +187,18 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
 
     // Create advertising list
     return this.announceFilter(Array.from(addrSet)
-      .map(str => new Multiaddr(str)))
+      .map(str => multiaddr(str)))
       .map(ma => {
-        if (ma.getPeerId() === this.components.getPeerId().toString()) {
+        // do not append our peer id to a path multiaddr as it will become invalid
+        if (ma.protos().pop()?.path === true) {
           return ma
         }
 
-        return ma.encapsulate(`/p2p/${this.components.getPeerId().toString()}`)
+        if (ma.getPeerId() === this.components.peerId.toString()) {
+          return ma
+        }
+
+        return ma.encapsulate(`/p2p/${this.components.peerId.toString()}`)
       })
   }
 }
