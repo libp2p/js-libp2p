@@ -5,8 +5,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface CircuitRelay {
   type?: CircuitRelay.Type
@@ -95,7 +95,7 @@ export namespace CircuitRelay {
             w.fork()
           }
 
-          if (opts.writeDefaults === true || (obj.id != null && obj.id.byteLength > 0)) {
+          if ((obj.id != null && obj.id.byteLength > 0)) {
             w.uint32(10)
             w.bytes(obj.id)
           }
@@ -141,7 +141,7 @@ export namespace CircuitRelay {
       return _codec
     }
 
-    export const encode = (obj: Peer): Uint8Array => {
+    export const encode = (obj: Partial<Peer>): Uint8Array => {
       return encodeMessage(obj, Peer.codec())
     }
 
@@ -166,16 +166,12 @@ export namespace CircuitRelay {
 
         if (obj.srcPeer != null) {
           w.uint32(18)
-          CircuitRelay.Peer.codec().encode(obj.srcPeer, w, {
-            writeDefaults: false
-          })
+          CircuitRelay.Peer.codec().encode(obj.srcPeer, w)
         }
 
         if (obj.dstPeer != null) {
           w.uint32(26)
-          CircuitRelay.Peer.codec().encode(obj.dstPeer, w, {
-            writeDefaults: false
-          })
+          CircuitRelay.Peer.codec().encode(obj.dstPeer, w)
         }
 
         if (obj.code != null) {
@@ -220,7 +216,7 @@ export namespace CircuitRelay {
     return _codec
   }
 
-  export const encode = (obj: CircuitRelay): Uint8Array => {
+  export const encode = (obj: Partial<CircuitRelay>): Uint8Array => {
     return encodeMessage(obj, CircuitRelay.codec())
   }
 

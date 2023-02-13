@@ -62,6 +62,7 @@ describe('autonat', () => {
 
     components = new DefaultComponents({
       peerId: await createEd25519PeerId(),
+      dialer,
       peerRouting,
       registrar,
       addressManager,
@@ -114,7 +115,7 @@ describe('autonat', () => {
       return peer
     }
 
-    it.only('should request peers verify our observed address', async () => {
+    it('should request peers verify our observed address', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
       addressManager.getObservedAddrs.returns([observedAddress])
 

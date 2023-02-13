@@ -5,8 +5,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Message {
   type?: Message.MessageType
@@ -40,7 +40,7 @@ export namespace Message {
   }
 
   enum __ResponseStatusValues {
-    OK = 1,
+    OK = 0,
     E_DIAL_ERROR = 100,
     E_DIAL_REFUSED = 101,
     E_BAD_REQUEST = 200,
@@ -113,7 +113,7 @@ export namespace Message {
       return _codec
     }
 
-    export const encode = (obj: PeerInfo): Uint8Array => {
+    export const encode = (obj: Partial<PeerInfo>): Uint8Array => {
       return encodeMessage(obj, PeerInfo.codec())
     }
 
@@ -138,9 +138,7 @@ export namespace Message {
 
           if (obj.peer != null) {
             w.uint32(10)
-            Message.PeerInfo.codec().encode(obj.peer, w, {
-              writeDefaults: false
-            })
+            Message.PeerInfo.codec().encode(obj.peer, w)
           }
 
           if (opts.lengthDelimited !== false) {
@@ -171,7 +169,7 @@ export namespace Message {
       return _codec
     }
 
-    export const encode = (obj: Dial): Uint8Array => {
+    export const encode = (obj: Partial<Dial>): Uint8Array => {
       return encodeMessage(obj, Dial.codec())
     }
 
@@ -197,10 +195,8 @@ export namespace Message {
           }
 
           if (obj.status != null) {
-            w.uint32(10)
-            Message.ResponseStatus.codec().encode(obj.status, w, {
-              writeDefaults: false
-            })
+            w.uint32(8)
+            Message.ResponseStatus.codec().encode(obj.status, w)
           }
 
           if (obj.statusText != null) {
@@ -226,7 +222,7 @@ export namespace Message {
 
             switch (tag >>> 3) {
               case 1:
-                obj.status = Message.ResponseStatus.codec().decode(reader, reader.uint32())
+                obj.status = Message.ResponseStatus.codec().decode(reader)
                 break
               case 2:
                 obj.statusText = reader.string()
@@ -247,7 +243,7 @@ export namespace Message {
       return _codec
     }
 
-    export const encode = (obj: DialResponse): Uint8Array => {
+    export const encode = (obj: Partial<DialResponse>): Uint8Array => {
       return encodeMessage(obj, DialResponse.codec())
     }
 
@@ -272,16 +268,12 @@ export namespace Message {
 
         if (obj.dial != null) {
           w.uint32(18)
-          Message.Dial.codec().encode(obj.dial, w, {
-            writeDefaults: false
-          })
+          Message.Dial.codec().encode(obj.dial, w)
         }
 
         if (obj.dialResponse != null) {
           w.uint32(26)
-          Message.DialResponse.codec().encode(obj.dialResponse, w, {
-            writeDefaults: false
-          })
+          Message.DialResponse.codec().encode(obj.dialResponse, w)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -318,7 +310,7 @@ export namespace Message {
     return _codec
   }
 
-  export const encode = (obj: Message): Uint8Array => {
+  export const encode = (obj: Partial<Message>): Uint8Array => {
     return encodeMessage(obj, Message.codec())
   }
 
