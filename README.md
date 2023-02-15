@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
+  <a href="https://libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
 </h1>
 
 <h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/workflow/status/libp2p/js-libp2p/ci?label=ci&style=flat-square" /></a>
+  <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master&label=ci&style=flat-square" /></a>
   <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/master.svg?style=flat-square"></a>
   <br>
   <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
@@ -189,7 +189,7 @@ List of packages currently in existence for libp2p
   <p align="middle">
     <a href="https://lodestar.chainsafe.io/"><img width="300" src="https://github.com/ChainSafe/lodestar/blob/unstable/assets/lodestar_icon_text_black_stroke.png?raw=true"></a>
     <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo">
-    <a href="https:/https://js.ipfs.io/"><img src="https://ipfs.io/ipfs/Qme6KJdKcp85TYbLxuLV7oQzMiLremD7HMoXLZEmgo6Rnh/js-ipfs-sticker.png" alt="IPFS in JavaScript logo" width="150" /></a>
+    <a href="https://js.ipfs.io/"><img src="https://ipfs.io/ipfs/Qme6KJdKcp85TYbLxuLV7oQzMiLremD7HMoXLZEmgo6Rnh/js-ipfs-sticker.png" alt="IPFS in JavaScript logo" width="150" /></a>
   </p>
 </div>
 
