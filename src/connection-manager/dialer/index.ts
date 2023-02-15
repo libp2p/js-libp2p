@@ -228,6 +228,10 @@ export class DefaultDialer implements Startable, Dialer {
    * Returns true if the peer id is in the pending dials
    */
   hasPendingDial (peerId: PeerId | Multiaddr): boolean {
+    if (isMultiaddr(peerId)) {
+      return this.pendingDials.has(peerId.getPeerId() ?? '')
+    }
+
     return this.pendingDials.has(peerId.toString())
   }
 
