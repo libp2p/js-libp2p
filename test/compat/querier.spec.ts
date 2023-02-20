@@ -27,9 +27,9 @@ describe('Querier', () => {
   })
 
   afterEach(async () => {
+    mdns?.destroy()
     return await Promise.all([
-      querier?.stop(),
-      mdns?.destroy()
+      querier?.stop()
     ])
   })
 
@@ -60,7 +60,7 @@ describe('Querier', () => {
   })
 
   it('should not emit peer for responses with non matching service tags', async () => {
-    return await ensureNoPeer(event => {
+    await ensureNoPeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
       const bogusServiceTagLocal = '_ifps-discovery._udp'
 
@@ -75,7 +75,7 @@ describe('Querier', () => {
   })
 
   it('should not emit peer for responses with missing TXT record', async () => {
-    return await ensureNoPeer(event => {
+    await ensureNoPeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
 
       return [{
@@ -89,7 +89,7 @@ describe('Querier', () => {
   })
 
   it('should not emit peer for responses with missing peer ID in TXT record', async () => {
-    return await ensureNoPeer(event => {
+    await ensureNoPeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
 
       return [{
@@ -109,7 +109,7 @@ describe('Querier', () => {
   })
 
   it('should not emit peer for responses to self', async () => {
-    return await ensureNoPeer(event => {
+    await ensureNoPeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
 
       return [{
@@ -128,9 +128,8 @@ describe('Querier', () => {
     })
   })
 
-  // TODO: unskip when https://github.com/libp2p/js-peer-id/issues/83 is resolved
   it('should not emit peer for responses with invalid peer ID in TXT record', async () => {
-    return await ensureNoPeer(event => {
+    await ensureNoPeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
 
       return [{
@@ -150,7 +149,7 @@ describe('Querier', () => {
   })
 
   it('should not emit peer for responses with missing SRV record', async () => {
-    return await ensureNoPeer(event => {
+    await ensureNoPeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
 
       return [{
@@ -170,7 +169,7 @@ describe('Querier', () => {
   })
 
   it('should emit peer for responses even if no multiaddrs', async () => {
-    return await ensurePeer(event => {
+    await ensurePeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
 
       return [{
@@ -201,7 +200,7 @@ describe('Querier', () => {
   })
 
   it('should emit peer for responses with valid multiaddrs', async () => {
-    return await ensurePeer(event => {
+    await ensurePeer(event => {
       const peerServiceTagLocal = `${peerIds[1].toString()}.${SERVICE_TAG_LOCAL}`
 
       return [{
@@ -242,7 +241,7 @@ describe('Querier', () => {
    *
    * @param {Function} getResponse - Given a query, construct a response to test the querier
    */
-  async function ensurePeer (getResponse: (event: QueryPacket, info: RemoteInfo) => Answer[]) {
+  async function ensurePeer (getResponse: (event: QueryPacket, info: RemoteInfo) => Answer[]): Promise<void> {
     const querier = new Querier({ peerId: peerIds[0] })
     mdns = MDNS()
 
@@ -278,7 +277,7 @@ describe('Querier', () => {
    *
    * @param {Function} getResponse - Given a query, construct a response to test the querier
    */
-  async function ensureNoPeer (getResponse: (event: QueryPacket, info: RemoteInfo) => Answer[]) {
+  async function ensureNoPeer (getResponse: (event: QueryPacket, info: RemoteInfo) => Answer[]): Promise<void> {
     const querier = new Querier({ peerId: peerIds[0] })
     mdns = MDNS()
 

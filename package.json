@@ -143,14 +143,14 @@
     "@libp2p/peer-id": "^2.0.0",
     "@multiformats/multiaddr": "^11.0.0",
     "@types/multicast-dns": "^7.2.1",
-    "multicast-dns": "^7.2.0",
-    "multiformats": "^11.0.0"
+    "dns-packet": "^5.4.0",
+    "multicast-dns": "^7.2.0"
   },
   "devDependencies": {
     "@libp2p/interface-address-manager": "^2.0.0",
     "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
-    "aegir": "^37.9.1",
+    "aegir": "^38.1.2",
     "delay": "^5.0.0",
     "p-defer": "^4.0.0",
     "p-wait-for": "^5.0.0",

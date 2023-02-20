@@ -53,15 +53,15 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): '@libp2p/go-mdns-querier' {
     return '@libp2p/go-mdns-querier'
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return Boolean(this._handle)
   }
 
-  start () {
+  async start (): Promise<void> {
     this._handle = periodically(() => {
       // Create a querier that queries multicast but gets responses unicast
       const mdns = MDNS({ multicast: false, interface: '0.0.0.0', port: 0 })
@@ -84,7 +84,7 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
       return {
         stop: async () => {
           mdns.removeListener('response', this._onResponse)
-          return await new Promise(resolve => mdns.destroy(resolve))
+          await new Promise(resolve => { mdns.destroy(resolve as () => void) })
         }
       }
     }, {
@@ -93,7 +93,7 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
     })
   }
 
-  _onResponse (event: ResponsePacket, info: RemoteInfo) {
+  _onResponse (event: ResponsePacket, info: RemoteInfo): void {
     log.trace('received mDNS query response')
     const answers = event.answers ?? []
 
@@ -116,7 +116,7 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
     }))
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     if (this._handle != null) {
       await this._handle.stop()
     }
@@ -128,12 +128,12 @@ export class Querier extends EventEmitter<PeerDiscoveryEvents> implements PeerDi
  * running it again. `fn` must return an object with a stop function, which is
  * called when the period expires.
  */
-function periodically (fn: () => Handle, options: { period: number, interval: number }) {
+function periodically (fn: () => Handle, options: { period: number, interval: number }): { stop: () => Promise<void> } {
   let handle: Handle | null
   let timeoutId: NodeJS.Timer
   let stopped = false
 
-  const reRun = () => {
+  const reRun = (): void => {
     handle = fn()
     timeoutId = setTimeout(() => {
       if (handle != null) {

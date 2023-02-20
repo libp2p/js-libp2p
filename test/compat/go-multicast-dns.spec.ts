@@ -10,7 +10,7 @@ import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 let port = 20000
 
-async function createGoMulticastDNS () {
+async function createGoMulticastDNS (): Promise<{ mdns: GoMulticastDNS, components: any }> {
   const peerId = await createEd25519PeerId()
   const addressManager = stubInterface<AddressManager>()
   addressManager.getAddresses.returns([
@@ -36,7 +36,7 @@ describe('GoMulticastDNS', () => {
     const { mdns } = await createGoMulticastDNS()
 
     await mdns.start()
-    return await mdns.stop()
+    await mdns.stop()
   })
 
   it('should ignore multiple start calls', async () => {
@@ -45,7 +45,7 @@ describe('GoMulticastDNS', () => {
     await mdns.start()
     await mdns.start()
 
-    return await mdns.stop()
+    await mdns.stop()
   })
 
   it('should ignore unnecessary stop calls', async () => {
@@ -62,7 +62,7 @@ describe('GoMulticastDNS', () => {
     mdnsA.addEventListener('peer', (evt) => {
       const { id } = evt.detail
 
-      if (!componentsB.peerId.equals(id)) {
+      if (componentsB.peerId.equals(id) !== true) {
         return
       }
 

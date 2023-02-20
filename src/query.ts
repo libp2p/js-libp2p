@@ -10,8 +10,8 @@ import type { SrvAnswer, StringAnswer, TxtAnswer, Answer } from 'dns-packet'
 
 const log = logger('libp2p:mdns:query')
 
-export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: number) {
-  const query = () => {
+export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: number): NodeJS.Timer {
+  const query = (): void => {
     log('query', serviceTag)
 
     mdns.query({
@@ -98,7 +98,7 @@ export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTa
   }
 }
 
-export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, multiaddrs: Multiaddr[], serviceTag: string, broadcast: boolean) {
+export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, multiaddrs: Multiaddr[], serviceTag: string, broadcast: boolean): void {
   if (!broadcast) {
     log('not responding to mDNS query as broadcast mode is false')
     return
@@ -139,7 +139,7 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, 
       data: {
         priority: 10,
         weight: 1,
-        port: port,
+        port,
         target: os.hostname()
       }
     })

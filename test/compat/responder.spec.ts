@@ -42,9 +42,10 @@ describe('Responder', () => {
   })
 
   afterEach(async () => {
+    mdns?.destroy()
+
     return await Promise.all([
-      responder?.stop(),
-      mdns?.destroy()
+      responder?.stop()
     ])
   })
 
@@ -125,7 +126,7 @@ describe('Responder', () => {
       const peerInfo = findPeerInfoInAnswers(event.answers, peerIds[1])
 
       if (peerInfo == null) {
-        return defer.reject(new Error('Could not read PeerData from mDNS query response'))
+        defer.reject(new Error('Could not read PeerData from mDNS query response')); return
       }
 
       defer.resolve(peerInfo)
@@ -146,7 +147,7 @@ describe('Responder', () => {
   })
 })
 
-function isResponseFrom (res: ResponsePacket, fromPeerId: PeerId) {
+function isResponseFrom (res: ResponsePacket, fromPeerId: PeerId): boolean {
   const answers = res.answers ?? []
   const ptrRecord = answers.find(a => a.type === 'PTR' && a.name === SERVICE_TAG_LOCAL)
   if (ptrRecord == null) return false // Ignore irrelevant

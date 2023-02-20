@@ -37,28 +37,26 @@ export class GoMulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): '@libp2p/go-mdns' {
     return '@libp2p/go-mdns'
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this._started
   }
 
-  async start () {
+  async start (): Promise<void> {
     if (this.isStarted()) {
       return
     }
 
     this._started = true
 
-    await Promise.all([
-      this._responder.start(),
-      this._querier.start()
-    ])
+    await this._responder.start()
+    await this._querier.start()
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     if (!this.isStarted()) {
       return
     }

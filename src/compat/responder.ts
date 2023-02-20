@@ -18,12 +18,12 @@ export class Responder {
     this._onQuery = this._onQuery.bind(this)
   }
 
-  start () {
+  async start (): Promise<void> {
     this._mdns = MDNS()
     this._mdns.on('query', this._onQuery)
   }
 
-  _onQuery (event: QueryPacket, info: RemoteInfo) {
+  _onQuery (event: QueryPacket, info: RemoteInfo): void {
     const addresses = this.components.addressManager.getAddresses().reduce<MultiaddrObject[]>((acc, addr) => {
       addr = addr.decapsulateCode(protocols('p2p').code)
 
@@ -101,10 +101,10 @@ export class Responder {
     }
   }
 
-  stop () {
+  async stop (): Promise<void> {
     if (this._mdns != null) {
       this._mdns.removeListener('query', this._onQuery)
-      return new Promise<void>(resolve => {
+      await new Promise<void>(resolve => {
         if (this._mdns != null) {
           this._mdns.destroy(resolve)
         } else {
