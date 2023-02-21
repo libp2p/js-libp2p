@@ -161,7 +161,7 @@
     "@libp2p/peer-id-factory": "^2.0.0",
     "@protobuf-ts/plugin": "^2.8.0",
     "@protobuf-ts/protoc": "^2.8.0",
-    "aegir": "^37.6.6",
+    "aegir": "^38.1.6",
     "it-first": "^2.0.0",
     "libp2p": "^0.41.0"
   }
