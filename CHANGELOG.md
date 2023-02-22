@@ -1,3 +1,10 @@
+## [6.0.4](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.3...v6.0.4) (2023-02-22)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.6 ([#128](https://github.com/libp2p/js-libp2p-pubsub/issues/128)) ([7609545](https://github.com/libp2p/js-libp2p-pubsub/commit/7609545f732f94a1e52586b99f62f6c49d2b6c76))
+
 ## [6.0.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.2...v6.0.3) (2023-02-22)
 
 
