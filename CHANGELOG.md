@@ -1,3 +1,10 @@
+## [6.0.3](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.2...v6.0.3) (2023-02-22)
+
+
+### Dependencies
+
+* **dev:** bump protons from 6.1.3 to 7.0.2 ([#124](https://github.com/libp2p/js-libp2p-pubsub/issues/124)) ([302763e](https://github.com/libp2p/js-libp2p-pubsub/commit/302763ecbc95b03051c071f821464d97825cb693))
+
 ## [6.0.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.1...v6.0.2) (2023-02-22)
 
 
