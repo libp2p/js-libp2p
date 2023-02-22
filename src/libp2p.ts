@@ -133,7 +133,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.components.dialer = new DefaultDialer(this.components, init.connectionManager)
 
     // Create the Connection Manager
-    this.connectionManager = this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
+    // if a connection manager is not provided, create a default one
+    this.connectionManager = (init.customConnectionManager != null) ? init.customConnectionManager(this.components) : this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
 
     // forward connection manager events
     this.components.connectionManager.addEventListener('peer:disconnect', (event) => {

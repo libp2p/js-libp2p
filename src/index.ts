@@ -41,6 +41,7 @@ import type { KeyChainInit } from '@libp2p/keychain'
 import type { NatManagerInit } from './nat-manager.js'
 import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 
 /**
@@ -149,6 +150,11 @@ export interface Libp2pInit {
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
   connectionProtector?: (components: Components) => ConnectionProtector
+
+  /**
+   * Pass a custom ConnectionManager implementation to enable custom connection management
+   */
+  customConnectionManager?: (components: Components) => ConnectionManager
 }
 
 /**
