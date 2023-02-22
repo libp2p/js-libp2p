@@ -121,10 +121,17 @@ describe('utils', () => {
         sequenceNumber: utils.bigIntToBytes(1n),
         signature: new Uint8Array(0),
         key: dummyPeerID.publicKey
+      },
+      {
+        from: (await PeerIdFactory.createEd25519PeerId()).toBytes(),
+        topic: 'test',
+        data: new Uint8Array(0),
+        sequenceNumber: utils.bigIntToBytes(1n),
+        signature: new Uint8Array(0)
       }
     ]
-    const expected = ['signed', 'unsigned', 'signed']
 
+    const expected = ['signed', 'unsigned', 'signed', 'signed']
     const actual = (await Promise.all(cases.map(utils.toMessage))).map(m => m.type)
 
     expect(actual).to.deep.equal(expected)

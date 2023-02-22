@@ -97,16 +97,23 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
     }
   }
 
-  return {
+  const from = peerIdFromBytes(message.from)
+
+  const msg: Message = {
     type: 'signed',
     from: peerIdFromBytes(message.from),
     topic: message.topic ?? '',
     sequenceNumber: bigIntFromBytes(message.sequenceNumber ?? new Uint8Array(0)),
     data: message.data ?? new Uint8Array(0),
     signature: message.signature ?? new Uint8Array(0),
-    // @ts-expect-error key need not be defined
-    key: message.key
+    key: message.key ?? from.publicKey ?? new Uint8Array(0)
   }
+
+  if (msg.key.length === 0) {
+    throw new CodeError('Signed RPC message was missing key', codes.ERR_MISSING_KEY)
+  }
+
+  return msg
 }
 
 export const toRpcMessage = (message: Message): PubSubRPCMessage => {
