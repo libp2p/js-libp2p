@@ -162,6 +162,7 @@
     "@protobuf-ts/plugin": "^2.8.0",
     "@protobuf-ts/protoc": "^2.8.0",
     "aegir": "^38.1.6",
+    "eslint-plugin-etc": "^2.0.2",
     "it-first": "^2.0.0",
     "libp2p": "^0.41.0"
   }

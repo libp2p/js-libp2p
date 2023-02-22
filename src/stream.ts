@@ -156,55 +156,55 @@ export class WebRTCStream implements Stream {
   /**
    * Unique identifier for a stream
    */
-  id: string;
+  id: string
 
   /**
    * Stats about this stream
    */
-  stat: StreamStat;
+  stat: StreamStat
 
   /**
    * User defined stream metadata
    */
-  metadata: Record<string, any>;
+  metadata: Record<string, any>
 
   /**
    * The data channel used to send and receive data
    */
-  private readonly channel: RTCDataChannel;
+  private readonly channel: RTCDataChannel
 
   /**
    * The current state of the stream
    */
-  streamState = new StreamState();
+  streamState = new StreamState()
 
   /**
    * Read unwrapped protobuf data from the underlying datachannel.
    * _src is exposed to the user via the `source` getter to .
    */
-  private readonly _src: Source<Uint8ArrayList>;
+  private readonly _src: Source<Uint8ArrayList>
 
   /**
    * push data from the underlying datachannel to the length prefix decoder
    * and then the protobuf decoder.
    */
-  private readonly _innersrc = pushable();
+  private readonly _innersrc = pushable()
 
   /**
    * Deferred promise that resolves when the underlying datachannel is in the
    * open state.
    */
-  opened: DeferredPromise<void> = defer();
+  opened: DeferredPromise<void> = defer()
 
   /**
    * sinkCreated is set to true once the sinkFunction is invoked
    */
-  _sinkCalled: boolean = false;
+  _sinkCalled: boolean = false
 
   /**
    * Triggers a generator which can be used to close the sink.
    */
-  closeWritePromise: DeferredPromise<void> = defer();
+  closeWritePromise: DeferredPromise<void> = defer()
 
   /**
    * Callback to invoke when the stream is closed.
@@ -436,7 +436,7 @@ export class WebRTCStream implements Stream {
   private _sendFlag (flag: pb.Message_Flag): void {
     try {
       log.trace('Sending flag: %s', flag.toString())
-      const msgbuf = pb.Message.toBinary({ flag: flag })
+      const msgbuf = pb.Message.toBinary({ flag })
       this.channel.send(lengthPrefixed.encode.single(msgbuf).subarray())
     } catch (err) {
       if (err instanceof Error) {

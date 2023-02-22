@@ -14,7 +14,7 @@ function setup (): { peerConnection: RTCPeerConnection, datachannel: RTCDataChan
 
 function generatePbByFlag (flag?: pb.Message_Flag): Uint8Array {
   const testPb: pb.Message = {
-    flag: flag,
+    flag,
     message: bytes.fromString(TEST_MESSAGE)
   }
   return pb.Message.toBinary(testPb)

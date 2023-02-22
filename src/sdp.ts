@@ -2,6 +2,7 @@ import { logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { bases } from 'multiformats/basics'
 import * as multihashes from 'multihashes'
+import type { HashCode, HashName } from 'multihashes'
 
 import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error.js'
 import { CERTHASH_CODE } from './transport.js'
@@ -44,7 +45,7 @@ export function certhash (ma: Multiaddr): string {
 /**
  * Convert a certhash into a multihash
  */
-export function decodeCerthash (certhash: string) {
+export function decodeCerthash (certhash: string): { code: HashCode, name: HashName, length: number, digest: Uint8Array } {
   const mbdecoded = mbdecoder.decode(certhash)
   return multihashes.decode(mbdecoded)
 }

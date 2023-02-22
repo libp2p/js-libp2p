@@ -10,7 +10,7 @@ describe('Multiaddr Connection', () => {
     peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
     const remoteAddr = multiaddr('/ip4/1.2.3.4/udp/1234/webrtc/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ')
     const maConn = new WebRTCMultiaddrConnection({
-      peerConnection: peerConnection,
+      peerConnection,
       remoteAddr,
       timeline: {
         open: (new Date()).getTime()

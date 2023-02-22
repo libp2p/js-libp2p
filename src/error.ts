@@ -28,7 +28,7 @@ export class ConnectionClosedError extends WebRTCTransportError {
   }
 }
 
-export function connectionClosedError (state: RTCPeerConnectionState, msg: string) {
+export function connectionClosedError (state: RTCPeerConnectionState, msg: string): Error {
   return errCode(new ConnectionClosedError(state, msg), codes.ERR_CONNECTION_CLOSED)
 }
 
@@ -39,7 +39,7 @@ export class DataChannelError extends WebRTCTransportError {
   }
 }
 
-export function dataChannelError (streamLabel: string, msg: string) {
+export function dataChannelError (streamLabel: string, msg: string): Error {
   return errCode(new DataChannelError(streamLabel, msg), codes.ERR_DATA_CHANNEL)
 }
 
@@ -50,7 +50,7 @@ export class InappropriateMultiaddrError extends WebRTCTransportError {
   }
 }
 
-export function inappropriateMultiaddr (msg: string) {
+export function inappropriateMultiaddr (msg: string): Error {
   return errCode(new InappropriateMultiaddrError(msg), codes.ERR_INVALID_MULTIADDR)
 }
 
@@ -61,7 +61,7 @@ export class InvalidArgumentError extends WebRTCTransportError {
   }
 }
 
-export function invalidArgument (msg: string) {
+export function invalidArgument (msg: string): Error {
   return errCode(new InvalidArgumentError(msg), codes.ERR_INVALID_PARAMETERS)
 }
 
@@ -72,7 +72,7 @@ export class InvalidFingerprintError extends WebRTCTransportError {
   }
 }
 
-export function invalidFingerprint (fingerprint: string, source: string) {
+export function invalidFingerprint (fingerprint: string, source: string): Error {
   return errCode(new InvalidFingerprintError(fingerprint, source), codes.ERR_INVALID_FINGERPRINT)
 }
 
@@ -83,7 +83,7 @@ export class OperationAbortedError extends WebRTCTransportError {
   }
 }
 
-export function operationAborted (context: string, reason: string) {
+export function operationAborted (context: string, reason: string): Error {
   return errCode(new OperationAbortedError(context, reason), codes.ERR_ALREADY_ABORTED)
 }
 
@@ -94,7 +94,7 @@ export class OverStreamLimitError extends WebRTCTransportError {
   }
 }
 
-export function overStreamLimit (dir: Direction, proto: string) {
+export function overStreamLimit (dir: Direction, proto: string): Error {
   const code = dir === 'inbound' ? codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS : codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS
   return errCode(new OverStreamLimitError(`${dir} stream limit reached for protocol - ${proto}`), code)
 }
@@ -106,7 +106,7 @@ export class UnimplementedError extends WebRTCTransportError {
   }
 }
 
-export function unimplemented (methodName: string) {
+export function unimplemented (methodName: string): Error {
   return errCode(new UnimplementedError(methodName), codes.ERR_NOT_IMPLEMENTED)
 }
 
@@ -118,6 +118,6 @@ export class UnsupportedHashAlgorithmError extends WebRTCTransportError {
   }
 }
 
-export function unsupportedHashAlgorithm (algorithm: string) {
+export function unsupportedHashAlgorithm (algorithm: string): Error {
   return errCode(new UnsupportedHashAlgorithmError(algorithm), codes.ERR_HASH_NOT_SUPPORTED)
 }
