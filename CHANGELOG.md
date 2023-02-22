@@ -1,3 +1,15 @@
+## [6.0.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.1...v6.0.2) (2023-02-22)
+
+
+### Bug Fixes
+
+* get key from peer id if not specified in the message ([#129](https://github.com/libp2p/js-libp2p-pubsub/issues/129)) ([c183c70](https://github.com/libp2p/js-libp2p-pubsub/commit/c183c70f4d57af486e74fd2920eb1d0a878e6ab3))
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([9839b71](https://github.com/libp2p/js-libp2p-pubsub/commit/9839b71811a2467a9317700c9874b14a6da8759e))
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.0...v6.0.1) (2023-01-31)
 
 
