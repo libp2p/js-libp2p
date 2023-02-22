@@ -3,8 +3,8 @@
  */
 export interface RelayConfig {
   /**
-   * Enable dialing a client over a relay and receiving relayed
-   * connections. This in itself does not enable the node to act as a relay.
+   * Enable dialing a client over a relay and receiving relayed connections.
+   * This in itself does not enable the node to act as a relay.
    */
   enabled: boolean
   advertise: RelayAdvertiseConfig

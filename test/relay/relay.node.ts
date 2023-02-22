@@ -106,7 +106,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     await expect(srcLibp2p.dial(dialAddr))
       .to.eventually.be.rejected()
-      .and.to.have.nested.property('.errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
+      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
   })
 
   it('should not stay connected to a relay when not already connected and HOP fails', async () => {
@@ -119,7 +119,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     await expect(srcLibp2p.dial(dialAddr))
       .to.eventually.be.rejected()
-      .and.to.have.nested.property('.errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
+      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
 
     // We should not be connected to the relay, because we weren't before the dial
     const srcToRelayConns = srcLibp2p.components.connectionManager.getConnections(relayLibp2p.peerId)
@@ -137,7 +137,7 @@ describe('Dialing (via relay, TCP)', () => {
 
     await expect(srcLibp2p.dial(dialAddr))
       .to.eventually.be.rejected()
-      .and.to.have.nested.property('.errors[0].code', Errors.ERR_HOP_REQUEST_FAILED)
+      .and.to.have.property('code', Errors.ERR_HOP_REQUEST_FAILED)
 
     const srcToRelayConn = srcLibp2p.components.connectionManager.getConnections(relayLibp2p.peerId)
     expect(srcToRelayConn).to.have.lengthOf(1)

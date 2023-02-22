@@ -17,7 +17,7 @@ export class ReservationStore implements IReservationStore, Startable {
 
   /**
    * @param limit - maximum number of reservations to store
-   * @param reservationClearInterval - interval to check for expired reservations in millisecons
+   * @param reservationClearInterval - interval to check for expired reservations in milliseconds
    */
   constructor (private readonly limit = 15, private readonly reservationClearInterval = 300 * 1000) {
   }
@@ -50,7 +50,7 @@ export class ReservationStore implements IReservationStore, Startable {
 
   async reserve (peer: PeerId, addr: Multiaddr): Promise<{ status: ReservationStatus, expire?: number }> {
     if (this.reservations.size >= this.limit && !this.reservations.has(peer)) {
-      return { status: Status.RESERVATION_REFUSED, expire: undefined }
+      return { status: Status.RESERVATION_REFUSED }
     }
     const expire = new Date()
     expire.setHours(expire.getHours() + 12)

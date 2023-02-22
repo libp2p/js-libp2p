@@ -32,7 +32,7 @@ export interface HopProtocolOptions {
   connectionManager: ConnectionManager
 }
 
-export async function handleHopProtocol (options: HopProtocolOptions) {
+export async function handleHopProtocol (options: HopProtocolOptions): Promise<void> {
   const { pbstr, request } = options
   log('received hop message')
   switch (request.type) {
@@ -45,7 +45,7 @@ export async function handleHopProtocol (options: HopProtocolOptions) {
   }
 }
 
-export async function reserve (connection: Connection) {
+export async function reserve (connection: Connection): Promise<Reservation> {
   log('requesting reservation from %s', connection.remotePeer)
   const stream = await connection.newStream([RELAY_V2_HOP_CODEC])
   const pbstr = pbStream(stream)
@@ -71,7 +71,7 @@ export async function reserve (connection: Connection) {
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 
-async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit, acl, reservationStore }: HopProtocolOptions) {
+async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit, acl, reservationStore }: HopProtocolOptions): Promise<void> {
   const hopstr = pbstr.pb(HopMessage)
   log('hop reserve request from %s', connection.remotePeer)
 
@@ -110,7 +110,7 @@ async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit,
   // TODO: how to ensure connection manager doesn't close reserved relay conn
 }
 
-async function handleConnect (options: HopProtocolOptions) {
+async function handleConnect (options: HopProtocolOptions): Promise<void> {
   const { connection, pbstr, request, reservationStore, connectionManager, acl } = options
   const hopstr = pbstr.pb(HopMessage)
 
