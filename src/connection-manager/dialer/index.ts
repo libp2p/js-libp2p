@@ -218,6 +218,24 @@ export class DefaultDialer implements Startable, Dialer {
   }
 
   /**
+   * Get the current dial targets which are pending
+   */
+  getPendingDialTargets (): Map<string, AbortController> {
+    return this.pendingDialTargets
+  }
+
+  /**
+   * Returns true if the peer id is in the pending dials
+   */
+  hasPendingDial (peerId: PeerId | Multiaddr): boolean {
+    if (isMultiaddr(peerId)) {
+      return this.pendingDials.has(peerId.getPeerId() ?? '')
+    }
+
+    return this.pendingDials.has(peerId.toString())
+  }
+
+  /**
    * Creates a DialTarget. The DialTarget is used to create and track
    * the DialRequest to a given peer.
    *
