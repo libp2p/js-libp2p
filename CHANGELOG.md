@@ -1,3 +1,15 @@
+## [1.0.4](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.3...v1.0.4) (2023-02-22)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.6 ([#94](https://github.com/libp2p/js-libp2p-webrtc/issues/94)) ([2ee8a5e](https://github.com/libp2p/js-libp2p-webrtc/commit/2ee8a5e4bb03377214ff3c12744c2e153a3f69b4))
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([7e0b1c0](https://github.com/libp2p/js-libp2p-webrtc/commit/7e0b1c00b28cae7249a506f06f18bf3537bf3476))
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.2...v1.0.3) (2023-01-30)
 
 
