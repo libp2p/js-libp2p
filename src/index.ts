@@ -29,7 +29,7 @@ export interface PubSubComponents {
  * PubSubBaseProtocol handles the peers and connections logic for pubsub routers
  * and specifies the API that pubsub routers should have.
  */
-export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events> {
+export abstract class PubSubBaseProtocol<Events extends Record<string, any> = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events> {
   public started: boolean
   /**
    * Map of topics to which peers are subscribed to
@@ -108,10 +108,8 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
 
   /**
    * Register the pubsub protocol onto the libp2p node.
-   *
-   * @returns {void}
    */
-  async start () {
+  async start (): Promise<void> {
     if (this.started || !this.enabled) {
       return
     }
@@ -121,10 +119,12 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     const registrar = this.components.registrar
     // Incoming streams
     // Called after a peer dials us
-    await Promise.all(this.multicodecs.map(async multicodec => await registrar.handle(multicodec, this._onIncomingStream, {
-      maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams
-    })))
+    await Promise.all(this.multicodecs.map(async multicodec => {
+      await registrar.handle(multicodec, this._onIncomingStream, {
+        maxInboundStreams: this.maxInboundStreams,
+        maxOutboundStreams: this.maxOutboundStreams
+      })
+    }))
 
     // register protocol with topology
     // Topology callbacks called on connection manager changes
@@ -141,7 +141,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Unregister the pubsub protocol and the streams with other peers will be closed.
    */
-  async stop () {
+  async stop (): Promise<void> {
     if (!this.started || !this.enabled) {
       return
     }
@@ -150,10 +150,14 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
 
     // unregister protocol and handlers
     if (this._registrarTopologyIds != null) {
-      this._registrarTopologyIds?.map(id => registrar.unregister(id))
+      this._registrarTopologyIds?.forEach(id => {
+        registrar.unregister(id)
+      })
     }
 
-    await Promise.all(this.multicodecs.map(async multicodec => await registrar.unhandle(multicodec)))
+    await Promise.all(this.multicodecs.map(async multicodec => {
+      await registrar.unhandle(multicodec)
+    }))
 
     log('stopping')
     for (const peerStreams of this.peers.values()) {
@@ -166,14 +170,14 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     log('stopped')
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * On an inbound stream opened
    */
-  protected _onIncomingStream (data: IncomingStreamData) {
+  protected _onIncomingStream (data: IncomingStreamData): void {
     const { stream, connection } = data
     const peerId = connection.remotePeer
 
@@ -186,13 +190,13 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
     const inboundStream = peer.attachInboundStream(stream)
 
     this.processMessages(peerId, inboundStream, peer)
-      .catch(err => log(err))
+      .catch(err => { log(err) })
   }
 
   /**
    * Registrar notifies an established connection with pubsub protocol
    */
-  protected _onPeerConnected (peerId: PeerId, conn: Connection) {
+  protected _onPeerConnected (peerId: PeerId, conn: Connection): void {
     log('connected %p', peerId)
 
     void Promise.resolve().then(async () => {
@@ -221,7 +225,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Registrar notifies a closing connection with pubsub protocol
    */
-  protected _onPeerDisconnected (peerId: PeerId, conn?: Connection) {
+  protected _onPeerDisconnected (peerId: PeerId, conn?: Connection): void {
     const idB58Str = peerId.toString()
 
     log('connection ended', idB58Str)
@@ -258,7 +262,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Notifies the router that a peer has been disconnected
    */
-  protected _removePeer (peerId: PeerId) {
+  protected _removePeer (peerId: PeerId): PeerStreams | undefined {
     const peerStreams = this.peers.get(peerId)
     if (peerStreams == null) {
       return
@@ -284,7 +288,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Responsible for processing each RPC message received by other peers.
    */
-  async processMessages (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>, peerStreams: PeerStreams) {
+  async processMessages (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>, peerStreams: PeerStreams): Promise<void> {
     try {
       await pipe(
         stream,
@@ -320,7 +324,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
               })),
               messages
             })
-              .catch(err => log(err))
+              .catch(err => { log(err) })
           }
         }
       )
@@ -378,7 +382,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
           log.error(err)
         }
       }))
-        .catch(err => log(err))
+        .catch(err => { log(err) })
     }
 
     return true
@@ -387,7 +391,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Handles a subscription change from a peer
    */
-  processRpcSubOpt (id: PeerId, subOpt: PubSubRPCSubscription) {
+  processRpcSubOpt (id: PeerId, subOpt: PubSubRPCSubscription): void {
     const t = subOpt.topic
 
     if (t == null) {
@@ -412,7 +416,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Handles a message from a peer
    */
-  async processMessage (from: PeerId, msg: Message) {
+  async processMessage (from: PeerId, msg: Message): Promise<void> {
     if (this.components.peerId.equals(from) && !this.emitSelf) {
       return
     }
@@ -442,7 +446,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
    * The default msgID implementation
    * Child class can override this.
    */
-  getMsgId (msg: Message) {
+  getMsgId (msg: Message): Promise<Uint8Array> | Uint8Array {
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictSign':
@@ -470,7 +474,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
    * Whether to accept a message from a peer
    * Override to create a graylist
    */
-  acceptFrom (id: PeerId) {
+  acceptFrom (id: PeerId): boolean {
     return true
   }
 
@@ -495,10 +499,10 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Send an rpc object to a peer
    */
-  send (peer: PeerId, data: { messages?: Message[], subscriptions?: string[], subscribe?: boolean }) {
+  send (peer: PeerId, data: { messages?: Message[], subscriptions?: string[], subscribe?: boolean }): void {
     const { messages, subscriptions, subscribe } = data
 
-    return this.sendRpc(peer, {
+    this.sendRpc(peer, {
       subscriptions: (subscriptions ?? []).map(str => ({ topic: str, subscribe: Boolean(subscribe) })),
       messages: (messages ?? []).map(toRpcMessage)
     })
@@ -507,7 +511,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Send an rpc object to a peer
    */
-  sendRpc (peer: PeerId, rpc: PubSubRPC) {
+  sendRpc (peer: PeerId, rpc: PubSubRPC): void {
     const peerStreams = this.peers.get(peer)
 
     if (peerStreams == null || !peerStreams.isWritable) {
@@ -523,7 +527,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
    * Validates the given message. The signature will be checked for authenticity.
    * Throws an error on invalid messages
    */
-  async validate (from: PeerId, message: Message) { // eslint-disable-line require-await
+  async validate (from: PeerId, message: Message): Promise<void> { // eslint-disable-line require-await
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictNoSign':
@@ -671,7 +675,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Subscribes to a given topic.
    */
-  subscribe (topic: string) {
+  subscribe (topic: string): void {
     if (!this.started) {
       throw new Error('Pubsub has not started')
     }
@@ -690,7 +694,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Unsubscribe from the given topic
    */
-  unsubscribe (topic: string) {
+  unsubscribe (topic: string): void {
     if (!this.started) {
       throw new Error('Pubsub is not started')
     }
@@ -713,7 +717,7 @@ export abstract class PubSubBaseProtocol<Events extends { [s: string]: any } = P
   /**
    * Get the list of topics which the peer is subscribed to.
    */
-  getTopics () {
+  getTopics (): string[] {
     if (!this.started) {
       throw new Error('Pubsub is not started')
     }

@@ -12,6 +12,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import delay from 'delay'
 
 class PubsubProtocol extends PubSubBaseProtocol {
   decodeRpc (bytes: Uint8Array): PubSubRPC {
@@ -51,7 +52,7 @@ describe('pubsub base lifecycle', () => {
       }
 
       pubsub = new PubsubProtocol({
-        peerId: peerId,
+        peerId,
         registrar: sinonMockRegistrar
       }, {
         multicodecs: ['/pubsub/1.0.0']
@@ -154,8 +155,8 @@ describe('pubsub base lifecycle', () => {
       const [c0, c1] = ConnectionPair()
 
       // Notify peers of connection
-      await topologyA.onConnect(peerIdB, c0)
-      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      topologyA.onConnect(peerIdB, c0)
+      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
 
       expect(pubsubA.peers.size).to.be.eql(1)
       expect(pubsubB.peers.size).to.be.eql(1)
@@ -175,8 +176,8 @@ describe('pubsub base lifecycle', () => {
 
       sinon.spy(c0, 'newStream')
 
-      await topologyA.onConnect(peerIdB, c0)
-      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      topologyA.onConnect(peerIdB, c0)
+      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
       expect(c0.newStream).to.have.property('callCount', 1)
 
       // @ts-expect-error _removePeer is a protected method
@@ -184,7 +185,9 @@ describe('pubsub base lifecycle', () => {
 
       sinon.spy(c2, 'newStream')
 
-      await topologyA?.onConnect(peerIdB, c2)
+      topologyA?.onConnect(peerIdB, c2)
+      // newStream invocation takes place in a resolved promise
+      await delay(10)
       expect(c2.newStream).to.have.property('callCount', 1)
 
       // @ts-expect-error _removePeer is a protected method
@@ -215,8 +218,8 @@ describe('pubsub base lifecycle', () => {
       const error = new Error('new stream error')
       sinon.stub(c0, 'newStream').throws(error)
 
-      await topologyA.onConnect(peerIdB, c0)
-      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      topologyA.onConnect(peerIdB, c0)
+      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
 
       expect(c0.newStream).to.have.property('callCount', 1)
     })
@@ -233,8 +236,8 @@ describe('pubsub base lifecycle', () => {
       // Notify peers of connection
       const [c0, c1] = ConnectionPair()
 
-      await topologyA.onConnect(peerIdB, c0)
-      await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      topologyA.onConnect(peerIdB, c0)
+      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
 
       // Notice peers of disconnect
       topologyA?.onDisconnect(peerIdB)

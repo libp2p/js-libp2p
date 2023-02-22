@@ -30,7 +30,7 @@ describe('pubsub base implementation', () => {
     beforeEach(async () => {
       const peerId = await createPeerId()
       pubsub = new PubsubImplementation({
-        peerId: peerId,
+        peerId,
         registrar: new MockRegistrar()
       }, {
         multicodecs: [protocol],
@@ -38,7 +38,7 @@ describe('pubsub base implementation', () => {
       })
     })
 
-    afterEach(async () => await pubsub.stop())
+    afterEach(async () => { await pubsub.stop() })
 
     it('calls _publish for router to forward messages', async () => {
       sinon.spy(pubsub, 'publishMessage')
@@ -103,7 +103,7 @@ describe('pubsub base implementation', () => {
       beforeEach(async () => {
         const peerId = await createPeerId()
         pubsub = new PubsubImplementation({
-          peerId: peerId,
+          peerId,
           registrar: new MockRegistrar()
         }, {
           multicodecs: [protocol]
@@ -111,7 +111,7 @@ describe('pubsub base implementation', () => {
         await pubsub.start()
       })
 
-      afterEach(async () => await pubsub.stop())
+      afterEach(async () => { await pubsub.stop() })
 
       it('should add subscription', () => {
         pubsub.subscribe(topic)
@@ -164,8 +164,8 @@ describe('pubsub base implementation', () => {
         // Notify peers of connection
         const [c0, c1] = ConnectionPair()
 
-        await topologyA.onConnect(peerIdB, c0)
-        await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        topologyA.onConnect(peerIdB, c0)
+        handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
       })
 
       afterEach(async () => {
@@ -205,7 +205,7 @@ describe('pubsub base implementation', () => {
       beforeEach(async () => {
         const peerId = await createPeerId()
         pubsub = new PubsubImplementation({
-          peerId: peerId,
+          peerId,
           registrar: new MockRegistrar()
         }, {
           multicodecs: [protocol]
@@ -213,7 +213,7 @@ describe('pubsub base implementation', () => {
         await pubsub.start()
       })
 
-      afterEach(async () => await pubsub.stop())
+      afterEach(async () => { await pubsub.stop() })
 
       it('should remove all subscriptions for a topic', () => {
         pubsub.subscribe(topic)
@@ -271,8 +271,8 @@ describe('pubsub base implementation', () => {
         // Notify peers of connection
         const [c0, c1] = ConnectionPair()
 
-        await topologyA.onConnect(peerIdB, c0)
-        await handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        topologyA.onConnect(peerIdB, c0)
+        handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
       })
 
       afterEach(async () => {
@@ -335,7 +335,7 @@ describe('pubsub base implementation', () => {
     beforeEach(async () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
-        peerId: peerId,
+        peerId,
         registrar: new MockRegistrar()
       }, {
         multicodecs: [protocol]
@@ -343,7 +343,7 @@ describe('pubsub base implementation', () => {
       await pubsub.start()
     })
 
-    afterEach(async () => await pubsub.stop())
+    afterEach(async () => { await pubsub.stop() })
 
     it('returns the subscribed topics', () => {
       let subsTopics = pubsub.getTopics()
@@ -364,14 +364,14 @@ describe('pubsub base implementation', () => {
     beforeEach(async () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
-        peerId: peerId,
+        peerId,
         registrar: new MockRegistrar()
       }, {
         multicodecs: [protocol]
       })
     })
 
-    afterEach(async () => await pubsub.stop())
+    afterEach(async () => { await pubsub.stop() })
 
     it('should fail if pubsub is not started', () => {
       const topic = 'test-topic'
@@ -435,7 +435,7 @@ describe('pubsub base implementation', () => {
     beforeEach(async () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
-        peerId: peerId,
+        peerId,
         registrar: new MockRegistrar()
       }, {
         multicodecs: [protocol]
@@ -443,7 +443,7 @@ describe('pubsub base implementation', () => {
       await pubsub.start()
     })
 
-    afterEach(async () => await pubsub.stop())
+    afterEach(async () => { await pubsub.stop() })
 
     it('should drop unsigned messages', async () => {
       const publishSpy = sinon.spy(pubsub, 'publishMessage')
@@ -459,7 +459,7 @@ describe('pubsub base implementation', () => {
           from: peerStream.id.toBytes(),
           data,
           sequenceNumber: await noSignMsgId(data),
-          topic: topic
+          topic
         }]
       }
 

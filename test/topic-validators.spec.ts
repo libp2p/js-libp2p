@@ -24,7 +24,7 @@ describe('topic validators', () => {
     otherPeerId = await createEd25519PeerId()
 
     pubsub = new PubsubImplementation({
-      peerId: peerId,
+      peerId,
       registrar: new MockRegistrar()
     }, {
       multicodecs: [protocol],

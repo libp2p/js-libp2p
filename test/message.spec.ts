@@ -18,7 +18,7 @@ describe('pubsub base messages', () => {
   before(async () => {
     peerId = await createPeerId()
     pubsub = new PubsubImplementation({
-      peerId: peerId,
+      peerId,
       registrar: new MockRegistrar()
     }, {
       multicodecs: ['/pubsub/1.0.0']

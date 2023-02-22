@@ -58,14 +58,14 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
   /**
    * Do we have a connection to read from?
    */
-  get isReadable () {
+  get isReadable (): boolean {
     return Boolean(this.inboundStream)
   }
 
   /**
    * Do we have a connection to write on?
    */
-  get isWritable () {
+  get isWritable (): boolean {
     return Boolean(this.outboundStream)
   }
 
@@ -73,7 +73,7 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
    * Send a message to this peer.
    * Throws if there is no `stream` to write to available.
    */
-  write (data: Uint8Array | Uint8ArrayList) {
+  write (data: Uint8Array | Uint8ArrayList): void {
     if (this.outboundStream == null) {
       const id = this.id.toString()
       throw new Error('No writable connection to ' + id)
@@ -85,7 +85,7 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
   /**
    * Attach a raw inbound stream and setup a read stream
    */
-  attachInboundStream (stream: Stream) {
+  attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
     // Create and attach a new inbound stream
     // The inbound stream is:
     // - abortable, set to only return on abort, rather than throw
@@ -107,12 +107,12 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
   /**
    * Attach a raw outbound stream and setup a write stream
    */
-  async attachOutboundStream (stream: Stream) {
+  async attachOutboundStream (stream: Stream): Promise<Pushable<Uint8ArrayList>> {
     // If an outbound stream already exists, gently close it
     const _prevStream = this.outboundStream
     if (this.outboundStream != null) {
       // End the stream without emitting a close event
-      await this.outboundStream.end()
+      this.outboundStream.end()
     }
 
     this._rawOutboundStream = stream
@@ -151,7 +151,7 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
   /**
    * Closes the open connection to peer
    */
-  close () {
+  close (): void {
     if (this.closed) {
       return
     }

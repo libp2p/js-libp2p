@@ -10,7 +10,7 @@ import delay from 'delay'
 const protocol = '/pubsub/1.0.0'
 const topic = 'foo'
 const data = uint8ArrayFromString('bar')
-const shouldNotHappen = () => expect.fail()
+const shouldNotHappen = (): void => expect.fail()
 
 describe('emitSelf', () => {
   let pubsub: PubsubImplementation
@@ -50,7 +50,7 @@ describe('emitSelf', () => {
 
       await pubsub.publish(topic, data)
 
-      return await promise
+      await promise
     })
 
     it('should publish a message without data', async () => {
@@ -66,7 +66,7 @@ describe('emitSelf', () => {
 
       await pubsub.publish(topic)
 
-      return await promise
+      await promise
     })
   })
 

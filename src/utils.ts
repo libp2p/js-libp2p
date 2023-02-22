@@ -17,7 +17,7 @@ export function randomSeqno (): bigint {
 /**
  * Generate a message id, based on the `key` and `seqno`
  */
-export const msgId = (key: Uint8Array, seqno: bigint) => {
+export const msgId = (key: Uint8Array, seqno: bigint): Uint8Array => {
   const seqnoBytes = uint8ArrayFromString(seqno.toString(16).padStart(16, '0'), 'base16')
 
   const msgId = new Uint8Array(key.length + seqnoBytes.length)
@@ -30,7 +30,7 @@ export const msgId = (key: Uint8Array, seqno: bigint) => {
 /**
  * Generate a message id, based on message `data`
  */
-export const noSignMsgId = (data: Uint8Array) => {
+export const noSignMsgId = (data: Uint8Array): Uint8Array | Promise<Uint8Array> => {
   return sha256.encode(data)
 }
 
@@ -38,7 +38,7 @@ export const noSignMsgId = (data: Uint8Array) => {
  * Check if any member of the first set is also a member
  * of the second set
  */
-export const anyMatch = (a: Set<number> | number[], b: Set<number> | number[]) => {
+export const anyMatch = (a: Set<number> | number[], b: Set<number> | number[]): boolean => {
   let bHas
   if (Array.isArray(b)) {
     bHas = (val: number) => b.includes(val)
@@ -58,7 +58,7 @@ export const anyMatch = (a: Set<number> | number[], b: Set<number> | number[]) =
 /**
  * Make everything an array
  */
-export const ensureArray = function <T> (maybeArray: T | T[]) {
+export const ensureArray = function <T> (maybeArray: T | T[]): T[] {
   if (!Array.isArray(maybeArray)) {
     return [maybeArray]
   }

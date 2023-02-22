@@ -45,7 +45,7 @@ export async function signMessage (peerId: PeerId, message: { from: PeerId, topi
 /**
  * Verifies the signature of the given message
  */
-export async function verifySignature (message: SignedMessage, encode: (rpc: PubSubRPCMessage) => Uint8Array) {
+export async function verifySignature (message: SignedMessage, encode: (rpc: PubSubRPCMessage) => Uint8Array): Promise<boolean> {
   if (message.type !== 'signed') {
     throw new Error('Message type must be "signed" to be verified')
   }
@@ -80,7 +80,7 @@ export async function verifySignature (message: SignedMessage, encode: (rpc: Pub
  * Returns the PublicKey associated with the given message.
  * If no valid PublicKey can be retrieved an error will be returned.
  */
-export async function messagePublicKey (message: SignedMessage) {
+export async function messagePublicKey (message: SignedMessage): Promise<Uint8Array> {
   if (message.type !== 'signed') {
     throw new Error('Message type must be "signed" to have a public key')
   }

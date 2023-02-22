@@ -5,7 +5,7 @@ import { RPC } from '../message/rpc.js'
 import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord, Topology } from '@libp2p/interface-registrar'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 
 export const createPeerId = async (): Promise<PeerId> => {
   const peerId = await PeerIdFactory.createEd25519PeerId()
@@ -14,7 +14,7 @@ export const createPeerId = async (): Promise<PeerId> => {
 }
 
 export class PubsubImplementation extends PubSubBaseProtocol {
-  async publishMessage () {
+  async publishMessage (): Promise<PublishResult> {
     return {
       recipients: []
     }
@@ -41,7 +41,7 @@ export class MockRegistrar implements Registrar {
   private readonly topologies: Map<string, { topology: Topology, protocols: string[] }> = new Map()
   private readonly handlers: Map<string, StreamHandler> = new Map()
 
-  getProtocols () {
+  getProtocols (): string[] {
     const protocols = new Set<string>()
 
     for (const topology of this.topologies.values()) {
@@ -67,7 +67,7 @@ export class MockRegistrar implements Registrar {
     }
   }
 
-  async unhandle (protocols: string | string[]) {
+  async unhandle (protocols: string | string[]): Promise<void> {
     const protocolList = Array.isArray(protocols) ? protocols : [protocols]
 
     protocolList.forEach(protocol => {
@@ -85,7 +85,7 @@ export class MockRegistrar implements Registrar {
     return { handler, options: {} }
   }
 
-  async register (protocols: string | string[], topology: Topology) {
+  async register (protocols: string | string[], topology: Topology): Promise<string> {
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
@@ -100,7 +100,7 @@ export class MockRegistrar implements Registrar {
     return id
   }
 
-  unregister (id: string | string[]) {
+  unregister (id: string | string[]): void {
     if (!Array.isArray(id)) {
       id = [id]
     }
@@ -108,7 +108,7 @@ export class MockRegistrar implements Registrar {
     id.forEach(id => this.topologies.delete(id))
   }
 
-  getTopologies (protocol: string) {
+  getTopologies (protocol: string): Topology[] {
     const output: Topology[] = []
 
     for (const { topology, protocols } of this.topologies.values()) {
