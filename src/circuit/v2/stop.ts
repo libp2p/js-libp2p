@@ -14,7 +14,7 @@ const log = logger('libp2p:circuit:v2:stop')
 export interface HandleStopOptions {
   connection: Connection
   request: StopMessage
-  pbstr: ProtobufStream
+  pbstr: ProtobufStream<Uint8ArrayList | Uint8Array>
 }
 
 const isValidStop = (request: StopMessage): boolean => {
@@ -66,7 +66,7 @@ export interface StopOptions {
 export async function stop ({
   connection,
   request
-}: StopOptions): Promise<Duplex<Uint8ArrayList, Uint8Array> | undefined> {
+}: StopOptions): Promise<Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> | undefined> {
   const stream = await connection.newStream([RELAY_V2_STOP_CODEC])
   log('starting circuit relay v2 stop request to %s', connection.remotePeer)
   const pbstr = pbStream(stream)

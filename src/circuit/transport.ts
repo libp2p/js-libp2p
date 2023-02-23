@@ -26,8 +26,6 @@ import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import { pbStream } from 'it-pb-stream'
-import type { Duplex } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit')
 
@@ -265,7 +263,7 @@ export class Circuit implements Transport, Startable {
       let localAddr = relayAddr
       localAddr = localAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`)
       const maConn = streamToMaConnection({
-        stream: pbstr.unwrap() as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>,
+        stream: pbstr.unwrap(),
         remoteAddr: ma,
         localAddr
       })

@@ -14,16 +14,15 @@ import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ProtobufStream } from 'it-pb-stream'
 import { pbStream } from 'it-pb-stream'
-import type { Uint8ArrayList } from 'uint8arraylist'
-import type { Duplex } from 'it-stream-types'
 import { CIRCUIT_PROTO_CODE } from '../constants.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit:v2:hop')
 
 export interface HopProtocolOptions {
   connection: Connection
   request: HopMessage
-  pbstr: ProtobufStream
+  pbstr: ProtobufStream<Uint8ArrayList | Uint8Array>
   relayPeer: PeerId
   relayAddrs: Multiaddr[]
   limit?: Limit
@@ -176,22 +175,10 @@ async function handleConnect (options: HopProtocolOptions): Promise<void> {
 
   log('connection to destination established, short circuiting streams...')
   // Short circuit the two streams to create the relayed connection
-  return await pipe(
-    sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>,
-    // adapt uint8arraylist to uint8array
-    // async function * (src) {
-    //   for await(const buf of src) {
-    //     yield buf.subarray()
-    //   }
-    // },
-    destinationStream as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>,
-    // adapt uint8arraylist to uint8array
-    // async function * (src) {
-    //   for await(const buf of src) {
-    //     yield buf.subarray()
-    //   }
-    // },
-    sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>
+  await pipe(
+    sourceStream,
+    destinationStream,
+    sourceStream
   )
 }
 

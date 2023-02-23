@@ -8,11 +8,12 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
 import { pbStream, ProtobufStream } from 'it-pb-stream'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 /* eslint-env mocha */
 
 describe('Circuit v2 - stop protocol', function () {
-  let srcPeer: PeerId, relayPeer: PeerId, conn: Connection, pbstr: ProtobufStream
+  let srcPeer: PeerId, relayPeer: PeerId, conn: Connection, pbstr: ProtobufStream<Uint8ArrayList | Uint8Array>
 
   beforeEach(async () => {
     [srcPeer, relayPeer] = await createPeerIds(2)
