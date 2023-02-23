@@ -119,7 +119,6 @@ async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit,
     })
     log('sent confirmation response to %s', connection.remotePeer)
   } catch (err) {
-    console.log(err)
     log.error('failed to send confirmation response to %s', connection.remotePeer)
     await reservationStore.removeReservation(connection.remotePeer)
   }
