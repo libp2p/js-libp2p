@@ -38,11 +38,12 @@ A basic implementation of a peer id
 ## Example
 
 ```JavaScript
-import { PeerId } from '@libp2p/peer-id'
+import { peerIdFromString } from '@libp2p/peer-id'
 
-const id = new PeerId(...)
+const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
 
-console.log(id.toCid())
+console.log(peer.toCid()) // CID(bafzaa...)
+console.log(peer.toString()) // "12D3K..."
 ```
 
 ## API Docs
