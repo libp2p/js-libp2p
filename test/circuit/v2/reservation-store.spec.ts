@@ -8,7 +8,7 @@ import { createPeerId } from '../../utils/creators/peer.js'
 
 describe('Circuit v2 - reservation store', function () {
   it('should add reservation', async function () {
-    const store = new ReservationStore(2)
+    const store = new ReservationStore({ maxReservations: 2 })
     const peer = await createPeerId()
     const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
@@ -16,7 +16,7 @@ describe('Circuit v2 - reservation store', function () {
     expect(await store.hasReservation(peer)).to.be.true()
   })
   it('should add reservation if peer already has reservation', async function () {
-    const store = new ReservationStore(1)
+    const store = new ReservationStore({ maxReservations: 1 })
     const peer = await createPeerId()
     await store.reserve(peer, multiaddr())
     const result = await store.reserve(peer, multiaddr())
@@ -26,14 +26,14 @@ describe('Circuit v2 - reservation store', function () {
   })
 
   it('should fail to add reservation on exceeding limit', async function () {
-    const store = new ReservationStore(0)
+    const store = new ReservationStore({ maxReservations: 0 })
     const peer = await createPeerId()
     const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.RESERVATION_REFUSED)
   })
 
   it('should remove reservation', async function () {
-    const store = new ReservationStore(10)
+    const store = new ReservationStore({ maxReservations: 10 })
     const peer = await createPeerId()
     const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)

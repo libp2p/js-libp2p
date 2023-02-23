@@ -1,7 +1,6 @@
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { logger } from '@libp2p/logger'
-import { pipe } from 'it-pipe'
 import type { Connection } from '@libp2p/interface-connection'
 import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -16,8 +15,13 @@ import type { ProtobufStream } from 'it-pb-stream'
 import { pbStream } from 'it-pb-stream'
 import { CIRCUIT_PROTO_CODE } from '../constants.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import { createLimitedShortCircuit } from './util.js'
+import type { CodeError } from '@libp2p/interfaces/errors'
 
 const log = logger('libp2p:circuit:v2:hop')
+
+const RELAYED = 'relayed'
 
 export interface HopProtocolOptions {
   connection: Connection
@@ -29,6 +33,7 @@ export interface HopProtocolOptions {
   acl?: Acl
   reservationStore: ReservationStore
   connectionManager: ConnectionManager
+  peerStore: PeerStore
 }
 
 export async function handleHopProtocol (options: HopProtocolOptions): Promise<void> {
@@ -70,7 +75,7 @@ export async function reserve (connection: Connection): Promise<Reservation> {
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 
-async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit, acl, reservationStore }: HopProtocolOptions): Promise<void> {
+async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit, acl, reservationStore, peerStore }: HopProtocolOptions): Promise<void> {
   const hopstr = pbstr.pb(HopMessage)
   log('hop reserve request from %s', connection.remotePeer)
 
@@ -94,19 +99,30 @@ async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit,
   }
 
   try {
+    // tag relayed peer
+    // result.expire is non-null if `ReservationStore.reserve` returns with status == OK
+    if (result.expire != null) {
+      const ttl = new Date().getTime() - result.expire
+      await peerStore.tagPeer(relayPeer, RELAYED, { value: 1, ttl })
+        .catch((err: CodeError) => {
+          // ignore if peer is already tagged
+          if (err.code !== 'ERR_DUPLICATE_TAG') {
+            throw err
+          }
+        })
+    }
     hopstr.write({
       type: HopMessage.Type.STATUS,
       status: Status.OK,
       reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, BigInt(result.expire ?? 0)),
-      limit
+      limit: (await reservationStore.get(relayPeer))?.limit
     })
     log('sent confirmation response to %s', connection.remotePeer)
   } catch (err) {
+    console.log(err)
     log.error('failed to send confirmation response to %s', connection.remotePeer)
     await reservationStore.removeReservation(connection.remotePeer)
   }
-
-  // TODO: how to ensure connection manager doesn't close reserved relay conn
 }
 
 async function handleConnect (options: HopProtocolOptions): Promise<void> {
@@ -174,12 +190,26 @@ async function handleConnect (options: HopProtocolOptions): Promise<void> {
   const sourceStream = pbstr.unwrap()
 
   log('connection to destination established, short circuiting streams...')
+  const limit = (await reservationStore.get(dstPeer))?.limit
   // Short circuit the two streams to create the relayed connection
-  await pipe(
-    sourceStream,
-    destinationStream,
-    sourceStream
-  )
+  return await createLimitedShortCircuit(sourceStream, destinationStream, limit)
+  // return await pipe(
+  //   sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>,
+  //   // adapt uint8arraylist to uint8array
+  //   // async function * (src) {
+  //   //   for await(const buf of src) {
+  //   //     yield buf.subarray()
+  //   //   }
+  //   // },
+  //   destinationStream as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>,
+  //   // adapt uint8arraylist to uint8array
+  //   // async function * (src) {
+  //   //   for await(const buf of src) {
+  //   //     yield buf.subarray()
+  //   //   }
+  //   // },
+  //   sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>
+  // )
 }
 
 async function makeReservation (

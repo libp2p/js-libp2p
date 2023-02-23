@@ -145,6 +145,7 @@ export class Circuit implements Transport, Startable {
         relayPeer: this.components.peerId,
         relayAddrs: this.components.addressManager.getListenAddrs(),
         reservationStore: this.reservationStore,
+        peerStore: this.components.peerStore,
         request
       })
     } catch (_err) {
