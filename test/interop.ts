@@ -18,10 +18,21 @@ import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { floodsub } from '@libp2p/floodsub'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+
+/**
+ * @packageDocumentation
+ *
+ * To enable debug logging, run the tests with the following env vars:
+ *
+ * ```console
+ * DEBUG=libp2p*,go-libp2p:* npm run test:interop
+ * ```
+ */
 
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
-  const apiAddr = multiaddr(`/ip4/0.0.0.0/tcp/${controlPort}`)
+  const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
 
   const log = logger(`go-libp2p:${controlPort}`)
 
@@ -32,7 +43,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
   } else {
-    opts.push('-hostAddrs=/ip4/0.0.0.0/tcp/0')
+    opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
   }
 
   if (options.noise === true) {
@@ -91,7 +102,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   return {
     client: createClient(apiAddr),
     stop: async () => {
-      proc.kill('SIGKILL')
+      await proc.kill()
     }
   }
 }
@@ -108,7 +119,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   const opts: Libp2pOptions = {
     peerId,
     addresses: {
-      listen: options.noListen === true ? [] : ['/ip4/0.0.0.0/tcp/0']
+      listen: options.noListen === true ? [] : ['/ip4/127.0.0.1/tcp/0']
     },
     transports: [tcp()],
     streamMuxers: [],
@@ -128,7 +139,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     if (options.pubsubRouter === 'floodsub') {
       opts.pubsub = floodsub()
     } else {
-      opts.pubsub = floodsub()
+      opts.pubsub = gossipsub()
     }
   }
 
@@ -194,4 +205,5 @@ async function main () {
 
 main().catch(err => {
   console.error(err) // eslint-disable-line no-console
+  process.exit(1)
 })
