@@ -91,7 +91,7 @@
     "test:firefox": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:examples": "cd examples && npm run test:all",
-    "test:interop": "aegir test -t node -f dist/test/interop.js"
+    "test:interop": "DEBUG=libp2p*,-*:trace,go-libp2p* aegir test -t node -f dist/test/interop.js --grep pubsub"
   },
   "dependencies": {
     "@achingbrain/nat-port-mapper": "^1.0.3",
