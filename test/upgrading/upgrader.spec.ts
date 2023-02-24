@@ -318,7 +318,7 @@ describe('Upgrader', () => {
     // Ensure both sides fail
     expect(results).to.have.length(2)
     results.forEach(result => {
-      expect(result.status).to.equal('rejected')
+      expect(result).to.have.property('status', 'rejected')
       expect(result).to.have.nested.property('reason.code', codes.ERR_MUXER_UNAVAILABLE)
     })
   })
