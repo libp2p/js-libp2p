@@ -192,23 +192,6 @@ async function handleConnect (options: HopProtocolOptions): Promise<void> {
   const limit = (await reservationStore.get(dstPeer))?.limit
   // Short circuit the two streams to create the relayed connection
   return await createLimitedShortCircuit(sourceStream, destinationStream, limit)
-  // return await pipe(
-  //   sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>,
-  //   // adapt uint8arraylist to uint8array
-  //   // async function * (src) {
-  //   //   for await(const buf of src) {
-  //   //     yield buf.subarray()
-  //   //   }
-  //   // },
-  //   destinationStream as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>,
-  //   // adapt uint8arraylist to uint8array
-  //   // async function * (src) {
-  //   //   for await(const buf of src) {
-  //   //     yield buf.subarray()
-  //   //   }
-  //   // },
-  //   sourceStream as Duplex<Uint8ArrayList, Uint8Array | Uint8ArrayList>
-  // )
 }
 
 async function makeReservation (
