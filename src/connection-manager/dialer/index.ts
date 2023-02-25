@@ -50,6 +50,28 @@ export interface DialerInit {
   addressSorter?: AddressSorter
 
   /**
+   * If true, try to connect to all discovered peers up to the connection manager limit
+   */
+  autoDial?: boolean
+
+  /**
+   * How long to wait between attempting to keep our number of concurrent connections
+   * above minConnections
+   */
+  autoDialInterval: number
+
+  /**
+   * How long a dial attempt is allowed to take
+   */
+  dialTimeout?: number
+
+  /**
+   * When a new inbound connection is opened, the upgrade process (e.g. protect,
+   * encrypt, multiplex etc) must complete within this number of ms.
+   */
+  inboundUpgradeTimeout: number
+
+  /**
    * Number of max concurrent dials
    */
   maxParallelDials?: number
@@ -58,11 +80,6 @@ export interface DialerInit {
    * Number of max addresses to dial for a given peer
    */
   maxAddrsToDial?: number
-
-  /**
-   * How long a dial attempt is allowed to take
-   */
-  dialTimeout?: number
 
   /**
    * Number of max concurrent dials per peer
@@ -94,13 +111,13 @@ export class DefaultDialer implements Startable, Dialer {
   public pendingDialTargets: Map<string, AbortController>
   private started: boolean
 
-  constructor (components: DefaultDialerComponents, init: DialerInit = {}) {
+  constructor (components: DefaultDialerComponents, dialerInit?: DialerInit) {
     this.started = false
-    this.addressSorter = init.addressSorter ?? publicAddressesFirst
-    this.maxAddrsToDial = init.maxAddrsToDial ?? MAX_ADDRS_TO_DIAL
-    this.timeout = init.dialTimeout ?? DIAL_TIMEOUT
-    this.maxDialsPerPeer = init.maxDialsPerPeer ?? MAX_PER_PEER_DIALS
-    this.tokens = [...new Array(init.maxParallelDials ?? MAX_PARALLEL_DIALS)].map((_, index) => index)
+    this.addressSorter = dialerInit?.addressSorter ?? publicAddressesFirst
+    this.maxAddrsToDial = dialerInit?.maxAddrsToDial ?? MAX_ADDRS_TO_DIAL
+    this.timeout = dialerInit?.dialTimeout ?? DIAL_TIMEOUT
+    this.maxDialsPerPeer = dialerInit?.maxDialsPerPeer ?? MAX_PER_PEER_DIALS
+    this.tokens = [...new Array(dialerInit?.maxParallelDials ?? MAX_PARALLEL_DIALS)].map((_, index) => index)
     this.components = components
     this.pendingDials = trackedMap({
       name: 'libp2p_dialler_pending_dials',
@@ -111,7 +128,7 @@ export class DefaultDialer implements Startable, Dialer {
       metrics: components.metrics
     })
 
-    for (const [key, value] of Object.entries(init.resolvers ?? {})) {
+    for (const [key, value] of Object.entries(dialerInit?.resolvers ?? {})) {
       resolvers.set(key, value)
     }
   }

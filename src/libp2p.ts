@@ -122,19 +122,19 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       this.components.connectionProtector = init.connectionProtector(components)
     }
 
+    // Create the Connection Manager
+    // if a connection manager is not provided, create a default one
+    this.connectionManager = (init.connectionManager != null) ? init.connectionManager(this.components) : this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManagerConfig)
+
     // Set up the Upgrader
     this.components.upgrader = new DefaultUpgrader(this.components, {
       connectionEncryption: (init.connectionEncryption ?? []).map(fn => this.configureComponent(fn(this.components))),
       muxers: (init.streamMuxers ?? []).map(fn => this.configureComponent(fn(this.components))),
-      inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
+      inboundUpgradeTimeout: init.dialer.inboundUpgradeTimeout
     })
 
     // Create the dialer
-    this.components.dialer = new DefaultDialer(this.components, init.connectionManager)
-
-    // Create the Connection Manager
-    // if a connection manager is not provided, create a default one
-    this.connectionManager = (init.customConnectionManager != null) ? init.customConnectionManager(this.components) : this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
+    this.components.dialer = new DefaultDialer(this.components, init.dialer)
 
     // forward connection manager events
     this.components.connectionManager.addEventListener('peer:disconnect', (event) => {
@@ -157,9 +157,9 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.configureComponent(new PeerRecordUpdater(this.components))
 
     this.configureComponent(new AutoDialler(this.components, {
-      enabled: init.connectionManager.autoDial,
-      minConnections: init.connectionManager.minConnections,
-      autoDialInterval: init.connectionManager.autoDialInterval
+      enabled: init.dialer.autoDial,
+      minConnections: init.connectionManagerConfig.minConnections,
+      autoDialInterval: init.dialer.autoDialInterval
     }))
 
     // Create keychain
@@ -231,7 +231,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       this.components.transportManager.add(this.configureComponent(new Circuit(this.components, init.relay)))
 
       this.configureComponent(new Relay(this.components, {
-        addressSorter: init.connectionManager.addressSorter,
         ...init.relay
       }))
     }

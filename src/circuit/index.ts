@@ -23,6 +23,7 @@ export interface RelayConfig extends StreamHandlerOptions {
   advertise: RelayAdvertiseConfig
   hop: HopConfig
   autoRelay: AutoRelayConfig
+  addressSorter?: AddressSorter
 }
 
 export interface HopConfig {
@@ -48,10 +49,6 @@ export interface AutoRelayConfig {
   maxListeners: number
 }
 
-export interface RelayInit extends RelayConfig {
-  addressSorter?: AddressSorter
-}
-
 export interface RelayComponents {
   peerId: PeerId
   contentRouting: ContentRouting
@@ -62,7 +59,7 @@ export interface RelayComponents {
 
 export class Relay implements Startable {
   private readonly components: RelayComponents
-  private readonly init: RelayInit
+  private readonly init: RelayConfig
   // @ts-expect-error this field isn't used anywhere?
   private readonly autoRelay?: AutoRelay
   private timeout?: any
@@ -71,7 +68,7 @@ export class Relay implements Startable {
   /**
    * Creates an instance of Relay
    */
-  constructor (components: RelayComponents, init: RelayInit) {
+  constructor (components: RelayComponents, init: RelayConfig) {
     this.components = components
     // Create autoRelay if enabled
     this.autoRelay = init.autoRelay?.enabled !== false

@@ -11,7 +11,7 @@ import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
 import type { ConnectionManager, ConnectionManagerEvents, Dialer } from '@libp2p/interface-connection-manager'
 import * as STATUS from '@libp2p/interface-connection/status'
-import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 import { multiaddr, Multiaddr, Resolver } from '@multiformats/multiaddr'
 import { PeerMap } from '@libp2p/peer-collections'
 import { TimeoutController } from 'timeout-abort-controller'
@@ -45,47 +45,9 @@ export interface ConnectionManagerConfig {
   pollInterval?: number
 
   /**
-   * If true, try to connect to all discovered peers up to the connection manager limit
+   * The abort signal to use for timeouts when opening connections to peers
    */
-  autoDial?: boolean
-
-  /**
-   * How long to wait between attempting to keep our number of concurrent connections
-   * above minConnections
-   */
-  autoDialInterval: number
-
-  /**
-   * Sort the known addresses of a peer before trying to dial
-   */
-  addressSorter?: AddressSorter
-
-  /**
-   * Number of max concurrent dials
-   */
-  maxParallelDials?: number
-
-  /**
-   * Number of max addresses to dial for a given peer
-   */
-  maxAddrsToDial?: number
-
-  /**
-   * How long a dial attempt is allowed to take, including DNS resolution
-   * of the multiaddr, opening a socket and upgrading it to a Connection.
-   */
-  dialTimeout?: number
-
-  /**
-   * When a new inbound connection is opened, the upgrade process (e.g. protect,
-   * encrypt, multiplex etc) must complete within this number of ms.
-   */
-  inboundUpgradeTimeout: number
-
-  /**
-   * Number of max concurrent dials per peer
-   */
-  maxDialsPerPeer?: number
+  outgoingDialTimeout?: number
 
   /**
    * Multiaddr resolvers to use when dialing
@@ -128,7 +90,6 @@ const defaultOptions: Partial<ConnectionManagerConfig> = {
   minConnections: 0,
   maxEventLoopDelay: Infinity,
   pollInterval: 2000,
-  autoDialInterval: 10000,
   inboundConnectionThreshold: 5,
   maxIncomingPendingConnections: 10
 }
@@ -156,7 +117,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly latencyMonitor?: LatencyMonitor
   private readonly startupReconnectTimeout: number
   private connectOnStartupController?: TimeoutController
-  private readonly dialTimeout: number
+  private readonly outgoingDialTimeout: number
   private readonly allow: Multiaddr[]
   private readonly deny: Multiaddr[]
   private readonly inboundConnectionRateLimiter: RateLimiterMemory
@@ -198,7 +159,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.onDisconnect = this.onDisconnect.bind(this)
 
     this.startupReconnectTimeout = init.startupReconnectTimeout ?? STARTUP_RECONNECT_TIMEOUT
-    this.dialTimeout = init.dialTimeout ?? 30000
+    this.outgoingDialTimeout = init.outgoingDialTimeout ?? 30000
 
     this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
     this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
@@ -496,7 +457,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     let timeoutController: TimeoutController | undefined
 
     if (options?.signal == null) {
-      timeoutController = new TimeoutController(this.dialTimeout)
+      timeoutController = new TimeoutController(this.outgoingDialTimeout)
       options.signal = timeoutController.signal
 
       try {

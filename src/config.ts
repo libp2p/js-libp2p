@@ -12,26 +12,29 @@ import errCode from 'err-code'
 import type { RecursivePartial } from '@libp2p/interfaces'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 
-const DefaultConfig: Partial<Libp2pInit> = {
+export const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
     listen: [],
     announce: [],
     noAnnounce: [],
     announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs
   },
-  connectionManager: {
+  connectionManagerConfig: {
     maxConnections: 300,
     minConnections: 50,
+
+    resolvers: {
+      dnsaddr: dnsaddrResolver
+    }
+  },
+  dialer: {
+    addressSorter: publicAddressesFirst,
+    inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
     autoDial: true,
     autoDialInterval: 10000,
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
-    dialTimeout: Constants.DIAL_TIMEOUT,
-    inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
-    resolvers: {
-      dnsaddr: dnsaddrResolver
-    },
-    addressSorter: publicAddressesFirst
+    dialTimeout: Constants.DIAL_TIMEOUT
   },
   connectionGater: {},
   transportManager: {

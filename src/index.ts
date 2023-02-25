@@ -43,6 +43,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { DialerInit } from './connection-manager/dialer/index.js'
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
@@ -61,7 +62,12 @@ export interface Libp2pInit {
   /**
    * libp2p Connection Manager configuration
    */
-  connectionManager: ConnectionManagerInit
+  connectionManagerConfig: ConnectionManagerInit
+
+  /**
+   * libp2p dialer configuration
+   */
+  dialer: DialerInit
 
   /**
    * A connection gater can deny new connections based on user criteria
@@ -154,7 +160,7 @@ export interface Libp2pInit {
   /**
    * Pass a custom ConnectionManager implementation to enable custom connection management
    */
-  customConnectionManager?: (components: Components) => ConnectionManager
+  connectionManager?: (components: Components) => ConnectionManager
 }
 
 /**
