@@ -130,7 +130,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.components.upgrader = new DefaultUpgrader(this.components, {
       connectionEncryption: (init.connectionEncryption ?? []).map(fn => this.configureComponent(fn(this.components))),
       muxers: (init.streamMuxers ?? []).map(fn => this.configureComponent(fn(this.components))),
-      inboundUpgradeTimeout: init.dialer.inboundUpgradeTimeout
+      inboundUpgradeTimeout: init.dialer.inboundUpgradeTimeout ?? 10000
     })
 
     // Create the dialer

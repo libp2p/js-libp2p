@@ -22,7 +22,6 @@ export const DefaultConfig: Partial<Libp2pInit> = {
   connectionManagerConfig: {
     maxConnections: 300,
     minConnections: 50,
-
     resolvers: {
       dnsaddr: dnsaddrResolver
     }

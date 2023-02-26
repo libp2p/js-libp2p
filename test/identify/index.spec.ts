@@ -29,6 +29,7 @@ import { TimeoutController } from 'timeout-abort-controller'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 import { DefaultComponents } from '../../src/components.js'
+import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -59,7 +60,9 @@ async function createComponents (index: number) {
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
     minConnections: 50,
-    maxConnections: 1000,
+    maxConnections: 1000
+  })
+  components.dialer = new DefaultDialer(components, {
     autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
   })

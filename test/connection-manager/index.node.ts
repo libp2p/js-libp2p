@@ -13,12 +13,13 @@ import { stubInterface } from 'sinon-ts'
 import type { KeyBook, PeerStore } from '@libp2p/interface-peer-store'
 import sinon from 'sinon'
 import pWaitFor from 'p-wait-for'
-import type { Connection } from '@libp2p/interface-connection'
+import type { Connection, ConnectionGater } from '@libp2p/interface-connection'
 import delay from 'delay'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { codes } from '../../src/errors.js'
 import { start } from '@libp2p/interfaces/startable'
-import type { Dialer } from '@libp2p/interface-connection-manager'
+import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p
@@ -49,18 +50,28 @@ describe('Connection Manager', () => {
   it('should filter connections on disconnect, removing the closed one', async () => {
     const upgrader = mockUpgrader()
     const peerStore = stubInterface<PeerStore>()
+    const peerId = peerIds[0]
     peerStore.keyBook = stubInterface<KeyBook>()
 
+    const dialer = new DefaultDialer({
+      peerId,
+      peerStore,
+      transportManager: stubInterface<TransportManager>(),
+      connectionGater: stubInterface<ConnectionGater>()
+    },
+    {
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
+    })
+
     const connectionManager = new DefaultConnectionManager({
-      peerId: peerIds[0],
-      dialer: stubInterface<Dialer>(),
+      peerId,
+      dialer,
       upgrader,
       peerStore
     }, {
       maxConnections: 1000,
-      minConnections: 50,
-      autoDialInterval: 1000,
-      inboundUpgradeTimeout: 1000
+      minConnections: 5
     })
 
     await start(connectionManager)
@@ -89,18 +100,28 @@ describe('Connection Manager', () => {
   it('should close connections on stop', async () => {
     const upgrader = mockUpgrader()
     const peerStore = stubInterface<PeerStore>()
+    const peerId = peerIds[0]
     peerStore.keyBook = stubInterface<KeyBook>()
+
+    const dialer = new DefaultDialer({
+      peerId,
+      peerStore,
+      transportManager: stubInterface<TransportManager>(),
+      connectionGater: stubInterface<ConnectionGater>()
+    },
+    {
+      autoDialInterval: 1000,
+      inboundUpgradeTimeout: 1000
+    })
 
     const connectionManager = new DefaultConnectionManager({
       peerId: peerIds[0],
-      dialer: stubInterface<Dialer>(),
+      dialer,
       upgrader,
       peerStore
     }, {
       maxConnections: 1000,
-      minConnections: 50,
-      autoDialInterval: 1000,
-      inboundUpgradeTimeout: 1000
+      minConnections: 50
     })
 
     await start(connectionManager)

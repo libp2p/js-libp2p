@@ -78,11 +78,13 @@ describe('Dialing (direct, TCP)', () => {
       connectionGater: mockConnectionGater()
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents)
-    localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
-      maxConnections: 100,
-      minConnections: 50,
+    localComponents.dialer = new DefaultDialer(localComponents, {
       autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
+    })
+    localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
+      maxConnections: 100,
+      minConnections: 50
     })
 
     localTM = new DefaultTransportManager(localComponents)

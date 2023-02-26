@@ -58,7 +58,7 @@ export interface DialerInit {
    * How long to wait between attempting to keep our number of concurrent connections
    * above minConnections
    */
-  autoDialInterval: number
+  autoDialInterval?: number
 
   /**
    * How long a dial attempt is allowed to take
@@ -69,7 +69,7 @@ export interface DialerInit {
    * When a new inbound connection is opened, the upgrade process (e.g. protect,
    * encrypt, multiplex etc) must complete within this number of ms.
    */
-  inboundUpgradeTimeout: number
+  inboundUpgradeTimeout?: number
 
   /**
    * Number of max concurrent dials

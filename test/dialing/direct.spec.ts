@@ -50,11 +50,13 @@ describe('Dialing (direct, WebSockets)', () => {
     localComponents.peerStore = new PersistentPeerStore(localComponents, {
       addressFilter: localComponents.connectionGater.filterMultiaddrForPeer
     })
-    localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
-      maxConnections: 100,
-      minConnections: 50,
+    localComponents.dialer = new DefaultDialer(localComponents, {
       autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
+    })
+    localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
+      maxConnections: 100,
+      minConnections: 50
     })
 
     localTM = new DefaultTransportManager(localComponents)

@@ -15,6 +15,7 @@ import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import { DefaultComponents } from '../../src/components.js'
+import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 
 const defaultInit: FetchServiceInit = {
   protocolPrefix: 'ipfs',
@@ -33,11 +34,14 @@ async function createComponents (index: number) {
     datastore: new MemoryDatastore()
   })
   components.peerStore = new PersistentPeerStore(components)
-  components.connectionManager = new DefaultConnectionManager(components, {
-    minConnections: 50,
-    maxConnections: 1000,
+  components.dialer = new DefaultDialer(components, {
     autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
+  })
+  components.connectionManager = new DefaultConnectionManager(components, {
+    minConnections: 50,
+    maxConnections: 1000
+
   })
 
   return components

@@ -26,6 +26,7 @@ import { start, stop } from '@libp2p/interfaces/startable'
 import { stubInterface } from 'sinon-ts'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import { DefaultComponents } from '../../src/components.js'
+import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -57,7 +58,9 @@ async function createComponents (index: number): Promise<DefaultComponents> {
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
     minConnections: 50,
-    maxConnections: 1000,
+    maxConnections: 1000
+  })
+  components.dialer = new DefaultDialer(components, {
     autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
   })
