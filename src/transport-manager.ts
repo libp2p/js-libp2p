@@ -1,5 +1,4 @@
 import { logger } from '@libp2p/logger'
-import pSettle from 'p-settle'
 import { codes } from './errors.js'
 import errCode from 'err-code'
 import { FaultTolerance } from '@libp2p/interface-transport'
@@ -218,12 +217,12 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
         continue
       }
 
-      const results = await pSettle(tasks)
+      const results = await Promise.allSettled(tasks)
       // If we are listening on at least 1 address, succeed.
       // TODO: we should look at adding a retry (`p-retry`) here to better support
       // listening on remote addresses as they may be offline. We could then potentially
       // just wait for any (`p-any`) listener to succeed on each transport before returning
-      const isListening = results.find(r => r.isFulfilled)
+      const isListening = results.find(r => r.status === 'fulfilled')
       if ((isListening == null) && this.faultTolerance !== FaultTolerance.NO_FATAL) {
         throw errCode(new Error(`Transport (${key}) could not listen on any available address`), codes.ERR_NO_VALID_ADDRESSES)
       }

@@ -19,7 +19,6 @@ import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
-import pSettle, { PromiseResult } from 'p-settle'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
@@ -545,7 +544,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => await Promise.reject(error))
 
     await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
-    const dialResults: Array<PromiseResult<Connection>> = await pSettle([...new Array(dials)].map(async (_, index) => {
+    const dialResults = await Promise.allSettled([...new Array(dials)].map(async (_, index) => {
       if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
       return await libp2p.dial(remoteAddr)
     }))

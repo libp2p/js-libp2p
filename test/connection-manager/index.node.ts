@@ -189,7 +189,7 @@ describe('libp2p.connections', () => {
     })
 
     afterEach(async () => {
-      await Promise.all(nodes.map((node) => node.stop()))
+      await Promise.all(nodes.map(async (node) => await node.stop()))
 
       if (libp2p != null) {
         await libp2p.stop()
