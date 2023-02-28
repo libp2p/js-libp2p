@@ -1,3 +1,16 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.0...v6.0.1) (2023-02-28)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#53](https://github.com/libp2p/js-libp2p-peer-store/issues/53)) ([e6b87d7](https://github.com/libp2p/js-libp2p-peer-store/commit/e6b87d7f67fdd7124da265a0ca6566989a17a629)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([1139dc4](https://github.com/libp2p/js-libp2p-peer-store/commit/1139dc4f495dcd905344c3ed283339ea2b79f5c2))
+
+
+### Documentation
+
+* Update API link ([#65](https://github.com/libp2p/js-libp2p-peer-store/issues/65)) ([1b75110](https://github.com/libp2p/js-libp2p-peer-store/commit/1b75110ef6017b82d55134e5fd961b9c5dbfa211)), closes [#64](https://github.com/libp2p/js-libp2p-peer-store/issues/64)
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v5.0.1...v6.0.0) (2023-01-06)
 
 
