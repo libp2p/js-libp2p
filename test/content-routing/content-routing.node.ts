@@ -27,7 +27,7 @@ describe('content-routing', () => {
       })
     })
 
-    after(() => node.stop())
+    after(async () => await node.stop())
 
     it('.findProviders should return an error', async () => {
       try {
