@@ -141,7 +141,7 @@ A `peerId.toString()` identifier mapping to the peer metadata Map.
 
 ### API
 
-For the complete API documentation, you should check the [API.md](../../doc/API.md).
+For the complete API documentation, you should check the [API.md](https://libp2p.github.io/js-libp2p-peer-store).
 
 Access to its underlying books:
 
