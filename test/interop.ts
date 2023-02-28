@@ -85,7 +85,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   proc.stdout?.on('data', (buf: Buffer) => {
     const str = buf.toString()
-    log(str)
+    log(str.trim())
 
     // daemon has started
     if (str.includes('Control socket:')) {
@@ -94,7 +94,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   })
 
   proc.stderr?.on('data', (buf) => {
-    log.error(buf.toString())
+    log.error(buf.toString().trim())
   })
 
   await deferred.promise
