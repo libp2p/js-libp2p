@@ -76,7 +76,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
     maxInboundStreams: 1,
     maxOutboundStreams: 1,
     maxPushIncomingStreams: 1,
-    maxPushOutgoingStreams: 1
+    maxPushOutgoingStreams: 1,
+    maxObservedAddresses: 10
   },
   ping: {
     protocolPrefix: 'ipfs',
