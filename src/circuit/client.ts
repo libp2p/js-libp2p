@@ -359,7 +359,11 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
         }
 
         const timeout = setTimeout(
-          (peerId: PeerId) => { void refreshReservation(peerId) },
+          (peerId: PeerId) => {
+            void refreshReservation(peerId).catch(err => {
+              log.error('error refreshing reservation for %p', peerId, err)
+            })
+          },
           Math.max(getExpiration(reservation.expire) - 100, 0),
           peerId
         )

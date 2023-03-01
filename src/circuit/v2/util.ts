@@ -56,7 +56,7 @@ const dataLimitSource = (source: Source<Uint8ArrayList>, limit: bigint): Source<
 const adaptSource = (source: Source<Uint8ArrayList | Uint8Array>): Source<Uint8ArrayList> => (async function * () {
   for await (const buf of source) {
     if (buf instanceof Uint8Array) {
-      yield Uint8ArrayList.fromUint8Arrays([buf])
+      yield Uint8ArrayList.fromUint8Arrays([buf], buf.byteLength)
     } else {
       yield buf
     }
