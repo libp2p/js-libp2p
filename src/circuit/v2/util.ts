@@ -1,13 +1,13 @@
 import { abortableDuplex, AbortError } from 'abortable-iterator'
-import type { Duplex, Sink, Source } from 'it-stream-types'
+import type { Sink, Source } from 'it-stream-types'
 import { TimeoutController } from 'timeout-abort-controller'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { Limit } from './pb/index.js'
 import { logger } from '@libp2p/logger'
+import type { DuplexStream, Resetable } from './interfaces.js'
 
 const log = logger('libp2p:circuit:v2:util')
 
-type DuplexStream = Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
 const doRelay = (src: DuplexStream, dst: DuplexStream) => {
   queueMicrotask(() => {
     void dst.sink(src.source).catch(err => log.error('error while relating streams:', err))
@@ -18,20 +18,20 @@ const doRelay = (src: DuplexStream, dst: DuplexStream) => {
   })
 }
 
-export async function createLimitedShortCircuit (source: DuplexStream, destination: DuplexStream, limit?: Limit) {
+export function createLimitedRelay (source: Resetable<DuplexStream>, destination: Resetable<DuplexStream>, limit?: Limit) {
   // trivial case
   if (limit == null) {
-    doRelay(source, destination)
+    doRelay(source.value, destination.value)
     return
   }
   const dataLimit = limit.data ?? BigInt(0)
   const durationLimit = limit.duration ?? 0
   const src = durationLimitDuplex(dataLimitDuplex(source, dataLimit), durationLimit)
   const dst = durationLimitDuplex(dataLimitDuplex(destination, dataLimit), durationLimit)
-  doRelay(src, dst)
+  doRelay(src.value, dst.value)
 }
 
-const dataLimitSource = (source: Source<Uint8ArrayList>, limit: bigint): Source<Uint8ArrayList> => {
+const dataLimitSource = (source: Source<Uint8ArrayList>, reset: () => void, limit: bigint): Source<Uint8ArrayList> => {
   if (limit === BigInt(0)) {
     return source
   }
@@ -39,16 +39,14 @@ const dataLimitSource = (source: Source<Uint8ArrayList>, limit: bigint): Source<
   return (async function * (): Source<Uint8ArrayList> {
     let total = BigInt(0)
     for await (const buf of source) {
-      const remaining = limit - total
-      if (remaining <= 0) {
+      const len = BigInt(buf.length)
+      if (total + len > limit) {
+        log.error('attempted to send more data than limit: %s, resetting stream', limit.toString())
+        reset()
         return
       }
-      const len = BigInt(buf.length)
-      const readBytes = len <= remaining ? len : remaining
-      total += readBytes
-      // downcast to number is safe since len is guaranteed to
-      // be within the range of `number`.
-      yield buf.sublist(0, Number(readBytes))
+      total += len
+      yield buf
     }
   })()
 }
@@ -63,25 +61,33 @@ const adaptSource = (source: Source<Uint8ArrayList | Uint8Array>): Source<Uint8A
   }
 })()
 
-const dataLimitSink = (sink: Sink<Uint8ArrayList | Uint8Array>, limit: bigint): Sink<Uint8ArrayList | Uint8Array> => {
+const dataLimitSink = (sink: Sink<Uint8ArrayList | Uint8Array>, reset: () => void, limit: bigint): Sink<Uint8ArrayList | Uint8Array> => {
   return async (source: Source<Uint8ArrayList | Uint8Array>) => await sink(
     dataLimitSource(
       adaptSource(source),
+      reset,
       limit
     )
   )
 }
 
-const dataLimitDuplex = (duplex: DuplexStream, limit: bigint): DuplexStream => {
-  return { ...duplex, source: dataLimitSource(duplex.source, limit), sink: dataLimitSink(duplex.sink, limit) }
+const dataLimitDuplex = (duplex: Resetable<DuplexStream>, limit: bigint): Resetable<DuplexStream> => {
+  return {
+    ...duplex,
+    value: {
+      ...duplex.value,
+      source: dataLimitSource(duplex.value.source, duplex.reset, limit),
+      sink: dataLimitSink(duplex.value.sink, duplex.reset, limit)
+    }
+  }
 }
 
-const durationLimitDuplex = (duplex: DuplexStream, limit: number): DuplexStream => {
+const durationLimitDuplex = (duplex: Resetable<DuplexStream>, limit: number): Resetable<DuplexStream> => {
   if (limit === 0) {
     return duplex
   }
   const controller = new TimeoutController(limit)
-  const d = abortableDuplex(duplex, controller.signal)
+  const d = abortableDuplex(duplex.value, controller.signal)
   const source = (async function * () {
     try {
       for await (const buf of d.source) {
@@ -91,10 +97,13 @@ const durationLimitDuplex = (duplex: DuplexStream, limit: number): DuplexStream 
       if (!(err instanceof AbortError)) {
         throw err
       }
+      // reset if we encounter an abort error
+      log.error('exceeded duration: %d ms, resetting stream', limit)
+      duplex.reset()
     } finally {
       controller.clear()
     }
   })()
 
-  return { ...duplex, source }
+  return { ...duplex, value: { ...duplex.value, source } }
 }

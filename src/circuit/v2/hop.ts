@@ -5,7 +5,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { Acl, ReservationStore } from './interfaces.js'
+import type { Acl, ReservationStore, Resetable } from './interfaces.js'
 import { RELAY_V2_HOP_CODEC } from '../multicodec.js'
 import { stop } from './stop.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
@@ -16,7 +16,7 @@ import { pbStream } from 'it-pb-stream'
 import { CIRCUIT_PROTO_CODE } from '../constants.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { createLimitedShortCircuit } from './util.js'
+import { createLimitedRelay } from './util.js'
 import type { CodeError } from '@libp2p/interfaces/errors'
 
 const log = logger('libp2p:circuit:v2:hop')
@@ -26,7 +26,7 @@ const RELAYED = 'relayed'
 export interface HopProtocolOptions {
   connection: Connection
   request: HopMessage
-  pbstr: ProtobufStream<Uint8ArrayList | Uint8Array>
+  stream: Resetable<ProtobufStream<Uint8ArrayList | Uint8Array>>
   relayPeer: PeerId
   relayAddrs: Multiaddr[]
   limit?: Limit
@@ -37,14 +37,14 @@ export interface HopProtocolOptions {
 }
 
 export async function handleHopProtocol (options: HopProtocolOptions): Promise<void> {
-  const { pbstr, request } = options
+  const { stream, request } = options
   log('received hop message')
   switch (request.type) {
     case HopMessage.Type.RESERVE: await handleReserve(options); break
     case HopMessage.Type.CONNECT: await handleConnect(options); break
     default: {
       log.error('invalid hop request type %s via peer %s', options.request.type, options.connection.remotePeer)
-      pbstr.pb(HopMessage).write({ type: HopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
+      stream.value.pb(HopMessage).write({ type: HopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
     }
   }
 }
@@ -75,7 +75,7 @@ export async function reserve (connection: Connection): Promise<Reservation> {
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 
-async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit, acl, reservationStore, peerStore }: HopProtocolOptions): Promise<void> {
+async function handleReserve ({ connection, stream: { value: pbstr }, relayPeer, relayAddrs, limit, acl, reservationStore, peerStore }: HopProtocolOptions): Promise<void> {
   const hopstr = pbstr.pb(HopMessage)
   log('hop reserve request from %s', connection.remotePeer)
 
@@ -125,8 +125,8 @@ async function handleReserve ({ connection, pbstr, relayPeer, relayAddrs, limit,
 }
 
 async function handleConnect (options: HopProtocolOptions): Promise<void> {
-  const { connection, pbstr, request, reservationStore, connectionManager, acl } = options
-  const hopstr = pbstr.pb(HopMessage)
+  const { connection, stream, request, reservationStore, connectionManager, acl } = options
+  const hopstr = stream.value.pb(HopMessage)
 
   log('hop connect request from %s', connection.remotePeer)
 
@@ -186,12 +186,12 @@ async function handleConnect (options: HopProtocolOptions): Promise<void> {
   }
 
   hopstr.write({ type: HopMessage.Type.STATUS, status: Status.OK })
-  const sourceStream = pbstr.unwrap()
+  const sourceStream = { ...stream, value: stream.value.unwrap() }
 
   log('connection to destination established, short circuiting streams...')
   const limit = (await reservationStore.get(dstPeer))?.limit
   // Short circuit the two streams to create the relayed connection
-  return await createLimitedShortCircuit(sourceStream, destinationStream, limit)
+  return createLimitedRelay(sourceStream, destinationStream, limit)
 }
 
 async function makeReservation (

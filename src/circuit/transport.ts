@@ -131,6 +131,7 @@ export class Circuit implements Transport, Startable {
 
     const source = abortableDuplex(stream, controller.signal)
     const pbstr = pbStream({ ...stream, ...source })
+    const resetable = { value: pbstr, reset: () => stream.reset() }
     try {
       const request = await pbstr.pb(CircuitV2.HopMessage).read()
 
@@ -140,7 +141,7 @@ export class Circuit implements Transport, Startable {
 
       await CircuitV2Handler.handleHopProtocol({
         connection,
-        pbstr,
+        stream: resetable,
         connectionManager: this.components.connectionManager,
         relayPeer: this.components.peerId,
         relayAddrs: this.components.addressManager.getListenAddrs(),

@@ -1,5 +1,7 @@
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Limit, Status } from './pb/index.js'
 
 export type ReservationStatus = Status.OK | Status.PERMISSION_DENIED | Status.RESERVATION_REFUSED
@@ -25,4 +27,10 @@ export interface Acl {
    * Checks if connection should be allowed
    */
   allowConnect: (src: PeerId, addr: Multiaddr, dst: PeerId) => Promise<AclStatus>
+}
+
+export type DuplexStream = Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
+export interface Resetable<T> {
+  value: T
+  reset: () => void
 }

@@ -28,6 +28,7 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { Duplex } from 'it-stream-types'
+import { pushable } from 'it-pushable'
 
 /* eslint-env mocha */
 
@@ -57,7 +58,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: mockConnection(mockMultiaddrConnection(mockDuplex(), await peerUtils.createPeerId())),
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         request: {},
         relayPeer,
         relayAddrs: [],
@@ -80,7 +81,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -107,7 +108,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         relayPeer,
         connectionManager: sinon.stub() as any,
         peerStore,
@@ -129,7 +130,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -153,7 +154,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -180,7 +181,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -274,7 +275,7 @@ describe('Circuit v2 - hop protocol', function () {
       stub.returns([dstConn])
       await handleHopProtocol({
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -297,7 +298,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        pbstr: pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         request: {
           type: HopMessage.Type.CONNECT,
           // @ts-expect-error {} is missing the following properties from peer: id, addrs
@@ -319,7 +320,7 @@ describe('Circuit v2 - hop protocol', function () {
       }
       await handleHopProtocol({
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -345,7 +346,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -372,7 +373,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        pbstr,
+        stream: { value: pbstr, reset: () => stream.reset() },
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -432,7 +433,7 @@ describe('Circuit v2 - hop protocol', function () {
       })
     })
 
-    it('should connect - data limit', async () => {
+    it('should connect - data limit - src to dest', async () => {
       const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
       const getReservationStub = sinon.stub(reservationStore, 'get')
       hasReservationStub.resolves(true)
@@ -457,9 +458,15 @@ describe('Circuit v2 - hop protocol', function () {
 
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
+      const srcServerReset = sinon.stub()
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        pbstr: pbStream(srcServer),
+        stream: {
+          value: pbStream(srcServer),
+          reset: () => {
+            srcServerReset()
+          }
+        },
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -492,19 +499,93 @@ describe('Circuit v2 - hop protocol', function () {
       const sourceStream = srcClientPbStream.unwrap()
       const destStream = dstClientPbStream.unwrap()
 
-      // source to dest, write 10 bytes
-      await pipe([uint8arrayFromString('helloextra')], sourceStream)
+      // source to dest, write 4 bytes
+      const sender = pushable()
+      void pipe(sender, sourceStream)
+      sender.push(uint8arrayFromString('01234'))
+      // source to dest, exceed stream limit
+      sender.push(uint8arrayFromString('extra'))
       const data = await all(destStream.source)
-      expect(data).to.not.be.undefined()
-      expect(data?.length).to.be.eq(1)
-      expect(data[0].length).to.eq(5)
+      expect(data).to.have.length(1)
+      expect(data[0]).to.have.length(5)
+      expect(srcServerReset.callCount).to.equal(1)
+    })
 
-      // dest to source, write 10 bytes
-      await pipe([uint8arrayFromString('helloextra')], destStream)
-      const data1 = await all(sourceStream.source)
-      expect(data1).to.not.be.undefined()
-      expect(data1?.length).to.be.eq(1)
-      expect(data1[0].length).to.eq(5)
+    it('should connect - data limit - dest to src', async () => {
+      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
+      const getReservationStub = sinon.stub(reservationStore, 'get')
+      hasReservationStub.resolves(true)
+      getReservationStub.resolves({
+        expire: new Date(Date.now() + 2 * 60 * 1000),
+        addr: multiaddr('/ip4/0.0.0.0'),
+        // set limit
+        limit: {
+          data: BigInt(5),
+          duration: 0
+        }
+      })
+      const dstConn = mockConnection(
+        mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
+      )
+      const [dstServer, dstClient] = duplexPair<any>()
+      const [srcServer, srcClient] = duplexPair<any>()
+
+      // resolve the destination stream for the server
+      const streamStub = sinon.stub(dstConn, 'newStream')
+      const dstServerStream = mockStream(dstServer)
+      const dstServerStreamResetStub = sinon.stub(dstServerStream, 'reset')
+      streamStub.resolves(dstServerStream)
+
+      const stub = sinon.stub(components.connectionManager, 'getConnections')
+      stub.returns([dstConn])
+      const handleHop = expect(handleHopProtocol({
+        connection: conn,
+        stream: {
+          value: pbStream(srcServer),
+          reset: () => {}
+        },
+        request: {
+          type: HopMessage.Type.CONNECT,
+          peer: {
+            id: dstPeer.toBytes(),
+            addrs: []
+          }
+        },
+        relayPeer: relayPeer,
+        relayAddrs: [],
+        reservationStore,
+        peerStore: components.peerStore,
+        connectionManager: components.connectionManager
+      })).to.eventually.fulfilled()
+
+      const dstClientPbStream = pbStream(dstClient)
+      const stopConnectRequest = await dstClientPbStream.pb(StopMessage).read()
+      expect(stopConnectRequest.type).to.eq(StopMessage.Type.CONNECT)
+      // write response
+      dstClientPbStream.pb(StopMessage).write({
+        type: StopMessage.Type.STATUS,
+        status: Status.OK
+      })
+
+      await handleHop
+      const srcClientPbStream = pbStream(srcClient)
+      const response = await srcClientPbStream.pb(HopMessage).read()
+      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
+      expect(response.status).to.be.equal(Status.OK)
+
+      const sourceStream = srcClientPbStream.unwrap()
+      const destStream = dstClientPbStream.unwrap()
+
+      // dest to source, write 4 bytes
+      const sender = pushable()
+      void pipe(sender, destStream)
+      sender.push(uint8arrayFromString('01234'))
+      // dest to source, exceed stream limit
+      sender.push(uint8arrayFromString('extra'))
+      const data = await all(sourceStream.source)
+      expect(data).to.have.length(1)
+      expect(data[0]).to.have.length(5)
+      expect(dstServerStreamResetStub.callCount).to.equal(1)
     })
 
     it('should connect - duration limit - dest to src', async () => {
@@ -528,13 +609,18 @@ describe('Circuit v2 - hop protocol', function () {
 
       // resolve the destination stream for the server
       const streamStub = sinon.stub(dstConn, 'newStream')
-      streamStub.resolves(mockStream(dstServer))
+      const dstServerStream = mockStream(dstServer)
+      const dstResetStub = sinon.stub(dstServerStream, 'reset')
+      streamStub.resolves(dstServerStream)
 
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        pbstr: pbStream(srcServer),
+        stream: {
+          value: pbStream(srcServer),
+          reset: () => {}
+        },
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -580,6 +666,7 @@ describe('Circuit v2 - hop protocol', function () {
 
       const received = await all(sourceStream.source)
       expect(received).to.have.length(2)
+      expect(dstResetStub.callCount).to.equal(1)
     })
 
     it('should connect - duration limit - src to dest', async () => {
@@ -607,9 +694,13 @@ describe('Circuit v2 - hop protocol', function () {
 
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
+      const srcResetStub = sinon.stub()
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        pbstr: pbStream(srcServer),
+        stream: {
+          value: pbStream(srcServer),
+          reset: () => { srcResetStub() }
+        },
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -655,6 +746,7 @@ describe('Circuit v2 - hop protocol', function () {
 
       const received = await all(destStream.source)
       expect(received).to.have.length(2)
+      expect(srcResetStub.callCount).to.equal(1)
     })
   })
 })
