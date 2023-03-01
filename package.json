@@ -52,6 +52,10 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./perf": {
+      "types": "./src/perf/index.d.ts",
+      "import": "./dist/src/perf/index.js"
+    },
     "./insecure": {
       "types": "./dist/src/insecure/index.d.ts",
       "import": "./dist/src/insecure/index.js"

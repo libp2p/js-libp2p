@@ -14,7 +14,7 @@
  * ```
  */
 
-import { createLibp2pNode } from './libp2p.js'
+import { createLibp2pNode, type Libp2pNode } from './libp2p.js'
 import type { RecursivePartial } from '@libp2p/interfaces'
 import type { TransportManagerInit } from './transport-manager.js'
 import type { IdentifyServiceInit } from './identify/index.js'
@@ -168,7 +168,7 @@ export interface Libp2pEvents {
   'peer:discovery': CustomEvent<PeerInfo>
 }
 
-export type { Libp2p }
+export type { Libp2p, Libp2pNode }
 
 export type Libp2pOptions = RecursivePartial<Libp2pInit> & { start?: boolean }
 
@@ -197,7 +197,7 @@ export type Libp2pOptions = RecursivePartial<Libp2pInit> & { start?: boolean }
  * const libp2p = await createLibp2p(options)
  * ```
  */
-export async function createLibp2p (options: Libp2pOptions): Promise<Libp2p> {
+export async function createLibp2p (options: Libp2pOptions): Promise<Libp2pNode> {
   const node = await createLibp2pNode(options)
 
   if (options.start !== false) {
