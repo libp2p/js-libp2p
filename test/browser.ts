@@ -40,7 +40,7 @@ describe('libp2p-websockets', () => {
     expect(res[0].subarray()).to.equalBytes(data)
   })
 
-  it('should filter out no DNS websocket addresses', function () {
+  it('should filter out no wss websocket addresses', function () {
     const ma1 = multiaddr('/ip4/127.0.0.1/tcp/80/ws')
     const ma2 = multiaddr('/ip4/127.0.0.1/tcp/443/wss')
     const ma3 = multiaddr('/ip6/::1/tcp/80/ws')
@@ -49,7 +49,8 @@ describe('libp2p-websockets', () => {
     const valid = ws.filter([ma1, ma2, ma3, ma4])
 
     if (isBrowser || isWebWorker) {
-      expect(valid.length).to.equal(0)
+      expect(valid.length).to.equal(2)
+      expect(valid).to.deep.equal([ma2, ma4])
     } else {
       expect(valid.length).to.equal(4)
     }

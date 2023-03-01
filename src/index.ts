@@ -133,7 +133,7 @@ class WebSockets implements Transport {
 
     // Browser
     if (isBrowser || isWebWorker) {
-      return filters.dnsWss(multiaddrs)
+      return filters.wss(multiaddrs)
     }
 
     return filters.all(multiaddrs)

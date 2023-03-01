@@ -21,6 +21,18 @@ export function all (multiaddrs: Multiaddr[]) {
   })
 }
 
+export function wss (multiaddrs: Multiaddr[]) {
+  return multiaddrs.filter((ma) => {
+    if (ma.protoCodes().includes(CODE_CIRCUIT)) {
+      return false
+    }
+
+    const testMa = ma.decapsulateCode(CODE_P2P)
+
+    return mafmt.WebSocketsSecure.matches(testMa)
+  })
+}
+
 export function dnsWss (multiaddrs: Multiaddr[]) {
   return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
