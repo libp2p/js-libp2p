@@ -9,21 +9,26 @@ const log = logger('libp2p:circuit:v2:util')
 
 type DuplexStream = Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
 const doRelay = (src: DuplexStream, dst: DuplexStream) => {
-  void dst.sink(src.source).catch(err => log.error('error while relating streams:', err))
-  void src.sink(dst.source).catch(err => log.error('error while relaying streams:', err))
+  queueMicrotask(() => {
+    void dst.sink(src.source).catch(err => log.error('error while relating streams:', err))
+  })
+
+  queueMicrotask(() => {
+    void src.sink(dst.source).catch(err => log.error('error while relaying streams:', err))
+  })
 }
 
 export async function createLimitedShortCircuit (source: DuplexStream, destination: DuplexStream, limit?: Limit) {
   // trivial case
   if (limit == null) {
-    void doRelay(source, destination)
+    doRelay(source, destination)
     return
   }
   const dataLimit = limit.data ?? BigInt(0)
   const durationLimit = limit.duration ?? 0
   const src = durationLimitDuplex(dataLimitDuplex(source, dataLimit), durationLimit)
   const dst = durationLimitDuplex(dataLimitDuplex(destination, dataLimit), durationLimit)
-  void doRelay(src, dst)
+  doRelay(src, dst)
 }
 
 const dataLimitSource = (source: Source<Uint8ArrayList>, limit: bigint): Source<Uint8ArrayList> => {
