@@ -7,7 +7,7 @@ import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream, ProtobufStream } from 'it-pb-stream'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import type { DuplexStream, Resetable } from './interfaces.js'
+import type { DuplexStream, Abortable } from './interfaces.js'
 
 const log = logger('libp2p:circuit:v2:stop')
 
@@ -66,7 +66,7 @@ export interface StopOptions {
 export async function stop ({
   connection,
   request
-}: StopOptions): Promise<Resetable<DuplexStream> | undefined> {
+}: StopOptions): Promise<Abortable<DuplexStream> | undefined> {
   const stream = await connection.newStream([RELAY_V2_STOP_CODEC])
   log('starting circuit relay v2 stop request to %s', connection.remotePeer)
   const pbstr = pbStream(stream)
@@ -88,7 +88,7 @@ export async function stop ({
     log('stop request to %s was successful', connection.remotePeer)
     return {
       value: pbstr.unwrap(),
-      reset: () => stream.reset()
+      abort: () => stream.abort(new Error('aborted'))
     }
   }
 

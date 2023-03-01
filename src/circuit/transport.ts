@@ -15,9 +15,6 @@ import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } from '@libp2p/interface-transport'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { RelayConfig } from './index.js'
-import { abortableDuplex } from 'abortable-iterator'
-import { TimeoutController } from 'timeout-abort-controller'
-import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import * as CircuitV2Handler from './v2/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -26,6 +23,7 @@ import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import { pbStream } from 'it-pb-stream'
+import pDefer from 'p-defer'
 
 const log = logger('libp2p:circuit')
 
@@ -122,41 +120,44 @@ export class Circuit implements Transport, Startable {
 
   async onHop ({ connection, stream }: IncomingStreamData) {
     log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
-    const controller = new TimeoutController(this._init.hop.timeout)
 
+    const hopTimeoutPromise = pDefer()
+    const timeout = setTimeout(() => {
+      hopTimeoutPromise.reject('timed out')
+    }, this._init.hop.timeout)
+    const pbstr = pbStream(stream)
+    const abortable = { value: pbstr, abort: () => stream.abort(new Error('aborted')) }
     try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, controller.signal)
-    } catch { }
-
-    const source = abortableDuplex(stream, controller.signal)
-    const pbstr = pbStream({ ...stream, ...source })
-    const resetable = { value: pbstr, reset: () => stream.reset() }
-    try {
-      const request = await pbstr.pb(CircuitV2.HopMessage).read()
+      const request: CircuitV2.HopMessage = await Promise.race([
+        pbstr.pb(CircuitV2.HopMessage).read(),
+        hopTimeoutPromise.promise as any
+      ])
 
       if (request?.type == null) {
         throw new Error('request was invalid, could not read from stream')
       }
 
-      await CircuitV2Handler.handleHopProtocol({
-        connection,
-        stream: resetable,
-        connectionManager: this.components.connectionManager,
-        relayPeer: this.components.peerId,
-        relayAddrs: this.components.addressManager.getListenAddrs(),
-        reservationStore: this.reservationStore,
-        peerStore: this.components.peerStore,
-        request
-      })
+      await Promise.race([
+        CircuitV2Handler.handleHopProtocol({
+          connection,
+          stream: abortable,
+          connectionManager: this.components.connectionManager,
+          relayPeer: this.components.peerId,
+          relayAddrs: this.components.addressManager.getListenAddrs(),
+          reservationStore: this.reservationStore,
+          peerStore: this.components.peerStore,
+          request
+        }),
+        hopTimeoutPromise.promise
+      ])
     } catch (_err) {
       pbstr.pb(CircuitV2.HopMessage).write({
         type: CircuitV2.HopMessage.Type.STATUS,
         status: CircuitV2.Status.MALFORMED_MESSAGE
       })
-      stream.close()
+      stream.abort(_err as Error)
     } finally {
-      controller.clear()
+      clearTimeout(timeout)
     }
   }
 

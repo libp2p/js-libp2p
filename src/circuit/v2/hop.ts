@@ -5,7 +5,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { Acl, ReservationStore, Resetable } from './interfaces.js'
+import type { Acl, ReservationStore, Abortable } from './interfaces.js'
 import { RELAY_V2_HOP_CODEC } from '../multicodec.js'
 import { stop } from './stop.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
@@ -26,7 +26,7 @@ const RELAYED = 'relayed'
 export interface HopProtocolOptions {
   connection: Connection
   request: HopMessage
-  stream: Resetable<ProtobufStream<Uint8ArrayList | Uint8Array>>
+  stream: Abortable<ProtobufStream<Uint8ArrayList | Uint8Array>>
   relayPeer: PeerId
   relayAddrs: Multiaddr[]
   limit?: Limit

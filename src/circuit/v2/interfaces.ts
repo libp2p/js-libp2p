@@ -30,7 +30,7 @@ export interface Acl {
 }
 
 export type DuplexStream = Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
-export interface Resetable<T> {
+export interface Abortable<T> {
   value: T
-  reset: () => void
+  abort: () => void
 }

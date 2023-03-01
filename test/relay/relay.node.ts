@@ -10,6 +10,7 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import { createNode } from '../utils/creators/peer.js'
 import { createNodeOptions, createRelayOptions } from './utils.js'
 import all from 'it-all'
+import delay from 'delay'
 
 /* eslint-env mocha */
 
@@ -174,7 +175,7 @@ describe('Dialing (via relay, TCP)', () => {
 
   // TODO(ckousik): This test seems to fail on windows and macos on CI with a
   // stream reset in mplex.
-  it.skip('should time out when establishing a relay connection', async () => {
+  it('should time out when establishing a relay connection', async () => {
     await relayLibp2p.stop()
     relayLibp2p = await createNode({
       config: createRelayOptions({
@@ -182,7 +183,7 @@ describe('Dialing (via relay, TCP)', () => {
           enabled: true,
           hop: {
             // very short timeout
-            timeout: 5
+            timeout: 500
           }
         }
       })
@@ -197,11 +198,11 @@ describe('Dialing (via relay, TCP)', () => {
     const stream = await connection.newStream([RELAY_V2_HOP_CODEC])
 
     // TODO(ckousik): does this need to be awaited?
-    // await stream.sink(async function * () {
-    //   // delay for longer than the timeout
-    //   await delay(1000)
-    //   yield Uint8Array.from([0])
-    // }())
+    void stream.sink(async function * () {
+      // delay for longer than the timeout
+      await delay(1000)
+      yield Uint8Array.from([0])
+    }())
 
     // because we timed out, the remote should have reset the stream
     await expect(all(stream.source)).to.eventually.be.rejected
