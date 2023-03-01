@@ -88,7 +88,7 @@ export async function stop ({
     log('stop request to %s was successful', connection.remotePeer)
     return {
       value: pbstr.unwrap(),
-      abort: () => stream.abort(new Error('aborted'))
+      abort: (err: Error) => stream.abort(err)
     }
   }
 
