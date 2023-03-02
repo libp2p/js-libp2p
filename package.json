@@ -158,7 +158,6 @@
     "it-filter": "^2.0.0",
     "it-foreach": "^1.0.0",
     "it-map": "^2.0.0",
-    "it-pipe": "^2.0.3",
     "mortice": "^3.0.0",
     "multiformats": "^11.0.0",
     "protons-runtime": "^5.0.0",

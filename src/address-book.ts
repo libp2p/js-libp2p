@@ -3,11 +3,6 @@ import { CodeError } from '@libp2p/interfaces/errors'
 import { isMultiaddr } from '@multiformats/multiaddr'
 import { codes } from './errors.js'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
-import filter from 'it-filter'
-import map from 'it-map'
-import each from 'it-foreach'
 import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import type { Address, AddressFilter, Peer, PeerMultiaddrsChangeData, PeerStore } from '@libp2p/interface-peer-store'
@@ -346,21 +341,27 @@ export class PeerStoreAddressBook {
 }
 
 async function filterMultiaddrs (peerId: PeerId, multiaddrs: Multiaddr[], addressFilter: AddressFilter, isCertified: boolean = false): Promise<Address[]> {
-  return await pipe(
-    multiaddrs,
-    (source) => each(source, (multiaddr) => {
+  const output: Address[] = []
+
+  await Promise.all(
+    multiaddrs.map(async multiaddr => {
       if (!isMultiaddr(multiaddr)) {
         log.error('multiaddr must be an instance of Multiaddr')
         throw new CodeError('multiaddr must be an instance of Multiaddr', codes.ERR_INVALID_PARAMETERS)
       }
-    }),
-    (source) => filter(source, async (multiaddr) => await addressFilter(peerId, multiaddr)),
-    (source) => map(source, (multiaddr) => {
-      return {
+
+      const include = await addressFilter(peerId, multiaddr)
+
+      if (!include) {
+        return
+      }
+
+      output.push({
         multiaddr,
         isCertified
-      }
-    }),
-    async (source) => await all(source)
+      })
+    })
   )
+
+  return output
 }
