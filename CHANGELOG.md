@@ -1,3 +1,10 @@
+## [6.0.3](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.2...v6.0.3) (2023-03-02)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.6 ([#66](https://github.com/libp2p/js-libp2p-peer-store/issues/66)) ([df47658](https://github.com/libp2p/js-libp2p-peer-store/commit/df47658459ef0f691fa509475cea7161ddc0e78e))
+
 ## [6.0.2](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.1...v6.0.2) (2023-03-02)
 
 
