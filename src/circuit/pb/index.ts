@@ -5,8 +5,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface HopMessage {
   type?: HopMessage.Type
@@ -51,23 +51,17 @@ export namespace HopMessage {
 
         if (obj.peer != null) {
           w.uint32(18)
-          Peer.codec().encode(obj.peer, w, {
-            writeDefaults: false
-          })
+          Peer.codec().encode(obj.peer, w)
         }
 
         if (obj.reservation != null) {
           w.uint32(26)
-          Reservation.codec().encode(obj.reservation, w, {
-            writeDefaults: false
-          })
+          Reservation.codec().encode(obj.reservation, w)
         }
 
         if (obj.limit != null) {
           w.uint32(34)
-          Limit.codec().encode(obj.limit, w, {
-            writeDefaults: false
-          })
+          Limit.codec().encode(obj.limit, w)
         }
 
         if (obj.status != null) {
@@ -115,7 +109,7 @@ export namespace HopMessage {
     return _codec
   }
 
-  export const encode = (obj: HopMessage): Uint8Array => {
+  export const encode = (obj: Partial<HopMessage>): Uint8Array => {
     return encodeMessage(obj, HopMessage.codec())
   }
 
@@ -164,16 +158,12 @@ export namespace StopMessage {
 
         if (obj.peer != null) {
           w.uint32(18)
-          Peer.codec().encode(obj.peer, w, {
-            writeDefaults: false
-          })
+          Peer.codec().encode(obj.peer, w)
         }
 
         if (obj.limit != null) {
           w.uint32(26)
-          Limit.codec().encode(obj.limit, w, {
-            writeDefaults: false
-          })
+          Limit.codec().encode(obj.limit, w)
         }
 
         if (obj.status != null) {
@@ -218,7 +208,7 @@ export namespace StopMessage {
     return _codec
   }
 
-  export const encode = (obj: StopMessage): Uint8Array => {
+  export const encode = (obj: Partial<StopMessage>): Uint8Array => {
     return encodeMessage(obj, StopMessage.codec())
   }
 
@@ -242,7 +232,7 @@ export namespace Peer {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.id != null && obj.id.byteLength > 0)) {
+        if ((obj.id != null && obj.id.byteLength > 0)) {
           w.uint32(10)
           w.bytes(obj.id)
         }
@@ -288,7 +278,7 @@ export namespace Peer {
     return _codec
   }
 
-  export const encode = (obj: Peer): Uint8Array => {
+  export const encode = (obj: Partial<Peer>): Uint8Array => {
     return encodeMessage(obj, Peer.codec())
   }
 
@@ -313,7 +303,7 @@ export namespace Reservation {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.expire !== 0n) {
+        if ((obj.expire != null && obj.expire !== 0n)) {
           w.uint32(8)
           w.uint64(obj.expire)
         }
@@ -367,7 +357,7 @@ export namespace Reservation {
     return _codec
   }
 
-  export const encode = (obj: Reservation): Uint8Array => {
+  export const encode = (obj: Partial<Reservation>): Uint8Array => {
     return encodeMessage(obj, Reservation.codec())
   }
 
@@ -432,7 +422,7 @@ export namespace Limit {
     return _codec
   }
 
-  export const encode = (obj: Limit): Uint8Array => {
+  export const encode = (obj: Partial<Limit>): Uint8Array => {
     return encodeMessage(obj, Limit.codec())
   }
 
@@ -486,17 +476,17 @@ export namespace ReservationVoucher {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.relay != null && obj.relay.byteLength > 0)) {
+        if ((obj.relay != null && obj.relay.byteLength > 0)) {
           w.uint32(10)
           w.bytes(obj.relay)
         }
 
-        if (opts.writeDefaults === true || (obj.peer != null && obj.peer.byteLength > 0)) {
+        if ((obj.peer != null && obj.peer.byteLength > 0)) {
           w.uint32(18)
           w.bytes(obj.peer)
         }
 
-        if (opts.writeDefaults === true || obj.expiration !== 0n) {
+        if ((obj.expiration != null && obj.expiration !== 0n)) {
           w.uint32(24)
           w.uint64(obj.expiration)
         }
@@ -539,7 +529,7 @@ export namespace ReservationVoucher {
     return _codec
   }
 
-  export const encode = (obj: ReservationVoucher): Uint8Array => {
+  export const encode = (obj: Partial<ReservationVoucher>): Uint8Array => {
     return encodeMessage(obj, ReservationVoucher.codec())
   }
 
