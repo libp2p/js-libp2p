@@ -103,11 +103,13 @@ async function handleReserve ({ connection, stream: pbstr, relayPeer, relayAddrs
     if (result.expire != null) {
       const ttl = new Date().getTime() - result.expire
       await peerStore.tagPeer(relayPeer, RELAYED, { value: 1, ttl })
-        .catch((err: CodeError) => {
-          log.error('error occurred when tagging peer: ', err)
+        .catch(async (err: CodeError) => {
           if (err.code !== 'ERR_DUPLICATE_TAG') {
             throw err
           }
+          // update ttl
+          // TODO: make this atomic
+          return await peerStore.unTagPeer(relayPeer, RELAYED).then(async () => await peerStore.tagPeer(relayPeer, RELAYED, { value: 1, ttl }))
         })
     }
     hopstr.write({

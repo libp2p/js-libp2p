@@ -192,6 +192,37 @@ describe('Circuit v2 - hop protocol', function () {
       expect(removeReservationStub.calledOnce).to.be.true()
       pbstr.write = backup
     })
+
+    it('should tag peer', async () => {
+      const expire: number = 123
+      const reserveStub = sinon.stub(reservationStore, 'reserve')
+      reserveStub.resolves({ status: Status.OK, expire })
+      const pbstr = pbStream(stream)
+      await handleHopProtocol({
+        request: {
+          type: HopMessage.Type.RESERVE
+        },
+        connection: conn,
+        stream: pbstr,
+        relayPeer,
+        connectionManager: sinon.stub() as any,
+        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
+        peerStore,
+        reservationStore
+      })
+      expect(reserveStub.calledOnceWith(conn.remotePeer, conn.remoteAddr)).to.be.true()
+      const response = await pbstr.pb(HopMessage).read()
+      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
+      expect(response.limit).to.be.undefined()
+      expect(response.status).to.be.equal(Status.OK)
+      expect(response.reservation?.expire).to.be.equal(BigInt(expire))
+      expect(response.reservation?.voucher).to.not.be.undefined()
+      expect(response.reservation?.addrs?.length).to.be.greaterThan(0)
+
+      const tags = await peerStore.getTags(relayPeer)
+      expect(tags).length(1)
+      expect(tags[0].value).equal(1)
+    })
   })
 
   describe('connect', function () {
