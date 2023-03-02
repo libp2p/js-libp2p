@@ -1,3 +1,10 @@
+## [6.0.4](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.3...v6.0.4) (2023-03-02)
+
+
+### Bug Fixes
+
+* remove it-pipe ([#69](https://github.com/libp2p/js-libp2p-peer-store/issues/69)) ([dcf2e8e](https://github.com/libp2p/js-libp2p-peer-store/commit/dcf2e8e851771ea4dad025c3808d25533a06e651)), closes [#44](https://github.com/libp2p/js-libp2p-peer-store/issues/44)
+
 ## [6.0.3](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.2...v6.0.3) (2023-03-02)
 
 
