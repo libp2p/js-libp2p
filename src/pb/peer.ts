@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Peer {
   addresses: Address[]
@@ -28,9 +29,7 @@ export namespace Peer {
         if (obj.addresses != null) {
           for (const value of obj.addresses) {
             w.uint32(10)
-            Address.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            Address.codec().encode(value, w)
           }
         }
 
@@ -44,9 +43,7 @@ export namespace Peer {
         if (obj.metadata != null) {
           for (const value of obj.metadata) {
             w.uint32(26)
-            Metadata.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            Metadata.codec().encode(value, w)
           }
         }
 
@@ -104,7 +101,7 @@ export namespace Peer {
     return _codec
   }
 
-  export const encode = (obj: Peer): Uint8Array => {
+  export const encode = (obj: Partial<Peer>): Uint8Array => {
     return encodeMessage(obj, Peer.codec())
   }
 
@@ -128,7 +125,7 @@ export namespace Address {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.multiaddr != null && obj.multiaddr.byteLength > 0)) {
+        if ((obj.multiaddr != null && obj.multiaddr.byteLength > 0)) {
           w.uint32(10)
           w.bytes(obj.multiaddr)
         }
@@ -171,7 +168,7 @@ export namespace Address {
     return _codec
   }
 
-  export const encode = (obj: Address): Uint8Array => {
+  export const encode = (obj: Partial<Address>): Uint8Array => {
     return encodeMessage(obj, Address.codec())
   }
 
@@ -195,12 +192,12 @@ export namespace Metadata {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.key !== '') {
+        if ((obj.key != null && obj.key !== '')) {
           w.uint32(10)
           w.string(obj.key)
         }
 
-        if (opts.writeDefaults === true || (obj.value != null && obj.value.byteLength > 0)) {
+        if ((obj.value != null && obj.value.byteLength > 0)) {
           w.uint32(18)
           w.bytes(obj.value)
         }
@@ -239,7 +236,7 @@ export namespace Metadata {
     return _codec
   }
 
-  export const encode = (obj: Metadata): Uint8Array => {
+  export const encode = (obj: Partial<Metadata>): Uint8Array => {
     return encodeMessage(obj, Metadata.codec())
   }
 

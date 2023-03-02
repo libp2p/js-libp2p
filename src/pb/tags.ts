@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Tags {
   tags: Tag[]
@@ -24,9 +25,7 @@ export namespace Tags {
         if (obj.tags != null) {
           for (const value of obj.tags) {
             w.uint32(10)
-            Tag.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            Tag.codec().encode(value, w)
           }
         }
 
@@ -60,7 +59,7 @@ export namespace Tags {
     return _codec
   }
 
-  export const encode = (obj: Tags): Uint8Array => {
+  export const encode = (obj: Partial<Tags>): Uint8Array => {
     return encodeMessage(obj, Tags.codec())
   }
 
@@ -85,7 +84,7 @@ export namespace Tag {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.name !== '') {
+        if ((obj.name != null && obj.name !== '')) {
           w.uint32(10)
           w.string(obj.name)
         }
@@ -136,7 +135,7 @@ export namespace Tag {
     return _codec
   }
 
-  export const encode = (obj: Tag): Uint8Array => {
+  export const encode = (obj: Partial<Tag>): Uint8Array => {
     return encodeMessage(obj, Tag.codec())
   }
 
