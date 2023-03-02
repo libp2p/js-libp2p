@@ -453,8 +453,10 @@ describe('Circuit v2 - hop protocol', function () {
       const [srcServer, srcClient] = duplexPair<any>()
 
       // resolve the destination stream for the server
+      const dstStream = mockStream(dstServer)
+      const dstStreamAbortStub = sinon.stub(dstStream, 'abort')
       const streamStub = sinon.stub(dstConn, 'newStream')
-      streamStub.resolves(mockStream(dstServer))
+      streamStub.resolves(dstStream)
 
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
@@ -495,15 +497,16 @@ describe('Circuit v2 - hop protocol', function () {
       const sourceStream = srcClientPbStream.unwrap()
       const destStream = dstClientPbStream.unwrap()
 
-      // source to dest, write 4 bytes
       const sender = pushable()
       void pipe(sender, sourceStream)
-      sender.push(uint8arrayFromString('01234'))
+      // source to dest, write 4 bytes
+      sender.push(uint8arrayFromString('0123'))
       // source to dest, exceed stream limit
       sender.push(uint8arrayFromString('extra'))
       const data = await all(destStream.source)
-      expect(data).to.have.length(1)
-      expect(data[0]).to.have.length(5)
+      const sum = data.reduce((prev: number, cur: Uint8ArrayList) => prev + cur.length, 0)
+      expect(sum).eql(5)
+      expect(dstStreamAbortStub.callCount).to.equal(1)
       expect(srcServerAbort.callCount).to.equal(1)
     })
 
@@ -534,9 +537,13 @@ describe('Circuit v2 - hop protocol', function () {
 
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
+
+      // source stream on the server
+      const srcServerStream = mockStream(srcServer)
+      const srcServerStreamAbortStub = sinon.stub(srcServerStream, 'abort')
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        stream: pbStream(mockStream(srcServer)),
+        stream: pbStream(srcServerStream),
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -569,16 +576,17 @@ describe('Circuit v2 - hop protocol', function () {
       const sourceStream = srcClientPbStream.unwrap()
       const destStream = dstClientPbStream.unwrap()
 
-      // dest to source, write 4 bytes
       const sender = pushable()
       void pipe(sender, destStream)
-      sender.push(uint8arrayFromString('01234'))
+      // dest to source, write 4 bytes
+      sender.push(uint8arrayFromString('0123'))
       // dest to source, exceed stream limit
       sender.push(uint8arrayFromString('extra'))
       const data = await all(sourceStream.source)
-      expect(data).to.have.length(1)
-      expect(data[0]).to.have.length(5)
+      const sum = data.reduce((prev: number, cur: Uint8ArrayList) => prev + cur.length, 0)
+      expect(sum).equal(5)
       expect(dstServerStreamAbortStub.callCount).to.equal(1)
+      expect(srcServerStreamAbortStub.callCount).to.equal(1)
     })
 
     it('should connect - duration limit - dest to src', async () => {
@@ -609,9 +617,12 @@ describe('Circuit v2 - hop protocol', function () {
 
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
+
+      const srcServerStream = mockStream(srcServer)
+      const srcServerAbortStub = sinon.stub(srcServerStream, 'abort')
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        stream: pbStream(mockStream(srcServer)),
+        stream: pbStream(srcServerStream),
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -656,8 +667,9 @@ describe('Circuit v2 - hop protocol', function () {
       void pipe(periodicSender(200, 4), destStream)
 
       const received = await all(sourceStream.source)
-      expect(received).to.have.length(2)
+      expect(received.reduce((p, c) => p + c.length, 0)).to.equal(8)
       expect(dstAbortStub.callCount).to.equal(1)
+      expect(srcServerAbortStub.callCount).to.equal(1)
     })
 
     it('should connect - duration limit - src to dest', async () => {
@@ -681,7 +693,9 @@ describe('Circuit v2 - hop protocol', function () {
 
       // resolve the destination stream for the server
       const streamStub = sinon.stub(dstConn, 'newStream')
-      streamStub.resolves(mockStream(dstServer))
+      const dstServerStream = mockStream(dstServer)
+      const dstServerAbortStub = sinon.stub(dstServerStream, 'abort')
+      streamStub.resolves(dstServerStream)
 
       const stub = sinon.stub(components.connectionManager, 'getConnections')
       stub.returns([dstConn])
@@ -734,8 +748,10 @@ describe('Circuit v2 - hop protocol', function () {
       void pipe(periodicSender(200, 4), sourceStream)
 
       const received = await all(destStream.source)
-      expect(received).to.have.length(2)
+      const sum = received.reduce((prev: number, cur: Uint8ArrayList) => prev + cur.length, 0)
+      expect(sum).equals(8)
       expect(srcAbortStub.callCount).to.equal(1)
+      expect(dstServerAbortStub.callCount).to.equal(1)
     })
   })
 })

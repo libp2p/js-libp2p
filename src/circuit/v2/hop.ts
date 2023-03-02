@@ -104,7 +104,7 @@ async function handleReserve ({ connection, stream: pbstr, relayPeer, relayAddrs
       const ttl = new Date().getTime() - result.expire
       await peerStore.tagPeer(relayPeer, RELAYED, { value: 1, ttl })
         .catch((err: CodeError) => {
-          // ignore if peer is already tagged
+          log.error('error occurred when tagging peer: ', err)
           if (err.code !== 'ERR_DUPLICATE_TAG') {
             throw err
           }
