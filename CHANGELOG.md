@@ -1,3 +1,20 @@
+## [6.0.2](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.1...v6.0.2) (2023-03-02)
+
+
+### Bug Fixes
+
+* allow overwriting tags ([#68](https://github.com/libp2p/js-libp2p-peer-store/issues/68)) ([4182211](https://github.com/libp2p/js-libp2p-peer-store/commit/4182211c0bea6df9054bb0050928c68ce467ba2a))
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([e1271cf](https://github.com/libp2p/js-libp2p-peer-store/commit/e1271cf951e5e3d9c6f73f0b00c086e63d89f7de))
+
+
+### Dependencies
+
+* **dev:** bump protons from 6.1.3 to 7.0.2 ([#60](https://github.com/libp2p/js-libp2p-peer-store/issues/60)) ([0b5e25f](https://github.com/libp2p/js-libp2p-peer-store/commit/0b5e25fdc454958e6d607f046bb2c7253dceb5e4))
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.0...v6.0.1) (2023-02-28)
 
 
