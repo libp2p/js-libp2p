@@ -30,15 +30,15 @@ async function benchmarkWithOptions (serverOptions: Libp2pOptions, clientOptions
   await clientPerf.measureUploadBandwidth(server.peerId, 10n << 20n)
 
   const downloadBandwidth = await clientPerf.measureDownloadBandwidth(server.peerId, 100n << 20n)
-  console.log('Download bandwidth is (mbits/s)', downloadBandwidth >> 20)
+  console.log('Download bandwidth is (mbits/s)', BigInt(downloadBandwidth) >> 20n)
   const uploadBandwidth = await clientPerf.measureDownloadBandwidth(server.peerId, 50n << 20n)
-  console.log('Upload bandwidth is (mbits/s)', uploadBandwidth >> 20)
+  console.log('Upload bandwidth is (mbits/s)', BigInt(uploadBandwidth) >> 20n)
 
   await clientPerf.stop()
   await serverPerf.stop()
 
-  server.stop()
-  client.stop()
+  await server.stop()
+  await client.stop()
 }
 
 async function run () {
