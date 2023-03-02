@@ -70,7 +70,7 @@ export class PerfService implements Startable {
           toSend = bytesToSendBack
         }
         bytesToSendBack = bytesToSendBack - toSend
-        yield uint8Buf.slice(0, Number(toSend))
+        yield uint8Buf.subarray(0, Number(toSend))
       }
     }())
   }
@@ -92,7 +92,7 @@ export class PerfService implements Startable {
 
     await stream.sink((async function * () {
       // Send the number of bytes to receive
-      yield uint8Buf.slice(0, 8)
+      yield uint8Buf.subarray(0, 8)
       // Send the number of bytes to send
       while (sendBytes > 0n) {
         let toSend: bigint = writeBlockSize
@@ -100,7 +100,7 @@ export class PerfService implements Startable {
           toSend = sendBytes
         }
         sendBytes = sendBytes - toSend
-        yield uint8Buf.slice(0, Number(toSend))
+        yield uint8Buf.subarray(0, Number(toSend))
       }
     })())
 
