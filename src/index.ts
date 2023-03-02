@@ -135,11 +135,8 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
       tags = Tags.decode(buf).tags
     }
 
-    for (const t of tags) {
-      if (t.name === tag) {
-        throw new CodeError('Peer already tagged', 'ERR_DUPLICATE_TAG')
-      }
-    }
+    // do not allow duplicate tags
+    tags = tags.filter(t => t.name !== tag)
 
     tags.push({
       name: tag,

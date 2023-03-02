@@ -288,10 +288,18 @@ describe('peer-store', () => {
 
     it('does not tag a peer twice', async () => {
       const name = 'a-tag'
-      await peerStore.tagPeer(peerIds[0], name)
+      await peerStore.tagPeer(peerIds[0], name, {
+        value: 1
+      })
+      await peerStore.tagPeer(peerIds[0], name, {
+        value: 10
+      })
 
-      await expect(peerStore.tagPeer(peerIds[0], name), 'PeerStore allowed duplicate tags')
-        .to.eventually.be.rejected().with.property('code', 'ERR_DUPLICATE_TAG')
+      const allTags = await peerStore.getTags(peerIds[0])
+      const tags = allTags.filter(t => t.name === name)
+
+      expect(tags).to.have.lengthOf(1)
+      expect(tags).to.have.nested.property('[0].value', 10)
     })
 
     it('untags a peer', async () => {
