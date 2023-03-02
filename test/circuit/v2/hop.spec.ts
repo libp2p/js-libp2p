@@ -58,7 +58,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: mockConnection(mockMultiaddrConnection(mockDuplex(), await peerUtils.createPeerId())),
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         request: {},
         relayPeer,
         relayAddrs: [],
@@ -81,7 +81,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -108,7 +108,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         peerStore,
@@ -130,7 +130,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -154,7 +154,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -181,7 +181,7 @@ describe('Circuit v2 - hop protocol', function () {
           type: HopMessage.Type.RESERVE
         },
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         relayPeer,
         connectionManager: sinon.stub() as any,
         relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
@@ -275,7 +275,7 @@ describe('Circuit v2 - hop protocol', function () {
       stub.returns([dstConn])
       await handleHopProtocol({
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -298,7 +298,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           // @ts-expect-error {} is missing the following properties from peer: id, addrs
@@ -320,7 +320,7 @@ describe('Circuit v2 - hop protocol', function () {
       }
       await handleHopProtocol({
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -346,7 +346,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -373,7 +373,7 @@ describe('Circuit v2 - hop protocol', function () {
       const pbstr = pbStream(stream)
       await handleHopProtocol({
         connection: conn,
-        stream: { value: pbstr, abort: () => stream.reset() },
+        stream: pbstr,
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -462,12 +462,7 @@ describe('Circuit v2 - hop protocol', function () {
       const srcServerAbort = sinon.spy(srcServerStream, 'abort')
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        stream: {
-          value: pbStream(srcServerStream),
-          abort: () => {
-            srcServerStream.abort(new Error('test'))
-          }
-        },
+        stream: pbStream(srcServerStream),
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -541,10 +536,7 @@ describe('Circuit v2 - hop protocol', function () {
       stub.returns([dstConn])
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        stream: {
-          value: pbStream(srcServer),
-          abort: () => {}
-        },
+        stream: pbStream(mockStream(srcServer)),
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -619,10 +611,7 @@ describe('Circuit v2 - hop protocol', function () {
       stub.returns([dstConn])
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        stream: {
-          value: pbStream(srcServer),
-          abort: () => {}
-        },
+        stream: pbStream(mockStream(srcServer)),
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {
@@ -700,10 +689,7 @@ describe('Circuit v2 - hop protocol', function () {
       const srcAbortStub = sinon.stub(srcServerStream, 'abort')
       const handleHop = expect(handleHopProtocol({
         connection: conn,
-        stream: {
-          value: pbStream(srcServerStream),
-          abort: () => { srcServerStream.abort(new Error('test')) }
-        },
+        stream: pbStream(srcServerStream),
         request: {
           type: HopMessage.Type.CONNECT,
           peer: {

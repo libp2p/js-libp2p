@@ -1,20 +1,18 @@
 
 import { Status, StopMessage } from './pb/index.js'
-import type { Connection } from '@libp2p/interface-connection'
+import type { Connection, Stream } from '@libp2p/interface-connection'
 
 import { logger } from '@libp2p/logger'
 import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream, ProtobufStream } from 'it-pb-stream'
-import type { Uint8ArrayList } from 'uint8arraylist'
-import type { DuplexStream, Abortable } from './interfaces.js'
 
 const log = logger('libp2p:circuit:v2:stop')
 
 export interface HandleStopOptions {
   connection: Connection
   request: StopMessage
-  pbstr: ProtobufStream<Uint8ArrayList | Uint8Array>
+  pbstr: ProtobufStream<Stream>
 }
 
 const isValidStop = (request: StopMessage): boolean => {
@@ -66,7 +64,7 @@ export interface StopOptions {
 export async function stop ({
   connection,
   request
-}: StopOptions): Promise<Abortable<DuplexStream> | undefined> {
+}: StopOptions): Promise<Stream | undefined> {
   const stream = await connection.newStream([RELAY_V2_STOP_CODEC])
   log('starting circuit relay v2 stop request to %s', connection.remotePeer)
   const pbstr = pbStream(stream)
@@ -86,10 +84,7 @@ export async function stop ({
   }
   if (response.status === Status.OK) {
     log('stop request to %s was successful', connection.remotePeer)
-    return {
-      value: pbstr.unwrap(),
-      abort: (err: Error) => stream.abort(err)
-    }
+    return pbstr.unwrap()
   }
 
   log('stop request failed with code %d', response.status)

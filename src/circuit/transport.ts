@@ -126,7 +126,7 @@ export class Circuit implements Transport, Startable {
       hopTimeoutPromise.reject('timed out')
     }, this._init.hop.timeout)
     const pbstr = pbStream(stream)
-    const abortable = { value: pbstr, abort: (err: Error) => stream.abort(err) }
+
     try {
       const request: CircuitV2.HopMessage = await Promise.race([
         pbstr.pb(CircuitV2.HopMessage).read(),
@@ -140,7 +140,7 @@ export class Circuit implements Transport, Startable {
       await Promise.race([
         CircuitV2Handler.handleHopProtocol({
           connection,
-          stream: abortable,
+          stream: pbstr,
           connectionManager: this.components.connectionManager,
           relayPeer: this.components.peerId,
           relayAddrs: this.components.addressManager.getListenAddrs(),

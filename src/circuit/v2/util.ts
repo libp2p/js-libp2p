@@ -1,12 +1,12 @@
-import type { Sink, Source } from 'it-stream-types'
-import { Uint8ArrayList } from 'uint8arraylist'
+import type { Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Limit } from './pb/index.js'
 import { logger } from '@libp2p/logger'
-import type { DuplexStream, Abortable } from './interfaces.js'
+import type { Stream } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:circuit:v2:util')
 
-const doRelay = (src: DuplexStream, dst: DuplexStream) => {
+const doRelay = (src: Stream, dst: Stream) => {
   queueMicrotask(() => {
     void dst.sink(src.source).catch(err => log.error('error while relating streams:', err))
   })
@@ -16,85 +16,102 @@ const doRelay = (src: DuplexStream, dst: DuplexStream) => {
   })
 }
 
-export function createLimitedRelay (source: Abortable<DuplexStream>, destination: Abortable<DuplexStream>, limit?: Limit) {
+export function createLimitedRelay (source: Stream, destination: Stream, limit?: Limit) {
   // trivial case
   if (limit == null) {
-    doRelay(source.value, destination.value)
+    doRelay(source, destination)
     return
   }
-  const dataLimit = limit.data ?? BigInt(0)
+
+  const dataLimit = limit.data ?? 0n
   const durationLimit = limit.duration ?? 0
   const src = durationLimitDuplex(dataLimitDuplex(source, dataLimit), durationLimit)
   const dst = durationLimitDuplex(dataLimitDuplex(destination, dataLimit), durationLimit)
-  doRelay(src.value, dst.value)
+
+  doRelay(src, dst)
 }
 
-const dataLimitSource = (source: Source<Uint8ArrayList>, abort: (err: Error) => void, limit: bigint): Source<Uint8ArrayList> => {
-  if (limit === BigInt(0)) {
-    return source
+const dataLimitSource = (stream: Stream, limit: bigint): Stream => {
+  if (limit === 0n) {
+    return stream
   }
 
-  return (async function * (): Source<Uint8ArrayList> {
-    let total = BigInt(0)
+  const source = stream.source
+
+  stream.source = (async function * (): Source<Uint8ArrayList> {
+    let total = 0n
+
     for await (const buf of source) {
-      const len = BigInt(buf.length)
+      const len = BigInt(buf.byteLength)
       if (total + len > limit) {
         log.error('attempted to send more data than limit: %s, resetting stream', limit.toString())
-        abort(new Error('exceeded connection data limit'))
+        stream.abort(new Error('exceeded connection data limit'))
         return
       }
-      total += len
+
       yield buf
+
+      total += len
     }
   })()
+
+  return stream
 }
 
-const adaptSource = (source: Source<Uint8ArrayList | Uint8Array>): Source<Uint8ArrayList> => (async function * () {
-  for await (const buf of source) {
-    if (buf instanceof Uint8Array) {
-      yield Uint8ArrayList.fromUint8Arrays([buf])
-    } else {
-      yield buf
-    }
+const dataLimitSink = (stream: Stream, limit: bigint): Stream => {
+  if (limit === 0n) {
+    return stream
   }
-})()
 
-const dataLimitSink = (sink: Sink<Uint8ArrayList | Uint8Array>, abort: (err: Error) => void, limit: bigint): Sink<Uint8ArrayList | Uint8Array> => {
-  return async (source: Source<Uint8ArrayList | Uint8Array>) => await sink(
-    dataLimitSource(
-      adaptSource(source),
-      abort,
-      limit
-    )
-  )
-}
+  const sink = stream.sink
 
-const dataLimitDuplex = (duplex: Abortable<DuplexStream>, limit: bigint): Abortable<DuplexStream> => {
-  return {
-    ...duplex,
-    value: {
-      ...duplex.value,
-      source: dataLimitSource(duplex.value.source, duplex.abort, limit),
-      sink: dataLimitSink(duplex.value.sink, duplex.abort, limit)
-    }
+  stream.sink = async (source: Source<Uint8ArrayList | Uint8Array>) => {
+    await sink((async function * (): Source<Uint8ArrayList | Uint8Array> {
+      let total = 0n
+
+      for await (const buf of source) {
+        const len = BigInt(buf.byteLength)
+        if (total + len > limit) {
+          log.error('attempted to send more data than limit: %s, resetting stream', limit.toString())
+          stream.abort(new Error('exceeded connection data limit'))
+          return
+        }
+
+        total += len
+        yield buf
+      }
+    })())
   }
+
+  return stream
 }
 
-const durationLimitDuplex = (duplex: Abortable<DuplexStream>, limit: number): Abortable<DuplexStream> => {
+const dataLimitDuplex = (stream: Stream, limit: bigint): Stream => {
+  dataLimitSource(stream, limit)
+  dataLimitSink(stream, limit)
+
+  return stream
+}
+
+const durationLimitDuplex = (stream: Stream, limit: number): Stream => {
   if (limit === 0) {
-    return duplex
+    return stream
   }
+
   let timedOut = false
   const timeout = setTimeout(
     () => {
       timedOut = true
-      duplex.abort(new Error('exceeded connection duration limit'))
+      stream.abort(new Error('exceeded connection duration limit'))
     },
     limit
   )
-  const source = (async function * (): Source<Uint8ArrayList> {
+
+  const source = stream.source
+
+  stream.source = (async function * (): Source<Uint8ArrayList> {
     try {
-      for await (const buf of duplex.value.source) {
+      for await (const buf of source) {
         if (timedOut) {
           return
         }
@@ -105,5 +122,5 @@ const durationLimitDuplex = (duplex: Abortable<DuplexStream>, limit: number): Ab
     }
   })()
 
-  return { ...duplex, value: { ...duplex.value, source } }
+  return stream
 }
