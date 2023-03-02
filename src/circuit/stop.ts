@@ -3,7 +3,7 @@ import { Status, StopMessage } from './pb/index.js'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 
 import { logger } from '@libp2p/logger'
-import { RELAY_V2_STOP_CODEC } from '../multicodec.js'
+import { RELAY_V2_STOP_CODEC } from './multicodec.js'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream, ProtobufStream } from 'it-pb-stream'
 

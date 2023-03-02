@@ -1,5 +1,5 @@
-import * as CircuitV2 from './v2/pb/index.js'
-import { ReservationStore } from './v2/reservation-store.js'
+import * as CircuitV2 from './pb/index.js'
+import { ReservationStore } from './reservation-store.js'
 import { logger } from '@libp2p/logger'
 import createError from 'err-code'
 import * as mafmt from '@multiformats/mafmt'
@@ -16,7 +16,8 @@ import type { Listener, Transport, CreateListenerOptions, ConnectionHandler } fr
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { RelayConfig } from './index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import * as CircuitV2Handler from './v2/index.js'
+import { handleHopProtocol } from './hop.js'
+import { handleStop } from './stop.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/dist/src/startable'
@@ -61,7 +62,10 @@ export class Circuit implements Transport, Startable {
   constructor (components: CircuitComponents, options: RelayConfig) {
     this.components = components
     this._init = options
-    this.reservationStore = new ReservationStore()
+    this.reservationStore = new ReservationStore({
+      defaultDataLimit: options.hop?.limit?.data,
+      defaultDurationLimit: options.hop?.limit?.duration
+    })
     this._started = false
   }
 
@@ -138,7 +142,7 @@ export class Circuit implements Transport, Startable {
       }
 
       await Promise.race([
-        CircuitV2Handler.handleHopProtocol({
+        handleHopProtocol({
           connection,
           stream: pbstr,
           connectionManager: this.components.connectionManager,
@@ -169,7 +173,7 @@ export class Circuit implements Transport, Startable {
       return
     }
 
-    const mStream = await CircuitV2Handler.handleStop({
+    const mStream = await handleStop({
       connection,
       pbstr,
       request

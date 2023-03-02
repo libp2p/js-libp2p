@@ -6,21 +6,18 @@ import { HopMessage, Limit, Reservation, Status, StopMessage } from './pb/index.
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { Acl, ReservationStore } from './interfaces.js'
-import { RELAY_V2_HOP_CODEC } from '../multicodec.js'
+import { RELAY_V2_HOP_CODEC } from './multicodec.js'
 import { stop } from './stop.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ProtobufStream } from 'it-pb-stream'
 import { pbStream } from 'it-pb-stream'
-import { CIRCUIT_PROTO_CODE } from '../constants.js'
+import { CIRCUIT_PROTO_CODE, RELAY_DESTINATION_TAG } from './constants.js'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { createLimitedRelay } from './util.js'
-import type { CodeError } from '@libp2p/interfaces/errors'
+import { createLimitedRelay } from './utils.js'
 
 const log = logger('libp2p:circuit:v2:hop')
-
-const RELAYED = 'relayed'
 
 export interface HopProtocolOptions {
   connection: Connection
@@ -58,10 +55,10 @@ export async function reserve (connection: Connection): Promise<Reservation> {
   let response: HopMessage
   try {
     response = await hopstr.read()
-  } catch (e: any) {
-    log.error('error passing reserve message response from %s because', connection.remotePeer, e.message)
+  } catch (err: any) {
+    log.error('error passing reserve message response from %s because', connection.remotePeer, err.message)
     stream.close()
-    throw e
+    throw err
   }
 
   if (response.status === Status.OK && (response.reservation != null)) {
@@ -74,7 +71,7 @@ export async function reserve (connection: Connection): Promise<Reservation> {
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 
-async function handleReserve ({ connection, stream: pbstr, relayPeer, relayAddrs, limit, acl, reservationStore, peerStore }: HopProtocolOptions): Promise<void> {
+async function handleReserve ({ connection, stream: pbstr, relayPeer, relayAddrs, acl, reservationStore, peerStore }: HopProtocolOptions): Promise<void> {
   const hopstr = pbstr.pb(HopMessage)
   log('hop reserve request from %s', connection.remotePeer)
 
@@ -102,15 +99,7 @@ async function handleReserve ({ connection, stream: pbstr, relayPeer, relayAddrs
     // result.expire is non-null if `ReservationStore.reserve` returns with status == OK
     if (result.expire != null) {
       const ttl = new Date().getTime() - result.expire
-      await peerStore.tagPeer(relayPeer, RELAYED, { value: 1, ttl })
-        .catch(async (err: CodeError) => {
-          if (err.code !== 'ERR_DUPLICATE_TAG') {
-            throw err
-          }
-          // update ttl
-          // TODO: make this atomic
-          return await peerStore.unTagPeer(relayPeer, RELAYED).then(async () => await peerStore.tagPeer(relayPeer, RELAYED, { value: 1, ttl }))
-        })
+      await peerStore.tagPeer(relayPeer, RELAY_DESTINATION_TAG, { value: 1, ttl })
     }
     hopstr.write({
       type: HopMessage.Type.STATUS,

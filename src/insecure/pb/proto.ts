@@ -2,6 +2,7 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -89,7 +90,7 @@ enum __KeyTypeValues {
 }
 
 export namespace KeyType {
-  export const codec = () => {
+  export const codec = (): Codec<KeyType> => {
     return enumeration<KeyType>(__KeyTypeValues)
   }
 }

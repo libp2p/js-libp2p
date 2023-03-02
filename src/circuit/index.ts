@@ -33,13 +33,35 @@ export interface RelayReservationManagerConfig {
  */
 export interface HopConfig {
   /**
-   *
+   * If true this node will function as a limited relay (default: false)
    */
   enabled?: boolean
+
   /**
    * timeout for hop requests to complete
    */
   timeout: number
+
+  /**
+   * If false, no connection limits will be applied to relayed connections (default: true)
+   */
+  applyConnectionLimits?: boolean
+
+  /**
+   * Limits to apply to incoming relay connections - relayed connections will be closed if
+   * these limits are exceeded.
+   */
+  limit?: {
+    /**
+     * How long to relay a connection for in milliseconds (default: 2m)
+     */
+    duration?: number
+
+    /**
+     * How many bytes to allow to be transferred over a relayed connection (default: 128k)
+     */
+    data?: bigint
+  }
 }
 
 export interface RelayAdvertiseConfig {

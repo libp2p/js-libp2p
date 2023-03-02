@@ -11,10 +11,10 @@ export interface Reservation {
 }
 
 export interface ReservationStore {
-  reserve: (peer: PeerId, addr: Multiaddr, limit?: Limit) => Promise<{status: ReservationStatus, expire?: number}>
-  removeReservation: (peer: PeerId) => Promise<void>
-  hasReservation: (dst: PeerId) => Promise<boolean>
-  get: (peer: PeerId) => Promise<Reservation | undefined>
+  reserve: (peer: PeerId, addr: Multiaddr, limit?: Limit) => {status: ReservationStatus, expire?: number}
+  removeReservation: (peer: PeerId) => void
+  hasReservation: (dst: PeerId) => boolean
+  get: (peer: PeerId) => Reservation | undefined
 }
 
 export type AclStatus = Status.OK | Status.RESOURCE_LIMIT_EXCEEDED | Status.PERMISSION_DENIED

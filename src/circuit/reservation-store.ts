@@ -24,6 +24,14 @@ export interface ReservationStoreInit {
    * reservation ttl, default: 2 hours
    */
   reservationTtl: number
+  /**
+   * The maximum time a relayed connection can be open for
+   */
+  defaultDurationLimit?: number
+  /**
+   * The maximum amount of data allowed to be transferred over a relayed connection
+   */
+  defaultDataLimit?: bigint
 }
 
 export type ReservationStoreOptions = RecursivePartial<ReservationStoreInit>
@@ -38,8 +46,10 @@ export class ReservationStore implements IReservationStore, Startable {
     this.init = {
       maxReservations: options?.maxReservations ?? 15,
       reservationClearInterval: options?.reservationClearInterval ?? 300 * 1000,
-      applyDefaultLimit: options?.applyDefaultLimit === false,
-      reservationTtl: options?.reservationTtl ?? 2 * 60 * 60 * 1000
+      applyDefaultLimit: options?.applyDefaultLimit !== false,
+      reservationTtl: options?.reservationTtl ?? 2 * 60 * 60 * 1000,
+      defaultDurationLimit: options?.defaultDurationLimit ?? DEFAULT_DURATION_LIMIT,
+      defaultDataLimit: options?.defaultDataLimit ?? DEFAULT_DATA_LIMIT
     }
   }
 
@@ -69,28 +79,28 @@ export class ReservationStore implements IReservationStore, Startable {
     clearInterval(this.interval)
   }
 
-  async reserve (peer: PeerId, addr: Multiaddr, limit?: Limit): Promise<{ status: ReservationStatus, expire?: number }> {
+  reserve (peer: PeerId, addr: Multiaddr, limit?: Limit): { status: ReservationStatus, expire?: number } {
     if (this.reservations.size >= this.init.maxReservations && !this.reservations.has(peer)) {
       return { status: Status.RESERVATION_REFUSED }
     }
     const expire = new Date(Date.now() + this.init.reservationTtl)
     let checkedLimit: Limit | undefined
     if (this.init.applyDefaultLimit) {
-      checkedLimit = limit ?? { data: BigInt(DEFAULT_DATA_LIMIT), duration: DEFAULT_DURATION_LIMIT }
+      checkedLimit = limit ?? { data: this.init.defaultDataLimit, duration: this.init.defaultDurationLimit }
     }
     this.reservations.set(peer, { addr, expire, limit: checkedLimit })
     return { status: Status.OK, expire: expire.getTime() }
   }
 
-  async removeReservation (peer: PeerId) {
+  removeReservation (peer: PeerId): void {
     this.reservations.delete(peer)
   }
 
-  async hasReservation (dst: PeerId) {
+  hasReservation (dst: PeerId): boolean {
     return this.reservations.has(dst)
   }
 
-  async get (peer: PeerId): Promise<Reservation | undefined> {
+  get (peer: PeerId): Reservation | undefined {
     return this.reservations.get(peer)
   }
 }
