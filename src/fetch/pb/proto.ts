@@ -2,6 +2,7 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -84,7 +85,7 @@ export namespace FetchResponse {
   }
 
   export namespace StatusCode {
-    export const codec = () => {
+    export const codec = (): Codec<StatusCode> => {
       return enumeration<StatusCode>(__StatusCodeValues)
     }
   }

@@ -553,14 +553,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
     expect(dialResults).to.have.length(10)
 
     for (const result of dialResults) {
-      expect(result).to.have.property('status', 'rejected')
-      expect(result).to.have.property('reason').that.has.property('name', 'AggregateError')
-
       // All errors should be the exact same as `error`
-      // @ts-expect-error reason is any
-      for (const err of result.reason.errors) {
-        expect(err).to.equal(error)
-      }
+      expect(result).to.have.property('status', 'rejected')
+      expect(result).to.have.property('reason', error)
     }
 
     // 1 connection, because we know the peer in the multiaddr

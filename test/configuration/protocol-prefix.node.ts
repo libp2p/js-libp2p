@@ -33,7 +33,7 @@ describe('Protocol prefix is configurable', () => {
     const protocols = await libp2p.peerStore.protoBook.get(libp2p.peerId)
     expect(protocols).to.include.members([
       `/${testProtocol}/fetch/0.0.1`,
-      '/libp2p/circuit/relay/0.1.0',
+      '/libp2p/circuit/relay/0.2.0/stop',
       `/${testProtocol}/id/1.0.0`,
       `/${testProtocol}/id/push/1.0.0`,
       `/${testProtocol}/ping/1.0.0`
@@ -46,7 +46,7 @@ describe('Protocol prefix is configurable', () => {
 
     const protocols = await libp2p.peerStore.protoBook.get(libp2p.peerId)
     expect(protocols).to.include.members([
-      '/libp2p/circuit/relay/0.1.0',
+      '/libp2p/circuit/relay/0.2.0/stop',
       '/ipfs/id/1.0.0',
       '/ipfs/id/push/1.0.0',
       '/ipfs/ping/1.0.0',

@@ -2,184 +2,77 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
 
-export interface CircuitRelay {
-  type?: CircuitRelay.Type
-  srcPeer?: CircuitRelay.Peer
-  dstPeer?: CircuitRelay.Peer
-  code?: CircuitRelay.Status
+export interface HopMessage {
+  type?: HopMessage.Type
+  peer?: Peer
+  reservation?: Reservation
+  limit?: Limit
+  status?: Status
 }
 
-export namespace CircuitRelay {
-  export enum Status {
-    SUCCESS = 'SUCCESS',
-    HOP_SRC_ADDR_TOO_LONG = 'HOP_SRC_ADDR_TOO_LONG',
-    HOP_DST_ADDR_TOO_LONG = 'HOP_DST_ADDR_TOO_LONG',
-    HOP_SRC_MULTIADDR_INVALID = 'HOP_SRC_MULTIADDR_INVALID',
-    HOP_DST_MULTIADDR_INVALID = 'HOP_DST_MULTIADDR_INVALID',
-    HOP_NO_CONN_TO_DST = 'HOP_NO_CONN_TO_DST',
-    HOP_CANT_DIAL_DST = 'HOP_CANT_DIAL_DST',
-    HOP_CANT_OPEN_DST_STREAM = 'HOP_CANT_OPEN_DST_STREAM',
-    HOP_CANT_SPEAK_RELAY = 'HOP_CANT_SPEAK_RELAY',
-    HOP_CANT_RELAY_TO_SELF = 'HOP_CANT_RELAY_TO_SELF',
-    STOP_SRC_ADDR_TOO_LONG = 'STOP_SRC_ADDR_TOO_LONG',
-    STOP_DST_ADDR_TOO_LONG = 'STOP_DST_ADDR_TOO_LONG',
-    STOP_SRC_MULTIADDR_INVALID = 'STOP_SRC_MULTIADDR_INVALID',
-    STOP_DST_MULTIADDR_INVALID = 'STOP_DST_MULTIADDR_INVALID',
-    STOP_RELAY_REFUSED = 'STOP_RELAY_REFUSED',
-    MALFORMED_MESSAGE = 'MALFORMED_MESSAGE'
-  }
-
-  enum __StatusValues {
-    SUCCESS = 100,
-    HOP_SRC_ADDR_TOO_LONG = 220,
-    HOP_DST_ADDR_TOO_LONG = 221,
-    HOP_SRC_MULTIADDR_INVALID = 250,
-    HOP_DST_MULTIADDR_INVALID = 251,
-    HOP_NO_CONN_TO_DST = 260,
-    HOP_CANT_DIAL_DST = 261,
-    HOP_CANT_OPEN_DST_STREAM = 262,
-    HOP_CANT_SPEAK_RELAY = 270,
-    HOP_CANT_RELAY_TO_SELF = 280,
-    STOP_SRC_ADDR_TOO_LONG = 320,
-    STOP_DST_ADDR_TOO_LONG = 321,
-    STOP_SRC_MULTIADDR_INVALID = 350,
-    STOP_DST_MULTIADDR_INVALID = 351,
-    STOP_RELAY_REFUSED = 390,
-    MALFORMED_MESSAGE = 400
-  }
-
-  export namespace Status {
-    export const codec = () => {
-      return enumeration<Status>(__StatusValues)
-    }
-  }
-
+export namespace HopMessage {
   export enum Type {
-    HOP = 'HOP',
-    STOP = 'STOP',
-    STATUS = 'STATUS',
-    CAN_HOP = 'CAN_HOP'
+    RESERVE = 'RESERVE',
+    CONNECT = 'CONNECT',
+    STATUS = 'STATUS'
   }
 
   enum __TypeValues {
-    HOP = 1,
-    STOP = 2,
-    STATUS = 3,
-    CAN_HOP = 4
+    RESERVE = 0,
+    CONNECT = 1,
+    STATUS = 2
   }
 
   export namespace Type {
-    export const codec = () => {
+    export const codec = (): Codec<Type> => {
       return enumeration<Type>(__TypeValues)
     }
   }
 
-  export interface Peer {
-    id: Uint8Array
-    addrs: Uint8Array[]
-  }
+  let _codec: Codec<HopMessage>
 
-  export namespace Peer {
-    let _codec: Codec<Peer>
-
-    export const codec = (): Codec<Peer> => {
-      if (_codec == null) {
-        _codec = message<Peer>((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork()
-          }
-
-          if (opts.writeDefaults === true || (obj.id != null && obj.id.byteLength > 0)) {
-            w.uint32(10)
-            w.bytes(obj.id)
-          }
-
-          if (obj.addrs != null) {
-            for (const value of obj.addrs) {
-              w.uint32(18)
-              w.bytes(value)
-            }
-          }
-
-          if (opts.lengthDelimited !== false) {
-            w.ldelim()
-          }
-        }, (reader, length) => {
-          const obj: any = {
-            id: new Uint8Array(0),
-            addrs: []
-          }
-
-          const end = length == null ? reader.len : reader.pos + length
-
-          while (reader.pos < end) {
-            const tag = reader.uint32()
-
-            switch (tag >>> 3) {
-              case 1:
-                obj.id = reader.bytes()
-                break
-              case 2:
-                obj.addrs.push(reader.bytes())
-                break
-              default:
-                reader.skipType(tag & 7)
-                break
-            }
-          }
-
-          return obj
-        })
-      }
-
-      return _codec
-    }
-
-    export const encode = (obj: Peer): Uint8Array => {
-      return encodeMessage(obj, Peer.codec())
-    }
-
-    export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
-      return decodeMessage(buf, Peer.codec())
-    }
-  }
-
-  let _codec: Codec<CircuitRelay>
-
-  export const codec = (): Codec<CircuitRelay> => {
+  export const codec = (): Codec<HopMessage> => {
     if (_codec == null) {
-      _codec = message<CircuitRelay>((obj, w, opts = {}) => {
+      _codec = message<HopMessage>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
 
         if (obj.type != null) {
           w.uint32(8)
-          CircuitRelay.Type.codec().encode(obj.type, w)
+          HopMessage.Type.codec().encode(obj.type, w)
         }
 
-        if (obj.srcPeer != null) {
+        if (obj.peer != null) {
           w.uint32(18)
-          CircuitRelay.Peer.codec().encode(obj.srcPeer, w, {
+          Peer.codec().encode(obj.peer, w, {
             writeDefaults: false
           })
         }
 
-        if (obj.dstPeer != null) {
+        if (obj.reservation != null) {
           w.uint32(26)
-          CircuitRelay.Peer.codec().encode(obj.dstPeer, w, {
+          Reservation.codec().encode(obj.reservation, w, {
             writeDefaults: false
           })
         }
 
-        if (obj.code != null) {
-          w.uint32(32)
-          CircuitRelay.Status.codec().encode(obj.code, w)
+        if (obj.limit != null) {
+          w.uint32(34)
+          Limit.codec().encode(obj.limit, w, {
+            writeDefaults: false
+          })
+        }
+
+        if (obj.status != null) {
+          w.uint32(40)
+          Status.codec().encode(obj.status, w)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -195,16 +88,19 @@ export namespace CircuitRelay {
 
           switch (tag >>> 3) {
             case 1:
-              obj.type = CircuitRelay.Type.codec().decode(reader)
+              obj.type = HopMessage.Type.codec().decode(reader)
               break
             case 2:
-              obj.srcPeer = CircuitRelay.Peer.codec().decode(reader, reader.uint32())
+              obj.peer = Peer.codec().decode(reader, reader.uint32())
               break
             case 3:
-              obj.dstPeer = CircuitRelay.Peer.codec().decode(reader, reader.uint32())
+              obj.reservation = Reservation.codec().decode(reader, reader.uint32())
               break
             case 4:
-              obj.code = CircuitRelay.Status.codec().decode(reader)
+              obj.limit = Limit.codec().decode(reader, reader.uint32())
+              break
+            case 5:
+              obj.status = Status.codec().decode(reader)
               break
             default:
               reader.skipType(tag & 7)
@@ -219,11 +115,435 @@ export namespace CircuitRelay {
     return _codec
   }
 
-  export const encode = (obj: CircuitRelay): Uint8Array => {
-    return encodeMessage(obj, CircuitRelay.codec())
+  export const encode = (obj: HopMessage): Uint8Array => {
+    return encodeMessage(obj, HopMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): CircuitRelay => {
-    return decodeMessage(buf, CircuitRelay.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList): HopMessage => {
+    return decodeMessage(buf, HopMessage.codec())
+  }
+}
+
+export interface StopMessage {
+  type?: StopMessage.Type
+  peer?: Peer
+  limit?: Limit
+  status?: Status
+}
+
+export namespace StopMessage {
+  export enum Type {
+    CONNECT = 'CONNECT',
+    STATUS = 'STATUS'
+  }
+
+  enum __TypeValues {
+    CONNECT = 0,
+    STATUS = 1
+  }
+
+  export namespace Type {
+    export const codec = (): Codec<Type> => {
+      return enumeration<Type>(__TypeValues)
+    }
+  }
+
+  let _codec: Codec<StopMessage>
+
+  export const codec = (): Codec<StopMessage> => {
+    if (_codec == null) {
+      _codec = message<StopMessage>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if (obj.type != null) {
+          w.uint32(8)
+          StopMessage.Type.codec().encode(obj.type, w)
+        }
+
+        if (obj.peer != null) {
+          w.uint32(18)
+          Peer.codec().encode(obj.peer, w, {
+            writeDefaults: false
+          })
+        }
+
+        if (obj.limit != null) {
+          w.uint32(26)
+          Limit.codec().encode(obj.limit, w, {
+            writeDefaults: false
+          })
+        }
+
+        if (obj.status != null) {
+          w.uint32(32)
+          Status.codec().encode(obj.status, w)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {}
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.type = StopMessage.Type.codec().decode(reader)
+              break
+            case 2:
+              obj.peer = Peer.codec().decode(reader, reader.uint32())
+              break
+            case 3:
+              obj.limit = Limit.codec().decode(reader, reader.uint32())
+              break
+            case 4:
+              obj.status = Status.codec().decode(reader)
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: StopMessage): Uint8Array => {
+    return encodeMessage(obj, StopMessage.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList): StopMessage => {
+    return decodeMessage(buf, StopMessage.codec())
+  }
+}
+
+export interface Peer {
+  id: Uint8Array
+  addrs: Uint8Array[]
+}
+
+export namespace Peer {
+  let _codec: Codec<Peer>
+
+  export const codec = (): Codec<Peer> => {
+    if (_codec == null) {
+      _codec = message<Peer>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if (opts.writeDefaults === true || (obj.id != null && obj.id.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.id)
+        }
+
+        if (obj.addrs != null) {
+          for (const value of obj.addrs) {
+            w.uint32(18)
+            w.bytes(value)
+          }
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          id: new Uint8Array(0),
+          addrs: []
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.id = reader.bytes()
+              break
+            case 2:
+              obj.addrs.push(reader.bytes())
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: Peer): Uint8Array => {
+    return encodeMessage(obj, Peer.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
+    return decodeMessage(buf, Peer.codec())
+  }
+}
+
+export interface Reservation {
+  expire: bigint
+  addrs: Uint8Array[]
+  voucher?: Uint8Array
+}
+
+export namespace Reservation {
+  let _codec: Codec<Reservation>
+
+  export const codec = (): Codec<Reservation> => {
+    if (_codec == null) {
+      _codec = message<Reservation>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if (opts.writeDefaults === true || obj.expire !== 0n) {
+          w.uint32(8)
+          w.uint64(obj.expire)
+        }
+
+        if (obj.addrs != null) {
+          for (const value of obj.addrs) {
+            w.uint32(18)
+            w.bytes(value)
+          }
+        }
+
+        if (obj.voucher != null) {
+          w.uint32(26)
+          w.bytes(obj.voucher)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          expire: 0n,
+          addrs: []
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.expire = reader.uint64()
+              break
+            case 2:
+              obj.addrs.push(reader.bytes())
+              break
+            case 3:
+              obj.voucher = reader.bytes()
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: Reservation): Uint8Array => {
+    return encodeMessage(obj, Reservation.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Reservation => {
+    return decodeMessage(buf, Reservation.codec())
+  }
+}
+
+export interface Limit {
+  duration?: number
+  data?: bigint
+}
+
+export namespace Limit {
+  let _codec: Codec<Limit>
+
+  export const codec = (): Codec<Limit> => {
+    if (_codec == null) {
+      _codec = message<Limit>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if (obj.duration != null) {
+          w.uint32(8)
+          w.uint32(obj.duration)
+        }
+
+        if (obj.data != null) {
+          w.uint32(16)
+          w.uint64(obj.data)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {}
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.duration = reader.uint32()
+              break
+            case 2:
+              obj.data = reader.uint64()
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: Limit): Uint8Array => {
+    return encodeMessage(obj, Limit.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList): Limit => {
+    return decodeMessage(buf, Limit.codec())
+  }
+}
+
+export enum Status {
+  UNUSED = 'UNUSED',
+  OK = 'OK',
+  RESERVATION_REFUSED = 'RESERVATION_REFUSED',
+  RESOURCE_LIMIT_EXCEEDED = 'RESOURCE_LIMIT_EXCEEDED',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
+  CONNECTION_FAILED = 'CONNECTION_FAILED',
+  NO_RESERVATION = 'NO_RESERVATION',
+  MALFORMED_MESSAGE = 'MALFORMED_MESSAGE',
+  UNEXPECTED_MESSAGE = 'UNEXPECTED_MESSAGE'
+}
+
+enum __StatusValues {
+  UNUSED = 0,
+  OK = 100,
+  RESERVATION_REFUSED = 200,
+  RESOURCE_LIMIT_EXCEEDED = 201,
+  PERMISSION_DENIED = 202,
+  CONNECTION_FAILED = 203,
+  NO_RESERVATION = 204,
+  MALFORMED_MESSAGE = 400,
+  UNEXPECTED_MESSAGE = 401
+}
+
+export namespace Status {
+  export const codec = (): Codec<Status> => {
+    return enumeration<Status>(__StatusValues)
+  }
+}
+export interface ReservationVoucher {
+  relay: Uint8Array
+  peer: Uint8Array
+  expiration: bigint
+}
+
+export namespace ReservationVoucher {
+  let _codec: Codec<ReservationVoucher>
+
+  export const codec = (): Codec<ReservationVoucher> => {
+    if (_codec == null) {
+      _codec = message<ReservationVoucher>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if (opts.writeDefaults === true || (obj.relay != null && obj.relay.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.relay)
+        }
+
+        if (opts.writeDefaults === true || (obj.peer != null && obj.peer.byteLength > 0)) {
+          w.uint32(18)
+          w.bytes(obj.peer)
+        }
+
+        if (opts.writeDefaults === true || obj.expiration !== 0n) {
+          w.uint32(24)
+          w.uint64(obj.expiration)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          relay: new Uint8Array(0),
+          peer: new Uint8Array(0),
+          expiration: 0n
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1:
+              obj.relay = reader.bytes()
+              break
+            case 2:
+              obj.peer = reader.bytes()
+              break
+            case 3:
+              obj.expiration = reader.uint64()
+              break
+            default:
+              reader.skipType(tag & 7)
+              break
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: ReservationVoucher): Uint8Array => {
+    return encodeMessage(obj, ReservationVoucher.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList): ReservationVoucher => {
+    return decodeMessage(buf, ReservationVoucher.codec())
   }
 }

@@ -124,6 +124,13 @@ export class DialRequest {
 
         return conn
       }))
+    } catch (err: any) {
+      // if we only dialed one address, unwrap the AggregateError
+      if (this.addrs.length === 1 && err.name === 'AggregateError') {
+        throw err.errors[0]
+      }
+
+      throw err
     } finally {
       // success/failure happened, abort everything else
       dialAbortControllers.forEach(c => {

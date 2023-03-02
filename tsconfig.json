@@ -7,10 +7,4 @@
     "src",
     "test"
   ],
-  "exclude": [
-    "src/circuit/pb/index.js",
-    "src/fetch/pb/proto.js",
-    "src/identify/pb/message.js",
-    "src/insecure/pb/proto.js"
-  ]
 }

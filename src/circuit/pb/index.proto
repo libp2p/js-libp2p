@@ -1,42 +1,67 @@
 syntax = "proto3";
 
-message CircuitRelay {
-
-  enum Status {
-    SUCCESS                    = 100;
-    HOP_SRC_ADDR_TOO_LONG      = 220;
-    HOP_DST_ADDR_TOO_LONG      = 221;
-    HOP_SRC_MULTIADDR_INVALID  = 250;
-    HOP_DST_MULTIADDR_INVALID  = 251;
-    HOP_NO_CONN_TO_DST         = 260;
-    HOP_CANT_DIAL_DST          = 261;
-    HOP_CANT_OPEN_DST_STREAM   = 262;
-    HOP_CANT_SPEAK_RELAY       = 270;
-    HOP_CANT_RELAY_TO_SELF     = 280;
-    STOP_SRC_ADDR_TOO_LONG     = 320;
-    STOP_DST_ADDR_TOO_LONG     = 321;
-    STOP_SRC_MULTIADDR_INVALID = 350;
-    STOP_DST_MULTIADDR_INVALID = 351;
-    STOP_RELAY_REFUSED         = 390;
-    MALFORMED_MESSAGE          = 400;
+message HopMessage {
+  enum Type {
+    RESERVE = 0;
+    CONNECT = 1;
+    STATUS = 2;
   }
 
-  enum Type { // RPC identifier, either HOP, STOP or STATUS
-    HOP = 1;
-    STOP = 2;
-    STATUS = 3;
-    CAN_HOP = 4;
+  // the presence of this field is enforced at application level
+  optional Type type = 1;
+
+  optional Peer peer = 2;
+  optional Reservation reservation = 3;
+  optional Limit limit = 4;
+
+  optional Status status = 5;
+}
+
+message StopMessage {
+  enum Type {
+    CONNECT = 0;
+    STATUS = 1;
   }
 
-  message Peer {
-    required bytes id = 1;    // peer id
-    repeated bytes addrs = 2; // peer's known addresses
-  }
+  // the presence of this field is enforced at application level
+  optional Type type = 1;
 
-  optional Type type = 1;     // Type of the message
+  optional Peer peer = 2;
+  optional Limit limit = 3;
 
-  optional Peer srcPeer = 2;  // srcPeer and dstPeer are used when Type is HOP or STATUS
-  optional Peer dstPeer = 3;
+  optional Status status = 4;
+}
 
-  optional Status code = 4;   // Status code, used when Type is STATUS
+message Peer {
+  bytes id = 1;
+  repeated bytes addrs = 2;
+}
+
+message Reservation {
+  uint64 expire = 1; // Unix expiration time (UTC)
+  repeated bytes addrs = 2;   // relay addrs for reserving peer
+  optional bytes voucher = 3; // reservation voucher
+}
+
+message Limit {
+  optional uint32 duration = 1; // seconds
+  optional uint64 data = 2;     // bytes
+}
+
+enum Status {
+  UNUSED = 0;
+  OK                      = 100;
+  RESERVATION_REFUSED     = 200;
+  RESOURCE_LIMIT_EXCEEDED = 201;
+  PERMISSION_DENIED       = 202;
+  CONNECTION_FAILED       = 203;
+  NO_RESERVATION          = 204;
+  MALFORMED_MESSAGE       = 400;
+  UNEXPECTED_MESSAGE      = 401;
+}
+
+message ReservationVoucher {
+  bytes relay = 1;
+  bytes peer = 2;
+  uint64 expiration = 3;
 }
