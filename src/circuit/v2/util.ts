@@ -83,7 +83,7 @@ const dataLimitSink = (stream: Stream, limit: bigint): Stream => {
           const remaining = Number(limit - total)
           try {
             if (remaining !== 0) {
-              yield buf.slice(0, remaining)
+              yield buf.subarray(0, remaining)
             }
           } finally {
             stream.abort(new Error('data limit exceeded'))
