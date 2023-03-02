@@ -130,7 +130,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i protons",
     "generate": "protons src/pb/peer.proto src/pb/tags.proto",
     "build": "aegir build",
     "test": "aegir test",
@@ -166,10 +166,9 @@
     "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^3.0.2",
     "@libp2p/peer-id-factory": "^2.0.0",
     "@libp2p/utils": "^3.0.2",
-    "aegir": "^37.9.1",
+    "aegir": "^38.1.6",
     "datastore-core": "^8.0.1",
     "delay": "^5.0.0",
     "p-defer": "^4.0.0",

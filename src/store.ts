@@ -45,7 +45,7 @@ export class PersistentStore {
     })
   }
 
-  _peerIdToDatastoreKey (peerId: PeerId) {
+  _peerIdToDatastoreKey (peerId: PeerId): Key {
     if (peerId.type == null) {
       log.error('peerId must be an instance of peer-id to store data')
       throw new CodeError('peerId must be an instance of peer-id', codes.ERR_INVALID_PARAMETERS)
@@ -55,11 +55,11 @@ export class PersistentStore {
     return new Key(`${NAMESPACE_COMMON}${b32key}`)
   }
 
-  async has (peerId: PeerId) {
+  async has (peerId: PeerId): Promise<boolean> {
     return await this.components.datastore.has(this._peerIdToDatastoreKey(peerId))
   }
 
-  async delete (peerId: PeerId) {
+  async delete (peerId: PeerId): Promise<void> {
     await this.components.datastore.delete(this._peerIdToDatastoreKey(peerId))
   }
 
@@ -87,7 +87,7 @@ export class PersistentStore {
     }
   }
 
-  async save (peer: Peer) {
+  async save (peer: Peer): Promise<Peer> {
     if (peer.pubKey != null && peer.id.publicKey != null && !uint8arrayEquals(peer.pubKey, peer.id.publicKey)) {
       log.error('peer publicKey bytes do not match peer id publicKey bytes')
       throw new CodeError('publicKey bytes do not match peer id publicKey bytes', codes.ERR_INVALID_PARAMETERS)
@@ -135,13 +135,13 @@ export class PersistentStore {
     return await this.load(peer.id)
   }
 
-  async patch (peerId: PeerId, data: Partial<Peer>) {
+  async patch (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
     const peer = await this.load(peerId)
 
     return await this._patch(peerId, data, peer)
   }
 
-  async patchOrCreate (peerId: PeerId, data: Partial<Peer>) {
+  async patchOrCreate (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
     let peer: Peer
 
     try {
@@ -157,7 +157,7 @@ export class PersistentStore {
     return await this._patch(peerId, data, peer)
   }
 
-  async _patch (peerId: PeerId, data: Partial<Peer>, peer: Peer) {
+  async _patch (peerId: PeerId, data: Partial<Peer>, peer: Peer): Promise<Peer> {
     return await this.save({
       ...peer,
       ...data,
@@ -165,13 +165,13 @@ export class PersistentStore {
     })
   }
 
-  async merge (peerId: PeerId, data: Partial<Peer>) {
+  async merge (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
     const peer = await this.load(peerId)
 
     return await this._merge(peerId, data, peer)
   }
 
-  async mergeOrCreate (peerId: PeerId, data: Partial<Peer>) {
+  async mergeOrCreate (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
     /** @type {Peer} */
     let peer
 
@@ -188,7 +188,7 @@ export class PersistentStore {
     return await this._merge(peerId, data, peer)
   }
 
-  async _merge (peerId: PeerId, data: Partial<Peer>, peer: Peer) {
+  async _merge (peerId: PeerId, data: Partial<Peer>, peer: Peer): Promise<Peer> {
     // if the peer has certified addresses, use those in
     // favour of the supplied versions
     const addresses = new Map<string, boolean>()
@@ -227,7 +227,7 @@ export class PersistentStore {
     })
   }
 
-  async * all () {
+  async * all (): AsyncGenerator<Peer, void, unknown> {
     for await (const key of this.components.datastore.queryKeys({
       prefix: NAMESPACE_COMMON
     })) {

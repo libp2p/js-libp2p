@@ -11,7 +11,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { ProtoBook } from '@libp2p/interface-peer-store'
 
-const arraysAreEqual = (a: string[], b: string[]) => {
+const arraysAreEqual = (a: string[], b: string[]): boolean => {
   if (a.length !== b.length) {
     return false
   }
@@ -284,7 +284,7 @@ describe('protoBook', () => {
       const protocols = await pb.get(peerId)
       expect(protocols).to.have.deep.members(finalProtocols)
 
-      return await pWaitFor(() => spy.callCount === 2)
+      await pWaitFor(() => spy.callCount === 2)
     })
 
     it('does not emit on remove if the content does not change', async () => {

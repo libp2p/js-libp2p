@@ -27,7 +27,7 @@ export class PeerStoreKeyBook implements KeyBook {
   /**
    * Set the Peer public key
    */
-  async set (peerId: PeerId, publicKey: Uint8Array) {
+  async set (peerId: PeerId, publicKey: Uint8Array): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (!(publicKey instanceof Uint8Array)) {
@@ -68,7 +68,7 @@ export class PeerStoreKeyBook implements KeyBook {
       this.dispatchEvent(new CustomEvent<PeerPublicKeyChangeData>(EVENT_NAME, {
         detail: {
           peerId,
-          publicKey: publicKey,
+          publicKey,
           oldPublicKey: peer == null ? undefined : peer.pubKey
         }
       }))
@@ -78,7 +78,7 @@ export class PeerStoreKeyBook implements KeyBook {
   /**
    * Get Public key of the given PeerId, if stored
    */
-  async get (peerId: PeerId) {
+  async get (peerId: PeerId): Promise<Uint8Array | undefined> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('get await write lock')
@@ -99,7 +99,7 @@ export class PeerStoreKeyBook implements KeyBook {
     }
   }
 
-  async delete (peerId: PeerId) {
+  async delete (peerId: PeerId): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('delete await write lock')

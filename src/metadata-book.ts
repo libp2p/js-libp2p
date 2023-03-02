@@ -28,7 +28,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
   /**
    * Get the known data of a provided peer
    */
-  async get (peerId: PeerId) {
+  async get (peerId: PeerId): Promise<Map<string, Uint8Array>> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('get await read lock')
@@ -54,7 +54,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
   /**
    * Get specific metadata value, if it exists
    */
-  async getValue (peerId: PeerId, key: string) {
+  async getValue (peerId: PeerId, key: string): Promise<Uint8Array | undefined> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('getValue await read lock')
@@ -75,7 +75,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
     }
   }
 
-  async set (peerId: PeerId, metadata: Map<string, Uint8Array>) {
+  async set (peerId: PeerId, metadata: Map<string, Uint8Array>): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (!(metadata instanceof Map)) {
@@ -118,7 +118,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
   /**
    * Set metadata key and value of a provided peer
    */
-  async setValue (peerId: PeerId, key: string, value: Uint8Array) {
+  async setValue (peerId: PeerId, key: string, value: Uint8Array): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (typeof key !== 'string' || !(value instanceof Uint8Array)) {
@@ -164,7 +164,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
     }))
   }
 
-  async delete (peerId: PeerId) {
+  async delete (peerId: PeerId): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('delete await write lock')
@@ -203,7 +203,7 @@ export class PeerStoreMetadataBook implements MetadataBook {
     }
   }
 
-  async deleteValue (peerId: PeerId, key: string) {
+  async deleteValue (peerId: PeerId, key: string): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('deleteValue await write lock')

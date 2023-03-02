@@ -41,7 +41,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
     this.protoBook = new PeerStoreProtoBook(this.dispatchEvent.bind(this), this.store)
   }
 
-  async forEach (fn: (peer: Peer) => void) {
+  async forEach (fn: (peer: Peer) => void): Promise<void> {
     log.trace('getPeers await read lock')
     const release = await this.store.lock.readLock()
     log.trace('getPeers got read lock')
@@ -74,7 +74,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
   /**
    * Delete the information of the given peer in every book
    */
-  async delete (peerId: PeerId) {
+  async delete (peerId: PeerId): Promise<void> {
     log.trace('delete await write lock')
     const release = await this.store.lock.writeLock()
     log.trace('delete got write lock')
@@ -90,7 +90,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
   /**
    * Get the stored information of a given peer
    */
-  async get (peerId: PeerId) {
+  async get (peerId: PeerId): Promise<Peer> {
     log.trace('get await read lock')
     const release = await this.store.lock.readLock()
     log.trace('get got read lock')
@@ -106,7 +106,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
   /**
    * Returns true if we have a record of the peer
    */
-  async has (peerId: PeerId) {
+  async has (peerId: PeerId): Promise<boolean> {
     log.trace('has await read lock')
     const release = await this.store.lock.readLock()
     log.trace('has got read lock')
@@ -119,7 +119,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
     }
   }
 
-  async tagPeer (peerId: PeerId, tag: string, options: TagOptions = {}) {
+  async tagPeer (peerId: PeerId, tag: string, options: TagOptions = {}): Promise<void> {
     const providedValue = options.value ?? 0
     const value = Math.round(providedValue)
     const ttl = options.ttl ?? undefined
@@ -147,7 +147,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
     await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }).subarray())
   }
 
-  async unTagPeer (peerId: PeerId, tag: string) {
+  async unTagPeer (peerId: PeerId, tag: string): Promise<void> {
     const buf = await this.metadataBook.getValue(peerId, 'tags')
     let tags: Tag[] = []
 
@@ -160,7 +160,7 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
     await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }).subarray())
   }
 
-  async getTags (peerId: PeerId) {
+  async getTags (peerId: PeerId): Promise<Array<{ name: string, value: number }>> {
     const buf = await this.metadataBook.getValue(peerId, 'tags')
     let tags: Tag[] = []
 

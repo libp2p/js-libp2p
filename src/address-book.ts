@@ -10,7 +10,7 @@ import map from 'it-map'
 import each from 'it-foreach'
 import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { CustomEvent } from '@libp2p/interfaces/events'
-import type { AddressFilter, Peer, PeerMultiaddrsChangeData, PeerStore } from '@libp2p/interface-peer-store'
+import type { Address, AddressFilter, Peer, PeerMultiaddrsChangeData, PeerStore } from '@libp2p/interface-peer-store'
 import type { Store } from './store.js'
 import type { Envelope } from '@libp2p/interface-record'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -20,7 +20,7 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 const log = logger('libp2p:peer-store:address-book')
 const EVENT_NAME = 'change:multiaddrs'
 
-async function allowAll () {
+async function allowAll (): Promise<boolean> {
   return true
 }
 
@@ -40,7 +40,7 @@ export class PeerStoreAddressBook {
    * This will return a boolean that indicates if the record was successfully processed and added
    * into the AddressBook.
    */
-  async consumePeerRecord (envelope: Envelope) {
+  async consumePeerRecord (envelope: Envelope): Promise<boolean> {
     log.trace('consumePeerRecord await write lock')
     const release = await this.store.lock.writeLock()
     log.trace('consumePeerRecord got write lock')
@@ -113,7 +113,7 @@ export class PeerStoreAddressBook {
     return true
   }
 
-  async getRawEnvelope (peerId: PeerId) {
+  async getRawEnvelope (peerId: PeerId): Promise<Uint8Array | undefined> {
     log.trace('getRawEnvelope await read lock')
     const release = await this.store.lock.readLock()
     log.trace('getRawEnvelope got read lock')
@@ -136,7 +136,7 @@ export class PeerStoreAddressBook {
    * Get an Envelope containing a PeerRecord for the given peer.
    * Returns undefined if no record exists.
    */
-  async getPeerRecord (peerId: PeerId) {
+  async getPeerRecord (peerId: PeerId): Promise<RecordEnvelope | undefined> {
     const raw = await this.getRawEnvelope(peerId)
 
     if (raw == null) {
@@ -146,7 +146,7 @@ export class PeerStoreAddressBook {
     return await RecordEnvelope.createFromProtobuf(raw)
   }
 
-  async get (peerId: PeerId) {
+  async get (peerId: PeerId): Promise<Address[]> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('get wait for read lock')
@@ -169,7 +169,7 @@ export class PeerStoreAddressBook {
     return []
   }
 
-  async set (peerId: PeerId, multiaddrs: Multiaddr[]) {
+  async set (peerId: PeerId, multiaddrs: Multiaddr[]): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (!Array.isArray(multiaddrs)) {
@@ -239,7 +239,7 @@ export class PeerStoreAddressBook {
     }
   }
 
-  async add (peerId: PeerId, multiaddrs: Multiaddr[]) {
+  async add (peerId: PeerId, multiaddrs: Multiaddr[]): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (!Array.isArray(multiaddrs)) {
@@ -307,7 +307,7 @@ export class PeerStoreAddressBook {
     }
   }
 
-  async delete (peerId: PeerId) {
+  async delete (peerId: PeerId): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('delete await write lock')
@@ -345,7 +345,7 @@ export class PeerStoreAddressBook {
   }
 }
 
-async function filterMultiaddrs (peerId: PeerId, multiaddrs: Multiaddr[], addressFilter: AddressFilter, isCertified: boolean = false) {
+async function filterMultiaddrs (peerId: PeerId, multiaddrs: Multiaddr[], addressFilter: AddressFilter, isCertified: boolean = false): Promise<Address[]> {
   return await pipe(
     multiaddrs,
     (source) => each(source, (multiaddr) => {

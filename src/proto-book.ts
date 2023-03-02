@@ -24,7 +24,7 @@ export class PeerStoreProtoBook implements ProtoBook {
     this.store = store
   }
 
-  async get (peerId: PeerId) {
+  async get (peerId: PeerId): Promise<string[]> {
     log.trace('get wait for read lock')
     const release = await this.store.lock.readLock()
     log.trace('get got read lock')
@@ -45,7 +45,7 @@ export class PeerStoreProtoBook implements ProtoBook {
     return []
   }
 
-  async set (peerId: PeerId, protocols: string[]) {
+  async set (peerId: PeerId, protocols: string[]): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (!Array.isArray(protocols)) {
@@ -94,7 +94,7 @@ export class PeerStoreProtoBook implements ProtoBook {
     }))
   }
 
-  async add (peerId: PeerId, protocols: string[]) {
+  async add (peerId: PeerId, protocols: string[]): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (!Array.isArray(protocols)) {
@@ -144,7 +144,7 @@ export class PeerStoreProtoBook implements ProtoBook {
     }))
   }
 
-  async remove (peerId: PeerId, protocols: string[]) {
+  async remove (peerId: PeerId, protocols: string[]): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     if (!Array.isArray(protocols)) {
@@ -196,7 +196,7 @@ export class PeerStoreProtoBook implements ProtoBook {
     }))
   }
 
-  async delete (peerId: PeerId) {
+  async delete (peerId: PeerId): Promise<void> {
     peerId = peerIdFromPeerId(peerId)
 
     log.trace('delete await write lock')
