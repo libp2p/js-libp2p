@@ -15,11 +15,11 @@ export class DHTContentRouting implements ContentRouting {
     this.dht = dht
   }
 
-  async provide (cid: CID) {
+  async provide (cid: CID): Promise<void> {
     await drain(this.dht.provide(cid))
   }
 
-  async * findProviders (cid: CID, options: AbortOptions = {}) {
+  async * findProviders (cid: CID, options: AbortOptions = {}): AsyncIterable<Uint8Array> {
     for await (const event of this.dht.findProviders(cid, options)) {
       if (event.name === 'PROVIDER') {
         yield * event.providers
