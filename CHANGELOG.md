@@ -1,3 +1,16 @@
+## [5.0.4](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.3...v5.0.4) (2023-03-03)
+
+
+### Bug Fixes
+
+* Only filter by wss not dns ([#218](https://github.com/libp2p/js-libp2p-websockets/issues/218)) ([434d44c](https://github.com/libp2p/js-libp2p-websockets/commit/434d44cdfcbab48008a160cca2da1129cb43860b))
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([fad99cc](https://github.com/libp2p/js-libp2p-websockets/commit/fad99cca84037922b62785829fb67c6110ea4c16))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([b1954aa](https://github.com/libp2p/js-libp2p-websockets/commit/b1954aad07080a24db9021ea2736d34a4e444d00))
+
 ## [5.0.3](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.2...v5.0.3) (2023-01-13)
 
 
