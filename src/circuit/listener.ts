@@ -54,7 +54,7 @@ export function createListener (options: ListenerOptions): Listener {
    *
    * @returns {Multiaddr[]}
    */
-  function getAddrs () {
+  function getAddrs (): Multiaddr[] {
     const addrs = []
     for (const addr of listeningAddrs.values()) {
       addrs.push(addr)
@@ -63,7 +63,7 @@ export function createListener (options: ListenerOptions): Listener {
   }
 
   const listener: Listener = Object.assign(new EventEmitter(), {
-    close: async () => await Promise.resolve(),
+    close: async () => { await Promise.resolve() },
     listen,
     getAddrs
   })

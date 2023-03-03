@@ -22,7 +22,7 @@ import { PeerSet, PeerMap, PeerList } from '@libp2p/peer-collections'
 
 const log = logger('libp2p:circuit:client')
 
-const noop = () => {}
+const noop = (): void => {}
 
 /**
  * CircuitServiceInit initializes the circuit service using values
@@ -81,17 +81,17 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
     this.components.connectionManager.addEventListener('peer:connect', this._onPeerConnect)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  start () {
+  start (): void {
     void this._listenOnAvailableHopRelays().catch(err => { log.error('error listening on relays', err) })
     this.started = true
   }
 
-  async stop () {
-    this.reservationMap.forEach((timer) => clearTimeout(timer))
+  async stop (): Promise<void> {
+    this.reservationMap.forEach((timer) => { clearTimeout(timer) })
     this.reservationMap.clear()
     this.relays.clear()
   }
@@ -102,7 +102,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
    * If the protocol is supported, check if the peer supports **HOP** and add it as a listener if
    * inside the threshold.
    */
-  async _onProtocolChange ({ peerId, protocols }: {peerId: PeerId, protocols: string[]}) {
+  async _onProtocolChange ({ peerId, protocols }: { peerId: PeerId, protocols: string[] }): Promise<void> {
     if (peerId.equals(this.components.peerId)) {
       return
     }
@@ -151,11 +151,11 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
    * Handle case when peer connects. If we already have the peer in the protobook,
    * we treat this event as an `onProtocolChange`.
    */
-  _onPeerConnect ({ detail: connection }: CustomEvent<Connection>) {
+  _onPeerConnect ({ detail: connection }: CustomEvent<Connection>): void {
     void this.components.peerStore.protoBook.get(connection.remotePeer)
       .then((protocols) => {
         void this._onProtocolChange({ peerId: connection.remotePeer, protocols })
-          .catch((err) => log.error('handling reconnect failed', err))
+          .catch((err) => { log.error('handling reconnect failed', err) })
       },
       (err) => {
         // this is not necessarily an error as we will only have the protocols stored
@@ -167,7 +167,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
   /**
    * Peer disconnects
    */
-  _onPeerDisconnected (evt: CustomEvent<Connection>) {
+  _onPeerDisconnected (evt: CustomEvent<Connection>): void {
     const connection = evt.detail
     const peerId = connection.remotePeer
     clearTimeout(this.reservationMap.get(peerId))
@@ -238,11 +238,11 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
   /**
    * Remove listen relay
    */
-  async _removeListenRelay (PeerId: PeerId) {
+  async _removeListenRelay (PeerId: PeerId): Promise<void> {
     const recheck = this.relays.has(PeerId)
     this.relays.delete(PeerId)
     if (recheck) {
-      // TODO: this should be responsibility of the connMgr
+      // TODO: this should be responsibility of the connMgr https://github.com/libp2p/js-libp2p/issues/1610
       await this._listenOnAvailableHopRelays(new PeerList([PeerId]))
     }
   }
@@ -254,7 +254,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
    * 2. Dial and try to listen on the peers we know that support hop but are not connected.
    * 3. Search the network.
    */
-  async _listenOnAvailableHopRelays (peersToIgnore: PeerList = new PeerList([])) {
+  async _listenOnAvailableHopRelays (peersToIgnore: PeerList = new PeerList([])): Promise<void> {
     // Check if already listening on enough relays
     if (this.relays.size >= this.maxReservations) {
       return
@@ -321,7 +321,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
     }
   }
 
-  async _tryToListenOnRelay (peerId: PeerId) {
+  async _tryToListenOnRelay (peerId: PeerId): Promise<void> {
     try {
       if (peerId.equals(this.components.peerId)) {
         log.trace('Skipping dialling self %p', peerId.toString())
@@ -335,7 +335,7 @@ export class RelayReservationManager extends EventEmitter<RelayReservationManage
     }
   }
 
-  private readonly createOrRefreshReservation = async (peerId: PeerId) => {
+  private readonly createOrRefreshReservation = async (peerId: PeerId): Promise<void> => {
     try {
       const connections = this.components.connectionManager.getConnections(peerId)
 

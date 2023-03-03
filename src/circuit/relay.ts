@@ -39,14 +39,14 @@ export class Relay implements Startable {
     this._advertiseService = this._advertiseService.bind(this)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * Start Relay service
    */
-  async start () {
+  async start (): Promise<void> {
     // Advertise service if HOP enabled and advertising enabled
     if (this.init.hop.enabled === true && this.init.advertise.enabled === true) {
       this.timeout = setDelayedInterval(
@@ -60,7 +60,7 @@ export class Relay implements Startable {
   /**
    * Stop Relay service
    */
-  async stop () {
+  async stop (): Promise<void> {
     try {
       clearDelayedInterval(this.timeout)
     } catch (err) { }
@@ -71,7 +71,7 @@ export class Relay implements Startable {
   /**
    * Advertise hop relay service in the network.
    */
-  async _advertiseService () {
+  async _advertiseService (): Promise<void> {
     try {
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
       await this.components.contentRouting.provide(cid)

@@ -87,7 +87,7 @@ async function handleReserve ({ connection, stream: pbstr, relayPeer, relayAddrs
     return
   }
 
-  const result = await reservationStore.reserve(connection.remotePeer, connection.remoteAddr)
+  const result = reservationStore.reserve(connection.remotePeer, connection.remoteAddr)
 
   if (result.status !== Status.OK) {
     hopstr.write({ type: HopMessage.Type.STATUS, status: result.status })
@@ -105,12 +105,12 @@ async function handleReserve ({ connection, stream: pbstr, relayPeer, relayAddrs
       type: HopMessage.Type.STATUS,
       status: Status.OK,
       reservation: await makeReservation(relayAddrs, relayPeer, connection.remotePeer, BigInt(result.expire ?? 0)),
-      limit: (await reservationStore.get(relayPeer))?.limit
+      limit: reservationStore.get(relayPeer)?.limit
     })
     log('sent confirmation response to %s', connection.remotePeer)
   } catch (err) {
     log.error('failed to send confirmation response to %s', connection.remotePeer)
-    await reservationStore.removeReservation(connection.remotePeer)
+    reservationStore.removeReservation(connection.remotePeer)
   }
 }
 
@@ -138,12 +138,12 @@ async function handleConnect (options: HopProtocolOptions): Promise<void> {
     const status = await acl.allowConnect(connection.remotePeer, connection.remoteAddr, dstPeer)
     if (status !== Status.OK) {
       log.error('hop connect denied for %s with status %s', connection.remotePeer, status)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: status })
+      hopstr.write({ type: HopMessage.Type.STATUS, status })
       return
     }
   }
 
-  if (!await reservationStore.hasReservation(dstPeer)) {
+  if (!reservationStore.hasReservation(dstPeer)) {
     log.error('hop connect denied for %s with status %s', connection.remotePeer, Status.NO_RESERVATION)
     hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
     return
@@ -179,9 +179,9 @@ async function handleConnect (options: HopProtocolOptions): Promise<void> {
   const sourceStream = stream.unwrap()
 
   log('connection to destination established, short circuiting streams...')
-  const limit = (await reservationStore.get(dstPeer))?.limit
+  const limit = reservationStore.get(dstPeer)?.limit
   // Short circuit the two streams to create the relayed connection
-  return createLimitedRelay(sourceStream, destinationStream, limit)
+  createLimitedRelay(sourceStream, destinationStream, limit)
 }
 
 async function makeReservation (

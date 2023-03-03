@@ -69,7 +69,7 @@ export class Circuit implements Transport, Startable {
     this._started = false
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this._started
   }
 
@@ -102,11 +102,11 @@ export class Circuit implements Transport, Startable {
       })
 
     if (this._init.hop.enabled === true) {
-      void this.reservationStore.start()
+      this.reservationStore.start()
     }
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     if (this._init.hop.enabled === true) {
       this.reservationStore.stop()
       await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
@@ -118,11 +118,11 @@ export class Circuit implements Transport, Startable {
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): 'libp2p/circuit-relay-v2' {
     return 'libp2p/circuit-relay-v2'
   }
 
-  async onHop ({ connection, stream }: IncomingStreamData) {
+  async onHop ({ connection, stream }: IncomingStreamData): Promise<void> {
     log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
 
     const hopTimeoutPromise = pDefer()
@@ -165,7 +165,7 @@ export class Circuit implements Transport, Startable {
     }
   }
 
-  async onStop ({ connection, stream }: IncomingStreamData) {
+  async onStop ({ connection, stream }: IncomingStreamData): Promise<void> {
     const pbstr = pbStream(stream)
     const request = await pbstr.readPB(CircuitV2.StopMessage)
     log('received circuit v2 stop protocol request from %s', connection.remotePeer)
@@ -248,7 +248,7 @@ export class Circuit implements Transport, Startable {
       destinationAddr, relayAddr, ma,
       disconnectOnFailure
     }: ConnectOptions
-  ) {
+  ): Promise<Connection> {
     try {
       const pbstr = pbStream(stream)
       const hopstr = pbstr.pb(CircuitV2.HopMessage)

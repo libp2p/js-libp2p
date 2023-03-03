@@ -38,7 +38,7 @@ export type ReservationStoreOptions = RecursivePartial<ReservationStoreInit>
 
 export class ReservationStore implements IReservationStore, Startable {
   private readonly reservations = new PeerMap<Reservation>()
-  private _started = false;
+  private _started = false
   private interval: any
   private readonly init: ReservationStoreInit
 
@@ -53,11 +53,11 @@ export class ReservationStore implements IReservationStore, Startable {
     }
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this._started
   }
 
-  start () {
+  start (): void {
     if (this._started) {
       return
     }
@@ -75,7 +75,7 @@ export class ReservationStore implements IReservationStore, Startable {
     )
   }
 
-  stop () {
+  stop (): void {
     clearInterval(this.interval)
   }
 

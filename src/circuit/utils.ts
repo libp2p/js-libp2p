@@ -8,17 +8,17 @@ import type { Stream } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:circuit:v2:util')
 
-const doRelay = (src: Stream, dst: Stream) => {
+const doRelay = (src: Stream, dst: Stream): void => {
   queueMicrotask(() => {
-    void dst.sink(src.source).catch(err => log.error('error while relating streams:', err))
+    void dst.sink(src.source).catch(err => { log.error('error while relating streams:', err) })
   })
 
   queueMicrotask(() => {
-    void src.sink(dst.source).catch(err => log.error('error while relaying streams:', err))
+    void src.sink(dst.source).catch(err => { log.error('error while relaying streams:', err) })
   })
 }
 
-export function createLimitedRelay (source: Stream, destination: Stream, limit?: Limit) {
+export function createLimitedRelay (source: Stream, destination: Stream, limit?: Limit): void {
   // trivial case
   if (limit == null) {
     doRelay(source, destination)

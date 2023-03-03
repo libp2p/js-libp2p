@@ -11,7 +11,7 @@ export interface Reservation {
 }
 
 export interface ReservationStore {
-  reserve: (peer: PeerId, addr: Multiaddr, limit?: Limit) => {status: ReservationStatus, expire?: number}
+  reserve: (peer: PeerId, addr: Multiaddr, limit?: Limit) => { status: ReservationStatus, expire?: number }
   removeReservation: (peer: PeerId) => void
   hasReservation: (dst: PeerId) => boolean
   get: (peer: PeerId) => Reservation | undefined

@@ -30,7 +30,7 @@ export async function handleStop ({
   connection,
   request,
   pbstr
-}: HandleStopOptions) {
+}: HandleStopOptions): Promise<Stream | undefined> {
   const stopstr = pbstr.pb(StopMessage)
   log('new circuit relay v2 stop stream from %s', connection.remotePeer)
   // Validate the STOP request has the required input
@@ -45,7 +45,7 @@ export async function handleStop ({
     return
   }
 
-  // TODO: go-libp2p marks connection transient if there is limit field present in request.
+  // TODO: go-libp2p marks connection transient if there is limit field present in request. Depends on https://github.com/libp2p/js-libp2p/issues/1611
   // Cannot find any reference to transient connections in js-libp2p
 
   stopstr.write({ type: StopMessage.Type.STATUS, status: Status.OK })

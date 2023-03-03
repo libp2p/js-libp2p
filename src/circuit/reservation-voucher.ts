@@ -22,7 +22,7 @@ export class ReservationVoucherRecord implements Record {
     this.expiration = expiration
   }
 
-  marshal () {
+  marshal (): Uint8Array {
     return ReservationVoucher.encode({
       relay: this.relay.toBytes(),
       peer: this.peer.toBytes(),
@@ -30,7 +30,7 @@ export class ReservationVoucherRecord implements Record {
     })
   }
 
-  equals (other: Record) {
+  equals (other: Record): boolean {
     if (!(other instanceof ReservationVoucherRecord)) {
       return false
     }
