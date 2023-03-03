@@ -32,11 +32,12 @@ import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { Duplex } from 'it-stream-types'
 import map from 'it-map'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:plaintext')
 const PROTOCOL = '/plaintext/2.0.0'
 
-function lpEncodeExchange (exchange: Exchange) {
+function lpEncodeExchange (exchange: Exchange): Uint8ArrayList {
   const pb = Exchange.encode(exchange)
 
   return lp.encode.single(pb)

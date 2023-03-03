@@ -4,7 +4,7 @@ import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
 import { Identify } from './pb/message.js'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import {
@@ -112,7 +112,7 @@ export class IdentifyService implements Startable {
       const { peerId } = evt.detail
 
       if (this.components.peerId.equals(peerId)) {
-        void this.pushToPeerStore().catch(err => log.error(err))
+        void this.pushToPeerStore().catch(err => { log.error(err) })
       }
     })
 
@@ -121,16 +121,16 @@ export class IdentifyService implements Startable {
       const { peerId } = evt.detail
 
       if (this.components.peerId.equals(peerId)) {
-        void this.pushToPeerStore().catch(err => log.error(err))
+        void this.pushToPeerStore().catch(err => { log.error(err) })
       }
     })
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     if (this.started) {
       return
     }
@@ -158,7 +158,7 @@ export class IdentifyService implements Startable {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     await this.components.registrar.unhandle(this.identifyProtocolStr)
     await this.components.registrar.unhandle(this.identifyPushProtocolStr)
 
@@ -216,7 +216,7 @@ export class IdentifyService implements Startable {
   /**
    * Calls `push` on all peer connections
    */
-  async pushToPeerStore () {
+  async pushToPeerStore (): Promise<void> {
     // Do not try to push if we are not running
     if (!this.isStarted()) {
       return
@@ -388,7 +388,7 @@ export class IdentifyService implements Startable {
    * Sends the `Identify` response with the Signed Peer Record
    * to the requesting peer over the given `connection`
    */
-  async _handleIdentify (data: IncomingStreamData) {
+  async _handleIdentify (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
     const timeoutController = new TimeoutController(this.init.timeout)
 
@@ -440,7 +440,7 @@ export class IdentifyService implements Startable {
   /**
    * Reads the Identify Push message from the given `connection`
    */
-  async _handlePush (data: IncomingStreamData) {
+  async _handlePush (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
     const timeoutController = new TimeoutController(this.init.timeout)
 
@@ -467,14 +467,14 @@ export class IdentifyService implements Startable {
         message = Identify.decode(data)
       }
     } catch (err: any) {
-      return log.error('received invalid message', err)
+      log.error('received invalid message', err)
     } finally {
       stream.close()
       timeoutController.clear()
     }
 
     if (message == null) {
-      return log.error('received invalid message')
+      log.error('received invalid message')
     }
 
     const id = connection.remotePeer
@@ -486,7 +486,7 @@ export class IdentifyService implements Startable {
 
     log('received push from %p', id)
 
-    if (message.signedPeerRecord != null) {
+    if (message?.signedPeerRecord != null) {
       log('received signedPeerRecord in push')
 
       try {
@@ -510,14 +510,14 @@ export class IdentifyService implements Startable {
     // LEGACY: Update peers data in PeerStore
     try {
       await this.components.peerStore.addressBook.set(id,
-        message.listenAddrs.map((addr) => multiaddr(addr)))
+        message?.listenAddrs.map((addr) => multiaddr(addr)) ?? [])
     } catch (err: any) {
       log.error('received invalid addrs', err)
     }
 
     // Update the protocols
     try {
-      await this.components.peerStore.protoBook.set(id, message.protocols)
+      await this.components.peerStore.protoBook.set(id, message?.protocols ?? [])
     } catch (err: any) {
       log.error('received invalid protocols', err)
     }
@@ -528,7 +528,7 @@ export class IdentifyService implements Startable {
   /**
    * Takes the `addr` and converts it to a Multiaddr if possible
    */
-  static getCleanMultiaddr (addr: Uint8Array | string | null | undefined) {
+  static getCleanMultiaddr (addr: Uint8Array | string | null | undefined): Multiaddr | undefined {
     if (addr != null && addr.length > 0) {
       try {
         return multiaddr(addr)
