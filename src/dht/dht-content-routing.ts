@@ -4,6 +4,7 @@ import type { DHT } from '@libp2p/interface-dht'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 /**
  * Wrapper class to convert events into returned values
@@ -19,7 +20,7 @@ export class DHTContentRouting implements ContentRouting {
     await drain(this.dht.provide(cid))
   }
 
-  async * findProviders (cid: CID, options: AbortOptions = {}): AsyncIterable<Uint8Array> {
+  async * findProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
     for await (const event of this.dht.findProviders(cid, options)) {
       if (event.name === 'PROVIDER') {
         yield * event.providers
