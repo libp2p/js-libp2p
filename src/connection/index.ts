@@ -136,7 +136,7 @@ export class ConnectionImpl implements Connection {
    * Remove stream registry after it is closed
    */
   removeStream (id: string) {
-
+    this.streams.splice(this.streams.findIndex(s => s.id === id), 1)
   }
 
   /**
