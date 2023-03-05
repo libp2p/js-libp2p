@@ -53,7 +53,7 @@ export interface UpgraderInit {
   inboundUpgradeTimeout: number
 }
 
-function findIncomingStreamLimit (protocol: string, registrar: Registrar) {
+function findIncomingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
   try {
     const { options } = registrar.getHandler(protocol)
 
@@ -67,7 +67,7 @@ function findIncomingStreamLimit (protocol: string, registrar: Registrar) {
   return DEFAULT_MAX_INBOUND_STREAMS
 }
 
-function findOutgoingStreamLimit (protocol: string, registrar: Registrar) {
+function findOutgoingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
   try {
     const { options } = registrar.getHandler(protocol)
 
@@ -81,7 +81,7 @@ function findOutgoingStreamLimit (protocol: string, registrar: Registrar) {
   return DEFAULT_MAX_OUTBOUND_STREAMS
 }
 
-function countStreams (protocol: string, direction: 'inbound' | 'outbound', connection: Connection) {
+function countStreams (protocol: string, direction: 'inbound' | 'outbound', connection: Connection): number {
   let streamCount = 0
 
   connection.streams.forEach(stream => {
@@ -399,7 +399,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
               // the peerstore should ensure that the peer is registered with that protocol
-              this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => log.error(err))
+              this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => { log.error(err) })
 
               connection.addStream(muxedStream)
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
@@ -456,7 +456,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
           // If a protocol stream has been successfully negotiated and is to be passed to the application,
           // the peerstore should ensure that the peer is registered with that protocol
-          this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => log.error(err))
+          this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => { log.error(err) })
 
           // after the handshake the returned stream can have early data so override
           // the souce/sink
@@ -522,14 +522,14 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     })
     maConn.timeline.upgraded = Date.now()
 
-    const errConnectionNotMultiplexed = () => {
+    const errConnectionNotMultiplexed = (): any => {
       throw errCode(new Error('connection is not multiplexed'), codes.ERR_CONNECTION_NOT_MULTIPLEXED)
     }
 
     // Create the connection
     connection = createConnection({
       remoteAddr: maConn.remoteAddr,
-      remotePeer: remotePeer,
+      remotePeer,
       stat: {
         status: 'OPEN',
         direction,
@@ -538,7 +538,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         encryption: cryptoProtocol
       },
       newStream: newStream ?? errConnectionNotMultiplexed,
-      getStreams: () => muxer != null ? muxer.streams : errConnectionNotMultiplexed(),
+      getStreams: () => { if (muxer != null) { return muxer.streams } else { return errConnectionNotMultiplexed() } },
       close: async () => {
         await maConn.close()
         // Ensure remaining streams are closed
