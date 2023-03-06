@@ -11,37 +11,37 @@ describe('Circuit v2 - reservation store', function () {
   it('should add reservation', async function () {
     const store = new ReservationStore({ maxReservations: 2 })
     const peer = await createPeerId()
-    const result = store.reserve(peer, multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
     expect(result.expire).to.not.be.undefined()
-    expect(store.hasReservation(peer)).to.be.true()
+    expect(await store.hasReservation(peer)).to.be.true()
   })
   it('should add reservation if peer already has reservation', async function () {
     const store = new ReservationStore({ maxReservations: 1 })
     const peer = await createPeerId()
-    store.reserve(peer, multiaddr())
-    const result = store.reserve(peer, multiaddr())
+    await store.reserve(peer, multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
     expect(result.expire).to.not.be.undefined()
-    expect(store.hasReservation(peer)).to.be.true()
+    expect(await store.hasReservation(peer)).to.be.true()
   })
 
   it('should fail to add reservation on exceeding limit', async function () {
     const store = new ReservationStore({ maxReservations: 0 })
     const peer = await createPeerId()
-    const result = store.reserve(peer, multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.RESERVATION_REFUSED)
   })
 
   it('should remove reservation', async function () {
     const store = new ReservationStore({ maxReservations: 10 })
     const peer = await createPeerId()
-    const result = store.reserve(peer, multiaddr())
+    const result = await store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
-    expect(store.hasReservation(peer)).to.be.true()
-    store.removeReservation(peer)
-    expect(store.hasReservation(peer)).to.be.false()
-    store.removeReservation(peer)
+    expect(await store.hasReservation(peer)).to.be.true()
+    await store.removeReservation(peer)
+    expect(await store.hasReservation(peer)).to.be.false()
+    await store.removeReservation(peer)
   })
 
   it('should apply configured default connection limits', async function () {
@@ -53,9 +53,9 @@ describe('Circuit v2 - reservation store', function () {
       defaultDurationLimit
     })
     const peer = await createPeerId()
-    store.reserve(peer, multiaddr())
+    await store.reserve(peer, multiaddr())
 
-    const reservation = store.get(peer)
+    const reservation = await store.get(peer)
 
     expect(reservation).to.have.nested.property('limit.data', defaultDataLimit)
     expect(reservation).to.have.nested.property('limit.duration', defaultDurationLimit)
@@ -64,9 +64,9 @@ describe('Circuit v2 - reservation store', function () {
   it('should apply default connection limits', async function () {
     const store = new ReservationStore()
     const peer = await createPeerId()
-    store.reserve(peer, multiaddr())
+    await store.reserve(peer, multiaddr())
 
-    const reservation = store.get(peer)
+    const reservation = await store.get(peer)
 
     expect(reservation).to.have.nested.property('limit.data', DEFAULT_DATA_LIMIT)
     expect(reservation).to.have.nested.property('limit.duration', DEFAULT_DURATION_LIMIT)
@@ -77,9 +77,9 @@ describe('Circuit v2 - reservation store', function () {
       applyDefaultLimit: false
     })
     const peer = await createPeerId()
-    store.reserve(peer, multiaddr())
+    await store.reserve(peer, multiaddr())
 
-    const reservation = store.get(peer)
+    const reservation = await store.get(peer)
 
     expect(reservation).to.not.have.nested.property('limit.data')
     expect(reservation).to.not.have.nested.property('limit.duration')

@@ -314,7 +314,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: components.peerStore,
@@ -359,7 +359,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: components.peerStore,
@@ -385,7 +385,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: sinon.stub() as any,
@@ -412,7 +412,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: sinon.stub() as any,
@@ -503,7 +503,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: components.peerStore,
@@ -582,7 +582,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: components.peerStore,
@@ -661,7 +661,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: components.peerStore,
@@ -742,7 +742,7 @@ describe('Circuit v2 - hop protocol', function () {
             addrs: []
           }
         },
-        relayPeer: relayPeer,
+        relayPeer,
         relayAddrs: [],
         reservationStore,
         peerStore: components.peerStore,

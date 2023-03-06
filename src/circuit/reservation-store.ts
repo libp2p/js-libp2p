@@ -79,7 +79,7 @@ export class ReservationStore implements IReservationStore, Startable {
     clearInterval(this.interval)
   }
 
-  reserve (peer: PeerId, addr: Multiaddr, limit?: Limit): { status: ReservationStatus, expire?: number } {
+  async reserve (peer: PeerId, addr: Multiaddr, limit?: Limit): Promise<{ status: ReservationStatus, expire?: number }> {
     if (this.reservations.size >= this.init.maxReservations && !this.reservations.has(peer)) {
       return { status: Status.RESERVATION_REFUSED }
     }
@@ -92,15 +92,15 @@ export class ReservationStore implements IReservationStore, Startable {
     return { status: Status.OK, expire: expire.getTime() }
   }
 
-  removeReservation (peer: PeerId): void {
+  async removeReservation (peer: PeerId): Promise<void> {
     this.reservations.delete(peer)
   }
 
-  hasReservation (dst: PeerId): boolean {
+  async hasReservation (dst: PeerId): Promise<boolean> {
     return this.reservations.has(dst)
   }
 
-  get (peer: PeerId): Reservation | undefined {
+  async get (peer: PeerId): Promise<Reservation | undefined> {
     return this.reservations.get(peer)
   }
 }
