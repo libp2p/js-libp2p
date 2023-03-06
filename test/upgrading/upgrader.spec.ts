@@ -186,7 +186,7 @@ describe('Upgrader', () => {
     // Verify the MultiaddrConnection close method is called
     const inboundCloseSpy = sinon.spy(inbound, 'close')
     const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(inboundCloseSpy.callCount).to.equal(1)
     expect(outboundCloseSpy.callCount).to.equal(1)
   })
@@ -278,8 +278,8 @@ describe('Upgrader', () => {
       }
 
       source = []
-      async sink () {}
-      close () {}
+      async sink (): Promise<void> {}
+      close (): void {}
     }
 
     class OtherMuxerFactory implements StreamMuxerFactory {
@@ -344,7 +344,7 @@ describe('Upgrader', () => {
     // Verify the MultiaddrConnection close method is called
     const inboundCloseSpy = sinon.spy(inbound, 'close')
     const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(inboundCloseSpy.callCount).to.equal(1)
     expect(outboundCloseSpy.callCount).to.equal(1)
   })
@@ -382,7 +382,7 @@ describe('Upgrader', () => {
     ])
 
     // Verify onConnectionEnd is called with the connection
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
 
     await Promise.all([
       localConnectionEndEventReceived.promise,
@@ -593,7 +593,7 @@ describe('libp2p.upgrader', () => {
       ]
     })
     await libp2p.start()
-    const echoHandler = () => {}
+    const echoHandler = (): void => {}
     await libp2p.handle(['/echo/1.0.0'], echoHandler)
 
     remoteLibp2p = await createLibp2pNode({
@@ -675,7 +675,7 @@ describe('libp2p.upgrader', () => {
     expect(remotePeer.equals(event.detail.remotePeer)).to.equal(true)
 
     // Close and check the disconnect event
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(connectionManagerDispatchEventSpy.callCount).to.equal(2)
     ;([event] = connectionManagerDispatchEventSpy.getCall(1).args)
     expect(event).to.have.property('type', 'peer:disconnect')

@@ -56,12 +56,12 @@ describe('Dialing (via relay, TCP)', () => {
     })
 
     // Start each node
-    await Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => await libp2p.start()))
+    await Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => { await libp2p.start() }))
   })
 
   afterEach(async () => {
     // Stop each node
-    return await Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => await libp2p.stop()))
+    return await Promise.all([srcLibp2p, relayLibp2p, dstLibp2p].map(async libp2p => { await libp2p.stop() }))
   })
 
   it('should be able to connect to a peer over a relay with active connections', async () => {

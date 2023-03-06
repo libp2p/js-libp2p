@@ -17,10 +17,11 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { pEvent } from 'p-event'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit/multicodec.js'
+import type { Transport } from '@libp2p/interface-transport'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
-const getDnsaddrStub = (peerId: PeerId) => [
+const getDnsaddrStub = (peerId: PeerId): string[] => [
   `/dnsaddr/ams-1.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
   `/dnsaddr/ams-2.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
   `/dnsaddr/lon-1.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
@@ -29,9 +30,9 @@ const getDnsaddrStub = (peerId: PeerId) => [
   `/dnsaddr/sfo-2.bootstrap.libp2p.io/p2p/${peerId.toString()}`
 ]
 
-const relayedAddr = (peerId: PeerId) => `${relayAddr.toString()}/p2p-circuit/p2p/${peerId.toString()}`
+const relayedAddr = (peerId: PeerId): string => `${relayAddr.toString()}/p2p-circuit/p2p/${peerId.toString()}`
 
-const getDnsRelayedAddrStub = (peerId: PeerId) => [
+const getDnsRelayedAddrStub = (peerId: PeerId): string[] => [
   `${relayedAddr(peerId)}`
 ]
 
@@ -91,12 +92,12 @@ describe('Dialing (resolvable addresses)', () => {
       })
     ])
 
-    await Promise.all([libp2p, remoteLibp2p].map(async n => await n.start()))
+    await Promise.all([libp2p, remoteLibp2p].map(async n => { await n.start() }))
   })
 
   afterEach(async () => {
     sinon.restore()
-    await Promise.all([libp2p, remoteLibp2p].map(async n => await n.stop()))
+    await Promise.all([libp2p, remoteLibp2p].map(async n => { await n.stop() }))
   })
 
   it('resolves dnsaddr to ws local address', async () => {
@@ -258,7 +259,7 @@ describe('Dialing (resolvable addresses)', () => {
   })
 })
 
-function getTransport (libp2p: Libp2pNode, tag: string) {
+function getTransport (libp2p: Libp2pNode, tag: string): Transport {
   const transport = libp2p.components.transportManager.getTransports().find(t => {
     return t[Symbol.toStringTag] === tag
   })

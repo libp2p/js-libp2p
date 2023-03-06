@@ -14,7 +14,7 @@ import { protocols } from '@multiformats/multiaddr'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 
-async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions<boolean>) {
+async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
     const search = `${relay.peerId.toString()}/p2p-circuit`
@@ -22,7 +22,7 @@ async function usingAsRelay (node: Libp2pNode, relay: Libp2pNode, opts?: PWaitFo
   }, opts)
 }
 
-async function discoveredRelayConfig (node: Libp2pNode, relay: Libp2pNode) {
+async function discoveredRelayConfig (node: Libp2pNode, relay: Libp2pNode): Promise<void> {
   await pWaitFor(async () => {
     const peerData = await node.peerStore.get(relay.peerId)
     return peerData.protocols.includes(RELAY_V2_HOP_CODEC)
@@ -46,12 +46,12 @@ describe('auto-relay', () => {
 
     beforeEach(async () => {
       // Start each node
-      return await Promise.all([libp2p, relayLibp2p].map(async libp2p => await libp2p.start()))
+      return await Promise.all([libp2p, relayLibp2p].map(async libp2p => { await libp2p.start() }))
     })
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([libp2p, relayLibp2p].map(async libp2p => await libp2p.stop()))
+      return await Promise.all([libp2p, relayLibp2p].map(async libp2p => { await libp2p.stop() }))
     })
 
     it('should ask if node supports hop on protocol change (relay protocol) and add to listen multiaddrs', async () => {
@@ -87,12 +87,12 @@ describe('auto-relay', () => {
       ])
 
       // Start each node
-      await Promise.all([libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => await libp2p.start()))
+      await Promise.all([libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => { await libp2p.start() }))
     })
 
     afterEach(async () => {
       // Stop each node
-      await Promise.all([libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => await libp2p.stop()))
+      await Promise.all([libp2p, relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => { await libp2p.stop() }))
     })
 
     it('should ask if node supports hop on protocol change (relay protocol) and add to listen multiaddrs', async () => {
@@ -286,12 +286,12 @@ describe('auto-relay', () => {
       ])
 
       // Start each node
-      await Promise.all([relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => await libp2p.start()))
+      await Promise.all([relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => { await libp2p.start() }))
     })
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => await libp2p.stop()))
+      return await Promise.all([relayLibp2p1, relayLibp2p2, relayLibp2p3].map(async libp2p => { await libp2p.stop() }))
     })
 
     it('should not add listener to a already relayed connection', async () => {
@@ -374,7 +374,7 @@ describe('auto-relay', () => {
 
     beforeEach(async () => {
       // Start each node
-      await Promise.all([local, remote, relayLibp2p].map(async libp2p => await libp2p.start()))
+      await Promise.all([local, remote, relayLibp2p].map(async libp2p => { await libp2p.start() }))
 
       // Should provide on start
       await pWaitFor(() => relayDelegate.provide.callCount === 1)
@@ -393,7 +393,7 @@ describe('auto-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([local, remote, relayLibp2p].map(async libp2p => await libp2p.stop()))
+      return await Promise.all([local, remote, relayLibp2p].map(async libp2p => { await libp2p.stop() }))
     })
 
     it('should find providers for relay and add it as listen relay', async () => {
