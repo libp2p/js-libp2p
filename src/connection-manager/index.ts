@@ -470,6 +470,10 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     return conns
   }
 
+  getConnectionsMap (): Map<string, Connection[]> {
+    return this.connections
+  }
+
   async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
 

@@ -6,7 +6,6 @@ import { mplex } from '@libp2p/mplex'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
-import pSettle from 'p-settle'
 import { webSockets } from '@libp2p/websockets'
 import { preSharedKey } from '../../src/pnet/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -262,7 +261,7 @@ describe('Upgrader', () => {
     })
 
     // Wait for the results of each side of the connection
-    const results = await pSettle([
+    const results = await Promise.allSettled([
       localUpgrader.upgradeOutbound(outbound),
       remoteUpgrader.upgradeInbound(inbound)
     ])
@@ -270,7 +269,7 @@ describe('Upgrader', () => {
     // Ensure both sides fail
     expect(results).to.have.length(2)
     results.forEach(result => {
-      expect(result).to.have.property('isRejected', true)
+      expect(result).to.have.property('status', 'rejected')
       expect(result).to.have.nested.property('reason.code', codes.ERR_ENCRYPTION_FAILED)
     })
   })
@@ -319,7 +318,7 @@ describe('Upgrader', () => {
     })
 
     // Wait for the results of each side of the connection
-    const results = await pSettle([
+    const results = await Promise.allSettled([
       localUpgrader.upgradeOutbound(outbound),
       remoteUpgrader.upgradeInbound(inbound)
     ])
@@ -327,7 +326,7 @@ describe('Upgrader', () => {
     // Ensure both sides fail
     expect(results).to.have.length(2)
     results.forEach(result => {
-      expect(result).to.have.property('isRejected', true)
+      expect(result).to.have.property('status', 'rejected')
       expect(result).to.have.nested.property('reason.code', codes.ERR_MUXER_UNAVAILABLE)
     })
   })
@@ -409,13 +408,13 @@ describe('Upgrader', () => {
 
     expect(connections).to.have.length(2)
 
-    const results = await pSettle([
+    const results = await Promise.allSettled([
       connections[0].newStream('/unsupported/1.0.0'),
       connections[1].newStream('/unsupported/1.0.0')
     ])
     expect(results).to.have.length(2)
     results.forEach(result => {
-      expect(result).to.have.property('isRejected', true)
+      expect(result).to.have.property('status', 'rejected')
       expect(result).to.have.nested.property('reason.code', codes.ERR_UNSUPPORTED_PROTOCOL)
     })
   })

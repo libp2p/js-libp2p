@@ -18,19 +18,33 @@ import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { floodsub } from '@libp2p/floodsub'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 
-// IPFS_LOGGING=debug DEBUG=libp2p*,go-libp2p:* npm run test:interop
+/**
+ * @packageDocumentation
+ *
+ * To enable debug logging, run the tests with the following env vars:
+ *
+ * ```console
+ * DEBUG=libp2p*,go-libp2p:* npm run test:interop
+ * ```
+ */
 
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
-  const apiAddr = multiaddr(`/ip4/0.0.0.0/tcp/${controlPort}`)
+  const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
 
   const log = logger(`go-libp2p:${controlPort}`)
 
   const opts = [
-    `-listen=${apiAddr.toString()}`,
-    '-hostAddrs=/ip4/0.0.0.0/tcp/0'
+    `-listen=${apiAddr.toString()}`
   ]
+
+  if (options.noListen === true) {
+    opts.push('-noListenAddrs')
+  } else {
+    opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+  }
 
   if (options.noise === true) {
     opts.push('-noise=true')
@@ -38,6 +52,10 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.dht === true) {
     opts.push('-dhtServer')
+  }
+
+  if (options.relay === true) {
+    opts.push('-relay')
   }
 
   if (options.pubsub === true) {
@@ -52,8 +70,18 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     opts.push(`-id=${options.key}`)
   }
 
+  if (options.muxer === 'mplex') {
+    opts.push('-muxer=mplex')
+  } else {
+    opts.push('-muxer=yamux')
+  }
+
   const deferred = pDefer()
-  const proc = execa(p2pd(), opts)
+  const proc = execa(p2pd(), opts, {
+    env: {
+      GOLOG_LOG_LEVEL: 'debug'
+    }
+  })
 
   proc.stdout?.on('data', (buf: Buffer) => {
     const str = buf.toString()
@@ -91,11 +119,14 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   const opts: Libp2pOptions = {
     peerId,
     addresses: {
-      listen: ['/ip4/0.0.0.0/tcp/0']
+      listen: options.noListen === true ? [] : ['/ip4/127.0.0.1/tcp/0']
     },
     transports: [tcp()],
     streamMuxers: [],
-    connectionEncryption: [noise()]
+    connectionEncryption: [noise()],
+    nat: {
+      enabled: false
+    }
   }
 
   if (options.muxer === 'mplex') {
@@ -108,7 +139,17 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     if (options.pubsubRouter === 'floodsub') {
       opts.pubsub = floodsub()
     } else {
-      opts.pubsub = floodsub()
+      opts.pubsub = gossipsub()
+    }
+  }
+
+  opts.relay = {
+    enabled: true,
+    hop: {
+      enabled: options.relay === true
+    },
+    reservationManager: {
+      enabled: false
     }
   }
 
@@ -136,7 +177,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   const node = await createLibp2p(opts)
 
-  const server = await createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
+  const server = createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
   await server.start()
 
   return {

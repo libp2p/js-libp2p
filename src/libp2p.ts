@@ -1,3 +1,4 @@
+import { RelayReservationManager } from './circuit/client.js'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
@@ -12,7 +13,7 @@ import { DefaultConnectionManager } from './connection-manager/index.js'
 import { AutoDialler } from './connection-manager/auto-dialler.js'
 import { Circuit } from './circuit/transport.js'
 import { Relay } from './circuit/index.js'
-import { KeyChain } from './keychain/index.js'
+import { DefaultKeyChain } from '@libp2p/keychain'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
 import { DefaultRegistrar } from './registrar.js'
@@ -50,6 +51,8 @@ import { PeerSet } from '@libp2p/peer-collections'
 import { DefaultDialer } from './connection-manager/dialer/index.js'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Datastore } from 'interface-datastore'
+import type { KeyChain } from '@libp2p/interface-keychain'
+import mergeOptions from 'merge-options'
 
 const log = logger('libp2p')
 
@@ -58,6 +61,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public dht: DualDHT
   public pubsub: PubSub
   public identifyService: IdentifyService
+  public circuitService?: RelayReservationManager
   public fetchService: FetchService
   public pingService: PingService
   public components: Components
@@ -160,8 +164,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     }))
 
     // Create keychain
-    const keychainOpts = KeyChain.generateOptions()
-    this.keychain = this.configureComponent(new KeyChain(this.components, {
+    const keychainOpts = DefaultKeyChain.generateOptions()
+    this.keychain = this.configureComponent(new DefaultKeyChain(this.components, {
       ...keychainOpts,
       ...init.keychain
     }))
@@ -178,6 +182,14 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       ...init.identify
     })
     this.configureComponent(this.identifyService)
+
+    if (init.relay.reservationManager.enabled === true) {
+      this.circuitService = new RelayReservationManager(this.components, {
+        addressSorter: init.connectionManager.addressSorter,
+        ...init.relay.reservationManager
+      })
+      this.services.push(this.circuitService)
+    }
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (init.dht != null) {
@@ -228,7 +240,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       this.components.transportManager.add(this.configureComponent(new Circuit(this.components, init.relay)))
 
       this.configureComponent(new Relay(this.components, {
-        addressSorter: init.connectionManager.addressSorter,
         ...init.relay
       }))
     }
@@ -271,6 +282,13 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     log('libp2p is starting')
 
+    const keys = await this.keychain.listKeys()
+
+    if (keys.find(key => key.name === 'self') == null) {
+      log('importing self key into keychain')
+      await this.keychain.importPeer('self', this.components.peerId)
+    }
+
     try {
       await Promise.all(
         this.services.map(async service => {
@@ -282,7 +300,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
       // start any startables
       await Promise.all(
-        this.services.map(service => service.start())
+        this.services.map(async service => await service.start())
       )
 
       await Promise.all(
@@ -322,7 +340,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     )
 
     await Promise.all(
-      this.services.map(service => service.stop())
+      this.services.map(async service => await service.stop())
     )
 
     await Promise.all(
@@ -516,13 +534,9 @@ export async function createLibp2pNode (options: Libp2pOptions): Promise<Libp2pN
     if (datastore != null) {
       try {
         // try load the peer id from the keychain
-        // @ts-expect-error missing the peer id property
-        const keyChain = new KeyChain({
+        const keyChain = new DefaultKeyChain({
           datastore
-        }, {
-          ...KeyChain.generateOptions(),
-          ...(options.keychain ?? {})
-        })
+        }, mergeOptions(DefaultKeyChain.generateOptions(), options.keychain))
 
         options.peerId = await keyChain.exportPeerId('self')
       } catch (err: any) {
