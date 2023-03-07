@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       wrtcStar.transport
     ],
     connectionEncryption: [noise()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     peerDiscovery: [
       wrtcStar.discovery,
       bootstrap({

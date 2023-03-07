@@ -32,8 +32,8 @@ export default {
           webSockets()
         ],
         streamMuxers: [
-          mplex(),
-          yamux()
+          yamux(),
+          mplex()
         ],
         connectionEncryption: [
           noise(),

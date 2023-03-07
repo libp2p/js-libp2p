@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hardcodedPeerId = '12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m'
   const libp2p = await createLibp2p({
     transports: [webRTCDirect()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     peerDiscovery: [
       bootstrap({

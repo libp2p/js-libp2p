@@ -190,7 +190,7 @@ export type Libp2pOptions = RecursivePartial<Libp2pInit> & { start?: boolean }
  * // specify options
  * const options = {
  *   transports: [tcp()],
- *   streamMuxers: [mplex(), yamux()],
+ *   streamMuxers: [yamux(), mplex()],
  *   connectionEncryption: [noise()]
  * }
  *

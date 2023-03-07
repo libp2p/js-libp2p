@@ -22,8 +22,7 @@ async function createNode (peerId: PeerId) {
       tcp()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+    yamux(),mplex()
     ],
     connectionEncryption: [
       plaintext()

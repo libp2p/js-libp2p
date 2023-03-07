@@ -408,8 +408,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -463,8 +463,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -497,8 +497,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -538,8 +538,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -567,8 +567,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -589,8 +589,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -632,8 +632,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -659,8 +659,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()

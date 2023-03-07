@@ -25,7 +25,7 @@ import { yamux } from '@chainsafe/libp2p-yamux',
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0/ws']
     // TODO check "What is next?" section
@@ -82,7 +82,7 @@ if (!relayAddr) {
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   relay: {
     enabled: true,
     autoRelay: {
@@ -146,7 +146,7 @@ if (!autoRelayNodeAddr) {
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex(), yamux()]
+  streamMuxers: [yamux(), mplex()]
 })
 
 console.log(`Node started with id ${node.peerId.toString()}`)

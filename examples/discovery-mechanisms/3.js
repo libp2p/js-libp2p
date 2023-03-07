@@ -15,7 +15,7 @@ const createNode = async (bootstrappers) => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     pubsub: floodsub(),
     peerDiscovery: [
@@ -39,7 +39,7 @@ const createNode = async (bootstrappers) => {
       ]
     },
     transports: [tcp()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     pubsub: floodsub(),
     peerDiscovery: [

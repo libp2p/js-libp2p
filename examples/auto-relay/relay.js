@@ -18,8 +18,7 @@ async function main () {
       noise()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+    yamux(),mplex()
     ],
     relay: {
       enabled: true,

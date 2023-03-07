@@ -250,7 +250,7 @@ const node = await createLibp2p({
     tcp(),
     webSockets()
   ],
-  streamMuxers: [mplex(),yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   peerDiscovery: [MulticastDNS],
   dht: kadDHT(),
@@ -271,7 +271,7 @@ import { bootstrap } from '@libp2p/bootstrap'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(),yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   peerDiscovery: [
     mdns({
@@ -315,8 +315,8 @@ const node = await createLibp2p({
     webRtc.discovery
   ],
   streamMuxers: [
-    mplex(),
-    yamux()
+    yamux(),
+    mplex()
   ],
   connectionEncryption: [
     noise()
@@ -340,8 +340,7 @@ const node = await createLibp2p({
       tcp()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+    yamux(),mplex()
     ],
     connectionEncryption: [
       noise()
@@ -368,6 +367,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
+    yamux(),
     mplex()
   ],
   connectionEncryption: [
@@ -409,7 +409,7 @@ const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClie
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   contentRouting: [
     delegatedContentRouting
@@ -439,7 +439,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   relay: {                   // Circuit Relay options
     enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
@@ -476,7 +476,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()]
   relay: {                   // Circuit Relay options (this config is part of libp2p core configurations)
     enabled: true,           // Allows you to dial and accept relayed connections. Does not make you a relay.
@@ -510,7 +510,7 @@ await datastore.open()
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   keychain: {
     pass: 'notsafepassword123456789',
@@ -547,7 +547,7 @@ import { publicAddressesFirst } from '@libp2p-utils/address-sort'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   dialer: {
     maxParallelDials: 100,
@@ -574,7 +574,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   connectionManager: {
     maxConnections: Infinity,
@@ -725,7 +725,7 @@ import { FaultTolerance } from '@libp2p/interface-transport'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   transportManager: {
     faultTolerance: FaultTolerance.NO_FATAL
@@ -756,7 +756,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()]
   metrics: {
     enabled: true,
@@ -799,7 +799,7 @@ await datastore.open() // level database must be ready before node boot
 const node = await createLibp2p({
   datastore, // pass the opened datastore
   transports: [tcp()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   peerStore: {
     persistence: true,
@@ -832,8 +832,8 @@ const node = await createLibp2p({
     webRTC.discovery
   ],
   streamMuxers: [
-    mplex(),
-    yamux()
+  yamux(), mplex()
+
   ],
   connectionEncryption: [
     noise()
@@ -862,8 +862,8 @@ const node = await createLibp2p({
     webRTC.discovery
   ],
   streamMuxers: [
-    mplex(),
-    yamux()
+  yamux(), mplex()
+
   ],
   connectionEncryption: [
     noise()

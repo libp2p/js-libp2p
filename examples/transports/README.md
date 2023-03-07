@@ -102,7 +102,7 @@ const createNode = async () => {
     },
     transports: [tcp()],
     connectionEncryption: [noise()],
-    streamMuxers: [mplex(), yamux()] // <--- Add this line
+    streamMuxers: [yamux(), mplex()] // <--- Add this line
   })
 
   return node
@@ -190,7 +190,7 @@ const createNode = async (transports, addresses = []) => {
     },
     transports: transports,
     connectionEncryption: [noise()],
-    streamMuxers: [mplex(), yamux()]
+    streamMuxers: [yamux(), mplex()]
   })
 
   return node

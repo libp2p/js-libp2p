@@ -25,8 +25,8 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    mplex(),
-    yamux()
+    yamux(),
+    mplex()
   ],
   connectionEncryption: [
     noise()
@@ -65,8 +65,8 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    mplex(),
-    yamux()
+    yamux(),
+    mplex()
   ],
   connectionEncryption: [
     noise()
@@ -132,8 +132,7 @@ const createNode = () => {
       tcp()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+      yamux(),mplex()
     ],
     connectionEncryption: [
       noise()
@@ -193,8 +192,7 @@ const createNode = async (bootstrapers) => {
       tcp()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+    yamux(),mplex()
     ],
     connectionEncryption: [
       noise()
@@ -225,7 +223,7 @@ const relay = await createLibp2p({
       ]
     },
     transports: [tcp()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     pubsub: gossipsub({ allowPublishToZeroPeers: true }),
     peerDiscovery: [

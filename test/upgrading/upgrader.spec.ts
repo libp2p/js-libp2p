@@ -193,7 +193,7 @@ describe('Upgrader', () => {
     // Verify the MultiaddrConnection close method is called
     const inboundCloseSpy = sinon.spy(inbound, 'close')
     const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(inboundCloseSpy.callCount).to.equal(1)
     expect(outboundCloseSpy.callCount).to.equal(1)
   })
@@ -311,8 +311,8 @@ describe('Upgrader', () => {
         plaintext()()
       ],
       muxers: [
-        mplex()(),
-        yamux()()
+        yamux()(),
+        mplex()()
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -352,7 +352,7 @@ describe('Upgrader', () => {
     // Verify the MultiaddrConnection close method is called
     const inboundCloseSpy = sinon.spy(inbound, 'close')
     const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(inboundCloseSpy.callCount).to.equal(1)
     expect(outboundCloseSpy.callCount).to.equal(1)
   })
@@ -390,7 +390,7 @@ describe('Upgrader', () => {
     ])
 
     // Verify onConnectionEnd is called with the connection
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
 
     await Promise.all([
       localConnectionEndEventReceived.promise,
@@ -572,8 +572,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -595,8 +595,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -612,8 +612,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -630,10 +630,10 @@ describe('libp2p.upgrader', () => {
     const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteLibp2p.components.upgrader as DefaultUpgrader, '_onStream')
 
     const stream = await localConnection.newStream(['/echo/1.0.0'])
-    expect(stream).to.include.keys(['id', 'close', 'reset', 'stat'])
+    expect(stream).to.include.keys(['abortController', 'source', 'id', 'name'])
 
     const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
-    expect(arg0.stream).to.include.keys(['id', 'close', 'reset', 'stat'])
+    expect(arg0.stream).to.include.keys(['abortController', 'source', 'id', 'name'])
   })
 
   it('should emit connect and disconnect events', async () => {
@@ -644,8 +644,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -659,8 +659,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -688,7 +688,7 @@ describe('libp2p.upgrader', () => {
     expect(remotePeer.equals(event.detail.remotePeer)).to.equal(true)
 
     // Close and check the disconnect event
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(connectionManagerDispatchEventSpy.callCount).to.equal(2)
     ;([event] = connectionManagerDispatchEventSpy.getCall(1).args)
     expect(event).to.have.property('type', 'peer:disconnect')
@@ -705,8 +705,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -720,8 +720,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -757,7 +757,7 @@ describe('libp2p.upgrader', () => {
     expect(streamCount).to.equal(1)
 
     await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
-      .with.property('code', 'ERR_STREAM_RESET')
+      .with.property('code', 'ERR_UNDER_READ')
   })
 
   it('should limit the number of outgoing streams that can be opened using a protocol', async () => {
@@ -769,8 +769,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -784,8 +784,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()

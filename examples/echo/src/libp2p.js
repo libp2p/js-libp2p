@@ -13,8 +13,7 @@ export async function createLibp2p (_options) {
       webSockets()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+    yamux(),mplex()
     ],
     connectionEncryption: [
       noise()

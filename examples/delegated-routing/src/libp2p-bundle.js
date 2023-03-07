@@ -39,7 +39,7 @@ export default function Libp2pBundle ({ peerInfo, peerBook }) {
       webSockets()
     ],
     streamMuxers: [
-      mplex(), yamux()
+      yamux(), mplex()
     ],
     peerDiscovery: [
       wrtcstar.discovery

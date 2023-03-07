@@ -15,7 +15,7 @@ const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
 export const baseOptions: Partial<Libp2pInit> = {
   transports: [webSockets()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   connectionEncryption: [plaintext()]
 }
 

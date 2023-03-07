@@ -76,7 +76,7 @@ describe('registrar', () => {
       })
     })
 
-    afterEach(async () => await libp2p.stop())
+    afterEach(async () => { await libp2p.stop() })
 
     it('should be able to register a protocol', async () => {
       const topology = createTopology({
@@ -216,8 +216,8 @@ describe('registrar', () => {
           webSockets()
         ],
         streamMuxers: [
-          mplex(),
-          yamux()
+          yamux(),
+          mplex()
         ],
         connectionEncryption: [
           plaintext()

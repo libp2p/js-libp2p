@@ -114,7 +114,7 @@ import { yamux } from '@chainsafe/libp2p-yamux',
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex(), yamux()]
+  streamMuxers: [yamux(), mplex()]
 })
 ```
 
@@ -144,7 +144,7 @@ const node = await createLibp2p({
   },
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex(), yamux()]
+  streamMuxers: [yamux(), mplex()]
 })
 
 // start libp2p
@@ -203,7 +203,7 @@ const bootstrapMultiaddrs = [
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex(), yamux()],
+  streamMuxers: [yamux(), mplex()],
   peerDiscovery: [
     bootstrap({
       list: bootstrapMultiaddrs, // provide array of multiaddrs

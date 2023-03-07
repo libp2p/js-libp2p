@@ -14,7 +14,7 @@ import bootstrapers from './bootstrappers.js'
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     peerDiscovery: [
       bootstrap({

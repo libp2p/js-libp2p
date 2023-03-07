@@ -34,7 +34,7 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
 	  // we add the Pubsub module we want
 	  pubsub: gossipsub({ allowPublishToZeroPeers: true })

@@ -11,8 +11,7 @@ export function createBaseOptions (...overrides: Libp2pOptions[]): Libp2pOptions
       tcp()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+    yamux(),mplex()
     ],
     connectionEncryption: [
       plaintext()

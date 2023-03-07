@@ -17,7 +17,7 @@ export async function privateLibp2pNode (swarmKey) {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()], // We're only using the TCP transport for this example
-    streamMuxers: [mplex(), yamux()], // We're only using mplex muxing
+    streamMuxers: [yamux(), mplex()], // We're only using mplex muxing
     // Let's make sure to use identifying crypto in our pnet since the protector doesn't
     // care about node identity, and only the presence of private keys
     connectionEncryption: [noise()],

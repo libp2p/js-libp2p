@@ -119,8 +119,8 @@ createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    mplex(),
-    yamux()
+    yamux(),
+    mplex()
   ]
 })
 
@@ -184,7 +184,7 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
   })
 

@@ -21,7 +21,7 @@ const createNode = async (transports, addresses = []) => {
     },
     transports: transports,
     connectionEncryption: [noise()],
-    streamMuxers: [mplex(), yamux()]
+    streamMuxers: [yamux(), mplex()]
   })
 
   return node

@@ -20,7 +20,7 @@ import wrtc from 'wrtc'
       listen: ['/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct']
     },
     transports: [webRTCDirect({ wrtc })],
-    streamMuxers: [mplex(), yamux()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()]
   })
 

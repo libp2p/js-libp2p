@@ -16,8 +16,7 @@ const createNode = async () => {
       tcp()
     ],
     streamMuxers: [
-      mplex(),
-      yamux()
+    yamux(),mplex()
     ],
     connectionEncryption: [
       noise()
