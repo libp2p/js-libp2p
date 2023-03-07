@@ -1,3 +1,24 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v6.0.0...v7.0.0) (2023-03-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* service name now defaults to `_p2p._udp.local` and no
+longer uses A and AAA records -> replaced by TXT records
+
+Added random peer name option
+
+### Features
+
+* update to latest spec, added peer name, announces all multiaddrs ([#157](https://github.com/libp2p/js-libp2p-mdns/issues/157)) ([5edcc16](https://github.com/libp2p/js-libp2p-mdns/commit/5edcc16d119ebd2b644f85a29596fdcd33617bd0)), closes [#101](https://github.com/libp2p/js-libp2p-mdns/issues/101)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([28c668e](https://github.com/libp2p/js-libp2p-mdns/commit/28c668e9eee0906d4a05a27d824f1c293e702940))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([9dccd84](https://github.com/libp2p/js-libp2p-mdns/commit/9dccd84725704e2b3b6b7b2aee16829ca416904f))
+* upgrade aegir to `38.1.2`  ([#182](https://github.com/libp2p/js-libp2p-mdns/issues/182)) ([f86328c](https://github.com/libp2p/js-libp2p-mdns/commit/f86328c5cdb4c5a83ee0c941feba3b6ef8e5c016))
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v5.1.1...v6.0.0) (2023-01-06)
 
 
