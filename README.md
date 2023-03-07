@@ -24,27 +24,34 @@ $ npm i @libp2p/mdns
 
 ## Usage
 
-```JavaScript
-import { MDNS } from '@libp2p/mdns'
+```Typescript
+import { mdns } from '@libp2p/mdns'
 
-const mdns = new MDNS(options)
+const options = {
+  peerDiscovery: [
+    mdns()
+  ]
+}
 
-mdns.on('peer', (peerData) => {
-  console.log('Found a peer in the local network', peerData.id.toString(), peerData.multiaddrs)
-})
+async function start () {
+  const libp2p = await createLibp2p(options)
 
-// Broadcast for 20 seconds
-mdns.start()
-setTimeout(() => mdns.stop(), 20 * 1000)
+  libp2p.on('peer:discovery', function (peerId) {
+    console.log('found peer: ', peerId.toB58String())
+  })
+
+  await libp2p.start()
+}
+
 ```
 
 - options
-  - `peerId` - PeerId to announce
+  - `peerName` - Peer name to announce (should not be peeer id), default random string
   - `multiaddrs` - multiaddrs to announce
   - `broadcast` - (true/false) announce our presence through mDNS, default `false`
   - `interval` - query interval, default 10 \* 1000 (10 seconds)
   - `serviceTag` - name of the service announce , default 'ipfs.local\`
-  - `compat` - enable/disable compatibility with go-libp2p-mdns, default `true`
+
 
 ## MDNS messages
 

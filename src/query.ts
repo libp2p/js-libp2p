@@ -1,12 +1,9 @@
-import os from 'os'
-import { logger } from '@libp2p/logger'
-import { protocols, multiaddr } from '@multiformats/multiaddr'
-import type { Multiaddr, MultiaddrObject } from '@multiformats/multiaddr'
-import { peerIdFromString } from '@libp2p/peer-id'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { MulticastDNS, ResponsePacket, QueryPacket } from 'multicast-dns'
-import type { SrvAnswer, StringAnswer, TxtAnswer, Answer } from 'dns-packet'
+import { logger } from '@libp2p/logger'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
+import type { Answer, StringAnswer, TxtAnswer } from 'dns-packet'
+import type { MulticastDNS, QueryPacket, ResponsePacket } from 'multicast-dns'
 
 const log = logger('libp2p:mdns:query')
 
@@ -27,93 +24,60 @@ export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: numb
   return setInterval(query, interval)
 }
 
-interface Answers {
-  ptr?: StringAnswer
-  srv?: SrvAnswer
-  txt?: TxtAnswer
-  a: StringAnswer[]
-  aaaa: StringAnswer[]
-}
-
-export function gotResponse (rsp: ResponsePacket, localPeerId: PeerId, serviceTag: string): PeerInfo | undefined {
+export function gotResponse (rsp: ResponsePacket, localPeerName: string, serviceTag: string): PeerInfo | undefined {
   if (rsp.answers == null) {
     return
   }
 
-  const answers: Answers = {
-    a: [],
-    aaaa: []
-  }
+  let answerPTR: StringAnswer | undefined
+  const txtAnswers: TxtAnswer[] = []
 
   rsp.answers.forEach((answer) => {
     switch (answer.type) {
-      case 'PTR': answers.ptr = answer; break
-      case 'SRV': answers.srv = answer; break
-      case 'TXT': answers.txt = answer; break
-      case 'A': answers.a.push(answer); break
-      case 'AAAA': answers.aaaa.push(answer); break
+      case 'PTR': answerPTR = answer; break
+      case 'TXT': txtAnswers.push(answer); break
       default: break
     }
   })
 
-  if (answers.ptr == null ||
-      answers.ptr.name !== serviceTag ||
-      answers.txt == null ||
-      answers.srv == null) {
+  if (answerPTR == null ||
+    answerPTR?.name !== serviceTag ||
+    txtAnswers.length === 0 ||
+    answerPTR.data.startsWith(localPeerName)) {
     return
   }
 
-  const b58Id = answers.txt.data[0].toString()
-  const port = answers.srv.data.port
-  const multiaddrs: Multiaddr[] = []
+  try {
+    const multiaddrs: Multiaddr[] = txtAnswers
+      .flatMap((a) => a.data)
+      .filter(answerData => answerData.toString().startsWith('dnsaddr='))
+      .map((answerData) => {
+        return multiaddr(answerData.toString().substring('dnsaddr='.length))
+      })
 
-  answers.a.forEach((a) => {
-    const ma = multiaddr(`/ip4/${a.data}/tcp/${port}`)
-
-    if (!multiaddrs.some((m) => m.equals(ma))) {
-      multiaddrs.push(ma)
+    const peerId = multiaddrs[0].getPeerId()
+    if (peerId == null) {
+      throw new Error("Multiaddr doesn't contain PeerId")
     }
-  })
+    log('peer found %p', peerId)
 
-  answers.aaaa.forEach((a) => {
-    const ma = multiaddr(`/ip6/${a.data}/tcp/${port}`)
-
-    if (!multiaddrs.some((m) => m.equals(ma))) {
-      multiaddrs.push(ma)
+    return {
+      id: peerIdFromString(peerId),
+      multiaddrs,
+      protocols: []
     }
-  })
-
-  if (localPeerId.toString() === b58Id) {
-    return // replied to myself, ignore
-  }
-
-  const id = peerIdFromString(b58Id)
-
-  log('peer found %p', id)
-
-  return {
-    id,
-    multiaddrs,
-    protocols: []
+  } catch (e) {
+    log.error('failed to parse mdns response', e)
   }
 }
 
-export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, multiaddrs: Multiaddr[], serviceTag: string, broadcast: boolean): void {
+export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string, multiaddrs: Multiaddr[], serviceTag: string, broadcast: boolean): void {
   if (!broadcast) {
     log('not responding to mDNS query as broadcast mode is false')
     return
   }
 
-  const addresses: MultiaddrObject[] = multiaddrs.reduce<MultiaddrObject[]>((acc, addr) => {
-    if (addr.decapsulateCode(protocols('p2p').code).isThinWaistAddress()) {
-      acc.push(addr.toOptions())
-    }
-    return acc
-  }, [])
-
-  // Only announce TCP for now
-  if (addresses.length === 0) {
-    log('no thin waist addresses present, cannot respond to query')
+  if (multiaddrs.length === 0) {
     return
   }
 
@@ -125,41 +89,18 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerId: PeerId, 
       type: 'PTR',
       class: 'IN',
       ttl: 120,
-      data: peerId.toString() + '.' + serviceTag
+      data: peerName + '.' + serviceTag
     })
 
-    // Only announce TCP multiaddrs for now
-    const port = addresses[0].port
-
-    answers.push({
-      name: peerId.toString() + '.' + serviceTag,
-      type: 'SRV',
-      class: 'IN',
-      ttl: 120,
-      data: {
-        priority: 10,
-        weight: 1,
-        port,
-        target: os.hostname()
-      }
-    })
-
-    answers.push({
-      name: peerId.toString() + '.' + serviceTag,
-      type: 'TXT',
-      class: 'IN',
-      ttl: 120,
-      data: peerId.toString()
-    })
-
-    addresses.forEach((addr) => {
-      if ([4, 6].includes(addr.family)) {
+    multiaddrs.forEach((addr) => {
+      // spec mandates multiaddr contains peer id
+      if (addr.getPeerId() != null) {
         answers.push({
-          name: os.hostname(),
-          type: addr.family === 4 ? 'A' : 'AAAA',
+          name: peerName + '.' + serviceTag,
+          type: 'TXT',
           class: 'IN',
           ttl: 120,
-          data: addr.host
+          data: 'dnsaddr=' + addr.toString()
         })
       }
     })

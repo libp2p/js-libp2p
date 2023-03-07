@@ -26,8 +26,7 @@ describe('compliance tests', () => {
 
       discovery = mdns({
         broadcast: false,
-        port: 50001,
-        compat: true
+        port: 50001
       })({
         peerId: peerId1,
         addressManager

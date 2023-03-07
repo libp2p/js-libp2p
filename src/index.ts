@@ -2,10 +2,10 @@ import multicastDNS from 'multicast-dns'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import * as query from './query.js'
-import { GoMulticastDNS } from './compat/index.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { symbol } from '@libp2p/interface-peer-discovery'
+import { stringGen } from './utils.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 
@@ -15,11 +15,9 @@ export interface MulticastDNSInit {
   broadcast?: boolean
   interval?: number
   serviceTag?: string
+  peerName?: string
   port?: number
   ip?: string
-  compat?: boolean
-  compatQueryPeriod?: number
-  compatQueryInterval?: number
 }
 
 export interface MulticastDNSComponents {
@@ -33,33 +31,30 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
   private readonly broadcast: boolean
   private readonly interval: number
   private readonly serviceTag: string
+  private readonly peerName: string
   private readonly port: number
   private readonly ip: string
   private _queryInterval: ReturnType<typeof setInterval> | null
-  private readonly _goMdns?: GoMulticastDNS
   private readonly components: MulticastDNSComponents
 
   constructor (components: MulticastDNSComponents, init: MulticastDNSInit = {}) {
     super()
 
-    this.components = components
     this.broadcast = init.broadcast !== false
     this.interval = init.interval ?? (1e3 * 10)
-    this.serviceTag = init.serviceTag ?? 'ipfs.local'
+    this.serviceTag = init.serviceTag ?? '_p2p._udp.local'
     this.ip = init.ip ?? '224.0.0.251'
+    this.peerName = init.peerName ?? stringGen(63)
+    // 63 is dns label limit
+    if (this.peerName.length >= 64) {
+      throw new Error('Peer name should be less than 64 chars long')
+    }
     this.port = init.port ?? 5353
+    this.components = components
     this._queryInterval = null
     this._onPeer = this._onPeer.bind(this)
     this._onMdnsQuery = this._onMdnsQuery.bind(this)
     this._onMdnsResponse = this._onMdnsResponse.bind(this)
-
-    if (init.compat !== false) {
-      this._goMdns = new GoMulticastDNS(components, {
-        queryPeriod: init.compatQueryPeriod,
-        queryInterval: init.compatQueryInterval
-      })
-      this._goMdns.addEventListener('peer', this._onPeer)
-    }
   }
 
   get [symbol] (): true {
@@ -89,10 +84,6 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     this.mdns.on('response', this._onMdnsResponse)
 
     this._queryInterval = query.queryLAN(this.mdns, this.serviceTag, this.interval)
-
-    if (this._goMdns != null) {
-      await this._goMdns.start()
-    }
   }
 
   _onMdnsQuery (event: multicastDNS.QueryPacket): void {
@@ -101,14 +92,21 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     }
 
     log.trace('received incoming mDNS query')
-    query.gotQuery(event, this.mdns, this.components.peerId, this.components.addressManager.getAddresses(), this.serviceTag, this.broadcast)
+    const localPeerId = this.components.peerId
+    query.gotQuery(
+      event,
+      this.mdns,
+      this.peerName,
+      this.components.addressManager.getAddresses().map((ma) => ma.encapsulate('/p2p/' + localPeerId.toString())),
+      this.serviceTag,
+      this.broadcast)
   }
 
   _onMdnsResponse (event: multicastDNS.ResponsePacket): void {
     log.trace('received mDNS query response')
 
     try {
-      const foundPeer = query.gotResponse(event, this.components.peerId, this.serviceTag)
+      const foundPeer = query.gotResponse(event, this.peerName, this.serviceTag)
 
       if (foundPeer != null) {
         log('discovered peer in mDNS qeury response %p', foundPeer.id)
@@ -144,23 +142,19 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
 
     this.mdns.removeListener('query', this._onMdnsQuery)
     this.mdns.removeListener('response', this._onMdnsResponse)
-    this._goMdns?.removeEventListener('peer', this._onPeer)
 
     if (this._queryInterval != null) {
       clearInterval(this._queryInterval)
       this._queryInterval = null
     }
 
-    await Promise.all([
-      this._goMdns?.stop(),
-      new Promise<void>((resolve) => {
-        if (this.mdns != null) {
-          this.mdns.destroy(resolve)
-        } else {
-          resolve()
-        }
-      })
-    ])
+    await new Promise<void>((resolve) => {
+      if (this.mdns != null) {
+        this.mdns.destroy(resolve)
+      } else {
+        resolve()
+      }
+    })
 
     this.mdns = undefined
   }
@@ -172,40 +166,17 @@ export function mdns (init: MulticastDNSInit = {}): (components: MulticastDNSCom
 
 /* for reference
 
-   [ { name: 'discovery.ipfs.io.local',
+   [ { name: '_p2p._udp.local',
        type: 'PTR',
        class: 1,
        ttl: 120,
-       data: 'QmbBHw1Xx9pUpAbrVZUKTPL5Rsph5Q9GQhRvcWVBPFgGtC.discovery.ipfs.io.local' },
+       data: 'XQxZeAH6MX2n4255fzYmyUCUdhQ0DAWv.p2p._udp.local' },
 
-     { name: 'QmbBHw1Xx9pUpAbrVZUKTPL5Rsph5Q9GQhRvcWVBPFgGtC.discovery.ipfs.io.local',
-       type: 'SRV',
-       class: 1,
-       ttl: 120,
-       data: { priority: 10, weight: 1, port: 4001, target: 'lorien.local' } },
-
-     { name: 'lorien.local',
-       type: 'A',
-       class: 1,
-       ttl: 120,
-       data: '127.0.0.1' },
-
-     { name: 'lorien.local',
-       type: 'A',
-       class: 1,
-       ttl: 120,
-       data: '127.94.0.1' },
-
-     { name: 'lorien.local',
-       type: 'A',
-       class: 1,
-       ttl: 120,
-       data: '172.16.38.224' },
-
-     { name: 'QmbBHw1Xx9pUpAbrVZUKTPL5Rsph5Q9GQhRvcWVBPFgGtC.discovery.ipfs.io.local',
+     { name: 'XQxZeAH6MX2n4255fzYmyUCUdhQ0DAWv.p2p._udp.local',
        type: 'TXT',
        class: 1,
        ttl: 120,
-       data: 'QmbBHw1Xx9pUpAbrVZUKTPL5Rsph5Q9GQhRvcWVBPFgGtC' } ],
+       data: 'dnsaddr=/ip4/127.0.0.1/tcp/80/p2p/QmbBHw1Xx9pUpAbrVZUKTPL5Rsph5Q9GQhRvcWVBPFgGtC' },
+]
 
 */

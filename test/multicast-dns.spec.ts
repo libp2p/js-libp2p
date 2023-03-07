@@ -24,7 +24,6 @@ describe('MulticastDNS', () => {
   let aMultiaddrs: Multiaddr[]
   let pB: PeerId
   let bMultiaddrs: Multiaddr[]
-  let pC: PeerId
   let cMultiaddrs: Multiaddr[]
   let pD: PeerId
   let dMultiaddrs: Multiaddr[]
@@ -32,8 +31,7 @@ describe('MulticastDNS', () => {
   before(async function () {
     this.timeout(80 * 1000)
 
-    ;[pA, pB, pC, pD] = await Promise.all([
-      createEd25519PeerId(),
+    ;[pA, pB, pD] = await Promise.all([
       createEd25519PeerId(),
       createEd25519PeerId(),
       createEd25519PeerId()
@@ -67,13 +65,11 @@ describe('MulticastDNS', () => {
 
     const mdnsA = mdns({
       broadcast: false, // do not talk to ourself
-      port: 50001,
-      compat: false
+      port: 50001
     })(getComponents(pA, aMultiaddrs))
 
     const mdnsB = mdns({
-      port: 50001, // port must be the same
-      compat: false
+      port: 50001 // port must be the same
     })(getComponents(pB, bMultiaddrs))
 
     await start(mdnsA, mdnsB)
@@ -89,27 +85,24 @@ describe('MulticastDNS', () => {
     await stop(mdnsA, mdnsB)
   })
 
-  it('only announce TCP multiaddrs', async function () {
+  it('announces all multiaddresses', async function () {
     this.timeout(40 * 1000)
 
     const mdnsA = mdns({
       broadcast: false, // do not talk to ourself
-      port: 50003,
-      compat: false
+      port: 50003
     })(getComponents(pA, aMultiaddrs))
-    const mdnsC = mdns({
-      port: 50003, // port must be the same
-      compat: false
-    })(getComponents(pC, cMultiaddrs))
+    const mdnsB = mdns({
+      port: 50003 // port must be the same
+    })(getComponents(pB, cMultiaddrs))
     const mdnsD = mdns({
-      port: 50003, // port must be the same
-      compat: false
+      port: 50003 // port must be the same
     })(getComponents(pD, dMultiaddrs))
 
-    await start(mdnsA, mdnsC, mdnsD)
+    await start(mdnsA, mdnsB, mdnsD)
 
     const peers = new Map()
-    const expectedPeer = pC.toString()
+    const expectedPeer = pB.toString()
 
     const foundPeer = (evt: CustomEvent<PeerInfo>): Map<string, PeerInfo> => peers.set(evt.detail.id.toString(), evt.detail)
     mdnsA.addEventListener('peer', foundPeer)
@@ -117,50 +110,20 @@ describe('MulticastDNS', () => {
     await pWaitFor(() => peers.has(expectedPeer))
     mdnsA.removeEventListener('peer', foundPeer)
 
-    expect(peers.get(expectedPeer).multiaddrs.length).to.equal(1)
+    expect(peers.get(expectedPeer).multiaddrs.length).to.equal(3)
 
-    await stop(mdnsA, mdnsC, mdnsD)
-  })
-
-  it('announces IP6 addresses', async function () {
-    this.timeout(40 * 1000)
-
-    const mdnsA = mdns({
-      broadcast: false, // do not talk to ourself
-      port: 50001,
-      compat: false
-    })(getComponents(pA, aMultiaddrs))
-
-    const mdnsB = mdns({
-      port: 50001,
-      compat: false
-    })(getComponents(pB, bMultiaddrs))
-
-    await start(mdnsA, mdnsB)
-
-    const { detail: { id, multiaddrs } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => {
-      mdnsA.addEventListener('peer', resolve, {
-        once: true
-      })
-    })
-
-    expect(pB.toString()).to.eql(id.toString())
-    expect(multiaddrs.length).to.equal(2)
-
-    await stop(mdnsA, mdnsB)
+    await stop(mdnsA, mdnsB, mdnsD)
   })
 
   it('doesn\'t emit peers after stop', async function () {
     this.timeout(40 * 1000)
 
     const mdnsA = mdns({
-      port: 50004, // port must be the same
-      compat: false
+      port: 50004 // port must be the same
     })(getComponents(pA, aMultiaddrs))
 
     const mdnsC = mdns({
-      port: 50004,
-      compat: false
+      port: 50004
     })(getComponents(pD, dMultiaddrs))
 
     await start(mdnsA)
@@ -236,14 +199,12 @@ describe('MulticastDNS', () => {
     const mdnsA = mdns({
       broadcast: false, // do not talk to ourself
       port: 50005,
-      ip: '224.0.0.252',
-      compat: false
+      ip: '224.0.0.252'
     })(getComponents(pA, aMultiaddrs))
 
     const mdnsB = mdns({
       port: 50005, // port must be the same
-      ip: '224.0.0.252', // ip must be the same
-      compat: false
+      ip: '224.0.0.252' // ip must be the same
     })(getComponents(pB, bMultiaddrs))
 
     await start(mdnsA, mdnsB)

@@ -135,24 +135,22 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface-peer-discovery": "^1.0.1",
-    "@libp2p/interface-peer-id": "^2.0.0",
-    "@libp2p/interface-peer-info": "^1.0.3",
-    "@libp2p/interfaces": "^3.0.3",
-    "@libp2p/logger": "^2.0.1",
-    "@libp2p/peer-id": "^2.0.0",
-    "@multiformats/multiaddr": "^11.0.0",
+    "@libp2p/interface-peer-discovery": "^1.0.5",
+    "@libp2p/interface-peer-id": "^2.0.1",
+    "@libp2p/interface-peer-info": "^1.0.8",
+    "@libp2p/interfaces": "^3.3.1",
+    "@libp2p/logger": "^2.0.5",
+    "@libp2p/peer-id": "^2.0.1",
+    "@multiformats/multiaddr": "^11.0.7",
     "@types/multicast-dns": "^7.2.1",
-    "dns-packet": "^5.4.0",
-    "multicast-dns": "^7.2.0"
+    "multicast-dns": "^7.2.5",
+    "dns-packet": "^5.4.0"
   },
   "devDependencies": {
-    "@libp2p/interface-address-manager": "^2.0.0",
-    "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.0",
+    "@libp2p/interface-address-manager": "^2.0.1",
+    "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.1",
     "@libp2p/peer-id-factory": "^2.0.0",
     "aegir": "^38.1.2",
-    "delay": "^5.0.0",
-    "p-defer": "^4.0.0",
     "p-wait-for": "^5.0.0",
     "ts-sinon": "^2.0.2"
   }
