@@ -1,29 +1,31 @@
-import { Limit, Status } from './pb/index.js'
-import type { ReservationStore as IReservationStore, ReservationStatus, Reservation } from './interfaces.js'
+import { Limit, Status } from '../pb/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { PeerMap } from '@libp2p/peer-collections'
 import type { RecursivePartial } from '@libp2p/interfaces'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
+import type { RelayReservation } from '../index.js'
+
+export type ReservationStatus = Status.OK | Status.PERMISSION_DENIED | Status.RESERVATION_REFUSED
 
 export interface ReservationStoreInit {
   /*
    * maximum number of reservations allowed, default: 15
    */
-  maxReservations: number
+  maxReservations?: number
   /*
    * interval after which stale reservations are cleared, default: 300s
    */
-  reservationClearInterval: number
+  reservationClearInterval?: number
   /*
    * apply default relay limits to a new reservation, default: true
    */
-  applyDefaultLimit: boolean
+  applyDefaultLimit?: boolean
   /**
    * reservation ttl, default: 2 hours
    */
-  reservationTtl: number
+  reservationTtl?: number
   /**
    * The maximum time a relayed connection can be open for
    */
@@ -36,21 +38,24 @@ export interface ReservationStoreInit {
 
 export type ReservationStoreOptions = RecursivePartial<ReservationStoreInit>
 
-export class ReservationStore implements IReservationStore, Startable {
-  private readonly reservations = new PeerMap<Reservation>()
-  private _started = false;
+export class ReservationStore implements Startable {
+  public readonly reservations = new PeerMap<RelayReservation>()
+  private _started = false
   private interval: any
-  private readonly init: ReservationStoreInit
+  private readonly maxReservations: number
+  private readonly reservationClearInterval: number
+  private readonly applyDefaultLimit: boolean
+  private readonly reservationTtl: number
+  private readonly defaultDurationLimit: number
+  private readonly defaultDataLimit: bigint
 
-  constructor (options?: ReservationStoreOptions) {
-    this.init = {
-      maxReservations: options?.maxReservations ?? 15,
-      reservationClearInterval: options?.reservationClearInterval ?? 300 * 1000,
-      applyDefaultLimit: options?.applyDefaultLimit !== false,
-      reservationTtl: options?.reservationTtl ?? 2 * 60 * 60 * 1000,
-      defaultDurationLimit: options?.defaultDurationLimit ?? DEFAULT_DURATION_LIMIT,
-      defaultDataLimit: options?.defaultDataLimit ?? DEFAULT_DATA_LIMIT
-    }
+  constructor (options: ReservationStoreOptions = {}) {
+    this.maxReservations = options.maxReservations ?? DEFAULT_MAX_RESERVATION_STORE_SIZE
+    this.reservationClearInterval = options.reservationClearInterval ?? DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL
+    this.applyDefaultLimit = options.applyDefaultLimit !== false
+    this.reservationTtl = options.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL
+    this.defaultDurationLimit = options.defaultDurationLimit ?? DEFAULT_DURATION_LIMIT
+    this.defaultDataLimit = options.defaultDataLimit ?? DEFAULT_DATA_LIMIT
   }
 
   isStarted () {
@@ -71,7 +76,7 @@ export class ReservationStore implements IReservationStore, Startable {
           }
         })
       },
-      this.init.reservationClearInterval
+      this.reservationClearInterval
     )
   }
 
@@ -80,13 +85,13 @@ export class ReservationStore implements IReservationStore, Startable {
   }
 
   reserve (peer: PeerId, addr: Multiaddr, limit?: Limit): { status: ReservationStatus, expire?: number } {
-    if (this.reservations.size >= this.init.maxReservations && !this.reservations.has(peer)) {
+    if (this.reservations.size >= this.maxReservations && !this.reservations.has(peer)) {
       return { status: Status.RESERVATION_REFUSED }
     }
-    const expire = new Date(Date.now() + this.init.reservationTtl)
+    const expire = new Date(Date.now() + this.reservationTtl)
     let checkedLimit: Limit | undefined
-    if (this.init.applyDefaultLimit) {
-      checkedLimit = limit ?? { data: this.init.defaultDataLimit, duration: this.init.defaultDurationLimit }
+    if (this.applyDefaultLimit) {
+      checkedLimit = limit ?? { data: this.defaultDataLimit, duration: this.defaultDurationLimit }
     }
     this.reservations.set(peer, { addr, expire, limit: checkedLimit })
     return { status: Status.OK, expire: expire.getTime() }
@@ -100,7 +105,7 @@ export class ReservationStore implements IReservationStore, Startable {
     return this.reservations.has(dst)
   }
 
-  get (peer: PeerId): Reservation | undefined {
+  get (peer: PeerId): RelayReservation | undefined {
     return this.reservations.get(peer)
   }
 }

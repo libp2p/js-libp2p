@@ -5,111 +5,65 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Limit } from './pb/index.js'
 import { logger } from '@libp2p/logger'
 import type { Stream } from '@libp2p/interface-connection'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 
-const log = logger('libp2p:circuit:v2:util')
+const log = logger('libp2p:circuit-relay:utils')
 
-const doRelay = (src: Stream, dst: Stream) => {
-  queueMicrotask(() => {
-    void dst.sink(src.source).catch(err => log.error('error while relating streams:', err))
-  })
+async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: bigint): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
+  let total = 0n
 
-  queueMicrotask(() => {
-    void src.sink(dst.source).catch(err => log.error('error while relaying streams:', err))
-  })
-}
+  for await (const buf of source) {
+    const len = BigInt(buf.byteLength)
+    if (total + len > limit) {
+      // this is a safe downcast since len is guarantee to be in the range for a number
+      const remaining = Number(limit - total)
 
-export function createLimitedRelay (source: Stream, destination: Stream, limit?: Limit) {
-  // trivial case
-  if (limit == null) {
-    doRelay(source, destination)
-    return
-  }
-
-  const dataLimit = limit.data ?? 0n
-  const durationLimit = limit.duration ?? 0
-  const src = durationLimitDuplex(dataLimitDuplex(source, dataLimit), durationLimit)
-  const dst = durationLimitDuplex(dataLimitDuplex(destination, dataLimit), durationLimit)
-
-  doRelay(src, dst)
-}
-
-const dataLimitSource = (stream: Stream, limit: bigint): Stream => {
-  if (limit === 0n) {
-    return stream
-  }
-
-  const source = stream.source
-
-  stream.source = (async function * (): Source<Uint8ArrayList> {
-    let total = 0n
-
-    for await (const buf of source) {
-      const len = BigInt(buf.byteLength)
-      if (total + len > limit) {
-        // this is a safe downcast since len is guarantee to be in the range for a number
-        const remaining = Number(limit - total)
-        try {
-          if (remaining !== 0) {
-            yield buf
-          }
-        } finally {
-          stream.abort(new Error('data limit exceeded'))
+      try {
+        if (remaining !== 0) {
+          yield buf.subarray(0, remaining)
         }
-        return
+      } catch (err: any) {
+        log.error(err)
       }
 
-      yield buf
-
-      total += len
+      throw new Error('data limit exceeded')
     }
-  })()
 
-  return stream
-}
-
-const dataLimitSink = (stream: Stream, limit: bigint): Stream => {
-  if (limit === 0n) {
-    return stream
+    total += len
+    yield buf
   }
-
-  const sink = stream.sink
-
-  stream.sink = async (source: Source<Uint8ArrayList | Uint8Array>) => {
-    await sink((async function * (): Source<Uint8ArrayList | Uint8Array> {
-      let total = 0n
-
-      for await (const buf of source) {
-        const len = BigInt(buf.byteLength)
-        if (total + len > limit) {
-          // this is a safe downcast since len is guarantee to be in the range for a number
-          const remaining = Number(limit - total)
-          try {
-            if (remaining !== 0) {
-              yield buf.subarray(0, remaining)
-            }
-          } finally {
-            stream.abort(new Error('data limit exceeded'))
-          }
-          return
-        }
-
-        total += len
-        yield buf
-      }
-    })())
-  }
-
-  return stream
 }
 
-const dataLimitDuplex = (stream: Stream, limit: bigint): Stream => {
-  dataLimitSource(stream, limit)
-  dataLimitSink(stream, limit)
+const doRelay = (src: Stream, dst: Stream, limit: bigint) => {
+  queueMicrotask(() => {
+    void dst.sink(countStreamBytes(src.source, limit))
+      .catch(err => {
+        log.error('error while relaying streams src -> dst', err)
+        src.abort(err)
+        dst.abort(err)
+      })
+  })
 
-  return stream
+  queueMicrotask(() => {
+    void src.sink(countStreamBytes(dst.source, limit))
+      .catch(err => {
+        log.error('error while relaying streams dst -> src', err)
+        src.abort(err)
+        dst.abort(err)
+      })
+  })
 }
 
-const durationLimitDuplex = (stream: Stream, limit: number): Stream => {
+export function createLimitedRelay (source: Stream, destination: Stream, abortSignal: AbortSignal, limit?: Limit): void {
+  const dataLimit = limit?.data ?? BigInt(DEFAULT_DATA_LIMIT)
+  const durationLimit = limit?.duration ?? DEFAULT_DURATION_LIMIT
+  const src = durationLimitDuplex(source, durationLimit, abortSignal)
+  const dst = durationLimitDuplex(destination, durationLimit, abortSignal)
+
+  doRelay(src, dst, dataLimit)
+}
+
+const durationLimitDuplex = (stream: Stream, limit: number, abortSignal: AbortSignal): Stream => {
   if (limit === 0) {
     return stream
   }
@@ -124,6 +78,11 @@ const durationLimitDuplex = (stream: Stream, limit: number): Stream => {
   )
 
   const source = stream.source
+  const listener = () => {
+    timedOut = true
+    stream.abort(new Error('exceeded connection duration limit'))
+  }
+  abortSignal.addEventListener('abort', listener)
 
   stream.source = (async function * (): Source<Uint8ArrayList> {
     try {
@@ -135,6 +94,7 @@ const durationLimitDuplex = (stream: Stream, limit: number): Stream => {
       }
     } finally {
       clearTimeout(timeout)
+      abortSignal.removeEventListener('abort', listener)
     }
   })()
 
@@ -151,7 +111,9 @@ export async function namespaceToCid (namespace: string): Promise<CID> {
   return CID.createV0(hash)
 }
 
-/** returns number of ms beween now and expiration time */
+/**
+ * returns number of ms between now and expiration time
+ */
 export function getExpiration (expireTime: bigint): number {
   return Number(expireTime) - new Date().getTime()
 }

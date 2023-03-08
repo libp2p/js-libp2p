@@ -22,7 +22,6 @@ import type { DualDHT } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
 import type { PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { RelayConfig } from './circuit/index.js'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
 import type { ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
 import type { Transport } from '@libp2p/interface-transport'
@@ -42,6 +41,7 @@ import type { NatManagerInit } from './nat-manager.js'
 import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { CircuitRelayService } from './circuit/index.js'
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
@@ -103,7 +103,7 @@ export interface Libp2pInit {
    * If configured as a relay this node will relay certain
    * types of traffic for other peers
    */
-  relay: RelayConfig
+  relay: (components: Components) => CircuitRelayService
 
   /**
    * libp2p identify protocol options

@@ -1,788 +1,343 @@
-import type { Connection, Stream } from '@libp2p/interface-connection'
-import { mockConnection, mockDuplex, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { expect } from 'aegir/chai'
-import { pair } from 'it-pair'
-import * as sinon from 'sinon'
-import { Circuit } from '../../src/circuit/transport.js'
-import { handleHopProtocol } from '../../src/circuit/hop.js'
-import { HopMessage, Status, StopMessage } from '../../src/circuit/pb/index.js'
-import { ReservationStore } from '../../src/circuit/reservation-store.js'
-import { Components, DefaultComponents } from '../../src/components.js'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { DefaultRegistrar } from '../../src/registrar.js'
-import { DefaultUpgrader } from '../../src/upgrader.js'
-import * as peerUtils from '../utils/creators/peer.js'
-import * as Constants from '../../src/constants.js'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { multiaddr } from '@multiformats/multiaddr'
-import type { AclStatus } from '../../src/circuit/interfaces.js'
-import { pbStream } from 'it-pb-stream'
-import { pipe } from 'it-pipe'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { duplexPair } from 'it-pair/duplex'
-import all from 'it-all'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import { MemoryDatastore } from 'datastore-core'
-import { Uint8ArrayList } from 'uint8arraylist'
-import type { Duplex } from 'it-stream-types'
-import { pushable } from 'it-pushable'
-
 /* eslint-env mocha */
+/* eslint max-nested-callbacks: ['error', 5] */
 
-describe('Circuit v2 - hop protocol', function () {
+import type { Connection, Stream } from '@libp2p/interface-connection'
+import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager } from '@libp2p/interface-mocks'
+import { expect } from 'aegir/chai'
+import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit/index.js'
+import { HopMessage, Status } from '../../src/circuit/pb/index.js'
+import { MessageStream, pbStream } from 'it-pb-stream'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
+import { isStartable } from '@libp2p/interfaces/startable'
+import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC } from '../../src/circuit/constants.js'
+import { PeerMap } from '@libp2p/peer-collections'
+import { matchPeerId } from '../fixtures/match-peer-id.js'
+import type { CircuitRelayServerInit } from '../../src/circuit/server/index.js'
+import { AclStatus } from '../../src/circuit/server/index.js'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+
+interface Node {
+  peerId: PeerId
+  multiaddr: Multiaddr
+  registrar: Registrar
+  peerStore: StubbedInstance<PeerStore>
+  circuitRelayService: CircuitRelayService
+  upgrader: Upgrader
+  connectionManager: ConnectionManager
+  circuitRelayTransport: Transport
+}
+
+let peerIndex = 0
+
+describe('circuit-relay hop protocol', function () {
+  let relayNode: Node
+  let clientNode: Node
+  let targetNode: Node
+  let nodes: Node[]
+
+  async function createNode (circuitRelayInit?: CircuitRelayServerInit): Promise<Node> {
+    peerIndex++
+
+    const peerId = await createEd25519PeerId()
+    const registrar = mockRegistrar()
+    const connections = new PeerMap<Connection>()
+
+    const octet = peerIndex + 100
+    const port = peerIndex + 10000
+    const ma = multiaddr(`/ip4/${octet}.${octet}.${octet}.${octet}/tcp/${port}/p2p/${peerId.toString()}`)
+
+    const addressManager = stubInterface<AddressManager>()
+    addressManager.getAddresses.returns([
+      ma
+    ])
+    const peerStore = stubInterface<PeerStore>()
+
+    const connectionManager = mockConnectionManager({
+      peerId,
+      registrar
+    })
+
+    const upgrader = mockUpgrader({
+      registrar
+    })
+    upgrader.addEventListener('connection', (evt) => {
+      const conn = evt.detail
+      connections.set(conn.remotePeer, conn)
+    })
+    upgrader.addEventListener('connectionEnd', (evt) => {
+      const conn = evt.detail
+      connections.delete(conn.remotePeer)
+    })
+
+    const service = circuitRelayServer(circuitRelayInit)({
+      addressManager,
+      contentRouting: stubInterface<ContentRouting>(),
+      connectionManager,
+      peerId,
+      peerStore,
+      registrar
+    })
+
+    if (isStartable(service)) {
+      await service.start()
+    }
+
+    const transport = circuitRelayTransport({})({
+      addressManager,
+      connectionManager,
+      contentRouting: stubInterface<ContentRouting>(),
+      peerId,
+      peerStore,
+      registrar,
+      transportManager: stubInterface<TransportManager>(),
+      upgrader
+    })
+
+    if (isStartable(transport)) {
+      await transport.start()
+    }
+
+    const node: Node = {
+      peerId,
+      multiaddr: ma,
+      registrar,
+      circuitRelayService: service,
+      peerStore,
+      upgrader,
+      connectionManager,
+      circuitRelayTransport: transport
+    }
+
+    mockNetwork.addNode(node)
+    nodes.push(node)
+
+    return node
+  }
+
+  async function openStream (client: Node, relay: Node, protocol: string): Promise<MessageStream<HopMessage, Stream>> {
+    const connection = await client.connectionManager.openConnection(relay.peerId)
+    const clientStream = await connection.newStream(protocol)
+    return pbStream(clientStream).pb(HopMessage)
+  }
+
+  async function makeReservation (client: Node, relay: Node): Promise<{ response: HopMessage, clientPbStream: MessageStream<HopMessage> }> {
+    const clientPbStream = await openStream(client, relay, RELAY_V2_HOP_CODEC)
+
+    // send reserve message
+    clientPbStream.write({
+      type: HopMessage.Type.RESERVE
+    })
+
+    return {
+      response: await clientPbStream.read(),
+      clientPbStream
+    }
+  }
+
+  async function sendConnect (client: Node, target: Node, relay: Node): Promise<{ response: HopMessage, clientPbStream: MessageStream<HopMessage, Stream> }> {
+    const clientPbStream = await openStream(client, relay, RELAY_V2_HOP_CODEC)
+
+    // send reserve message
+    clientPbStream.write({
+      type: HopMessage.Type.CONNECT,
+      peer: {
+        id: target.peerId.toBytes(),
+        addrs: [
+          target.multiaddr.bytes
+        ]
+      }
+    })
+
+    return {
+      response: await clientPbStream.read(),
+      clientPbStream
+    }
+  }
+
+  beforeEach(async () => {
+    nodes = []
+
+    relayNode = await createNode()
+    clientNode = await createNode()
+    targetNode = await createNode()
+  })
+
+  afterEach(async () => {
+    for (const node of nodes) {
+      if (isStartable(node.circuitRelayService)) {
+        await node.circuitRelayService.stop()
+      }
+
+      if (isStartable(node.circuitRelayTransport)) {
+        await node.circuitRelayTransport.stop()
+      }
+    }
+
+    mockNetwork.reset()
+  })
+
   describe('reserve', function () {
-    let relayPeer: PeerId,
-      conn: Connection,
-      stream: Stream,
-      reservationStore: ReservationStore,
-      peerStore: PeerStore
+    it('error on unknown message type', async () => {
+      const clientPbStream = await openStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
 
-    beforeEach(async () => {
-      [, relayPeer] = await peerUtils.createPeerIds(2)
-      conn = mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
-      stream = mockStream(pair<any>())
-      reservationStore = new ReservationStore()
-      peerStore = new PersistentPeerStore(new DefaultComponents({ datastore: new MemoryDatastore() }))
-    })
-
-    this.afterEach(async function () {
-      sinon.restore()
-      await conn.close()
-    })
-
-    it('error on unknown message type', async function () {
-      const stream = mockStream(pair<any>())
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        connection: mockConnection(mockMultiaddrConnection(mockDuplex(), await peerUtils.createPeerId())),
-        stream: pbstr,
-        request: {},
-        relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        connectionManager: sinon.stub() as any,
-        peerStore
+      // wrong initial message
+      clientPbStream.write({
+        type: HopMessage.Type.STATUS,
+        status: Status.MALFORMED_MESSAGE
       })
-      const msg = await pbstr.pb(HopMessage).read()
-      expect(msg.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(msg.status).to.be.equal(Status.UNEXPECTED_MESSAGE)
+
+      const msg = await clientPbStream.read()
+      expect(msg).to.have.property('type', HopMessage.Type.STATUS)
+      expect(msg).to.have.property('status', Status.UNEXPECTED_MESSAGE)
     })
 
-    it('should reserve slot', async function () {
-      const expire: number = 123
-      const reserveStub = sinon.stub(reservationStore, 'reserve')
-      reserveStub.resolves({ status: Status.OK, expire })
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        request: {
-          type: HopMessage.Type.RESERVE
-        },
-        connection: conn,
-        stream: pbstr,
-        relayPeer,
-        connectionManager: sinon.stub() as any,
-        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
-        peerStore,
-        reservationStore
+    it('should reserve slot', async () => {
+      const { response } = await makeReservation(clientNode, relayNode)
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.OK)
+      expect(response).to.have.nested.property('reservation.expire').that.is.a('bigint')
+      expect(response).to.have.nested.property('reservation.addrs').that.satisfies((val: Uint8Array[]) => {
+        return val
+          .map(buf => multiaddr(buf))
+          .map(ma => ma.toString())
+          .includes(relayNode.multiaddr.toString())
       })
-      expect(reserveStub.calledOnceWith(conn.remotePeer, conn.remoteAddr)).to.be.true()
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.undefined()
-      expect(response.status).to.be.equal(Status.OK)
-      expect(response.reservation?.expire).to.be.equal(BigInt(expire))
-      expect(response.reservation?.voucher).to.not.be.undefined()
-      expect(response.reservation?.addrs?.length).to.be.greaterThan(0)
+      expect(response.limit).to.have.property('data').that.is.a('bigint')
+      expect(response.limit).to.have.property('duration').that.is.a('number')
+
+      const reservation = relayNode.circuitRelayService.reservations.get(clientNode.peerId)
+      expect(reservation).to.have.nested.property('limit.data', response.limit?.data)
+      expect(reservation).to.have.nested.property('limit.duration', response.limit?.duration)
     })
 
-    it('should fail to reserve slot - relayed connection', async function () {
-      const reserveStub = sinon.stub(reservationStore, 'reserve')
-      const connStub = sinon.stub(conn, 'remoteAddr')
-      connStub.value(multiaddr('/ip4/127.0.0.1/tcp/1234/p2p-circuit'))
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        request: {
-          type: HopMessage.Type.RESERVE
-        },
-        connection: conn,
-        stream: pbstr,
-        relayPeer,
-        connectionManager: sinon.stub() as any,
-        peerStore,
-        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
-        reservationStore
-      })
-      expect(reserveStub.notCalled).to.be.true()
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.undefined()
-      expect(response.status).to.be.equal(Status.PERMISSION_DENIED)
+    it('should fail to reserve slot - acl denied', async () => {
+      // @ts-expect-error private field
+      relayNode.circuitRelayService.acl = {
+        allowReserve: async () => await Promise.resolve(false),
+        allowConnect: async () => await Promise.resolve(true)
+      }
+
+      const { response } = await makeReservation(clientNode, relayNode)
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.PERMISSION_DENIED)
+
+      expect(relayNode.circuitRelayService.reservations.get(clientNode.peerId)).to.be.undefined()
     })
 
-    it('should fail to reserve slot - acl denied', async function () {
-      const reserveStub = sinon.stub(reservationStore, 'reserve')
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        request: {
-          type: HopMessage.Type.RESERVE
-        },
-        connection: conn,
-        stream: pbstr,
-        relayPeer,
-        connectionManager: sinon.stub() as any,
-        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
-        peerStore,
-        reservationStore,
-        acl: { allowReserve: async function () { return false }, allowConnect: sinon.stub() as any }
-      })
-      expect(reserveStub.notCalled).to.be.true()
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.undefined()
-      expect(response.status).to.be.equal(Status.PERMISSION_DENIED)
+    it('should fail to reserve slot - resource exceeded', async () => {
+      // fill all the available reservation slots
+      for (let i = 0; i < DEFAULT_MAX_RESERVATION_STORE_SIZE; i++) {
+        const peer = await createNode()
+        const { response } = await makeReservation(peer, relayNode)
+        expect(response).to.have.property('type', HopMessage.Type.STATUS)
+        expect(response).to.have.property('status', Status.OK)
+      }
+
+      // next reservation should fail
+      const { response } = await makeReservation(clientNode, relayNode)
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.RESERVATION_REFUSED)
+
+      expect(relayNode.circuitRelayService.reservations.get(clientNode.peerId)).to.be.undefined()
     })
 
-    it('should fail to reserve slot - resource exceeded', async function () {
-      const reserveStub = sinon.stub(reservationStore, 'reserve')
-      reserveStub.resolves({ status: Status.RESERVATION_REFUSED })
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        request: {
-          type: HopMessage.Type.RESERVE
-        },
-        connection: conn,
-        stream: pbstr,
-        relayPeer,
-        connectionManager: sinon.stub() as any,
-        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
-        peerStore,
-        reservationStore
-      })
-      expect(reserveStub.calledOnce).to.be.true()
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.undefined()
-      expect(response.status).to.be.equal(Status.RESERVATION_REFUSED)
+    it('should refresh previous reservation when store is full', async () => {
+      const peers: Node[] = []
+
+      // fill all the available reservation slots
+      for (let i = 0; i < DEFAULT_MAX_RESERVATION_STORE_SIZE; i++) {
+        const peer = await createNode()
+        peers.push(peer)
+
+        const { response } = await makeReservation(peer, relayNode)
+        expect(response).to.have.property('type', HopMessage.Type.STATUS)
+        expect(response).to.have.property('status', Status.OK)
+      }
+
+      // next reservation should fail
+      const { response: failureResponse } = await makeReservation(clientNode, relayNode)
+      expect(failureResponse).to.have.property('type', HopMessage.Type.STATUS)
+      expect(failureResponse).to.have.property('status', Status.RESERVATION_REFUSED)
+      expect(relayNode.circuitRelayService.reservations.get(clientNode.peerId)).to.be.undefined()
+
+      // should be able to refresh older reservation
+      const { response: successResponse } = await makeReservation(peers[0], relayNode)
+      expect(successResponse).to.have.property('type', HopMessage.Type.STATUS)
+      expect(successResponse).to.have.property('status', Status.OK)
+      expect(relayNode.circuitRelayService.reservations.get(peers[0].peerId)).to.be.ok()
     })
 
-    it('should fail to reserve slot - failed to write response', async function () {
-      const reserveStub = sinon.stub(reservationStore, 'reserve')
-      const removeReservationStub = sinon.stub(reservationStore, 'removeReservation')
-      reserveStub.resolves({ status: Status.OK, expire: 123 })
-      removeReservationStub.resolves()
-      const pbstr = pbStream(stream)
-      const backup = pbstr.write
-      pbstr.write = function () { throw new Error('connection reset') }
-      await handleHopProtocol({
-        request: {
-          type: HopMessage.Type.RESERVE
-        },
-        connection: conn,
-        stream: pbstr,
-        relayPeer,
-        connectionManager: sinon.stub() as any,
-        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
-        peerStore,
-        reservationStore
-      })
-      expect(reserveStub.calledOnce).to.be.true()
-      expect(removeReservationStub.calledOnce).to.be.true()
-      pbstr.write = backup
-    })
+    it('should tag peer making reservation', async () => {
+      const { response } = await makeReservation(clientNode, relayNode)
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.OK)
 
-    it('should tag peer', async () => {
-      const expire: number = 123
-      const reserveStub = sinon.stub(reservationStore, 'reserve')
-      reserveStub.resolves({ status: Status.OK, expire })
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        request: {
-          type: HopMessage.Type.RESERVE
-        },
-        connection: conn,
-        stream: pbstr,
-        relayPeer,
-        connectionManager: sinon.stub() as any,
-        relayAddrs: [multiaddr('/ip4/127.0.0.1/udp/1234')],
-        peerStore,
-        reservationStore
-      })
-      expect(reserveStub.calledOnceWith(conn.remotePeer, conn.remoteAddr)).to.be.true()
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.limit).to.be.undefined()
-      expect(response.status).to.be.equal(Status.OK)
-      expect(response.reservation?.expire).to.be.equal(BigInt(expire))
-      expect(response.reservation?.voucher).to.not.be.undefined()
-      expect(response.reservation?.addrs?.length).to.be.greaterThan(0)
-
-      const tags = await peerStore.getTags(relayPeer)
-      expect(tags).length(1)
-      expect(tags[0].value).equal(1)
+      expect(relayNode.peerStore.tagPeer.calledWith(matchPeerId(clientNode.peerId), RELAY_SOURCE_TAG)).to.be.true()
     })
   })
 
-  describe('connect', function () {
-    let relayPeer: PeerId,
-      dstPeer: PeerId,
-      conn: Connection,
-      stream: Stream,
-      reservationStore: ReservationStore,
-      circuit: Circuit,
-      components: Components
+  describe('connect', () => {
+    it('should connect successfully', async () => {
+      // both peers make a reservation on the relay
+      await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
+      await expect(makeReservation(targetNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
 
-    beforeEach(async () => {
-      [, relayPeer, dstPeer] = await peerUtils.createPeerIds(3)
-      conn = mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
-      stream = mockStream(pair<any>())
-      reservationStore = new ReservationStore()
-      // components
-      components = new DefaultComponents({ datastore: new MemoryDatastore() })
-      components.connectionManager = new DefaultConnectionManager(components,
-        {
-          maxConnections: 300,
-          minConnections: 50,
-          autoDial: true,
-          autoDialInterval: 10000,
-          maxParallelDials: Constants.MAX_PARALLEL_DIALS,
-          maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
-          dialTimeout: Constants.DIAL_TIMEOUT,
-          inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
-          resolvers: {
-            dnsaddr: dnsaddrResolver
-          },
-          addressSorter: publicAddressesFirst
-        }
-      )
-      components.peerStore = new PersistentPeerStore(components)
-      components.registrar = new DefaultRegistrar(components)
-      components.upgrader = new DefaultUpgrader(components, {
-        connectionEncryption: [],
-        muxers: [],
-        inboundUpgradeTimeout: 10000
-      })
-
-      circuit = new Circuit(components, {
-        enabled: true,
-        advertise: {
-          enabled: false
-        },
-        hop: {
-          enabled: true,
-          timeout: 30000
-        },
-        reservationManager: {
-          enabled: false,
-          maxReservations: 2
-        }
-      })
+      // client peer sends CONNECT to target peer
+      const { response } = await sendConnect(clientNode, targetNode, relayNode)
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.OK)
     })
 
-    this.afterEach(async function () {
-      await conn.close()
-    })
+    it('should fail to connect - invalid request', async () => {
+      // both peers make a reservation on the relay
+      await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
+      await expect(makeReservation(targetNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
 
-    it('should succeed to connect', async function () {
-      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
-      const getReservationStub = sinon.stub(reservationStore, 'get')
-      hasReservationStub.resolves(true)
-      getReservationStub.resolves({ expire: new Date(Date.now() + 2 * 60 * 1000), addr: multiaddr('/ip4/0.0.0.0') })
-      const dstConn = mockConnection(
-        mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
-      )
-      const streamStub = sinon.stub(dstConn, 'newStream')
-      const dstStream = mockStream(pair<any>())
-      streamStub.resolves(dstStream)
-      const dstStreamHandler = pbStream(dstStream)
-      dstStreamHandler.pb(StopMessage).write({
-        type: StopMessage.Type.STATUS,
-        status: Status.OK
+      const clientPbStream = await openStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
+      clientPbStream.write({
+        type: HopMessage.Type.CONNECT,
+        // @ts-expect-error {} is missing the following properties from peer: id, addrs
+        peer: {}
       })
-      const pbstr = pbStream(stream)
-      const stub = sinon.stub(components.connectionManager, 'getConnections')
-      stub.returns([dstConn])
-      await handleHopProtocol({
-        connection: conn,
-        stream: pbstr,
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: components.peerStore,
-        connectionManager: components.connectionManager
-      })
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.OK)
-    })
 
-    it('should fail to connect - invalid request', async function () {
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        connection: conn,
-        stream: pbstr,
-        request: {
-          type: HopMessage.Type.CONNECT,
-          // @ts-expect-error {} is missing the following properties from peer: id, addrs
-          peer: {}
-        },
-        reservationStore,
-        circuit
-      })
-      const response = await pbstr.pb(HopMessage).read()
+      const response = await clientPbStream.read()
       expect(response.type).to.be.equal(HopMessage.Type.STATUS)
       expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
     })
 
-    it('should failed to connect - acl denied', async function () {
-      const pbstr = pbStream(stream)
-      const acl = {
-        allowConnect: async () => await Promise.resolve(Status.PERMISSION_DENIED as AclStatus),
-        allowReserve: async () => await Promise.resolve(false)
+    it('should failed to connect - acl denied', async () => {
+      // @ts-expect-error private field
+      relayNode.circuitRelayService.acl = {
+        allowReserve: async () => await Promise.resolve(true),
+        allowConnect: async () => await Promise.resolve(AclStatus.PERMISSION_DENIED)
       }
-      await handleHopProtocol({
-        connection: conn,
-        stream: pbstr,
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: components.peerStore,
-        connectionManager: components.connectionManager,
-        acl
-      })
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.PERMISSION_DENIED)
+
+      // both peers make a reservation on the relay
+      await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
+      await expect(makeReservation(targetNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
+
+      // client peer sends CONNECT to target peer
+      const { response } = await sendConnect(clientNode, targetNode, relayNode)
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.PERMISSION_DENIED)
     })
 
-    it('should fail to connect - no reservation', async function () {
-      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
-      hasReservationStub.resolves(false)
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        connection: conn,
-        stream: pbstr,
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: sinon.stub() as any,
-        connectionManager: components.connectionManager
-      })
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.NO_RESERVATION)
-    })
+    it('should fail to connect - no connection', async () => {
+      // target peer has no reservation on the relay
+      await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
 
-    it('should fail to connect - no connection', async function () {
-      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
-      hasReservationStub.resolves(true)
-      const stub = sinon.stub(components.connectionManager, 'getConnections')
-      stub.returns([])
-      const pbstr = pbStream(stream)
-      await handleHopProtocol({
-        connection: conn,
-        stream: pbstr,
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: sinon.stub() as any,
-        connectionManager: components.connectionManager
-      })
-      const response = await pbstr.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.NO_RESERVATION)
-      expect(stub.calledOnce).to.be.true()
-    })
-  })
-
-  describe('connection limits', () => {
-    let relayPeer: PeerId,
-      dstPeer: PeerId,
-      conn: Connection,
-      reservationStore: ReservationStore,
-      components: Components
-
-    beforeEach(async () => {
-      [, relayPeer, dstPeer] = await peerUtils.createPeerIds(3)
-      conn = mockConnection(mockMultiaddrConnection(mockDuplex(), relayPeer))
-      reservationStore = new ReservationStore()
-      // components
-      components = new DefaultComponents({ datastore: new MemoryDatastore() })
-      components.connectionManager = new DefaultConnectionManager(components,
-
-        {
-          maxConnections: 300,
-          minConnections: 50,
-          autoDial: true,
-          autoDialInterval: 10000,
-          maxParallelDials: Constants.MAX_PARALLEL_DIALS,
-          maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
-          dialTimeout: Constants.DIAL_TIMEOUT,
-          inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
-          resolvers: {
-            dnsaddr: dnsaddrResolver
-          },
-          addressSorter: publicAddressesFirst
-        }
-      )
-      components.peerStore = new PersistentPeerStore(components)
-      components.registrar = new DefaultRegistrar(components)
-      components.upgrader = new DefaultUpgrader(components, {
-        connectionEncryption: [],
-        muxers: [],
-        inboundUpgradeTimeout: 10000
-      })
-    })
-
-    it('should connect - data limit - src to dest', async () => {
-      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
-      const getReservationStub = sinon.stub(reservationStore, 'get')
-      hasReservationStub.resolves(true)
-      getReservationStub.resolves({
-        expire: new Date(Date.now() + 2 * 60 * 1000),
-        addr: multiaddr('/ip4/0.0.0.0'),
-        // set limit
-        limit: {
-          data: BigInt(5),
-          duration: 0
-        }
-      })
-      const dstConn = mockConnection(
-        mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
-      )
-      const [dstServer, dstClient] = duplexPair<any>()
-      const [srcServer, srcClient] = duplexPair<any>()
-
-      // resolve the destination stream for the server
-      const dstStream = mockStream(dstServer)
-      const dstStreamAbortStub = sinon.stub(dstStream, 'abort')
-      const streamStub = sinon.stub(dstConn, 'newStream')
-      streamStub.resolves(dstStream)
-
-      const stub = sinon.stub(components.connectionManager, 'getConnections')
-      stub.returns([dstConn])
-      const srcServerStream = mockStream(srcServer)
-      const srcServerAbort = sinon.spy(srcServerStream, 'abort')
-      const handleHop = expect(handleHopProtocol({
-        connection: conn,
-        stream: pbStream(srcServerStream),
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: components.peerStore,
-        connectionManager: components.connectionManager
-      })).to.eventually.fulfilled()
-
-      const dstClientPbStream = pbStream(dstClient)
-      const stopConnectRequest = await dstClientPbStream.pb(StopMessage).read()
-      expect(stopConnectRequest.type).to.eq(StopMessage.Type.CONNECT)
-      // write response
-      dstClientPbStream.pb(StopMessage).write({
-        type: StopMessage.Type.STATUS,
-        status: Status.OK
-      })
-
-      await handleHop
-      const srcClientPbStream = pbStream(srcClient)
-      const response = await srcClientPbStream.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.OK)
-
-      const sourceStream = srcClientPbStream.unwrap()
-      const destStream = dstClientPbStream.unwrap()
-
-      const sender = pushable()
-      void pipe(sender, sourceStream)
-      // source to dest, write 4 bytes
-      sender.push(uint8arrayFromString('0123'))
-      // source to dest, exceed stream limit
-      sender.push(uint8arrayFromString('extra'))
-      const data = await all(destStream.source)
-      const sum = data.reduce((prev: number, cur: Uint8ArrayList) => prev + cur.length, 0)
-      expect(sum).eql(5)
-      expect(dstStreamAbortStub.callCount).to.equal(1)
-      expect(srcServerAbort.callCount).to.equal(1)
-    })
-
-    it('should connect - data limit - dest to src', async () => {
-      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
-      const getReservationStub = sinon.stub(reservationStore, 'get')
-      hasReservationStub.resolves(true)
-      getReservationStub.resolves({
-        expire: new Date(Date.now() + 2 * 60 * 1000),
-        addr: multiaddr('/ip4/0.0.0.0'),
-        // set limit
-        limit: {
-          data: BigInt(5),
-          duration: 0
-        }
-      })
-      const dstConn = mockConnection(
-        mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
-      )
-      const [dstServer, dstClient] = duplexPair<any>()
-      const [srcServer, srcClient] = duplexPair<any>()
-
-      // resolve the destination stream for the server
-      const streamStub = sinon.stub(dstConn, 'newStream')
-      const dstServerStream = mockStream(dstServer)
-      const dstServerStreamAbortStub = sinon.spy(dstServerStream, 'abort')
-      streamStub.resolves(dstServerStream)
-
-      const stub = sinon.stub(components.connectionManager, 'getConnections')
-      stub.returns([dstConn])
-
-      // source stream on the server
-      const srcServerStream = mockStream(srcServer)
-      const srcServerStreamAbortStub = sinon.stub(srcServerStream, 'abort')
-      const handleHop = expect(handleHopProtocol({
-        connection: conn,
-        stream: pbStream(srcServerStream),
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: components.peerStore,
-        connectionManager: components.connectionManager
-      })).to.eventually.fulfilled()
-
-      const dstClientPbStream = pbStream(dstClient)
-      const stopConnectRequest = await dstClientPbStream.pb(StopMessage).read()
-      expect(stopConnectRequest.type).to.eq(StopMessage.Type.CONNECT)
-      // write response
-      dstClientPbStream.pb(StopMessage).write({
-        type: StopMessage.Type.STATUS,
-        status: Status.OK
-      })
-
-      await handleHop
-      const srcClientPbStream = pbStream(srcClient)
-      const response = await srcClientPbStream.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.OK)
-
-      const sourceStream = srcClientPbStream.unwrap()
-      const destStream = dstClientPbStream.unwrap()
-
-      const sender = pushable()
-      void pipe(sender, destStream)
-      // dest to source, write 4 bytes
-      sender.push(uint8arrayFromString('0123'))
-      // dest to source, exceed stream limit
-      sender.push(uint8arrayFromString('extra'))
-      const data = await all(sourceStream.source)
-      const sum = data.reduce((prev: number, cur: Uint8ArrayList) => prev + cur.length, 0)
-      expect(sum).equal(5)
-      expect(dstServerStreamAbortStub.callCount).to.equal(1)
-      expect(srcServerStreamAbortStub.callCount).to.equal(1)
-    })
-
-    it('should connect - duration limit - dest to src', async () => {
-      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
-      const getReservationStub = sinon.stub(reservationStore, 'get')
-      hasReservationStub.resolves(true)
-      getReservationStub.resolves({
-        expire: new Date(Date.now() + 2 * 60 * 1000),
-        addr: multiaddr('/ip4/0.0.0.0'),
-        // set limit
-        limit: {
-          // 500 ms duration limit
-          duration: 500
-        }
-      })
-      const dstConn = mockConnection(
-        mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
-      )
-      const [dstServer, dstClient] = duplexPair<any>()
-      const [srcServer, srcClient] = duplexPair<any>()
-
-      // resolve the destination stream for the server
-      const streamStub = sinon.stub(dstConn, 'newStream')
-      const dstServerStream = mockStream(dstServer)
-      streamStub.resolves(dstServerStream)
-
-      const dstAbortStub = sinon.stub(dstServerStream, 'abort')
-
-      const stub = sinon.stub(components.connectionManager, 'getConnections')
-      stub.returns([dstConn])
-
-      const srcServerStream = mockStream(srcServer)
-      const srcServerAbortStub = sinon.stub(srcServerStream, 'abort')
-      const handleHop = expect(handleHopProtocol({
-        connection: conn,
-        stream: pbStream(srcServerStream),
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: components.peerStore,
-        connectionManager: components.connectionManager
-      })).to.eventually.fulfilled()
-
-      const dstClientPbStream = pbStream(dstClient)
-      const stopConnectRequest = await dstClientPbStream.pb(StopMessage).read()
-      expect(stopConnectRequest.type).to.eq(StopMessage.Type.CONNECT)
-      // write response
-      dstClientPbStream.pb(StopMessage).write({
-        type: StopMessage.Type.STATUS,
-        status: Status.OK
-      })
-
-      await handleHop
-      const srcClientPbStream = pbStream(srcClient)
-      const response = await srcClientPbStream.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.OK)
-
-      const sourceStream = srcClientPbStream.unwrap() as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
-      const destStream = dstClientPbStream.unwrap()
-
-      const periodicSender = (period: number, count: number) => async function * () {
-        const data = new Uint8ArrayList(new Uint8Array([0, 0, 0, 0]))
-        while (count > 0) {
-          await new Promise((resolve) => setTimeout(resolve, period))
-          yield data
-          count--
-        }
-      }
-      // dest to source, write 4 messages
-      void pipe(periodicSender(200, 4), destStream)
-
-      const received = await all(sourceStream.source)
-      expect(received.reduce((p, c) => p + c.length, 0)).to.equal(8)
-      expect(dstAbortStub.callCount).to.equal(1)
-      expect(srcServerAbortStub.callCount).to.equal(1)
-    })
-
-    it('should connect - duration limit - src to dest', async () => {
-      const hasReservationStub = sinon.stub(reservationStore, 'hasReservation')
-      const getReservationStub = sinon.stub(reservationStore, 'get')
-      hasReservationStub.resolves(true)
-      getReservationStub.resolves({
-        expire: new Date(Date.now() + 2 * 60 * 1000),
-        addr: multiaddr('/ip4/0.0.0.0'),
-        // set limit
-        limit: {
-          // 500 ms duration limit
-          duration: 500
-        }
-      })
-      const dstConn = mockConnection(
-        mockMultiaddrConnection(pair<Uint8Array>(), dstPeer)
-      )
-      const [dstServer, dstClient] = duplexPair<any>()
-      const [srcServer, srcClient] = duplexPair<any>()
-
-      // resolve the destination stream for the server
-      const streamStub = sinon.stub(dstConn, 'newStream')
-      const dstServerStream = mockStream(dstServer)
-      const dstServerAbortStub = sinon.stub(dstServerStream, 'abort')
-      streamStub.resolves(dstServerStream)
-
-      const stub = sinon.stub(components.connectionManager, 'getConnections')
-      stub.returns([dstConn])
-      const srcServerStream = mockStream(srcServer)
-      const srcAbortStub = sinon.stub(srcServerStream, 'abort')
-      const handleHop = expect(handleHopProtocol({
-        connection: conn,
-        stream: pbStream(srcServerStream),
-        request: {
-          type: HopMessage.Type.CONNECT,
-          peer: {
-            id: dstPeer.toBytes(),
-            addrs: []
-          }
-        },
-        relayPeer: relayPeer,
-        relayAddrs: [],
-        reservationStore,
-        peerStore: components.peerStore,
-        connectionManager: components.connectionManager
-      })).to.eventually.fulfilled()
-
-      const dstClientPbStream = pbStream(dstClient)
-      const stopConnectRequest = await dstClientPbStream.pb(StopMessage).read()
-      expect(stopConnectRequest.type).to.eq(StopMessage.Type.CONNECT)
-      // write response
-      dstClientPbStream.pb(StopMessage).write({
-        type: StopMessage.Type.STATUS,
-        status: Status.OK
-      })
-
-      await handleHop
-      const srcClientPbStream = pbStream(srcClient)
-      const response = await srcClientPbStream.pb(HopMessage).read()
-      expect(response.type).to.be.equal(HopMessage.Type.STATUS)
-      expect(response.status).to.be.equal(Status.OK)
-
-      const sourceStream = srcClientPbStream.unwrap() as Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
-      const destStream = dstClientPbStream.unwrap()
-
-      const periodicSender = (period: number, count: number) => async function * () {
-        const data = new Uint8ArrayList(new Uint8Array([0, 0, 0, 0]))
-        while (count > 0) {
-          await new Promise((resolve) => setTimeout(resolve, period))
-          yield data
-          count--
-        }
-      }
-      // dest to source, write 4 messages
-      void pipe(periodicSender(200, 4), sourceStream)
-
-      const received = await all(destStream.source)
-      const sum = received.reduce((prev: number, cur: Uint8ArrayList) => prev + cur.length, 0)
-      expect(sum).equals(8)
-      expect(srcAbortStub.callCount).to.equal(1)
-      expect(dstServerAbortStub.callCount).to.equal(1)
+      // client peer sends CONNECT to target peer
+      const { response } = await sendConnect(clientNode, targetNode, relayNode)
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.NO_RESERVATION)
     })
   })
 })
