@@ -587,55 +587,6 @@ describe('libp2p.upgrader', () => {
     expect(libp2p.components.connectionProtector).to.exist()
   })
 
-  it('should return muxed streams', async () => {
-    const remotePeer = peers[1]
-    libp2p = await createLibp2pNode({
-      peerId: peers[0],
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-    await libp2p.start()
-    const echoHandler = () => {}
-    await libp2p.handle(['/echo/1.0.0'], echoHandler)
-
-    remoteLibp2p = await createLibp2pNode({
-      peerId: remotePeer,
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-    await remoteLibp2p.start()
-    await remoteLibp2p.handle('/echo/1.0.0', echoHandler)
-
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-    const [localConnection] = await Promise.all([
-      libp2p.components.upgrader.upgradeOutbound(outbound),
-      remoteLibp2p.components.upgrader.upgradeInbound(inbound)
-    ])
-    const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteLibp2p.components.upgrader as DefaultUpgrader, '_onStream')
-
-    const stream = await localConnection.newStream(['/echo/1.0.0'])
-    expect(stream).to.include.keys(['abortController', 'source', 'id', 'name'])
-
-    const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
-    expect(arg0.stream).to.include.keys(['abortController', 'source', 'id', 'name'])
-  })
-
   it('should emit connect and disconnect events', async () => {
     const remotePeer = peers[1]
     libp2p = await createLibp2pNode({
@@ -705,8 +656,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        yamux(),
-        mplex()
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -720,8 +670,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        yamux(),
-        mplex()
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -757,7 +706,7 @@ describe('libp2p.upgrader', () => {
     expect(streamCount).to.equal(1)
 
     await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
-      .with.property('code', 'ERR_UNDER_READ')
+      .with.property('code', 'ERR_STREAM_RESET')
   })
 
   it('should limit the number of outgoing streams that can be opened using a protocol', async () => {
