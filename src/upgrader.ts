@@ -416,7 +416,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         },
         // Run anytime a stream closes
         onStreamEnd: muxedStream => {
-          connection?.removeStream(muxedStream.id)
+          connection.removeStream(muxedStream.id)
         }
       })
 

@@ -130,13 +130,18 @@ export class ConnectionImpl implements Connection {
    */
   addStream (stream: Stream) {
     stream.stat.direction = 'inbound'
+    this.streams.push(stream)
   }
 
   /**
    * Remove stream registry after it is closed
    */
   removeStream (id: string) {
-    this.streams.splice(this.streams.findIndex(s => s.id === id), 1)
+    const indexToRemove = this.streams.findIndex(s => s.id === id)
+    if (indexToRemove === -1) {
+      return
+    }
+    this.streams.splice(indexToRemove, 1)
   }
 
   /**

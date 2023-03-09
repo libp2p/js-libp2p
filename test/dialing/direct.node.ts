@@ -335,6 +335,62 @@ describe('libp2p.dialer (direct, TCP)', () => {
     expect(dialerDialSpy.callCount).to.be.greaterThan(0)
   })
 
+  it('should remove a stream from the connection when it closes', async () => {
+    libp2p = await createLibp2pNode({
+      peerId,
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        mplex()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    await libp2p.start()
+
+    await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
+    const connection = await libp2p.dial(remotePeerId)
+
+    // Create local to remote streams
+    const stream = await connection.newStream('/echo/1.0.0')
+
+    connection.addStream(stream)
+    expect(connection.streams).to.include(stream)
+
+    connection.removeStream(stream.id)
+    expect(connection.streams).to.not.include(stream.id)
+  })
+
+  it('should only close an existing stream', async () => {
+    libp2p = await createLibp2pNode({
+      peerId,
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        mplex()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    await libp2p.start()
+
+    await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
+    const connection = await libp2p.dial(remotePeerId)
+
+    // Create local to remote streams
+    const stream = await connection.newStream('/echo/1.0.0')
+    connection.addStream(stream)
+    connection.removeStream('non-existent-stream-id')
+
+    expect(connection.streams).to.include(stream)
+  })
+
   it('should close all streams when the connection closes', async () => {
     libp2p = await createLibp2pNode({
       peerId,
