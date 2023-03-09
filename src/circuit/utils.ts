@@ -6,17 +6,19 @@ import type { Limit } from './pb/index.js'
 import { logger } from '@libp2p/logger'
 import type { Stream } from '@libp2p/interface-connection'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
+import { abortableSource } from 'abortable-iterator'
+import anySignal from 'any-signal'
 
 const log = logger('libp2p:circuit-relay:utils')
 
-async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: bigint): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
-  let total = 0n
-
+async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
   for await (const buf of source) {
     const len = BigInt(buf.byteLength)
-    if (total + len > limit) {
+
+    if ((limit.remaining - len) < 0) {
       // this is a safe downcast since len is guarantee to be in the range for a number
-      const remaining = Number(limit - total)
+      const remaining = Number(limit.remaining)
+      limit.remaining = 0n
 
       try {
         if (remaining !== 0) {
@@ -29,27 +31,63 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
       throw new Error('data limit exceeded')
     }
 
-    total += len
+    limit.remaining -= len
     yield buf
   }
 }
 
-const doRelay = (src: Stream, dst: Stream, limit: bigint) => {
+const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Required<Limit>): void => {
+  function abortStreams (err: Error) {
+    src.abort(err)
+    dst.abort(err)
+    clearTimeout(timeout)
+  }
+
+  const abortController = new AbortController()
+  const signal = anySignal([abortSignal, abortController.signal])
+
+  const timeout = setTimeout(() => {
+    abortController.abort()
+  }, limit.duration)
+
+  let srcDstFinished = false
+  let dstSrcFinished = false
+
+  const dataLimit = {
+    remaining: limit.data
+  }
+
   queueMicrotask(() => {
-    void dst.sink(countStreamBytes(src.source, limit))
+    void dst.sink(countStreamBytes(abortableSource(src.source, signal, {
+      abortMessage: 'duration limit exceeded'
+    }), dataLimit))
       .catch(err => {
         log.error('error while relaying streams src -> dst', err)
-        src.abort(err)
-        dst.abort(err)
+        abortStreams(err)
+      })
+      .finally(() => {
+        srcDstFinished = true
+
+        if (dstSrcFinished) {
+          clearTimeout(timeout)
+        }
       })
   })
 
   queueMicrotask(() => {
-    void src.sink(countStreamBytes(dst.source, limit))
+    void src.sink(countStreamBytes(abortableSource(dst.source, signal, {
+      abortMessage: 'duration limit exceeded'
+    }), dataLimit))
       .catch(err => {
         log.error('error while relaying streams dst -> src', err)
-        src.abort(err)
-        dst.abort(err)
+        abortStreams(err)
+      })
+      .finally(() => {
+        dstSrcFinished = true
+
+        if (srcDstFinished) {
+          clearTimeout(timeout)
+        }
       })
   })
 }
@@ -57,48 +95,11 @@ const doRelay = (src: Stream, dst: Stream, limit: bigint) => {
 export function createLimitedRelay (source: Stream, destination: Stream, abortSignal: AbortSignal, limit?: Limit): void {
   const dataLimit = limit?.data ?? BigInt(DEFAULT_DATA_LIMIT)
   const durationLimit = limit?.duration ?? DEFAULT_DURATION_LIMIT
-  const src = durationLimitDuplex(source, durationLimit, abortSignal)
-  const dst = durationLimitDuplex(destination, durationLimit, abortSignal)
 
-  doRelay(src, dst, dataLimit)
-}
-
-const durationLimitDuplex = (stream: Stream, limit: number, abortSignal: AbortSignal): Stream => {
-  if (limit === 0) {
-    return stream
-  }
-
-  let timedOut = false
-  const timeout = setTimeout(
-    () => {
-      timedOut = true
-      stream.abort(new Error('exceeded connection duration limit'))
-    },
-    limit
-  )
-
-  const source = stream.source
-  const listener = () => {
-    timedOut = true
-    stream.abort(new Error('exceeded connection duration limit'))
-  }
-  abortSignal.addEventListener('abort', listener)
-
-  stream.source = (async function * (): Source<Uint8ArrayList> {
-    try {
-      for await (const buf of source) {
-        if (timedOut) {
-          return
-        }
-        yield buf
-      }
-    } finally {
-      clearTimeout(timeout)
-      abortSignal.removeEventListener('abort', listener)
-    }
-  })()
-
-  return stream
+  doRelay(source, destination, abortSignal, {
+    data: dataLimit,
+    duration: durationLimit
+  })
 }
 
 /**

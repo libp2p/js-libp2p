@@ -58,11 +58,11 @@ export class ReservationStore implements Startable {
     this.defaultDataLimit = options.defaultDataLimit ?? DEFAULT_DATA_LIMIT
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this._started
   }
 
-  start () {
+  start (): void {
     if (this._started) {
       return
     }
@@ -80,7 +80,7 @@ export class ReservationStore implements Startable {
     )
   }
 
-  stop () {
+  stop (): void {
     clearInterval(this.interval)
   }
 

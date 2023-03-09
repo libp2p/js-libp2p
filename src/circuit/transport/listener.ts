@@ -73,18 +73,16 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
    * addr, such when dialing over a relay with this address, it will create the circuit using
    * the encapsulated transport address. This is useful when for example, a peer should only
    * be dialed over TCP rather than any other transport
-   *
-   * @returns {Multiaddr[]}
    */
-  getAddrs () {
+  getAddrs (): Multiaddr[] {
     return [...this.listeningAddrs.values()]
   }
 
-  async close () {
+  async close (): Promise<void> {
 
   }
 
-  #removeRelayPeer (peerId: PeerId) {
+  #removeRelayPeer (peerId: PeerId): void {
     const had = this.listeningAddrs.has(peerId)
 
     this.listeningAddrs.delete(peerId)

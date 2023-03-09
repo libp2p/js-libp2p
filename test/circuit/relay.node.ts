@@ -493,17 +493,20 @@ describe('circuit-relay', () => {
       const protocol = '/test/protocol/1.0.0'
       await remote.handle(protocol, ({ stream }) => {
         void Promise.resolve().then(async () => {
-          for await (const buf of stream.source) {
-            transferred.append(buf)
-          }
+          try {
+            for await (const buf of stream.source) {
+              transferred.append(buf)
+            }
+          } catch {}
         })
       })
 
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
-      const stream = await local.dialProtocol(ma, protocol)
 
       try {
+        const stream = await local.dialProtocol(ma, protocol)
+
         await stream.sink(async function * () {
           while (true) {
             await delay(100)
@@ -585,17 +588,20 @@ describe('circuit-relay', () => {
       const protocol = '/test/protocol/1.0.0'
       await remote.handle(protocol, ({ stream }) => {
         void Promise.resolve().then(async () => {
-          for await (const buf of stream.source) {
-            transferred.append(buf)
-          }
+          try {
+            for await (const buf of stream.source) {
+              transferred.append(buf)
+            }
+          } catch {}
         })
       })
 
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
-      const stream = await local.dialProtocol(ma, protocol)
 
       try {
+        const stream = await local.dialProtocol(ma, protocol)
+
         await stream.sink(async function * () {
           while (true) {
             await delay(100)

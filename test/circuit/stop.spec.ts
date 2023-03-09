@@ -17,6 +17,7 @@ import { circuitRelayTransport } from '../../src/circuit/index.js'
 import { Status, StopMessage } from '../../src/circuit/pb/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { duplexPair } from 'it-pair/duplex'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 describe('circuit-relay stop protocol', function () {
   let transport: Transport
@@ -33,7 +34,8 @@ describe('circuit-relay stop protocol', function () {
       peerStore: stubInterface<PeerStore>(),
       registrar: stubInterface<Registrar>(),
       transportManager: stubInterface<TransportManager>(),
-      upgrader: stubInterface<Upgrader>()
+      upgrader: stubInterface<Upgrader>(),
+      connectionGater: stubInterface<ConnectionGater>()
     }
 
     transport = circuitRelayTransport({})(components)

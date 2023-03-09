@@ -94,15 +94,15 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     })
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     this.reservations.forEach(({ timeout }) => {
       clearTimeout(timeout)
     })
@@ -117,7 +117,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
    * to the remote, and the remote peer speaks the hop protocol, try to reserve a slot
    * on the remote peer
    */
-  async addRelay (peerId: PeerId, type: RelayType) {
+  async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
     log('add relay', this.reserveQueue.size)
 
     await this.reserveQueue.add(async () => {
@@ -193,7 +193,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     })
   }
 
-  hasReservation (peerId: PeerId) {
+  hasReservation (peerId: PeerId): boolean {
     return this.reservations.has(peerId)
   }
 
@@ -228,7 +228,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   /**
    * Remove listen relay
    */
-  removeRelay (peerId: PeerId) {
+  removeRelay (peerId: PeerId): void {
     const existingReservation = this.reservations.get(peerId)
 
     if (existingReservation == null) {

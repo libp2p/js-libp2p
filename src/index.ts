@@ -23,7 +23,8 @@ import type { Datastore } from 'interface-datastore'
 import type { PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
-import type { ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
+import type { ConnectionProtector } from '@libp2p/interface-connection'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { Transport } from '@libp2p/interface-transport'
 import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
@@ -65,7 +66,7 @@ export interface Libp2pInit {
   /**
    * A connection gater can deny new connections based on user criteria
    */
-  connectionGater: Partial<ConnectionGater>
+  connectionGater: ConnectionGater
 
   /**
    * libp2p transport manager configuration

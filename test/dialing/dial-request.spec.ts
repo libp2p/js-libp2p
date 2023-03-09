@@ -12,7 +12,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
-import type { ConnectionGater } from '@libp2p/interface-connection'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import { stubInterface } from 'sinon-ts'
 const error = new Error('dial failure')
 

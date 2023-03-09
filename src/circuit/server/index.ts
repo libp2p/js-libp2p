@@ -16,6 +16,7 @@ import { pbStream, ProtobufStream } from 'it-pb-stream'
 import { HopMessage, Reservation, Status, StopMessage } from '../pb/index.js'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import type { Connection, Stream } from '@libp2p/interface-connection'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
@@ -29,24 +30,6 @@ import { setMaxListeners } from 'events'
 const log = logger('libp2p:circuit-relay:server')
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
-
-export enum AclStatus {
-  OK = Status.OK,
-  RESOURCE_LIMIT_EXCEEDED = Status.RESOURCE_LIMIT_EXCEEDED,
-  PERMISSION_DENIED = Status.PERMISSION_DENIED
-}
-
-export interface Acl {
-  /**
-   * Checks if a peer should be allowed to use this relay
-   */
-  allowReserve?: (peer: PeerId, addr: Multiaddr) => Promise<boolean>
-
-  /**
-   * Checks if a peer should be allowed to make a connection to another peer
-   */
-  allowConnect?: (src: PeerId, addr: Multiaddr, dst: PeerId) => Promise<AclStatus>
-}
 
 export interface CircuitRelayServerInit {
   /**
@@ -65,11 +48,6 @@ export interface CircuitRelayServerInit {
    * Configuration of reservations
    */
   reservations?: ReservationStoreInit
-
-  /**
-   * functions to control allow/deny of the creation of new reservations
-   */
-  acl?: Acl
 
   /**
    * The maximum number of simultaneous HOP inbound streams that can be open at once
@@ -99,6 +77,7 @@ export interface CircuitRelayServerComponents extends AdvertServiceComponents {
   addressManager: AddressManager
   peerId: PeerId
   connectionManager: ConnectionManager
+  connectionGater: ConnectionGater
 }
 
 export interface RelayServerEvents {
@@ -113,11 +92,11 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   private readonly addressManager: AddressManager
   private readonly peerId: PeerId
   private readonly connectionManager: ConnectionManager
+  private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
   private readonly advertService: AdvertService | undefined
   private started: boolean
   private readonly hopTimeout: number
-  private readonly acl?: Acl
   private readonly shutdownController: AbortController
   private readonly maxInboundHopStreams?: number
   private readonly maxOutboundHopStreams?: number
@@ -133,9 +112,9 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     this.addressManager = components.addressManager
     this.peerId = components.peerId
     this.connectionManager = components.connectionManager
+    this.connectionGater = components.connectionGater
     this.started = false
     this.hopTimeout = init?.hopTimeout ?? DEFAULT_HOP_TIMEOUT
-    this.acl = init?.acl
     this.shutdownController = new AbortController()
     this.maxInboundHopStreams = init.maxInboundHopStreams
     this.maxOutboundHopStreams = init.maxOutboundHopStreams
@@ -158,14 +137,14 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     this.reservationStore = new ReservationStore(init.reservations)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * Start Relay service
    */
-  async start () {
+  async start (): Promise<void> {
     if (this.started) {
       return
     }
@@ -190,7 +169,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   /**
    * Stop Relay service
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.advertService?.stop()
     this.reservationStore.stop()
     this.shutdownController.abort()
@@ -199,7 +178,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     this.started = false
   }
 
-  async onHop ({ connection, stream }: IncomingStreamData) {
+  async onHop ({ connection, stream }: IncomingStreamData): Promise<void> {
     log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
 
     const hopTimeoutPromise = pDefer<HopMessage>()
@@ -262,8 +241,8 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       return
     }
 
-    if ((await this.acl?.allowReserve?.(connection.remotePeer, connection.remoteAddr)) === false) {
-      log.error('acl denied reservation to %s', connection.remotePeer)
+    if ((await this.connectionGater.denyInboundRelayReservation?.(connection.remotePeer)) === true) {
+      log.error('reservation for %p denied by connection gater', connection.remotePeer)
       hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
       return
     }
@@ -358,21 +337,10 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       return
     }
 
-    if (this.acl?.allowConnect !== undefined) {
-      const aclResult = await this.acl.allowConnect(connection.remotePeer, connection.remoteAddr, dstPeer)
-
-      if (aclResult !== AclStatus.OK) {
-        log.error('hop connect denied by acl for %p with status %s', connection.remotePeer, aclResult)
-
-        let status = Status.PERMISSION_DENIED
-
-        if (aclResult === AclStatus.RESOURCE_LIMIT_EXCEEDED) {
-          status = Status.RESOURCE_LIMIT_EXCEEDED
-        }
-
-        hopstr.write({ type: HopMessage.Type.STATUS, status: status })
-        return
-      }
+    if ((await this.connectionGater.denyOutboundRelayedConnection?.(connection.remotePeer, dstPeer)) === true) {
+      log.error('hop connect for %p to %p denied by connection gater', connection.remotePeer, dstPeer)
+      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      return
     }
 
     const connections = this.connectionManager.getConnections(dstPeer)

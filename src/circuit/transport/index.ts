@@ -12,6 +12,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { Listener, Transport, CreateListenerOptions } from '@libp2p/interface-transport'
 import type { Connection, Stream } from '@libp2p/interface-connection'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerStore } from '@libp2p/interface-peer-store'
@@ -47,6 +48,7 @@ export interface CircuitRelayTransportComponents extends RelayDiscoveryComponent
   upgrader: Upgrader
   addressManager: AddressManager
   contentRouting: ContentRouting
+  connectionGater: ConnectionGater
 }
 
 interface ConnectOptions {
@@ -78,6 +80,7 @@ class CircuitRelayTransport implements Transport {
   private readonly peerId: PeerId
   private readonly upgrader: Upgrader
   private readonly addressManager: AddressManager
+  private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
   private started: boolean
 
@@ -88,6 +91,7 @@ class CircuitRelayTransport implements Transport {
     this.peerId = components.peerId
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
+    this.connectionGater = components.connectionGater
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -110,11 +114,11 @@ class CircuitRelayTransport implements Transport {
     this.started = false
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     await this.reservationStore.start()
     await this.discovery?.start()
 
@@ -127,7 +131,7 @@ class CircuitRelayTransport implements Transport {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     this.discovery?.stop()
     await this.reservationStore.stop()
     await this.registrar.unhandle(RELAY_V2_STOP_CODEC)
@@ -266,7 +270,7 @@ class CircuitRelayTransport implements Transport {
   /**
    * An incoming STOP request means a remote peer wants to dial us via a relay
    */
-  async onStop ({ connection, stream }: IncomingStreamData) {
+  async onStop ({ connection, stream }: IncomingStreamData): Promise<void> {
     const pbstr = pbStream(stream)
     const request = await pbstr.readPB(StopMessage)
     log('received circuit v2 stop protocol request from %s', connection.remotePeer)
@@ -291,9 +295,15 @@ class CircuitRelayTransport implements Transport {
       return
     }
 
+    const remotePeerId = peerIdFromBytes(request.peer.id)
+
+    if ((await this.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
+      stopstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      return
+    }
+
     stopstr.write({ type: StopMessage.Type.STATUS, status: Status.OK })
 
-    const remotePeerId = peerIdFromBytes(request.peer.id)
     const remoteAddr = connection.remoteAddr.encapsulate(`/p2p-circuit/p2p/${remotePeerId.toString()}`)
     const localAddr = this.addressManager.getAddresses()[0]
     const maConn = streamToMaConnection({

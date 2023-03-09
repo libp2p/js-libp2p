@@ -50,11 +50,11 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
     this.registrar = components.registrar
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     // register a topology listener for when new peers are encountered
     // that support the hop protocol
     this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, createTopology({
@@ -71,7 +71,7 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
     this.started = true
   }
 
-  stop () {
+  stop (): void {
     if (this.topologyId != null) {
       this.registrar.unregister(this.topologyId)
     }
@@ -87,7 +87,7 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
    * 2. Dial and try to listen on the peers we know that support hop but are not connected
    * 3. Search the network
    */
-  async discover () {
+  async discover (): Promise<void> {
     log('searching peer store for relays')
     const peers = (await this.peerStore.all())
       // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on

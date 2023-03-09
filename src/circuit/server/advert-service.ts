@@ -48,14 +48,14 @@ export class AdvertService extends EventEmitter<AdvertServiceEvents> implements 
     this.started = false
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * Start Relay service
    */
-  start () {
+  start (): void {
     if (this.started) {
       return
     }
@@ -73,7 +73,7 @@ export class AdvertService extends EventEmitter<AdvertServiceEvents> implements 
   /**
    * Stop Relay service
    */
-  stop () {
+  stop (): void {
     try {
       clearTimeout(this.timeout)
     } catch (err) { }
@@ -84,7 +84,7 @@ export class AdvertService extends EventEmitter<AdvertServiceEvents> implements 
   /**
    * Advertise hop relay service in the network.
    */
-  async _advertiseService () {
+  async _advertiseService (): Promise<void> {
     await pRetry(async () => {
       try {
         const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)

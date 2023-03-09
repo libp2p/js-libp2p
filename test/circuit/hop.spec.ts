@@ -2,7 +2,7 @@
 /* eslint max-nested-callbacks: ['error', 5] */
 
 import type { Connection, Stream } from '@libp2p/interface-connection'
-import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager } from '@libp2p/interface-mocks'
+import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-mocks'
 import { expect } from 'aegir/chai'
 import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit/index.js'
 import { HopMessage, Status } from '../../src/circuit/pb/index.js'
@@ -21,8 +21,9 @@ import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODE
 import { PeerMap } from '@libp2p/peer-collections'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
 import type { CircuitRelayServerInit } from '../../src/circuit/server/index.js'
-import { AclStatus } from '../../src/circuit/server/index.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import Sinon from 'sinon'
 
 interface Node {
   peerId: PeerId
@@ -33,6 +34,7 @@ interface Node {
   upgrader: Upgrader
   connectionManager: ConnectionManager
   circuitRelayTransport: Transport
+  connectionGater: ConnectionGater
 }
 
 let peerIndex = 0
@@ -77,13 +79,16 @@ describe('circuit-relay hop protocol', function () {
       connections.delete(conn.remotePeer)
     })
 
+    const connectionGater = mockConnectionGater()
+
     const service = circuitRelayServer(circuitRelayInit)({
       addressManager,
       contentRouting: stubInterface<ContentRouting>(),
       connectionManager,
       peerId,
       peerStore,
-      registrar
+      registrar,
+      connectionGater
     })
 
     if (isStartable(service)) {
@@ -98,7 +103,8 @@ describe('circuit-relay hop protocol', function () {
       peerStore,
       registrar,
       transportManager: stubInterface<TransportManager>(),
-      upgrader
+      upgrader,
+      connectionGater
     })
 
     if (isStartable(transport)) {
@@ -113,7 +119,8 @@ describe('circuit-relay hop protocol', function () {
       peerStore,
       upgrader,
       connectionManager,
-      circuitRelayTransport: transport
+      circuitRelayTransport: transport,
+      connectionGater
     }
 
     mockNetwork.addNode(node)
@@ -218,12 +225,8 @@ describe('circuit-relay hop protocol', function () {
       expect(reservation).to.have.nested.property('limit.duration', response.limit?.duration)
     })
 
-    it('should fail to reserve slot - acl denied', async () => {
-      // @ts-expect-error private field
-      relayNode.circuitRelayService.acl = {
-        allowReserve: async () => await Promise.resolve(false),
-        allowConnect: async () => await Promise.resolve(true)
-      }
+    it('should fail to reserve slot - denied by connection gater', async () => {
+      relayNode.connectionGater.denyInboundRelayReservation = Sinon.stub().returns(true)
 
       const { response } = await makeReservation(clientNode, relayNode)
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
@@ -313,12 +316,8 @@ describe('circuit-relay hop protocol', function () {
       expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
     })
 
-    it('should failed to connect - acl denied', async () => {
-      // @ts-expect-error private field
-      relayNode.circuitRelayService.acl = {
-        allowReserve: async () => await Promise.resolve(true),
-        allowConnect: async () => await Promise.resolve(AclStatus.PERMISSION_DENIED)
-      }
+    it('should failed to connect - denied by connection gater', async () => {
+      relayNode.connectionGater.denyOutboundRelayedConnection = Sinon.stub().returns(true)
 
       // both peers make a reservation on the relay
       await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)

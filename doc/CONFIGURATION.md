@@ -452,15 +452,20 @@ const node = await createLibp2p({
       applyDefaultLimit: true // whether to apply default data/duration limits to each relayed connection
       defaultDurationLimit: 2 * 60 * 1000 // the default maximum amount of time a relayed connection can be open for
       defaultDataLimit: BigInt(2 << 7) // the default maximum number of bytes that can be transferred over a relayed connection
-      acl: {
-        // fine grained control over which peers are allow to reserve slots or connect to other peers
-        allowReserve: (peer: PeerId, addr: Multiaddr) => Promise<boolean>,
-        allowConnect: (src: PeerId, addr: Multiaddr, dst: PeerId) => Promise<AclStatus>
-      }
       maxInboundHopStreams: 32 // how many inbound HOP streams are allow simultaneously
       maxOutboundHopStreams: 64 // how many outbound HOP streams are allow simultaneously
     }
-  })
+  }),
+  connectionGater: {
+    // used by the server - return true to deny a reservation to the remote peer
+    denyInboundRelayReservation: (source: PeerId) => Promise<boolean>
+
+    // used by the server - return true to deny a relay connection request from the source to the destination peer
+    denyOutboundRelayedConnection: (source: PeerId, destination: PeerId) => Promise<boolean>
+
+    // used by the client - return true to deny a relay connection from the remote relay and peer
+    denyInboundRelayedConnection: (relay: PeerId, remotePeer: PeerId) => Promise<boolean>
+  }
 })
 ```
 
