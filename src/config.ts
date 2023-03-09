@@ -79,7 +79,13 @@ const DefaultConfig: Partial<Libp2pInit> = {
   },
   ping: {
     protocolPrefix: 'ipfs',
-    maxInboundStreams: 1,
+    // See https://github.com/libp2p/specs/blob/d4b5fb0152a6bb86cfd9ea/ping/ping.md?plain=1#L38-L43
+    // The dialing peer MUST NOT keep more than one outbound stream for the ping protocol per peer.
+    // The listening peer SHOULD accept at most two streams per peer since cross-stream behavior is
+    // non-linear and stream writes occur asynchronously. The listening peer may perceive the
+    // dialing peer closing and opening the wrong streams (for instance, closing stream B and
+    // opening stream A even though the dialing peer is opening stream B and closing stream A).
+    maxInboundStreams: 2,
     maxOutboundStreams: 1,
     timeout: 10000
   },
