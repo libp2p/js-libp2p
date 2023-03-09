@@ -8,7 +8,7 @@ import {
   CODE_WSS
 } from './constants.js'
 
-export function all (multiaddrs: Multiaddr[]) {
+export function all (multiaddrs: Multiaddr[]): Multiaddr[] {
   return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
       return false
@@ -21,7 +21,7 @@ export function all (multiaddrs: Multiaddr[]) {
   })
 }
 
-export function wss (multiaddrs: Multiaddr[]) {
+export function wss (multiaddrs: Multiaddr[]): Multiaddr[] {
   return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
       return false
@@ -33,7 +33,7 @@ export function wss (multiaddrs: Multiaddr[]) {
   })
 }
 
-export function dnsWss (multiaddrs: Multiaddr[]) {
+export function dnsWss (multiaddrs: Multiaddr[]): Multiaddr[] {
   return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
       return false
@@ -46,7 +46,7 @@ export function dnsWss (multiaddrs: Multiaddr[]) {
   })
 }
 
-export function dnsWsOrWss (multiaddrs: Multiaddr[]) {
+export function dnsWsOrWss (multiaddrs: Multiaddr[]): Multiaddr[] {
   return multiaddrs.filter((ma) => {
     if (ma.protoCodes().includes(CODE_CIRCUIT)) {
       return false

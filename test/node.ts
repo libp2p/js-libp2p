@@ -22,7 +22,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Source } from 'it-stream-types'
 import './compliance.node.js'
 
-async function * toBuffers (source: Source<Uint8ArrayList>) {
+async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
   for await (const list of source) {
     yield * list
   }
@@ -57,7 +57,7 @@ describe('listen', () => {
     const listener = ws.createListener({
       handler: (conn) => {
         void conn.newStream([protocol]).then(async (stream) => {
-          return await pipe(stream, stream)
+          await pipe(stream, stream)
         })
       },
       upgrader
@@ -85,7 +85,7 @@ describe('listen', () => {
     })
 
     afterEach(async () => {
-      return await listener.close()
+      await listener.close()
     })
 
     it('listen, check for promise', async () => {
@@ -108,14 +108,14 @@ describe('listen', () => {
       const dumbServer = http.createServer()
       await new Promise<void>(resolve => dumbServer.listen(ma.toOptions().port, resolve))
       await expect(listener.listen(ma)).to.eventually.rejectedWith('listen EADDRINUSE')
-      await new Promise<void>(resolve => dumbServer.close(() => resolve()))
+      await new Promise<void>(resolve => dumbServer.close(() => { resolve() }))
     })
 
     it('listen, check for the close event', (done) => {
       const listener = ws.createListener({ upgrader })
 
       listener.addEventListener('listening', () => {
-        listener.addEventListener('close', () => done())
+        listener.addEventListener('close', () => { done() })
         void listener.close()
       })
 
@@ -134,7 +134,7 @@ describe('listen', () => {
       listener = ws.createListener({ upgrader })
 
       await listener.listen(ma)
-      const addrs = await listener.getAddrs()
+      const addrs = listener.getAddrs()
       expect(addrs.map((a) => a.toOptions().port)).to.not.include(0)
     })
 
@@ -143,14 +143,14 @@ describe('listen', () => {
       listener = ws.createListener({ upgrader })
 
       await listener.listen(ma)
-      const addrs = await listener.getAddrs()
+      const addrs = listener.getAddrs()
       expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
     })
 
     it('getAddrs', async () => {
       listener = ws.createListener({ upgrader })
       await listener.listen(ma)
-      const addrs = await listener.getAddrs()
+      const addrs = listener.getAddrs()
       expect(addrs.length).to.equal(1)
       expect(addrs[0]).to.deep.equal(ma)
     })
@@ -159,7 +159,7 @@ describe('listen', () => {
       const addr = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
       listener = ws.createListener({ upgrader })
       await listener.listen(addr)
-      const addrs = await listener.getAddrs()
+      const addrs = listener.getAddrs()
       expect(addrs.length).to.equal(1)
       expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
     })
@@ -168,7 +168,7 @@ describe('listen', () => {
       const addr = multiaddr('/ip4/0.0.0.0/tcp/47382/ws')
       listener = ws.createListener({ upgrader })
       await listener.listen(addr)
-      const addrs = await listener.getAddrs()
+      const addrs = listener.getAddrs()
       expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
     })
 
@@ -176,7 +176,7 @@ describe('listen', () => {
       const addr = multiaddr('/ip4/0.0.0.0/tcp/0/ws')
       listener = ws.createListener({ upgrader })
       await listener.listen(addr)
-      const addrs = await listener.getAddrs()
+      const addrs = listener.getAddrs()
       expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
       expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
     })
@@ -186,7 +186,7 @@ describe('listen', () => {
       listener = ws.createListener({ upgrader })
 
       await listener.listen(ma)
-      const addrs = await listener.getAddrs()
+      const addrs = listener.getAddrs()
       expect(addrs.length).to.equal(1)
       expect(addrs[0]).to.deep.equal(ma)
     })
@@ -220,7 +220,7 @@ describe('listen', () => {
       const listener = ws.createListener({ upgrader })
 
       listener.addEventListener('listening', () => {
-        listener.addEventListener('close', () => done())
+        listener.addEventListener('close', () => { done() })
         void listener.close()
       })
 
@@ -245,10 +245,10 @@ describe('dial', () => {
     beforeEach(async () => {
       ws = webSockets()()
       listener = ws.createListener({ upgrader })
-      return await listener.listen(ma)
+      await listener.listen(ma)
     })
 
-    afterEach(async () => await listener.close())
+    afterEach(async () => { await listener.close() })
 
     it('dial', async () => {
       const conn = await ws.dial(ma, { upgrader })
@@ -313,15 +313,15 @@ describe('dial', () => {
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
-            return await pipe(stream, stream)
+            await pipe(stream, stream)
           })
         },
         upgrader
       })
-      return await listener.listen(ma)
+      await listener.listen(ma)
     })
 
-    afterEach(async () => await listener.close())
+    afterEach(async () => { await listener.close() })
 
     it('dial', async () => {
       const addrs = listener.getAddrs().filter((ma) => {
@@ -359,17 +359,17 @@ describe('dial', () => {
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
-            return await pipe(stream, stream)
+            await pipe(stream, stream)
           })
         },
         upgrader
       })
-      return await listener.listen(ma)
+      await listener.listen(ma)
     })
 
     afterEach(async () => {
       await listener.close()
-      await server.close()
+      server.close()
     })
 
     it('should listen on wss address', () => {
@@ -401,15 +401,15 @@ describe('dial', () => {
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
-            return await pipe(stream, stream)
+            await pipe(stream, stream)
           })
         },
         upgrader
       })
-      return await listener.listen(ma)
+      await listener.listen(ma)
     })
 
-    afterEach(async () => await listener.close())
+    afterEach(async () => { await listener.close() })
 
     it('dial ip6', async () => {
       const conn = await ws.dial(ma, { upgrader })

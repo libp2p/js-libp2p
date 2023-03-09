@@ -6,6 +6,7 @@ import http from 'http'
 import { webSockets } from '../src/index.js'
 import * as filters from '../src/filters.js'
 import type { WebSocketListenerInit } from '../src/listener.js'
+import type { Listener } from '@libp2p/interface-transport'
 
 describe('interface-transport compliance', () => {
   tests({
@@ -19,7 +20,7 @@ describe('interface-transport compliance', () => {
       ]
 
       let delayMs = 0
-      const delayedCreateListener = (options: WebSocketListenerInit) => {
+      const delayedCreateListener = (options: WebSocketListenerInit): Listener => {
         // A server that will delay the upgrade event by delayMs
         options.server = new Proxy(http.createServer(), {
           get (server, prop) {
@@ -27,9 +28,9 @@ describe('interface-transport compliance', () => {
               return (event: string, handler: (...args: any[]) => void) => {
                 server.on(event, (...args) => {
                   if (event !== 'upgrade' || delayMs === 0) {
-                    return handler(...args)
+                    handler(...args); return
                   }
-                  setTimeout(() => handler(...args), delayMs)
+                  setTimeout(() => { handler(...args) }, delayMs)
                 })
               }
             }

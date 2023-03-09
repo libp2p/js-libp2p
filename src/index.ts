@@ -7,7 +7,7 @@ import { isBrowser, isWebWorker } from 'wherearewe'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
 import * as filters from './filters.js'
-import { Transport, MultiaddrFilter, symbol, CreateListenerOptions, DialOptions } from '@libp2p/interface-transport'
+import { Transport, MultiaddrFilter, symbol, CreateListenerOptions, DialOptions, Listener } from '@libp2p/interface-transport'
 import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -30,7 +30,7 @@ class WebSockets implements Transport {
     this.init = init
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): string {
     return '@libp2p/websockets'
   }
 
@@ -59,7 +59,7 @@ class WebSockets implements Transport {
     log('dialing %s:%s', cOpts.host, cOpts.port)
 
     const errorPromise = pDefer()
-    const errfn = (err: any) => {
+    const errfn = (err: any): void => {
       log.error('connection error:', err)
 
       errorPromise.reject(err)
@@ -92,7 +92,7 @@ class WebSockets implements Transport {
 
       // Already aborted?
       if (options?.signal?.aborted === true) {
-        return onAbort()
+        onAbort(); return
       }
 
       options?.signal?.addEventListener('abort', onAbort)
@@ -115,7 +115,7 @@ class WebSockets implements Transport {
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`
    */
-  createListener (options: CreateListenerOptions) {
+  createListener (options: CreateListenerOptions): Listener {
     return createListener({ ...this.init, ...options })
   }
 
@@ -124,7 +124,7 @@ class WebSockets implements Transport {
    * By default, in a browser environment only DNS+WSS multiaddr is accepted,
    * while in a Node.js environment DNS+{WS, WSS} multiaddrs are accepted.
    */
-  filter (multiaddrs: Multiaddr[]) {
+  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     if (this.init?.filter != null) {

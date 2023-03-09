@@ -81,9 +81,9 @@ class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener
     })
   }
 
-  async close () {
+  async close (): Promise<void> {
     await Promise.all(
-      Array.from(this.connections).map(async maConn => await maConn.close())
+      Array.from(this.connections).map(async maConn => { await maConn.close() })
     )
 
     if (this.server.address() == null) {
@@ -91,16 +91,16 @@ class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener
       return
     }
 
-    return await this.server.close()
+    await this.server.close()
   }
 
-  async listen (ma: Multiaddr) {
+  async listen (ma: Multiaddr): Promise<void> {
     this.listeningMultiaddr = ma
 
     await this.server.listen(ma.toOptions())
   }
 
-  getAddrs () {
+  getAddrs (): Multiaddr[] {
     const multiaddrs = []
     const address = this.server.address()
 
