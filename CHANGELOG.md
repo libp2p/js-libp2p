@@ -1,3 +1,16 @@
+## [5.0.5](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.4...v5.0.5) (2023-03-09)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([4936a70](https://github.com/libp2p/js-libp2p-websockets/commit/4936a70ef1d148aab69c4c659ba2e3a7724918d6))
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-mocks from 8.0.5 to 9.1.3 ([#220](https://github.com/libp2p/js-libp2p-websockets/issues/220)) ([1076b05](https://github.com/libp2p/js-libp2p-websockets/commit/1076b05ccd3bc3f5a0115759baa1f438f66416da))
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#219](https://github.com/libp2p/js-libp2p-websockets/issues/219)) ([4e0f17b](https://github.com/libp2p/js-libp2p-websockets/commit/4e0f17b04ba4f62b72d91a3c343d748d79ca4000))
+
 ## [5.0.4](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.3...v5.0.4) (2023-03-03)
 
 
