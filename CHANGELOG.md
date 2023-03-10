@@ -1,3 +1,18 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-record/compare/v3.0.0...v3.0.1) (2023-03-10)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#71](https://github.com/libp2p/js-libp2p-record/issues/71)) ([a843ae4](https://github.com/libp2p/js-libp2p-record/commit/a843ae4fbdc8c262a55f4ed87f989770d3783c5a)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([3982918](https://github.com/libp2p/js-libp2p-record/commit/3982918a51c25bf1f803702073eaf17cc5feee9b))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([79984c0](https://github.com/libp2p/js-libp2p-record/commit/79984c0ce651cb0bff634b3b8df630cf807baa59))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([7ccccc7](https://github.com/libp2p/js-libp2p-record/commit/7ccccc73fb1aad74cd4b696acd8dc912199afec3))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#84](https://github.com/libp2p/js-libp2p-record/issues/84)) ([4cc5935](https://github.com/libp2p/js-libp2p-record/commit/4cc593576ccda281950f30aa6c8e769baa1aeee6))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-record/compare/v2.0.4...v3.0.0) (2023-01-06)
 
 
