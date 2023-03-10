@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/libp2p/js-libp2p-record/compare/v3.0.1...v3.0.2) (2023-03-10)
+
+
+### Dependencies
+
+* bump protons-runtime from 4.0.2 to 5.0.0 ([#73](https://github.com/libp2p/js-libp2p-record/issues/73)) ([4b1b67b](https://github.com/libp2p/js-libp2p-record/commit/4b1b67bac77cb13a01ce330a4a93eb6c3dc042a5))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-record/compare/v3.0.0...v3.0.1) (2023-03-10)
 
 
