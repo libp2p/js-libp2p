@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.1...v6.0.2) (2023-03-10)
+
+
+### Dependencies
+
+* bump protons-runtime from 4.0.2 to 5.0.0 ([#207](https://github.com/libp2p/js-libp2p-floodsub/issues/207)) ([8e7e186](https://github.com/libp2p/js-libp2p-floodsub/commit/8e7e186f7cac515373d85f7c73aed285f273bea5))
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.0...v6.0.1) (2023-03-10)
 
 
