@@ -1,3 +1,19 @@
+## [5.0.1](https://github.com/libp2p/js-libp2p-peer-record/compare/v5.0.0...v5.0.1) (2023-03-10)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#42](https://github.com/libp2p/js-libp2p-peer-record/issues/42)) ([b76d07f](https://github.com/libp2p/js-libp2p-peer-record/commit/b76d07f07e7de5f65bd00a3c3c4a106fcca99f57)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([157d49d](https://github.com/libp2p/js-libp2p-peer-record/commit/157d49d80d2e6930311aac69980889174addfcdd))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([920dfd3](https://github.com/libp2p/js-libp2p-peer-record/commit/920dfd323e876becae7a98493dc92cd3c40c1e73))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([1ef05ef](https://github.com/libp2p/js-libp2p-peer-record/commit/1ef05ef112b5136afe0e3dea00dc3abcf92d2556))
+* upgrade `aegir` to `38.1.2` ([#48](https://github.com/libp2p/js-libp2p-peer-record/issues/48)) ([e0fd5e3](https://github.com/libp2p/js-libp2p-peer-record/commit/e0fd5e3ef3cddd82b4c65817835a783edaebfb3b))
+
+
+### Dependencies
+
+* bump protons-runtime from 4.0.2 to 5.0.0 ([#45](https://github.com/libp2p/js-libp2p-peer-record/issues/45)) ([83958a5](https://github.com/libp2p/js-libp2p-peer-record/commit/83958a5b1cae2b33cbeee4bb998c790c973db776))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p-peer-record/compare/v4.0.5...v5.0.0) (2023-01-06)
 
 
