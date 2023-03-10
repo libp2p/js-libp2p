@@ -1,3 +1,10 @@
+## [1.0.14](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.13...v1.0.14) (2023-03-10)
+
+
+### Dependencies
+
+* bump protons-runtime from 4.0.2 to 5.0.0 ([#297](https://github.com/libp2p/js-libp2p-crypto/issues/297)) ([7e61930](https://github.com/libp2p/js-libp2p-crypto/commit/7e61930f0416bac16dfd66f825a60a49acfbf780))
+
 ## [1.0.13](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.12...v1.0.13) (2023-03-10)
 
 
