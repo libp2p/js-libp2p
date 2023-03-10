@@ -1,3 +1,11 @@
+## [7.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.2...v7.0.3) (2023-03-10)
+
+
+### Dependencies
+
+* bump protons-runtime from 4.0.2 to 5.0.0 ([#416](https://github.com/libp2p/js-libp2p-kad-dht/issues/416)) ([7ebf172](https://github.com/libp2p/js-libp2p-kad-dht/commit/7ebf172b6b454315ff8d0fcd15509b768a5da4ad))
+* **dev:** bump execa from 6.1.0 to 7.0.0 ([#421](https://github.com/libp2p/js-libp2p-kad-dht/issues/421)) ([04124d4](https://github.com/libp2p/js-libp2p-kad-dht/commit/04124d48a065d226a4ec370efec38dfe4f3c5ff4))
+
 ## [7.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.1...v7.0.2) (2023-03-10)
 
 
