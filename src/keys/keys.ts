@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum KeyType {
   RSA = 'RSA',
@@ -80,7 +81,7 @@ export namespace PublicKey {
     return _codec
   }
 
-  export const encode = (obj: PublicKey): Uint8Array => {
+  export const encode = (obj: Partial<PublicKey>): Uint8Array => {
     return encodeMessage(obj, PublicKey.codec())
   }
 
@@ -145,7 +146,7 @@ export namespace PrivateKey {
     return _codec
   }
 
-  export const encode = (obj: PrivateKey): Uint8Array => {
+  export const encode = (obj: Partial<PrivateKey>): Uint8Array => {
     return encodeMessage(obj, PrivateKey.codec())
   }
 

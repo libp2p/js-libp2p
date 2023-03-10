@@ -185,7 +185,7 @@
     "@noble/secp256k1": "^1.5.4",
     "multiformats": "^11.0.0",
     "node-forge": "^1.1.0",
-    "protons-runtime": "^4.0.1",
+    "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.2"
   },
@@ -193,6 +193,7 @@
     "@types/mocha": "^10.0.0",
     "aegir": "^38.1.2",
     "benchmark": "^2.1.4",
+    "protons": "^7.0.2",
     "util": "^0.12.5"
   },
   "browser": {
