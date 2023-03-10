@@ -1,3 +1,17 @@
+## [1.0.13](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.12...v1.0.13) (2023-03-10)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([b66007c](https://github.com/libp2p/js-libp2p-crypto/commit/b66007c8a092789490789dce596b4e157fa855e1))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([110063c](https://github.com/libp2p/js-libp2p-crypto/commit/110063cbea5d868923a2df2b9676e13a127b81f5))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([c789b0c](https://github.com/libp2p/js-libp2p-crypto/commit/c789b0c9f18f76df84a4038e9ed893a516babb43))
+
+
+### Dependencies
+
+* **dev:** upgrade aegir to `38.1.2` ([#302](https://github.com/libp2p/js-libp2p-crypto/issues/302)) ([9d60e39](https://github.com/libp2p/js-libp2p-crypto/commit/9d60e394d5e52167e9197067d3fa7953b30a990b))
+
 ## [1.0.12](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.11...v1.0.12) (2023-02-08)
 
 
