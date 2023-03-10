@@ -1,3 +1,10 @@
+## [7.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.1...v7.0.2) (2023-03-10)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#427](https://github.com/libp2p/js-libp2p-kad-dht/issues/427)) ([bf7d1ba](https://github.com/libp2p/js-libp2p-kad-dht/commit/bf7d1bac21d0346098cc206951602dc39224d43a))
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.0...v7.0.1) (2023-03-10)
 
 
