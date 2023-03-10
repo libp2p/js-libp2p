@@ -8,13 +8,13 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 /**
  * Sort peers by distance to the given `kadId`
  */
-export async function sortClosestPeers (peers: PeerId[], kadId: Uint8Array) {
+export async function sortClosestPeers (peers: PeerId[], kadId: Uint8Array): Promise<PeerId[]> {
   const distances = await all(
     map(peers, async (peer) => {
       const id = await convertPeerId(peer)
 
       return {
-        peer: peer,
+        peer,
         distance: uint8ArrayXor(id, kadId)
       }
     })

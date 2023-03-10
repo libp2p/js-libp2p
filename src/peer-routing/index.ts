@@ -13,7 +13,7 @@ import { Libp2pRecord } from '@libp2p/record'
 import { logger } from '@libp2p/logger'
 import { keys } from '@libp2p/crypto'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import type { DHTRecord, QueryOptions, Validators } from '@libp2p/interface-dht'
+import type { DHTRecord, DialingPeerEvent, FinalPeerEvent, QueryEvent, QueryOptions, Validators } from '@libp2p/interface-dht'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { Network } from '../network.js'
@@ -97,7 +97,7 @@ export class PeerRouting {
   /**
    * Get a value via rpc call for the given parameters
    */
-  async * _getValueSingle (peer: PeerId, key: Uint8Array, options: AbortOptions = {}) { // eslint-disable-line require-await
+  async * _getValueSingle (peer: PeerId, key: Uint8Array, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
     const msg = new Message(MESSAGE_TYPE.GET_VALUE, key, 0)
     yield * this.network.sendRequest(peer, msg, options)
   }
@@ -105,7 +105,7 @@ export class PeerRouting {
   /**
    * Get the public key directly from a node
    */
-  async * getPublicKeyFromNode (peer: PeerId, options: AbortOptions = {}) {
+  async * getPublicKeyFromNode (peer: PeerId, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
     const pkKey = utils.keyForPublicKey(peer)
 
     for await (const event of this._getValueSingle(peer, pkKey, options)) {
@@ -133,7 +133,7 @@ export class PeerRouting {
   /**
    * Search for a peer with the given ID
    */
-  async * findPeer (id: PeerId, options: QueryOptions = {}) {
+  async * findPeer (id: PeerId, options: QueryOptions = {}): AsyncGenerator<FinalPeerEvent | QueryEvent> {
     this.log('findPeer %p', id)
 
     // Try to find locally
@@ -215,14 +215,14 @@ export class PeerRouting {
    * Kademlia 'node lookup' operation on a key, which could be a the
    * bytes from a multihash or a peer ID
    */
-  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}) {
+  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<DialingPeerEvent | QueryEvent> {
     this.log('getClosestPeers to %b', key)
     const id = await utils.convertBuffer(key)
     const tablePeers = this.routingTable.closestPeers(id)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     const peers = new PeerDistanceList(id, this.routingTable.kBucketSize)
-    await Promise.all(tablePeers.map(async peer => await peers.add(peer)))
+    await Promise.all(tablePeers.map(async peer => { await peers.add(peer) }))
 
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, signal }) {
       self.log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
@@ -235,7 +235,7 @@ export class PeerRouting {
       yield event
 
       if (event.name === 'PEER_RESPONSE') {
-        await Promise.all(event.closer.map(async peerData => await peers.add(peerData.id)))
+        await Promise.all(event.closer.map(async peerData => { await peers.add(peerData.id) }))
       }
     }
 
@@ -259,7 +259,7 @@ export class PeerRouting {
    *
    * Note: The peerStore is updated with new addresses found for the given peer.
    */
-  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: AbortOptions = {}) {
+  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: AbortOptions = {}): AsyncGenerator<DialingPeerEvent | QueryEvent> {
     for await (const event of this._getValueSingle(peer, key, options)) {
       if (event.name === 'PEER_RESPONSE') {
         if (event.record != null) {
@@ -284,7 +284,7 @@ export class PeerRouting {
    * Verify a record, fetching missing public keys from the network.
    * Throws an error if the record is invalid.
    */
-  async _verifyRecordOnline (record: DHTRecord) {
+  async _verifyRecordOnline (record: DHTRecord): Promise<void> {
     if (record.timeReceived == null) {
       throw new CodeError('invalid record received', 'ERR_INVALID_RECORD')
     }
@@ -296,7 +296,7 @@ export class PeerRouting {
    * Get the nearest peers to the given query, but if closer
    * than self
    */
-  async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId) {
+  async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId): Promise<PeerInfo[]> {
     const id = await utils.convertBuffer(key)
     const ids = this.routingTable.closestPeers(id)
     const output: PeerInfo[] = []

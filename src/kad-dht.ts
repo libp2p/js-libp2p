@@ -14,7 +14,7 @@ import {
   removePublicAddresses
 } from './utils.js'
 import { Logger, logger } from '@libp2p/logger'
-import type { QueryOptions, Validators, Selectors, DHT } from '@libp2p/interface-dht'
+import type { QueryOptions, Validators, Selectors, DHT, QueryEvent } from '@libp2p/interface-dht'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -207,11 +207,11 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): '@libp2p/kad-dht' {
     return '@libp2p/kad-dht'
   }
 
-  async onPeerConnect (peerData: PeerInfo) {
+  async onPeerConnect (peerData: PeerInfo): Promise<void> {
     this.log('peer %p connected with protocols %s', peerData.id, peerData.protocols)
 
     if (this.lan) {
@@ -235,21 +235,21 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
   /**
    * Is this DHT running.
    */
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  async getMode () {
+  async getMode (): Promise<'client' | 'server'> {
     return this.clientMode ? 'client' : 'server'
   }
 
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  async setMode (mode: 'client' | 'server') {
+  async setMode (mode: 'client' | 'server'): Promise<void> {
     await this.components.registrar.unhandle(this.protocol)
 
     if (mode === 'client') {
@@ -268,7 +268,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
   /**
    * Start listening to incoming connections.
    */
-  async start () {
+  async start (): Promise<void> {
     this.running = true
 
     // Only respond to queries when not in client mode
@@ -290,7 +290,7 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
    * Stop accepting incoming connections and sending outgoing
    * messages.
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.running = false
 
     await Promise.all([
@@ -307,14 +307,14 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
   /**
    * Store the given key/value pair in the DHT
    */
-  async * put (key: Uint8Array, value: Uint8Array, options: QueryOptions = {}) { // eslint-disable-line require-await
+  async * put (key: Uint8Array, value: Uint8Array, options: QueryOptions = {}): AsyncGenerator<any, void, undefined> {
     yield * this.contentFetching.put(key, value, options)
   }
 
   /**
    * Get the value that corresponds to the passed key
    */
-  async * get (key: Uint8Array, options: QueryOptions = {}) { // eslint-disable-line require-await
+  async * get (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     yield * this.contentFetching.get(key, options)
   }
 
@@ -323,14 +323,14 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
   /**
    * Announce to the network that we can provide given key's value
    */
-  async * provide (key: CID, options: QueryOptions = {}) { // eslint-disable-line require-await
+  async * provide (key: CID, options: QueryOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     yield * this.contentRouting.provide(key, this.components.addressManager.getAddresses(), options)
   }
 
   /**
    * Search the dht for providers of the given CID
    */
-  async * findProviders (key: CID, options: QueryOptions = {}) {
+  async * findProviders (key: CID, options: QueryOptions = {}): AsyncGenerator<QueryEvent, any, unknown> {
     yield * this.contentRouting.findProviders(key, options)
   }
 
@@ -339,18 +339,18 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
   /**
    * Search for a peer with the given ID
    */
-  async * findPeer (id: PeerId, options: QueryOptions = {}) { // eslint-disable-line require-await
+  async * findPeer (id: PeerId, options: QueryOptions = {}): AsyncGenerator<QueryEvent, any, unknown> {
     yield * this.peerRouting.findPeer(id, options)
   }
 
   /**
    * Kademlia 'node lookup' operation
    */
-  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}) {
+  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent, any, unknown> {
     yield * this.peerRouting.getClosestPeers(key, options)
   }
 
-  async refreshRoutingTable () {
-    await this.routingTableRefresh.refreshTable(true)
+  async refreshRoutingTable (): Promise<void> {
+    this.routingTableRefresh.refreshTable(true)
   }
 }

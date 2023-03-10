@@ -3,7 +3,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 /**
  * Count how many peers are in b but are not in a
  */
-export function countDiffPeers (a: PeerId[], b: PeerId[]) {
+export function countDiffPeers (a: PeerId[], b: PeerId[]): number {
   const s = new Set()
   a.forEach((p) => s.add(p.toString()))
 

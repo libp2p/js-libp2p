@@ -66,14 +66,14 @@ export class Providers implements Startable {
     this.started = false
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * Start the provider cleanup service
    */
-  async start () {
+  async start (): Promise<void> {
     if (this.started) {
       return
     }
@@ -93,7 +93,7 @@ export class Providers implements Startable {
   /**
    * Release any resources.
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.started = false
 
     if (this.cleaner != null) {
@@ -105,8 +105,8 @@ export class Providers implements Startable {
   /**
    * Check all providers if they are still valid, and if not delete them
    */
-  async _cleanup () {
-    return await this.syncQueue.add(async () => {
+  async _cleanup (): Promise<void> {
+    await this.syncQueue.add(async () => {
       const start = Date.now()
 
       let count = 0
@@ -174,7 +174,7 @@ export class Providers implements Startable {
   /**
    * Get the currently known provider peer ids for a given CID
    */
-  async _getProvidersMap (cid: CID) {
+  async _getProvidersMap (cid: CID): Promise<Map<string, Date>> {
     const cacheKey = makeProviderKey(cid)
     let provs: Map<string, Date> = this.cache.get(cacheKey)
 
@@ -189,8 +189,8 @@ export class Providers implements Startable {
   /**
    * Add a new provider for the given CID
    */
-  async addProvider (cid: CID, provider: PeerId) {
-    return await this.syncQueue.add(async () => {
+  async addProvider (cid: CID, provider: PeerId): Promise<void> {
+    await this.syncQueue.add(async () => {
       log('%p provides %s', provider, cid)
       const provs = await this._getProvidersMap(cid)
 
@@ -228,7 +228,7 @@ export class Providers implements Startable {
 /**
  * Encode the given key its matching datastore key
  */
-function makeProviderKey (cid: CID | string) {
+function makeProviderKey (cid: CID | string): string {
   const cidStr = typeof cid === 'string' ? cid : uint8ArrayToString(cid.multihash.bytes, 'base32')
 
   return `${PROVIDER_KEY_PREFIX}/${cidStr}`
@@ -237,7 +237,7 @@ function makeProviderKey (cid: CID | string) {
 /**
  * Write a provider into the given store
  */
-async function writeProviderEntry (store: Datastore, cid: CID, peer: PeerId, time: Date) { // eslint-disable-line require-await
+async function writeProviderEntry (store: Datastore, cid: CID, peer: PeerId, time: Date): Promise<void> {
   const dsKey = [
     makeProviderKey(cid),
     '/',
@@ -247,13 +247,13 @@ async function writeProviderEntry (store: Datastore, cid: CID, peer: PeerId, tim
   const key = new Key(dsKey)
   const buffer = Uint8Array.from(varint.encode(time.getTime()))
 
-  return await store.put(key, buffer)
+  await store.put(key, buffer)
 }
 
 /**
  * Parse the CID and provider peer id from the key
  */
-function parseProviderKey (key: Key) {
+function parseProviderKey (key: Key): { cid: string, peerId: string } {
   const parts = key.toString().split('/')
 
   if (parts.length !== 5) {
@@ -269,7 +269,7 @@ function parseProviderKey (key: Key) {
 /**
  * Load providers for the given CID from the store
  */
-async function loadProviders (store: Datastore, cid: CID) {
+async function loadProviders (store: Datastore, cid: CID): Promise<Map<string, Date>> {
   const providers = new Map<string, Date>()
   const query = store.query({ prefix: makeProviderKey(cid) })
 
@@ -281,6 +281,6 @@ async function loadProviders (store: Datastore, cid: CID) {
   return providers
 }
 
-function readTime (buf: Uint8Array) {
+function readTime (buf: Uint8Array): Date {
   return new Date(varint.decode(buf))
 }

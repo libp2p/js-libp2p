@@ -54,7 +54,7 @@ export class RPC {
   /**
    * Process incoming DHT messages
    */
-  async handleMessage (peerId: PeerId, msg: Message) {
+  async handleMessage (peerId: PeerId, msg: Message): Promise<Message | undefined> {
     try {
       await this.routingTable.add(peerId)
     } catch (err: any) {
@@ -75,7 +75,7 @@ export class RPC {
   /**
    * Handle incoming streams on the dht protocol
    */
-  onIncomingStream (data: IncomingStreamData) {
+  onIncomingStream (data: IncomingStreamData): void {
     Promise.resolve().then(async () => {
       const { stream, connection } = data
       const peerId = connection.remotePeer

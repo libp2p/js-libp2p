@@ -30,7 +30,7 @@ import map from 'it-map'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'VALUE'): Promise<ValueEvent>
-async function findEvent (events: AsyncIterable<QueryEvent>, name: string) {
+async function findEvent (events: AsyncIterable<QueryEvent>, name: string): Promise<QueryEvent> {
   const eventTypes = new Set<string>()
 
   const event = await last(
@@ -424,7 +424,7 @@ describe('KadDHT', () => {
       ])
 
       // provide values
-      await Promise.all(values.map(async (value) => await drain(dhts[3].provide(value.cid))))
+      await Promise.all(values.map(async (value) => { await drain(dhts[3].provide(value.cid)) }))
 
       // Expect an ADD_PROVIDER message to be sent to each peer for each value
       const fn = dhts[3].lan.network.sendMessage
@@ -528,7 +528,7 @@ describe('KadDHT', () => {
         tdht.connect(dhts[1], dhts[2])
       ])
 
-      await Promise.all(dhts.map(async (dht) => await drain(dht.provide(val.cid))))
+      await Promise.all(dhts.map(async (dht) => { await drain(dht.provide(val.cid)) }))
 
       const events = await all(dhts[0].findProviders(val.cid))
 
@@ -564,7 +564,7 @@ describe('KadDHT', () => {
         tdht.connect(dhts[1], dhts[2])
       ])
 
-      await Promise.all(dhts.map(async (dht) => await drain(dht.provide(val.cid))))
+      await Promise.all(dhts.map(async (dht) => { await drain(dht.provide(val.cid)) }))
 
       const events = await all(dhts[0].findProviders(val.cid))
 
@@ -713,7 +713,7 @@ describe('KadDHT', () => {
           throw new Error('Could not find DHT')
         }
 
-        return await tdht.connect(dhtA, dhtB)
+        await tdht.connect(dhtA, dhtB)
       }))
 
       // Get the alpha (3) closest peers to the key from the origin's
@@ -784,13 +784,9 @@ describe('KadDHT', () => {
 
       const dht = await tdht.spawn()
 
-      // TODO: Switch not closing well, but it will be removed
-      // (invalid transition: STOPPED -> done)
       await delay(100)
 
       await expect(all(dht.get(uint8ArrayFromString('/v/hello')))).to.eventually.be.rejected().property('code', 'ERR_NO_PEERS_IN_ROUTING_TABLE')
-
-      // TODO: after error switch
     })
 
     it('get should handle correctly an unexpected error', async function () {

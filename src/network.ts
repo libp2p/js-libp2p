@@ -22,6 +22,7 @@ import type { Stream } from '@libp2p/interface-connection'
 import { abortableDuplex } from 'abortable-iterator'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { KadDHTComponents } from './index.js'
+import type { QueryEvent } from '@libp2p/interface-dht'
 
 export interface NetworkInit {
   protocol: string
@@ -57,7 +58,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Start the network
    */
-  async start () {
+  async start (): Promise<void> {
     if (this.running) {
       return
     }
@@ -68,21 +69,21 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Stop all network activity
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.running = false
   }
 
   /**
    * Is the network online?
    */
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
   /**
    * Send a request and record RTT for latency measurements
    */
-  async * sendRequest (to: PeerId, msg: Message, options: AbortOptions = {}) {
+  async * sendRequest (to: PeerId, msg: Message, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       return
     }
@@ -118,7 +119,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Sends a message without expecting an answer
    */
-  async * sendMessage (to: PeerId, msg: Message, options: AbortOptions = {}) {
+  async * sendMessage (to: PeerId, msg: Message, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       return
     }
@@ -148,7 +149,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Write a message to the given stream
    */
-  async _writeMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
+  async _writeMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<void> {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }
@@ -166,7 +167,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
    * If no response is received after the specified timeout
    * this will error out.
    */
-  async _writeReadMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions) {
+  async _writeReadMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<Message> {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }

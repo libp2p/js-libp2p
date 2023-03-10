@@ -60,7 +60,7 @@ describe('Routing Table', () => {
     const ids = await createPeerIds(20)
 
     await Promise.all(
-      Array.from({ length: 1000 }).map(async () => await table.add(ids[random(ids.length - 1)]))
+      Array.from({ length: 1000 }).map(async () => { await table.add(ids[random(ids.length - 1)]) })
     )
 
     await Promise.all(
@@ -78,7 +78,7 @@ describe('Routing Table', () => {
     this.timeout(20 * 1000)
 
     const peers = await createPeerIds(10)
-    await Promise.all(peers.map(async (peer) => await table.add(peer)))
+    await Promise.all(peers.map(async (peer) => { await table.add(peer) }))
 
     const key = await kadUtils.convertPeerId(peers[2])
     expect(table.closestPeers(key, 10)).to.have.length(10)
@@ -92,7 +92,7 @@ describe('Routing Table', () => {
     this.timeout(10 * 1000)
 
     const peers = await createPeerIds(4)
-    await Promise.all(peers.map(async (peer) => await table.add(peer)))
+    await Promise.all(peers.map(async (peer) => { await table.add(peer) }))
 
     const id = peers[2]
     const key = await kadUtils.convertPeerId(id)
@@ -103,7 +103,7 @@ describe('Routing Table', () => {
     this.timeout(20 * 1000)
 
     const peers = await createPeerIds(18)
-    await Promise.all(peers.map(async (peer) => await table.add(peer)))
+    await Promise.all(peers.map(async (peer) => { await table.add(peer) }))
 
     const key = await kadUtils.convertPeerId(peers[2])
     expect(table.closestPeers(key, 15)).to.have.length(15)

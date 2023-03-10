@@ -74,7 +74,7 @@ describe('Providers', () => {
 
     const cids = hashes.map((h) => CID.createV0(h))
 
-    await Promise.all(cids.map(async cid => await providers.addProvider(cid, peers[0])))
+    await Promise.all(cids.map(async cid => { await providers.addProvider(cid, peers[0]) }))
     const provs = await Promise.all(cids.map(async cid => await providers.getProviders(cid)))
 
     expect(provs).to.have.length(100)

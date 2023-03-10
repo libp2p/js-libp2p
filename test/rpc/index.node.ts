@@ -69,7 +69,7 @@ describe('rpc', () => {
     const defer = pDefer()
     const msg = new Message(MESSAGE_TYPE.GET_VALUE, uint8ArrayFromString('hello'), 5)
 
-    const validateMessage = (res: Uint8ArrayList[]) => {
+    const validateMessage = (res: Uint8ArrayList[]): void => {
       const msg = Message.deserialize(res[0])
       expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
       expect(msg).to.have.property('closerPeers').eql([])

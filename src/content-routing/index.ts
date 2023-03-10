@@ -10,7 +10,7 @@ import {
   providerEvent
 } from '../query/events.js'
 import { logger } from '@libp2p/logger'
-import type { QueryEvent, QueryOptions } from '@libp2p/interface-dht'
+import type { PeerResponseEvent, ProviderEvent, QueryEvent, QueryOptions } from '@libp2p/interface-dht'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { RoutingTable } from '../routing-table/index.js'
@@ -58,7 +58,7 @@ export class ContentRouting {
    * Announce to the network that we can provide the value for a given key and
    * are contactable on the given multiaddrs
    */
-  async * provide (key: CID, multiaddrs: Multiaddr[], options: AbortOptions = {}) {
+  async * provide (key: CID, multiaddrs: Multiaddr[], options: AbortOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     this.log('provide %s', key)
 
     // Add peer as provider
@@ -124,7 +124,7 @@ export class ContentRouting {
   /**
    * Search the dht for up to `K` providers of the given CID.
    */
-  async * findProviders (key: CID, options: QueryOptions) {
+  async * findProviders (key: CID, options: QueryOptions): AsyncGenerator<PeerResponseEvent | ProviderEvent | QueryEvent> {
     const toFind = this.routingTable.kBucketSize
     const target = key.multihash.bytes
     const id = await convertBuffer(target)
@@ -147,7 +147,7 @@ export class ContentRouting {
       }
 
       yield peerResponseEvent({ from: this.components.peerId, messageType: MESSAGE_TYPE.GET_PROVIDERS, providers })
-      yield providerEvent({ from: this.components.peerId, providers: providers })
+      yield providerEvent({ from: this.components.peerId, providers })
     }
 
     // All done

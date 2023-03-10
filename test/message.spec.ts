@@ -15,7 +15,6 @@ describe('Message', () => {
 
     expect(msg).to.have.property('type', 'PING')
     expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
-    // TODO: confirm this works as expected
     expect(msg).to.have.property('clusterLevelRaw', 5)
     expect(msg).to.have.property('clusterLevel', 4)
   })

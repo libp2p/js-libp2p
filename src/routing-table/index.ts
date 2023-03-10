@@ -109,7 +109,7 @@ export class RoutingTable implements Startable {
     this.tagName = tagName ?? KAD_CLOSE_TAG_NAME
     this.tagValue = tagValue ?? KAD_CLOSE_TAG_VALUE
 
-    const updatePingQueueSizeMetric = () => {
+    const updatePingQueueSizeMetric = (): void => {
       this.metrics?.pingQueueSize.update(this.pingQueue.size)
       this.metrics?.pingRunning.update(this.pingQueue.pending)
     }
@@ -121,11 +121,11 @@ export class RoutingTable implements Startable {
     this._onPing = this._onPing.bind(this)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.running = true
 
     if (this.components.metrics != null) {
@@ -150,7 +150,7 @@ export class RoutingTable implements Startable {
     this._tagPeers(kBuck)
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     this.running = false
     this.pingQueue.clear()
     this.kb = undefined
@@ -161,7 +161,7 @@ export class RoutingTable implements Startable {
    * - this will lower the chances that connections to them get closed when
    * we reach connection limits
    */
-  _tagPeers (kBuck: KBucketTree) {
+  _tagPeers (kBuck: KBucketTree): void {
     let kClosest = new PeerSet()
 
     const updatePeerTags = utils.debounce(() => {
@@ -208,7 +208,7 @@ export class RoutingTable implements Startable {
    * `oldContacts` will not be empty and is the list of contacts that
    * have not been contacted for the longest.
    */
-  _onPing (oldContacts: KBucketPeer[], newContact: KBucketPeer) {
+  _onPing (oldContacts: KBucketPeer[], newContact: KBucketPeer): void {
     // add to a queue so multiple ping requests do not overlap and we don't
     // flood the network with ping requests if lots of newContact requests
     // are received
@@ -272,7 +272,7 @@ export class RoutingTable implements Startable {
   /**
    * Amount of currently stored peers
    */
-  get size () {
+  get size (): number {
     if (this.kb == null) {
       return 0
     }
@@ -323,14 +323,14 @@ export class RoutingTable implements Startable {
   /**
    * Add or update the routing table with the given peer
    */
-  async add (peer: PeerId) {
+  async add (peer: PeerId): Promise<void> {
     if (this.kb == null) {
       throw new Error('RoutingTable is not started')
     }
 
     const id = await utils.convertPeerId(peer)
 
-    this.kb.add({ id: id, peer: peer })
+    this.kb.add({ id, peer })
 
     this.log('added %p with kad id %b', peer, id)
 
@@ -340,7 +340,7 @@ export class RoutingTable implements Startable {
   /**
    * Remove a given peer from the table
    */
-  async remove (peer: PeerId) {
+  async remove (peer: PeerId): Promise<void> {
     if (this.kb == null) {
       throw new Error('RoutingTable is not started')
     }

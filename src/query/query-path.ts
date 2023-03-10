@@ -83,7 +83,7 @@ export interface QueryPathOptions {
  * Walks a path through the DHT, calling the passed query function for
  * every peer encountered that we have not seen before
  */
-export async function * queryPath (options: QueryPathOptions) {
+export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
   const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, cleanUp, queryFuncTimeout, log, peersSeen } = options
   // Only ALPHA node/value lookups are allowed at any given time for each process
   // https://github.com/libp2p/specs/tree/master/kad-dht#alpha-concurrency-parameter-%CE%B1
@@ -98,7 +98,7 @@ export async function * queryPath (options: QueryPathOptions) {
    * Adds the passed peer to the query queue if it's not us and no
    * other path has passed through this peer
    */
-  function queryPeer (peer: PeerId, peerKadId: Uint8Array) {
+  function queryPeer (peer: PeerId, peerKadId: Uint8Array): void {
     if (peer == null) {
       return
     }
@@ -196,12 +196,12 @@ export async function * queryPath (options: QueryPathOptions) {
   yield * toGenerator(queue, signal, cleanUp, log)
 }
 
-async function * toGenerator (queue: Queue, signal: AbortSignal, cleanUp: EventEmitter<CleanUpEvents>, log: Logger) {
+async function * toGenerator (queue: Queue, signal: AbortSignal, cleanUp: EventEmitter<CleanUpEvents>, log: Logger): AsyncGenerator<QueryEvent, void, undefined> {
   let deferred = defer()
   let running = true
   const results: QueryEvent[] = []
 
-  const cleanup = () => {
+  const cleanup = (): void => {
     if (!running) {
       return
     }

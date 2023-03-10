@@ -13,7 +13,7 @@ export class PeerList {
   /**
    * Add a new peer. Returns `true` if it was a new one
    */
-  push (peerId: PeerId) {
+  push (peerId: PeerId): boolean {
     if (!this.has(peerId)) {
       this.list.push(peerId)
 
@@ -26,7 +26,7 @@ export class PeerList {
   /**
    * Check if this PeerInfo is already in here
    */
-  has (peerId: PeerId) {
+  has (peerId: PeerId): boolean {
     const match = this.list.find((i) => i.equals(peerId))
     return Boolean(match)
   }
@@ -34,21 +34,21 @@ export class PeerList {
   /**
    * Get the list as an array
    */
-  toArray () {
+  toArray (): PeerId[] {
     return this.list.slice()
   }
 
   /**
    * Remove the last element
    */
-  pop () {
+  pop (): PeerId | undefined {
     return this.list.pop()
   }
 
   /**
    * The length of the list
    */
-  get length () {
+  get length (): number {
     return this.list.length
   }
 }

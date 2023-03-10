@@ -20,7 +20,7 @@ export class AddProviderHandler implements DHTMessageHandler {
     this.providers = providers
   }
 
-  async handle (peerId: PeerId, msg: Message) {
+  async handle (peerId: PeerId, msg: Message): Promise<Message | undefined> {
     log('start')
 
     if (msg.key == null || msg.key.length === 0) {

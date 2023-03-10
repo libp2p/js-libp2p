@@ -6,7 +6,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 const log = logger('libp2p:kad-dht:rpc:handlers:ping')
 
 export class PingHandler implements DHTMessageHandler {
-  async handle (peerId: PeerId, msg: Message) {
+  async handle (peerId: PeerId, msg: Message): Promise<Message> {
     log('ping from %p', peerId)
     return msg
   }

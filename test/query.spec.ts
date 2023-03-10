@@ -26,13 +26,18 @@ interface TopologyEntry {
   closerPeers?: number[]
   event: QueryEvent
 }
+type Topology = Record<string, {
+  delay?: number | undefined
+  error?: Error | undefined
+  event: QueryEvent
+}>
 
 describe('QueryManager', () => {
   let ourPeerId: PeerId
   let peers: PeerId[]
   let key: Uint8Array
 
-  function createTopology (opts: Record<number, { delay?: number, error?: Error, value?: Uint8Array, closerPeers?: number[] }>) {
+  function createTopology (opts: Record<number, { delay?: number, error?: Error, value?: Uint8Array, closerPeers?: number[] }>): Topology {
     const topology: Record<string, { delay?: number, error?: Error, event: QueryEvent }> = {}
 
     Object.keys(opts).forEach(key => {
@@ -72,7 +77,7 @@ describe('QueryManager', () => {
     return topology
   }
 
-  function createQueryFunction (topology: Record<string, { delay?: number, event: QueryEvent }>) {
+  function createQueryFunction (topology: Record<string, { delay?: number, event: QueryEvent }>): QueryFunc {
     const queryFunc: QueryFunc = async function * ({ peer }) {
       const res = topology[peer.toString()]
 
@@ -561,7 +566,7 @@ describe('QueryManager', () => {
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
       visited.push(peer)
 
-      const getResult = async () => {
+      const getResult = async (): Promise<QueryEvent> => {
         const res = topology[peer.toString()]
         // this delay is necessary so `dhtA.stop` has time to stop the
         // requests before they all complete

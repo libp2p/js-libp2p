@@ -82,7 +82,7 @@ export function removePublicAddresses (peer: PeerInfo): PeerInfo {
 /**
  * Creates a DHT ID by hashing a given Uint8Array
  */
-export async function convertBuffer (buf: Uint8Array) {
+export async function convertBuffer (buf: Uint8Array): Promise<Uint8Array> {
   const multihash = await sha256.digest(buf)
 
   return multihash.digest
@@ -91,61 +91,61 @@ export async function convertBuffer (buf: Uint8Array) {
 /**
  * Creates a DHT ID by hashing a Peer ID
  */
-export async function convertPeerId (peerId: PeerId) {
+export async function convertPeerId (peerId: PeerId): Promise<Uint8Array> {
   return await convertBuffer(peerId.toBytes())
 }
 
 /**
  * Convert a Uint8Array to their SHA2-256 hash
  */
-export function bufferToKey (buf: Uint8Array) {
+export function bufferToKey (buf: Uint8Array): Key {
   return new Key('/' + uint8ArrayToString(buf, 'base32'), false)
 }
 
 /**
  * Convert a Uint8Array to their SHA2-256 hash
  */
-export function bufferToRecordKey (buf: Uint8Array) {
+export function bufferToRecordKey (buf: Uint8Array): Key {
   return new Key(`${RECORD_KEY_PREFIX}/${uint8ArrayToString(buf, 'base32')}`, false)
 }
 
 /**
  * Generate the key for a public key.
  */
-export function keyForPublicKey (peer: PeerId) {
+export function keyForPublicKey (peer: PeerId): Uint8Array {
   return uint8ArrayConcat([
     PK_PREFIX,
     peer.toBytes()
   ])
 }
 
-export function isPublicKeyKey (key: Uint8Array) {
+export function isPublicKeyKey (key: Uint8Array): boolean {
   return uint8ArrayToString(key.subarray(0, 4)) === '/pk/'
 }
 
-export function isIPNSKey (key: Uint8Array) {
+export function isIPNSKey (key: Uint8Array): boolean {
   return uint8ArrayToString(key.subarray(0, 4)) === '/ipns/'
 }
 
-export function fromPublicKeyKey (key: Uint8Array) {
+export function fromPublicKeyKey (key: Uint8Array): PeerId {
   return peerIdFromBytes(key.subarray(4))
 }
 
 /**
  * Create a new put record, encodes and signs it if enabled
  */
-export function createPutRecord (key: Uint8Array, value: Uint8Array) {
+export function createPutRecord (key: Uint8Array, value: Uint8Array): Uint8Array {
   const timeReceived = new Date()
   const rec = new Libp2pRecord(key, value, timeReceived)
 
   return rec.serialize()
 }
 
-export function debounce (callback: () => void, wait: number = 100) {
+export function debounce (callback: () => void, wait: number = 100): () => void {
   let timeout: ReturnType<typeof setTimeout>
 
-  return () => {
+  return (): void => {
     clearTimeout(timeout)
-    timeout = setTimeout(() => callback(), wait)
+    timeout = setTimeout(() => { callback() }, wait)
   }
 }

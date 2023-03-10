@@ -12,6 +12,7 @@ import type { PeerRouting } from '../../peer-routing/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-providers')
 
@@ -40,7 +41,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
     this.lan = Boolean(lan)
   }
 
-  async handle (peerId: PeerId, msg: Message) {
+  async handle (peerId: PeerId, msg: Message): Promise<Message> {
     let cid
     try {
       cid = CID.decode(msg.key)
@@ -71,13 +72,13 @@ export class GetProvidersHandler implements DHTMessageHandler {
     return response
   }
 
-  async _getAddresses (peerId: PeerId) {
+  async _getAddresses (peerId: PeerId): Promise<Multiaddr[]> {
     const addrs = await this.components.peerStore.addressBook.get(peerId)
 
     return addrs.map(address => address.multiaddr)
   }
 
-  async _getPeers (peerIds: PeerId[]) {
+  async _getPeers (peerIds: PeerId[]): Promise<PeerInfo[]> {
     const output: PeerInfo[] = []
     const addrFilter = this.lan ? removePublicAddresses : removePrivateAddresses
 

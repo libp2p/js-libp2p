@@ -3,7 +3,7 @@ import { CodeError } from '@libp2p/interfaces/errors'
 import merge from 'it-merge'
 import { queryErrorEvent } from './query/events.js'
 import type { KadDHT } from './kad-dht.js'
-import type { DualDHT, QueryOptions } from '@libp2p/interface-dht'
+import type { DualDHT, QueryEvent, QueryOptions } from '@libp2p/interface-dht'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import type { CID } from 'multiformats'
@@ -47,35 +47,35 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): '@libp2p/dual-kad-dht' {
     return '@libp2p/dual-kad-dht'
   }
 
   /**
    * Is this DHT running.
    */
-  isStarted () {
+  isStarted (): boolean {
     return this.wan.isStarted() && this.lan.isStarted()
   }
 
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  async getMode () {
+  async getMode (): Promise<'client' | 'server'> {
     return await this.wan.getMode()
   }
 
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  async setMode (mode: 'client' | 'server') {
+  async setMode (mode: 'client' | 'server'): Promise<void> {
     await this.wan.setMode(mode)
   }
 
   /**
    * Start listening to incoming connections.
    */
-  async start () {
+  async start (): Promise<void> {
     await Promise.all([
       this.lan.start(),
       this.wan.start()
@@ -86,7 +86,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
    * Stop accepting incoming connections and sending outgoing
    * messages.
    */
-  async stop () {
+  async stop (): Promise<void> {
     await Promise.all([
       this.lan.stop(),
       this.wan.stop()
@@ -96,7 +96,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
   /**
    * Store the given key/value pair in the DHT
    */
-  async * put (key: Uint8Array, value: Uint8Array, options: QueryOptions = {}) {
+  async * put (key: Uint8Array, value: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     for await (const event of merge(
       this.lan.put(key, value, options),
       this.wan.put(key, value, options)
@@ -108,7 +108,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
   /**
    * Get the value that corresponds to the passed key
    */
-  async * get (key: Uint8Array, options: QueryOptions = {}) { // eslint-disable-line require-await
+  async * get (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     let queriedPeers = false
     let foundValue = false
 
@@ -152,7 +152,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
   /**
    * Announce to the network that we can provide given key's value
    */
-  async * provide (key: CID, options: AbortOptions = {}) { // eslint-disable-line require-await
+  async * provide (key: CID, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
     let sent = 0
     let success = 0
     const errors = []
@@ -194,7 +194,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
   /**
    * Search the dht for up to `K` providers of the given CID
    */
-  async * findProviders (key: CID, options: QueryOptions = {}) {
+  async * findProviders (key: CID, options: QueryOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     yield * merge(
       this.lan.findProviders(key, options),
       this.wan.findProviders(key, options)
@@ -206,7 +206,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
   /**
    * Search for a peer with the given ID
    */
-  async * findPeer (id: PeerId, options: QueryOptions = {}) {
+  async * findPeer (id: PeerId, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     let queriedPeers = false
 
     for await (const event of merge(
@@ -228,14 +228,14 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
   /**
    * Kademlia 'node lookup' operation
    */
-  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}) {
+  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     yield * merge(
       this.lan.getClosestPeers(key, options),
       this.wan.getClosestPeers(key, options)
     )
   }
 
-  async refreshRoutingTable () {
+  async refreshRoutingTable (): Promise<void> {
     await Promise.all([
       this.lan.refreshRoutingTable(),
       this.wan.refreshRoutingTable()

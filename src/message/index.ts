@@ -42,7 +42,7 @@ export class Message {
   /**
    * @type {number}
    */
-  get clusterLevel () {
+  get clusterLevel (): number {
     const level = this.clusterLevelRaw - 1
     if (level < 0) {
       return 0
@@ -58,7 +58,7 @@ export class Message {
   /**
    * Encode into protobuf
    */
-  serialize () {
+  serialize (): Uint8Array {
     return PBMessage.encode({
       key: this.key,
       type: this.type,
@@ -72,7 +72,7 @@ export class Message {
   /**
    * Decode from protobuf
    */
-  static deserialize (raw: Uint8ArrayList | Uint8Array) {
+  static deserialize (raw: Uint8ArrayList | Uint8Array): Message {
     const dec = PBMessage.decode(raw)
 
     const msg = new Message(dec.type ?? PBMessage.MessageType.PUT_VALUE, dec.key ?? Uint8Array.from([]), dec.clusterLevelRaw ?? 0)
@@ -87,7 +87,7 @@ export class Message {
   }
 }
 
-function toPbPeer (peer: PeerInfo) {
+function toPbPeer (peer: PeerInfo): PBPeer {
   const output: PBPeer = {
     id: peer.id.toBytes(),
     addrs: (peer.multiaddrs ?? []).map((m) => m.bytes),
@@ -97,7 +97,7 @@ function toPbPeer (peer: PeerInfo) {
   return output
 }
 
-function fromPbPeer (peer: PBMessage.Peer) {
+function fromPbPeer (peer: PBMessage.Peer): PeerInfo {
   if (peer.id == null) {
     throw new Error('Invalid peer in message')
   }

@@ -17,7 +17,7 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
-async function fromGo (targetCpl: number, randPrefix: number, localKadId: string) {
+async function fromGo (targetCpl: number, randPrefix: number, localKadId: string): Promise<Uint8Array> {
   const { stdout } = await execa('./generate-peer', [targetCpl.toString(), randPrefix.toString(), localKadId], {
     cwd: dirname
   })

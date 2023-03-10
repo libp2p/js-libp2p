@@ -10,6 +10,7 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import type { RoutingTable } from './index.js'
 import type { Logger } from '@libp2p/logger'
 import type { PeerRouting } from '../peer-routing/index.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 /**
  * Cannot generate random KadIds longer than this + 1
@@ -49,12 +50,12 @@ export class RoutingTableRefresh {
     this.refreshTable = this.refreshTable.bind(this)
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.log(`refreshing routing table every ${this.refreshInterval}ms`)
     this.refreshTable(true)
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     if (this.refreshTimeoutId != null) {
       clearTimeout(this.refreshTimeoutId)
     }
@@ -66,7 +67,7 @@ export class RoutingTableRefresh {
    * that is close to the requested peer ID and query that, then network
    * peers will tell us who they know who is close to the fake ID
    */
-  refreshTable (force: boolean = false) {
+  refreshTable (force: boolean = false): void {
     this.log('refreshing routing table')
 
     const prefixLength = this._maxCommonPrefix()
@@ -123,7 +124,7 @@ export class RoutingTableRefresh {
     })
   }
 
-  async _refreshCommonPrefixLength (cpl: number, lastRefresh: Date, force: boolean) {
+  async _refreshCommonPrefixLength (cpl: number, lastRefresh: Date, force: boolean): Promise<void> {
     if (!force && lastRefresh.getTime() > (Date.now() - this.refreshInterval)) {
       this.log('not running refresh for cpl %s as time since last refresh not above interval', cpl)
       return
@@ -146,7 +147,7 @@ export class RoutingTableRefresh {
     }
   }
 
-  _getTrackedCommonPrefixLengthsForRefresh (maxCommonPrefix: number) {
+  _getTrackedCommonPrefixLengthsForRefresh (maxCommonPrefix: number): Date[] {
     if (maxCommonPrefix > MAX_COMMON_PREFIX_LENGTH) {
       maxCommonPrefix = MAX_COMMON_PREFIX_LENGTH
     }
@@ -161,7 +162,7 @@ export class RoutingTableRefresh {
     return dates
   }
 
-  async _generateRandomPeerId (targetCommonPrefixLength: number) {
+  async _generateRandomPeerId (targetCommonPrefixLength: number): Promise<PeerId> {
     if (this.routingTable.kb == null) {
       throw new Error('Routing table not started')
     }
@@ -174,7 +175,7 @@ export class RoutingTableRefresh {
     return peerIdFromBytes(key)
   }
 
-  async _makePeerId (localKadId: Uint8Array, randomPrefix: number, targetCommonPrefixLength: number) {
+  async _makePeerId (localKadId: Uint8Array, randomPrefix: number, targetCommonPrefixLength: number): Promise<Uint8Array> {
     if (targetCommonPrefixLength > MAX_COMMON_PREFIX_LENGTH) {
       throw new Error(`Cannot generate peer ID for common prefix length greater than ${MAX_COMMON_PREFIX_LENGTH}`)
     }
@@ -208,7 +209,7 @@ export class RoutingTableRefresh {
    * returns the maximum common prefix length between any peer in the table
    * and the current peer
    */
-  _maxCommonPrefix () {
+  _maxCommonPrefix (): number {
     // xor our KadId with every KadId in the k-bucket tree,
     // return the longest id prefix that is the same
     let prefixLength = 0
@@ -225,7 +226,7 @@ export class RoutingTableRefresh {
   /**
    * Returns the number of peers in the table with a given prefix length
    */
-  _numPeersForCpl (prefixLength: number) {
+  _numPeersForCpl (prefixLength: number): number {
     let count = 0
 
     for (const length of this._prefixLengths()) {
@@ -240,7 +241,7 @@ export class RoutingTableRefresh {
   /**
    * Yields the common prefix length of every peer in the table
    */
-  * _prefixLengths () {
+  * _prefixLengths (): Generator<number> {
     if (this.routingTable.kb == null) {
       return
     }

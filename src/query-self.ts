@@ -44,11 +44,11 @@ export class QuerySelf implements Startable {
     this.queryTimeout = queryTimeout ?? QUERY_SELF_TIMEOUT
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
-  async start () {
+  async start (): Promise<void> {
     if (this.running) {
       return
     }
@@ -57,7 +57,7 @@ export class QuerySelf implements Startable {
     this._querySelf()
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     this.running = false
 
     if (this.timeoutId != null) {
@@ -69,7 +69,7 @@ export class QuerySelf implements Startable {
     }
   }
 
-  _querySelf () {
+  _querySelf (): void {
     Promise.resolve().then(async () => {
       const timeoutController = new TimeoutController(this.queryTimeout)
 

@@ -34,7 +34,7 @@ export class GetValueHandler implements DHTMessageHandler {
     this.peerRouting = peerRouting
   }
 
-  async handle (peerId: PeerId, msg: Message) {
+  async handle (peerId: PeerId, msg: Message): Promise<Message> {
     const key = msg.key
 
     log('%p asked for key %b', peerId, key)
@@ -91,11 +91,11 @@ export class GetValueHandler implements DHTMessageHandler {
 
   /**
    * Try to fetch a given record by from the local datastore.
-   * Returns the record iff it is still valid, meaning
+   * Returns the record if it is still valid, meaning
    * - it was either authored by this node, or
    * - it was received less than `MAX_RECORD_AGE` ago.
    */
-  async _checkLocalDatastore (key: Uint8Array) {
+  async _checkLocalDatastore (key: Uint8Array): Promise<Libp2pRecord | undefined> {
     log('checkLocalDatastore looking for %b', key)
     const dsKey = bufferToRecordKey(key)
 

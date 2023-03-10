@@ -40,7 +40,7 @@ export class FindNodeHandler implements DHTMessageHandler {
   /**
    * Process `FindNode` DHT messages
    */
-  async handle (peerId: PeerId, msg: Message) {
+  async handle (peerId: PeerId, msg: Message): Promise<Message> {
     log('incoming request from %p for peers closer to %b', peerId, msg.key)
 
     let closer: PeerInfo[] = []

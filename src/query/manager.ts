@@ -12,7 +12,7 @@ import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { QueryFunc } from './types.js'
-import type { QueryOptions } from '@libp2p/interface-dht'
+import type { QueryEvent, QueryOptions } from '@libp2p/interface-dht'
 import { PeerSet } from '@libp2p/peer-collections'
 import type { Metric, Metrics } from '@libp2p/interface-metrics'
 
@@ -59,14 +59,14 @@ export class QueryManager implements Startable {
     this.queries = 0
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
   /**
    * Starts the query manager
    */
-  async start () {
+  async start (): Promise<void> {
     this.running = true
 
     if (this.components.metrics != null && this.metrics == null) {
@@ -80,7 +80,7 @@ export class QueryManager implements Startable {
   /**
    * Stops all queries
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.running = false
 
     for (const controller of this.controllers) {
@@ -90,7 +90,7 @@ export class QueryManager implements Startable {
     this.controllers.clear()
   }
 
-  async * run (key: Uint8Array, peers: PeerId[], queryFunc: QueryFunc, options: QueryOptions = {}) {
+  async * run (key: Uint8Array, peers: PeerId[], queryFunc: QueryFunc, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       throw new Error('QueryManager not started')
     }

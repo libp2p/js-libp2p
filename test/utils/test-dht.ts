@@ -15,17 +15,18 @@ import { start } from '@libp2p/interfaces/startable'
 import delay from 'delay'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:kad-dht:test-dht')
 
 export class TestDHT {
-  private readonly peers: Map<string, { dht: DualKadDHT, registrar: Registrar}>
+  private readonly peers: Map<string, { dht: DualKadDHT, registrar: Registrar }>
 
   constructor () {
     this.peers = new Map()
   }
 
-  async spawn (options: Partial<KadDHTInit> = {}, autoStart = true) {
+  async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<DualKadDHT> {
     const components: KadDHTComponents = {
       peerId: await createPeerId(),
       datastore: new MemoryDatastore(),
@@ -93,7 +94,7 @@ export class TestDHT {
       Promise.all([
         components.peerStore.addressBook.add(peerData.id, peerData.multiaddrs),
         components.peerStore.protoBook.set(peerData.id, peerData.protocols)
-      ]).catch(err => log.error(err))
+      ]).catch(err => { log.error(err) })
     })
 
     if (autoStart) {
@@ -108,7 +109,7 @@ export class TestDHT {
     return dht
   }
 
-  async connect (dhtA: DualKadDHT, dhtB: DualKadDHT) {
+  async connect (dhtA: DualKadDHT, dhtB: DualKadDHT): Promise<void> {
     // need addresses in the address book otherwise we won't know whether to add
     // the peer to the public or private DHT and will do nothing
     await dhtA.components.peerStore.addressBook.add(dhtB.components.peerId, dhtB.components.addressManager.getAddresses())
@@ -124,7 +125,7 @@ export class TestDHT {
       await checkConnected(dhtA.wan, dhtB.wan)
     }
 
-    async function checkConnected (a: KadDHT, b: KadDHT) {
+    async function checkConnected (a: KadDHT, b: KadDHT): Promise<PeerId[]> {
       const routingTableChecks = []
 
       routingTableChecks.push(async () => {
@@ -161,7 +162,7 @@ export class TestDHT {
 
   async teardown (): Promise<void> {
     await Promise.all(
-      Array.from(this.peers.entries()).map(async ([_, { dht }]) => await dht.stop())
+      Array.from(this.peers.entries()).map(async ([_, { dht }]) => { await dht.stop() })
     )
     this.peers.clear()
   }

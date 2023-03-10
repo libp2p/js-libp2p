@@ -36,14 +36,14 @@ export class TopologyListener extends EventEmitter<TopologyListenerEvents> imple
     this.protocol = protocol
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
   /**
    * Start the network
    */
-  async start () {
+  async start (): Promise<void> {
     if (this.running) {
       return
     }
@@ -65,7 +65,7 @@ export class TopologyListener extends EventEmitter<TopologyListenerEvents> imple
   /**
    * Stop all network activity
    */
-  stop () {
+  async stop (): Promise<void> {
     this.running = false
 
     // unregister protocol and handlers

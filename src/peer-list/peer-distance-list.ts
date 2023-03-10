@@ -33,21 +33,21 @@ export class PeerDistanceList {
   /**
    * The length of the list
    */
-  get length () {
+  get length (): number {
     return this.peerDistances.length
   }
 
   /**
    * The peerIds in the list, in order of distance from the origin key
    */
-  get peers () {
+  get peers (): PeerId[] {
     return this.peerDistances.map(pd => pd.peerId)
   }
 
   /**
    * Add a peerId to the list.
    */
-  async add (peerId: PeerId) {
+  async add (peerId: PeerId): Promise<void> {
     if (this.peerDistances.find(pd => pd.peerId.equals(peerId)) != null) {
       return
     }
@@ -67,7 +67,7 @@ export class PeerDistanceList {
    * Indicates whether any of the peerIds passed as a parameter are closer
    * to the origin key than the furthest peerId in the PeerDistanceList.
    */
-  async anyCloser (peerIds: PeerId[]) {
+  async anyCloser (peerIds: PeerId[]): Promise<boolean> {
     if (peerIds.length === 0) {
       return false
     }

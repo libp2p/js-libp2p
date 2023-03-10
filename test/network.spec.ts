@@ -29,7 +29,7 @@ describe('Network', () => {
     })
   })
 
-  after(async () => await tdht.teardown())
+  after(async () => { await tdht.teardown() })
 
   describe('sendRequest', () => {
     it('send and response echo', async () => {
@@ -45,7 +45,7 @@ describe('Network', () => {
     it('send and response different messages', async () => {
       const defer = pDefer()
       let i = 0
-      const finish = () => {
+      const finish = (): void => {
         if (i++ === 1) {
           defer.resolve()
         }

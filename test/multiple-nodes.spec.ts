@@ -26,7 +26,7 @@ describe('multiple nodes', function () {
     const range = Array.from(Array(n - 1).keys())
 
     // connect the last one with the others one by one
-    return await Promise.all(range.map(async (i) => await tdht.connect(dhts[n - 1], dhts[i])))
+    return await Promise.all(range.map(async (i) => { await tdht.connect(dhts[n - 1], dhts[i]) }))
   })
 
   afterEach(async function () {

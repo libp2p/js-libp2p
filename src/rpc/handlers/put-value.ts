@@ -29,7 +29,7 @@ export class PutValueHandler implements DHTMessageHandler {
     this.validators = validators
   }
 
-  async handle (peerId: PeerId, msg: Message) {
+  async handle (peerId: PeerId, msg: Message): Promise<Message> {
     const key = msg.key
     this.log('%p asked us to store value for key %b', peerId, key)
 
