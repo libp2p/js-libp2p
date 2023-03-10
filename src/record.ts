@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Record {
   key: Uint8Array
@@ -23,17 +24,17 @@ export namespace Record {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.key != null && obj.key.byteLength > 0)) {
+        if ((obj.key != null && obj.key.byteLength > 0)) {
           w.uint32(10)
           w.bytes(obj.key)
         }
 
-        if (opts.writeDefaults === true || (obj.value != null && obj.value.byteLength > 0)) {
+        if ((obj.value != null && obj.value.byteLength > 0)) {
           w.uint32(18)
           w.bytes(obj.value)
         }
 
-        if (opts.writeDefaults === true || obj.timeReceived !== '') {
+        if ((obj.timeReceived != null && obj.timeReceived !== '')) {
           w.uint32(42)
           w.string(obj.timeReceived)
         }
@@ -76,7 +77,7 @@ export namespace Record {
     return _codec
   }
 
-  export const encode = (obj: Record): Uint8Array => {
+  export const encode = (obj: Partial<Record>): Uint8Array => {
     return encodeMessage(obj, Record.codec())
   }
 
