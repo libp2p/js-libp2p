@@ -62,7 +62,7 @@ export async function createFromProtobuf (buf: Uint8Array): Promise<PeerId> {
   } = PeerIdProto.decode(buf)
 
   return await createFromParts(
-    id,
+    id ?? new Uint8Array(0),
     privKey,
     pubKey
   )

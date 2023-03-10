@@ -2,13 +2,14 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerIdProto {
-  id: Uint8Array
+  id?: Uint8Array
   pubKey?: Uint8Array
   privKey?: Uint8Array
 }
@@ -23,7 +24,7 @@ export namespace PeerIdProto {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.id != null && obj.id.byteLength > 0)) {
+        if (obj.id != null) {
           w.uint32(10)
           w.bytes(obj.id)
         }
@@ -42,9 +43,7 @@ export namespace PeerIdProto {
           w.ldelim()
         }
       }, (reader, length) => {
-        const obj: any = {
-          id: new Uint8Array(0)
-        }
+        const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
 
@@ -74,7 +73,7 @@ export namespace PeerIdProto {
     return _codec
   }
 
-  export const encode = (obj: PeerIdProto): Uint8Array => {
+  export const encode = (obj: Partial<PeerIdProto>): Uint8Array => {
     return encodeMessage(obj, PeerIdProto.codec())
   }
 
