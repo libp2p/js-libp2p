@@ -1,3 +1,17 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.0...v6.0.1) (2023-03-10)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([258b856](https://github.com/libp2p/js-libp2p-floodsub/commit/258b856897c2f1db052dcdf5b29a7bbd650de673))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([3e5da6a](https://github.com/libp2p/js-libp2p-floodsub/commit/3e5da6ac7fb17a064125b21ea4e7a3d313b58800))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([cac8712](https://github.com/libp2p/js-libp2p-floodsub/commit/cac87120e169818febb02df4552562383f8557ea))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#215](https://github.com/libp2p/js-libp2p-floodsub/issues/215)) ([8a8b243](https://github.com/libp2p/js-libp2p-floodsub/commit/8a8b243210d6c66eb03bcfbd700f434c8bd86810))
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v5.0.0...v6.0.0) (2023-01-06)
 
 
