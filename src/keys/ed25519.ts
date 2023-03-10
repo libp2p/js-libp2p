@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { promisify } from 'util'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import type { Uint8ArrayKeyPair } from './interface.js'
 
 const keypair = promisify(crypto.generateKeyPair)
 
@@ -34,7 +35,7 @@ function derivePublicKey (privateKey: Uint8Array): Uint8Array {
   return uint8arrayFromString(jwk.x, 'base64url')
 }
 
-export async function generateKey () {
+export async function generateKey (): Promise<Uint8ArrayKeyPair> {
   const key = await keypair('ed25519', {
     publicKeyEncoding: { type: 'spki', format: 'jwk' },
     privateKeyEncoding: { type: 'pkcs8', format: 'jwk' }
@@ -54,7 +55,7 @@ export async function generateKey () {
 /**
  * Generate keypair from a 32 byte uint8array
  */
-export async function generateKeyFromSeed (seed: Uint8Array) {
+export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8ArrayKeyPair> {
   if (seed.length !== KEYS_BYTE_LENGTH) {
     throw new TypeError('"seed" must be 32 bytes in length.')
   } else if (!(seed instanceof Uint8Array)) {
@@ -70,7 +71,7 @@ export async function generateKeyFromSeed (seed: Uint8Array) {
   }
 }
 
-export async function hashAndSign (key: Uint8Array, msg: Uint8Array) {
+export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Buffer> {
   if (!(key instanceof Uint8Array)) {
     throw new TypeError('"key" must be a node.js Buffer, or Uint8Array.')
   }
@@ -101,7 +102,7 @@ export async function hashAndSign (key: Uint8Array, msg: Uint8Array) {
   return crypto.sign(null, msg, obj)
 }
 
-export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array) {
+export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
   if (key.byteLength !== PUBLIC_KEY_BYTE_LENGTH) {
     throw new TypeError('"key" must be 32 bytes in length.')
   } else if (!(key instanceof Uint8Array)) {
@@ -126,7 +127,7 @@ export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint
   return crypto.verify(null, msg, obj, sig)
 }
 
-function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array) {
+function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {
   const privateKey = new Uint8Array(PRIVATE_KEY_BYTE_LENGTH)
   for (let i = 0; i < KEYS_BYTE_LENGTH; i++) {
     privateKey[i] = privateKeyRaw[i]

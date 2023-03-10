@@ -81,10 +81,10 @@ describe('RSA', function () {
     expect(valid).to.be.eql(true)
   })
 
-  it('encrypt and decrypt', async () => {
+  it('encrypt and decrypt', () => {
     const data = uint8ArrayFromString('hello world')
-    const enc = await key.public.encrypt(data)
-    const dec = await key.decrypt(enc)
+    const enc = key.public.encrypt(data)
+    const dec = key.decrypt(enc)
     expect(dec).to.be.eql(data)
   })
 

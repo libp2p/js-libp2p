@@ -94,7 +94,7 @@ describe('AES-CTR', () => {
   })
 })
 
-async function encryptAndDecrypt (cipher: AESCipher) {
+async function encryptAndDecrypt (cipher: AESCipher): Promise<void> {
   const data = new Uint8Array(100)
   data.fill(Math.ceil(Math.random() * 100))
 

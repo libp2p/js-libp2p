@@ -6,7 +6,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 
-export function bigIntegerToUintBase64url (num: { abs: () => any}, len?: number) {
+export function bigIntegerToUintBase64url (num: { abs: () => any }, len?: number): string {
   // Call `.abs()` to convert to unsigned
   let buf = Uint8Array.from(num.abs().toByteArray()) // toByteArray converts to big endian
 
@@ -30,7 +30,7 @@ export function base64urlToBigInteger (str: string): typeof forge.jsbn.BigIntege
   return new forge.jsbn.BigInteger(uint8ArrayToString(buf, 'base16'), 16)
 }
 
-export function base64urlToBuffer (str: string, len?: number) {
+export function base64urlToBuffer (str: string, len?: number): Uint8Array {
   let buf = uint8ArrayFromString(str, 'base64urlpad')
 
   if (len != null) {

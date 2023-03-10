@@ -5,7 +5,7 @@ const CIPHER_MODES = {
   32: 'aes-256-ctr'
 }
 
-export function cipherMode (key: Uint8Array) {
+export function cipherMode (key: Uint8Array): string {
   if (key.length === 16 || key.length === 32) {
     return CIPHER_MODES[key.length]
   }

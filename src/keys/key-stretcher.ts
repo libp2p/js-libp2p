@@ -2,6 +2,7 @@ import { CodeError } from '@libp2p/interfaces/errors'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as hmac from '../hmac/index.js'
+import type { EnhancedKey, EnhancedKeyPair } from './interface.js'
 
 const cipherMap = {
   'AES-128': {
@@ -22,7 +23,7 @@ const cipherMap = {
  * Generates a set of keys for each party by stretching the shared key.
  * (myIV, theirIV, myCipherKey, theirCipherKey, myMACKey, theirMACKey)
  */
-export async function keyStretcher (cipherType: 'AES-128' | 'AES-256' | 'Blowfish', hash: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array) {
+export async function keyStretcher (cipherType: 'AES-128' | 'AES-256' | 'Blowfish', hash: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array): Promise<EnhancedKeyPair> {
   const cipher = cipherMap[cipherType]
 
   if (cipher == null) {
@@ -64,7 +65,7 @@ export async function keyStretcher (cipherType: 'AES-128' | 'AES-256' | 'Blowfis
   const r1 = resultBuffer.subarray(0, half)
   const r2 = resultBuffer.subarray(half, resultLength)
 
-  const createKey = (res: Uint8Array) => ({
+  const createKey = (res: Uint8Array): EnhancedKey => ({
     iv: res.subarray(0, ivSize),
     cipherKey: res.subarray(ivSize, ivSize + cipherKeySize),
     macKey: res.subarray(ivSize + cipherKeySize)

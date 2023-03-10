@@ -25,12 +25,12 @@ export const supportedKeys = {
   secp256k1: Secp256k1
 }
 
-function unsupportedKey (type: string) {
+function unsupportedKey (type: string): CodeError<Record<string, never>> {
   const supported = Object.keys(supportedKeys).join(' / ')
   return new CodeError(`invalid or unsupported key type ${type}. Must be ${supported}`, 'ERR_UNSUPPORTED_KEY_TYPE')
 }
 
-function typeToKey (type: string) {
+function typeToKey (type: string): typeof RSA | typeof Ed25519 | typeof Secp256k1 {
   type = type.toLowerCase()
 
   if (type === 'rsa' || type === 'ed25519' || type === 'secp256k1') {

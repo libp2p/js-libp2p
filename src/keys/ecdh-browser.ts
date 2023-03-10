@@ -4,7 +4,7 @@ import { base64urlToBuffer } from '../util.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { ECDHKey, ECDHKeyPair } from './interface.js'
+import type { ECDHKey, ECDHKeyPair, JWKEncodedPrivateKey, JWKEncodedPublicKey } from './interface.js'
 
 const bits = {
   'P-256': 256,
@@ -15,7 +15,7 @@ const bits = {
 const curveTypes = Object.keys(bits)
 const names = curveTypes.join(' / ')
 
-export async function generateEphmeralKeyPair (curve: string) {
+export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
     throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
   }
@@ -30,7 +30,7 @@ export async function generateEphmeralKeyPair (curve: string) {
   )
 
   // forcePrivate is used for testing only
-  const genSharedKey = async (theirPub: Uint8Array, forcePrivate?: ECDHKeyPair) => {
+  const genSharedKey = async (theirPub: Uint8Array, forcePrivate?: ECDHKeyPair): Promise<Uint8Array> => {
     let privateKey
 
     if (forcePrivate != null) {
@@ -92,7 +92,7 @@ const curveLengths = {
 // Marshal converts a jwk encoded ECDH public key into the
 // form specified in section 4.3.6 of ANSI X9.62. (This is the format
 // go-ipfs uses)
-function marshalPublicKey (jwk: JsonWebKey) {
+function marshalPublicKey (jwk: JsonWebKey): Uint8Array {
   if (jwk.crv == null || jwk.x == null || jwk.y == null) {
     throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }
@@ -111,7 +111,7 @@ function marshalPublicKey (jwk: JsonWebKey) {
 }
 
 // Unmarshal converts a point, serialized by Marshal, into an jwk encoded key
-function unmarshalPublicKey (curve: string, key: Uint8Array) {
+function unmarshalPublicKey (curve: string, key: Uint8Array): JWKEncodedPublicKey {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
     throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
   }
@@ -131,7 +131,7 @@ function unmarshalPublicKey (curve: string, key: Uint8Array) {
   }
 }
 
-const unmarshalPrivateKey = (curve: string, key: ECDHKeyPair) => ({
+const unmarshalPrivateKey = (curve: string, key: ECDHKeyPair): JWKEncodedPrivateKey => ({
   ...unmarshalPublicKey(curve, key.public),
   d: uint8ArrayToString(key.private, 'base64url')
 })

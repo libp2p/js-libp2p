@@ -61,9 +61,9 @@ describe('ed25519', function () {
     expect(res).to.be.eql(true)
   })
 
-  it('encoding', async () => {
+  it('encoding', () => {
     const keyMarshal = key.marshal()
-    const key2 = await ed25519.unmarshalEd25519PrivateKey(keyMarshal)
+    const key2 = ed25519.unmarshalEd25519PrivateKey(keyMarshal)
     const keyMarshal2 = key2.marshal()
 
     expect(keyMarshal).to.eql(keyMarshal2)

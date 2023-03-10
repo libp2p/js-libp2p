@@ -5,7 +5,11 @@ import forge from 'node-forge/lib/forge.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
-export function createCipheriv (mode: any, key: Uint8Array, iv: Uint8Array) {
+export interface Cipher {
+  update: (data: Uint8Array) => Uint8Array
+}
+
+export function createCipheriv (mode: any, key: Uint8Array, iv: Uint8Array): Cipher {
   const cipher2 = forge.cipher.createCipher('AES-CTR', uint8ArrayToString(key, 'ascii'))
   cipher2.start({ iv: uint8ArrayToString(iv, 'ascii') })
   return {
@@ -16,7 +20,7 @@ export function createCipheriv (mode: any, key: Uint8Array, iv: Uint8Array) {
   }
 }
 
-export function createDecipheriv (mode: any, key: Uint8Array, iv: Uint8Array) {
+export function createDecipheriv (mode: any, key: Uint8Array, iv: Uint8Array): Cipher {
   const cipher2 = forge.cipher.createDecipher('AES-CTR', uint8ArrayToString(key, 'ascii'))
   cipher2.start({ iv: uint8ArrayToString(iv, 'ascii') })
   return {

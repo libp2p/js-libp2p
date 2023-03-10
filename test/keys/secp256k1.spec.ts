@@ -40,9 +40,9 @@ describe('secp256k1 keys', () => {
     expect(res).to.equal(true)
   })
 
-  it('encoding', async () => {
+  it('encoding', () => {
     const keyMarshal = key.marshal()
-    const key2 = await secp256k1.unmarshalSecp256k1PrivateKey(keyMarshal)
+    const key2 = secp256k1.unmarshalSecp256k1PrivateKey(keyMarshal)
     const keyMarshal2 = key2.marshal()
 
     expect(keyMarshal).to.eql(keyMarshal2)
@@ -57,7 +57,7 @@ describe('secp256k1 keys', () => {
 
   it('key id', async () => {
     const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
-    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
+    const key = secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
     const id = await key.id()
     expect(id).to.eql('QmPCyMBGEyifPtx5aa6k6wkY9N1eBf9vHK1eKfNc35q9uq')
   })
@@ -122,8 +122,8 @@ describe('crypto functions', () => {
   let privKey: Uint8Array
   let pubKey: Uint8Array
 
-  before(async () => {
-    privKey = await secp256k1Crypto.generateKey()
+  before(() => {
+    privKey = secp256k1Crypto.generateKey()
     pubKey = secp256k1Crypto.computePublicKey(privKey)
   })
 
@@ -135,8 +135,8 @@ describe('crypto functions', () => {
   })
 
   it('does not validate an invalid key', () => {
-    expect(() => secp256k1Crypto.validatePublicKey(uint8ArrayFromString('42'))).to.throw()
-    expect(() => secp256k1Crypto.validatePrivateKey(uint8ArrayFromString('42'))).to.throw()
+    expect(() => { secp256k1Crypto.validatePublicKey(uint8ArrayFromString('42')) }).to.throw()
+    expect(() => { secp256k1Crypto.validatePrivateKey(uint8ArrayFromString('42')) }).to.throw()
   })
 
   it('validates a correct signature', async () => {
@@ -185,13 +185,13 @@ describe('crypto functions', () => {
 })
 
 describe('go interop', () => {
-  it('loads a private key marshaled by go-libp2p-crypto', async () => {
+  it('loads a private key marshaled by go-libp2p-crypto', () => {
     // we need to first extract the key data from the protobuf, which is
     // normally handled by js-libp2p-crypto
     const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
     expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
 
-    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
+    const key = secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
     expect(key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
     expect(key.bytes).to.eql(fixtures.privateKey)
   })
@@ -209,7 +209,7 @@ describe('go interop', () => {
     const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
     expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
 
-    const key = await secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
+    const key = secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
     const sig = await key.sign(fixtures.message)
     expect(sig).to.eql(fixtures.signature)
   })

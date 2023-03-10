@@ -115,7 +115,7 @@ describe('libp2p-crypto', function () {
     })
 
     it('throws on invalid hash name', () => {
-      const fn = () => crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')
+      const fn = (): string => crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')
       expect(fn).to.throw().with.property('code', 'ERR_UNSUPPORTED_HASH_TYPE')
     })
   })

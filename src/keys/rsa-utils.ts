@@ -28,7 +28,7 @@ export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {
 }
 
 // Convert a JWK key into PKCS#1 in ASN1 DER format
-export function jwkToPkcs1 (jwk: JsonWebKey) {
+export function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array {
   if (jwk.n == null || jwk.e == null || jwk.d == null || jwk.p == null || jwk.q == null || jwk.dp == null || jwk.dq == null || jwk.qi == null) {
     throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }
@@ -60,7 +60,7 @@ export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
 }
 
 // Convert a JWK key to PKCIX in ASN1 DER format
-export function jwkToPkix (jwk: JsonWebKey) {
+export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
   if (jwk.n == null || jwk.e == null) {
     throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }

@@ -7,12 +7,12 @@ const hashTypes = {
   SHA512: 'SHA-512'
 }
 
-const sign = async (key: CryptoKey, data: Uint8Array) => {
+const sign = async (key: CryptoKey, data: Uint8Array): Promise<Uint8Array> => {
   const buf = await webcrypto.get().subtle.sign({ name: 'HMAC' }, key, data)
   return new Uint8Array(buf, 0, buf.byteLength)
 }
 
-export async function create (hashType: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array) {
+export async function create (hashType: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array): Promise<{ digest: (data: Uint8Array) => Promise<Uint8Array>, length: number }> {
   const hash = hashTypes[hashType]
 
   const key = await webcrypto.get().subtle.importKey(

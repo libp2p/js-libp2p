@@ -9,6 +9,7 @@ import forge from 'node-forge/lib/forge.js'
 import * as crypto from './rsa.js'
 import * as pbm from './keys.js'
 import { exporter } from './exporter.js'
+import type { Multibase } from 'multiformats'
 
 export class RsaPublicKey {
   private readonly _key: JsonWebKey
@@ -17,30 +18,30 @@ export class RsaPublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array) { // eslint-disable-line require-await
+  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> { // eslint-disable-line require-await
     return await crypto.hashAndVerify(this._key, sig, data)
   }
 
-  marshal () {
+  marshal (): Uint8Array {
     return crypto.utils.jwkToPkix(this._key)
   }
 
-  get bytes () {
+  get bytes (): Uint8Array {
     return pbm.PublicKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
     }).subarray()
   }
 
-  encrypt (bytes: Uint8Array) {
+  encrypt (bytes: Uint8Array): Uint8Array {
     return crypto.encrypt(this._key, bytes)
   }
 
-  equals (key: any) {
+  equals (key: any): boolean {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () {
+  async hash (): Promise<Uint8Array> {
     const { bytes } = await sha256.digest(this.bytes)
 
     return bytes
@@ -56,15 +57,15 @@ export class RsaPrivateKey {
     this._publicKey = publicKey
   }
 
-  genSecret () {
+  genSecret (): Uint8Array {
     return crypto.getRandomValues(16)
   }
 
-  async sign (message: Uint8Array) { // eslint-disable-line require-await
+  async sign (message: Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
     return await crypto.hashAndSign(this._key, message)
   }
 
-  get public () {
+  get public (): RsaPublicKey {
     if (this._publicKey == null) {
       throw new CodeError('public key not provided', 'ERR_PUBKEY_NOT_PROVIDED')
     }
@@ -72,26 +73,26 @@ export class RsaPrivateKey {
     return new RsaPublicKey(this._publicKey)
   }
 
-  decrypt (bytes: Uint8Array) {
+  decrypt (bytes: Uint8Array): Uint8Array {
     return crypto.decrypt(this._key, bytes)
   }
 
-  marshal () {
+  marshal (): Uint8Array {
     return crypto.utils.jwkToPkcs1(this._key)
   }
 
-  get bytes () {
+  get bytes (): Uint8Array {
     return pbm.PrivateKey.encode({
       Type: pbm.KeyType.RSA,
       Data: this.marshal()
     }).subarray()
   }
 
-  equals (key: any) {
+  equals (key: any): boolean {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () {
+  async hash (): Promise<Uint8Array> {
     const { bytes } = await sha256.digest(this.bytes)
 
     return bytes
@@ -104,7 +105,7 @@ export class RsaPrivateKey {
    * The public key is a protobuf encoding containing a type and the DER encoding
    * of the PKCS SubjectPublicKeyInfo.
    */
-  async id () {
+  async id (): Promise<string> {
     const hash = await this.public.hash()
     return uint8ArrayToString(hash, 'base58btc')
   }
@@ -112,7 +113,7 @@ export class RsaPrivateKey {
   /**
    * Exports the key into a password protected PEM format
    */
-  async export (password: string, format = 'pkcs-8') { // eslint-disable-line require-await
+  async export (password: string, format = 'pkcs-8'): Promise<Multibase<'m'>> { // eslint-disable-line require-await
     if (format === 'pkcs-8') {
       const buffer = new forge.util.ByteBuffer(this.marshal())
       const asn1 = forge.asn1.fromDer(buffer)
@@ -133,23 +134,23 @@ export class RsaPrivateKey {
   }
 }
 
-export async function unmarshalRsaPrivateKey (bytes: Uint8Array) {
+export async function unmarshalRsaPrivateKey (bytes: Uint8Array): Promise<RsaPrivateKey> {
   const jwk = crypto.utils.pkcs1ToJwk(bytes)
   const keys = await crypto.unmarshalPrivateKey(jwk)
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }
 
-export function unmarshalRsaPublicKey (bytes: Uint8Array) {
+export function unmarshalRsaPublicKey (bytes: Uint8Array): RsaPublicKey {
   const jwk = crypto.utils.pkixToJwk(bytes)
   return new RsaPublicKey(jwk)
 }
 
-export async function fromJwk (jwk: JsonWebKey) {
+export async function fromJwk (jwk: JsonWebKey): Promise<RsaPrivateKey> {
   const keys = await crypto.unmarshalPrivateKey(jwk)
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }
 
-export async function generateKeyPair (bits: number) {
+export async function generateKeyPair (bits: number): Promise<RsaPrivateKey> {
   const keys = await crypto.generateKey(bits)
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }

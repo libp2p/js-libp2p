@@ -5,7 +5,7 @@ import type { CreateOptions, AESCipher } from './interface.js'
 
 // Based off of code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
 
-export function create (opts?: CreateOptions) {
+export function create (opts?: CreateOptions): AESCipher {
   const algorithm = opts?.algorithm ?? 'AES-GCM'
   let keyLength = opts?.keyLength ?? 16
   const nonceLength = opts?.nonceLength ?? 12
@@ -20,7 +20,7 @@ export function create (opts?: CreateOptions) {
    * Uses the provided password to derive a pbkdf2 key. The key
    * will then be used to encrypt the data.
    */
-  async function encrypt (data: Uint8Array, password: string | Uint8Array) { // eslint-disable-line require-await
+  async function encrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
     const salt = crypto.getRandomValues(new Uint8Array(saltLength))
     const nonce = crypto.getRandomValues(new Uint8Array(nonceLength))
     const aesGcm = { name: algorithm, iv: nonce }
@@ -45,7 +45,7 @@ export function create (opts?: CreateOptions) {
    * this decryption cipher must be the same as those used to create
    * the encryption cipher.
    */
-  async function decrypt (data: Uint8Array, password: string | Uint8Array) {
+  async function decrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> {
     const salt = data.subarray(0, saltLength)
     const nonce = data.subarray(saltLength, saltLength + nonceLength)
     const ciphertext = data.subarray(saltLength + nonceLength)

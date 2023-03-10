@@ -5,6 +5,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as crypto from './secp256k1.js'
 import { exporter } from './exporter.js'
 import * as keysProtobuf from './keys.js'
+import type { Multibase } from 'multiformats'
 
 export class Secp256k1PublicKey {
   private readonly _key: Uint8Array
@@ -14,26 +15,26 @@ export class Secp256k1PublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array) {
+  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
     return await crypto.hashAndVerify(this._key, sig, data)
   }
 
-  marshal () {
+  marshal (): Uint8Array {
     return crypto.compressPublicKey(this._key)
   }
 
-  get bytes () {
+  get bytes (): Uint8Array {
     return keysProtobuf.PublicKey.encode({
       Type: keysProtobuf.KeyType.Secp256k1,
       Data: this.marshal()
     }).subarray()
   }
 
-  equals (key: any) {
+  equals (key: any): boolean {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () {
+  async hash (): Promise<Uint8Array> {
     const { bytes } = await sha256.digest(this.bytes)
 
     return bytes
@@ -51,30 +52,30 @@ export class Secp256k1PrivateKey {
     crypto.validatePublicKey(this._publicKey)
   }
 
-  async sign (message: Uint8Array) {
+  async sign (message: Uint8Array): Promise<Uint8Array> {
     return await crypto.hashAndSign(this._key, message)
   }
 
-  get public () {
+  get public (): Secp256k1PublicKey {
     return new Secp256k1PublicKey(this._publicKey)
   }
 
-  marshal () {
+  marshal (): Uint8Array {
     return this._key
   }
 
-  get bytes () {
+  get bytes (): Uint8Array {
     return keysProtobuf.PrivateKey.encode({
       Type: keysProtobuf.KeyType.Secp256k1,
       Data: this.marshal()
     }).subarray()
   }
 
-  equals (key: any) {
+  equals (key: any): boolean {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash () {
+  async hash (): Promise<Uint8Array> {
     const { bytes } = await sha256.digest(this.bytes)
 
     return bytes
@@ -87,7 +88,7 @@ export class Secp256k1PrivateKey {
    * The public key is a protobuf encoding containing a type and the DER encoding
    * of the PKCS SubjectPublicKeyInfo.
    */
-  async id () {
+  async id (): Promise<string> {
     const hash = await this.public.hash()
     return uint8ArrayToString(hash, 'base58btc')
   }
@@ -95,7 +96,7 @@ export class Secp256k1PrivateKey {
   /**
    * Exports the key into a password protected `format`
    */
-  async export (password: string, format = 'libp2p-key') { // eslint-disable-line require-await
+  async export (password: string, format = 'libp2p-key'): Promise<Multibase<'m'>> {
     if (format === 'libp2p-key') {
       return await exporter(this.bytes, password)
     } else {
@@ -104,15 +105,15 @@ export class Secp256k1PrivateKey {
   }
 }
 
-export function unmarshalSecp256k1PrivateKey (bytes: Uint8Array) {
+export function unmarshalSecp256k1PrivateKey (bytes: Uint8Array): Secp256k1PrivateKey {
   return new Secp256k1PrivateKey(bytes)
 }
 
-export function unmarshalSecp256k1PublicKey (bytes: Uint8Array) {
+export function unmarshalSecp256k1PublicKey (bytes: Uint8Array): Secp256k1PublicKey {
   return new Secp256k1PublicKey(bytes)
 }
 
-export async function generateKeyPair () {
-  const privateKeyBytes = await crypto.generateKey()
+export async function generateKeyPair (): Promise<Secp256k1PrivateKey> {
+  const privateKeyBytes = crypto.generateKey()
   return new Secp256k1PrivateKey(privateKeyBytes)
 }
