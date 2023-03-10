@@ -10,7 +10,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
  * It runs the needed validators.
  * If verification fails the returned Promise will reject with the error.
  */
-export function verifyRecord (validators: Validators, record: Libp2pRecord) {
+export async function verifyRecord (validators: Validators, record: Libp2pRecord): Promise<void> {
   const key = record.key
   const keyString = uint8ArrayToString(key)
   const parts = keyString.split('/')
@@ -28,7 +28,7 @@ export function verifyRecord (validators: Validators, record: Libp2pRecord) {
     throw new CodeError(errMsg, 'ERR_INVALID_RECORD_KEY_TYPE')
   }
 
-  return validator(key, record.value)
+  await validator(key, record.value)
 }
 
 /**
@@ -40,7 +40,7 @@ export function verifyRecord (validators: Validators, record: Libp2pRecord) {
  * @param {Uint8Array} key - A valid key is of the form `'/pk/<keymultihash>'`
  * @param {Uint8Array} publicKey - The public key to validate against (protobuf encoded).
  */
-const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array) => {
+const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array): Promise<void> => {
   if (!(key instanceof Uint8Array)) {
     throw new CodeError('"key" must be a Uint8Array', 'ERR_INVALID_RECORD_KEY_NOT_BUFFER')
   }

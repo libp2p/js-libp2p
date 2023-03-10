@@ -23,14 +23,14 @@ export class Libp2pRecord {
     this.timeReceived = timeReceived
   }
 
-  serialize () {
+  serialize (): Uint8Array {
     return Record.encode(this.prepareSerialize())
   }
 
   /**
    * Return the object format ready to be given to the protobuf library.
    */
-  prepareSerialize () {
+  prepareSerialize (): Record {
     return {
       key: this.key,
       value: this.value,
@@ -41,7 +41,7 @@ export class Libp2pRecord {
   /**
    * Decode a protobuf encoded record
    */
-  static deserialize (raw: Uint8Array | Uint8ArrayList) {
+  static deserialize (raw: Uint8Array | Uint8ArrayList): Libp2pRecord {
     const rec = Record.decode(raw)
 
     return new Libp2pRecord(rec.key, rec.value, new Date(rec.timeReceived))
@@ -50,7 +50,7 @@ export class Libp2pRecord {
   /**
    * Create a record from the raw object returned from the protobuf library
    */
-  static fromDeserialized (obj: Record) {
+  static fromDeserialized (obj: Record): Libp2pRecord {
     const recvtime = utils.parseRFC3339(obj.timeReceived)
 
     if (obj.key == null) {

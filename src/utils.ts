@@ -2,7 +2,7 @@
  * Convert a JavaScript date into an `RFC3339Nano` formatted
  * string
  */
-export function toRFC3339 (time: Date) {
+export function toRFC3339 (time: Date): string {
   const year = time.getUTCFullYear()
   const month = String(time.getUTCMonth() + 1).padStart(2, '0')
   const day = String(time.getUTCDate()).padStart(2, '0')
@@ -19,7 +19,7 @@ export function toRFC3339 (time: Date) {
  * Parses a date string formatted as `RFC3339Nano` into a
  * JavaScript Date object
  */
-export function parseRFC3339 (time: string) {
+export function parseRFC3339 (time: string): Date {
   const rfc3339Matcher = new RegExp(
     // 2006-01-02T
     '(\\d{4})-(\\d{2})-(\\d{2})T' +

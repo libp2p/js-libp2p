@@ -5,7 +5,7 @@ import type { Selectors } from '@libp2p/interface-dht'
 /**
  * Select the best record out of the given records
  */
-export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8Array[]) {
+export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8Array[]): number {
   if (records.length === 0) {
     const errMsg = 'No records given'
 
@@ -41,7 +41,7 @@ export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8A
  * Simply returns the first record, as all valid public key
  * records are equal
  */
-function publickKey (k: Uint8Array, records: Uint8Array[]) {
+function publickKey (k: Uint8Array, records: Uint8Array[]): number {
   return 0
 }
 

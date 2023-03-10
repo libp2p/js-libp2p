@@ -154,7 +154,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i protons",
     "test": "aegir test",
     "test:node": "aegir test -t node",
     "test:chrome": "aegir test -t browser",
@@ -176,7 +176,7 @@
   },
   "devDependencies": {
     "@libp2p/crypto": "^1.0.11",
-    "aegir": "^37.9.1",
+    "aegir": "^38.1.7",
     "protons": "^6.0.0"
   }
 }
