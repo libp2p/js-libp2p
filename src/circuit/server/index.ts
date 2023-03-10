@@ -325,12 +325,6 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       return
     }
 
-    if (isRelayAddr(connection.remoteAddr)) {
-      log.error('hop connect request over circuit connection denied for peer: %p', connection.remotePeer)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
-      return
-    }
-
     if (!await this.reservationStore.hasReservation(dstPeer)) {
       log.error('hop connect denied for destination peer %p not having a reservation for %p with status %s', dstPeer, connection.remotePeer, Status.NO_RESERVATION)
       hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
@@ -352,7 +346,6 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     }
 
     const destinationConnection = connections[0]
-    log('hop connect request from %s to %s is valid', connection.remotePeer, dstPeer)
 
     const destinationStream = await this.stopHop({
       connection: destinationConnection,
@@ -360,7 +353,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
         type: StopMessage.Type.CONNECT,
         peer: {
           id: connection.remotePeer.toBytes(),
-          addrs: [multiaddr(`/p2p/${connection.remotePeer.toString()}`).bytes]
+          addrs: []
         }
       }
     })
@@ -374,7 +367,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     hopstr.write({ type: HopMessage.Type.STATUS, status: Status.OK })
     const sourceStream = stream.unwrap()
 
-    log('connection to destination established - joining streams together')
+    log('connection from %p to %p established - merging streans', connection.remotePeer, dstPeer)
     const limit = (await this.reservationStore.get(dstPeer))?.limit
     // Short circuit the two streams to create the relayed connection
     createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, limit)
