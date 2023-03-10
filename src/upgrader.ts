@@ -5,7 +5,7 @@ import { codes } from './errors.js'
 import { createConnection } from './connection/index.js'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { MultiaddrConnection, Connection, Stream, ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
+import type { MultiaddrConnection, Connection, Stream, ConnectionProtector } from '@libp2p/interface-connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -20,6 +20,7 @@ import { setMaxListeners } from 'events'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 const log = logger('libp2p:upgrader')
 
@@ -103,6 +104,8 @@ export interface DefaultUpgraderComponents {
   peerStore: PeerStore
 }
 
+type EncryptedConn = Duplex<Uint8Array, Uint8Array, Promise<void>>
+
 export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upgrader {
   private readonly components: DefaultUpgraderComponents
   private readonly connectionEncryption: Map<string, ConnectionEncrypter>
@@ -128,6 +131,17 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     this.inboundUpgradeTimeout = init.inboundUpgradeTimeout
   }
 
+  async shouldBlockEncryptedConnection (protectedConn: MultiaddrConnection, encryptedConn: EncryptedConn, remotePeer: PeerId) {
+    if (this.components.connectionGater.denyInboundEncryptedConnection !== undefined) {
+      if (await this.components.connectionGater.denyInboundEncryptedConnection(remotePeer, {
+        ...protectedConn,
+        ...encryptedConn
+      })) {
+        throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      }
+    }
+  }
+
   /**
    * Upgrades an inbound connection
    */
@@ -138,7 +152,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       throw errCode(new Error('connection denied'), codes.ERR_CONNECTION_DENIED)
     }
 
-    let encryptedConn
+    let encryptedConn: EncryptedConn
     let remotePeer
     let upgradedConn: Duplex<Uint8Array>
     let muxerFactory: StreamMuxerFactory | undefined
@@ -156,8 +170,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       maConn.source = abortableStream.source
       maConn.sink = abortableStream.sink
 
-      if (await this.components.connectionGater.denyInboundConnection(maConn)) {
-        throw errCode(new Error('The multiaddr connection is blocked by gater.acceptConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      if (this.components.connectionGater.denyInboundConnection !== undefined) {
+        if (await this.components.connectionGater.denyInboundConnection(maConn)) {
+          throw errCode(new Error('The multiaddr connection is blocked by gater.acceptConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+        }
       }
 
       this.components.metrics?.trackMultiaddrConnection(maConn)
@@ -186,12 +202,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             protocol: cryptoProtocol
           } = await this._encryptInbound(protectedConn))
 
-          if (await this.components.connectionGater.denyInboundEncryptedConnection(remotePeer, {
-            ...protectedConn,
-            ...encryptedConn
-          })) {
-            throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
-          }
+          await this.shouldBlockEncryptedConnection(protectedConn, encryptedConn, remotePeer)
         } else {
           const idStr = maConn.remoteAddr.getPeerId()
 
@@ -222,12 +233,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         throw err
       }
 
-      if (await this.components.connectionGater.denyInboundUpgradedConnection(remotePeer, {
-        ...protectedConn,
-        ...encryptedConn
-      })) {
-        throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
-      }
+      await this.shouldBlockEncryptedConnection(protectedConn, encryptedConn, remotePeer)
 
       log('Successfully upgraded inbound connection')
 
@@ -255,8 +261,10 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     if (idStr != null) {
       remotePeerId = peerIdFromString(idStr)
 
-      if (await this.components.connectionGater.denyOutboundConnection(remotePeerId, maConn)) {
-        throw errCode(new Error('The multiaddr connection is blocked by connectionGater.denyOutboundConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+      if (this.components.connectionGater.denyOutboundConnection !== undefined) {
+        if (await this.components.connectionGater.denyOutboundConnection(remotePeerId, maConn)) {
+          throw errCode(new Error('The multiaddr connection is blocked by connectionGater.denyOutboundConnection'), codes.ERR_CONNECTION_INTERCEPTED)
+        }
       }
     }
 
@@ -293,12 +301,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           protocol: cryptoProtocol
         } = await this._encryptOutbound(protectedConn, remotePeerId))
 
-        if (await this.components.connectionGater.denyOutboundEncryptedConnection(remotePeer, {
-          ...protectedConn,
-          ...encryptedConn
-        })) {
-          throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
-        }
+        await this.shouldBlockEncryptedConnection(protectedConn, encryptedConn, remotePeer)
       } else {
         if (remotePeerId == null) {
           throw errCode(new Error('Encryption was skipped but no peer id was passed'), codes.ERR_INVALID_PEER)
@@ -326,12 +329,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       throw err
     }
 
-    if (await this.components.connectionGater.denyOutboundUpgradedConnection(remotePeer, {
-      ...protectedConn,
-      ...encryptedConn
-    })) {
-      throw errCode(new Error('The multiaddr connection is blocked by gater.acceptEncryptedConnection'), codes.ERR_CONNECTION_INTERCEPTED)
-    }
+    await this.shouldBlockEncryptedConnection(protectedConn, encryptedConn, remotePeer)
 
     log('Successfully upgraded outbound connection')
 

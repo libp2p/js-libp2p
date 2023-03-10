@@ -24,7 +24,7 @@ import type { PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { RelayConfig } from './circuit/index.js'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
-import type { ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
+import type { ConnectionProtector } from '@libp2p/interface-connection'
 import type { Transport } from '@libp2p/interface-transport'
 import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
@@ -42,6 +42,7 @@ import type { NatManagerInit } from './nat-manager.js'
 import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).

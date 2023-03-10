@@ -12,8 +12,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
-import type { ConnectionGater } from '@libp2p/interface-connection'
 import { stubInterface } from 'sinon-ts'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 const error = new Error('dial failure')
 
 describe('Dial Request', () => {
