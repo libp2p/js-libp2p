@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface RPC {
   subscriptions: RPC.SubOpts[]
@@ -70,7 +71,7 @@ export namespace RPC {
       return _codec
     }
 
-    export const encode = (obj: SubOpts): Uint8Array => {
+    export const encode = (obj: Partial<SubOpts>): Uint8Array => {
       return encodeMessage(obj, SubOpts.codec())
     }
 
@@ -171,7 +172,7 @@ export namespace RPC {
       return _codec
     }
 
-    export const encode = (obj: Message): Uint8Array => {
+    export const encode = (obj: Partial<Message>): Uint8Array => {
       return encodeMessage(obj, Message.codec())
     }
 
@@ -192,26 +193,20 @@ export namespace RPC {
         if (obj.subscriptions != null) {
           for (const value of obj.subscriptions) {
             w.uint32(10)
-            RPC.SubOpts.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            RPC.SubOpts.codec().encode(value, w)
           }
         }
 
         if (obj.messages != null) {
           for (const value of obj.messages) {
             w.uint32(18)
-            RPC.Message.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            RPC.Message.codec().encode(value, w)
           }
         }
 
         if (obj.control != null) {
           w.uint32(26)
-          ControlMessage.codec().encode(obj.control, w, {
-            writeDefaults: false
-          })
+          ControlMessage.codec().encode(obj.control, w)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -251,7 +246,7 @@ export namespace RPC {
     return _codec
   }
 
-  export const encode = (obj: RPC): Uint8Array => {
+  export const encode = (obj: Partial<RPC>): Uint8Array => {
     return encodeMessage(obj, RPC.codec())
   }
 
@@ -280,36 +275,28 @@ export namespace ControlMessage {
         if (obj.ihave != null) {
           for (const value of obj.ihave) {
             w.uint32(10)
-            ControlIHave.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            ControlIHave.codec().encode(value, w)
           }
         }
 
         if (obj.iwant != null) {
           for (const value of obj.iwant) {
             w.uint32(18)
-            ControlIWant.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            ControlIWant.codec().encode(value, w)
           }
         }
 
         if (obj.graft != null) {
           for (const value of obj.graft) {
             w.uint32(26)
-            ControlGraft.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            ControlGraft.codec().encode(value, w)
           }
         }
 
         if (obj.prune != null) {
           for (const value of obj.prune) {
             w.uint32(34)
-            ControlPrune.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            ControlPrune.codec().encode(value, w)
           }
         }
 
@@ -355,7 +342,7 @@ export namespace ControlMessage {
     return _codec
   }
 
-  export const encode = (obj: ControlMessage): Uint8Array => {
+  export const encode = (obj: Partial<ControlMessage>): Uint8Array => {
     return encodeMessage(obj, ControlMessage.codec())
   }
 
@@ -424,7 +411,7 @@ export namespace ControlIHave {
     return _codec
   }
 
-  export const encode = (obj: ControlIHave): Uint8Array => {
+  export const encode = (obj: Partial<ControlIHave>): Uint8Array => {
     return encodeMessage(obj, ControlIHave.codec())
   }
 
@@ -484,7 +471,7 @@ export namespace ControlIWant {
     return _codec
   }
 
-  export const encode = (obj: ControlIWant): Uint8Array => {
+  export const encode = (obj: Partial<ControlIWant>): Uint8Array => {
     return encodeMessage(obj, ControlIWant.codec())
   }
 
@@ -540,7 +527,7 @@ export namespace ControlGraft {
     return _codec
   }
 
-  export const encode = (obj: ControlGraft): Uint8Array => {
+  export const encode = (obj: Partial<ControlGraft>): Uint8Array => {
     return encodeMessage(obj, ControlGraft.codec())
   }
 
@@ -573,9 +560,7 @@ export namespace ControlPrune {
         if (obj.peers != null) {
           for (const value of obj.peers) {
             w.uint32(18)
-            PeerInfo.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            PeerInfo.codec().encode(value, w)
           }
         }
 
@@ -620,7 +605,7 @@ export namespace ControlPrune {
     return _codec
   }
 
-  export const encode = (obj: ControlPrune): Uint8Array => {
+  export const encode = (obj: Partial<ControlPrune>): Uint8Array => {
     return encodeMessage(obj, ControlPrune.codec())
   }
 
@@ -685,7 +670,7 @@ export namespace PeerInfo {
     return _codec
   }
 
-  export const encode = (obj: PeerInfo): Uint8Array => {
+  export const encode = (obj: Partial<PeerInfo>): Uint8Array => {
     return encodeMessage(obj, PeerInfo.codec())
   }
 
