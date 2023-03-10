@@ -51,7 +51,7 @@ export interface KBucketTree {
   add: (peer: KBucketPeer) => void
   get: (key: Uint8Array) => Uint8Array
   count: () => number
-  toIterable: () => Iterable<KBucket>
+  toIterable: () => Iterable<KBucketPeer>
 }
 
 export interface RoutingTableInit {
