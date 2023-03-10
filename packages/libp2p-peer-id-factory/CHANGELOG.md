@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-factory-v2.0.2](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v2.0.1...@libp2p/peer-id-factory-v2.0.2) (2023-03-10)
+
+
+### Dependencies
+
+* bump protons-runtime from 4.0.2 to 5.0.0 ([#49](https://github.com/libp2p/js-libp2p-peer-id/issues/49)) ([48037ee](https://github.com/libp2p/js-libp2p-peer-id/commit/48037ee53d4c07a3750bbeeb40727cbaf3c23946))
+
 ## [@libp2p/peer-id-factory-v2.0.1](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v2.0.0...@libp2p/peer-id-factory-v2.0.1) (2023-01-18)
 
 
