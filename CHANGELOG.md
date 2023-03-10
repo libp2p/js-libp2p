@@ -1,3 +1,19 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.0...v7.0.1) (2023-03-10)
+
+
+### Bug Fixes
+
+* correct `KBucketTree` types ([#426](https://github.com/libp2p/js-libp2p-kad-dht/issues/426)) ([ea8e6d0](https://github.com/libp2p/js-libp2p-kad-dht/commit/ea8e6d0fc7db9192539532c8d74b3e5e053056fd)), closes [/github.com/tristanls/k-bucket/blob/3aa5b4f1dacb835752995a25409ab319d2070b9e/index.js#L413](https://github.com/libp2p//github.com/tristanls/k-bucket/blob/3aa5b4f1dacb835752995a25409ab319d2070b9e/index.js/issues/L413)
+* update p-queue types ([#428](https://github.com/libp2p/js-libp2p-kad-dht/issues/428)) ([f5b85fc](https://github.com/libp2p/js-libp2p-kad-dht/commit/f5b85fccfd920984073319f6c62015231611ba26))
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#413](https://github.com/libp2p/js-libp2p-kad-dht/issues/413)) ([e05d2a0](https://github.com/libp2p/js-libp2p-kad-dht/commit/e05d2a07eee96bfd91bdd01707f5c8112151c377)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([a70ab3f](https://github.com/libp2p/js-libp2p-kad-dht/commit/a70ab3f200cb73703b6301b81ba6b922c37b5bc3))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([1652c6c](https://github.com/libp2p/js-libp2p-kad-dht/commit/1652c6cccd8dc1381c4b28091f87cadcac9782b5))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([ea13c2a](https://github.com/libp2p/js-libp2p-kad-dht/commit/ea13c2a10c689655656880b584315ebab374871c))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v6.1.1...v7.0.0) (2023-01-06)
 
 
