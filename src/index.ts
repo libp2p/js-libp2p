@@ -71,7 +71,7 @@ export class FloodSub extends PubSubBaseProtocol {
    * Process incoming message
    * Extends base implementation to check router cache.
    */
-  async processMessage (from: PeerId, message: Message) {
+  async processMessage (from: PeerId, message: Message): Promise<void> {
     // Check if I've seen the message, if yes, ignore
     const seqno = await super.getMsgId(message)
     const msgIdStr = toString(seqno, 'base64')
