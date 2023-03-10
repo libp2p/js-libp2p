@@ -216,6 +216,11 @@ export class Providers implements Startable {
       return [...provs.keys()].map(peerIdStr => {
         return peerIdFromString(peerIdStr)
       })
+    }, {
+      // no timeout is specified for this queue so it will not
+      // throw, but this is required to get the right return
+      // type since p-queue@7.3.4
+      throwOnTimeout: true
     })
   }
 }

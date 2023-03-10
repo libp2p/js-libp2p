@@ -15,6 +15,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Sink } from 'it-stream-types'
 import { Uint8ArrayList } from 'uint8arraylist'
 import map from 'it-map'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 describe('Network', () => {
   let dht: DualKadDHT
@@ -53,7 +54,7 @@ describe('Network', () => {
       const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
 
       // mock it
-      dht.components.connectionManager.openConnection = async (peer: PeerId) => {
+      dht.components.connectionManager.openConnection = async (peer: PeerId | Multiaddr) => {
         // @ts-expect-error incomplete implementation
         const connection: Connection = {
           newStream: async (protocols: string | string[]) => {

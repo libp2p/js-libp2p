@@ -113,8 +113,8 @@ describe('Routing Table', () => {
     let fn: (() => Promise<any>) | undefined
 
     // execute queued functions immediately
+    // @ts-expect-error incomplete implementation
     table.pingQueue = {
-      // @ts-expect-error
       add: async (f: () => Promise<any>) => {
         fn = f
       },
@@ -175,8 +175,8 @@ describe('Routing Table', () => {
     let fn: (() => Promise<any>) | undefined
 
     // execute queued functions immediately
+    // @ts-expect-error incomplete implementation
     table.pingQueue = {
-      // @ts-expect-error
       add: async (f: () => Promise<any>) => {
         fn = f
       },
