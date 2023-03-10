@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Envelope {
   publicKey: Uint8Array
@@ -24,22 +25,22 @@ export namespace Envelope {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.publicKey != null && obj.publicKey.byteLength > 0)) {
+        if ((obj.publicKey != null && obj.publicKey.byteLength > 0)) {
           w.uint32(10)
           w.bytes(obj.publicKey)
         }
 
-        if (opts.writeDefaults === true || (obj.payloadType != null && obj.payloadType.byteLength > 0)) {
+        if ((obj.payloadType != null && obj.payloadType.byteLength > 0)) {
           w.uint32(18)
           w.bytes(obj.payloadType)
         }
 
-        if (opts.writeDefaults === true || (obj.payload != null && obj.payload.byteLength > 0)) {
+        if ((obj.payload != null && obj.payload.byteLength > 0)) {
           w.uint32(26)
           w.bytes(obj.payload)
         }
 
-        if (opts.writeDefaults === true || (obj.signature != null && obj.signature.byteLength > 0)) {
+        if ((obj.signature != null && obj.signature.byteLength > 0)) {
           w.uint32(42)
           w.bytes(obj.signature)
         }
@@ -86,7 +87,7 @@ export namespace Envelope {
     return _codec
   }
 
-  export const encode = (obj: Envelope): Uint8Array => {
+  export const encode = (obj: Partial<Envelope>): Uint8Array => {
     return encodeMessage(obj, Envelope.codec())
   }
 

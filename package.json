@@ -161,7 +161,7 @@
     "it-map": "^2.0.0",
     "it-pipe": "^2.0.3",
     "multiformats": "^11.0.0",
-    "protons-runtime": "^4.0.1",
+    "protons-runtime": "^5.0.0",
     "uint8-varint": "^1.0.2",
     "uint8arraylist": "^2.1.0",
     "uint8arrays": "^4.0.2",
@@ -172,7 +172,7 @@
     "@libp2p/peer-id-factory": "^2.0.0",
     "@types/varint": "^6.0.0",
     "aegir": "^38.1.2",
-    "protons": "^6.0.0",
+    "protons": "^7.0.2",
     "sinon": "^15.0.0"
   }
 }

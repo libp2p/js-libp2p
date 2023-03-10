@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerRecord {
   peerId: Uint8Array
@@ -28,7 +29,7 @@ export namespace PeerRecord {
             w.fork()
           }
 
-          if (opts.writeDefaults === true || (obj.multiaddr != null && obj.multiaddr.byteLength > 0)) {
+          if ((obj.multiaddr != null && obj.multiaddr.byteLength > 0)) {
             w.uint32(10)
             w.bytes(obj.multiaddr)
           }
@@ -63,7 +64,7 @@ export namespace PeerRecord {
       return _codec
     }
 
-    export const encode = (obj: AddressInfo): Uint8Array => {
+    export const encode = (obj: Partial<AddressInfo>): Uint8Array => {
       return encodeMessage(obj, AddressInfo.codec())
     }
 
@@ -81,12 +82,12 @@ export namespace PeerRecord {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.peerId != null && obj.peerId.byteLength > 0)) {
+        if ((obj.peerId != null && obj.peerId.byteLength > 0)) {
           w.uint32(10)
           w.bytes(obj.peerId)
         }
 
-        if (opts.writeDefaults === true || obj.seq !== 0n) {
+        if ((obj.seq != null && obj.seq !== 0n)) {
           w.uint32(16)
           w.uint64(obj.seq)
         }
@@ -94,9 +95,7 @@ export namespace PeerRecord {
         if (obj.addresses != null) {
           for (const value of obj.addresses) {
             w.uint32(26)
-            PeerRecord.AddressInfo.codec().encode(value, w, {
-              writeDefaults: true
-            })
+            PeerRecord.AddressInfo.codec().encode(value, w)
           }
         }
 
@@ -138,7 +137,7 @@ export namespace PeerRecord {
     return _codec
   }
 
-  export const encode = (obj: PeerRecord): Uint8Array => {
+  export const encode = (obj: Partial<PeerRecord>): Uint8Array => {
     return encodeMessage(obj, PeerRecord.codec())
   }
 
