@@ -7,9 +7,24 @@ import { isPeerId } from '@libp2p/interface-peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 /**
- * Extracts a PeerId and/or multiaddr from the passed PeerId or Multiaddr
+ * Extracts a PeerId and/or multiaddr from the passed PeerId or Multiaddr or an array of Multiaddrs
  */
-export function getPeerAddress (peer: PeerId | Multiaddr): { peerId?: PeerId, multiaddr?: Multiaddr } {
+export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): { peerId?: PeerId, multiaddr?: Multiaddr } {
+  if (Array.isArray(peer)) {
+    const firstPeerId = peer[0].getPeerId()
+    if (peer.every((p) => p.getPeerId() === firstPeerId) && firstPeerId !== null) {
+      return {
+        peerId: peerIdFromString(firstPeerId)
+      }
+    }
+
+    if (peer.every((p) => p.getPeerId() === null)) {
+      return {
+        multiaddr: peer[0]
+      }
+    }
+  }
+
   if (isPeerId(peer)) {
     return {
       peerId: peer

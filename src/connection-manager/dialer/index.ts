@@ -150,7 +150,7 @@ export class DefaultDialer implements Startable, Dialer {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    */
-  async dial (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+  async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
     const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null) {
