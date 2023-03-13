@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-keychain/compare/v1.0.1...v2.0.0) (2023-03-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires most recent datastore implementation
+
+### Bug Fixes
+
+* update datastore dependency ([#58](https://github.com/libp2p/js-libp2p-keychain/issues/58)) ([a8a1628](https://github.com/libp2p/js-libp2p-keychain/commit/a8a162875e48f23611190c3fb31e439da1d2d64b))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p-keychain/compare/v1.0.0...v1.0.1) (2023-03-13)
 
 
