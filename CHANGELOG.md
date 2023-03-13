@@ -1,3 +1,17 @@
+## [2.0.6](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.5...v2.0.6) (2023-03-13)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([a24089e](https://github.com/libp2p/js-libp2p-logger/commit/a24089e1ad4bf47185828a880879fa60adf867d6))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([36c0fe1](https://github.com/libp2p/js-libp2p-logger/commit/36c0fe124ebd82c06c167b999d960343a4601468))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([e73d815](https://github.com/libp2p/js-libp2p-logger/commit/e73d8153a0b93a25b2fbdfd6950eaa41e778ab4f))
+
+
+### Dependencies
+
+* update interface-datastore and aegir ([#29](https://github.com/libp2p/js-libp2p-logger/issues/29)) ([451d936](https://github.com/libp2p/js-libp2p-logger/commit/451d936b77b6e4588e31665e32f98e13da6c1899))
+
 ## [2.0.5](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.4...v2.0.5) (2023-01-06)
 
 
