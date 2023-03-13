@@ -132,7 +132,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i protons",
     "generate": "protons src/envelope/envelope.proto src/peer-record/peer-record.proto",
     "build": "aegir build",
     "test": "aegir test",
@@ -150,29 +150,19 @@
     "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/interface-record": "^2.0.1",
     "@libp2p/interfaces": "^3.2.0",
-    "@libp2p/logger": "^2.0.5",
     "@libp2p/peer-id": "^2.0.0",
     "@libp2p/utils": "^3.0.0",
     "@multiformats/multiaddr": "^11.0.0",
-    "interface-datastore": "^7.0.0",
-    "it-all": "^2.0.0",
-    "it-filter": "^2.0.0",
-    "it-foreach": "^1.0.0",
-    "it-map": "^2.0.0",
-    "it-pipe": "^2.0.3",
-    "multiformats": "^11.0.0",
     "protons-runtime": "^5.0.0",
     "uint8-varint": "^1.0.2",
     "uint8arraylist": "^2.1.0",
-    "uint8arrays": "^4.0.2",
-    "varint": "^6.0.0"
+    "uint8arrays": "^4.0.2"
   },
   "devDependencies": {
     "@libp2p/interface-record-compliance-tests": "^2.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
     "@types/varint": "^6.0.0",
     "aegir": "^38.1.2",
-    "protons": "^7.0.2",
-    "sinon": "^15.0.0"
+    "protons": "^7.0.2"
   }
 }
