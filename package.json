@@ -150,7 +150,7 @@
     "@libp2p/interfaces": "^3.3.1",
     "@libp2p/logger": "^2.0.5",
     "@libp2p/peer-id": "^2.0.1",
-    "interface-datastore": "^7.0.3",
+    "interface-datastore": "^8.0.0",
     "merge-options": "^3.0.4",
     "sanitize-filename": "^1.6.3",
     "uint8arrays": "^4.0.3"
@@ -158,7 +158,7 @@
   "devDependencies": {
     "@libp2p/peer-id-factory": "^2.0.1",
     "aegir": "^38.1.0",
-    "datastore-core": "^8.0.4",
+    "datastore-core": "^9.0.1",
     "multiformats": "^11.0.1"
   }
 }

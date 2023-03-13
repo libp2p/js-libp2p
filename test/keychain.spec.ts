@@ -28,12 +28,6 @@ describe('keychain', () => {
     ks = new DefaultKeyChain({
       datastore: datastore2
     }, { pass: passPhrase })
-
-    await datastore2.open()
-  })
-
-  after(async () => {
-    await datastore2.close()
   })
 
   it('can start without a password', async () => {
@@ -455,7 +449,6 @@ describe('keychain', () => {
       kc = new DefaultKeyChain({
         datastore: ds
       }, options)
-      await ds.open()
     })
 
     it('should validate newPass is a string', async () => {
