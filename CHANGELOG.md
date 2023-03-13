@@ -1,3 +1,18 @@
+## [1.0.1](https://github.com/libp2p/js-libp2p-keychain/compare/v1.0.0...v1.0.1) (2023-03-13)
+
+
+### Bug Fixes
+
+* replace err-code with CodeError ([#57](https://github.com/libp2p/js-libp2p-keychain/issues/57)) ([cc752d9](https://github.com/libp2p/js-libp2p-keychain/commit/cc752d9349a622f013cb3b713d09a663b1169766))
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([f3985cc](https://github.com/libp2p/js-libp2p-keychain/commit/f3985cc47ae966a33537af3f58c071f6c58184c9))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([d8b81ff](https://github.com/libp2p/js-libp2p-keychain/commit/d8b81ff5e03ca56541ae2117a928dedf180e85ac))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([a0a6972](https://github.com/libp2p/js-libp2p-keychain/commit/a0a6972d7af40488344e619e116f4d665190db6e))
+* Update .github/workflows/stale.yml [skip ci] ([b2cf129](https://github.com/libp2p/js-libp2p-keychain/commit/b2cf129fb1a3e0263a03d5a8a0e1ee74cd543004))
+
 ## [1.0.0](https://github.com/libp2p/js-libp2p-keychain/compare/v0.6.1...v1.0.0) (2023-01-27)
 
 
