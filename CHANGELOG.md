@@ -1,3 +1,19 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.4...v7.0.0) (2023-03-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* update interface-datastore to 8.x.x (#70)
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([d2b7c22](https://github.com/libp2p/js-libp2p-peer-store/commit/d2b7c229c7497c8a05bed9cb05d85e9da96e9c12))
+
+
+### Dependencies
+
+* update interface-datastore to 8.x.x ([#70](https://github.com/libp2p/js-libp2p-peer-store/issues/70)) ([864bd19](https://github.com/libp2p/js-libp2p-peer-store/commit/864bd19e711ed0d0f0a8a509c04b6b3692097232))
+
 ## [6.0.4](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.3...v6.0.4) (2023-03-02)
 
 
