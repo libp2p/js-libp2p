@@ -13,6 +13,7 @@
   - [Browser `<script>` tag](#browser-script-tag)
 - [Description](#description)
 - [Example](#example)
+- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
 
@@ -59,6 +60,10 @@ with this peer: 12D3Foo
 with this base58btc: Qmfoo
 with this base32: bafyfoo
 ```
+
+## API Docs
+
+- <https://libp2p.github.io/js-libp2p-logger>
 
 ## License
 

@@ -7,32 +7,32 @@ import type { CID } from 'multiformats/cid'
 import type { Key } from 'interface-datastore'
 
 // Add a formatter for converting to a base58 string
-debug.formatters.b = (v?: Uint8Array) => {
+debug.formatters.b = (v?: Uint8Array): string => {
   return v == null ? 'undefined' : base58btc.baseEncode(v)
 }
 
 // Add a formatter for converting to a base32 string
-debug.formatters.t = (v?: Uint8Array) => {
+debug.formatters.t = (v?: Uint8Array): string => {
   return v == null ? 'undefined' : base32.baseEncode(v)
 }
 
 // Add a formatter for converting to a base64 string
-debug.formatters.m = (v?: Uint8Array) => {
+debug.formatters.m = (v?: Uint8Array): string => {
   return v == null ? 'undefined' : base64.baseEncode(v)
 }
 
 // Add a formatter for stringifying peer ids
-debug.formatters.p = (v?: PeerId) => {
+debug.formatters.p = (v?: PeerId): string => {
   return v == null ? 'undefined' : v.toString()
 }
 
 // Add a formatter for stringifying CIDs
-debug.formatters.c = (v?: CID) => {
+debug.formatters.c = (v?: CID): string => {
   return v == null ? 'undefined' : v.toString()
 }
 
 // Add a formatter for stringifying Datastore keys
-debug.formatters.k = (v: Key) => {
+debug.formatters.k = (v: Key): string => {
   return v == null ? 'undefined' : v.toString()
 }
 
@@ -50,14 +50,14 @@ export function logger (name: string): Logger {
   })
 }
 
-export function disable () {
+export function disable (): void {
   debug.disable()
 }
 
-export function enable (namespaces: string) {
+export function enable (namespaces: string): void {
   debug.enable(namespaces)
 }
 
-export function enabled (namespaces: string) {
+export function enabled (namespaces: string): boolean {
   return debug.enabled(namespaces)
 }

@@ -141,11 +141,11 @@
   "dependencies": {
     "@libp2p/interface-peer-id": "^2.0.0",
     "debug": "^4.3.3",
-    "interface-datastore": "^7.0.0",
+    "interface-datastore": "^8.0.0",
     "multiformats": "^11.0.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
-    "aegir": "^37.9.1"
+    "aegir": "^38.1.7"
   }
 }
