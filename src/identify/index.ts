@@ -65,6 +65,7 @@ export interface IdentifyServiceInit {
 
   maxPushIncomingStreams: number
   maxPushOutgoingStreams: number
+  maxObservedAddresses?: number
 }
 
 export interface IdentifyServiceComponents {
@@ -378,10 +379,13 @@ export class IdentifyService implements Startable {
     }
 
     log('identify completed for peer %p and protocols %o', id, protocols)
+    log('our observed address is %s', cleanObservedAddr)
 
-    // TODO: Add and score our observed addr
-    log('received observed address of %s', cleanObservedAddr?.toString())
-    // this.components.addressManager.addObservedAddr(observedAddr)
+    if (cleanObservedAddr != null &&
+        this.components.addressManager.getObservedAddrs().length < (this.init.maxObservedAddresses ?? Infinity)) {
+      log('storing our observed address %s', cleanObservedAddr?.toString())
+      this.components.addressManager.addObservedAddr(cleanObservedAddr)
+    }
   }
 
   /**

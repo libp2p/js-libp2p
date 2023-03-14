@@ -22,6 +22,7 @@ import { PeerRecordUpdater } from './peer-record-updater.js'
 import { DHTPeerRouting } from './dht/dht-peer-routing.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DHTContentRouting } from './dht/dht-content-routing.js'
+import { AutonatService } from './autonat/index.js'
 import { DefaultComponents } from './components.js'
 import type { Components } from './components.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -62,6 +63,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public circuitService?: CircuitRelayService
   public fetchService: FetchService
   public pingService: PingService
+  public autonatService: AutonatService
   public components: Components
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -228,6 +230,16 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     this.pingService = this.configureComponent(new PingService(this.components, {
       ...init.ping
+    }))
+
+    this.autonatService = this.configureComponent(new AutonatService(this.components, {
+      ...init.autonat
+    }))
+
+    this.configureComponent(new AutoDialler(this.components, {
+      enabled: init.connectionManager.autoDial,
+      minConnections: init.connectionManager.minConnections,
+      autoDialInterval: init.connectionManager.autoDialInterval
     }))
 
     if (init.relay != null) {

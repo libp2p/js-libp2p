@@ -35,6 +35,7 @@ import type { Metrics } from '@libp2p/interface-metrics'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PingServiceInit } from './ping/index.js'
 import type { FetchServiceInit } from './fetch/index.js'
+import type { AutonatServiceInit } from './autonat/index.js'
 import type { Components } from './components.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { KeyChainInit } from '@libp2p/keychain'
@@ -107,19 +108,24 @@ export interface Libp2pInit {
   relay: (components: Components) => CircuitRelayService
 
   /**
-   * libp2p identify protocol options
+   * identify protocol options
    */
   identify: IdentifyServiceInit
 
   /**
-   * libp2p ping protocol options
+   * ping protocol options
    */
   ping: PingServiceInit
 
   /**
-   * libp2p fetch protocol options
+   * fetch protocol options
    */
   fetch: FetchServiceInit
+
+  /**
+   * autonat protocol options
+   */
+  autonat: AutonatServiceInit
 
   /**
    * An array that must include at least 1 compliant transport

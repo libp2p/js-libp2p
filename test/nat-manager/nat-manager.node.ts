@@ -14,6 +14,7 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { start, stop } from '@libp2p/interfaces/startable'
+import { multiaddr } from '@multiformats/multiaddr'
 import { DefaultComponents } from '../../src/components.js'
 
 const DEFAULT_ADDRESSES = [
@@ -99,6 +100,9 @@ describe('Nat Manager (TCP)', () => {
         protocol: 'TCP'
       })
     })
+
+    // simulate autonat having run
+    components.addressManager.confirmObservedAddr(multiaddr('/ip4/82.3.1.5/tcp/4002'))
 
     expect(addressChangedEventFired).to.be.true()
   })
