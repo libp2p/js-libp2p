@@ -25,7 +25,7 @@ import { pipe } from 'it-pipe'
 import { Components, DefaultComponents } from '../../src/components.js'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 const defaultInit: AutonatServiceInit = {
   protocolPrefix: 'libp2p',
