@@ -62,7 +62,7 @@ describe('Nat Manager (TCP)', () => {
     }
   }
 
-  afterEach(async () => await Promise.all(teardown.map(async t => await t())))
+  afterEach(async () => await Promise.all(teardown.map(async t => { await t() })))
 
   it('should map TCP connections to external ports', async () => {
     const {

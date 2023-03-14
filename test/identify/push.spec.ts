@@ -148,7 +148,7 @@ describe('identify (push)', () => {
     await delay(1000)
 
     // make sure we have a peer record to send
-    await localPeerRecordUpdater.update()
+    localPeerRecordUpdater.update()
 
     // wait for the remote peer store to notice the changes
     const eventPromise = pEvent(remoteComponents.peerStore, 'change:multiaddrs')

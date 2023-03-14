@@ -3,6 +3,7 @@ import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
 import { multiaddr } from '@multiformats/multiaddr'
+import { circuitRelayTransport } from 'libp2p/circuit-relay'
 
 async function main () {
   const relayAddr = process.argv[2]
@@ -12,21 +13,17 @@ async function main () {
 
   const node = await createLibp2p({
     transports: [
-      webSockets()
+      webSockets(),
+      circuitRelayTransport({
+        discoverRelays: 2
+      })
     ],
     connectionEncryption: [
       noise()
     ],
     streamMuxers: [
       mplex()
-    ],
-    relay: {
-      enabled: true,
-      autoRelay: {
-        enabled: true,
-        maxListeners: 2
-      }
-    }
+    ]
   })
 
   console.log(`Node started with id ${node.peerId.toString()}`)

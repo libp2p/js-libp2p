@@ -148,7 +148,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
     this.latencyData = this.initLatencyData()
   }
 
-  start () {
+  start (): void {
     // We check for isBrowser because of browsers set max rates of timeouts when a page is hidden,
     // so we fall back to another library
     // See: http://stackoverflow.com/questions/6032429/chrome-timeouts-interval-suspended-in-background-tabs
@@ -172,7 +172,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
     }
   }
 
-  stop () {
+  stop (): void {
     this._stopTimers()
   }
 
@@ -181,7 +181,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
    *
    * @private
    */
-  _startTimers () {
+  _startTimers (): void {
     // Timer already started, ignore this
     if (this.checkLatencyID != null) {
       return
@@ -190,7 +190,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
     this.checkLatency()
 
     if (this.dataEmitIntervalMs != null) {
-      this.emitIntervalID = setInterval(() => this._emitSummary(), this.dataEmitIntervalMs)
+      this.emitIntervalID = setInterval(() => { this._emitSummary() }, this.dataEmitIntervalMs)
       if (typeof this.emitIntervalID.unref === 'function') {
         this.emitIntervalID.unref() // Doesn't block exit
       }
@@ -202,7 +202,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
    *
    * @private
    */
-  _stopTimers () {
+  _stopTimers (): void {
     if (this.checkLatencyID != null) {
       clearTimeout(this.checkLatencyID)
       this.checkLatencyID = undefined
@@ -218,7 +218,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
    *
    * @private
    */
-  _emitSummary () {
+  _emitSummary (): void {
     const summary = this.getSummary()
     if (summary.events > 0) {
       this.dispatchEvent(new CustomEvent<SummaryObject>('data', {
@@ -254,7 +254,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
    * Randomly calls an async fn every roughly latencyCheckIntervalMs (plus some randomness). If no async fn is found,
    * it will simply report on event loop latency.
    */
-  checkLatency () {
+  checkLatency (): void {
     // Randomness is needed to avoid alignment by accident to regular things in the event loop
     const randomness = (Math.random() * this.latencyCheckMultiply) - this.latencyCheckSubtract
 
@@ -264,7 +264,7 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
       startTime: this.now()
     }
 
-    const cb = () => {
+    const cb = (): void => {
       // We are already stopped, ignore this datapoint
       if (this.checkLatencyID == null) {
         return
@@ -314,6 +314,6 @@ export class LatencyMonitor extends EventEmitter<LatencyMonitorEvents> {
   }
 }
 
-function isBrowser () {
+function isBrowser (): boolean {
   return typeof globalThis.window !== 'undefined'
 }

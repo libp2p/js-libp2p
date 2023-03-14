@@ -11,7 +11,7 @@ This example uses a publicly known delegated routing node. This aims to ease exp
 
 ## Running this example
 
-1. Install IPFS locally if you dont already have it. [Install Guide](https://docs.ipfs.io/introduction/install/)
+1. Install IPFS locally if you dont already have it. [Install Guide](https://docs.ipfs.tech/install/)
 2. Run the IPFS daemon: `ipfs daemon`
 3. In another window output the addresses of the node: `ipfs id`. Make note of the websocket address, it will contain `/ws/` in the address.
   - If there is no websocket address, you will need to add it in the ipfs config file (`~/.ipfs/config`)
