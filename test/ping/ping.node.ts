@@ -75,4 +75,34 @@ describe('ping', () => {
 
     defer.resolve()
   })
+
+  it('allows two incoming streams from the same peer', async () => {
+    const remote = nodes[0]
+    const client = await createNode({
+      config: createBaseOptions({
+        ping: {
+        // Allow two outbound ping streams.
+        // It is not allowed by the spec, but this test needs to open two concurrent streams.
+          maxOutboundStreams: 2
+        }
+      })
+    })
+    await client.components.peerStore.addressBook.set(remote.peerId, remote.getMultiaddrs())
+    // register our new node for shutdown after the test finishes
+    // otherwise the Mocha/Node.js process never finishes
+    nodes.push(client)
+
+    // Send two ping requests in parallel, this should open two concurrent streams
+    const results = await Promise.allSettled([
+      client.ping(remote.peerId),
+      client.ping(remote.peerId)
+    ])
+
+    // Verify that the remote peer accepted both inbound streams
+    expect(results.map(describe)).to.deep.equal(['fulfilled', 'fulfilled'])
+
+    function describe (result: PromiseSettledResult<number>): string {
+      return result.status === 'fulfilled' ? result.status : result.reason ?? result.status
+    }
+  })
 })

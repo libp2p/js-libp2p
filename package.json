@@ -49,8 +49,12 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./circuit-relay": {
+      "types": "./dist/src/circuit/index.d.ts",
+      "import": "./dist/src/circuit/index.js"
     },
     "./insecure": {
       "types": "./dist/src/insecure/index.d.ts",
@@ -99,6 +103,7 @@
     "@libp2p/interface-address-manager": "^2.0.0",
     "@libp2p/interface-connection": "^3.0.2",
     "@libp2p/interface-connection-encrypter": "^3.0.1",
+    "@libp2p/interface-connection-gater": "^1.0.0",
     "@libp2p/interface-connection-manager": "^1.1.1",
     "@libp2p/interface-content-routing": "^2.0.0",
     "@libp2p/interface-dht": "^2.0.0",
@@ -123,6 +128,7 @@
     "@libp2p/peer-id-factory": "^2.0.0",
     "@libp2p/peer-record": "^5.0.0",
     "@libp2p/peer-store": "^6.0.4",
+    "@libp2p/topology": "^4.0.1",
     "@libp2p/tracked-map": "^3.0.0",
     "@libp2p/utils": "^3.0.2",
     "@multiformats/mafmt": "^11.0.2",
@@ -143,7 +149,7 @@
     "it-map": "^2.0.0",
     "it-merge": "^2.0.0",
     "it-pair": "^2.0.2",
-    "it-pb-stream": "^3.0.0",
+    "it-pb-stream": "^3.2.0",
     "it-pipe": "^2.0.3",
     "it-sort": "^2.0.0",
     "it-stream-types": "^1.0.4",
@@ -151,6 +157,7 @@
     "multiformats": "^11.0.0",
     "p-defer": "^4.0.0",
     "p-fifo": "^1.0.0",
+    "p-queue": "^7.3.4",
     "p-retry": "^5.0.0",
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
@@ -181,7 +188,6 @@
     "@libp2p/mplex": "^7.0.0",
     "@libp2p/pubsub": "^6.0.0",
     "@libp2p/tcp": "^6.0.0",
-    "@libp2p/topology": "^4.0.0",
     "@libp2p/webrtc-star": "^6.0.0",
     "@libp2p/websockets": "^5.0.0",
     "@types/p-fifo": "^1.0.0",

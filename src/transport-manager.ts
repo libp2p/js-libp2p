@@ -55,7 +55,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     }
 
     if (this.transports.has(tag)) {
-      throw errCode(new Error('There is already a transport with this tag'), codes.ERR_DUPLICATE_TRANSPORT)
+      throw errCode(new Error(`There is already a transport with the tag ${tag}`), codes.ERR_DUPLICATE_TRANSPORT)
     }
 
     log('adding transport %s', tag)
