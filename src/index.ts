@@ -108,19 +108,23 @@ export interface Libp2pInit {
   relay: (components: Components) => CircuitRelayService
 
   /**
-   * libp2p identify protocol options
+   * identify protocol options
    */
   identify: IdentifyServiceInit
 
   /**
-   * libp2p ping protocol options
+   * ping protocol options
    */
   ping: PingServiceInit
 
   /**
-   * libp2p fetch protocol options
+   * fetch protocol options
    */
   fetch: FetchServiceInit
+
+  /**
+   * autonat protocol options
+   */
   autonat: AutonatServiceInit
 
   /**

@@ -48,15 +48,18 @@ interface ObservedAddressMetadata {
   confident: boolean
 }
 
+/**
+ * If the passed multiaddr contains the passed peer id, remove it
+ */
 function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
-  const observedPeerId = ma.getPeerId()
+  const observedPeerIdStr = ma.getPeerId()
 
   // strip our peer id if it has been passed
-  if (observedPeerId != null) {
-    const peerId = peerIdFromString(observedPeerId)
+  if (observedPeerIdStr != null) {
+    const observedPeerId = peerIdFromString(observedPeerIdStr)
 
     // use same encoding for comparison
-    if (peerId.equals(peerId)) {
+    if (observedPeerId.equals(peerId)) {
       ma = ma.decapsulate(multiaddr(`/p2p/${peerId.toString()}`))
     }
   }
@@ -114,21 +117,9 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
   /**
    * Add peer observed addresses
    */
-  addObservedAddr (addr: string | Multiaddr): void {
-    let ma = multiaddr(addr)
-    const remotePeer = ma.getPeerId()
-
-    // strip our peer id if it has been passed
-    if (remotePeer != null) {
-      const remotePeerId = peerIdFromString(remotePeer)
-
-      // use same encoding for comparison
-      if (remotePeerId.equals(this.components.peerId)) {
-        ma = ma.decapsulate(multiaddr(`/p2p/${this.components.peerId.toString()}`))
-      }
-    }
-
-    const addrString = ma.toString()
+  addObservedAddr (addr: Multiaddr): void {
+    addr = stripPeerId(addr, this.components.peerId)
+    const addrString = addr.toString()
 
     // do not trigger the change:addresses event if we already know about this address
     if (this.observed.has(addrString)) {

@@ -104,7 +104,7 @@ describe('Address Manager', () => {
   })
 
   it('should dedupe added observed addresses', () => {
-    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
@@ -145,7 +145,7 @@ describe('Address Manager', () => {
   })
 
   it('should strip our peer address from added observed addresses', () => {
-    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
@@ -163,7 +163,7 @@ describe('Address Manager', () => {
   })
 
   it('should strip our peer address from added observed addresses in difference formats', () => {
-    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()

@@ -1,7 +1,11 @@
+import { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection } from '@libp2p/interface-connection'
+import { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import { PeerRouting } from '@libp2p/interface-peer-routing'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
@@ -16,7 +20,6 @@ import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
 import { TimeoutController } from 'timeout-abort-controller'
-import type { Components } from '../components.js'
 import {
   PROTOCOL
 } from './constants.js'
@@ -67,12 +70,15 @@ export interface AutonatServiceInit {
   maxOutboundStreams: number
 }
 
-export type DefaultAutonatComponents = Pick<
-Components,
-'registrar' | 'addressManager' |
-'transportManager' | 'dialer' |
-'peerId' | 'connectionManager' | 'peerRouting'
->
+export interface DefaultAutonatComponents {
+  registrar: Registrar
+  addressManager: AddressManager
+  transportManager: TransportManager
+  dialer: Dialer
+  peerId: PeerId
+  connectionManager: ConnectionManager
+  peerRouting: PeerRouting
+}
 
 export class AutonatService implements Startable {
   private readonly components: DefaultAutonatComponents
