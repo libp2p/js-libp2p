@@ -468,6 +468,7 @@ export class IdentifyService implements Startable {
       }
     } catch (err: any) {
       log.error('received invalid message', err)
+      return
     } finally {
       stream.close()
       timeoutController.clear()
@@ -475,6 +476,7 @@ export class IdentifyService implements Startable {
 
     if (message == null) {
       log.error('received invalid message')
+      return
     }
 
     const id = connection.remotePeer
@@ -486,7 +488,7 @@ export class IdentifyService implements Startable {
 
     log('received push from %p', id)
 
-    if (message?.signedPeerRecord != null) {
+    if (message.signedPeerRecord != null) {
       log('received signedPeerRecord in push')
 
       try {
@@ -509,15 +511,14 @@ export class IdentifyService implements Startable {
 
     // LEGACY: Update peers data in PeerStore
     try {
-      await this.components.peerStore.addressBook.set(id,
-        message?.listenAddrs.map((addr) => multiaddr(addr)) ?? [])
+      await this.components.peerStore.addressBook.set(id, message.listenAddrs.map((addr) => multiaddr(addr)))
     } catch (err: any) {
       log.error('received invalid addrs', err)
     }
 
     // Update the protocols
     try {
-      await this.components.peerStore.protoBook.set(id, message?.protocols ?? [])
+      await this.components.peerStore.protoBook.set(id, message.protocols)
     } catch (err: any) {
       log.error('received invalid protocols', err)
     }
