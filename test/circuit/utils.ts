@@ -27,7 +27,7 @@ export function createNodeOptions (...overrides: Libp2pOptions[]): Libp2pOptions
   }, ...overrides)
 }
 
-export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>) {
+export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
     const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
@@ -86,7 +86,7 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
   return relayPeerId
 }
 
-export async function discoveredRelayConfig (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>) {
+export async function discoveredRelayConfig (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   await pWaitFor(async () => {
     const peerData = await node.peerStore.get(relay.peerId)
     return peerData.protocols.includes(RELAY_V2_HOP_CODEC)
@@ -116,7 +116,7 @@ export class MockContentRouting implements ContentRouting {
   static providers: Map<string, PeerInfo[]> = new Map()
   static data: Map<string, Uint8Array> = new Map()
 
-  static reset () {
+  static reset (): void {
     MockContentRouting.providers.clear()
     MockContentRouting.data.clear()
   }
@@ -129,7 +129,7 @@ export class MockContentRouting implements ContentRouting {
     this.addressManager = components.addressManager
   }
 
-  async provide (cid: CID, options?: AbortOptions) {
+  async provide (cid: CID, options?: AbortOptions): Promise<void> {
     let providers = MockContentRouting.providers.get(cid.toString()) ?? []
     providers = providers.filter(peerInfo => !peerInfo.id.equals(this.peerId))
 
@@ -142,15 +142,15 @@ export class MockContentRouting implements ContentRouting {
     MockContentRouting.providers.set(cid.toString(), providers)
   }
 
-  async * findProviders (cid: CID<unknown, number, number, Version>, options?: AbortOptions | undefined) {
+  async * findProviders (cid: CID<unknown, number, number, Version>, options?: AbortOptions | undefined): AsyncGenerator<PeerInfo, void, undefined> {
     yield * MockContentRouting.providers.get(cid.toString()) ?? []
   }
 
-  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions) {
+  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
     MockContentRouting.data.set(uint8ArrayToString(key, 'base58btc'), value)
   }
 
-  async get (key: Uint8Array, options?: AbortOptions) {
+  async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
     const value = MockContentRouting.data.get(uint8ArrayToString(key, 'base58btc'))
 
     if (value != null) {

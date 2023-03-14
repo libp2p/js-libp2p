@@ -24,7 +24,7 @@ describe('ping', () => {
     await nodes[1].components.peerStore.addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
   })
 
-  afterEach(async () => await Promise.all(nodes.map(async n => await n.stop())))
+  afterEach(async () => await Promise.all(nodes.map(async n => { await n.stop() })))
 
   it('ping once from peer0 to peer1 using a multiaddr', async () => {
     const ma = multiaddr(`${nodes[2].getMultiaddrs()[0].toString()}/p2p/${nodes[2].peerId.toString()}`)

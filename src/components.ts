@@ -91,11 +91,11 @@ export class DefaultComponents implements Components, Startable {
     this._dialer = init.dialer
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this._started
   }
 
-  async beforeStart () {
+  async beforeStart (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.beforeStart != null) {
@@ -105,7 +105,7 @@ export class DefaultComponents implements Components, Startable {
     )
   }
 
-  async start () {
+  async start (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         await startable.start()
@@ -115,7 +115,7 @@ export class DefaultComponents implements Components, Startable {
     this._started = true
   }
 
-  async afterStart () {
+  async afterStart (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.afterStart != null) {
@@ -125,7 +125,7 @@ export class DefaultComponents implements Components, Startable {
     )
   }
 
-  async beforeStop () {
+  async beforeStop (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.beforeStop != null) {
@@ -135,7 +135,7 @@ export class DefaultComponents implements Components, Startable {
     )
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         await startable.stop()
@@ -145,7 +145,7 @@ export class DefaultComponents implements Components, Startable {
     this._started = false
   }
 
-  async afterStop () {
+  async afterStop (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.afterStop != null) {

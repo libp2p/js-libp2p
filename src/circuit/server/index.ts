@@ -26,6 +26,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { setMaxListeners } from 'events'
+import type { PeerMap } from '@libp2p/peer-collections'
 
 const log = logger('libp2p:circuit-relay:server')
 
@@ -247,7 +248,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       return
     }
 
-    const result = await this.reservationStore.reserve(connection.remotePeer, connection.remoteAddr)
+    const result = this.reservationStore.reserve(connection.remotePeer, connection.remoteAddr)
 
     if (result.status !== Status.OK) {
       hopstr.write({ type: HopMessage.Type.STATUS, status: result.status })
@@ -266,12 +267,12 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
         type: HopMessage.Type.STATUS,
         status: Status.OK,
         reservation: await this.makeReservation(connection.remotePeer, BigInt(result.expire ?? 0)),
-        limit: (await this.reservationStore.get(connection.remotePeer))?.limit
+        limit: this.reservationStore.get(connection.remotePeer)?.limit
       })
       log('sent confirmation response to %s', connection.remotePeer)
     } catch (err) {
       log.error('failed to send confirmation response to %p', connection.remotePeer, err)
-      await this.reservationStore.removeReservation(connection.remotePeer)
+      this.reservationStore.removeReservation(connection.remotePeer)
     }
   }
 
@@ -325,7 +326,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       return
     }
 
-    if (!await this.reservationStore.hasReservation(dstPeer)) {
+    if (!this.reservationStore.hasReservation(dstPeer)) {
       log.error('hop connect denied for destination peer %p not having a reservation for %p with status %s', dstPeer, connection.remotePeer, Status.NO_RESERVATION)
       hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
       return
@@ -368,7 +369,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     const sourceStream = stream.unwrap()
 
     log('connection from %p to %p established - merging streans', connection.remotePeer, dstPeer)
-    const limit = (await this.reservationStore.get(dstPeer))?.limit
+    const limit = this.reservationStore.get(dstPeer)?.limit
     // Short circuit the two streams to create the relayed connection
     createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, limit)
   }
@@ -408,7 +409,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     stream.close()
   }
 
-  get reservations () {
+  get reservations (): PeerMap<RelayReservation> {
     return this.reservationStore.reservations
   }
 }

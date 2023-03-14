@@ -143,7 +143,7 @@ class CircuitRelayTransport implements Transport {
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): 'libp2p/circuit-relay-v2' {
     return 'libp2p/circuit-relay-v2'
   }
 
@@ -208,7 +208,7 @@ class CircuitRelayTransport implements Transport {
       destinationAddr, relayAddr, ma,
       disconnectOnFailure
     }: ConnectOptions
-  ) {
+  ): Promise<Connection> {
     try {
       const pbstr = pbStream(stream)
       const hopstr = pbstr.pb(HopMessage)

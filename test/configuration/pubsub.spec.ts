@@ -81,7 +81,7 @@ describe('Pubsub subscription handlers adapter', () => {
     const topic = 'topic'
     const defer = pDefer()
 
-    const handler = () => {
+    const handler = (): void => {
       countMessages++
       defer.resolve()
     }
