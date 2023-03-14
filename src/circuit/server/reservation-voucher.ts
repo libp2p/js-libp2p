@@ -1,6 +1,6 @@
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Record } from '@libp2p/interface-record'
-import { ReservationVoucher } from './pb/index.js'
+import { ReservationVoucher } from '../pb/index.js'
 
 export interface ReservationVoucherOptions {
   relay: PeerId

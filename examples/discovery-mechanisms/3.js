@@ -7,6 +7,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { floodsub } from '@libp2p/floodsub'
 import { bootstrap } from '@libp2p/bootstrap'
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
+import { circuitRelayTransport, circuitRelayServer } from 'libp2p/circuit-relay'
 
 const createNode = async (bootstrappers) => {
   const node = await createLibp2p({
@@ -37,7 +38,7 @@ const createNode = async (bootstrappers) => {
         '/ip4/0.0.0.0/tcp/0'
       ]
     },
-    transports: [tcp()],
+    transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [mplex()],
     connectionEncryption: [noise()],
     pubsub: floodsub(),
@@ -46,12 +47,7 @@ const createNode = async (bootstrappers) => {
         interval: 1000
       })
     ],
-    relay: {
-      enabled: true, // Allows you to dial and accept relayed connections. Does not make you a relay.
-      hop: {
-        enabled: true // Allows you to be a relay for other peers
-      }
-    }
+    relay: circuitRelayServer()
   })
   console.log(`libp2p relay started with id: ${relay.peerId.toString()}`)
 

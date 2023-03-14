@@ -1,5 +1,5 @@
 import errCode from 'err-code'
-import type { ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
+import type { ConnectionProtector } from '@libp2p/interface-connection'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import { isStartable, Startable } from '@libp2p/interfaces/startable'
@@ -13,6 +13,7 @@ import type { Datastore } from 'interface-datastore'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { DualDHT } from '@libp2p/interface-dht'
 import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 export interface Components {
   peerId: PeerId

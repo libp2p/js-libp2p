@@ -1,4 +1,3 @@
-import { RelayReservationManager } from './circuit/client.js'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
@@ -11,8 +10,6 @@ import { codes } from './errors.js'
 import { DefaultAddressManager } from './address-manager/index.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
 import { AutoDialler } from './connection-manager/auto-dialler.js'
-import { Circuit } from './circuit/transport.js'
-import { Relay } from './circuit/index.js'
 import { DefaultKeyChain } from '@libp2p/keychain'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
@@ -53,6 +50,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import type { Datastore } from 'interface-datastore'
 import type { KeyChain } from '@libp2p/interface-keychain'
 import mergeOptions from 'merge-options'
+import type { CircuitRelayService } from './circuit/index.js'
 
 const log = logger('libp2p')
 
@@ -61,7 +59,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public dht: DualDHT
   public pubsub: PubSub
   public identifyService: IdentifyService
-  public circuitService?: RelayReservationManager
+  public circuitService?: CircuitRelayService
   public fetchService: FetchService
   public pingService: PingService
   public components: Components
@@ -173,23 +171,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     // Create the Nat Manager
     this.services.push(new NatManager(this.components, init.nat))
 
-    init.transports.forEach((fn) => {
-      this.components.transportManager.add(this.configureComponent(fn(this.components)))
-    })
-
     // Add the identify service
     this.identifyService = new IdentifyService(this.components, {
       ...init.identify
     })
     this.configureComponent(this.identifyService)
-
-    if (init.relay.reservationManager.enabled === true) {
-      this.circuitService = new RelayReservationManager(this.components, {
-        addressSorter: init.connectionManager.addressSorter,
-        ...init.relay.reservationManager
-      })
-      this.services.push(this.circuitService)
-    }
 
     // dht provided components (peerRouting, contentRouting, dht)
     if (init.dht != null) {
@@ -236,14 +222,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       routers: contentRouters
     }))
 
-    if (init.relay.enabled) {
-      this.components.transportManager.add(this.configureComponent(new Circuit(this.components, init.relay)))
-
-      this.configureComponent(new Relay(this.components, {
-        ...init.relay
-      }))
-    }
-
     this.fetchService = this.configureComponent(new FetchService(this.components, {
       ...init.fetch
     }))
@@ -251,6 +229,10 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.pingService = this.configureComponent(new PingService(this.components, {
       ...init.ping
     }))
+
+    if (init.relay != null) {
+      this.circuitService = this.configureComponent(init.relay(this.components))
+    }
 
     // Discovery modules
     for (const fn of init.peerDiscovery ?? []) {
@@ -260,6 +242,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
         this.onDiscoveryPeer(evt)
       })
     }
+
+    // Transport modules
+    init.transports.forEach((fn) => {
+      this.components.transportManager.add(this.configureComponent(fn(this.components)))
+    })
   }
 
   private configureComponent <T> (component: T): T {
