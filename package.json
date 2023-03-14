@@ -184,7 +184,7 @@
     "@libp2p/interface-mocks": "^9.0.0",
     "@libp2p/interop": "^7.0.0",
     "@libp2p/kad-dht": "^7.0.0",
-    "@libp2p/mdns": "^6.0.0",
+    "@libp2p/mdns": "^7.0.0",
     "@libp2p/mplex": "^7.0.0",
     "@libp2p/pubsub": "^6.0.0",
     "@libp2p/tcp": "^6.0.0",
