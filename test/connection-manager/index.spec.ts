@@ -132,7 +132,7 @@ describe('Connection Manager', () => {
     const connectionManagerMaybeDisconnectOneSpy = sinon.spy(connectionManager, '_pruneConnections')
     const spies = new Map<string, sinon.SinonSpy<[], Promise<void>>>()
 
-    const createConnection = async (value: number, open: number = Date.now(), peerTag: string = 'test-tag') => {
+    const createConnection = async (value: number, open: number = Date.now(), peerTag: string = 'test-tag'): Promise<void> => {
       // #TODO: Mock the connection timeline to simulate an older connection
       const connection = mockConnection(mockMultiaddrConnection({ ...mockDuplex(), timeline: { open } }, await createEd25519PeerId()))
       const spy = sinon.spy(connection, 'close')

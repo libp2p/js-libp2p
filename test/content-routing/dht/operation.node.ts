@@ -14,7 +14,7 @@ import { start } from '@libp2p/interfaces/startable'
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
 
-async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2pNode) {
+async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2pNode): Promise<Multiaddr> {
   const addrs = await libp2p.components.peerStore.addressBook.get(remotePeerId)
 
   if (addrs.length === 0) {
@@ -152,7 +152,7 @@ describe('DHT subsystem operates correctly', () => {
       // the ability to report stats on the DHT routing table instead of reaching into it's heart like this
       expect(remoteLibp2p.dht.lan.routingTable).to.be.empty()
 
-      return await pWaitFor(() => libp2p.dht.lan.routingTable.size === 1)
+      await pWaitFor(() => libp2p.dht.lan.routingTable.size === 1)
     })
 
     it('should put on a peer and get from the other', async () => {

@@ -96,7 +96,7 @@ export class AdvertService extends EventEmitter<AdvertServiceEvents> implements 
 
         if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
           log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)
-          await this.stop()
+          this.stop()
           return
         }
 

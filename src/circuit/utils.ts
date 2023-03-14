@@ -37,7 +37,7 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
 }
 
 const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Required<Limit>): void => {
-  function abortStreams (err: Error) {
+  function abortStreams (err: Error): void {
     src.abort(err)
     dst.abort(err)
     clearTimeout(timeout)

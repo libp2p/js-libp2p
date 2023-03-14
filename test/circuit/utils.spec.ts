@@ -11,7 +11,7 @@ import { pushable } from 'it-pushable'
 import Sinon from 'sinon'
 import toBuffer from 'it-to-buffer'
 
-describe('circuit-relay utils', function () {
+describe('circuit-relay utils', () => {
   it('should create relay', async () => {
     const received = pushable()
 

@@ -58,14 +58,14 @@ export class AutoDialler implements Startable {
     log('options: %j', this.options)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
   /**
    * Starts the auto dialer
    */
-  async start () {
+  async start (): Promise<void> {
     if (!this.options.enabled) {
       log('not enabled')
       return
@@ -83,7 +83,7 @@ export class AutoDialler implements Startable {
   /**
    * Stops the auto dialler
    */
-  async stop () {
+  async stop (): Promise<void> {
     if (!this.options.enabled) {
       log('not enabled')
       return
@@ -98,7 +98,7 @@ export class AutoDialler implements Startable {
     log('stopped')
   }
 
-  async _autoDial () {
+  async _autoDial (): Promise<void> {
     if (this.autoDialTimeout != null) {
       this.autoDialTimeout.clear()
     }

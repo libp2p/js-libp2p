@@ -87,18 +87,18 @@ export class ConnectionImpl implements Connection {
     this._closing = false
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): 'Connection' {
     return 'Connection'
   }
 
-  get [symbol] () {
+  get [symbol] (): true {
     return true
   }
 
   /**
    * Get all the streams of the muxer
    */
-  get streams () {
+  get streams (): Stream[] {
     return this._getStreams()
   }
 
@@ -128,21 +128,21 @@ export class ConnectionImpl implements Connection {
   /**
    * Add a stream when it is opened to the registry
    */
-  addStream (stream: Stream) {
+  addStream (stream: Stream): void {
     stream.stat.direction = 'inbound'
   }
 
   /**
    * Remove stream registry after it is closed
    */
-  removeStream (id: string) {
+  removeStream (id: string): void {
 
   }
 
   /**
    * Close the connection
    */
-  async close () {
+  async close (): Promise<void> {
     if (this.stat.status === CLOSED || this._closing) {
       return
     }
@@ -151,7 +151,7 @@ export class ConnectionImpl implements Connection {
 
     // close all streams - this can throw if we're not multiplexed
     try {
-      this.streams.forEach(s => s.close())
+      this.streams.forEach(s => { s.close() })
     } catch (err) {
       log.error(err)
     }
