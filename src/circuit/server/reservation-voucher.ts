@@ -1,6 +1,6 @@
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Record } from '@libp2p/interface-record'
-import { ReservationVoucher } from './pb/index.js'
+import { ReservationVoucher } from '../pb/index.js'
 
 export interface ReservationVoucherOptions {
   relay: PeerId
@@ -22,7 +22,7 @@ export class ReservationVoucherRecord implements Record {
     this.expiration = expiration
   }
 
-  marshal () {
+  marshal (): Uint8Array {
     return ReservationVoucher.encode({
       relay: this.relay.toBytes(),
       peer: this.peer.toBytes(),
@@ -30,7 +30,7 @@ export class ReservationVoucherRecord implements Record {
     })
   }
 
-  equals (other: Record) {
+  equals (other: Record): boolean {
     if (!(other instanceof ReservationVoucherRecord)) {
       return false
     }

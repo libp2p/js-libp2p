@@ -52,6 +52,7 @@ export async function createNode (options: CreatePeerOptions = {}): Promise<Libp
   const peer = await createLibp2pNode(createBaseOptions({
     peerId,
     addresses,
+    start: started,
     ...config
   }))
 
