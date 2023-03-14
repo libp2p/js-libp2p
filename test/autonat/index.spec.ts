@@ -25,6 +25,7 @@ import { pipe } from 'it-pipe'
 import { Components, DefaultComponents } from '../../src/components.js'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { PeerInfo } from '@libp2p/interface-peer-info'
 
 const defaultInit: AutonatServiceInit = {
   protocolPrefix: 'libp2p',
@@ -85,7 +86,7 @@ describe('autonat', () => {
   })
 
   describe('verify our observed addresses', () => {
-    async function stubPeerResponse (host: string, dialResponse: Message.DialResponse, peerId?: PeerId) {
+    async function stubPeerResponse (host: string, dialResponse: Message.DialResponse, peerId?: PeerId): Promise<PeerInfo> {
       // stub random peer lookup
       const peer = {
         id: peerId ?? await createEd25519PeerId(),
@@ -418,7 +419,7 @@ describe('autonat', () => {
       message?: Message | Uint8Array | boolean
       transportSupported?: boolean
       canDial?: boolean
-    } = {}) {
+    } = {}): Promise<Message> {
       const requestingPeer = opts.requestingPeer ?? await createEd25519PeerId()
       const remotePeer = opts.remotePeer ?? requestingPeer
       const observedAddress = opts.observedAddress ?? multiaddr('/ip4/124.124.124.124/tcp/28319')

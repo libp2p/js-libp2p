@@ -92,11 +92,11 @@ export class AutonatService implements Startable {
     this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     if (this.started) {
       return
     }
@@ -116,7 +116,7 @@ export class AutonatService implements Startable {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     await this.components.registrar.unhandle(PROTOCOL)
     clearTimeout(this.verifyAddressTimeout)
 
@@ -364,7 +364,7 @@ export class AutonatService implements Startable {
     }
   }
 
-  _verifyExternalAddresses () {
+  _verifyExternalAddresses (): void {
     void this.verifyExternalAddresses()
       .catch(err => {
         log.error(err)
@@ -374,7 +374,7 @@ export class AutonatService implements Startable {
   /**
    * Our multicodec topology noticed a new peer that supports autonat
    */
-  async verifyExternalAddresses () {
+  async verifyExternalAddresses (): Promise<void> {
     clearTimeout(this.verifyAddressTimeout)
 
     // Do not try to push if we are not running

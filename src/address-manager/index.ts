@@ -48,7 +48,7 @@ interface ObservedAddressMetadata {
   confident: boolean
 }
 
-function stripPeerId (ma: Multiaddr, peerId: PeerId) {
+function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
   const observedPeerId = ma.getPeerId()
 
   // strip our peer id if it has been passed
@@ -140,7 +140,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     })
   }
 
-  confirmObservedAddr (addr: Multiaddr) {
+  confirmObservedAddr (addr: Multiaddr): void {
     addr = stripPeerId(addr, this.components.peerId)
     const addrString = addr.toString()
 
@@ -160,7 +160,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
     }
   }
 
-  removeObservedAddr (addr: Multiaddr) {
+  removeObservedAddr (addr: Multiaddr): void {
     addr = stripPeerId(addr, this.components.peerId)
     const addrString = addr.toString()
 
