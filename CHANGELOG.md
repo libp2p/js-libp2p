@@ -1,3 +1,14 @@
+## [8.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.3...v8.0.0) (2023-03-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires an instance of `interface-datastore@8.x.x`
+
+### Dependencies
+
+* update interface-datastore to 8.x.x ([#430](https://github.com/libp2p/js-libp2p-kad-dht/issues/430)) ([923ef72](https://github.com/libp2p/js-libp2p-kad-dht/commit/923ef72ff39930fb773f3d619f8d1a23cf15d65d))
+
 ## [7.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.2...v7.0.3) (2023-03-10)
 
 
