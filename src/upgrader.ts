@@ -133,7 +133,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     this.inboundUpgradeTimeout = init.inboundUpgradeTimeout
   }
 
-  async shouldBlockConnection (remotePeer: PeerId, maConn: MultiaddrConnection, connectionType: ConnectionDeniedType) {
+  async shouldBlockConnection (remotePeer: PeerId, maConn: MultiaddrConnection, connectionType: ConnectionDeniedType): Promise<void> {
     const connectionGater = this.components.connectionGater[connectionType]
 
     if (connectionGater !== undefined) {
