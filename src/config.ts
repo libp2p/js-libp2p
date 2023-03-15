@@ -2,7 +2,6 @@ import mergeOptions from 'merge-options'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import * as Constants from './constants.js'
 import { AGENT_VERSION } from './identify/consts.js'
-import * as RelayConstants from './circuit/constants.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { FaultTolerance } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -49,22 +48,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
     ttl: 7200,
     keepAlive: true
   },
-  relay: {
-    enabled: true,
-    advertise: {
-      bootDelay: RelayConstants.ADVERTISE_BOOT_DELAY,
-      enabled: false,
-      ttl: RelayConstants.ADVERTISE_TTL
-    },
-    hop: {
-      enabled: false,
-      timeout: 30000
-    },
-    reservationManager: {
-      enabled: false,
-      maxReservations: 2
-    }
-  },
   identify: {
     protocolPrefix: 'ipfs',
     host: {
@@ -75,7 +58,8 @@ const DefaultConfig: Partial<Libp2pInit> = {
     maxInboundStreams: 1,
     maxOutboundStreams: 1,
     maxPushIncomingStreams: 1,
-    maxPushOutgoingStreams: 1
+    maxPushOutgoingStreams: 1,
+    maxObservedAddresses: 10
   },
   ping: {
     protocolPrefix: 'ipfs',
@@ -94,6 +78,14 @@ const DefaultConfig: Partial<Libp2pInit> = {
     maxInboundStreams: 1,
     maxOutboundStreams: 1,
     timeout: 10000
+  },
+  autonat: {
+    protocolPrefix: 'libp2p',
+    maxInboundStreams: 1,
+    maxOutboundStreams: 1,
+    timeout: 30000,
+    startupDelay: 5000,
+    refreshInterval: 60000
   }
 }
 

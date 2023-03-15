@@ -12,8 +12,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { DefaultDialer } from '../../src/connection-manager/dialer/index.js'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
-import { stubInterface } from 'sinon-ts'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { stubInterface } from 'sinon-ts'
 const error = new Error('dial failure')
 
 describe('Dial Request', () => {
@@ -184,7 +184,7 @@ describe('Dial Request', () => {
   })
 
   it('should abort all dials when its signal is aborted', async () => {
-    const deferToAbort = async (args: { signal: AbortSignal }) => {
+    const deferToAbort = async (args: { signal: AbortSignal }): Promise<any> => {
       const { signal } = args
 
       if (signal.aborted) {
@@ -192,7 +192,7 @@ describe('Dial Request', () => {
       }
 
       const deferred = pDefer<any>()
-      const onAbort = () => {
+      const onAbort = (): void => {
         deferred.reject(new AbortError())
         signal.removeEventListener('abort', onAbort)
       }
@@ -229,7 +229,7 @@ describe('Dial Request', () => {
     sinon.spy(actions, '/ip4/127.0.0.1/tcp/1233')
 
     try {
-      setTimeout(() => controller.abort(), 100)
+      setTimeout(() => { controller.abort() }, 100)
       await dialRequest.run({ signal: controller.signal })
       expect.fail('dial should have failed')
     } catch (err: any) {

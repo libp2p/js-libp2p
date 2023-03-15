@@ -117,18 +117,18 @@ export class DefaultDialer implements Startable, Dialer {
     }
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.started = true
   }
 
   /**
    * Clears any pending dials
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.started = false
 
     for (const dial of this.pendingDials.values()) {
@@ -163,10 +163,9 @@ export class DefaultDialer implements Startable, Dialer {
         log('storing multiaddrs %p', peerId, multiaddr)
         await this.components.peerStore.addressBook.add(peerId, [multiaddr])
       }
-      if (this.components.connectionGater.denyDialPeer !== undefined) {
-        if (await this.components.connectionGater.denyDialPeer(peerId)) {
-          throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
-        }
+
+      if ((await this.components.connectionGater.denyDialPeer?.(peerId)) === true) {
+        throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
       }
     }
 
@@ -300,12 +299,10 @@ export class DefaultDialer implements Startable, Dialer {
 
     return (await Promise.all(
       addresses.map(async address => {
-        if (this.components.connectionGater.denyDialMultiaddr !== undefined) {
-          const deny = await this.components.connectionGater.denyDialMultiaddr(peer, address.multiaddr)
+        const deny = await this.components.connectionGater.denyDialMultiaddr?.(peer, address.multiaddr)
 
-          if (deny) {
-            return false
-          }
+        if (deny === true) {
+          return false
         }
 
         return address
@@ -370,14 +367,14 @@ export class DefaultDialer implements Startable, Dialer {
     return pendingDial
   }
 
-  getTokens (num: number) {
+  getTokens (num: number): number[] {
     const total = Math.min(num, this.maxDialsPerPeer, this.tokens.length)
     const tokens = this.tokens.splice(0, total)
     log('%d tokens request, returning %d, %d remaining', num, total, this.tokens.length)
     return tokens
   }
 
-  releaseToken (token: number) {
+  releaseToken (token: number): void {
     // Guard against duplicate releases
     if (this.tokens.includes(token)) {
       return

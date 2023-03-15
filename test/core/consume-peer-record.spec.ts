@@ -28,7 +28,7 @@ describe('Consume peer record', () => {
     await libp2p.stop()
   })
 
-  it('should consume peer record when observed addrs are added', async () => {
+  it('should consume peer record when observed addrs are confirmed', async () => {
     let done: () => void
 
     libp2p.components.peerStore.addressBook.consumePeerRecord = async () => {
@@ -42,7 +42,7 @@ describe('Consume peer record', () => {
 
     await libp2p.start()
 
-    libp2p.components.addressManager.addObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/3983'))
+    libp2p.components.addressManager.confirmObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/3983'))
 
     await p
 

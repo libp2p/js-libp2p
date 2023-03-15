@@ -27,7 +27,7 @@ describe('content-routing', () => {
       })
     })
 
-    after(async () => await node.stop())
+    after(async () => { await node.stop() })
 
     it('.findProviders should return an error', async () => {
       try {
@@ -72,7 +72,7 @@ describe('content-routing', () => {
       sinon.restore()
     })
 
-    after(async () => await Promise.all(nodes.map(async (n) => await n.stop())))
+    after(async () => await Promise.all(nodes.map(async (n) => { await n.stop() })))
 
     it('should use the nodes dht to provide', async () => {
       const deferred = pDefer()
@@ -244,7 +244,7 @@ describe('content-routing', () => {
       sinon.restore()
     })
 
-    afterEach(async () => await node.stop())
+    afterEach(async () => { await node.stop() })
 
     it('should store the multiaddrs of a peer', async () => {
       const providerPeerId = await createPeerId()

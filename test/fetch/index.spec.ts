@@ -23,7 +23,7 @@ const defaultInit: FetchServiceInit = {
   timeout: 1000
 }
 
-async function createComponents (index: number) {
+async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
   const components = new DefaultComponents({
