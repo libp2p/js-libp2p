@@ -285,8 +285,8 @@ describe('Upgrader', () => {
       }
 
       source = []
-      async sink () {}
-      close () {}
+      async sink (): Promise<void> {}
+      close (): void {}
     }
 
     class OtherMuxerFactory implements StreamMuxerFactory {

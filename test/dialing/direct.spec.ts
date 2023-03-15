@@ -270,7 +270,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     sinon.stub(localTM, 'dial').callsFake(async (_, options) => {
       const deferredDial = pDefer<Connection>()
-      const onAbort = () => {
+      const onAbort = (): void => {
         options.signal.removeEventListener('abort', onAbort)
         deferredDial.reject(new AbortError())
       }

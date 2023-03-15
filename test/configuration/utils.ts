@@ -10,6 +10,7 @@ import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import * as cborg from 'cborg'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayTransport } from '../../src/circuit/index.js'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -74,6 +75,7 @@ export const pubsubSubsystemOptions: Libp2pOptions = mergeOptions(baseOptions, {
     listen: [`${relayAddr.toString()}/p2p-circuit`]
   },
   transports: [
-    webSockets({ filter: filters.all })
+    webSockets({ filter: filters.all }),
+    circuitRelayTransport()
   ]
 })

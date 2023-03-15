@@ -95,7 +95,7 @@ describe('Dialing (direct, TCP)', () => {
     remoteAddr = remoteTM.getAddrs()[0].encapsulate(`/p2p/${remotePeerId.toString()}`)
   })
 
-  afterEach(async () => await remoteTM.stop())
+  afterEach(async () => { await remoteTM.stop() })
 
   afterEach(() => {
     sinon.restore()

@@ -10,7 +10,7 @@ import { codes } from '../../src/errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { yamux } from '@chainsafe/libp2p-yamux'
 
-async function createNode (peerId: PeerId) {
+async function createNode (peerId: PeerId): Promise<Libp2pNode> {
   return await createLibp2pNode({
     peerId,
     addresses: {
@@ -122,7 +122,7 @@ describe('Fetch', () => {
   it('registering multiple handlers for same prefix errors', async () => {
     receiver.fetchService.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
 
-    expect(() => receiver.fetchService.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B)))
+    expect(() => { receiver.fetchService.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B)) })
       .to.throw().with.property('code', codes.ERR_KEY_ALREADY_EXISTS)
   })
 

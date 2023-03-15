@@ -10,6 +10,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { delegatedPeerRouting } from '@libp2p/delegated-peer-routing'
 import { delegatedContentRouting } from '@libp2p/delegated-content-routing'
 import { create as createIpfsHttpClient } from 'ipfs-http-client'
+import { circuitRelayTransport } from 'libp2p/circuit-relay'
 
 export default function Libp2pBundle ({ peerInfo, peerBook }) {
   const wrtcstar = new webRTCStar()
@@ -36,7 +37,8 @@ export default function Libp2pBundle ({ peerInfo, peerBook }) {
     ],
     transports: [
       wrtcstar.transport,
-      webSockets()
+      webSockets(),
+      circuitRelayTransport()
     ],
     streamMuxers: [
       yamux(), mplex()
@@ -46,12 +48,6 @@ export default function Libp2pBundle ({ peerInfo, peerBook }) {
     ],
     connectionEncryption: [
       noise()
-    ],
-    relay: {
-      enabled: true,
-      hop: {
-        enabled: false
-      }
-    }
+    ]
   })
 }

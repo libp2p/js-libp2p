@@ -26,18 +26,18 @@ export class PeerRecordUpdater implements Startable {
     this.update = this.update.bind(this)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.started = true
     this.components.transportManager.addEventListener('listener:listening', this.update)
     this.components.transportManager.addEventListener('listener:close', this.update)
     this.components.addressManager.addEventListener('change:addresses', this.update)
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     this.started = false
     this.components.transportManager.removeEventListener('listener:listening', this.update)
     this.components.transportManager.removeEventListener('listener:close', this.update)
@@ -47,7 +47,7 @@ export class PeerRecordUpdater implements Startable {
   /**
    * Create (or update if existing) self peer record and store it in the AddressBook.
    */
-  update () {
+  update (): void {
     Promise.resolve()
       .then(async () => {
         const peerRecord = new PeerRecord({

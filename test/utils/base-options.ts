@@ -17,12 +17,6 @@ export function createBaseOptions (...overrides: Libp2pOptions[]): Libp2pOptions
     connectionEncryption: [
       plaintext()
     ],
-    relay: {
-      enabled: true,
-      hop: {
-        enabled: false
-      }
-    },
     nat: {
       enabled: false
     }

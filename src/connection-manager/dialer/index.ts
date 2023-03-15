@@ -14,7 +14,7 @@ import {
   MAX_PER_PEER_DIALS,
   MAX_ADDRS_TO_DIAL
 } from '../../constants.js'
-import type { Connection, ConnectionGater } from '@libp2p/interface-connection'
+import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
@@ -23,6 +23,7 @@ import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 const log = logger('libp2p:dialer')
 
@@ -116,18 +117,18 @@ export class DefaultDialer implements Startable, Dialer {
     }
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.started = true
   }
 
   /**
    * Clears any pending dials
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.started = false
 
     for (const dial of this.pendingDials.values()) {
@@ -163,7 +164,7 @@ export class DefaultDialer implements Startable, Dialer {
         await this.components.peerStore.addressBook.add(peerId, [multiaddr])
       }
 
-      if (await this.components.connectionGater.denyDialPeer(peerId)) {
+      if ((await this.components.connectionGater.denyDialPeer?.(peerId)) === true) {
         throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
       }
     }
@@ -298,9 +299,9 @@ export class DefaultDialer implements Startable, Dialer {
 
     return (await Promise.all(
       addresses.map(async address => {
-        const deny = await this.components.connectionGater.denyDialMultiaddr(peer, address.multiaddr)
+        const deny = await this.components.connectionGater.denyDialMultiaddr?.(peer, address.multiaddr)
 
-        if (deny) {
+        if (deny === true) {
           return false
         }
 
@@ -366,14 +367,14 @@ export class DefaultDialer implements Startable, Dialer {
     return pendingDial
   }
 
-  getTokens (num: number) {
+  getTokens (num: number): number[] {
     const total = Math.min(num, this.maxDialsPerPeer, this.tokens.length)
     const tokens = this.tokens.splice(0, total)
     log('%d tokens request, returning %d, %d remaining', num, total, this.tokens.length)
     return tokens
   }
 
-  releaseToken (token: number) {
+  releaseToken (token: number): void {
     // Guard against duplicate releases
     if (this.tokens.includes(token)) {
       return

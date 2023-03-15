@@ -52,6 +52,7 @@ export async function createNode (options: CreatePeerOptions = {}): Promise<Libp
   const peer = await createLibp2pNode(createBaseOptions({
     peerId,
     addresses,
+    start: started,
     ...config
   }))
 
@@ -62,7 +63,7 @@ export async function createNode (options: CreatePeerOptions = {}): Promise<Libp
   return peer
 }
 
-export async function populateAddressBooks (peers: Libp2pNode[]) {
+export async function populateAddressBooks (peers: Libp2pNode[]): Promise<void> {
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
