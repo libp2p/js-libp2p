@@ -372,11 +372,12 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return Array.from(peerSet)
   }
 
-  async dial (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+  async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
+    // @ts-expect-error
     return await this.components.connectionManager.openConnection(peer, options)
   }
 
-  async dialProtocol (peer: PeerId | Multiaddr, protocols: string | string[], options: AbortOptions = {}) {
+  async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: AbortOptions = {}) {
     if (protocols == null) {
       throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
     }

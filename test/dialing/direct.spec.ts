@@ -379,6 +379,32 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(dialTarget).to.have.property('addrs').with.lengthOf(1)
     expect(dialTarget.addrs[0].toString()).to.equal(dialMultiaddr.toString())
   })
+
+  it('Should dial multiple multiaddrs in parallel', async () => {
+    const addrs = [
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${remoteComponents.peerId.toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${remoteComponents.peerId.toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8002/ws/p2p/${remoteComponents.peerId.toString()}`)
+    ]
+
+    // Inject data into the AddressBook
+    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+
+    const dialer = new DefaultDialer(localComponents)
+    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
+
+    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+
+    // Perform dial
+    await dialer.dial(addrs)
+    await dialer.stop()
+
+    expect(createDialTargetSpy.callCount).to.equal(3)
+
+    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
+
+    expect(dialTarget).to.have.property('addrs').with.lengthOf(3)
+  })
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
