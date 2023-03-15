@@ -45,11 +45,6 @@ export interface ConnectionManagerConfig {
   pollInterval?: number
 
   /**
-   * If true, try to connect to all discovered peers up to the connection manager limit
-   */
-  autoDial?: boolean
-
-  /**
    * How long to wait between attempting to keep our number of concurrent connections
    * above minConnections
    */

@@ -157,12 +157,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     // update our peer record when addresses change
     this.configureComponent(new PeerRecordUpdater(this.components))
 
-    this.configureComponent(new AutoDialler(this.components, {
-      enabled: init.connectionManager.autoDial,
-      minConnections: init.connectionManager.minConnections,
-      autoDialInterval: init.connectionManager.autoDialInterval
-    }))
-
     // Create keychain
     const keychainOpts = DefaultKeyChain.generateOptions()
     this.keychain = this.configureComponent(new DefaultKeyChain(this.components, {
@@ -237,7 +231,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     }))
 
     this.configureComponent(new AutoDialler(this.components, {
-      enabled: init.connectionManager.autoDial,
       minConnections: init.connectionManager.minConnections,
       autoDialInterval: init.connectionManager.autoDialInterval
     }))
