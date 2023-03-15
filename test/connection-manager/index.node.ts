@@ -65,8 +65,8 @@ describe('Connection Manager', () => {
 
     await start(connectionManager)
 
-    const conn1 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
-    const conn2 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+    const conn1 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+    const conn2 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(0)
 
@@ -105,8 +105,8 @@ describe('Connection Manager', () => {
 
     await start(connectionManager)
 
-    const conn1 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
-    const conn2 = await mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+    const conn1 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+    const conn2 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
 
     // Add connection to the connectionManager
     upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn1 }))
@@ -189,7 +189,7 @@ describe('libp2p.connections', () => {
     })
 
     afterEach(async () => {
-      await Promise.all(nodes.map(async (node) => await node.stop()))
+      await Promise.all(nodes.map(async (node) => { await node.stop() }))
 
       if (libp2p != null) {
         await libp2p.stop()

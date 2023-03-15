@@ -19,6 +19,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { floodsub } from '@libp2p/floodsub'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { circuitRelayServer, circuitRelayTransport } from '../src/circuit/index.js'
 
 /**
  * @packageDocumentation
@@ -102,7 +103,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   return {
     client: createClient(apiAddr),
     stop: async () => {
-      await proc.kill()
+      proc.kill()
     }
   }
 }
@@ -121,7 +122,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     addresses: {
       listen: options.noListen === true ? [] : ['/ip4/127.0.0.1/tcp/0']
     },
-    transports: [tcp()],
+    transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
     connectionEncryption: [noise()],
     nat: {
@@ -143,14 +144,8 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     }
   }
 
-  opts.relay = {
-    enabled: true,
-    hop: {
-      enabled: options.relay === true
-    },
-    reservationManager: {
-      enabled: false
-    }
+  if (options.relay === true) {
+    opts.relay = circuitRelayServer()
   }
 
   if (options.dht === true) {
@@ -189,7 +184,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 }
 
-async function main () {
+async function main (): Promise<void> {
   const factory: DaemonFactory = {
     async spawn (options: SpawnOptions) {
       if (options.type === 'go') {
