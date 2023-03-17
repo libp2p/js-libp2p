@@ -1,3 +1,10 @@
+## [5.0.6](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.5...v5.0.6) (2023-03-17)
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#223](https://github.com/libp2p/js-libp2p-websockets/issues/223)) ([e69a70c](https://github.com/libp2p/js-libp2p-websockets/commit/e69a70c1004d25a1272877ecba1ba2af1afc5a2f))
+
 ## [5.0.5](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.4...v5.0.5) (2023-03-09)
 
 
