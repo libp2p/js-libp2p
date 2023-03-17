@@ -1,3 +1,17 @@
+## [6.1.3](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.2...v6.1.3) (2023-03-17)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([05bd31c](https://github.com/libp2p/js-libp2p-tcp/commit/05bd31c1cb224995f474af1541670ce5ca1fed09))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([bbd4c2a](https://github.com/libp2p/js-libp2p-tcp/commit/bbd4c2ac11e61e9da8e9cccf2eae5b70d7908ad4))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([6dd008a](https://github.com/libp2p/js-libp2p-tcp/commit/6dd008ad2b3338c57903f22559ee9f741a7c7a8b))
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#256](https://github.com/libp2p/js-libp2p-tcp/issues/256)) ([048e9aa](https://github.com/libp2p/js-libp2p-tcp/commit/048e9aad8167069f0fb579c0710b56942347af67))
+
 ## [6.1.2](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.1...v6.1.2) (2023-02-01)
 
 
