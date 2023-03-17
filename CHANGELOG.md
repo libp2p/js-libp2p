@@ -1,3 +1,19 @@
+## [3.0.5](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.4...v3.0.5) (2023-03-17)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#70](https://github.com/libp2p/js-libp2p-utils/issues/70)) ([beb252d](https://github.com/libp2p/js-libp2p-utils/commit/beb252d79f69d0f49d1fa4fd664a49e33ff80cd3)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([acad1fe](https://github.com/libp2p/js-libp2p-utils/commit/acad1fe38a1cfef19f63de7283e721caec059d34))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([1b96837](https://github.com/libp2p/js-libp2p-utils/commit/1b96837cac6c9625ed243d0f62595582a57f7f04))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([10d6e7a](https://github.com/libp2p/js-libp2p-utils/commit/10d6e7a7731b746f199ffb2f186e28185cb512f5))
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#83](https://github.com/libp2p/js-libp2p-utils/issues/83)) ([3eeeeba](https://github.com/libp2p/js-libp2p-utils/commit/3eeeeba52b764b96463a1b6bcfcff394492eab2e))
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#80](https://github.com/libp2p/js-libp2p-utils/issues/80)) ([2c262ba](https://github.com/libp2p/js-libp2p-utils/commit/2c262ba37d3668bc4f957914c40c5167cd8faf4f))
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.3...v3.0.4) (2022-12-16)
 
 
