@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v7.0.0...v7.0.1) (2023-03-17)
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#73](https://github.com/libp2p/js-libp2p-peer-store/issues/73)) ([8ef9aa1](https://github.com/libp2p/js-libp2p-peer-store/commit/8ef9aa1db5baf797e9f1afbaf896801ee0ba3ef4))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v6.0.4...v7.0.0) (2023-03-13)
 
 
