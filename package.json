@@ -152,7 +152,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/peer-id": "^2.0.0",
     "@libp2p/peer-record": "^5.0.0",
-    "@multiformats/multiaddr": "^11.0.0",
+    "@multiformats/multiaddr": "^12.0.0",
     "interface-datastore": "^8.0.0",
     "mortice": "^3.0.0",
     "multiformats": "^11.0.0",
