@@ -152,7 +152,7 @@
     "@libp2p/interfaces": "^3.2.0",
     "@libp2p/peer-id": "^2.0.0",
     "@libp2p/utils": "^3.0.0",
-    "@multiformats/multiaddr": "^11.0.0",
+    "@multiformats/multiaddr": "^12.0.0",
     "protons-runtime": "^5.0.0",
     "uint8-varint": "^1.0.2",
     "uint8arraylist": "^2.1.0",
