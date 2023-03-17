@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.1...v6.0.2) (2023-03-17)
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#169](https://github.com/libp2p/js-libp2p-bootstrap/issues/169)) ([3532982](https://github.com/libp2p/js-libp2p-bootstrap/commit/35329826d9e90ec6c323d883e5838bd347dea71c))
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.0...v6.0.1) (2023-03-17)
 
 
