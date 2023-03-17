@@ -39,7 +39,7 @@ export interface StreamProperties {
  * Convert a duplex iterable into a MultiaddrConnection.
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export function streamToMaConnection (props: StreamProperties, options: StreamOptions = {}) {
+export function streamToMaConnection (props: StreamProperties, options: StreamOptions = {}): MultiaddrConnection {
   const { stream, remoteAddr } = props
   const { sink, source } = stream
 
@@ -80,11 +80,11 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
     }
   }
 
-  async function close () {
+  async function close (): Promise<void> {
     if (maConn.timeline.close == null) {
       maConn.timeline.close = Date.now()
     }
-    return await Promise.resolve()
+    await Promise.resolve()
   }
 
   return maConn

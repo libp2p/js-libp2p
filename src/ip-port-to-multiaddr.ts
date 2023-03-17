@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { multiaddr } from '@multiformats/multiaddr'
+import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { CodeError } from '@libp2p/interfaces/errors'
 import { Address4, Address6 } from '@achingbrain/ip-address'
 
@@ -14,7 +14,7 @@ export const Errors = {
 /**
  * Transform an IP, Port pair into a multiaddr
  */
-export function ipPortToMultiaddr (ip: string, port: number | string) {
+export function ipPortToMultiaddr (ip: string, port: number | string): Multiaddr {
   if (typeof ip !== 'string') {
     throw new CodeError(`invalid ip provided: ${ip}`, Errors.ERR_INVALID_IP_PARAMETER) // eslint-disable-line @typescript-eslint/restrict-template-expressions
   }

@@ -11,7 +11,7 @@ import type { Stream } from '@libp2p/interface-connection'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-function toMuxedStream (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>) {
+function toMuxedStream (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>): Stream {
   const muxedStream: Stream = {
     ...stream,
     close: () => {},
