@@ -1,3 +1,10 @@
+## [5.0.3](https://github.com/libp2p/js-libp2p-peer-record/compare/v5.0.2...v5.0.3) (2023-03-17)
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#55](https://github.com/libp2p/js-libp2p-peer-record/issues/55)) ([edc67ec](https://github.com/libp2p/js-libp2p-peer-record/commit/edc67eceaaf8d1a7f1e41d26b95872860633abf0))
+
 ## [5.0.2](https://github.com/libp2p/js-libp2p-peer-record/compare/v5.0.1...v5.0.2) (2023-03-13)
 
 
