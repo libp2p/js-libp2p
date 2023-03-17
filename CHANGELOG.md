@@ -1,3 +1,15 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.0...v7.0.1) (2023-03-17)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([5e82b6d](https://github.com/libp2p/js-libp2p-mdns/commit/5e82b6d1e81934588bf70bdf8663672cf36bbb18))
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#190](https://github.com/libp2p/js-libp2p-mdns/issues/190)) ([6b4882f](https://github.com/libp2p/js-libp2p-mdns/commit/6b4882f58f8e9528ca405534afb9792c8988b339))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v6.0.0...v7.0.0) (2023-03-07)
 
 
