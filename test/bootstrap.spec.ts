@@ -39,9 +39,11 @@ describe('bootstrap', () => {
       timeout: 100
     })(components)
 
-    const p = new Promise((resolve) => r.addEventListener('peer', resolve, {
-      once: true
-    }))
+    const p = new Promise((resolve) => {
+      r.addEventListener('peer', resolve, {
+        once: true
+      })
+    })
     await start(r)
 
     await p
@@ -63,9 +65,11 @@ describe('bootstrap', () => {
       tagTTL
     })(components)
 
-    const p = new Promise((resolve) => r.addEventListener('peer', resolve, {
-      once: true
-    }))
+    const p = new Promise((resolve) => {
+      r.addEventListener('peer', resolve, {
+        once: true
+      })
+    })
     await start(r)
 
     await p

@@ -99,18 +99,18 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): '@libp2p/bootstrap' {
     return '@libp2p/bootstrap'
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return Boolean(this.timer)
   }
 
   /**
    * Start emitting events
    */
-  start () {
+  start (): void {
     if (this.isStarted()) {
       return
     }
@@ -127,7 +127,7 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
   /**
    * Emit each address in the list as a PeerInfo
    */
-  async _discoverBootstrapPeers () {
+  async _discoverBootstrapPeers (): Promise<void> {
     if (this.timer == null) {
       return
     }
@@ -150,7 +150,7 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
   /**
    * Stop emitting events
    */
-  stop () {
+  stop (): void {
     if (this.timer != null) {
       clearTimeout(this.timer)
     }

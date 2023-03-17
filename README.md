@@ -12,10 +12,9 @@
 - [Install](#install)
   - [Browser `<script>` tag](#browser-script-tag)
 - [Usage](#usage)
-- [Contribute](#contribute)
 - [API Docs](#api-docs)
 - [License](#license)
-- [Contribute](#contribute-1)
+- [Contribution](#contribution)
 
 ## Install
 
@@ -88,13 +87,6 @@ async function start () {
 start()
 ```
 
-## Contribute
-
-The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
-
-- Go through the modules and **check out existing issues**. This is especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
-- **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
-
 ## API Docs
 
 - <https://libp2p.github.io/js-libp2p-bootstrap>
@@ -106,6 +98,6 @@ Licensed under either of
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

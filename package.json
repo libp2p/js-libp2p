@@ -152,9 +152,9 @@
     "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.0",
     "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
-    "@libp2p/peer-store": "^6.0.0",
-    "aegir": "^37.9.1",
-    "datastore-core": "^8.0.1",
+    "@libp2p/peer-store": "^7.0.0",
+    "aegir": "^38.1.7",
+    "datastore-core": "^9.0.3",
     "delay": "^5.0.0"
   }
 }
