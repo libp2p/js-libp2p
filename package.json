@@ -148,7 +148,7 @@
     "@libp2p/logger": "^2.0.0",
     "@libp2p/utils": "^3.0.2",
     "@multiformats/mafmt": "^11.0.3",
-    "@multiformats/multiaddr": "^11.0.0",
+    "@multiformats/multiaddr": "^12.0.0",
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {
