@@ -1,3 +1,17 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.0...v6.0.1) (2023-03-17)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([2771c45](https://github.com/libp2p/js-libp2p-bootstrap/commit/2771c45b036be498416cebb4ecd017a5f57ed102))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([bdc51df](https://github.com/libp2p/js-libp2p-bootstrap/commit/bdc51df6aefc35fd8a55c1d134a4b5f3b6b2c7c2))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([93061bb](https://github.com/libp2p/js-libp2p-bootstrap/commit/93061bbf78a2033b2e67b4fd2fb53bf827ed409e))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#163](https://github.com/libp2p/js-libp2p-bootstrap/issues/163)) ([81ae1f2](https://github.com/libp2p/js-libp2p-bootstrap/commit/81ae1f246ae21b842ab002ad4dfb3107950fbaa6))
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v5.0.2...v6.0.0) (2023-01-06)
 
 
