@@ -1,3 +1,10 @@
+## [8.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.0...v8.0.1) (2023-03-17)
+
+
+### Dependencies
+
+* bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#434](https://github.com/libp2p/js-libp2p-kad-dht/issues/434)) ([49dcc65](https://github.com/libp2p/js-libp2p-kad-dht/commit/49dcc65c4b34bc4ddce8f04f6b1a9761f1693311))
+
 ## [8.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v7.0.3...v8.0.0) (2023-03-14)
 
 
