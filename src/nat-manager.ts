@@ -4,7 +4,7 @@ import { fromNodeAddress } from '@multiformats/multiaddr'
 import { isBrowser } from 'wherearewe'
 import isPrivateIp from 'private-ip'
 import * as pkg from './version.js'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import type { Startable } from '@libp2p/interfaces/startable'
@@ -94,7 +94,7 @@ export class NatManager implements Startable {
     this.gateway = init.gateway
 
     if (this.ttl < DEFAULT_TTL) {
-      throw errCode(new Error(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, codes.ERR_INVALID_PARAMETERS)
     }
   }
 

@@ -40,7 +40,7 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { DualDHT } from '@libp2p/interface-dht'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import type { Metrics } from '@libp2p/interface-metrics'
 import { DummyDHT } from './dht/dummy-dht.js'
@@ -370,13 +370,13 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
   async dialProtocol (peer: PeerId | Multiaddr, protocols: string | string[], options: AbortOptions = {}): Promise<Stream> {
     if (protocols == null) {
-      throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
     }
 
     protocols = Array.isArray(protocols) ? protocols : [protocols]
 
     if (protocols.length === 0) {
-      throw errCode(new Error('no protocols were provided to open a stream'), codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
     }
 
     const connection = await this.dial(peer, options)
@@ -417,7 +417,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     }
 
     if (this.dht == null) {
-      throw errCode(new Error('Public key was not in the peer store and the DHT is not enabled'), codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('Public key was not in the peer store and the DHT is not enabled', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     const peerKey = uint8ArrayConcat([
@@ -436,7 +436,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       }
     }
 
-    throw errCode(new Error(`Node not responding with its public key: ${peer.toString()}`), codes.ERR_INVALID_RECORD)
+    throw new CodeError(`Node not responding with its public key: ${peer.toString()}`, codes.ERR_INVALID_RECORD)
   }
 
   async fetch (peer: PeerId | Multiaddr, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {

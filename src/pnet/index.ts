@@ -24,7 +24,7 @@
 
 import { logger } from '@libp2p/logger'
 import { pipe } from 'it-pipe'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { duplexPair } from 'it-pair/duplex'
 import { randomBytes } from '@libp2p/crypto'
 import * as Errors from './errors.js'
@@ -81,7 +81,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     }
 
     if (connection == null) {
-      throw errCode(new Error(Errors.NO_HANDSHAKE_CONNECTION), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError(Errors.NO_HANDSHAKE_CONNECTION, codes.ERR_INVALID_PARAMETERS)
     }
 
     // Exchange nonces
@@ -94,7 +94,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     const result = await shake.reader.next(NONCE_LENGTH)
 
     if (result.value == null) {
-      throw errCode(new Error(Errors.STREAM_ENDED), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError(Errors.STREAM_ENDED, codes.ERR_INVALID_PARAMETERS)
     }
 
     const remoteNonce = result.value.slice()
