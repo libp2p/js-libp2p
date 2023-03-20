@@ -1,3 +1,10 @@
+## [6.1.4](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.3...v6.1.4) (2023-03-20)
+
+
+### Dependencies
+
+* bump @multiformats/mafmt from 11.1.2 to 12.0.0 ([#257](https://github.com/libp2p/js-libp2p-tcp/issues/257)) ([2e8e534](https://github.com/libp2p/js-libp2p-tcp/commit/2e8e53417323d4e9f01d44879e948f449b157b9d))
+
 ## [6.1.3](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.2...v6.1.3) (2023-03-17)
 
 
