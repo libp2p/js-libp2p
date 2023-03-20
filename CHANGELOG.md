@@ -1,3 +1,10 @@
+## [6.0.3](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.2...v6.0.3) (2023-03-20)
+
+
+### Dependencies
+
+* bump @multiformats/mafmt from 11.1.2 to 12.0.0 ([#170](https://github.com/libp2p/js-libp2p-bootstrap/issues/170)) ([5c15878](https://github.com/libp2p/js-libp2p-bootstrap/commit/5c158783314b9fdc9f69608cb8ebe180732c4242))
+
 ## [6.0.2](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.1...v6.0.2) (2023-03-17)
 
 
