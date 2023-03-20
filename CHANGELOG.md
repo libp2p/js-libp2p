@@ -1,3 +1,10 @@
+## [5.0.7](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.6...v5.0.7) (2023-03-20)
+
+
+### Dependencies
+
+* bump @multiformats/mafmt from 11.1.2 to 12.0.0 ([#224](https://github.com/libp2p/js-libp2p-websockets/issues/224)) ([ee3bb05](https://github.com/libp2p/js-libp2p-websockets/commit/ee3bb054ac265210c436defb42c62fd5de969232))
+
 ## [5.0.6](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.5...v5.0.6) (2023-03-17)
 
 
