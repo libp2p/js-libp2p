@@ -11,11 +11,6 @@ const log = logger('libp2p:connection-manager:auto-dialler')
 
 export interface AutoDiallerInit {
   /**
-   * Should preemptively guarantee connections are above the low watermark
-   */
-  enabled?: boolean
-
-  /**
    * The minimum number of connections to avoid pruning
    */
   minConnections?: number
@@ -33,7 +28,6 @@ export interface AutoDiallerComponents {
 }
 
 const defaultOptions: Partial<AutoDiallerInit> = {
-  enabled: true,
   minConnections: 0,
   autoDialInterval: 10000
 }
@@ -58,19 +52,14 @@ export class AutoDialler implements Startable {
     log('options: %j', this.options)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.running
   }
 
   /**
    * Starts the auto dialer
    */
-  async start () {
-    if (!this.options.enabled) {
-      log('not enabled')
-      return
-    }
-
+  async start (): Promise<void> {
     this.running = true
 
     void this._autoDial().catch(err => {
@@ -83,12 +72,7 @@ export class AutoDialler implements Startable {
   /**
    * Stops the auto dialler
    */
-  async stop () {
-    if (!this.options.enabled) {
-      log('not enabled')
-      return
-    }
-
+  async stop (): Promise<void> {
     this.running = false
 
     if (this.autoDialTimeout != null) {
@@ -98,7 +82,7 @@ export class AutoDialler implements Startable {
     log('stopped')
   }
 
-  async _autoDial () {
+  async _autoDial (): Promise<void> {
     if (this.autoDialTimeout != null) {
       this.autoDialTimeout.clear()
     }

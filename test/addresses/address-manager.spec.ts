@@ -79,7 +79,7 @@ describe('Address Manager', () => {
 
     expect(am.getObservedAddrs()).to.be.empty()
 
-    am.addObservedAddr('/ip4/123.123.123.123/tcp/39201')
+    am.addObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/39201'))
 
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
   })
@@ -104,7 +104,7 @@ describe('Address Manager', () => {
   })
 
   it('should dedupe added observed addresses', () => {
-    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
@@ -119,7 +119,7 @@ describe('Address Manager', () => {
     am.addObservedAddr(ma)
 
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
-    expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma)
+    expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
   it('should only emit one change:addresses event', () => {
@@ -136,16 +136,16 @@ describe('Address Manager', () => {
       eventCount++
     })
 
-    am.addObservedAddr(ma)
-    am.addObservedAddr(ma)
-    am.addObservedAddr(ma)
-    am.addObservedAddr(`${ma}/p2p/${peerId.toString()}`)
+    am.confirmObservedAddr(multiaddr(ma))
+    am.confirmObservedAddr(multiaddr(ma))
+    am.confirmObservedAddr(multiaddr(ma))
+    am.confirmObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
     expect(eventCount).to.equal(1)
   })
 
   it('should strip our peer address from added observed addresses', () => {
-    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
@@ -156,14 +156,14 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs()).to.be.empty()
 
     am.addObservedAddr(ma)
-    am.addObservedAddr(`${ma}/p2p/${peerId.toString()}`)
+    am.addObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
-    expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma)
+    expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
   it('should strip our peer address from added observed addresses in difference formats', () => {
-    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>()
@@ -174,10 +174,10 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs()).to.be.empty()
 
     am.addObservedAddr(ma)
-    am.addObservedAddr(`${ma}/p2p/${peerId.toString()}`)
+    am.addObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
-    expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma)
+    expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
   it('should not add our peer id to path multiaddrs', () => {

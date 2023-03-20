@@ -76,14 +76,14 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
     this._findClosestPeersTask = this._findClosestPeersTask.bind(this)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * Start peer routing service.
    */
-  async start () {
+  async start (): Promise<void> {
     if (this.started || this.routers.length === 0 || this.timeoutId != null || this.refreshManagerInit.enabled === false) {
       return
     }
@@ -98,7 +98,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
   /**
    * Recurrent task to find closest peers and add their addresses to the Address Book.
    */
-  async _findClosestPeersTask () {
+  async _findClosestPeersTask (): Promise<void> {
     if (this.abortController != null) {
       // we are already running the query
       return
@@ -127,7 +127,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
   /**
    * Stop peer routing service.
    */
-  async stop () {
+  async stop (): Promise<void> {
     clearDelayedInterval(this.timeoutId)
 
     // abort query if it is in-flight

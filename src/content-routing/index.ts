@@ -14,6 +14,8 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { CID } from 'multiformats/cid'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { DualDHT } from '@libp2p/interface-dht'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 export interface CompoundContentRoutingInit {
   routers: ContentRouting[]
@@ -35,22 +37,22 @@ export class CompoundContentRouting implements ContentRouting, Startable {
     this.components = components
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     this.started = false
   }
 
   /**
    * Iterates over all content routers in parallel to find providers of the given key
    */
-  async * findProviders (key: CID, options: AbortOptions = {}) {
+  async * findProviders (key: CID, options: AbortOptions = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
       throw new CodeError('No content this.routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
@@ -69,18 +71,18 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    * Iterates over all content routers in parallel to notify it is
    * a provider of the given key
    */
-  async provide (key: CID, options: AbortOptions = {}) {
+  async provide (key: CID, options: AbortOptions = {}): Promise<void> {
     if (this.routers.length === 0) {
       throw new CodeError('No content routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
-    await Promise.all(this.routers.map(async (router) => await router.provide(key, options)))
+    await Promise.all(this.routers.map(async (router) => { await router.provide(key, options) }))
   }
 
   /**
    * Store the given key/value pair in the available content routings
    */
-  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions) {
+  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
     if (!this.isStarted()) {
       throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
@@ -117,7 +119,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
   /**
    * Get the `n` values to the given key without sorting
    */
-  async * getMany (key: Uint8Array, nVals: number, options: AbortOptions) { // eslint-disable-line require-await
+  async * getMany (key: Uint8Array, nVals: number, options: AbortOptions): AsyncIterable<{ from: PeerId, val: Uint8Array }> {
     if (!this.isStarted()) {
       throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }

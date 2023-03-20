@@ -10,7 +10,7 @@ export class DummyDHT extends EventEmitter<PeerDiscoveryEvents> implements DualD
     return true
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): '@libp2p/dummy-dht' {
     return '@libp2p/dummy-dht'
   }
 

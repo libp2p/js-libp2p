@@ -46,7 +46,7 @@ const defaultInit: IdentifyServiceInit = {
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
-async function createComponents (index: number) {
+async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
   const components = new DefaultComponents({
@@ -115,7 +115,7 @@ describe('identify', () => {
     const localProtoBookSetSpy = sinon.spy(localComponents.peerStore.protoBook, 'set')
 
     // Make sure the remote peer has a peer record to share during identify
-    await remotePeerRecordUpdater.update()
+    remotePeerRecordUpdater.update()
 
     // Run identify
     await localIdentify.identify(localToRemote)
@@ -139,7 +139,7 @@ describe('identify', () => {
       ...defaultInit,
       protocolPrefix: 'ipfs',
       host: {
-        agentVersion: agentVersion
+        agentVersion
       }
     })
     await start(localIdentify)
@@ -147,7 +147,7 @@ describe('identify', () => {
       ...defaultInit,
       protocolPrefix: 'ipfs',
       host: {
-        agentVersion: agentVersion
+        agentVersion
       }
     })
     await start(remoteIdentify)
@@ -305,7 +305,7 @@ describe('identify', () => {
           [data],
           lp.encode(),
           stream,
-          async (source) => await drain(source)
+          async (source) => { await drain(source) }
         )
 
         deferred.resolve()

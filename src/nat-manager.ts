@@ -15,7 +15,7 @@ import type { AddressManager } from '@libp2p/interface-address-manager'
 const log = logger('libp2p:nat')
 const DEFAULT_TTL = 7200
 
-function highPort (min = 1024, max = 65535) {
+function highPort (min = 1024, max = 65535): number {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
@@ -98,18 +98,20 @@ export class NatManager implements Startable {
     }
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  start () {}
+  start (): void {
+    // #TODO: is there a way to remove this? Seems like a hack
+  }
 
   /**
    * Attempt to use uPnP to configure port mapping using the current gateway.
    *
    * Run after start to ensure the transport manager has all addresses configured.
    */
-  afterStart () {
+  afterStart (): void {
     if (isBrowser || !this.enabled || this.started) {
       return
     }
@@ -123,7 +125,7 @@ export class NatManager implements Startable {
     })
   }
 
-  async _start () {
+  async _start (): Promise<void> {
     const addrs = this.components.transportManager.getAddrs()
 
     for (const addr of addrs) {
@@ -178,7 +180,7 @@ export class NatManager implements Startable {
     }
   }
 
-  async _getClient () {
+  async _getClient (): Promise<NatAPI> {
     if (this.client != null) {
       return this.client
     }
@@ -196,7 +198,7 @@ export class NatManager implements Startable {
   /**
    * Stops the NAT manager
    */
-  async stop () {
+  async stop (): Promise<void> {
     if (isBrowser || this.client == null) {
       return
     }

@@ -11,7 +11,7 @@ const log = logger('libp2p:pnet')
 /**
  * Creates a stream iterable to encrypt messages in a private network
  */
-export function createBoxStream (nonce: Uint8Array, psk: Uint8Array) {
+export function createBoxStream (nonce: Uint8Array, psk: Uint8Array): (source: Source<Uint8Array>) => AsyncIterable<Uint8Array> {
   const xor = xsalsa20(nonce, psk)
 
   return (source: Source<Uint8Array>) => (async function * () {
@@ -38,7 +38,7 @@ export function createUnboxStream (nonce: Uint8Array, psk: Uint8Array) {
 /**
  * Decode the version 1 psk from the given Uint8Array
  */
-export function decodeV1PSK (pskBuffer: Uint8Array) {
+export function decodeV1PSK (pskBuffer: Uint8Array): { tag: string | undefined, codecName: string | undefined, psk: Uint8Array } {
   try {
     // This should pull from multibase/multicodec to allow for
     // more encoding flexibility. Ideally we'd consume the codecs
@@ -58,7 +58,7 @@ export function decodeV1PSK (pskBuffer: Uint8Array) {
     return {
       tag: pskTag,
       codecName: codec,
-      psk: psk
+      psk
     }
   } catch (err: any) {
     log.error(err)

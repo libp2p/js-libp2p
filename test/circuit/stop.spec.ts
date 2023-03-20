@@ -1,64 +1,116 @@
-import { pair } from 'it-pair'
-import type { Connection, Stream } from '@libp2p/interface-connection'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { createPeerIds } from '../utils/creators/peer.js'
-import { handleStop, stop } from '../../src/circuit/stop.js'
-import { Status, StopMessage } from '../../src/circuit/pb/index.js'
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { mockConnection, mockMultiaddrConnection, mockStream } from '@libp2p/interface-mocks'
-import { pbStream, ProtobufStream } from 'it-pb-stream'
-
 /* eslint-env mocha */
 
-describe('Circuit v2 - stop protocol', function () {
-  let srcPeer: PeerId, relayPeer: PeerId, conn: Connection, pbstr: ProtobufStream<Stream>
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { Connection } from '@libp2p/interface-connection'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import { mockStream } from '@libp2p/interface-mocks'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Registrar, StreamHandler } from '@libp2p/interface-registrar'
+import type { Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
+import { isStartable } from '@libp2p/interfaces/startable'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { expect } from 'aegir/chai'
+import { pbStream, MessageStream } from 'it-pb-stream'
+import { stubInterface } from 'sinon-ts'
+import { circuitRelayTransport } from '../../src/circuit/index.js'
+import { Status, StopMessage } from '../../src/circuit/pb/index.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import { duplexPair } from 'it-pair/duplex'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+
+describe('circuit-relay stop protocol', function () {
+  let transport: Transport
+  let handler: StreamHandler
+  let pbstr: MessageStream<StopMessage>
+  let sourcePeer: PeerId
 
   beforeEach(async () => {
-    [srcPeer, relayPeer] = await createPeerIds(2)
-    conn = mockConnection(mockMultiaddrConnection(pair<Uint8Array>(), relayPeer))
-    pbstr = pbStream(mockStream(pair<any>()))
+    const components = {
+      addressManager: stubInterface<AddressManager>(),
+      connectionManager: stubInterface<ConnectionManager>(),
+      contentRouting: stubInterface<ContentRouting>(),
+      peerId: await createEd25519PeerId(),
+      peerStore: stubInterface<PeerStore>(),
+      registrar: stubInterface<Registrar>(),
+      transportManager: stubInterface<TransportManager>(),
+      upgrader: stubInterface<Upgrader>(),
+      connectionGater: stubInterface<ConnectionGater>()
+    }
+
+    transport = circuitRelayTransport({})(components)
+
+    if (isStartable(transport)) {
+      await transport.start()
+    }
+
+    sourcePeer = await createEd25519PeerId()
+
+    handler = components.registrar.handle.getCall(0).args[1]
+
+    const [localStream, remoteStream] = duplexPair<any>()
+
+    handler({
+      stream: mockStream(remoteStream),
+      connection: stubInterface<Connection>()
+    })
+
+    pbstr = pbStream(localStream).pb(StopMessage)
   })
 
   this.afterEach(async function () {
-    await conn.close()
+    if (isStartable(transport)) {
+      await transport.stop()
+    }
   })
 
   it('handle stop - success', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } }, pbstr })
-    const response = await pbstr.pb(StopMessage).read()
+    pbstr.write({
+      type: StopMessage.Type.CONNECT,
+      peer: {
+        id: sourcePeer.toBytes(),
+        addrs: []
+      }
+    })
+
+    const response = await pbstr.read()
     expect(response.status).to.be.equal(Status.OK)
   })
 
   it('handle stop error - invalid request - wrong type', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.STATUS, peer: { id: srcPeer.toBytes(), addrs: [] } }, pbstr })
-    const response = await pbstr.pb(StopMessage).read()
+    pbstr.write({
+      type: StopMessage.Type.STATUS,
+      peer: {
+        id: sourcePeer.toBytes(),
+        addrs: []
+      }
+    })
+
+    const response = await pbstr.read()
     expect(response.status).to.be.equal(Status.UNEXPECTED_MESSAGE)
   })
 
   it('handle stop error - invalid request - missing peer', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT }, pbstr })
-    const response = await pbstr.pb(StopMessage).read()
+    pbstr.write({
+      type: StopMessage.Type.CONNECT
+    })
+
+    const response = await pbstr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - invalid request - invalid peer addr', async function () {
-    await handleStop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [new Uint8Array(32)] } }, pbstr })
-    const response = await pbstr.pb(StopMessage).read()
+    pbstr.write({
+      type: StopMessage.Type.CONNECT,
+      peer: {
+        id: sourcePeer.toBytes(),
+        addrs: [
+          new Uint8Array(32)
+        ]
+      }
+    })
+
+    const response = await pbstr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
-  })
-
-  it('send stop - success', async function () {
-    const streamStub = sinon.stub(conn, 'newStream')
-    streamStub.resolves(mockStream(pair<any>()))
-    await stop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } } })
-    pbstr.pb(StopMessage).write({ type: StopMessage.Type.STATUS, status: Status.OK })
-  })
-
-  it('send stop - should not fall apart with invalid status response', async function () {
-    const streamStub = sinon.stub(conn, 'newStream')
-    streamStub.resolves(mockStream(pair<any>()))
-    await stop({ connection: conn, request: { type: StopMessage.Type.CONNECT, peer: { id: srcPeer.toBytes(), addrs: [] } } })
-    pbstr.write(new Uint8Array(10))
   })
 })

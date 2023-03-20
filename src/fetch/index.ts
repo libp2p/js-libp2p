@@ -67,7 +67,7 @@ export class FetchService implements Startable {
     this.init = init
   }
 
-  async start () {
+  async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
         .catch(err => {
@@ -83,12 +83,12 @@ export class FetchService implements Startable {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     await this.components.registrar.unhandle(this.protocol)
     this.started = false
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
@@ -178,7 +178,7 @@ export class FetchService implements Startable {
    * responds based on looking up the key in the request via the lookup callback that corresponds
    * to the key's prefix.
    */
-  async handleMessage (data: IncomingStreamData) {
+  async handleMessage (data: IncomingStreamData): Promise<void> {
     const { stream } = data
     const self = this
 
@@ -224,7 +224,7 @@ export class FetchService implements Startable {
    * Given a key, finds the appropriate function for looking up its corresponding value, based on
    * the key's prefix.
    */
-  _getLookupFunction (key: string) {
+  _getLookupFunction (key: string): LookupFunction | undefined {
     for (const prefix of this.lookupFunctions.keys()) {
       if (key.startsWith(prefix)) {
         return this.lookupFunctions.get(prefix)
@@ -243,7 +243,7 @@ export class FetchService implements Startable {
    * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
    * ```
    */
-  registerLookupFunction (prefix: string, lookup: LookupFunction) {
+  registerLookupFunction (prefix: string, lookup: LookupFunction): void {
     if (this.lookupFunctions.has(prefix)) {
       throw new CodeError("Fetch protocol handler for key prefix '" + prefix + "' already registered", codes.ERR_KEY_ALREADY_EXISTS)
     }
@@ -262,7 +262,7 @@ export class FetchService implements Startable {
    * libp2p.fetchService.unregisterLookupFunction('/prefix')
    * ```
    */
-  unregisterLookupFunction (prefix: string, lookup?: LookupFunction) {
+  unregisterLookupFunction (prefix: string, lookup?: LookupFunction): void {
     if (lookup != null) {
       const existingLookup = this.lookupFunctions.get(prefix)
 

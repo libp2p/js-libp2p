@@ -15,6 +15,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { Libp2pOptions } from '../../src/index.js'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -73,9 +74,6 @@ describe('peer discovery scenarios', () => {
           listenAddr.toString()
         ]
       },
-      connectionManager: {
-        autoDial: false
-      },
       peerDiscovery: [
         bootstrap({
           list: bootstrappers
@@ -109,7 +107,7 @@ describe('peer discovery scenarios', () => {
     // use a random tag to prevent CI collision
     const serviceTag = `libp2p-test-${uint8ArrayToString(randomBytes(4), 'base16')}.local`
 
-    const getConfig = (peerId: PeerId) => createBaseOptions({
+    const getConfig = (peerId: PeerId): Libp2pOptions => createBaseOptions({
       peerId,
       addresses: {
         listen: [
@@ -121,10 +119,7 @@ describe('peer discovery scenarios', () => {
           interval: 200, // discover quickly
           serviceTag
         })
-      ],
-      connectionManager: {
-        autoDial: false
-      }
+      ]
     })
 
     libp2p = await createLibp2pNode(getConfig(peerId))
@@ -162,15 +157,12 @@ describe('peer discovery scenarios', () => {
   it('kad-dht should discover other peers', async () => {
     const deferred = defer()
 
-    const getConfig = (peerId: PeerId) => createBaseOptions({
+    const getConfig = (peerId: PeerId): Libp2pOptions => createBaseOptions({
       peerId,
       addresses: {
         listen: [
           listenAddr.toString()
         ]
-      },
-      connectionManager: {
-        autoDial: false
       },
       dht: kadDHT()
     })

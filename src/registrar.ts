@@ -44,14 +44,14 @@ export class DefaultRegistrar implements Registrar {
     this.components.peerStore.addEventListener('change:protocols', this._onProtocolChange)
   }
 
-  getProtocols () {
+  getProtocols (): string[] {
     return Array.from(new Set<string>([
       ...this.topologies.keys(),
       ...this.handlers.keys()
     ])).sort()
   }
 
-  getHandler (protocol: string) {
+  getHandler (protocol: string): StreamHandlerRecord {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
@@ -61,7 +61,7 @@ export class DefaultRegistrar implements Registrar {
     return handler
   }
 
-  getTopologies (protocol: string) {
+  getTopologies (protocol: string): Topology[] {
     const topologies = this.topologies.get(protocol)
 
     if (topologies == null) {
@@ -99,7 +99,7 @@ export class DefaultRegistrar implements Registrar {
    * Removes the handler for each protocol. The protocol
    * will no longer be supported on streams.
    */
-  async unhandle (protocols: string | string[]) {
+  async unhandle (protocols: string | string[]): Promise<void> {
     const protocolList = Array.isArray(protocols) ? protocols : [protocols]
 
     protocolList.forEach(protocol => {
@@ -140,7 +140,7 @@ export class DefaultRegistrar implements Registrar {
   /**
    * Unregister topology
    */
-  unregister (id: string) {
+  unregister (id: string): void {
     for (const [protocol, topologies] of this.topologies.entries()) {
       if (topologies.has(id)) {
         topologies.delete(id)
@@ -155,7 +155,7 @@ export class DefaultRegistrar implements Registrar {
   /**
    * Remove a disconnected peer from the record
    */
-  _onDisconnect (evt: CustomEvent<Connection>) {
+  _onDisconnect (evt: CustomEvent<Connection>): void {
     const connection = evt.detail
 
     void this.components.peerStore.protoBook.get(connection.remotePeer)
@@ -182,7 +182,7 @@ export class DefaultRegistrar implements Registrar {
    * On peer connected if we already have their protocols. Usually used for reconnects
    * as change:protocols event won't be emitted due to identical protocols.
    */
-  _onConnect (evt: CustomEvent<Connection>) {
+  _onConnect (evt: CustomEvent<Connection>): void {
     const connection = evt.detail
 
     void this.components.peerStore.protoBook.get(connection.remotePeer)
@@ -208,7 +208,7 @@ export class DefaultRegistrar implements Registrar {
   /**
    * Check if a new peer support the multicodecs for this topology
    */
-  _onProtocolChange (evt: CustomEvent<PeerProtocolsChangeData>) {
+  _onProtocolChange (evt: CustomEvent<PeerProtocolsChangeData>): void {
     const { peerId, protocols, oldProtocols } = evt.detail
     const removed = oldProtocols.filter(protocol => !protocols.includes(protocol))
     const added = protocols.filter(protocol => !oldProtocols.includes(protocol))

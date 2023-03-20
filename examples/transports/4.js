@@ -35,12 +35,7 @@ const createNode = async (addresses = []) => {
       })
     ],
     connectionEncryption: [noise()],
-    streamMuxers: [mplex()],
-    connectionManager: {
-      // Disable autoDial as it would fail because we are using a self-signed cert.
-      // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
-      autoDial: false
-    }
+    streamMuxers: [mplex()]
   })
 
   return node

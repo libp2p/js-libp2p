@@ -8,7 +8,7 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 /**
  * Store the multiaddrs from every peer in the passed peer store
  */
-export async function * storeAddresses (source: Source<PeerInfo>, peerStore: PeerStore) {
+export async function * storeAddresses (source: Source<PeerInfo>, peerStore: PeerStore): AsyncIterable<PeerInfo> {
   yield * map(source, async (peer) => {
     // ensure we have the addresses for a given peer
     await peerStore.addressBook.add(peer.id, peer.multiaddrs)
@@ -20,7 +20,7 @@ export async function * storeAddresses (source: Source<PeerInfo>, peerStore: Pee
 /**
  * Filter peers by unique peer id
  */
-export function uniquePeers (source: Source<PeerInfo>) {
+export function uniquePeers (source: Source<PeerInfo>): AsyncIterable<PeerInfo> {
   /** @type Set<string> */
   const seen = new Set()
 
@@ -39,7 +39,7 @@ export function uniquePeers (source: Source<PeerInfo>) {
 /**
  * Require at least `min` peers to be yielded from `source`
  */
-export async function * requirePeers (source: Source<PeerInfo>, min: number = 1) {
+export async function * requirePeers (source: Source<PeerInfo>, min: number = 1): AsyncIterable<PeerInfo> {
   let seen = 0
 
   for await (const peer of source) {
