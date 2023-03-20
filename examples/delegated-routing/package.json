@@ -1,0 +1,29 @@
+{
+  "name": "delegated-routing-example",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^11.0.0",
+    "ipfs-core": "^0.15.4",
+    "ipfs-http-client": "^58.0.1",
+    "libp2p": "../../",
+    "@libp2p/delegated-content-routing": "^4.0.0",
+    "@libp2p/delegated-peer-routing": "^4.0.0",
+    "@libp2p/kad-dht": "^7.0.0",
+    "@libp2p/mplex": "^7.0.0",
+    "@libp2p/webrtc-star": "^6.0.0",
+    "@libp2p/websockets": "^5.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "columns": [
+    "Package",
+    "Version",
+    "Deps",
+    "CI",
+    "Coverage",
+    "Lead Maintainer"
+  ],
+  "rows": [
+    "libp2p",
+    ["libp2p/js-libp2p", "libp2p"],
+    ["libp2p/js-libp2p-daemon", "libp2p-daemon"],
+    ["libp2p/js-libp2p-daemon-client", "libp2p-daemon-client"],
+    ["libp2p/js-interfaces", "libp2p-interfaces"],
+    ["libp2p/interop", "interop-libp2p"],
+
+    "transports",
+    ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
+    ["libp2p/js-libp2p-webrtc-direct", "libp2p-webrtc-direct"],
+    ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
+    ["libp2p/js-libp2p-websockets", "libp2p-websockets"],
+
+    "secure channels",
+    ["NodeFactoryIo/js-libp2p-noise", "libp2p-noise"],
+
+    "stream multiplexers",
+    ["libp2p/js-libp2p-mplex", "libp2p-mplex"],
+
+    "peer discovery",
+    ["libp2p/js-libp2p-bootstrap", "libp2p-bootstrap"],
+    ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
+    ["libp2p/js-libp2p-mdns", "libp2p-mdns"],
+    ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
+    ["ChainSafe/discv5", "@chainsafe/discv5"],
+
+    "content routing",
+    ["libp2p/js-libp2p-delegated-content-routing", "libp2p-delegated-content-routing"],
+    ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
+
+    "peer routing",
+    ["libp2p/js-libp2p-delegated-peer-routing", "libp2p-delegated-peer-routing"],
+    ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
+
+    "utilities",
+    ["libp2p/js-libp2p-crypto", "libp2p-crypto"],
+
+    "data types",
+    ["libp2p/js-peer-id", "peer-id"],
+    ["libp2p/js-libp2p-record", "libp2p-record"],
+
+    "pubsub",
+    ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
+    ["ChainSafe/js-libp2p-gossipsub", "libp2p-gossipsub"],
+
+    "extensions",
+    ["libp2p/js-libp2p-nat-mgnr", "libp2p-nat-mgnr"],
+    ["libp2p/js-libp2p-utils", "libp2p-utils"]
+  ]
+}

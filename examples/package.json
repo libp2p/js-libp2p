@@ -1,0 +1,27 @@
+{
+  "name": "libp2p-examples",
+  "version": "1.0.0",
+  "description": "Examples of how to use libp2p",
+  "type": "module",
+  "scripts": {
+    "test": "node ./test.js",
+    "test:all": "node ./test-all.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@libp2p/floodsub": "^6.0.0",
+    "@libp2p/pubsub-peer-discovery": "^8.0.0",
+    "@nodeutils/defaults-deep": "^1.1.0",
+    "execa": "^6.1.0",
+    "fs-extra": "^10.1.0",
+    "it-to-buffer": "^3.0.1",
+    "libp2p": "../",
+    "p-defer": "^4.0.0",
+    "uint8arrays": "^4.0.0",
+    "which": "^2.0.1"
+  },
+  "devDependencies": {
+    "https": "^1.0.0",
+    "playwright": "^1.7.1"
+  }
+}

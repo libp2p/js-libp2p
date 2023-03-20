@@ -1,0 +1,66 @@
+name: examples
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: lts/*
+    - uses: ipfs/aegir/actions/cache-node-modules@master
+      with:
+        directories: |
+          ./examples/node_modules
+          ~/.cache
+        build: |
+          cd examples
+          npm i
+          npx playwright install
+        cache_name: cache-examples
+
+  test-example:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example: [
+          chat,
+          connection-encryption,
+          discovery-mechanisms,
+          echo,
+          libp2p-in-the-browser,
+          peer-and-content-routing,
+          pnet,
+          protocol-and-stream-muxing,
+          pubsub,
+          transports,
+          webrtc-direct
+        ]
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+        with:
+          directories: |
+            ./examples/node_modules
+            ~/.cache
+          build: |
+            cd examples
+            npm i
+            npx playwright install
+          cache_name: cache-examples
+      - run: |
+          cd examples
+          npm run test -- ${{ matrix.example }}
