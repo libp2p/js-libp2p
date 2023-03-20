@@ -1,3 +1,10 @@
+## [6.0.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.2...v6.0.3) (2023-03-20)
+
+
+### Dependencies
+
+* **dev:** bump @multiformats/multiaddr from 11.6.1 to 12.0.0 ([#218](https://github.com/libp2p/js-libp2p-floodsub/issues/218)) ([46bac5f](https://github.com/libp2p/js-libp2p-floodsub/commit/46bac5f417c2d2e5a5373dbf34970589a2c2a37e))
+
 ## [6.0.2](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.1...v6.0.2) (2023-03-10)
 
 
