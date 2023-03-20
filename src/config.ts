@@ -7,7 +7,7 @@ import { FaultTolerance } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pInit } from './index.js'
 import { codes, messages } from './errors.js'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import type { RecursivePartial } from '@libp2p/interfaces'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 
@@ -21,7 +21,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
   connectionManager: {
     maxConnections: 300,
     minConnections: 50,
-    autoDial: true,
     autoDialInterval: 10000,
     maxParallelDials: Constants.MAX_PARALLEL_DIALS,
     maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
@@ -93,15 +92,15 @@ export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit 
   const resultingOptions: Libp2pInit = mergeOptions(DefaultConfig, opts)
 
   if (resultingOptions.transports == null || resultingOptions.transports.length < 1) {
-    throw errCode(new Error(messages.ERR_TRANSPORTS_REQUIRED), codes.ERR_TRANSPORTS_REQUIRED)
+    throw new CodeError(messages.ERR_TRANSPORTS_REQUIRED, codes.ERR_TRANSPORTS_REQUIRED)
   }
 
   if (resultingOptions.connectionEncryption == null || resultingOptions.connectionEncryption.length === 0) {
-    throw errCode(new Error(messages.CONN_ENCRYPTION_REQUIRED), codes.CONN_ENCRYPTION_REQUIRED)
+    throw new CodeError(messages.CONN_ENCRYPTION_REQUIRED, codes.CONN_ENCRYPTION_REQUIRED)
   }
 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
-    throw errCode(new Error(messages.ERR_PROTECTOR_REQUIRED), codes.ERR_PROTECTOR_REQUIRED)
+    throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes.ERR_PROTECTOR_REQUIRED)
   }
 
   // Append user agent version to default AGENT_VERSION depending on the environment

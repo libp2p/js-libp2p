@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import mergeOptions from 'merge-options'
 import { LatencyMonitor, SummaryObject } from './latency-monitor.js'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -43,11 +43,6 @@ export interface ConnectionManagerConfig {
    * Sets the poll interval (in milliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `2000` (2 seconds).
    */
   pollInterval?: number
-
-  /**
-   * If true, try to connect to all discovered peers up to the connection manager limit
-   */
-  autoDial?: boolean
 
   /**
    * How long to wait between attempting to keep our number of concurrent connections
@@ -168,7 +163,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
 
     if (this.opts.maxConnections < this.opts.minConnections) {
-      throw errCode(new Error('Connection Manager maxConnections must be greater than minConnections'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('Connection Manager maxConnections must be greater than minConnections', codes.ERR_INVALID_PARAMETERS)
     }
 
     log('options: %o', this.opts)
@@ -478,7 +473,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId == null && multiaddr == null) {
-      throw errCode(new TypeError('Can only open connections to PeerIds or Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('Can only open connections to PeerIds or Multiaddrs', codes.ERR_INVALID_PARAMETERS)
     }
 
     if (peerId != null) {
@@ -552,7 +547,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   getAll (peerId: PeerId): Connection[] {
     if (!isPeerId(peerId)) {
-      throw errCode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('peerId must be an instance of peer-id', codes.ERR_INVALID_PARAMETERS)
     }
 
     const id = peerId.toString()

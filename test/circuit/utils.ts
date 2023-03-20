@@ -20,9 +20,6 @@ export function createNodeOptions (...overrides: Libp2pOptions[]): Libp2pOptions
   return createBaseOptions({
     addresses: {
       listen: [listenAddr]
-    },
-    connectionManager: {
-      autoDial: false
     }
   }, ...overrides)
 }

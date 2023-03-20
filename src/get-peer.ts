@@ -1,7 +1,7 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { isMultiaddr } from '@multiformats/multiaddr'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { isPeerId } from '@libp2p/interface-peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -25,8 +25,8 @@ export function getPeerAddress (peer: PeerId | Multiaddr): { peerId?: PeerId, mu
     }
   }
 
-  throw errCode(
-    new Error(`${peer} is not a PeerId or a Multiaddr`), // eslint-disable-line @typescript-eslint/restrict-template-expressions
+  throw new CodeError(
+    `${peer} is not a PeerId or a Multiaddr`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
     codes.ERR_INVALID_MULTIADDR
   )
 }

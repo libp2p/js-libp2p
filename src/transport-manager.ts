@@ -1,6 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { codes } from './errors.js'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { FaultTolerance } from '@libp2p/interface-transport'
 import type { Listener, Transport, TransportManager, TransportManagerEvents, Upgrader } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -51,11 +51,11 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     const tag = transport[Symbol.toStringTag]
 
     if (tag == null) {
-      throw errCode(new Error('Transport must have a valid tag'), codes.ERR_INVALID_KEY)
+      throw new CodeError('Transport must have a valid tag', codes.ERR_INVALID_KEY)
     }
 
     if (this.transports.has(tag)) {
-      throw errCode(new Error(`There is already a transport with the tag ${tag}`), codes.ERR_DUPLICATE_TRANSPORT)
+      throw new CodeError(`There is already a transport with the tag ${tag}`, codes.ERR_DUPLICATE_TRANSPORT)
     }
 
     log('adding transport %s', tag)
@@ -114,7 +114,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     const transport = this.transportForMultiaddr(ma)
 
     if (transport == null) {
-      throw errCode(new Error(`No transport available for address ${String(ma)}`), codes.ERR_TRANSPORT_UNAVAILABLE)
+      throw new CodeError(`No transport available for address ${String(ma)}`, codes.ERR_TRANSPORT_UNAVAILABLE)
     }
 
     try {
@@ -224,7 +224,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
       // just wait for any (`p-any`) listener to succeed on each transport before returning
       const isListening = results.find(r => r.status === 'fulfilled')
       if ((isListening == null) && this.faultTolerance !== FaultTolerance.NO_FATAL) {
-        throw errCode(new Error(`Transport (${key}) could not listen on any available address`), codes.ERR_NO_VALID_ADDRESSES)
+        throw new CodeError(`Transport (${key}) could not listen on any available address`, codes.ERR_NO_VALID_ADDRESSES)
       }
     }
 
@@ -233,7 +233,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     if (couldNotListen.length === this.transports.size) {
       const message = `no valid addresses were provided for transports [${couldNotListen.join(', ')}]`
       if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
-        throw errCode(new Error(message), codes.ERR_NO_VALID_ADDRESSES)
+        throw new CodeError(message, codes.ERR_NO_VALID_ADDRESSES)
       }
       log(`libp2p in dial mode only: ${message}`)
     }
