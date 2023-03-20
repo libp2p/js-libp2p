@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
@@ -273,13 +273,13 @@ export class IdentifyService implements Startable {
       )
 
       if (data == null) {
-        throw errCode(new Error('No data could be retrieved'), codes.ERR_CONNECTION_ENDED)
+        throw new CodeError('No data could be retrieved', codes.ERR_CONNECTION_ENDED)
       }
 
       try {
         return Identify.decode(data)
       } catch (err: any) {
-        throw errCode(err, codes.ERR_INVALID_MESSAGE)
+        throw new CodeError(String(err), codes.ERR_INVALID_MESSAGE)
       }
     } finally {
       if (timeoutController != null) {
@@ -311,17 +311,17 @@ export class IdentifyService implements Startable {
     } = message
 
     if (publicKey == null) {
-      throw errCode(new Error('public key was missing from identify message'), codes.ERR_MISSING_PUBLIC_KEY)
+      throw new CodeError('public key was missing from identify message', codes.ERR_MISSING_PUBLIC_KEY)
     }
 
     const id = await peerIdFromKeys(publicKey)
 
     if (!connection.remotePeer.equals(id)) {
-      throw errCode(new Error('identified peer does not match the expected peer'), codes.ERR_INVALID_PEER)
+      throw new CodeError('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
     }
 
     if (this.components.peerId.equals(id)) {
-      throw errCode(new Error('identified peer is our own peer id?'), codes.ERR_INVALID_PEER)
+      throw new CodeError('identified peer is our own peer id?', codes.ERR_INVALID_PEER)
     }
 
     // Get the observedAddr if there is one
@@ -334,7 +334,7 @@ export class IdentifyService implements Startable {
         const envelope = await RecordEnvelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
 
         if (!envelope.peerId.equals(id)) {
-          throw errCode(new Error('identified peer does not match the expected peer'), codes.ERR_INVALID_PEER)
+          throw new CodeError('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
         }
 
         if (await this.components.peerStore.addressBook.consumePeerRecord(envelope)) {
