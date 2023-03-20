@@ -1,6 +1,5 @@
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { logger } from '@libp2p/logger'
-import createError from 'err-code'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { codes } from '../../errors.js'
@@ -23,6 +22,7 @@ import type { ContentRouting } from '@libp2p/interface-content-routing'
 import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { RelayStoreInit, ReservationStore } from './reservation-store.js'
 import { RelayDiscovery, RelayDiscoveryComponents } from './discovery.js'
+import { CodeError } from '@libp2p/interfaces/errors'
 
 const log = logger('libp2p:circuit-relay:transport')
 
@@ -154,7 +154,7 @@ class CircuitRelayTransport implements Transport {
     if (ma.protoCodes().filter(code => code === CIRCUIT_PROTO_CODE).length !== 1) {
       const errMsg = 'Invalid circuit relay address'
       log.error(errMsg, ma)
-      throw createError(new Error(errMsg), codes.ERR_RELAYED_DIAL)
+      throw new CodeError(errMsg, codes.ERR_RELAYED_DIAL)
     }
 
     // Check the multiaddr to see if it contains a relay and a destination peer
@@ -167,7 +167,7 @@ class CircuitRelayTransport implements Transport {
     if (relayId == null || destinationId == null) {
       const errMsg = 'Circuit relay dial failed as addresses did not have peer id'
       log.error(errMsg)
-      throw createError(new Error(errMsg), codes.ERR_RELAYED_DIAL)
+      throw new CodeError(errMsg, codes.ERR_RELAYED_DIAL)
     }
 
     const relayPeer = peerIdFromString(relayId)
