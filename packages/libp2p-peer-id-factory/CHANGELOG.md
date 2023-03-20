@@ -1,3 +1,10 @@
+## [@libp2p/peer-id-factory-v2.0.3](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v2.0.2...@libp2p/peer-id-factory-v2.0.3) (2023-03-20)
+
+
+### Documentation
+
+* update README.md ([#59](https://github.com/libp2p/js-libp2p-peer-id/issues/59)) ([aba6483](https://github.com/libp2p/js-libp2p-peer-id/commit/aba6483dad028ee5c24bfc01135b77568666cfd3))
+
 ## [@libp2p/peer-id-factory-v2.0.2](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-factory-v2.0.1...@libp2p/peer-id-factory-v2.0.2) (2023-03-10)
 
 
