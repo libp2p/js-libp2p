@@ -223,7 +223,7 @@ class CircuitRelayTransport implements Transport {
       const status = await hopstr.read()
 
       if (status.status !== Status.OK) {
-        throw createError(new Error(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`), codes.ERR_HOP_REQUEST_FAILED)
+        throw new CodeError(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`, codes.ERR_HOP_REQUEST_FAILED)
       }
 
       // TODO: do something with limit and transient connection
