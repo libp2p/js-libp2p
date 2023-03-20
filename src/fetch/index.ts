@@ -245,7 +245,7 @@ export class FetchService implements Startable {
    */
   registerLookupFunction (prefix: string, lookup: LookupFunction): void {
     if (this.lookupFunctions.has(prefix)) {
-      throw new CodeError("Fetch protocol handler for key prefix '" + prefix + "' already registered", codes.ERR_KEY_ALREADY_EXISTS)
+      throw new CodeError(`Fetch protocol handler for key prefix '${prefix}' already registered`, codes.ERR_KEY_ALREADY_EXISTS)
     }
 
     this.lookupFunctions.set(prefix, lookup)
