@@ -23,7 +23,7 @@ const REFRESH_WINDOW = (60 * 1000) * 10
 // try to refresh relay reservations 5 minutes before expiry
 const REFRESH_TIMEOUT = (60 * 1000) * 5
 
-// maximum duration before which a reservation should be refereshed (2 hrs)
+// maximum duration before which a reservation should be refereshed
 const REFRESH_TIMEOUT_MAX = (60 * 1000) * 15
 // minimum duration before which a reservation must not be refreshed
 const REFRESH_TIMEOUT_MIN = 30 * 1000
