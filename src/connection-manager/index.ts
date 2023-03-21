@@ -648,7 +648,15 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     for (const connection of sortedConnections) {
       log('too many connections open - closing a connection to %p', connection.remotePeer)
-      toClose.push(connection)
+      // check allow list
+      const connectionInAllowList = this.allow.some((ma) => {
+        return connection.remoteAddr.toString().startsWith(ma.toString())
+      })
+
+      // Connections in the allow list should be excluded from pruning
+      if (!connectionInAllowList) {
+        toClose.push(connection)
+      }
 
       if (toClose.length === toPrune) {
         break
