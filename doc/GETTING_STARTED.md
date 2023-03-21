@@ -48,12 +48,12 @@ npm install @libp2p/websockets
 Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
+import { createLibp2p } from "libp2p";
+import { webSockets } from "@libp2p/websockets";
 
 const node = await createLibp2p({
-  transports: [webSockets()]
-})
+  transports: [webSockets()],
+});
 ```
 
 There are multiple libp2p transports available, you should evaluate the needs of your application and select the Transport(s) that best suit your requirements. You can add as many transports as you like to `modules.transport` in order to establish connections with as many peers as possible.
@@ -61,7 +61,7 @@ There are multiple libp2p transports available, you should evaluate the needs of
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://docs.libp2p.io/concepts/transport
+- https://docs.libp2p.io/concepts/transports
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
@@ -78,14 +78,14 @@ npm install @chainsafe/libp2p-noise
 With `@chainsafe/libp2p-noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
+import { createLibp2p } from "libp2p";
+import { webSockets } from "@libp2p/websockets";
+import { noise } from "@chainsafe/libp2p-noise";
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()]
-})
+  connectionEncryption: [noise()],
+});
 ```
 
 <details><summary>Read More</summary>
@@ -108,16 +108,16 @@ npm install @libp2p/mplex
 ```
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
+import { createLibp2p } from "libp2p";
+import { webSockets } from "@libp2p/websockets";
+import { noise } from "@chainsafe/libp2p-noise";
+import { mplex } from "@libp2p/mplex";
 
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex()]
-})
+  streamMuxers: [mplex()],
+});
 ```
 
 <details><summary>Read More</summary>
@@ -133,32 +133,32 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
+import { createLibp2p } from "libp2p";
+import { webSockets } from "@libp2p/websockets";
+import { noise } from "@chainsafe/libp2p-noise";
+import { mplex } from "@libp2p/mplex";
 
 const node = await createLibp2p({
   // libp2p nodes are started by default, pass false to override this
   start: false,
   addresses: {
-    listen: ['/ip4/127.0.0.1/tcp/8000/ws']
+    listen: ["/ip4/127.0.0.1/tcp/8000/ws"],
   },
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [mplex()]
-})
+  streamMuxers: [mplex()],
+});
 
 // start libp2p
-await node.start()
-console.log('libp2p has started')
+await node.start();
+console.log("libp2p has started");
 
-const listenAddrs = node.getMultiaddrs()
-console.log('libp2p is listening on the following addresses: ', listenAddrs)
+const listenAddrs = node.getMultiaddrs();
+console.log("libp2p is listening on the following addresses: ", listenAddrs);
 
 // stop libp2p
-await node.stop()
-console.log('libp2p has stopped')
+await node.stop();
+console.log("libp2p has stopped");
 ```
 
 ### Custom setup
@@ -172,6 +172,7 @@ Peer discovery is an important part of creating a well connected libp2p node. A 
 For each discovered peer libp2p will emit a `peer:discovery` event which includes metadata about that peer. You can read the [Events](./API.md#events) in the API doc to learn more.
 
 Looking at the [available peer discovery](./CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
+
 - If you already know the addresses of some other network peers, you should consider using `@libp2p/bootstrap` as this is the easiest way of getting your peer into the network.
 - If it is likely that you will have other peers on your local network, `@libp2p/mdns` is a must if you're node is not running in the browser. It allows peers to discover each other when on the same local network.
 - If your application is browser based you can use the `@libp2p/webrtc-star` Transport, which includes a rendezvous based peer sharing service.
@@ -188,18 +189,18 @@ npm install @libp2p/bootstrap
 We can provide specific configurations for each protocol within a `config.peerDiscovery` property in the options as shown below.
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
+import { createLibp2p } from "libp2p";
+import { webSockets } from "@libp2p/websockets";
+import { noise } from "@chainsafe/libp2p-noise";
+import { mplex } from "@libp2p/mplex";
 
-import { bootstrap } from '@libp2p/bootstrap'
+import { bootstrap } from "@libp2p/bootstrap";
 
 // Known peers addresses
 const bootstrapMultiaddrs = [
-  '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
-  '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
-]
+  "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
+  "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+];
 
 const node = await createLibp2p({
   transports: [webSockets()],
@@ -208,17 +209,17 @@ const node = await createLibp2p({
   peerDiscovery: [
     bootstrap({
       list: bootstrapMultiaddrs, // provide array of multiaddrs
-    })
-  ]
-})
+    }),
+  ],
+});
 
-node.addEventListener('peer:discovery', (evt) => {
-  console.log('Discovered %s', evt.detail.id.toString()) // Log discovered peer
-})
+node.addEventListener("peer:discovery", (evt) => {
+  console.log("Discovered %s", evt.detail.id.toString()); // Log discovered peer
+});
 
-node.connectionManager.addEventListener('peer:connect', (evt) => {
-  console.log('Connected to %s', evt.detail.remotePeer.toString()) // Log connected peer
-})
+node.connectionManager.addEventListener("peer:connect", (evt) => {
+  console.log("Connected to %s", evt.detail.remotePeer.toString()); // Log connected peer
+});
 ```
 
 <details><summary>Read More</summary>
@@ -245,17 +246,19 @@ DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:di
 
 ```javascript
 // all libp2p debug logs
-localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the libraries can read this when spinning up.
+localStorage.setItem("debug", "libp2p:*"); // then refresh the page to ensure the libraries can read this when spinning up.
 
 // networking debug logs
-localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer')
+localStorage.setItem(
+  "debug",
+  "libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer"
+);
 ```
 
 ## What is next
 
 There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples folder](../examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
-
 [transport]: https://github.com/libp2p/js-interfaces/tree/master/src/transport
 [crypto]: https://github.com/libp2p/js-interfaces/tree/master/src/crypto
-[streamMuxer]: https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer
+[streammuxer]: https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer
