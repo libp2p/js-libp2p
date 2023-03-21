@@ -238,13 +238,14 @@ DEBUG="libp2p:*" node myscript.js
 # networking debug logs
 DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer" node myscript.js
 ```
+
 ### Browser
 
 ```javascript
 // all libp2p debug logs
 localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the libraries can read this when spinning up.
 
-# networking debug logs
+// networking debug logs
 localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer')
 ```
 
