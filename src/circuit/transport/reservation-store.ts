@@ -23,6 +23,9 @@ const REFRESH_WINDOW = (60 * 1000) * 10
 // try to refresh relay reservations 5 minutes before expiry
 const REFRESH_TIMEOUT = (60 * 1000) * 5
 
+// maximum duration before which a reservation should be refereshed (2 hrs)
+const REFRESH_TIMEOUT_MAX = (60 * 1000) * 120
+
 export interface RelayStoreComponents {
   peerId: PeerId
   connectionManager: ConnectionManager
@@ -164,14 +167,16 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
 
         const expiration = getExpirationMilliseconds(reservation.expire)
 
+        // sets a lower bound as 0 for the timeout
+        const timeoutDuration = Math.max(expiration - REFRESH_TIMEOUT, 0)
+        // sets an upper bound on the timeout
+        const boundedTimeoutDuration = Math.min(timeoutDuration, REFRESH_TIMEOUT_MAX)
+
         const timeout = setTimeout(() => {
           this.addRelay(peerId, type).catch(err => {
             log.error('could not refresh reservation to relay %p', peerId, err)
           })
-        },
-        // TODO: If we get an expiration of 0, this will keep calling
-        // addRelay
-        Math.max(expiration - REFRESH_TIMEOUT, 0))
+        }, boundedTimeoutDuration)
 
         this.reservations.set(peerId, {
           timeout,
