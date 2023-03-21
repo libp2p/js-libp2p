@@ -118,7 +118,7 @@ export async function namespaceToCid (namespace: string): Promise<CID> {
 export function getExpirationMilliseconds (expireTimeSeconds: bigint): number {
   const expireTimeMillis = expireTimeSeconds * BigInt(1000)
   const currentTime = new Date().getTime()
-  // The difference between expireTime and currentTime is much more
-  // likely to fit in a Number type.
+
+  // downcast to number to use with setTimeout
   return Number(expireTimeMillis - BigInt(currentTime))
 }
