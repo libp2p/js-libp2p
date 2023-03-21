@@ -115,6 +115,7 @@ export async function namespaceToCid (namespace: string): Promise<CID> {
 /**
  * returns number of ms between now and expiration time
  */
-export function getExpiration (expireTime: bigint): number {
-  return Number(expireTime) - new Date().getTime()
+export function getExpirationSeconds (expireTime: bigint): number {
+  const currentTimeSeconds = ((new Date().getTime()) / 1000) | 0
+  return Number(expireTime) - currentTimeSeconds
 }
