@@ -167,8 +167,9 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
 
         const expiration = getExpirationMilliseconds(reservation.expire)
 
-        // sets a lower bound on the timeout
-        const timeoutDuration = Math.max(expiration - REFRESH_TIMEOUT, REFRESH_TIMEOUT_MIN)
+        // sets a lower bound on the timeout, and also don't let it go over
+        // 2^31 - 1 (setTimeout will only accept signed 32 bit integers)
+        const timeoutDuration = Math.min(Math.max(expiration - REFRESH_TIMEOUT, REFRESH_TIMEOUT_MIN), Math.pow(2, 31) - 1)
 
         const timeout = setTimeout(() => {
           this.addRelay(peerId, type).catch(err => {
@@ -215,7 +216,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     try {
       response = await hopstr.read()
     } catch (err: any) {
-      log.error('error parsing reserve message response from %s because', connection.remotePeer, err.message)
+      log.error('error parsing reserve message response from %p because', connection.remotePeer, err)
       throw err
     } finally {
       stream.close()

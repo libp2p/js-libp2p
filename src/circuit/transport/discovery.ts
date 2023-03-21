@@ -1,8 +1,8 @@
 import { logger } from '@libp2p/logger'
 import { namespaceToCid } from '../utils.js'
 import {
-  RELAY_RENDEZVOUS_NS
-  , RELAY_V2_HOP_CODEC
+  RELAY_RENDEZVOUS_NS,
+  RELAY_V2_HOP_CODEC
 } from '../constants.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
