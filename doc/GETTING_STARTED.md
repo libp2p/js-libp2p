@@ -13,6 +13,8 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
     - [Custom setup](#custom-setup)
       - [Peer Discovery](#peer-discovery)
   - [Debugging](#debugging)
+    - [Node](#node)
+    - [Browser](#browser)
   - [What is next](#what-is-next)
 
 ## Install
