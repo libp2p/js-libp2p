@@ -1,3 +1,19 @@
+## [7.1.2](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.1...v7.1.2) (2023-03-21)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#242](https://github.com/libp2p/js-libp2p-mplex/issues/242)) ([8d58a3b](https://github.com/libp2p/js-libp2p-mplex/commit/8d58a3b187aa174970251f6040fe82f9e5ff0c6d)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([54de88d](https://github.com/libp2p/js-libp2p-mplex/commit/54de88df5443b031c4d443ed23480229d3e89cbb))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([df03e8d](https://github.com/libp2p/js-libp2p-mplex/commit/df03e8df27fe52f4471b259ff65a14afc8d5d203))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([9c3f235](https://github.com/libp2p/js-libp2p-mplex/commit/9c3f235a7f2cb776b90387aaf53c57084e4de95f))
+
+
+### Dependencies
+
+* **dev:** bump typescript from 4.9.5 to 5.0.2 ([#256](https://github.com/libp2p/js-libp2p-mplex/issues/256)) ([a3590af](https://github.com/libp2p/js-libp2p-mplex/commit/a3590af093dee73c873aef1539bc8d81b0d61b08))
+* **dev:** Upgrade aegir to 38.1.7 ([#257](https://github.com/libp2p/js-libp2p-mplex/issues/257)) ([e0bf45a](https://github.com/libp2p/js-libp2p-mplex/commit/e0bf45af3ec85986d15ce3d05cb62637bc761a3e))
+
 ## [7.1.1](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.0...v7.1.1) (2022-12-16)
 
 
