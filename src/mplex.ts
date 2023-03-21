@@ -22,7 +22,7 @@ const MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION = 1024
 const MAX_STREAM_BUFFER_SIZE = 1024 * 1024 * 4 // 4MB
 const DISCONNECT_THRESHOLD = 5
 
-function printMessage (msg: Message) {
+function printMessage (msg: Message): any {
   const output: any = {
     ...msg,
     type: `${MessageTypeNames[msg.type]} (${msg.type})`
@@ -101,7 +101,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   /**
    * Returns a Map of streams and their ids
    */
-  get streams () {
+  get streams (): Stream[] {
     // Inbound and Outbound streams may have the same ids, so we need to make those unique
     const streams: Stream[] = []
     for (const stream of this._streams.initiators.values()) {
@@ -135,9 +135,9 @@ export class MplexStreamMuxer implements StreamMuxer {
     if (this.closeController.signal.aborted) return
 
     if (err != null) {
-      this.streams.forEach(s => s.abort(err))
+      this.streams.forEach(s => { s.abort(err) })
     } else {
-      this.streams.forEach(s => s.close())
+      this.streams.forEach(s => { s.close() })
     }
     this.closeController.abort()
   }
@@ -145,13 +145,13 @@ export class MplexStreamMuxer implements StreamMuxer {
   /**
    * Called whenever an inbound stream is created
    */
-  _newReceiverStream (options: { id: number, name: string }) {
+  _newReceiverStream (options: { id: number, name: string }): MplexStream {
     const { id, name } = options
     const registry = this._streams.receivers
     return this._newStream({ id, name, type: 'receiver', registry })
   }
 
-  _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, MplexStream> }) {
+  _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, MplexStream> }): MplexStream {
     const { id, name, type, registry } = options
 
     log('new %s stream %s', type, id)
@@ -164,7 +164,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       throw new Error(`${type} stream ${id} already exists!`)
     }
 
-    const send = (msg: Message) => {
+    const send = (msg: Message): void => {
       if (log.enabled) {
         log.trace('%s stream %s send', type, id, printMessage(msg))
       }
@@ -172,7 +172,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       this._source.push(msg)
     }
 
-    const onEnd = () => {
+    const onEnd = (): void => {
       log('%s stream with id %s and protocol %s ended', type, id, stream.stat.protocol)
       registry.delete(id)
 
@@ -190,7 +190,7 @@ export class MplexStreamMuxer implements StreamMuxer {
    * Creates a sink with an abortable source. Incoming messages will
    * also have their size restricted. All messages will be varint decoded.
    */
-  _createSink () {
+  _createSink (): Sink<Uint8Array> {
     const sink: Sink<Uint8Array> = async source => {
       // see: https://github.com/jacobheun/any-signal/pull/18
       const abortSignals = [this.closeController.signal]
@@ -222,8 +222,8 @@ export class MplexStreamMuxer implements StreamMuxer {
    * Creates a source that restricts outgoing message sizes
    * and varint encodes them
    */
-  _createSource () {
-    const onEnd = (err?: Error) => {
+  _createSource (): any {
+    const onEnd = (err?: Error): void => {
       this.close(err)
     }
     const source = pushableV<Message>({
@@ -238,7 +238,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     })
   }
 
-  async _handleIncoming (message: Message) {
+  async _handleIncoming (message: Message): Promise<void> {
     const { id, type } = message
 
     if (log.enabled) {

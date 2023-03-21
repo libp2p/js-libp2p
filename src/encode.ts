@@ -56,7 +56,7 @@ const encoder = new Encoder()
 /**
  * Encode and yield one or more messages
  */
-export async function * encode (source: Source<Message[]>, minSendBytes: number = 0) {
+export async function * encode (source: Source<Message[]>, minSendBytes: number = 0): AsyncGenerator<Uint8Array, void, undefined> {
   if (minSendBytes == null || minSendBytes === 0) {
     // just send the messages
     for await (const messages of source) {

@@ -25,7 +25,7 @@ export class Decoder {
     this._maxUnprocessedMessageQueueSize = maxUnprocessedMessageQueueSize
   }
 
-  write (chunk: Uint8Array) {
+  write (chunk: Uint8Array): Message[] {
     if (chunk == null || chunk.length === 0) {
       return []
     }
@@ -109,7 +109,12 @@ export class Decoder {
 const MSB = 0x80
 const REST = 0x7F
 
-function readVarInt (buf: Uint8ArrayList, offset: number = 0) {
+export interface ReadVarIntResult {
+  value: number
+  offset: number
+}
+
+function readVarInt (buf: Uint8ArrayList, offset: number = 0): ReadVarIntResult {
   let res = 0
   let shift = 0
   let counter = offset

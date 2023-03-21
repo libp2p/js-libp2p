@@ -165,9 +165,10 @@
   "devDependencies": {
     "@libp2p/interface-stream-muxer-compliance-tests": "^6.0.0",
     "@types/varint": "^6.0.0",
-    "aegir": "^37.2.0",
+    "aegir": "^38.1.7",
     "cborg": "^1.8.1",
     "delay": "^5.0.0",
+    "eslint-plugin-etc": "^2.0.2",
     "iso-random-stream": "^2.0.2",
     "it-all": "^2.0.0",
     "it-drain": "^2.0.0",
@@ -176,8 +177,7 @@
     "it-pipe": "^2.0.3",
     "it-to-buffer": "^3.0.0",
     "p-defer": "^4.0.0",
-    "random-int": "^3.0.0",
-    "typescript": "^5.0.2"
+    "random-int": "^3.0.0"
   },
   "browser": {
     "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js"

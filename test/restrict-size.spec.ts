@@ -33,7 +33,7 @@ describe('restrict size', () => {
         (source) => each(source, chunk => {
           output.push(chunk)
         }),
-        async (source) => await drain(source)
+        async (source) => { await drain(source) }
       )
     } catch (err: any) {
       expect(err).to.have.property('code', 'ERR_MSG_TOO_BIG')
@@ -90,7 +90,7 @@ describe('restrict size', () => {
         (source) => each(source, chunk => {
           output.push(chunk)
         }),
-        async (source) => await drain(source)
+        async (source) => { await drain(source) }
       )
     } catch (err: any) {
       expect(err).to.have.property('code', 'ERR_MSG_QUEUE_TOO_BIG')
@@ -113,7 +113,7 @@ describe('restrict size', () => {
         (source) => each(source, chunk => {
           output.push(chunk)
         }),
-        async (source) => await drain(source)
+        async (source) => { await drain(source) }
       )
     } catch (err: any) {
       expect(err).to.have.property('code', 'ERR_MSG_QUEUE_TOO_BIG')

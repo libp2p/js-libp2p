@@ -47,7 +47,7 @@ export function createStream (options: Options): MplexStream {
     open: Date.now()
   }
 
-  const onSourceEnd = (err?: Error) => {
+  const onSourceEnd = (err?: Error): void => {
     if (sourceEnded) {
       return
     }
@@ -68,7 +68,7 @@ export function createStream (options: Options): MplexStream {
     }
   }
 
-  const onSinkEnd = (err?: Error) => {
+  const onSinkEnd = (err?: Error): void => {
     if (sinkEnded) {
       return
     }
