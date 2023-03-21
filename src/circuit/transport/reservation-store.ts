@@ -8,7 +8,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Reservation } from '../pb/index.js'
 import { HopMessage, Status } from '../pb/index.js'
-import { getExpirationSeconds } from '../utils.js'
+import { getExpirationMilliseconds } from '../utils.js'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/dist/src/startable.js'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
@@ -131,7 +131,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
         const existingReservation = this.reservations.get(peerId)
 
         if (existingReservation != null) {
-          if (getExpirationSeconds(existingReservation.reservation.expire) > REFRESH_WINDOW) {
+          if (getExpirationMilliseconds(existingReservation.reservation.expire) > REFRESH_WINDOW) {
             log('already have reservation on relay peer %p and it expires in more than 10 minutes', peerId)
             return
           }
@@ -162,7 +162,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
 
         log('created reservation on relay peer %p', peerId)
 
-        const expiration = getExpirationSeconds(reservation.expire)
+        const expiration = getExpirationMilliseconds(reservation.expire)
 
         const timeout = setTimeout(() => {
           this.addRelay(peerId, type).catch(err => {
@@ -171,7 +171,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
         },
         // TODO: If we get an expiration of 0, this will keep calling
         // addRelay
-        Math.max(expiration * 1000 - REFRESH_TIMEOUT, 0))
+        Math.max(expiration - REFRESH_TIMEOUT, 0))
 
         this.reservations.set(peerId, {
           timeout,
