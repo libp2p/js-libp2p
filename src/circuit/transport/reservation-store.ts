@@ -24,7 +24,9 @@ const REFRESH_WINDOW = (60 * 1000) * 10
 const REFRESH_TIMEOUT = (60 * 1000) * 5
 
 // maximum duration before which a reservation should be refereshed (2 hrs)
-const REFRESH_TIMEOUT_MAX = (60 * 1000) * 120
+const REFRESH_TIMEOUT_MAX = (60 * 1000) * 15
+// minimum duration before which a reservation must not be refreshed
+const REFRESH_TIMEOUT_MIN = 30 * 1000
 
 export interface RelayStoreComponents {
   peerId: PeerId
@@ -168,7 +170,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
         const expiration = getExpirationMilliseconds(reservation.expire)
 
         // sets a lower bound as 0 for the timeout
-        const timeoutDuration = Math.max(expiration - REFRESH_TIMEOUT, 0)
+        const timeoutDuration = Math.max(expiration - REFRESH_TIMEOUT, REFRESH_TIMEOUT_MIN)
         // sets an upper bound on the timeout
         const boundedTimeoutDuration = Math.min(timeoutDuration, REFRESH_TIMEOUT_MAX)
 
