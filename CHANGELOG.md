@@ -10,6 +10,13 @@
 
 
 
+### [0.43.1](https://www.github.com/libp2p/js-libp2p/compare/v0.43.0...v0.43.1) (2023-03-21)
+
+
+### Bug Fixes
+
+* interpret circuit relay expiry as seconds ([#1636](https://www.github.com/libp2p/js-libp2p/issues/1636)) ([5de0f07](https://www.github.com/libp2p/js-libp2p/commit/5de0f07000f102f6e02fe6c93630581fa03a2fa7))
+
 ## [0.43.0](https://www.github.com/libp2p/js-libp2p/compare/v0.42.2...v0.43.0) (2023-03-17)
 
 
