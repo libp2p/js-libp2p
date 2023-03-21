@@ -10,6 +10,14 @@
 
 
 
+### [0.43.2](https://www.github.com/libp2p/js-libp2p/compare/v0.43.1...v0.43.2) (2023-03-21)
+
+
+### Bug Fixes
+
+* Connections to Allow list peers will not be pruned ([#1564](https://www.github.com/libp2p/js-libp2p/issues/1564)) ([f9e5450](https://www.github.com/libp2p/js-libp2p/commit/f9e5450ab1721481360805d72da85bd13906a171)), closes [#1515](https://www.github.com/libp2p/js-libp2p/issues/1515)
+* return relay reservations in seconds ([#1641](https://www.github.com/libp2p/js-libp2p/issues/1641)) ([78cb192](https://www.github.com/libp2p/js-libp2p/commit/78cb1925c5fb74c313247f50ace707064dcf9737))
+
 ### [0.43.1](https://www.github.com/libp2p/js-libp2p/compare/v0.43.0...v0.43.1) (2023-03-21)
 
 
