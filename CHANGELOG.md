@@ -1,3 +1,18 @@
+## [1.0.8](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.7...v1.0.8) (2023-03-22)
+
+
+### Trivial Changes
+
+* constrain go version examples run with ([#57](https://github.com/libp2p/js-libp2p-webtransport/issues/57)) ([aa177a8](https://github.com/libp2p/js-libp2p-webtransport/commit/aa177a8afcdb4fcccbd22cd97e8676fa00a44187))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([9435f0d](https://github.com/libp2p/js-libp2p-webtransport/commit/9435f0d1f9a93169e26789c6a3cb0706f06149cd))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([63f0c33](https://github.com/libp2p/js-libp2p-webtransport/commit/63f0c33bc2b876c11ec756e132bb679f32f46245))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([5e3a711](https://github.com/libp2p/js-libp2p-webtransport/commit/5e3a71197f1c8e89a9a5c05bdeee544bc3e460f1))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#54](https://github.com/libp2p/js-libp2p-webtransport/issues/54)) ([23bbd82](https://github.com/libp2p/js-libp2p-webtransport/commit/23bbd82bf2c3caa25d5964c98f7362736134862d))
+
 ## [1.0.7](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.6...v1.0.7) (2023-01-12)
 
 
