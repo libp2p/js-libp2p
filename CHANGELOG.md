@@ -1,3 +1,15 @@
+## [1.0.9](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.8...v1.0.9) (2023-03-22)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 12.x.x ([#58](https://github.com/libp2p/js-libp2p-webtransport/issues/58)) ([1b3d005](https://github.com/libp2p/js-libp2p-webtransport/commit/1b3d005e4d82a2fec3e9ab32bb813cae9e073af2))
+
+
+### Documentation
+
+* **example:** add helper instructions for running example ([#56](https://github.com/libp2p/js-libp2p-webtransport/issues/56)) ([0f0d54b](https://github.com/libp2p/js-libp2p-webtransport/commit/0f0d54b56a60ea80a91f96b05b74f2d42f443a15))
+
 ## [1.0.8](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.7...v1.0.8) (2023-03-22)
 
 
