@@ -16,6 +16,7 @@ import delay from 'delay'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import { pbStream } from 'it-pb-stream'
 import { HopMessage, Status } from '../../src/circuit/pb/index.js'
+import { Circuit } from '@multiformats/mafmt'
 
 describe('circuit-relay', () => {
   describe('flows with 1 listener', () => {
@@ -224,6 +225,63 @@ describe('circuit-relay', () => {
       expect(relay1.getConnections()).to.be.empty()
 
       // Wait for failed dial
+      await deferred.promise
+    })
+
+    it('should announce new addresses when using a peer as a relay', async () => {
+      // should not have have a circuit address to start with
+      expect(local.getMultiaddrs().find(ma => Circuit.matches(ma))).to.be.undefined()
+
+      // set up listener for address change
+      const deferred = defer()
+
+      local.peerStore.addEventListener('change:multiaddrs', ({ detail }) => {
+        const isLocalPeerId = local.peerId.equals(detail.peerId)
+        const hasCircuitRelayAddress = detail.multiaddrs.find(ma => Circuit.matches(ma)) != null
+
+        if (isLocalPeerId && hasCircuitRelayAddress) {
+          deferred.resolve()
+        }
+      })
+
+      // discover relay
+      await local.dial(relay1.getMultiaddrs()[0])
+      await discoveredRelayConfig(local, relay1)
+
+      // wait for peer added as listen relay
+      await usingAsRelay(local, relay1)
+
+      // should have emitted a change:multiaddrs event with a circuit address
+      await deferred.promise
+    })
+
+    it('should announce new addresses when using no longer using peer as a relay', async () => {
+      // should not have have a circuit address to start with
+      expect(local.getMultiaddrs().find(ma => Circuit.matches(ma))).to.be.undefined()
+
+      // discover relay
+      await local.dial(relay1.getMultiaddrs()[0])
+      await discoveredRelayConfig(local, relay1)
+
+      // wait for peer added as listen relay
+      await usingAsRelay(local, relay1)
+
+      // set up listener for address change
+      const deferred = defer()
+
+      local.peerStore.addEventListener('change:multiaddrs', ({ detail }) => {
+        const isLocalPeerId = local.peerId.equals(detail.peerId)
+        const hasNoCircuitRelayAddress = detail.multiaddrs.find(ma => Circuit.matches(ma)) == null
+
+        if (isLocalPeerId && hasNoCircuitRelayAddress) {
+          deferred.resolve()
+        }
+      })
+
+      // shut down the relay
+      await relay1.stop()
+
+      // should no longer have a circuit address
       await deferred.promise
     })
   })
