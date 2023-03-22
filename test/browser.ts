@@ -60,7 +60,7 @@ describe('libp2p-webtransport', () => {
         res = Date.now() - now
       })())
 
-      await stream.close()
+      stream.close()
 
       expect(res).to.be.greaterThan(-1)
     }
@@ -99,7 +99,7 @@ describe('libp2p-webtransport', () => {
       connectionEncryption: [noise()]
     })
 
-    async function * gen () {
+    async function * gen (): AsyncGenerator<Uint8Array, void, unknown> {
       yield new Uint8Array([0])
       yield new Uint8Array([1, 2, 3, 4])
       yield new Uint8Array([5, 6, 7])

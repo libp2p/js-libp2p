@@ -50,7 +50,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
   const reader = bidiStream.readable.getReader()
   await writer.ready
 
-  function cleanupStreamFromActiveStreams () {
+  function cleanupStreamFromActiveStreams (): void {
     const index = activeStreams.findIndex(s => s === stream)
     if (index !== -1) {
       activeStreams.splice(index, 1)
@@ -138,7 +138,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
       stream.close()
     },
     stat: {
-      direction: direction,
+      direction,
       timeline: { open: Date.now() }
     },
     metadata: {},
@@ -276,7 +276,7 @@ class WebTransport implements Transport {
     }
   }
 
-  get [Symbol.toStringTag] () {
+  get [Symbol.toStringTag] (): '@libp2p/webtransport' {
     return '@libp2p/webtransport'
   }
 
@@ -476,7 +476,7 @@ class WebTransport implements Transport {
   /**
    * Takes a list of `Multiaddr`s and returns only valid webtransport addresses.
    */
-  filter (multiaddrs: Multiaddr[]) {
+  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(ma => ma.protoNames().includes('webtransport'))
   }
 }

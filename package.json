@@ -167,7 +167,7 @@
     "uint8arraylist": "^2.3.3"
   },
   "devDependencies": {
-    "aegir": "^37.5.6",
+    "aegir": "^38.1.7",
     "libp2p": "^0.42.0"
   },
   "browser": {
