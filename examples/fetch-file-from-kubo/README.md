@@ -53,6 +53,8 @@ Make sure you have installed all of the following prerequisites on your developm
 
 ### Installation and Running example
 
+**Pre-requisite**: Because this example is in a subfolder of @libp2p/webtransport, if you are running the example inside https://github.com/libp2p/js-libp2p-webtransport, you must build at the root first. If you are running the code outside of https://github.com/libp2p/js-libp2p-webtransport, you must run `npm install --save @libp2p/webtransport` first.
+
 ```console
 > npm install
 > npm start
