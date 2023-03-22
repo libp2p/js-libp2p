@@ -61,7 +61,7 @@ There are multiple libp2p transports available, you should evaluate the needs of
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://docs.libp2p.io/concepts/transport
+- https://docs.libp2p.io/concepts/transports
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
