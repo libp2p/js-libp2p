@@ -1,3 +1,10 @@
+## [2.0.7](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.6...v2.0.7) (2023-03-24)
+
+
+### Bug Fixes
+
+* disable trace logging by default ([#32](https://github.com/libp2p/js-libp2p-logger/issues/32)) ([47915fe](https://github.com/libp2p/js-libp2p-logger/commit/47915fe85dc8b50713c4344d15cb9082d8147b8f))
+
 ## [2.0.6](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.5...v2.0.6) (2023-03-13)
 
 
