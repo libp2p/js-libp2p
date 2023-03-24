@@ -43,10 +43,31 @@ export interface Logger {
   enabled: boolean
 }
 
+function createDisabledLogger (namespace: string): debug.Debugger {
+  const logger = (): void => {}
+  logger.enabled = false
+  logger.color = ''
+  logger.diff = 0
+  logger.log = (): void => {}
+  logger.namespace = namespace
+  logger.destroy = () => true
+  logger.extend = () => logger
+
+  return logger
+}
+
 export function logger (name: string): Logger {
+  // trace logging is a no-op by default
+  let trace: debug.Debugger = createDisabledLogger(`${name}:trace`)
+
+  // look at all the debug names and see if trace logging has explicitly been enabled
+  if (debug.enabled(`${name}:trace`) && debug.names.map(r => r.toString()).find(n => n.includes(':trace')) != null) {
+    trace = debug(`${name}:trace`)
+  }
+
   return Object.assign(debug(name), {
     error: debug(`${name}:error`),
-    trace: debug(`${name}:trace`)
+    trace
   })
 }
 
