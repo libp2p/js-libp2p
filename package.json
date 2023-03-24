@@ -194,7 +194,7 @@
     "@types/lodash.random": "^3.2.6",
     "@types/lodash.range": "^3.2.6",
     "@types/varint": "^6.0.0",
-    "@types/which": "^2.0.1",
+    "@types/which": "^3.0.0",
     "aegir": "^38.1.2",
     "datastore-level": "^10.0.0",
     "delay": "^5.0.0",
