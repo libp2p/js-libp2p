@@ -1,3 +1,10 @@
+## [8.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.1...v8.0.2) (2023-03-24)
+
+
+### Dependencies
+
+* **dev:** bump @types/which from 2.0.2 to 3.0.0 ([#435](https://github.com/libp2p/js-libp2p-kad-dht/issues/435)) ([f8ad02a](https://github.com/libp2p/js-libp2p-kad-dht/commit/f8ad02a26d80a66f684817e2587e5f705e83de2b))
+
 ## [8.0.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.0...v8.0.1) (2023-03-17)
 
 
