@@ -11,12 +11,11 @@ import type { Duplex, Source } from 'it-stream-types'
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface-stream-muxer'
 import { Uint8ArrayList } from 'uint8arraylist'
 
-const log = logger('libp2p:webtransport')
 declare global {
-  interface Window {
-    WebTransport: any
-  }
+  var WebTransport: any
 }
+
+const log = logger('libp2p:webtransport')
 
 // @ts-expect-error - Not easy to combine these types.
 const multibaseDecoder = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
@@ -265,7 +264,7 @@ export interface WebTransportComponents {
   peerId: PeerId
 }
 
-class WebTransport implements Transport {
+class WebTransportTransport implements Transport {
   private readonly components: WebTransportComponents
   private readonly config: Required<WebTransportInit>
 
@@ -299,7 +298,7 @@ class WebTransport implements Transport {
       throw new Error('Expected multiaddr to contain certhashes')
     }
 
-    const wt = new window.WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
+    const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
       serverCertificateHashes: certhashes.map(certhash => ({
         algorithm: 'sha-256',
         value: certhash.digest
@@ -349,7 +348,7 @@ class WebTransport implements Transport {
     return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
   }
 
-  async authenticateWebTransport (wt: typeof window.WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
+  async authenticateWebTransport (wt: InstanceType<typeof WebTransport>, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
     const stream = await wt.createBidirectionalStream()
     const writer = stream.writable.getWriter()
     const reader = stream.readable.getReader()
@@ -359,7 +358,14 @@ class WebTransport implements Transport {
       source: (async function * () {
         while (true) {
           const val = await reader.read()
-          yield val.value
+
+          if (val.value != null) {
+            yield val.value
+          }
+
+          if (val.done === true) {
+            break
+          }
         }
       })(),
       sink: async function (source: Source<Uint8Array>) {
@@ -390,7 +396,7 @@ class WebTransport implements Transport {
     return true
   }
 
-  webtransportMuxer (wt: typeof window.WebTransport): StreamMuxerFactory {
+  webtransportMuxer (wt: InstanceType<typeof WebTransport>): StreamMuxerFactory {
     let streamIDCounter = 0
     const config = this.config
     return {
@@ -411,9 +417,11 @@ class WebTransport implements Transport {
           const reader = wt.incomingBidirectionalStreams.getReader()
           while (true) {
             const { done, value: wtStream } = await reader.read()
+
             if (done === true) {
               break
             }
+
             if (activeStreams.length >= config.maxInboundStreams) {
               // We've reached our limit, close this stream.
               wtStream.writable.close().catch((err: Error) => {
@@ -482,5 +490,5 @@ class WebTransport implements Transport {
 }
 
 export function webTransport (init: WebTransportInit = {}): (components: WebTransportComponents) => Transport {
-  return (components: WebTransportComponents) => new WebTransport(components, init)
+  return (components: WebTransportComponents) => new WebTransportTransport(components, init)
 }

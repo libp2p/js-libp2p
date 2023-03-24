@@ -148,8 +148,9 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "test": "aegir test -t browser",
+    "test": "aegir test -t browser -t webworker",
     "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
     "release": "aegir release",
     "docs": "aegir docs"
   },
