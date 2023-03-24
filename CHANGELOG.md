@@ -1,3 +1,17 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-peer-collections/compare/v3.0.0...v3.0.1) (2023-03-24)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([aece586](https://github.com/libp2p/js-libp2p-peer-collections/commit/aece5866e1acd0e2ec189ecb189b04a864b2627b))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([7cea5fc](https://github.com/libp2p/js-libp2p-peer-collections/commit/7cea5fc5b11f7f2326d5268119e7f02b18745352))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([67007a2](https://github.com/libp2p/js-libp2p-peer-collections/commit/67007a29585ce2d7a6396edbed85d8428cd10413))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.8 ([#28](https://github.com/libp2p/js-libp2p-peer-collections/issues/28)) ([17b6e75](https://github.com/libp2p/js-libp2p-peer-collections/commit/17b6e75131932f47d592d61dc517bc0439bfa318))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-peer-collections/compare/v2.2.2...v3.0.0) (2023-01-06)
 
 
