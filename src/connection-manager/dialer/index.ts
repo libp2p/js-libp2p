@@ -303,7 +303,7 @@ export class DefaultDialer implements Startable, Dialer {
    * Loads a list of addresses from the peer store for the passed peer id
    */
   async _loadAddresses (peer: PeerId): Promise<Multiaddr[]> {
-    let addresses = await this.components.peerStore.addressBook.get(peer)
+    const addresses = await this.components.peerStore.addressBook.get(peer)
 
     return (await Promise.all(
       addresses.map(async address => {
