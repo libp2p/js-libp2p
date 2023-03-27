@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from '../errors.js'
 import * as lp from 'it-length-prefixed'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
@@ -67,7 +67,7 @@ export class FetchService implements Startable {
     this.init = init
   }
 
-  async start () {
+  async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
         .catch(err => {
@@ -83,12 +83,12 @@ export class FetchService implements Startable {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     await this.components.registrar.unhandle(this.protocol)
     this.started = false
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
@@ -134,7 +134,7 @@ export class FetchService implements Startable {
           const buf = await first(source)
 
           if (buf == null) {
-            throw errCode(new Error('No data received'), codes.ERR_INVALID_MESSAGE)
+            throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
           }
 
           const response = FetchResponse.decode(buf)
@@ -151,11 +151,11 @@ export class FetchService implements Startable {
             case (FetchResponse.StatusCode.ERROR): {
               log('received status for %s error', key)
               const errmsg = uint8arrayToString(response.data)
-              throw errCode(new Error('Error in fetch protocol response: ' + errmsg), codes.ERR_INVALID_PARAMETERS)
+              throw new CodeError('Error in fetch protocol response: ' + errmsg, codes.ERR_INVALID_PARAMETERS)
             }
             default: {
               log('received status for %s unknown', key)
-              throw errCode(new Error('Unknown response status'), codes.ERR_INVALID_MESSAGE)
+              throw new CodeError('Unknown response status', codes.ERR_INVALID_MESSAGE)
             }
           }
         }
@@ -178,7 +178,7 @@ export class FetchService implements Startable {
    * responds based on looking up the key in the request via the lookup callback that corresponds
    * to the key's prefix.
    */
-  async handleMessage (data: IncomingStreamData) {
+  async handleMessage (data: IncomingStreamData): Promise<void> {
     const { stream } = data
     const self = this
 
@@ -189,7 +189,7 @@ export class FetchService implements Startable {
         const buf = await first(source)
 
         if (buf == null) {
-          throw errCode(new Error('No data received'), codes.ERR_INVALID_MESSAGE)
+          throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
         }
 
         // for await (const buf of source) {
@@ -224,7 +224,7 @@ export class FetchService implements Startable {
    * Given a key, finds the appropriate function for looking up its corresponding value, based on
    * the key's prefix.
    */
-  _getLookupFunction (key: string) {
+  _getLookupFunction (key: string): LookupFunction | undefined {
     for (const prefix of this.lookupFunctions.keys()) {
       if (key.startsWith(prefix)) {
         return this.lookupFunctions.get(prefix)
@@ -243,9 +243,9 @@ export class FetchService implements Startable {
    * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
    * ```
    */
-  registerLookupFunction (prefix: string, lookup: LookupFunction) {
+  registerLookupFunction (prefix: string, lookup: LookupFunction): void {
     if (this.lookupFunctions.has(prefix)) {
-      throw errCode(new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered"), codes.ERR_KEY_ALREADY_EXISTS)
+      throw new CodeError(`Fetch protocol handler for key prefix '${prefix}' already registered`, codes.ERR_KEY_ALREADY_EXISTS)
     }
 
     this.lookupFunctions.set(prefix, lookup)
@@ -262,7 +262,7 @@ export class FetchService implements Startable {
    * libp2p.fetchService.unregisterLookupFunction('/prefix')
    * ```
    */
-  unregisterLookupFunction (prefix: string, lookup?: LookupFunction) {
+  unregisterLookupFunction (prefix: string, lookup?: LookupFunction): void {
     if (lookup != null) {
       const existingLookup = this.lookupFunctions.get(prefix)
 

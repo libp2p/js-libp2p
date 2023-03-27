@@ -5,140 +5,101 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Limit } from './pb/index.js'
 import { logger } from '@libp2p/logger'
 import type { Stream } from '@libp2p/interface-connection'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
+import { abortableSource } from 'abortable-iterator'
+import anySignal from 'any-signal'
 
-const log = logger('libp2p:circuit:v2:util')
+const log = logger('libp2p:circuit-relay:utils')
 
-const doRelay = (src: Stream, dst: Stream) => {
+async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
+  for await (const buf of source) {
+    const len = BigInt(buf.byteLength)
+
+    if ((limit.remaining - len) < 0) {
+      // this is a safe downcast since len is guarantee to be in the range for a number
+      const remaining = Number(limit.remaining)
+      limit.remaining = 0n
+
+      try {
+        if (remaining !== 0) {
+          yield buf.subarray(0, remaining)
+        }
+      } catch (err: any) {
+        log.error(err)
+      }
+
+      throw new Error('data limit exceeded')
+    }
+
+    limit.remaining -= len
+    yield buf
+  }
+}
+
+const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Required<Limit>): void => {
+  function abortStreams (err: Error): void {
+    src.abort(err)
+    dst.abort(err)
+    clearTimeout(timeout)
+  }
+
+  const abortController = new AbortController()
+  const signal = anySignal([abortSignal, abortController.signal])
+
+  const timeout = setTimeout(() => {
+    abortController.abort()
+  }, limit.duration)
+
+  let srcDstFinished = false
+  let dstSrcFinished = false
+
+  const dataLimit = {
+    remaining: limit.data
+  }
+
   queueMicrotask(() => {
-    void dst.sink(src.source).catch(err => log.error('error while relating streams:', err))
+    void dst.sink(countStreamBytes(abortableSource(src.source, signal, {
+      abortMessage: 'duration limit exceeded'
+    }), dataLimit))
+      .catch(err => {
+        log.error('error while relaying streams src -> dst', err)
+        abortStreams(err)
+      })
+      .finally(() => {
+        srcDstFinished = true
+
+        if (dstSrcFinished) {
+          clearTimeout(timeout)
+        }
+      })
   })
 
   queueMicrotask(() => {
-    void src.sink(dst.source).catch(err => log.error('error while relaying streams:', err))
+    void src.sink(countStreamBytes(abortableSource(dst.source, signal, {
+      abortMessage: 'duration limit exceeded'
+    }), dataLimit))
+      .catch(err => {
+        log.error('error while relaying streams dst -> src', err)
+        abortStreams(err)
+      })
+      .finally(() => {
+        dstSrcFinished = true
+
+        if (srcDstFinished) {
+          clearTimeout(timeout)
+        }
+      })
   })
 }
 
-export function createLimitedRelay (source: Stream, destination: Stream, limit?: Limit) {
-  // trivial case
-  if (limit == null) {
-    doRelay(source, destination)
-    return
-  }
+export function createLimitedRelay (source: Stream, destination: Stream, abortSignal: AbortSignal, limit?: Limit): void {
+  const dataLimit = limit?.data ?? BigInt(DEFAULT_DATA_LIMIT)
+  const durationLimit = limit?.duration ?? DEFAULT_DURATION_LIMIT
 
-  const dataLimit = limit.data ?? 0n
-  const durationLimit = limit.duration ?? 0
-  const src = durationLimitDuplex(dataLimitDuplex(source, dataLimit), durationLimit)
-  const dst = durationLimitDuplex(dataLimitDuplex(destination, dataLimit), durationLimit)
-
-  doRelay(src, dst)
-}
-
-const dataLimitSource = (stream: Stream, limit: bigint): Stream => {
-  if (limit === 0n) {
-    return stream
-  }
-
-  const source = stream.source
-
-  stream.source = (async function * (): Source<Uint8ArrayList> {
-    let total = 0n
-
-    for await (const buf of source) {
-      const len = BigInt(buf.byteLength)
-      if (total + len > limit) {
-        // this is a safe downcast since len is guarantee to be in the range for a number
-        const remaining = Number(limit - total)
-        try {
-          if (remaining !== 0) {
-            yield buf
-          }
-        } finally {
-          stream.abort(new Error('data limit exceeded'))
-        }
-        return
-      }
-
-      yield buf
-
-      total += len
-    }
-  })()
-
-  return stream
-}
-
-const dataLimitSink = (stream: Stream, limit: bigint): Stream => {
-  if (limit === 0n) {
-    return stream
-  }
-
-  const sink = stream.sink
-
-  stream.sink = async (source: Source<Uint8ArrayList | Uint8Array>) => {
-    await sink((async function * (): Source<Uint8ArrayList | Uint8Array> {
-      let total = 0n
-
-      for await (const buf of source) {
-        const len = BigInt(buf.byteLength)
-        if (total + len > limit) {
-          // this is a safe downcast since len is guarantee to be in the range for a number
-          const remaining = Number(limit - total)
-          try {
-            if (remaining !== 0) {
-              yield buf.subarray(0, remaining)
-            }
-          } finally {
-            stream.abort(new Error('data limit exceeded'))
-          }
-          return
-        }
-
-        total += len
-        yield buf
-      }
-    })())
-  }
-
-  return stream
-}
-
-const dataLimitDuplex = (stream: Stream, limit: bigint): Stream => {
-  dataLimitSource(stream, limit)
-  dataLimitSink(stream, limit)
-
-  return stream
-}
-
-const durationLimitDuplex = (stream: Stream, limit: number): Stream => {
-  if (limit === 0) {
-    return stream
-  }
-
-  let timedOut = false
-  const timeout = setTimeout(
-    () => {
-      timedOut = true
-      stream.abort(new Error('exceeded connection duration limit'))
-    },
-    limit
-  )
-
-  const source = stream.source
-
-  stream.source = (async function * (): Source<Uint8ArrayList> {
-    try {
-      for await (const buf of source) {
-        if (timedOut) {
-          return
-        }
-        yield buf
-      }
-    } finally {
-      clearTimeout(timeout)
-    }
-  })()
-
-  return stream
+  doRelay(source, destination, abortSignal, {
+    data: dataLimit,
+    duration: durationLimit
+  })
 }
 
 /**
@@ -151,7 +112,13 @@ export async function namespaceToCid (namespace: string): Promise<CID> {
   return CID.createV0(hash)
 }
 
-/** returns number of ms beween now and expiration time */
-export function getExpiration (expireTime: bigint): number {
-  return Number(expireTime) - new Date().getTime()
+/**
+ * returns number of ms between now and expiration time
+ */
+export function getExpirationMilliseconds (expireTimeSeconds: bigint): number {
+  const expireTimeMillis = expireTimeSeconds * BigInt(1000)
+  const currentTime = new Date().getTime()
+
+  // downcast to number to use with setTimeout
+  return Number(expireTimeMillis - BigInt(currentTime))
 }

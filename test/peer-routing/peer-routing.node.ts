@@ -36,7 +36,7 @@ describe('peer-routing', () => {
       })
     })
 
-    after(async () => await node.stop())
+    after(async () => { await node.stop() })
 
     it('.findPeer should return an error', async () => {
       await expect(node.peerRouting.findPeer(peerId))
@@ -78,7 +78,7 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    after(async () => await Promise.all(nodes.map(async (n) => await n.stop())))
+    after(async () => await Promise.all(nodes.map(async (n) => { await n.stop() })))
 
     it('should use the nodes dht', async () => {
       if (nodes[0].dht == null) {
@@ -253,7 +253,7 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    afterEach(async () => await node.stop())
+    afterEach(async () => { await node.stop() })
 
     it('should only have one router', () => {
       // @ts-expect-error private field
@@ -334,7 +334,7 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    afterEach(async () => await node.stop())
+    afterEach(async () => { await node.stop() })
 
     it('should use the delegate if the dht fails to find the peer', async () => {
       const remotePeerId = await createPeerId()

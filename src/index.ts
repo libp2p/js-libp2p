@@ -22,9 +22,9 @@ import type { DualDHT } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
 import type { PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { RelayConfig } from './circuit/index.js'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
-import type { ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
+import type { ConnectionProtector } from '@libp2p/interface-connection'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { Transport } from '@libp2p/interface-transport'
 import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
@@ -35,6 +35,7 @@ import type { Metrics } from '@libp2p/interface-metrics'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PingServiceInit } from './ping/index.js'
 import type { FetchServiceInit } from './fetch/index.js'
+import type { AutonatServiceInit } from './autonat/index.js'
 import type { Components } from './components.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { KeyChainInit } from '@libp2p/keychain'
@@ -42,6 +43,7 @@ import type { NatManagerInit } from './nat-manager.js'
 import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { CircuitRelayService } from './circuit/index.js'
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
@@ -65,7 +67,7 @@ export interface Libp2pInit {
   /**
    * A connection gater can deny new connections based on user criteria
    */
-  connectionGater: Partial<ConnectionGater>
+  connectionGater: ConnectionGater
 
   /**
    * libp2p transport manager configuration
@@ -103,22 +105,27 @@ export interface Libp2pInit {
    * If configured as a relay this node will relay certain
    * types of traffic for other peers
    */
-  relay: RelayConfig
+  relay: (components: Components) => CircuitRelayService
 
   /**
-   * libp2p identify protocol options
+   * identify protocol options
    */
   identify: IdentifyServiceInit
 
   /**
-   * libp2p ping protocol options
+   * ping protocol options
    */
   ping: PingServiceInit
 
   /**
-   * libp2p fetch protocol options
+   * fetch protocol options
    */
   fetch: FetchServiceInit
+
+  /**
+   * autonat protocol options
+   */
+  autonat: AutonatServiceInit
 
   /**
    * An array that must include at least 1 compliant transport

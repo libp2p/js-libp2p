@@ -30,7 +30,7 @@ import bootstrapers from './bootstrappers.js'
 
   node.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
-    // No need to dial, autoDial is on
+
     console.log('Discovered:', peer.id.toString())
   })
 })();

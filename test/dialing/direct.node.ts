@@ -94,7 +94,7 @@ describe('Dialing (direct, TCP)', () => {
     remoteAddr = remoteTM.getAddrs()[0].encapsulate(`/p2p/${remotePeerId.toString()}`)
   })
 
-  afterEach(async () => await remoteTM.stop())
+  afterEach(async () => { await remoteTM.stop() })
 
   afterEach(() => {
     sinon.restore()
@@ -229,6 +229,41 @@ describe('Dialing (direct, TCP)', () => {
     // Only two dials should be executed, as the first dial will succeed
     expect(localTM.dial).to.have.property('callCount', 2)
     expect(dialer.tokens).to.have.lengthOf(2)
+  })
+
+  it('should append the remote peerId to multiaddrs', async () => {
+    const addrs = [
+      multiaddr('/ip4/0.0.0.0/tcp/8000'),
+      multiaddr('/ip4/0.0.0.0/tcp/8001'),
+      multiaddr('/ip4/0.0.0.0/tcp/8002'),
+      multiaddr('/unix/tmp/some/path.sock')
+    ]
+
+    // Inject data into the AddressBook
+    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+
+    const dialer = new DefaultDialer(localComponents)
+    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
+
+    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+
+    // Perform dial
+    await dialer.dial(remoteComponents.peerId)
+    await dialer.stop()
+
+    expect(createDialTargetSpy.called).to.be.true()
+
+    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
+
+    expect(dialTarget).to.have.property('addrs').with.lengthOf(4)
+    expect(dialTarget.addrs).to.deep.equal(addrs.map(addr => {
+      // should not append peerId to path multiaddrs
+      if (addr.toString().startsWith('/unix')) {
+        return addr
+      }
+
+      return addr.encapsulate(`/p2p/${remoteComponents.peerId.toString()}`)
+    }))
   })
 })
 

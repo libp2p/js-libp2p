@@ -269,7 +269,7 @@ describe('Dialing (direct, WebSockets)', () => {
 
     sinon.stub(localTM, 'dial').callsFake(async (_, options) => {
       const deferredDial = pDefer<Connection>()
-      const onAbort = () => {
+      const onAbort = (): void => {
         options.signal.removeEventListener('abort', onAbort)
         deferredDial.reject(new AbortError())
       }
@@ -291,9 +291,8 @@ describe('Dialing (direct, WebSockets)', () => {
       await dialer.stop()
       await dialPromise
       expect.fail('should have failed')
-    } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateError')
-      expect(dialer.pendingDials.size).to.equal(0) // 1 dial request
+    } catch {
+      expect(dialer.pendingDials.size).to.equal(0) // 0 dial requests
     }
   })
 

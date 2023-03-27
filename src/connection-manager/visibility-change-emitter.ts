@@ -60,7 +60,7 @@ export class VisibilityChangeEmitter extends EventEmitter<VisibilityChangeEmitte
    *
    * @private
    */
-  _initializeVisibilityVarNames () {
+  _initializeVisibilityVarNames (): void {
     let hidden: Hidden = 'hidden'
     let visibilityChange = 'visibilitychange'
 
@@ -91,7 +91,7 @@ export class VisibilityChangeEmitter extends EventEmitter<VisibilityChangeEmitte
    *
    * @private
    */
-  _addVisibilityChangeListener () {
+  _addVisibilityChangeListener (): void {
     // @ts-expect-error cannot index document object with string key
     if (typeof globalThis.document.addEventListener === 'undefined' || typeof document[this.hidden] === 'undefined') {
       log('Checking page visibility requires a browser that supports the Page Visibility API.')
@@ -105,7 +105,7 @@ export class VisibilityChangeEmitter extends EventEmitter<VisibilityChangeEmitte
    * The function returns ```true``` if the page is visible or ```false``` if the page is not visible and
    * ```undefined``` if the page visibility API is not supported by the browser.
    */
-  isVisible () {
+  isVisible (): boolean | undefined {
     // @ts-expect-error cannot index document object with string key
     if (this.hidden === undefined || document[this.hidden] === undefined) {
       return undefined
@@ -122,7 +122,7 @@ export class VisibilityChangeEmitter extends EventEmitter<VisibilityChangeEmitte
    *
    * @private
    */
-  _handleVisibilityChange () {
+  _handleVisibilityChange (): void {
     // @ts-expect-error cannot index document object with string key
     const visible = globalThis.document[this.hidden] === false
     log(visible ? 'Page Visible' : 'Page Hidden')

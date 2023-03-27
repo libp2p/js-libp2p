@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import mergeOptions from 'merge-options'
 import { LatencyMonitor, SummaryObject } from './latency-monitor.js'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -43,11 +43,6 @@ export interface ConnectionManagerConfig {
    * Sets the poll interval (in milliseconds) for assessing the current state and determining if this peer needs to force a disconnect. Defaults to `2000` (2 seconds).
    */
   pollInterval?: number
-
-  /**
-   * If true, try to connect to all discovered peers up to the connection manager limit
-   */
-  autoDial?: boolean
 
   /**
    * How long to wait between attempting to keep our number of concurrent connections
@@ -168,7 +163,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.opts = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
 
     if (this.opts.maxConnections < this.opts.minConnections) {
-      throw errCode(new Error('Connection Manager maxConnections must be greater than minConnections'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('Connection Manager maxConnections must be greater than minConnections', codes.ERR_INVALID_PARAMETERS)
     }
 
     log('options: %o', this.opts)
@@ -211,7 +206,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.incomingPendingConnections = 0
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
@@ -219,7 +214,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * Starts the Connection Manager. If Metrics are not enabled on libp2p
    * only event loop and connection limits will be monitored.
    */
-  async start () {
+  async start (): Promise<void> {
     // track inbound/outbound connections
     this.components.metrics?.registerMetricGroup('libp2p_connection_manager_connections', {
       calculate: () => {
@@ -307,7 +302,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     log('started')
   }
 
-  async afterStart () {
+  async afterStart (): Promise<void> {
     this.components.upgrader.addEventListener('connection', this.onConnect)
     this.components.upgrader.addEventListener('connectionEnd', this.onDisconnect)
 
@@ -352,7 +347,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       })
   }
 
-  async beforeStop () {
+  async beforeStop (): Promise<void> {
     // if we are still dialing KEEP_ALIVE peers, abort those dials
     this.connectOnStartupController?.abort()
     this.components.upgrader.removeEventListener('connection', this.onConnect)
@@ -362,7 +357,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * Stops the Connection Manager
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.latencyMonitor?.removeEventListener('data', this._onLatencyMeasure)
     this.latencyMonitor?.stop()
 
@@ -374,7 +369,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * Cleans up the connections
    */
-  async _close () {
+  async _close (): Promise<void> {
     // Close all connections we're tracking
     const tasks: Array<Promise<void>> = []
     for (const connectionList of this.connections.values()) {
@@ -394,7 +389,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.connections.clear()
   }
 
-  onConnect (evt: CustomEvent<Connection>) {
+  onConnect (evt: CustomEvent<Connection>): void {
     void this._onConnect(evt).catch(err => {
       log.error(err)
     })
@@ -403,7 +398,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * Tracks the incoming connection and check the connection limit
    */
-  async _onConnect (evt: CustomEvent<Connection>) {
+  async _onConnect (evt: CustomEvent<Connection>): Promise<void> {
     const { detail: connection } = evt
 
     if (!this.started) {
@@ -436,7 +431,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * Removes the connection from tracking
    */
-  onDisconnect (evt: CustomEvent<Connection>) {
+  onDisconnect (evt: CustomEvent<Connection>): void {
     const { detail: connection } = evt
 
     if (!this.started) {
@@ -478,7 +473,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId == null && multiaddr == null) {
-      throw errCode(new TypeError('Can only open connections to PeerIds or Multiaddrs'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('Can only open connections to PeerIds or Multiaddrs', codes.ERR_INVALID_PARAMETERS)
     }
 
     if (peerId != null) {
@@ -543,7 +538,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     await Promise.all(
       connections.map(async connection => {
-        return await connection.close()
+        await connection.close()
       })
     )
   }
@@ -553,7 +548,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    */
   getAll (peerId: PeerId): Connection[] {
     if (!isPeerId(peerId)) {
-      throw errCode(new Error('peerId must be an instance of peer-id'), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('peerId must be an instance of peer-id', codes.ERR_INVALID_PARAMETERS)
     }
 
     const id = peerId.toString()
@@ -570,7 +565,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * If the event loop is slow, maybe close a connection
    */
-  _onLatencyMeasure (evt: CustomEvent<SummaryObject>) {
+  _onLatencyMeasure (evt: CustomEvent<SummaryObject>): void {
     const { detail: summary } = evt
 
     this._checkMaxLimit('maxEventLoopDelay', summary.avgMs, 1)
@@ -582,7 +577,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   /**
    * If the `value` of `name` has exceeded its limit, maybe close a connection
    */
-  async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number, toPrune: number = 1) {
+  async _checkMaxLimit (name: keyof ConnectionManagerInit, value: number, toPrune: number = 1): Promise<void> {
     const limit = this.opts[name]
 
     if (limit == null) {
@@ -601,7 +596,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
    * If we have more connections than our maximum, select some excess connections
    * to prune based on peer value
    */
-  async _pruneConnections (toPrune: number) {
+  async _pruneConnections (toPrune: number): Promise<void> {
     const connections = this.getConnections()
     const peerValues = new PeerMap<number>()
 
@@ -654,7 +649,15 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     for (const connection of sortedConnections) {
       log('too many connections open - closing a connection to %p', connection.remotePeer)
-      toClose.push(connection)
+      // check allow list
+      const connectionInAllowList = this.allow.some((ma) => {
+        return connection.remoteAddr.toString().startsWith(ma.toString())
+      })
+
+      // Connections in the allow list should be excluded from pruning
+      if (!connectionInAllowList) {
+        toClose.push(connection)
+      }
 
       if (toClose.length === toPrune) {
         break
@@ -727,7 +730,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     return false
   }
 
-  afterUpgradeInbound () {
+  afterUpgradeInbound (): void {
     this.incomingPendingConnections--
   }
 }

@@ -1,4 +1,4 @@
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { anySignal } from 'any-signal'
 import FIFO from 'p-fifo'
 import { setMaxListeners } from 'events'
@@ -50,7 +50,7 @@ export class DialRequest {
 
     // If no tokens are available, throw
     if (tokens.length < 1) {
-      throw errCode(new Error('No dial tokens available'), codes.ERR_NO_DIAL_TOKENS)
+      throw new CodeError('No dial tokens available', codes.ERR_NO_DIAL_TOKENS)
     }
 
     const tokenHolder = new FIFO<number>()
@@ -87,12 +87,12 @@ export class DialRequest {
         // End attempt once another attempt succeeded
         if (done) {
           this.dialer.releaseToken(tokens.splice(tokens.indexOf(token), 1)[0])
-          throw errCode(new Error('dialAction already succeeded'), codes.ERR_ALREADY_SUCCEEDED)
+          throw new CodeError('dialAction already succeeded', codes.ERR_ALREADY_SUCCEEDED)
         }
 
         const controller = dialAbortControllers[i]
         if (controller == null) {
-          throw errCode(new Error('dialAction did not come with an AbortController'), codes.ERR_INVALID_PARAMETERS)
+          throw new CodeError('dialAction did not come with an AbortController', codes.ERR_INVALID_PARAMETERS)
         }
         let conn
         try {
@@ -116,7 +116,7 @@ export class DialRequest {
           // Notify Promise.any that attempt was not successful
           // to prevent from returning undefined despite there
           // were successful dial attempts
-          throw errCode(new Error('dialAction led to empty object'), codes.ERR_TRANSPORT_DIAL_FAILED)
+          throw new CodeError('dialAction led to empty object', codes.ERR_TRANSPORT_DIAL_FAILED)
         } else {
           // This dial succeeded, don't attempt anything else
           done = true
@@ -138,7 +138,7 @@ export class DialRequest {
           c.abort()
         }
       })
-      tokens.forEach(token => this.dialer.releaseToken(token)) // release tokens back to the dialer
+      tokens.forEach(token => { this.dialer.releaseToken(token) }) // release tokens back to the dialer
     }
   }
 }

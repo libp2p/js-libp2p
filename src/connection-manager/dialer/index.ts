@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { isMultiaddr, Multiaddr, Resolver, multiaddr, resolvers } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
@@ -14,7 +14,7 @@ import {
   MAX_PER_PEER_DIALS,
   MAX_ADDRS_TO_DIAL
 } from '../../constants.js'
-import type { Connection, ConnectionGater } from '@libp2p/interface-connection'
+import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
@@ -23,6 +23,7 @@ import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 const log = logger('libp2p:dialer')
 
@@ -116,18 +117,18 @@ export class DefaultDialer implements Startable, Dialer {
     }
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  async start (): Promise<void> {
     this.started = true
   }
 
   /**
    * Clears any pending dials
    */
-  async stop () {
+  async stop (): Promise<void> {
     this.started = false
 
     for (const dial of this.pendingDials.values()) {
@@ -155,7 +156,7 @@ export class DefaultDialer implements Startable, Dialer {
 
     if (peerId != null) {
       if (this.components.peerId.equals(peerId)) {
-        throw errCode(new Error('Tried to dial self'), codes.ERR_DIALED_SELF)
+        throw new CodeError('Tried to dial self', codes.ERR_DIALED_SELF)
       }
 
       if (multiaddr != null) {
@@ -163,8 +164,8 @@ export class DefaultDialer implements Startable, Dialer {
         await this.components.peerStore.addressBook.add(peerId, [multiaddr])
       }
 
-      if (await this.components.connectionGater.denyDialPeer(peerId)) {
-        throw errCode(new Error('The dial request is blocked by gater.allowDialPeer'), codes.ERR_PEER_DIAL_INTERCEPTED)
+      if ((await this.components.connectionGater.denyDialPeer?.(peerId)) === true) {
+        throw new CodeError('The dial request is blocked by gater.allowDialPeer', codes.ERR_PEER_DIAL_INTERCEPTED)
       }
     }
 
@@ -194,7 +195,7 @@ export class DefaultDialer implements Startable, Dialer {
     }
 
     if (dialTarget.addrs.length === 0) {
-      throw errCode(new Error('The dial request has no valid addresses'), codes.ERR_NO_VALID_ADDRESSES)
+      throw new CodeError('The dial request has no valid addresses', codes.ERR_NO_VALID_ADDRESSES)
     }
 
     // try to join an in-flight dial for this peer if one is available
@@ -208,7 +209,9 @@ export class DefaultDialer implements Startable, Dialer {
       log('dial failed to %s', dialTarget.id, err)
       // Error is a timeout
       if (pendingDial.controller.signal.aborted) {
-        err.code = codes.ERR_TIMEOUT
+        const error = new CodeError(err.message, codes.ERR_TIMEOUT)
+        log.error(error)
+        throw error
       }
       log.error(err)
       throw err
@@ -266,7 +269,7 @@ export class DefaultDialer implements Startable, Dialer {
     addrs = [...new Set(addrs.map(ma => ma.toString()))].map(ma => multiaddr(ma))
 
     if (addrs.length > this.maxAddrsToDial) {
-      throw errCode(new Error('dial with more addresses than allowed'), codes.ERR_TOO_MANY_ADDRESSES)
+      throw new CodeError('dial with more addresses than allowed', codes.ERR_TOO_MANY_ADDRESSES)
     }
 
     const peerId = isPeerId(peerIdOrMultiaddr.peerId) ? peerIdOrMultiaddr.peerId : undefined
@@ -275,8 +278,14 @@ export class DefaultDialer implements Startable, Dialer {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`
       addrs = addrs.map(addr => {
         const addressPeerId = addr.getPeerId()
+        const lastProto = addr.protos().pop()
 
-        if (addressPeerId == null || !peerId.equals(addressPeerId)) {
+        // do not append peer id to path multiaddrs
+        if (lastProto?.path === true) {
+          return addr
+        }
+
+        if (addressPeerId == null) {
           return addr.encapsulate(peerIdMultiaddr)
         }
 
@@ -298,9 +307,9 @@ export class DefaultDialer implements Startable, Dialer {
 
     return (await Promise.all(
       addresses.map(async address => {
-        const deny = await this.components.connectionGater.denyDialMultiaddr(peer, address.multiaddr)
+        const deny = await this.components.connectionGater.denyDialMultiaddr?.(peer, address.multiaddr)
 
-        if (deny) {
+        if (deny === true) {
           return false
         }
 
@@ -323,7 +332,7 @@ export class DefaultDialer implements Startable, Dialer {
      */
     const dialAction: DialAction = async (addr, options = {}) => {
       if (options.signal?.aborted === true) {
-        throw errCode(new Error('already aborted'), codes.ERR_ALREADY_ABORTED)
+        throw new CodeError('already aborted', codes.ERR_ALREADY_ABORTED)
       }
 
       return await this.components.transportManager.dial(addr, options).catch(err => {
@@ -366,14 +375,14 @@ export class DefaultDialer implements Startable, Dialer {
     return pendingDial
   }
 
-  getTokens (num: number) {
+  getTokens (num: number): number[] {
     const total = Math.min(num, this.maxDialsPerPeer, this.tokens.length)
     const tokens = this.tokens.splice(0, total)
     log('%d tokens request, returning %d, %d remaining', num, total, this.tokens.length)
     return tokens
   }
 
-  releaseToken (token: number) {
+  releaseToken (token: number): void {
     // Guard against duplicate releases
     if (this.tokens.includes(token)) {
       return
