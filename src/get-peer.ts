@@ -6,10 +6,15 @@ import { codes } from './errors.js'
 import { isPeerId } from '@libp2p/interface-peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
+export interface PeerAddress {
+  peerId?: PeerId
+  multiaddr?: Multiaddr | Multiaddr[]
+}
+
 /**
  * Extracts a PeerId and/or multiaddr from the passed PeerId or Multiaddr or an array of Multiaddrs
  */
-export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): { peerId?: PeerId, multiaddr?: Multiaddr } {
+export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAddress {
   if (Array.isArray(peer)) {
     const firstPeerId = peer[0].getPeerId()
     if (peer.every((p) => p.getPeerId() === firstPeerId) && firstPeerId !== null) {
@@ -18,10 +23,15 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): { peerI
       }
     }
 
-    if (peer.every((p) => p.getPeerId() === null)) {
+    if ((peer.every((p) => p.getPeerId() === null))) {
       return {
-        multiaddr: peer[0]
+        multiaddr: peer
       }
+    } else {
+      throw new CodeError(
+        `${peer} is unsure which peerId to call`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
+        codes.ERR_INVALID_MULTIADDR
+      )
     }
   }
 

@@ -161,7 +161,11 @@ export class DefaultDialer implements Startable, Dialer {
 
       if (multiaddr != null) {
         log('storing multiaddrs %p', peerId, multiaddr)
-        await this.components.peerStore.addressBook.add(peerId, [multiaddr])
+        if (Array.isArray(multiaddr)) {
+          await this.components.peerStore.addressBook.add(peerId, multiaddr)
+        } else {
+          await this.components.peerStore.addressBook.add(peerId, [multiaddr])
+        }
       }
 
       if ((await this.components.connectionGater.denyDialPeer?.(peerId)) === true) {
@@ -171,10 +175,21 @@ export class DefaultDialer implements Startable, Dialer {
 
     log('creating dial target for %p', peerId)
 
+    if (Array.isArray(multiaddr)) {
+      // Return the first successful connection
+      return (await Promise.all(multiaddr.map(async (addr) => await this.createDialTarget(peerId, addr, options))))[0]
+    } else {
+      return await this.createDialTarget(peerId, multiaddr, options)
+    }
+  }
+
+  async createDialTarget (peerId?: PeerId, multiaddr?: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     // resolving multiaddrs can involve dns lookups so allow them to be aborted
     const controller = new AbortController()
     const controllerId = randomId()
+
     this.pendingDialTargets.set(controllerId, controller)
+
     let signal = controller.signal
 
     // merge with the passed signal, if any

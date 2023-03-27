@@ -379,7 +379,7 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(dialTarget.addrs[0].toString()).to.equal(dialMultiaddr.toString())
   })
 
-  it('Should dial multiple multiaddrs in parallel', async () => {
+  it('Should dial multiple multiaddrs and return a connections to the shared remote peer', async () => {
     const addrs = [
       multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${remoteComponents.peerId.toString()}`),
       multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${remoteComponents.peerId.toString()}`),
@@ -398,11 +398,37 @@ describe('Dialing (direct, WebSockets)', () => {
     await dialer.dial(addrs)
     await dialer.stop()
 
-    expect(createDialTargetSpy.callCount).to.equal(3)
+    expect(createDialTargetSpy.callCount).to.equal(1)
 
     const dialTarget = await createDialTargetSpy.getCall(0).returnValue
 
     expect(dialTarget).to.have.property('addrs').with.lengthOf(3)
+  })
+
+  it('Should dial multiple multiaddrs and return the peer connected to first', async () => {
+    const addrs = [
+      multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
+      multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
+      multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
+    ]
+
+    // Inject data into the AddressBook
+    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+
+    const dialer = new DefaultDialer(localComponents)
+    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
+
+    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+
+    // Perform dial
+    await dialer.dial(addrs)
+    await dialer.stop()
+
+    expect(createDialTargetSpy.callCount).to.equal(3)
+
+    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
+
+    expect(dialTarget).to.have.property('addrs').with.lengthOf(1)
   })
 })
 
