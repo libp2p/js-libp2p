@@ -295,7 +295,28 @@ export class DefaultDialer implements Startable, Dialer {
    * Loads a list of addresses from the peer store for the passed peer id
    */
   async _loadAddresses (peer: PeerId): Promise<Multiaddr[]> {
-    const addresses = await this.components.peerStore.addressBook.get(peer)
+    let addresses = await this.components.peerStore.addressBook.get(peer)
+
+    // append PeerId to multiaddrs where it's not already present
+    addresses = addresses.map((addr): Address => {
+      const peerId = addr.multiaddr.getPeerId()
+
+      const lastProto = addr.multiaddr.protos().pop()
+
+      // do not append peer id to path multiaddrs
+      if (lastProto?.path === true) {
+        return addr
+      }
+
+      if (peerId == null || !peer.equals(peerId)) {
+        return {
+          multiaddr: addr.multiaddr.encapsulate(`/p2p/${peer.toString()}`),
+          isCertified: addr.isCertified
+        }
+      }
+
+      return addr
+    })
 
     return (await Promise.all(
       addresses.map(async address => {
