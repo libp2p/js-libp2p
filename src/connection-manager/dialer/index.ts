@@ -209,7 +209,9 @@ export class DefaultDialer implements Startable, Dialer {
       log('dial failed to %s', dialTarget.id, err)
       // Error is a timeout
       if (pendingDial.controller.signal.aborted) {
-        err.code = codes.ERR_TIMEOUT
+        const error = new CodeError(err.message, codes.ERR_TIMEOUT)
+        log.error(error)
+        throw error
       }
       log.error(err)
       throw err
