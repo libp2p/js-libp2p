@@ -5,7 +5,11 @@ import isIpPrivate from 'private-ip'
  * Check if a given multiaddr has a private address.
  */
 export function isPrivate (ma: Multiaddr): boolean {
-  const { address } = ma.nodeAddress()
+  try {
+    const { address } = ma.nodeAddress()
 
-  return Boolean(isIpPrivate(address))
+    return Boolean(isIpPrivate(address))
+  } catch {
+    return true
+  }
 }

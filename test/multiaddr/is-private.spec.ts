@@ -53,4 +53,14 @@ describe('multiaddr isPrivate', () => {
       expect(isPrivate(ma)).to.eql(false)
     })
   })
+
+  it('identifies non-public addresses', () => {
+    [
+      multiaddr('/ip4/127.0.0.1/tcp/1000/p2p-circuit'),
+      multiaddr('/unix/foo/bar/baz.sock'),
+      multiaddr('/ip4/127.0.0.1/sctp/1000')
+    ].forEach(ma => {
+      expect(isPrivate(ma)).to.eql(true)
+    })
+  })
 })
