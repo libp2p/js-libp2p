@@ -19,7 +19,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
 import { getPeerAddress } from '../../get-peer.js'
-import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
+import type { Address, AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Dialer } from '@libp2p/interface-connection-manager'
 import type { TransportManager } from '@libp2p/interface-transport'
@@ -297,7 +297,28 @@ export class DefaultDialer implements Startable, Dialer {
    * Loads a list of addresses from the peer store for the passed peer id
    */
   async _loadAddresses (peer: PeerId): Promise<Multiaddr[]> {
-    const addresses = await this.components.peerStore.addressBook.get(peer)
+    let addresses = await this.components.peerStore.addressBook.get(peer)
+
+    // append PeerId to multiaddrs where it's not already present
+    addresses = addresses.map((addr): Address => {
+      const peerId = addr.multiaddr.getPeerId()
+
+      const lastProto = addr.multiaddr.protos().pop()
+
+      // do not append peer id to path multiaddrs
+      if (lastProto?.path === true) {
+        return addr
+      }
+
+      if (peerId == null || !peer.equals(peerId)) {
+        return {
+          multiaddr: addr.multiaddr.encapsulate(`/p2p/${peer.toString()}`),
+          isCertified: addr.isCertified
+        }
+      }
+
+      return addr
+    })
 
     return (await Promise.all(
       addresses.map(async address => {
