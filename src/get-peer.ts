@@ -29,8 +29,8 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAdd
       }
     } else {
       throw new CodeError(
-        `${peer} is unsure which peerId to call`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
-        codes.ERR_INVALID_MULTIADDR
+        `Multiaddrs must all have the same peer id or have no peer id: ${peer}`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
+        codes.ERR_INVALID_PARAMETERS
       )
     }
   }
