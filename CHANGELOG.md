@@ -1,3 +1,10 @@
+## [3.0.6](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.5...v3.0.6) (2023-03-27)
+
+
+### Bug Fixes
+
+* handle non ip4/ip6/dns addresses in isPrivate ([#84](https://github.com/libp2p/js-libp2p-utils/issues/84)) ([af2c222](https://github.com/libp2p/js-libp2p-utils/commit/af2c2221ad175a06f758a45fc71fbb2f870eece4))
+
 ## [3.0.5](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.4...v3.0.5) (2023-03-17)
 
 
