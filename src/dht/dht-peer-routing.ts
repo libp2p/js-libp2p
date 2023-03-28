@@ -8,15 +8,18 @@ import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { CustomProgressEvent, type ProgressEvent, type ProgressOptions } from 'progress-events'
 
 export type FindPeerProgressEvents =
-  ProgressEvent<'peer-routing:find-peer:dht:event', QueryEvent>
+  ProgressEvent<'libp2p:peer-routing:find-peer:dht:event', QueryEvent>
 
 export type GetClosestPeerProgressEvents =
-  ProgressEvent<'peer-routing:get-closest-peer:dht:event', QueryEvent>
+  ProgressEvent<'libp2p:peer-routing:get-closest-peer:dht:event', QueryEvent>
 
 /**
  * Wrapper class to convert events into returned values
  */
-export class DHTPeerRouting implements PeerRouting {
+export class DHTPeerRouting implements PeerRouting<
+  FindPeerProgressEvents,
+  GetClosestPeerProgressEvents
+> {
   private readonly dht: DHT
 
   constructor (dht: DHT) {
@@ -25,7 +28,7 @@ export class DHTPeerRouting implements PeerRouting {
 
   async findPeer (peerId: PeerId, options: AbortOptions & ProgressOptions<FindPeerProgressEvents> = {}): Promise<PeerInfo> {
     for await (const event of this.dht.findPeer(peerId, options)) {
-      options.onProgress?.(new CustomProgressEvent('peer-routing:find-peer:dht:event', event))
+      options.onProgress?.(new CustomProgressEvent('libp2p:peer-routing:find-peer:dht:event', event))
 
       if (event.name === 'FINAL_PEER') {
         return event.peer
@@ -37,7 +40,7 @@ export class DHTPeerRouting implements PeerRouting {
 
   async * getClosestPeers (key: Uint8Array, options: AbortOptions & ProgressOptions<GetClosestPeerProgressEvents> = {}): AsyncIterable<PeerInfo> {
     for await (const event of this.dht.getClosestPeers(key, options)) {
-      options.onProgress?.(new CustomProgressEvent('peer-routing:get-closest-peer:dht:event', event))
+      options.onProgress?.(new CustomProgressEvent('libp2p:peer-routing:get-closest-peer:dht:event', event))
 
       if (event.name === 'FINAL_PEER') {
         yield event.peer
