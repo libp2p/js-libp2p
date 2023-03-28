@@ -186,10 +186,23 @@ function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDig
   // eslint-disable-next-line complexity
   const { url, certhashes, remotePeer } = parts.reduce((state: { url: string, certhashes: MultihashDigest[], seenHost: boolean, seenPort: boolean, remotePeer?: PeerId }, [proto, value]) => {
     switch (proto) {
-      case protocols('ip4').code:
       case protocols('ip6').code:
-      case protocols('dns4').code:
+      // @ts-expect-error - ts error on switch fallthrough
       case protocols('dns6').code:
+        if (value?.includes(':') === true) {
+          /**
+           * This resolves cases where `new globalThis.WebTransport` fails to construct because of an invalid URL being passed.
+           *
+           * `new URL('https://::1:4001/blah')` will throw a `TypeError: Failed to construct 'URL': Invalid URL`
+           * `new URL('https://[::1]:4001/blah')` is valid and will not.
+           *
+           * @see https://datatracker.ietf.org/doc/html/rfc3986#section-3.2.2
+           */
+          value = `[${value}]`
+        }
+      // eslint-disable-next-line no-fallthrough
+      case protocols('ip4').code:
+      case protocols('dns4').code:
         if (state.seenHost || state.seenPort) {
           throw new Error('Invalid multiaddr, saw host and already saw the host or port')
         }

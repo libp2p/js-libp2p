@@ -15,8 +15,11 @@ declare global {
 
 describe('libp2p-webtransport', () => {
   it('webtransport connects to go-libp2p', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const maStr: string = process.env.serverAddr!
+    if (process.env.serverAddr == null) {
+      throw new Error('serverAddr not found')
+    }
+
+    const maStr: string = process.env.serverAddr
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
       transports: [webTransport()],
@@ -71,8 +74,11 @@ describe('libp2p-webtransport', () => {
   })
 
   it('fails to connect without certhashes', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const maStr: string = process.env.serverAddr!
+    if (process.env.serverAddr == null) {
+      throw new Error('serverAddr not found')
+    }
+
+    const maStr: string = process.env.serverAddr
     const maStrNoCerthash: string = maStr.split('/certhash')[0]
     const maStrP2p = maStr.split('/p2p/')[1]
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
@@ -89,10 +95,33 @@ describe('libp2p-webtransport', () => {
     await node.stop()
   })
 
+  it('connects to ipv6 addresses', async () => {
+    if (process.env.serverAddr6 == null) {
+      throw new Error('serverAddr6 not found')
+    }
+
+    const ma = multiaddr(process.env.serverAddr6)
+    const node = await createLibp2p({
+      transports: [webTransport()],
+      connectionEncryption: [noise()]
+    })
+
+    await node.start()
+
+    // the address is unreachable but we can parse it correctly
+    const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
+    stream.close()
+
+    await node.stop()
+  })
+
   it('Closes writes of streams after they have sunk a source', async () => {
-    // This is the behavor of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-stream-muxer-compliance-tests/src/close-test.ts)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const maStr: string = process.env.serverAddr!
+    // This is the behavior of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-stream-muxer-compliance-tests/src/close-test.ts)
+    if (process.env.serverAddr == null) {
+      throw new Error('serverAddr not found')
+    }
+
+    const maStr: string = process.env.serverAddr
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
       transports: [webTransport()],

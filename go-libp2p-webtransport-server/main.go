@@ -24,6 +24,11 @@ func main() {
 		panic(err)
 	}
 
+	err = h.Network().Listen(multiaddr.StringCast("/ip6/::1/udp/0/quic-v1/webtransport"))
+	if err != nil {
+		panic(err)
+	}
+
 	h.SetStreamHandler("echo", func(s network.Stream) {
 		io.Copy(s, s)
 		s.Close()

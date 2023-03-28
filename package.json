@@ -169,7 +169,8 @@
   },
   "devDependencies": {
     "aegir": "^38.1.7",
-    "libp2p": "^0.43.2"
+    "libp2p": "^0.43.2",
+    "p-defer": "^4.0.0"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
