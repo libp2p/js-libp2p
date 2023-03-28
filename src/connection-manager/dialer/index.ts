@@ -262,26 +262,27 @@ export class DefaultDialer implements Startable, Dialer {
       .flat()
 
     // Multiaddrs not supported by the available transports will be filtered out.
-    addrs = addrs.filter(ma => Boolean(this.components.transportManager.transportForMultiaddr(ma)))
+    const filteredAddrs = addrs.filter(ma => Boolean(this.components.transportManager.transportForMultiaddr(ma)))
 
     // deduplicate addresses
-    let filteredAddrs = [...new Set(addrs.map(ma => ma.toString()))].map(ma => multiaddr(ma))
+    const dedupedAddrs = [...new Set(filteredAddrs.map(ma => ma.toString()))]
+    let dedupedMultiaddrs = dedupedAddrs.map(ma => multiaddr(ma))
 
-    if (filteredAddrs.length > this.maxAddrsToDial) {
-      log('addresses after filtering', filteredAddrs.map(ma => ma.toString()))
+    if (dedupedMultiaddrs.length > this.maxAddrsToDial) {
+      log('addresses after filtering', dedupedMultiaddrs.map(ma => ma.toString()))
       throw new CodeError('dial with more addresses than allowed', codes.ERR_TOO_MANY_ADDRESSES)
     }
 
-    if (filteredAddrs.length === 0) {
+    if (dedupedMultiaddrs.length === 0) {
       log('addresses before filtering', addrs.map(ma => ma.toString()))
-      log('addresses after filtering', filteredAddrs.map(ma => ma.toString()))
+      log('addresses after filtering', dedupedMultiaddrs.map(ma => ma.toString()))
     }
 
     const peerId = isPeerId(peerIdOrMultiaddr.peerId) ? peerIdOrMultiaddr.peerId : undefined
 
     if (peerId != null) {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`
-      filteredAddrs = filteredAddrs.map(addr => {
+      dedupedMultiaddrs = dedupedMultiaddrs.map(addr => {
         const addressPeerId = addr.getPeerId()
 
         if (addressPeerId == null || !peerId.equals(addressPeerId)) {
@@ -294,7 +295,7 @@ export class DefaultDialer implements Startable, Dialer {
 
     return {
       id: peerId == null ? randomId() : peerId.toString(),
-      addrs
+      addrs: dedupedMultiaddrs
     }
   }
 
