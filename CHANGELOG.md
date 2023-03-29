@@ -10,6 +10,16 @@
 
 
 
+### [0.43.3](https://www.github.com/libp2p/js-libp2p/compare/v0.43.2...v0.43.3) (2023-03-28)
+
+
+### Bug Fixes
+
+* add logging around filtered addresses ([#1651](https://www.github.com/libp2p/js-libp2p/issues/1651)) ([1e85114](https://www.github.com/libp2p/js-libp2p/commit/1e851148f268e10af77c1c298054a83841673610))
+* do not overwrite code property on error ([#1650](https://www.github.com/libp2p/js-libp2p/issues/1650)) ([d53ec6c](https://www.github.com/libp2p/js-libp2p/commit/d53ec6c15309e280e0ab7575633e3e03eca57bb6))
+* if available, append target peer id to address book multiaddrs ([#1649](https://www.github.com/libp2p/js-libp2p/issues/1649)) ([9aaa5f3](https://www.github.com/libp2p/js-libp2p/commit/9aaa5f3cf257a2cf24321596e206f13c164965b7))
+* remove duplicated peer id logic ([#1653](https://www.github.com/libp2p/js-libp2p/issues/1653)) ([0c9f90c](https://www.github.com/libp2p/js-libp2p/commit/0c9f90cce3ccfd5319596fbd1a6937d67cd0606d))
+
 ### [0.43.2](https://www.github.com/libp2p/js-libp2p/compare/v0.43.1...v0.43.2) (2023-03-21)
 
 
