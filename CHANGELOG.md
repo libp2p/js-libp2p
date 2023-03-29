@@ -1,3 +1,10 @@
+## [8.0.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.2...v8.0.3) (2023-03-29)
+
+
+### Bug Fixes
+
+* updated for pqueue7 ([#433](https://github.com/libp2p/js-libp2p-kad-dht/issues/433)) ([62205a0](https://github.com/libp2p/js-libp2p-kad-dht/commit/62205a0cce3f40f238116810f75640466f8e3972))
+
 ## [8.0.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.1...v8.0.2) (2023-03-24)
 
 
