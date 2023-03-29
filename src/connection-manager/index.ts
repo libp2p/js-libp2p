@@ -470,15 +470,14 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   }
 
   async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
-    const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
+    const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId == null && multiaddr == null) {
+    if (peerId == null && multiaddrs.length === 0) {
       throw new CodeError('Can only open connections to PeerIds or Multiaddrs', codes.ERR_INVALID_PARAMETERS)
     }
 
     if (peerId != null) {
       log('dial to', peerId)
-
       const existingConnections = this.getConnections(peerId)
 
       if (existingConnections.length > 0) {

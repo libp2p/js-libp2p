@@ -379,38 +379,13 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(dialTarget.addrs[0].toString()).to.equal(dialMultiaddr.toString())
   })
 
-  it('Should dial multiple multiaddrs and return a connections to the shared remote peer', async () => {
-    const addrs = [
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${remoteComponents.peerId.toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${remoteComponents.peerId.toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8002/ws/p2p/${remoteComponents.peerId.toString()}`)
-    ]
-
-    // Inject data into the AddressBook
-    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
-
-    const dialer = new DefaultDialer(localComponents)
-    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
-
-    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
-
-    // Perform dial
-    await dialer.dial(addrs)
-    await dialer.stop()
-
-    expect(createDialTargetSpy.callCount).to.equal(1)
-
-    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
-
-    expect(dialTarget).to.have.property('addrs').with.lengthOf(3)
-  })
-
-  it('Should dial multiple multiaddrs and return the peer connected to first', async () => {
+  it('Should dial multiple multiaddrs and return first successful connection', async () => {
     const addrs = [
       multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
       multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
     ]
+    const mockConn = mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId))
 
     // Inject data into the AddressBook
     await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
@@ -418,17 +393,68 @@ describe('Dialing (direct, WebSockets)', () => {
     const dialer = new DefaultDialer(localComponents)
     const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
 
-    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+    const tmDialStub = sinon.stub(localTM, 'dial')
+    tmDialStub.onFirstCall().rejects(new Error('Could not connect'))
+    tmDialStub.onSecondCall().resolves(mockConn)
+    tmDialStub.onThirdCall().rejects(new Error('Could not connect'))
 
     // Perform dial
-    await dialer.dial(addrs)
-    await dialer.stop()
+    await expect(dialer.dial(addrs)).to.eventually.equal(mockConn)
 
-    expect(createDialTargetSpy.callCount).to.equal(3)
+    expect(createDialTargetSpy.callCount).to.equal(1)
 
     const dialTarget = await createDialTargetSpy.getCall(0).returnValue
+    expect(dialTarget).to.have.property('addrs').with.lengthOf(3)
 
-    expect(dialTarget).to.have.property('addrs').with.lengthOf(1)
+    // first and third dials should have been aborted, second was successful so should not have been
+    expect(tmDialStub.getCall(0)).to.have.nested.property('args[1].signal.aborted', true)
+    expect(tmDialStub.getCall(1)).to.have.nested.property('args[1].signal.aborted', false)
+    expect(tmDialStub.getCall(2)).to.have.nested.property('args[1].signal.aborted', true)
+
+    await dialer.stop()
+  })
+
+  it('Should throw if dialling an empty array is attempted', async () => {
+    const dialer = new DefaultDialer(localComponents)
+
+    // Perform dial
+    await expect(dialer.dial([])).to.eventually.rejected
+      .with.property('code', 'ERR_NO_VALID_ADDRESSES')
+
+    await dialer.stop()
+  })
+
+  it('Should throw if dialling multiaddrs with mismatched peer ids', async () => {
+    const dialer = new DefaultDialer(localComponents)
+
+    // Perform dial
+    await expect(dialer.dial([
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createPeerId()).toString()}`)
+    ])).to.eventually.rejected
+      .with.property('code', 'ERR_INVALID_PARAMETERS')
+
+    await dialer.stop()
+  })
+
+  it('Should throw if dialling multiaddrs with inconsistent peer ids', async () => {
+    const dialer = new DefaultDialer(localComponents)
+
+    // Perform dial
+    await expect(dialer.dial([
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`),
+      multiaddr('/ip4/0.0.0.0/tcp/8001/ws')
+    ])).to.eventually.rejected
+      .with.property('code', 'ERR_INVALID_PARAMETERS')
+
+    // Perform dial
+    await expect(dialer.dial([
+      multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`)
+    ])).to.eventually.rejected
+      .with.property('code', 'ERR_INVALID_PARAMETERS')
+
+    await dialer.stop()
   })
 })
 
