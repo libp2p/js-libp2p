@@ -177,7 +177,15 @@ export class DefaultDialer implements Startable, Dialer {
 
     if (Array.isArray(multiaddr)) {
       // Return the first successful connection
-      return (await Promise.all(multiaddr.map(async (addr) => await this.createDialTarget(peerId, addr, options))))[0]
+      const connection = (await Promise.all(multiaddr.map(async (addr) => await this.createDialTarget(peerId, addr, options))))[0]
+
+      // abort the creation of any other connections and/or close them, otherwise this will leak memory and sockets.
+      this.getPendingDialTargets().forEach((controller, id) => {
+        controller.abort()
+        this.pendingDialTargets.delete(id)
+      })
+
+      return connection
     } else {
       return await this.createDialTarget(peerId, multiaddr, options)
     }
