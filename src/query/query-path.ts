@@ -6,7 +6,6 @@ import { CodeError } from '@libp2p/interfaces/errors'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
-import { queryErrorEvent } from './events.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { CleanUpEvents } from './manager.js'
@@ -14,6 +13,7 @@ import type { Logger } from '@libp2p/logger'
 import type { QueryFunc } from '../query/types.js'
 import type { QueryEvent } from '@libp2p/interface-dht'
 import type { PeerSet } from '@libp2p/peer-collections'
+import { queryErrorEvent } from './events.js'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 
@@ -156,22 +156,16 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
               queryPeer(closerPeer.id, closerPeerKadId)
             }
           }
-
-          // TODO: we have upgraded to p-queue@7, this should no longer be necessary
           queue.emit('completed', event)
         }
 
         timeout?.clear()
       } catch (err: any) {
-        if (signal.aborted) {
-          // TODO: we have upgraded to p-queue@7, this should no longer be necessary
-          queue.emit('error', err)
-        } else {
-          // TODO: we have upgraded to p-queue@7, this should no longer be necessary
-          queue.emit('completed', queryErrorEvent({
+        if (!signal.aborted) {
+          return queryErrorEvent({
             from: peer,
             error: err
-          }))
+          })
         }
       } finally {
         timeout?.clear()
