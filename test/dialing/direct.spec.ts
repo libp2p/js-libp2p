@@ -379,7 +379,7 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(dialTarget.addrs[0].toString()).to.equal(dialMultiaddr.toString())
   })
 
-  it('Should dial multiple multiaddrs and return first successful connection', async () => {
+  it('should dial multiple multiaddrs and return first successful connection', async () => {
     const addrs = [
       multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
@@ -414,7 +414,7 @@ describe('Dialing (direct, WebSockets)', () => {
     await dialer.stop()
   })
 
-  it('Should throw if dialling an empty array is attempted', async () => {
+  it('should throw if dialling an empty array is attempted', async () => {
     const dialer = new DefaultDialer(localComponents)
 
     // Perform dial
@@ -424,7 +424,7 @@ describe('Dialing (direct, WebSockets)', () => {
     await dialer.stop()
   })
 
-  it('Should throw if dialling multiaddrs with mismatched peer ids', async () => {
+  it('should throw if dialling multiaddrs with mismatched peer ids', async () => {
     const dialer = new DefaultDialer(localComponents)
 
     // Perform dial
@@ -437,7 +437,7 @@ describe('Dialing (direct, WebSockets)', () => {
     await dialer.stop()
   })
 
-  it('Should throw if dialling multiaddrs with inconsistent peer ids', async () => {
+  it('should throw if dialling multiaddrs with inconsistent peer ids', async () => {
     const dialer = new DefaultDialer(localComponents)
 
     // Perform dial
