@@ -18,7 +18,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
-import { getPeerAddress } from '../../get-peer.js'
+import { getPeerAddress, PeerAddress } from '../../get-peer.js'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { Dialer } from '@libp2p/interface-connection-manager'
@@ -151,30 +151,35 @@ export class DefaultDialer implements Startable, Dialer {
    * The dial to the first address that is successfully able to upgrade a connection
    * will be used.
    */
-  async dial (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
-    const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
+  async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
+    const peerAddress = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId != null) {
-      if (this.components.peerId.equals(peerId)) {
+    if (peerAddress.peerId != null) {
+      if (this.components.peerId.equals(peerAddress.peerId)) {
         throw new CodeError('Tried to dial self', codes.ERR_DIALED_SELF)
       }
 
-      if (multiaddr != null) {
-        log('storing multiaddrs %p', peerId, multiaddr)
-        await this.components.peerStore.addressBook.add(peerId, [multiaddr])
+      if (peerAddress.multiaddrs.length > 0) {
+        log('storing multiaddrs %p', peerAddress.peerId, peerAddress.multiaddrs)
+        await this.components.peerStore.addressBook.add(peerAddress.peerId, peerAddress.multiaddrs)
       }
 
-      if ((await this.components.connectionGater.denyDialPeer?.(peerId)) === true) {
+      if ((await this.components.connectionGater.denyDialPeer?.(peerAddress.peerId)) === true) {
         throw new CodeError('The dial request is blocked by gater.allowDialPeer', codes.ERR_PEER_DIAL_INTERCEPTED)
       }
     }
 
-    log('creating dial target for %p', peerId)
+    log('creating dial target for %p', peerAddress.peerId)
+    return await this.createDialTarget(peerAddress, options)
+  }
 
+  async createDialTarget (peerAddress: PeerAddress, options: AbortOptions = {}): Promise<Connection> {
     // resolving multiaddrs can involve dns lookups so allow them to be aborted
     const controller = new AbortController()
     const controllerId = randomId()
+
     this.pendingDialTargets.set(controllerId, controller)
+
     let signal = controller.signal
 
     // merge with the passed signal, if any
@@ -185,7 +190,7 @@ export class DefaultDialer implements Startable, Dialer {
     let dialTarget: DialTarget
 
     try {
-      dialTarget = await this._createDialTarget({ peerId, multiaddr }, {
+      dialTarget = await this._createDialTarget(peerAddress, {
         ...options,
         signal
       })
@@ -246,18 +251,17 @@ export class DefaultDialer implements Startable, Dialer {
    *
    * Multiaddrs not supported by the available transports will be filtered out.
    */
-  async _createDialTarget (peerIdOrMultiaddr: { peerId?: PeerId, multiaddr?: Multiaddr }, options: AbortOptions): Promise<DialTarget> {
-    let addrs: Multiaddr[] = []
+  async _createDialTarget (peerIdOrMultiaddr: PeerAddress, options: AbortOptions): Promise<DialTarget> {
+    let addrs: Multiaddr[] = [
+      ...peerIdOrMultiaddr.multiaddrs
+    ]
 
-    if (isMultiaddr(peerIdOrMultiaddr.multiaddr)) {
-      addrs.push(peerIdOrMultiaddr.multiaddr)
-    }
-
-    // only load addresses if a peer id was passed, otherwise only dial the passed multiaddr
-    if (!isMultiaddr(peerIdOrMultiaddr.multiaddr) && isPeerId(peerIdOrMultiaddr.peerId)) {
+    // load addresses if only a peer id was passed, otherwise just dial the passed multiaddrs
+    if (peerIdOrMultiaddr.peerId != null && peerIdOrMultiaddr.multiaddrs.length === 0) {
       addrs.push(...await this._loadAddresses(peerIdOrMultiaddr.peerId))
     }
 
+    // resolve addresses - this can result in a one-to-many translation when dnsaddrs are resolved
     addrs = (await Promise.all(
       addrs.map(async (ma) => await this._resolve(ma, options))
     ))

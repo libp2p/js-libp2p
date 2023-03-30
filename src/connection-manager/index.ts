@@ -469,16 +469,15 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     return this.connections
   }
 
-  async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
-    const { peerId, multiaddr } = getPeerAddress(peerIdOrMultiaddr)
+  async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
+    const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId == null && multiaddr == null) {
+    if (peerId == null && multiaddrs.length === 0) {
       throw new CodeError('Can only open connections to PeerIds or Multiaddrs', codes.ERR_INVALID_PARAMETERS)
     }
 
     if (peerId != null) {
       log('dial to', peerId)
-
       const existingConnections = this.getConnections(peerId)
 
       if (existingConnections.length > 0) {
@@ -501,6 +500,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     try {
+      // @ts-expect-error until https://github.com/libp2p/js-libp2p-interfaces/pull/351 is merged
       const connection = await this.components.dialer.dial(peerIdOrMultiaddr, options)
       let peerConnections = this.connections.get(connection.remotePeer.toString())
 
