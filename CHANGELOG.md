@@ -1,3 +1,17 @@
+## [1.0.5](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.4...v1.0.5) (2023-03-30)
+
+
+### Bug Fixes
+
+* correction package.json exports types path ([#103](https://github.com/libp2p/js-libp2p-webrtc/issues/103)) ([c78851f](https://github.com/libp2p/js-libp2p-webrtc/commit/c78851fe71f6a6ca79a146a7022e818378ea6721))
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#82](https://github.com/libp2p/js-libp2p-webrtc/issues/82)) ([cfa6494](https://github.com/libp2p/js-libp2p-webrtc/commit/cfa6494c43c4edb977e70abe81a260bf0e03de73))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([f0ae5e7](https://github.com/libp2p/js-libp2p-webrtc/commit/f0ae5e78a0469bd1129d7b242e4fb41f0b2ed49e))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([4c8806c](https://github.com/libp2p/js-libp2p-webrtc/commit/4c8806c6d2a1a8eff48f0e2248203d48bd84c065))
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.3...v1.0.4) (2023-02-22)
 
 
