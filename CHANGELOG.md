@@ -1,3 +1,10 @@
+## [7.0.2](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.1...v7.0.2) (2023-03-30)
+
+
+### Bug Fixes
+
+* correction package.json exports types path ([#191](https://github.com/libp2p/js-libp2p-mdns/issues/191)) ([25e353b](https://github.com/libp2p/js-libp2p-mdns/commit/25e353b1b1a5261ceb484acde924d8f007238326))
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.0...v7.0.1) (2023-03-17)
 
 
