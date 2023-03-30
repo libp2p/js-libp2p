@@ -1,3 +1,10 @@
+## [6.1.5](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.4...v6.1.5) (2023-03-30)
+
+
+### Bug Fixes
+
+* correction package.json exports types path ([#258](https://github.com/libp2p/js-libp2p-tcp/issues/258)) ([97e785f](https://github.com/libp2p/js-libp2p-tcp/commit/97e785f1d9d770d894d283acf532e94f4c479ccd))
+
 ## [6.1.4](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.3...v6.1.4) (2023-03-20)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tcp",
-  "version": "6.1.4",
+  "version": "6.1.5",
   "description": "A TCP transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p-tcp#readme",
