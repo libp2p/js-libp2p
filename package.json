@@ -189,7 +189,7 @@
     "@libp2p/topology": "^4.0.0",
     "abortable-iterator": "^4.0.2",
     "it-length-prefixed": "^8.0.2",
-    "it-pipe": "^2.0.3",
+    "it-pipe": "^3.0.0",
     "it-pushable": "^3.0.0",
     "multiformats": "^11.0.0",
     "p-queue": "^7.2.0",
