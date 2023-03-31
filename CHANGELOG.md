@@ -1,3 +1,10 @@
+## [5.0.8](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.7...v5.0.8) (2023-03-31)
+
+
+### Dependencies
+
+* **dev:** bump it-all from 2.0.1 to 3.0.1 ([#226](https://github.com/libp2p/js-libp2p-websockets/issues/226)) ([8e9affd](https://github.com/libp2p/js-libp2p-websockets/commit/8e9affdd6ddda9a2678a143fb9390cf6917a8aff))
+
 ## [5.0.7](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.6...v5.0.7) (2023-03-20)
 
 
