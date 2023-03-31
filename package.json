@@ -162,7 +162,7 @@
     "@types/varint": "^6.0.0",
     "aegir": "^37.2.0",
     "iso-random-stream": "^2.0.2",
-    "it-all": "^2.0.0",
+    "it-all": "^3.0.1",
     "it-map": "^2.0.0",
     "it-pair": "^2.0.3",
     "p-timeout": "^6.0.0",
