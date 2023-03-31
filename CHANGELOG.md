@@ -1,3 +1,19 @@
+## [3.1.3](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.2...v3.1.3) (2023-03-31)
+
+
+### Trivial Changes
+
+* replace err-code with CodeError ([#36](https://github.com/libp2p/js-libp2p-multistream-select/issues/36)) ([fc2aefd](https://github.com/libp2p/js-libp2p-multistream-select/commit/fc2aefdec0db9a2b39fe8259881cf3a2693027cb)), closes [js-libp2p#1269](https://github.com/libp2p/js-libp2p/issues/1269)
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([1861a94](https://github.com/libp2p/js-libp2p-multistream-select/commit/1861a945fd8fef3d407591632d92f080d07e0bed))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([0f312c0](https://github.com/libp2p/js-libp2p-multistream-select/commit/0f312c08f3760f188304074088060f3d701e5815))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([6a277a6](https://github.com/libp2p/js-libp2p-multistream-select/commit/6a277a6efdcbd3afef72335699d3a61e4bbea609))
+
+
+### Dependencies
+
+* bump it-merge from 2.0.1 to 3.0.0 ([#51](https://github.com/libp2p/js-libp2p-multistream-select/issues/51)) ([129166b](https://github.com/libp2p/js-libp2p-multistream-select/commit/129166ba5366d29d20e2629ce1f542c57cc864ba))
+* **dev:** bump it-all from 2.0.1 to 3.0.1 ([#50](https://github.com/libp2p/js-libp2p-multistream-select/issues/50)) ([d8420a0](https://github.com/libp2p/js-libp2p-multistream-select/commit/d8420a03207be7ee3472c4bb7a4f3cc0912758a1))
+
 ## [3.1.2](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.1...v3.1.2) (2022-12-16)
 
 
