@@ -200,7 +200,7 @@
     "delay": "^5.0.0",
     "execa": "^7.0.0",
     "it-filter": "^2.0.0",
-    "it-last": "^2.0.0",
+    "it-last": "^3.0.1",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-retry": "^5.0.0",
