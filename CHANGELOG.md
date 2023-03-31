@@ -1,3 +1,12 @@
+## [8.0.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.4...v8.0.5) (2023-03-31)
+
+
+### Dependencies
+
+* bump it-map from 2.0.1 to 3.0.1 ([#440](https://github.com/libp2p/js-libp2p-kad-dht/issues/440)) ([8e02b3d](https://github.com/libp2p/js-libp2p-kad-dht/commit/8e02b3d6db1f323e103fbcdff59fabcc8f4d67c6))
+* bump it-take from 2.0.1 to 3.0.1 ([#439](https://github.com/libp2p/js-libp2p-kad-dht/issues/439)) ([f85e2f9](https://github.com/libp2p/js-libp2p-kad-dht/commit/f85e2f9576095035117ddb3f5794bf9aef1e8453))
+* **dev:** bump it-last from 2.0.1 to 3.0.1 ([#438](https://github.com/libp2p/js-libp2p-kad-dht/issues/438)) ([23cc94f](https://github.com/libp2p/js-libp2p-kad-dht/commit/23cc94f224dbb01a3f0454c6a8d9f6722a1f40c4))
+
 ## [8.0.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.3...v8.0.4) (2023-03-30)
 
 
