@@ -1,3 +1,10 @@
+## [7.1.3](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.2...v7.1.3) (2023-03-31)
+
+
+### Dependencies
+
+* **dev:** bump it-map from 2.0.1 to 3.0.1 ([#263](https://github.com/libp2p/js-libp2p-mplex/issues/263)) ([c438001](https://github.com/libp2p/js-libp2p-mplex/commit/c4380018b73a00ab360997524a3375b8210f91e8))
+
 ## [7.1.2](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.1...v7.1.2) (2023-03-21)
 
 
