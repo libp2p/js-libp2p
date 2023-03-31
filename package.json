@@ -150,7 +150,7 @@
     "it-merge": "^2.0.0",
     "it-pair": "^2.0.2",
     "it-pb-stream": "^3.2.0",
-    "it-pipe": "^2.0.3",
+    "it-pipe": "^3.0.0",
     "it-stream-types": "^1.0.4",
     "merge-options": "^3.0.4",
     "multiformats": "^11.0.0",
