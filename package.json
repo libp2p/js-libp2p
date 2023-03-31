@@ -180,7 +180,7 @@
     "@types/ws": "^8.2.2",
     "aegir": "^38.1.7",
     "is-loopback-addr": "^2.0.1",
-    "it-all": "^2.0.0",
+    "it-all": "^3.0.1",
     "it-drain": "^2.0.0",
     "it-goodbye": "^4.0.1",
     "it-pipe": "^2.0.3",
