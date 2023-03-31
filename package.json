@@ -142,7 +142,7 @@
     "it-all": "^2.0.0",
     "it-drain": "^2.0.0",
     "it-filter": "^2.0.0",
-    "it-first": "^2.0.0",
+    "it-first": "^3.0.0",
     "it-parallel": "^3.0.0",
     "it-handshake": "^4.1.2",
     "it-length-prefixed": "^8.0.2",
