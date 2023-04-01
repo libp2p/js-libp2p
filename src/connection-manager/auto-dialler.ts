@@ -6,6 +6,8 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import AbortAbort from 'abortabort'
+import type { Connection } from '@libp2p/interface-connection'
 
 const log = logger('libp2p:connection-manager:auto-dialler')
 
@@ -37,6 +39,8 @@ export class AutoDialler implements Startable {
   private readonly options: Required<AutoDiallerInit>
   private running: boolean
   private autoDialTimeout?: ReturnType<retimer>
+  private readonly abortController?: AbortAbort
+  connectionMap: Map<string, Promise<Connection>>
 
   /**
    * Proactively tries to connect to known peers stored in the PeerStore.
@@ -48,6 +52,8 @@ export class AutoDialler implements Startable {
     this.options = mergeOptions.call({ ignoreUndefined: true }, defaultOptions, init)
     this.running = false
     this._autoDial = this._autoDial.bind(this)
+    this.abortController = new AbortAbort()
+    this.connectionMap = new Map<string, Promise<Connection>>()
 
     log('options: %j', this.options)
   }
@@ -74,6 +80,8 @@ export class AutoDialler implements Startable {
    */
   async stop (): Promise<void> {
     this.running = false
+    // This will cause all pending dials to be aborted as well.
+    this.abortController?.abort()
 
     if (this.autoDialTimeout != null) {
       this.autoDialTimeout.clear()
@@ -113,7 +121,11 @@ export class AutoDialler implements Startable {
       return true
     })
 
-    // shuffle the peers
+    /**
+     * shuffle the peers
+     *
+     * @todo: Be smarter about shuffling peers. We should add weights to peers that are more likely to succeed
+     */
     peers = peers.sort(() => Math.random() > 0.5 ? 1 : -1)
 
     peers = peers.sort((a, b) => {
@@ -137,14 +149,29 @@ export class AutoDialler implements Startable {
       }
 
       const peer = peers[i]
+      const peerIdString = peer.id.toString()
 
-      if (this.components.connectionManager.getConnections(peer.id).length === 0) {
+      if (this.components.connectionManager.getConnections(peer.id).length === 0 && !this.connectionMap.has(peerIdString)) {
         log('connecting to a peerStore stored peer %p', peer.id)
-        try {
-          await this.components.connectionManager.openConnection(peer.id)
-        } catch (err: any) {
+        const connectionAbortController = new AbortAbort()
+        this.abortController?.addDependant(connectionAbortController)
+
+        /**
+         * we do not need to await the connection attempts because we are
+         * blocking new calls to `openConnection` by checking whether the
+         * peer already has an attempt in the `connectionMap` and we are
+         * removing the peer from the `connectionMap` when the attempt
+         * finishes (successful or not)
+         */
+        const connectionAttempt = this.components.connectionManager.openConnection(peer.id, { signal: connectionAbortController.signal })
+        connectionAttempt.catch((err: any) => {
           log.error('could not connect to peerStore stored peer', err)
-        }
+        })
+        this.connectionMap.set(peerIdString, connectionAttempt)
+        connectionAttempt.finally(() => {
+          this.connectionMap.delete(peerIdString)
+          connectionAbortController.abort()
+        })
       }
     }
 
