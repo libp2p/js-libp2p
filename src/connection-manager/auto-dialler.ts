@@ -63,7 +63,7 @@ export class AutoDialler implements Startable {
     this.running = true
 
     void this._autoDial().catch(err => {
-      log.error('could start autodial', err)
+      log.error('could not start autodial', err)
     })
 
     log('started')
