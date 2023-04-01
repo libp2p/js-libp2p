@@ -124,7 +124,8 @@ export class AutoDialler implements Startable {
     /**
      * shuffle the peers
      *
-     * @todo: Be smarter about shuffling peers. We should add weights to peers that are more likely to succeed
+     * todo: Be smarter about shuffling peers. We should add weights to peers
+     * that are more likely to succeed
      */
     peers = peers.sort(() => Math.random() > 0.5 ? 1 : -1)
 

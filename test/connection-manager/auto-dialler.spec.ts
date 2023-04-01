@@ -109,26 +109,7 @@ describe('Auto-dialler', () => {
     expect(connectionManager.openConnection.calledWith(peerWithoutAddress.id)).to.be.false()
   })
 
-  // eslint-disable-next-line no-only-tests/no-only-tests
-  it.only('Should dial multiple requests in parallel', async () => {
-    // const peer1: Peer = {
-    //   id: await createEd25519PeerId(),
-    //   protocols: [],
-    //   addresses: [{
-    //     multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
-    //     isCertified: true
-    //   }],
-    //   metadata: new Map()
-    // }
-    // const peer2: Peer = {
-    //   id: await createEd25519PeerId(),
-    //   protocols: [],
-    //   addresses: [{
-    //     multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
-    //     isCertified: true
-    //   }],
-    //   metadata: new Map()
-    // }
+  it('Should dial multiple requests in parallel', async () => {
     const getPeer = async (): Promise<Peer> => ({
       id: await createEd25519PeerId(),
       protocols: [],
@@ -140,7 +121,9 @@ describe('Auto-dialler', () => {
     })
 
     /**
-     * @note Browser limits will prevent a certain number of parallel connections at a time
+     * Note: Browser limits will prevent a certain number of parallel
+     * connections at a time.
+     *
      * This test will pass when tested in the browser only because we are not
      * actually opening connections, but using a stubbed connectionManager
      */
@@ -161,7 +144,7 @@ describe('Auto-dialler', () => {
        * delay to resolve each connection should be longer than the timeout we
        * wait for connection requests below
        */
-      }, 3000)
+      }, 10000)
     }))
 
     const autoDialler = new AutoDialler({
@@ -176,9 +159,10 @@ describe('Auto-dialler', () => {
 
     /**
      * the delay here needs to be less than the time it takes to resolve one
-     * "openConnection" request, to ensure two are in flight at the same time
+     * "openConnection" request, to ensure more than one is in flight at the
+     * same time
      */
-    await pWaitFor(() => connectionManager.openConnection.callCount === numPeers, { timeout: 2000 })
+    await pWaitFor(() => connectionManager.openConnection.callCount === numPeers, { timeout: 1000 })
 
     await autoDialler.stop()
     expect(connectionManager.openConnection.callCount).to.equal(numPeers)
