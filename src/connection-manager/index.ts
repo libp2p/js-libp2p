@@ -584,8 +584,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       return
     }
     if (limit === Infinity) {
-        log.trace('limit %s is Infinity so it cannot be applied', name);
-        return;
+      log.trace('limit %s is Infinity so it cannot be applied', name)
+      return
     }
 
     log.trace('checking limit of %s. current value: %d of %d', name, value, limit)
