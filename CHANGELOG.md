@@ -1,3 +1,22 @@
+## [6.0.5](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.4...v6.0.5) (2023-04-03)
+
+
+### Bug Fixes
+
+* update project config ([5c7e7f9](https://github.com/libp2p/js-libp2p-pubsub/commit/5c7e7f9f0393c0b231108bd51a0b8c805712ca09))
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([b1c5590](https://github.com/libp2p/js-libp2p-pubsub/commit/b1c5590a9090adadc69d9f5b0ea508035e1c02f8))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([f83a2f7](https://github.com/libp2p/js-libp2p-pubsub/commit/f83a2f76235639aed4bd9ecd6114365330acd5ff))
+
+
+### Dependencies
+
+* bump it-length-prefixed from 8.x to 9.x ([#134](https://github.com/libp2p/js-libp2p-pubsub/issues/134)) ([ae3e688](https://github.com/libp2p/js-libp2p-pubsub/commit/ae3e6881aab3d79bf61ac1d3dab952f4a36cbd25))
+* bump it-pipe from 2.0.5 to 3.0.0 ([#133](https://github.com/libp2p/js-libp2p-pubsub/issues/133)) ([cafd733](https://github.com/libp2p/js-libp2p-pubsub/commit/cafd7330727644b1074f57920099888385dbd81f))
+
 ## [6.0.4](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.3...v6.0.4) (2023-02-22)
 
 
