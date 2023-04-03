@@ -94,7 +94,7 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
     this.inboundStream = abortableSource(
       pipe(
         this._rawInboundStream,
-        lp.decode()
+        (source) => lp.decode(source)
       ),
       this._inboundAbortController.signal,
       { returnOnAbort: true }
@@ -134,7 +134,7 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
 
     pipe(
       this.outboundStream,
-      lp.encode(),
+      (source) => lp.encode(source),
       this._rawOutboundStream
     ).catch((err: Error) => {
       log.error(err)
