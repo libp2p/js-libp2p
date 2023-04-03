@@ -1,3 +1,10 @@
+## [3.1.4](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.3...v3.1.4) (2023-04-03)
+
+
+### Dependencies
+
+* update all it-* deps to the latest versions ([#57](https://github.com/libp2p/js-libp2p-multistream-select/issues/57)) ([cf9133a](https://github.com/libp2p/js-libp2p-multistream-select/commit/cf9133a00b73c9e6d7576b57d2dccd9e87ccd01e))
+
 ## [3.1.3](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.2...v3.1.3) (2023-03-31)
 
 
