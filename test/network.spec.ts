@@ -63,9 +63,9 @@ describe('Network', () => {
 
             const data = await pipe(
               [msg.serialize()],
-              lp.encode(),
+              (source) => lp.encode(source),
               source => map(source, arr => new Uint8ArrayList(arr)),
-              async (source) => await all(source)
+              async (source) => all(source)
             )
 
             const source = (function * () {
@@ -77,7 +77,7 @@ describe('Network', () => {
             const sink: Sink<Uint8ArrayList | Uint8Array> = async source => {
               const res = await pipe(
                 source,
-                lp.decode(),
+                (source) => lp.decode(source),
                 async (source) => await all(source)
               )
               expect(Message.deserialize(res[0]).type).to.eql(MESSAGE_TYPE.PING)

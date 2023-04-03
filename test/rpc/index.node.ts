@@ -78,11 +78,11 @@ describe('rpc', () => {
 
     peerRouting.getCloserPeersOffline.resolves([])
 
-    const source = await pipe(
+    const source = pipe(
       [msg.serialize()],
-      lp.encode(),
+      (source) => lp.encode(source),
       source => map(source, arr => new Uint8ArrayList(arr)),
-      async (source) => await all(source)
+      (source) => all(source)
     )
 
     const duplexStream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> = {
@@ -90,7 +90,7 @@ describe('rpc', () => {
       sink: async (source) => {
         const res = await pipe(
           source,
-          lp.decode(),
+          (source) => lp.decode(source),
           async (source) => await all(source)
         )
         validateMessage(res)

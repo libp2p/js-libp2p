@@ -90,7 +90,7 @@ export class RPC {
 
       await pipe(
         stream,
-        lp.decode(),
+        (source) => lp.decode(source),
         async function * (source) {
           for await (const msg of source) {
             // handle the message
@@ -104,7 +104,7 @@ export class RPC {
             }
           }
         },
-        lp.encode(),
+        (source) => lp.encode(source),
         stream
       )
     })

@@ -156,7 +156,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
 
     await pipe(
       [msg],
-      lp.encode(),
+      (source) => lp.encode(source),
       stream,
       drain
     )
@@ -174,9 +174,9 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
 
     const res = await pipe(
       [msg],
-      lp.encode(),
+      (source) => lp.encode(source),
       stream,
-      lp.decode(),
+      (source) => lp.decode(source),
       async source => {
         const buf = await first(source)
 
