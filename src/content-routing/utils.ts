@@ -49,6 +49,6 @@ export async function * requirePeers (source: Source<PeerInfo>, min: number = 1)
   }
 
   if (seen < min) {
- throw new CodeError(`more peers required, seen: ${seen}  min: ${min}`, 'NOT_FOUND')
+    throw new CodeError(`more peers required, seen: ${seen}  min: ${min}`, 'NOT_FOUND')
   }
 }
