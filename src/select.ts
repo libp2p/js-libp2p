@@ -122,23 +122,25 @@ export function lazySelect (stream: Duplex<any>, protocol: string): ProtocolStre
   let negotiated = false
   return {
     stream: {
-      sink: async source => await stream.sink((async function * () {
-        let first = true
-        for await (const chunk of merge(source, negotiateTrigger)) {
-          if (first) {
-            first = false
-            negotiated = true
-            negotiateTrigger.end()
-            const p1 = uint8ArrayFromString(PROTOCOL_ID)
-            const p2 = uint8ArrayFromString(protocol)
-            const list = new Uint8ArrayList(multistream.encode(p1), multistream.encode(p2))
-            if (chunk.length > 0) list.append(chunk)
-            yield * list
-          } else {
-            yield chunk
+      sink: async source => {
+        await stream.sink((async function * () {
+          let first = true
+          for await (const chunk of merge(source, negotiateTrigger)) {
+            if (first) {
+              first = false
+              negotiated = true
+              negotiateTrigger.end()
+              const p1 = uint8ArrayFromString(PROTOCOL_ID)
+              const p2 = uint8ArrayFromString(protocol)
+              const list = new Uint8ArrayList(multistream.encode(p1), multistream.encode(p2))
+              if (chunk.length > 0) list.append(chunk)
+              yield * list
+            } else {
+              yield chunk
+            }
           }
-        }
-      })()),
+        })())
+      },
       source: (async function * () {
         if (!negotiated) negotiateTrigger.push(new Uint8Array())
         const byteReader = reader(stream.source)

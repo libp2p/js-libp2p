@@ -28,7 +28,7 @@ export function encode (buffer: Uint8Array | Uint8ArrayList): Uint8ArrayList {
 /**
  * `write` encodes and writes a single buffer
  */
-export function write (writer: Pushable<any>, buffer: Uint8Array | Uint8ArrayList, options: MultistreamSelectInit = {}) {
+export function write (writer: Pushable<any>, buffer: Uint8Array | Uint8ArrayList, options: MultistreamSelectInit = {}): void {
   const encoded = encode(buffer)
 
   if (options.writeBytes === true) {
@@ -41,7 +41,7 @@ export function write (writer: Pushable<any>, buffer: Uint8Array | Uint8ArrayLis
 /**
  * `writeAll` behaves like `write`, except it encodes an array of items as a single write
  */
-export function writeAll (writer: Pushable<any>, buffers: Uint8Array[], options: MultistreamSelectInit = {}) {
+export function writeAll (writer: Pushable<any>, buffers: Uint8Array[], options: MultistreamSelectInit = {}): void {
   const list = new Uint8ArrayList()
 
   for (const buf of buffers) {
@@ -71,13 +71,13 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
   }
 
   // Once the length has been parsed, read chunk for that length
-  const onLength = (l: number) => {
+  const onLength = (l: number): void => {
     byteLength = l
   }
 
   const buf = await pipe(
     input,
-    lp.decode({ onLength, maxDataLength: MAX_PROTOCOL_LENGTH }),
+    (source) => lp.decode(source, { onLength, maxDataLength: MAX_PROTOCOL_LENGTH }),
     async (source) => await first(source)
   )
 
@@ -93,7 +93,7 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
   return buf.sublist(0, -1) // Remove newline
 }
 
-export async function readString (reader: Reader, options?: AbortOptions) {
+export async function readString (reader: Reader, options?: AbortOptions): Promise<string> {
   const buf = await read(reader, options)
 
   return uint8ArrayToString(buf.subarray())

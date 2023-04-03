@@ -120,7 +120,7 @@ describe('Listener', () => {
           // Decode each of the protocols from the reader
           const lsProtocols = await pipe(
             protocolsReader,
-            Lp.decode(),
+            (source) => Lp.decode(source),
             // Stringify and remove the newline
             (source) => map(source, (buf) => uint8ArrayToString(buf.subarray()).trim()),
             async (source) => await all(source)
