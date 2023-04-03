@@ -1,3 +1,10 @@
+## [8.0.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.5...v8.0.6) (2023-04-03)
+
+
+### Dependencies
+
+* update `it-*` deps to latest versions ([#450](https://github.com/libp2p/js-libp2p-kad-dht/issues/450)) ([0d07558](https://github.com/libp2p/js-libp2p-kad-dht/commit/0d07558c94728f2a0323ccd6d86b3816f4562966))
+
 ## [8.0.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.4...v8.0.5) (2023-03-31)
 
 
