@@ -1,3 +1,10 @@
+## [1.0.15](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.14...v1.0.15) (2023-04-04)
+
+
+### Bug Fixes
+
+* deriveKey in webkit linux (workaround) ([#313](https://github.com/libp2p/js-libp2p-crypto/issues/313)) ([4905944](https://github.com/libp2p/js-libp2p-crypto/commit/4905944fdb0578a77a36fd5c097be459a501ad34))
+
 ## [1.0.14](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.13...v1.0.14) (2023-03-10)
 
 
