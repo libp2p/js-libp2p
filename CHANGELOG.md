@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-record/compare/v3.0.2...v3.0.3) (2023-04-04)
+
+
+### Bug Fixes
+
+* correction package.json exports types path ([#87](https://github.com/libp2p/js-libp2p-record/issues/87)) ([c1e9a6d](https://github.com/libp2p/js-libp2p-record/commit/c1e9a6d402a971b3ef66484c151b9dc4627fea1b))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-record/compare/v3.0.1...v3.0.2) (2023-03-10)
 
 
