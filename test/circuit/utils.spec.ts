@@ -2,7 +2,7 @@
 
 import { mockStream } from '@libp2p/interface-mocks'
 import { expect } from 'aegir/chai'
-import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../../src/circuit/utils.js'
+import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../../src/circuit-relay/utils.js'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import delay from 'delay'
 import drain from 'it-drain'
