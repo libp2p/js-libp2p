@@ -100,6 +100,24 @@ describe('ed25519', function () {
     expect(key.equals(importedKey)).to.equal(true)
   })
 
+  it('should export a libp2p-key with no password to encrypt', async () => {
+    const key = await crypto.keys.generateKeyPair('Ed25519')
+
+    if (!(key instanceof Ed25519PrivateKey)) {
+      throw new Error('Key was incorrect type')
+    }
+
+    const encryptedKey = await key.export('')
+    // Import the key
+    const importedKey = await crypto.keys.importKey(encryptedKey, '')
+
+    if (!(importedKey instanceof Ed25519PrivateKey)) {
+      throw new Error('Key was incorrect type')
+    }
+
+    expect(key.equals(importedKey)).to.equal(true)
+  })
+
   it('should fail to import libp2p-key with wrong password', async () => {
     const key = await crypto.keys.generateKeyPair('Ed25519')
     const encryptedKey = await key.export('my secret', 'libp2p-key')

@@ -3,6 +3,22 @@ import { fromString } from 'uint8arrays/from-string'
 import webcrypto from '../webcrypto.js'
 import type { CreateOptions, AESCipher } from './interface.js'
 
+export function isWebkitLinux (): boolean {
+  return typeof navigator !== 'undefined' && navigator.userAgent.includes('Safari') && navigator.userAgent.includes('Linux') && !navigator.userAgent.includes('Chrome')
+}
+
+// WebKit on Linux does not support deriving a key from an empty PBKDF2 key.
+// So, as a workaround, we provide the generated key as a constant. We test that
+// this generated key is accurate in test/workaround.spec.ts
+// Generated via:
+// await crypto.subtle.exportKey('jwk',
+//   await crypto.subtle.deriveKey(
+//     { name: 'PBKDF2', salt: new Uint8Array(16), iterations: 32767, hash: { name: 'SHA-256' } },
+//     await crypto.subtle.importKey('raw', new Uint8Array(0), { name: 'PBKDF2' }, false, ['deriveKey']),
+//     { name: 'AES-GCM', length: 128 }, true, ['encrypt', 'decrypt'])
+// )
+export const derivedEmptyPasswordKey = { alg: 'A128GCM', ext: true, k: 'scm9jmO_4BJAgdwWGVulLg', key_ops: ['encrypt', 'decrypt'], kty: 'oct' }
+
 // Based off of code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
 
 export function create (opts?: CreateOptions): AESCipher {
@@ -29,10 +45,15 @@ export function create (opts?: CreateOptions): AESCipher {
       password = fromString(password)
     }
 
+    let cryptoKey: CryptoKey
+    if (password.length === 0 && isWebkitLinux()) {
+      cryptoKey = await crypto.subtle.importKey('jwk', derivedEmptyPasswordKey, { name: 'AES-GCM' }, true, ['encrypt'])
+    } else {
     // Derive a key using PBKDF2.
-    const deriveParams = { name: 'PBKDF2', salt, iterations, hash: { name: digest } }
-    const rawKey = await crypto.subtle.importKey('raw', password, { name: 'PBKDF2' }, false, ['deriveKey', 'deriveBits'])
-    const cryptoKey = await crypto.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ['encrypt'])
+      const deriveParams = { name: 'PBKDF2', salt, iterations, hash: { name: digest } }
+      const rawKey = await crypto.subtle.importKey('raw', password, { name: 'PBKDF2' }, false, ['deriveKey'])
+      cryptoKey = await crypto.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ['encrypt'])
+    }
 
     // Encrypt the string.
     const ciphertext = await crypto.subtle.encrypt(aesGcm, cryptoKey, data)
@@ -55,10 +76,15 @@ export function create (opts?: CreateOptions): AESCipher {
       password = fromString(password)
     }
 
-    // Derive the key using PBKDF2.
-    const deriveParams = { name: 'PBKDF2', salt, iterations, hash: { name: digest } }
-    const rawKey = await crypto.subtle.importKey('raw', password, { name: 'PBKDF2' }, false, ['deriveKey', 'deriveBits'])
-    const cryptoKey = await crypto.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ['decrypt'])
+    let cryptoKey: CryptoKey
+    if (password.length === 0 && isWebkitLinux()) {
+      cryptoKey = await crypto.subtle.importKey('jwk', derivedEmptyPasswordKey, { name: 'AES-GCM' }, true, ['decrypt'])
+    } else {
+      // Derive the key using PBKDF2.
+      const deriveParams = { name: 'PBKDF2', salt, iterations, hash: { name: digest } }
+      const rawKey = await crypto.subtle.importKey('raw', password, { name: 'PBKDF2' }, false, ['deriveKey'])
+      cryptoKey = await crypto.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ['decrypt'])
+    }
 
     // Decrypt the string.
     const plaintext = await crypto.subtle.decrypt(aesGcm, cryptoKey, ciphertext)
