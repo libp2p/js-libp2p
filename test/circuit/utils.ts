@@ -11,7 +11,7 @@ import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { Options as PWaitForOptions } from 'p-wait-for'
 import pWaitFor from 'p-wait-for'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { RELAY_V2_HOP_CODEC } from '../../src/circuit/constants.js'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const listenAddr = '/ip4/127.0.0.1/tcp/0'

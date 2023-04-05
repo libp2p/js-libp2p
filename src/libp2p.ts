@@ -51,7 +51,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import type { Datastore } from 'interface-datastore'
 import type { KeyChain } from '@libp2p/interface-keychain'
 import mergeOptions from 'merge-options'
-import type { CircuitRelayService } from './circuit/index.js'
+import type { CircuitRelayService } from './circuit-relay/index.js'
 
 const log = logger('libp2p')
 
