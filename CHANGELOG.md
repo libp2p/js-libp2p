@@ -10,6 +10,21 @@
 
 
 
+## [0.44.0](https://www.github.com/libp2p/js-libp2p/compare/v0.43.3...v0.44.0) (2023-04-05)
+
+
+### Features
+
+* support batch dialling ([#1623](https://www.github.com/libp2p/js-libp2p/issues/1623)) ([290e610](https://www.github.com/libp2p/js-libp2p/commit/290e6103f2497b2a74a8964b7479636c391df2ba))
+
+
+### Bug Fixes
+
+* **content-routing:utils:** improve requirePeers error msg ([#1647](https://www.github.com/libp2p/js-libp2p/issues/1647)) ([34e451a](https://www.github.com/libp2p/js-libp2p/commit/34e451afdfcc57dda2896b22d43b3e6b99b1b4cd))
+* correct a typo in an error message in AutoDialler ([#1667](https://www.github.com/libp2p/js-libp2p/issues/1667)) ([f4c99d9](https://www.github.com/libp2p/js-libp2p/commit/f4c99d95a0f1b142f6bd3e55ce930b1b776fd64a))
+* ensure to check for Infinity in checkMaxLimit function ([#1666](https://www.github.com/libp2p/js-libp2p/issues/1666)) ([00a7783](https://www.github.com/libp2p/js-libp2p/commit/00a77831b224b8d52a8d36027a8f59bfd6473d50))
+* update exports path for circuit relay ([#1676](https://www.github.com/libp2p/js-libp2p/issues/1676)) ([206b469](https://www.github.com/libp2p/js-libp2p/commit/206b469bef101f222d53f51fc15979ba965555c5)), closes [#1655](https://www.github.com/libp2p/js-libp2p/issues/1655)
+
 ### [0.43.3](https://www.github.com/libp2p/js-libp2p/compare/v0.43.2...v0.43.3) (2023-03-28)
 
 
