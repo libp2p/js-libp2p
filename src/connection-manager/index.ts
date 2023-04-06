@@ -67,7 +67,13 @@ export interface ConnectionManagerInit {
   maxParallelDials?: number
 
   /**
-   * Number of max addresses to dial for a given peer
+   * Number of max concurrent dials per peer
+   */
+  maxParallelDialsPerPeer?: number
+
+  /**
+   * Number of max addresses to dial for a given peer - if a peer has more
+   * addresses than this the dial will fail
    */
   maxPeerAddrsToDial?: number
 
@@ -82,11 +88,6 @@ export interface ConnectionManagerInit {
    * encrypt, multiplex etc) must complete within this number of ms.
    */
   inboundUpgradeTimeout?: number
-
-  /**
-   * Number of max concurrent dials per peer
-   */
-  maxConcurrentDialsPerPeer?: number
 
   /**
    * Multiaddr resolvers to use when dialing

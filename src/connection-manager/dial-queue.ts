@@ -63,7 +63,7 @@ export interface DialerInit {
   /**
    * Number of max concurrent dials per peer
    */
-  maxConcurrentDialsPerPeer?: number
+  maxParallelDialsPerPeer?: number
 
   /**
    * How long a dial attempt is allowed to take
@@ -80,7 +80,7 @@ const defaultOptions = {
   addressSorter: publicAddressesFirst,
   maxParallelDials: MAX_PARALLEL_DIALS,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
-  maxConcurrentDialsPerPeer: MAX_DIALS_PER_PEER,
+  maxParallelDialsPerPeer: MAX_DIALS_PER_PEER,
   dialTimeout: DIAL_TIMEOUT,
   resolvers: {
     dnsaddr: dnsaddrResolver
@@ -104,7 +104,7 @@ export class DialQueue {
   private readonly transportManager: TransportManager
   private readonly addressSorter: AddressSorter
   private readonly maxPeerAddrsToDial: number
-  private readonly maxConcurrentDialsPerPeer: number
+  private readonly maxParallelDialsPerPeer: number
   private readonly dialTimeout: number
   private readonly inProgressDialCount?: Metric
   private readonly pendingDialCount?: Metric
@@ -113,7 +113,7 @@ export class DialQueue {
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter ?? defaultOptions.addressSorter
     this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions.maxPeerAddrsToDial
-    this.maxConcurrentDialsPerPeer = init.maxConcurrentDialsPerPeer ?? defaultOptions.maxConcurrentDialsPerPeer
+    this.maxParallelDialsPerPeer = init.maxParallelDialsPerPeer ?? defaultOptions.maxParallelDialsPerPeer
     this.dialTimeout = init.dialTimeout ?? defaultOptions.dialTimeout
 
     this.peerId = components.peerId
@@ -400,7 +400,7 @@ export class DialQueue {
       // per peer at the same time to prevent one peer with a lot of addresses swamping
       // the dial queue
       const peerDialQueue = new PQueue({
-        concurrency: this.maxConcurrentDialsPerPeer
+        concurrency: this.maxParallelDialsPerPeer
       })
       peerDialQueue.on('error', (err) => {
         log.error('error dialling', err)
