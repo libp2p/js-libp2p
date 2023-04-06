@@ -1,6 +1,6 @@
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
@@ -74,7 +74,6 @@ export interface DefaultAutonatComponents {
   registrar: Registrar
   addressManager: AddressManager
   transportManager: TransportManager
-  dialer: Dialer
   peerId: PeerId
   connectionManager: ConnectionManager
   peerRouting: PeerRouting
@@ -319,9 +318,7 @@ export class AutonatService implements Startable {
             lastMultiaddr = multiaddr
 
             try {
-              // use the dialer so we can dial a specific multiaddr instead of every known
-              // multiaddr for the peer
-              connection = await self.components.dialer.dial(multiaddr, {
+              connection = await self.components.connectionManager.openConnection(multiaddr, {
                 signal: controller.signal
               })
 

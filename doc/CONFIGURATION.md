@@ -600,14 +600,7 @@ const node = await createLibp2p({
   connectionEncryption: [noise()],
   connectionManager: {
     maxConnections: Infinity,
-    minConnections: 0,
-    pollInterval: 2000,
-    // The below values will only be taken into account when Metrics are enabled
-    maxData: Infinity,
-    maxSentData: Infinity,
-    maxReceivedData: Infinity,
-    maxEventLoopDelay: Infinity,
-    movingAverageInterval: 60000
+    minConnections: 0
   }
 })
 ```
@@ -657,7 +650,7 @@ const node = await createLibp2p({
      *
      * Return true to prevent dialing the passed peer on the passed multiaddr.
      */
-    denyDialMultiaddr: (peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>
+    denyDialMultiaddr: (multiaddr: Multiaddr) => Promise<boolean>
 
     /**
      * denyInboundConnection tests whether an incipient inbound connection is allowed.

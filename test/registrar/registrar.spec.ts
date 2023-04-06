@@ -21,6 +21,9 @@ import { webSockets } from '@libp2p/websockets'
 import { mplex } from '@libp2p/mplex'
 import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
 import { DefaultComponents } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 const protocol = '/test/1.0.0'
 
@@ -38,13 +41,14 @@ describe('registrar', () => {
       components = new DefaultComponents({
         peerId,
         datastore: new MemoryDatastore(),
-        upgrader: mockUpgrader()
+        upgrader: mockUpgrader(),
+        transportManager: stubInterface<TransportManager>(),
+        connectionGater: stubInterface<ConnectionGater>()
       })
       components.peerStore = new PersistentPeerStore(components)
       components.connectionManager = new DefaultConnectionManager(components, {
         minConnections: 50,
         maxConnections: 1000,
-        autoDialInterval: 1000,
         inboundUpgradeTimeout: 1000
       })
       registrar = new DefaultRegistrar(components)

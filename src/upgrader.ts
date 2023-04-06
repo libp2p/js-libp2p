@@ -21,6 +21,7 @@ import type { Metrics } from '@libp2p/interface-metrics'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 
 const log = logger('libp2p:upgrader')
 
@@ -51,7 +52,7 @@ export interface UpgraderInit {
    * An amount of ms by which an inbound connection upgrade
    * must complete
    */
-  inboundUpgradeTimeout: number
+  inboundUpgradeTimeout?: number
 }
 
 function findIncomingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
@@ -126,7 +127,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       this.muxers.set(muxer.protocol, muxer)
     })
 
-    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout
+    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
   }
 
   /**

@@ -18,7 +18,8 @@ import delay from 'delay'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { codes } from '../../src/errors.js'
 import { start } from '@libp2p/interfaces/startable'
-import type { Dialer } from '@libp2p/interface-connection-manager'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p
@@ -53,13 +54,13 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: peerIds[0],
-      dialer: stubInterface<Dialer>(),
       upgrader,
-      peerStore
+      peerStore,
+      transportManager: stubInterface<TransportManager>(),
+      connectionGater: stubInterface<ConnectionGater>()
     }, {
       maxConnections: 1000,
       minConnections: 50,
-      autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
     })
 
@@ -93,13 +94,13 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: peerIds[0],
-      dialer: stubInterface<Dialer>(),
       upgrader,
-      peerStore
+      peerStore,
+      transportManager: stubInterface<TransportManager>(),
+      connectionGater: stubInterface<ConnectionGater>()
     }, {
       maxConnections: 1000,
       minConnections: 50,
-      autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
     })
 
@@ -289,7 +290,6 @@ describe('libp2p.connections', () => {
 
     it('should connect to peers in the PeerStore when a peer disconnected', async () => {
       const minConnections = 1
-      const autoDialInterval = 1000
 
       libp2p = await createNode({
         config: {
@@ -297,8 +297,7 @@ describe('libp2p.connections', () => {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
           connectionManager: {
-            minConnections,
-            autoDialInterval
+            minConnections
           }
         }
       })
@@ -416,11 +415,11 @@ describe('libp2p.connections', () => {
       await libp2p.connectionManager.openConnection(remoteLibp2p.peerId)
 
       for (const multiaddr of remoteLibp2p.getMultiaddrs()) {
-        expect(denyDialMultiaddr.calledWith(remoteLibp2p.peerId, multiaddr)).to.be.true()
+        expect(denyDialMultiaddr.calledWith(multiaddr)).to.be.true()
       }
     })
 
-    it('intercept multiaddr store during multiaddr dial', async () => {
+    it('intercept multiaddr store', async () => {
       const filterMultiaddrForPeer = sinon.stub().returns(true)
 
       libp2p = await createNode({
@@ -437,7 +436,7 @@ describe('libp2p.connections', () => {
 
       const fullMultiaddr = remoteLibp2p.getMultiaddrs()[0]
 
-      await libp2p.dial(fullMultiaddr)
+      await libp2p.peerStore.addressBook.add(remoteLibp2p.peerId, [fullMultiaddr])
 
       expect(filterMultiaddrForPeer.callCount).to.equal(2)
 
@@ -568,45 +567,6 @@ describe('libp2p.connections', () => {
 
       expect(denyOutboundUpgradedConnection.called).to.be.true()
       expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
-    })
-  })
-
-  describe('latency monitor', () => {
-    let libp2p: Libp2pNode
-
-    afterEach(async () => {
-      if (libp2p != null) {
-        await libp2p.stop()
-      }
-    })
-
-    it('should only start latency monitor if a limit is configured', async () => {
-      libp2p = await createNode({
-        config: createBaseOptions({
-          peerId: peerIds[0],
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0/ws']
-          }
-        })
-      })
-
-      expect(libp2p).to.not.have.nested.property('connectionManager.latencyMonitor')
-
-      await libp2p.stop()
-
-      libp2p = await createNode({
-        config: createBaseOptions({
-          peerId: peerIds[0],
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0/ws']
-          },
-          connectionManager: {
-            maxEventLoopDelay: 10000
-          }
-        })
-      })
-
-      expect(libp2p).to.have.nested.property('connectionManager.latencyMonitor')
     })
   })
 })
