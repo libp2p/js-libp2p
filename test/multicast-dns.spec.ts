@@ -5,18 +5,18 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import pWaitFor from 'p-wait-for'
-import { mdns } from './../src/index.js'
+import { mdns, MulticastDNSComponents } from './../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { StubbedInstance, stubInterface } from 'ts-sinon'
+import { stubInterface } from 'ts-sinon'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import { start, stop } from '@libp2p/interfaces/startable'
 
-function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): { peerId: PeerId, addressManager: StubbedInstance<AddressManager> } {
+function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSComponents {
   const addressManager = stubInterface<AddressManager>()
-  addressManager.getAddresses.returns(multiaddrs)
+  addressManager.getAddresses.returns(multiaddrs.map(ma => ma.encapsulate(`/p2p/${peerId.toString()}`)))
 
-  return { peerId, addressManager }
+  return { addressManager }
 }
 
 describe('MulticastDNS', () => {

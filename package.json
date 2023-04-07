@@ -136,7 +136,6 @@
   },
   "dependencies": {
     "@libp2p/interface-peer-discovery": "^1.0.5",
-    "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/interface-peer-info": "^1.0.8",
     "@libp2p/interfaces": "^3.3.1",
     "@libp2p/logger": "^2.0.5",
@@ -149,6 +148,7 @@
   "devDependencies": {
     "@libp2p/interface-address-manager": "^2.0.1",
     "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.1",
+    "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/peer-id-factory": "^2.0.0",
     "aegir": "^38.1.2",
     "p-wait-for": "^5.0.0",

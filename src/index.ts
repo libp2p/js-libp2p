@@ -6,7 +6,6 @@ import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { symbol } from '@libp2p/interface-peer-discovery'
 import { stringGen } from './utils.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 
 const log = logger('libp2p:mdns')
@@ -21,7 +20,6 @@ export interface MulticastDNSInit {
 }
 
 export interface MulticastDNSComponents {
-  peerId: PeerId
   addressManager: AddressManager
 }
 
@@ -92,12 +90,11 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     }
 
     log.trace('received incoming mDNS query')
-    const localPeerId = this.components.peerId
     query.gotQuery(
       event,
       this.mdns,
       this.peerName,
-      this.components.addressManager.getAddresses().map((ma) => ma.encapsulate('/p2p/' + localPeerId.toString())),
+      this.components.addressManager.getAddresses(),
       this.serviceTag,
       this.broadcast)
   }
@@ -109,7 +106,7 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
       const foundPeer = query.gotResponse(event, this.peerName, this.serviceTag)
 
       if (foundPeer != null) {
-        log('discovered peer in mDNS qeury response %p', foundPeer.id)
+        log('discovered peer in mDNS query response %p', foundPeer.id)
 
         this.dispatchEvent(new CustomEvent<PeerInfo>('peer', {
           detail: foundPeer

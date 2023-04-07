@@ -28,7 +28,6 @@ describe('compliance tests', () => {
         broadcast: false,
         port: 50001
       })({
-        peerId: peerId1,
         addressManager
       })
 
