@@ -15,8 +15,6 @@ import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Connection } from '@libp2p/interface-connection'
 
-const error = new Error('dial failure')
-
 describe('dial queue', () => {
   let components: {
     peerId: PeerId
@@ -45,9 +43,9 @@ describe('dial queue', () => {
 
   it('should end when a single multiaddr dials succeeds', async () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
-    const deferredConn = pDefer()
-    const actions: Record<string, () => Promise<any>> = {
-      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(error),
+    const deferredConn = pDefer<Connection>()
+    const actions: Record<string, () => Promise<Connection>> = {
+      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(new Error('dial failure')),
       '/ip4/127.0.0.1/tcp/1232': async () => await Promise.resolve(connection),
       '/ip4/127.0.0.1/tcp/1233': async () => await deferredConn.promise
     }
@@ -74,13 +72,52 @@ describe('dial queue', () => {
 
     // End third dial attempt
     deferredConn.resolve()
+
+    // prevent playwright-core error Error: Cannot find parent object page@... to create handle@...
+    await expect(deferredConn.promise).to.eventually.be.undefined()
+  })
+
+  it('should end when a single multiaddr dials succeeds even when a final dial fails', async () => {
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const deferredConn = pDefer<Connection>()
+    const actions: Record<string, () => Promise<Connection>> = {
+      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(new Error('dial failure')),
+      '/ip4/127.0.0.1/tcp/1232': async () => await Promise.resolve(connection),
+      '/ip4/127.0.0.1/tcp/1233': async () => await deferredConn.promise
+    }
+
+    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async ma => {
+      const maStr = ma.toString()
+      const action = actions[maStr]
+
+      if (action != null) {
+        return await action()
+      }
+
+      throw new Error(`No action found for multiaddr ${maStr}`)
+    })
+
+    dialer = new DialQueue(components, {
+      maxParallelDials: 2
+    })
+
+    // Make sure that dial attempt comes back before terminating last dial action
+    await expect(dialer.dial(Object.keys(actions).map(str => multiaddr(str))))
+      .to.eventually.equal(connection)
+
+    // End third dial attempt
+    deferredConn.reject(new Error('Oh noes!'))
+
+    // prevent playwright-core error Error: Cannot find parent object page@... to create handle@...
+    await expect(deferredConn.promise).to.eventually.be.rejected()
   })
 
   it('should throw an AggregateError if all dials fail', async () => {
-    const actions: Record<string, () => Promise<any>> = {
-      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(error),
-      '/ip4/127.0.0.1/tcp/1232': async () => await Promise.reject(error),
-      '/ip4/127.0.0.1/tcp/1233': async () => await Promise.reject(error)
+    const actions: Record<string, () => Promise<Connection>> = {
+      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(new Error('dial failure')),
+      '/ip4/127.0.0.1/tcp/1232': async () => await Promise.reject(new Error('dial failure')),
+      '/ip4/127.0.0.1/tcp/1233': async () => await Promise.reject(new Error('dial failure'))
     }
     dialer = new DialQueue(components, {
       maxParallelDials: 2
@@ -115,8 +152,8 @@ describe('dial queue', () => {
   })
 
   it('should handle a large number of addrs', async () => {
-    const reject = sinon.stub().callsFake(async () => await Promise.reject(error))
-    const actions: Record<string, () => Promise<any>> = {}
+    const reject = sinon.stub().callsFake(async () => await Promise.reject(new Error('dial failure')))
+    const actions: Record<string, () => Promise<Connection>> = {}
     const addrs = [...new Array(25)].map((_, index) => `/ip4/127.0.0.1/tcp/12${index + 1}`)
     addrs.forEach(addr => {
       actions[addr] = reject
@@ -177,15 +214,12 @@ describe('dial queue', () => {
       throw new Error(`No action found for multiaddr ${maStr}`)
     })
 
-    try {
-      setTimeout(() => { controller.abort() }, 100)
-      await dialer.dial(Object.keys(actions).map(str => multiaddr(str)), {
-        signal: controller.signal
-      })
-      expect.fail('dial should have failed')
-    } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateError')
-    }
+    setTimeout(() => { controller.abort() }, 100)
+
+    await expect(dialer.dial(Object.keys(actions).map(str => multiaddr(str)), {
+      signal: controller.signal
+    })).to.eventually.be.rejected
+      .with.property('name', 'AggregateError')
 
     expect(signals['/ip4/127.0.0.1/tcp/1231']).to.have.property('aborted', true)
     expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', true)

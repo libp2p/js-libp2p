@@ -18,14 +18,11 @@ const DefaultConfig: Partial<Libp2pInit> = {
     announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs
   },
   connectionManager: {
-    maxConnections: 300,
-    minConnections: 50,
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
     addressSorter: publicAddressesFirst
   },
-  connectionGater: {},
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
   },

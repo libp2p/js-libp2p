@@ -28,13 +28,13 @@ export const MAX_DIALS_PER_PEER = 10
  * Minimum required number of connections before this node begins to
  * auto-dial peers from the peer book to ensure good connectivity
  */
-export const MIN_CONNECTIONS = 0
+export const MIN_CONNECTIONS = 50
 
 /**
  * Maximum number of connections before this node begins to prune connections
  * to preserve resources
  */
-export const MAX_CONNECTIONS = Infinity
+export const MAX_CONNECTIONS = 300
 
 /**
  * How many peers to auto dial in parallel
@@ -46,3 +46,10 @@ export const AUTO_DIAL_CONCURRENCY = 25
  * user-initiated dials to take precedence.
  */
 export const AUTO_DIAL_PRIORITY = 0
+
+/**
+ *
+ */
+export const INBOUND_CONNECTION_THRESHOLD = 5
+
+export const MAX_INCOMING_PENDING_CONNECTIONS = 10

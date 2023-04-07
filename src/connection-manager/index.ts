@@ -22,7 +22,7 @@ import { ConnectionPruner } from './connection-pruner.js'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import { PeerMap } from '@libp2p/peer-collections'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
-import { DIAL_TIMEOUT, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import type { PendingDial } from '../libp2p.js'
 
@@ -33,13 +33,14 @@ const DEFAULT_DIAL_PRIORITY = 50
 export interface ConnectionManagerInit {
   /**
    * The maximum number of connections libp2p is willing to have before it starts
-   * pruning connections to reduce resource usage. Defaults to `Infinity`
+   * pruning connections to reduce resource usage. (default: 300)
    */
   maxConnections?: number
 
   /**
    * The minimum number of connections below which libp2p will start to dial peers
-   * from the peer book. Defaults to `0`.
+   * from the peer book. Setting this to 0 effectively disables this behaviour.
+   * (default: 50)
    */
   minConnections?: number
 
@@ -52,28 +53,33 @@ export interface ConnectionManagerInit {
 
   /**
    * To allow user dials to take priority over auto dials, use this value as the
-   * dial priority (default: 0)
+   * dial priority. (default: 0)
    */
   autoDialPriority?: number
 
   /**
-   * Sort the known addresses of a peer before trying to dial
+   * Sort the known addresses of a peer before trying to dial, By default public
+   * addresses will be dialled before private (e.g. loopback or LAN) addresses.
    */
   addressSorter?: AddressSorter
 
   /**
-   * Maxiumum number of concurrent dials
+   * The maximum number of dials across all peers to execute in parallel.
+   * (default: 100)
    */
   maxParallelDials?: number
 
   /**
-   * Number of max concurrent dials per peer
+   * To prevent individual peers with large amounts of multiaddrs swamping the
+   * dial queue, this value controls how many addresses to dial in parallel per
+   * peer. So for example if two peers have 10 addresses and this value is set
+   * at 5, we will dial 5 addresses from each at a time. (default: 10)
    */
   maxParallelDialsPerPeer?: number
 
   /**
-   * Number of max addresses to dial for a given peer - if a peer has more
-   * addresses than this the dial will fail
+   * Maximum number of addresses allowed for a given peer - if a peer has more
+   * addresses than this then the dial will fail. (default: 25)
    */
   maxPeerAddrsToDial?: number
 
@@ -85,12 +91,12 @@ export interface ConnectionManagerInit {
 
   /**
    * When a new inbound connection is opened, the upgrade process (e.g. protect,
-   * encrypt, multiplex etc) must complete within this number of ms.
+   * encrypt, multiplex etc) must complete within this number of ms. (default: 30s)
    */
   inboundUpgradeTimeout?: number
 
   /**
-   * Multiaddr resolvers to use when dialing
+   * Multiaddr resolvers to use when dialling
    */
   resolvers?: Record<string, Resolver>
 
@@ -108,24 +114,25 @@ export interface ConnectionManagerInit {
 
   /**
    * If more than this many connections are opened per second by a single
-   * host, reject subsequent connections
+   * host, reject subsequent connections. (default: 5)
    */
   inboundConnectionThreshold?: number
 
   /**
    * The maximum number of parallel incoming connections allowed that have yet to
-   * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc
+   * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc.
+   * (default: 10)
    */
   maxIncomingPendingConnections?: number
 }
 
 const defaultOptions = {
-  minConnections: 0,
-  maxConnections: Infinity,
-  inboundConnectionThreshold: 5,
-  maxIncomingPendingConnections: 10,
-  autoDialConcurrency: 25,
-  autoDialPriority: 0
+  minConnections: MIN_CONNECTIONS,
+  maxConnections: MAX_CONNECTIONS,
+  inboundConnectionThreshold: INBOUND_CONNECTION_THRESHOLD,
+  maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS,
+  autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
+  autoDialPriority: AUTO_DIAL_PRIORITY
 }
 
 export interface DefaultConnectionManagerComponents {
@@ -154,7 +161,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
   private readonly maxConnections: number
 
   public readonly dialQueue: DialQueue
-  private readonly autoDial: AutoDial
+  public readonly autoDial: AutoDial
   public readonly connectionPruner: ConnectionPruner
   private readonly inboundConnectionRateLimiter: RateLimiterMemory
 
@@ -488,7 +495,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null) {
-      log('dial to %p', peerId)
+      log('dial %p', peerId)
       const existingConnections = this.getConnections(peerId)
 
       if (existingConnections.length > 0) {

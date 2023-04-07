@@ -14,7 +14,7 @@
     "@libp2p/mplex": "^7.0.0",
     "@libp2p/webrtc-star": "^6.0.0",
     "@libp2p/websockets": "^5.0.0",
-    "libp2p": "../../"
+    "libp2p": "file:../../"
   },
   "devDependencies": {
     "vite": "^2.8.6"

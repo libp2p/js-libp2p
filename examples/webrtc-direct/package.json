@@ -13,7 +13,7 @@
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@libp2p/bootstrap": "^5.0.0",
     "@libp2p/mplex": "^7.0.0",
-    "libp2p": "../../",
+    "libp2p": "file:../../",
     "wrtc": "^0.4.7"
   },
   "devDependencies": {

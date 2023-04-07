@@ -4,7 +4,7 @@ import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'events'
 
-const log = logger('libp2p:connection-manage:utils')
+const log = logger('libp2p:connection-manager:utils')
 
 /**
  * Resolve multiaddr recursively
@@ -25,12 +25,16 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
   }))
 
   const addrs = recursiveMultiaddrs.flat()
-  return addrs.reduce<Multiaddr[]>((array, newM) => {
+  const output = addrs.reduce<Multiaddr[]>((array, newM) => {
     if (array.find(m => m.equals(newM)) == null) {
       array.push(newM)
     }
     return array
   }, ([]))
+
+  log('resolved %m to', ma, output)
+
+  return output
 }
 
 /**
@@ -52,6 +56,10 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Abo
 
   for (const sig of signals) {
     if (sig != null) {
+      try {
+        // fails on node < 15.4
+        setMaxListeners?.(Infinity, sig)
+      } catch { }
       sigs.push(sig)
     }
   }

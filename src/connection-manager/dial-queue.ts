@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { AbortError, CodeError } from '@libp2p/interfaces/errors'
 import { Multiaddr, Resolver, resolvers } from '@multiformats/multiaddr'
 import { TimeoutController } from 'timeout-abort-controller'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
@@ -20,10 +20,10 @@ import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import PQueue from 'p-queue'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { AbortError } from 'abortable-iterator'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
+import pDefer from 'p-defer'
 
-const log = logger('libp2p:dialer')
+const log = logger('libp2p:connection-manager:dial-queue')
 
 export type PendingDialStatus = 'queued' | 'active' | 'error' | 'success'
 
@@ -44,35 +44,12 @@ export interface DialOptions extends AbortOptions {
   priority?: number
 }
 
-export interface DialerInit {
-  /**
-   * Sort the known addresses of a peer before trying to dial
-   */
+interface DialerInit {
   addressSorter?: AddressSorter
-
-  /**
-   * Number of max concurrent dials
-   */
   maxParallelDials?: number
-
-  /**
-   * Number of max addresses to dial for a given peer
-   */
   maxPeerAddrsToDial?: number
-
-  /**
-   * Number of max concurrent dials per peer
-   */
   maxParallelDialsPerPeer?: number
-
-  /**
-   * How long a dial attempt is allowed to take
-   */
   dialTimeout?: number
-
-  /**
-   * Multiaddr resolvers to use when dialing
-   */
   resolvers?: Record<string, Resolver>
 }
 
@@ -87,7 +64,7 @@ const defaultOptions = {
   }
 }
 
-export interface DialQueueComponents {
+interface DialQueueComponents {
   peerId: PeerId
   metrics?: Metrics
   peerStore: PeerStore
@@ -152,7 +129,7 @@ export class DialQueue {
     })
     // a started job errored
     this.queue.on('error', (err) => {
-      log.error(err)
+      log.error('error in dial queue', err)
       this.pendingDialCount?.update(this.queue.size)
       this.inProgressDialCount?.update(this.queue.pending)
     })
@@ -341,8 +318,8 @@ export class DialQueue {
     let dedupedMultiaddrs = [...dedupedAddrs.values()]
 
     if (dedupedMultiaddrs.length === 0 || dedupedMultiaddrs.length > this.maxPeerAddrsToDial) {
-      log('addresses before filtering', resolvedAddresses.map(({ multiaddr }) => multiaddr.toString()))
-      log('addresses after filtering', dedupedMultiaddrs.map(({ multiaddr }) => multiaddr.toString()))
+      log('addresses for %p before filtering', peerId ?? 'unknown peer', resolvedAddresses.map(({ multiaddr }) => multiaddr.toString()))
+      log('addresses for %p after filtering', peerId ?? 'unknown peer', dedupedMultiaddrs.map(({ multiaddr }) => multiaddr.toString()))
     }
 
     // make sure we actually have some addresses to dial
@@ -415,49 +392,62 @@ export class DialQueue {
 
         // let any signal abort the dial
         const signal = combineSignals(controller.signal, options.signal)
+        const deferred = pDefer<Connection>()
 
-        return await peerDialQueue.add(async () => {
+        await peerDialQueue.add(async () => {
           if (signal.aborted) {
-            throw new AbortError('Dial was aborted before reaching the head of the peer dial queue')
+            log('dial to %m was aborted before reaching the head of the peer dial queue', addr)
+            deferred.reject(new AbortError())
+            return
           }
 
           // add the individual dial to the dial queue so we don't breach maxConcurrentDials
-          return await this.queue.add(async () => {
-            if (signal.aborted) {
-              throw new AbortError('Dial was aborted before reaching the head of the dial queue')
-            }
-
-            // update dial status
-            pendingDial.status = 'active'
-
-            const conn = await this.transportManager.dial(addr, {
-              ...options,
-              signal
-            })
-
-            // dial succeeded or failed
-            if (conn == null) {
-              throw new CodeError('successful dial led to empty object', codes.ERR_TRANSPORT_DIAL_FAILED)
-            }
-
-            // remove the successful AbortController so it is not aborted
-            dialAbortControllers[i] = undefined
-
-            // immediately abort any other dials
-            dialAbortControllers.forEach(c => {
-              if (c !== undefined) {
-                c.abort()
+          await this.queue.add(async () => {
+            try {
+              if (signal.aborted) {
+                log('dial to %m was aborted before reaching the head of the dial queue', addr)
+                deferred.reject(new AbortError())
+                return
               }
-            })
 
-            return conn
+              // update dial status
+              pendingDial.status = 'active'
+
+              const conn = await this.transportManager.dial(addr, {
+                ...options,
+                signal
+              })
+
+              // remove the successful AbortController so it is not aborted
+              dialAbortControllers[i] = undefined
+
+              // immediately abort any other dials
+              dialAbortControllers.forEach(c => {
+                if (c !== undefined) {
+                  c.abort()
+                }
+              })
+
+              // resolve the connection promise
+              deferred.resolve(conn)
+            } catch (err: any) {
+              // something only went wrong if our signal was not aborted
+              log.error('error during dial of %m', addr, err)
+              deferred.reject(err)
+            }
           }, {
             ...options,
             signal
+          }).catch(err => {
+            deferred.reject(err)
           })
         }, {
           signal
+        }).catch(err => {
+          deferred.reject(err)
         })
+
+        return await deferred.promise
       }))
 
       // dial succeeded or failed
@@ -478,13 +468,6 @@ export class DialQueue {
       }
 
       throw err
-    } finally {
-      // abort any leftover dials
-      dialAbortControllers.forEach(c => {
-        if (c !== undefined) {
-          c.abort()
-        }
-      })
     }
   }
 }

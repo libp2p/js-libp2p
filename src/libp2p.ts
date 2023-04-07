@@ -496,8 +496,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   /**
-   * Called whenever peer discovery services emit `peer` events.
-   * Known peers may be emitted.
+   * Called whenever peer discovery services emit `peer` events and adds peers
+   * to the peer store.
    */
   onDiscoveryPeer (evt: CustomEvent<PeerInfo>): void {
     const { detail: peer } = evt
@@ -507,15 +507,27 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       return
     }
 
-    if (peer.multiaddrs.length > 0) {
-      void this.components.peerStore.addressBook.add(peer.id, peer.multiaddrs).catch(err => { log.error(err) })
-    }
+    void this.components.peerStore.has(peer.id)
+      .then(async (has) => {
+        if (peer.multiaddrs.length > 0) {
+          await this.components.peerStore.addressBook.add(peer.id, peer.multiaddrs)
+        }
 
-    if (peer.protocols.length > 0) {
-      void this.components.peerStore.protoBook.set(peer.id, peer.protocols).catch(err => { log.error(err) })
-    }
+        if (peer.protocols.length > 0) {
+          await this.components.peerStore.protoBook.set(peer.id, peer.protocols)
+        }
 
-    this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peer }))
+        if (!has) {
+          this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peer }))
+        }
+
+        // FIXME: autodialler should listen for `peer:discovery` events on a
+        // central event bus https://github.com/libp2p/js-libp2p/issues/1574
+        await (this.connectionManager as DefaultConnectionManager).autoDial.autoDial()
+      })
+      .catch(err => {
+        log.error('error while handling peer discovery', err)
+      })
   }
 }
 

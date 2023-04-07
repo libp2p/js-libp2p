@@ -8,20 +8,12 @@ import { CustomEvent } from '@libp2p/interfaces/events'
 
 const log = logger('libp2p:connection-manager:connection-pruner')
 
-export interface ConnectionPrunerInit {
-  /**
-   * The maximum number of connections libp2p is willing to have before it starts disconnecting. Defaults to `Infinity`
-   */
+interface ConnectionPrunerInit {
   maxConnections?: number
-
-  /**
-   * A list of multiaddrs that will always be allowed (except if they are in the
-   * deny list) to open connections to this node even if we've reached maxConnections
-   */
   allow?: MultiaddrFilter[]
 }
 
-export interface ConnectionPrunerComponents {
+interface ConnectionPrunerComponents {
   connectionManager: ConnectionManager
   peerStore: PeerStore
 }

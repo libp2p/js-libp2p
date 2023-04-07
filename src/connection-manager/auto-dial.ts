@@ -7,28 +7,13 @@ import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './co
 
 const log = logger('libp2p:connection-manager:auto-dial')
 
-export interface AutoDialInit {
-  /**
-   * The minimum number of connections below which libp2p will start to dial
-   * peers from the peer book. (default: 0)
-   */
+interface AutoDialInit {
   minConnections?: number
-
-  /**
-   * When dialling peers from the peer book to keep the number of open connections
-   * above `minConnections`, add dials for this many peers to the dial queue
-   * at once. (default: 25)
-   */
   autoDialConcurrency?: number
-
-  /**
-   * To allow user dials to take priority over auto dials, use this value as the
-   * dial priority (default: 0)
-   */
   autoDialPriority?: number
 }
 
-export interface AutoDialComponents {
+interface AutoDialComponents {
   connectionManager: ConnectionManager
   peerStore: PeerStore
 }
@@ -65,23 +50,25 @@ export class AutoDial {
   }
 
   async autoDial (): Promise<void> {
+    const numConnections = this.connectionManager.getConnections().length
+
     // Already has enough connections
-    if (this.connectionManager.getConnections().length >= this.minConnections) {
+    if (numConnections >= this.minConnections) {
+      log('have enough connections %d/%d', numConnections, this.minConnections)
       return
     }
 
+    log('not enough connections %d/%d', numConnections, this.minConnections)
+
     // Sort peers on whether we know protocols or public keys for them
     let peers = await this.peerStore.all()
+
+    log('loaded %d peers from the peer store', peers.length)
 
     // Remove some peers
     peers = peers.filter((peer) => {
       // Remove peers without addresses
       if (peer.addresses.length === 0) {
-        return false
-      }
-
-      // Remove RSA peers with no public key (since we'd have to look it up on the DHT)
-      if (peer.id.publicKey == null) {
         return false
       }
 
@@ -122,10 +109,15 @@ export class AutoDial {
       return 0
     })
 
+    log('selected %d peers to dial', sortedPeers.length)
+
     for (const peer of sortedPeers) {
       this.queue.add(async () => {
+        const numConnections = this.connectionManager.getConnections().length
+
         // Check to see if we still need to auto dial
-        if (this.connectionManager.getConnections().length > this.minConnections) {
+        if (numConnections >= this.minConnections) {
+          log('got enough connections now %d/%d', numConnections, this.minConnections)
           this.queue.clear()
           return
         }
