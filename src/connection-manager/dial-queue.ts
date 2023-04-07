@@ -210,7 +210,7 @@ export class DialQueue {
       return await existingDial.promise
     }
 
-    log('creating dial target for %s', addrsToDial.map(({ multiaddr }) => multiaddr.toString()).join(', '))
+    log('creating dial target for', addrsToDial.map(({ multiaddr }) => multiaddr.toString()))
     // @ts-expect-error .promise property is set below
     const pendingDial: PendingDial = {
       id: randomId(),
@@ -277,6 +277,7 @@ export class DialQueue {
       if (addrs.length === 0) {
         log('loading multiaddrs for %p', peerId)
         addrs.push(...(await this.peerStore.addressBook.get(peerId)))
+        log('loaded multiaddrs for %p', peerId, addrs.map(({ multiaddr }) => multiaddr.toString()))
       }
     }
 
@@ -392,11 +393,14 @@ export class DialQueue {
 
         // let any signal abort the dial
         const signal = combineSignals(controller.signal, options.signal)
+        signal.addEventListener('abort', () => {
+          log('dial to %s aborted', addr)
+        })
         const deferred = pDefer<Connection>()
 
         await peerDialQueue.add(async () => {
           if (signal.aborted) {
-            log('dial to %m was aborted before reaching the head of the peer dial queue', addr)
+            log('dial to %s was aborted before reaching the head of the peer dial queue', addr)
             deferred.reject(new AbortError())
             return
           }
@@ -405,7 +409,7 @@ export class DialQueue {
           await this.queue.add(async () => {
             try {
               if (signal.aborted) {
-                log('dial to %m was aborted before reaching the head of the dial queue', addr)
+                log('dial to %s was aborted before reaching the head of the dial queue', addr)
                 deferred.reject(new AbortError())
                 return
               }
@@ -418,6 +422,18 @@ export class DialQueue {
                 signal
               })
 
+              if (controller.signal.aborted) {
+                // another dial succeeded faster than this one
+                log('multiple dials succeeded, closing superfluous connection')
+
+                conn.close().catch(err => {
+                  log.error('error closing superfluous connection', err)
+                })
+
+                deferred.reject(new AbortError())
+                return
+              }
+
               // remove the successful AbortController so it is not aborted
               dialAbortControllers[i] = undefined
 
@@ -428,11 +444,13 @@ export class DialQueue {
                 }
               })
 
+              log('dial to %s succeeded', addr)
+
               // resolve the connection promise
               deferred.resolve(conn)
             } catch (err: any) {
               // something only went wrong if our signal was not aborted
-              log.error('error during dial of %m', addr, err)
+              log.error('error during dial of %s', addr, err)
               deferred.reject(err)
             }
           }, {

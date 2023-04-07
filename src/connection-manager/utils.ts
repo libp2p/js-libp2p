@@ -32,7 +32,7 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
     return array
   }, ([]))
 
-  log('resolved %m to', ma, output)
+  log('resolved %s to', ma, output.map(ma => ma.toString()))
 
   return output
 }

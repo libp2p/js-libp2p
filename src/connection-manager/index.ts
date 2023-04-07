@@ -4,11 +4,10 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { codes } from '../errors.js'
-import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
 import type { ConnectionManager, ConnectionManagerEvents } from '@libp2p/interface-connection-manager'
-import * as STATUS from '@libp2p/interface-connection/status'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import type { Multiaddr, MultiaddrFilter, Resolver } from '@multiformats/multiaddr'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
@@ -542,24 +541,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         await connection.close()
       })
     )
-  }
-
-  /**
-   * Get all open connections with a peer
-   */
-  getAll (peerId: PeerId): Connection[] {
-    if (!isPeerId(peerId)) {
-      throw new CodeError('peerId must be an instance of peer-id', codes.ERR_INVALID_PARAMETERS)
-    }
-
-    const connections = this.connections.get(peerId)
-
-    // Return all open connections
-    if (connections != null) {
-      return connections.filter(connection => connection.stat.status === STATUS.OPEN)
-    }
-
-    return []
   }
 
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
