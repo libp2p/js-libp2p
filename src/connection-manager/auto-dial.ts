@@ -49,7 +49,7 @@ export class AutoDial {
   /**
    * Proactively tries to connect to known peers stored in the PeerStore.
    * It will keep the number of connections below the upper limit and sort
-   * the peers to connect based on wether we know their keys and protocols.
+   * the peers to connect based on whether we know their keys and protocols.
    */
   constructor (components: AutoDialComponents, init: AutoDialInit) {
     this.connectionManager = components.connectionManager
