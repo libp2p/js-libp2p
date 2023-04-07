@@ -1,3 +1,10 @@
+## [7.0.3](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.2...v7.0.3) (2023-04-07)
+
+
+### Bug Fixes
+
+* do not append peer id to advertised addresses ([#192](https://github.com/libp2p/js-libp2p-mdns/issues/192)) ([d1ee623](https://github.com/libp2p/js-libp2p-mdns/commit/d1ee6236f678166e87d0784f041ad5588801fdf2))
+
 ## [7.0.2](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.1...v7.0.2) (2023-03-30)
 
 
