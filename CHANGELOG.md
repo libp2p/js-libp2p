@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.5...v1.1.0) (2023-04-07)
+
+
+### Features
+
+* Browser to Browser ([#90](https://github.com/libp2p/js-libp2p-webrtc/issues/90)) ([add5c46](https://github.com/libp2p/js-libp2p-webrtc/commit/add5c467a2d02058933e6e11751af0c850568eaf))
+
 ## [1.0.5](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.4...v1.0.5) (2023-03-30)
 
 
