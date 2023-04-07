@@ -3,7 +3,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from "it-pipe";
 import { fromString, toString } from "uint8arrays";
-import { webRTC } from '@libp2p/webrtc'
+import { webRTCDirect } from '@libp2p/webrtc'
 import { pushable } from 'it-pushable';
 
 let stream;
@@ -18,7 +18,7 @@ const clean = (line) => line.replaceAll('\n', '')
 const sender = pushable()
 
 const node = await createLibp2p({
-  transports: [webRTC()],
+  transports: [webRTCDirect()],
   connectionEncryption: [noise()],
 });
 
@@ -30,7 +30,15 @@ node.connectionManager.addEventListener('peer:connect', (connection) => {
 })
 
 window.connect.onclick = async () => {
-  const ma = multiaddr(window.peer.value)
+
+
+  // TODO!!(ckousik): hack until webrtc is renamed in Go. Remove once
+  // complete
+  let candidateMa = window.peer.value
+  candidateMa = candidateMa.replace(/\/webrtc\/certhash/, "/webrtc-direct/certhash")
+  const ma = multiaddr(candidateMa)
+
+
   appendOutput(`Dialing '${ma}'`)
   stream = await node.dialProtocol(ma, ['/echo/1.0.0'])
   pipe(sender, stream, async (src) => {

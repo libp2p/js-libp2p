@@ -421,8 +421,6 @@ export class WebRTCStream implements Stream {
    * @see this.closeWrite
    */
   reset (): void {
-    // TODO Why are you resetting the stat here?
-    this.stat = defaultStat(this.stat.direction)
     const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: pb.Message_Flag.RESET })
     if (currentState === nextState) {
       // No change, no op
@@ -453,5 +451,12 @@ export class WebRTCStream implements Stream {
         yield new Uint8Array(0)
       }
     }
+  }
+
+  eq (stream: Stream): boolean {
+    if (stream instanceof WebRTCStream) {
+      return stream.channel.id === this.channel.id
+    }
+    return false
   }
 }

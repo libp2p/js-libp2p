@@ -20,6 +20,7 @@ jobs:
       matrix:
         project:
           - browser-to-server
+          - browser-to-browser
     defaults:
       run:
         working-directory: examples/${{ matrix.project }}
@@ -30,7 +31,7 @@ jobs:
           node-version: lts/*
       - uses: actions/setup-go@v3
         with:
-          go-version: '>=1.19.0'
+          go-version: '1.19'
       - name: Install dependencies
         run: npm install
         working-directory: .

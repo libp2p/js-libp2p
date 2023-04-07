@@ -82,7 +82,7 @@ func createHost() host.Host {
 	h, err := libp2p.New(
 		libp2p.Transport(webrtc.New),
 		libp2p.ListenAddrStrings(
-			fmt.Sprintf("/ip4/%s/udp/0/webrtc", listenerIp),
+			fmt.Sprintf("/ip4/%s/udp/0/webrtc-direct", listenerIp),
 		),
 		libp2p.DisableRelay(),
 		libp2p.Ping(true),
