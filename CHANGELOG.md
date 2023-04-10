@@ -1,3 +1,10 @@
+## [5.0.9](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.8...v5.0.9) (2023-04-10)
+
+
+### Bug Fixes
+
+* correction package.json exports types path ([#230](https://github.com/libp2p/js-libp2p-websockets/issues/230)) ([0a6ed35](https://github.com/libp2p/js-libp2p-websockets/commit/0a6ed354a131ff00836143611afc18978b08013b))
+
 ## [5.0.8](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.7...v5.0.8) (2023-03-31)
 
 
