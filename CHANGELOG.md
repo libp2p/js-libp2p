@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.0...v1.1.1) (2023-04-10)
+
+
+### Dependencies
+
+* bump it-pb-stream from 2.0.4 to 3.2.1 ([#118](https://github.com/libp2p/js-libp2p-webrtc/issues/118)) ([7e2ac67](https://github.com/libp2p/js-libp2p-webrtc/commit/7e2ac6795ea096b3cf5dc2c4077f6f39821e0502))
+
 ## [1.1.0](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.0.5...v1.1.0) (2023-04-07)
 
 
