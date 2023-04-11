@@ -9,7 +9,7 @@ import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
 import type { ConnectionManager, ConnectionManagerEvents } from '@libp2p/interface-connection-manager'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
-import type { Multiaddr, MultiaddrFilter, Resolver } from '@multiformats/multiaddr'
+import { Multiaddr, Resolver, multiaddr } from '@multiformats/multiaddr'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import type { Metrics } from '@libp2p/interface-metrics'
@@ -42,6 +42,12 @@ export interface ConnectionManagerInit {
    * (default: 50)
    */
   minConnections?: number
+
+  /**
+   * How long to wait between attempting to keep our number of concurrent connections
+   * above minConnections (default: 5000)
+   */
+  autoDialInterval?: number
 
   /**
    * When dialling peers from the peer book to keep the number of open connections
@@ -103,13 +109,13 @@ export interface ConnectionManagerInit {
    * A list of multiaddrs that will always be allowed (except if they are in the
    * deny list) to open connections to this node even if we've reached maxConnections
    */
-  allow?: MultiaddrFilter[]
+  allow?: string[]
 
   /**
    * A list of multiaddrs that will never be allowed to open connections to
    * this node under any circumstances
    */
-  deny?: MultiaddrFilter[]
+  deny?: string[]
 
   /**
    * If more than this many connections are opened per second by a single
@@ -153,8 +159,8 @@ export interface OpenConnectionOptions extends AbortOptions {
 export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
   private started: boolean
   private readonly connections: PeerMap<Connection[]>
-  private readonly allow: MultiaddrFilter[]
-  private readonly deny: MultiaddrFilter[]
+  private readonly allow: Multiaddr[]
+  private readonly deny: Multiaddr[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
   private readonly maxConnections: number
@@ -196,8 +202,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.onDisconnect = this.onDisconnect.bind(this)
 
     // allow/deny lists
-    this.allow = init.allow ?? []
-    this.deny = init.deny ?? []
+    this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
+    this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
@@ -348,6 +354,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       }
     })
 
+    this.autoDial.start()
+
     this.started = true
     log('started')
   }
@@ -380,18 +388,14 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         log.error(err)
       })
 
-    // make sure we have some peers
-    this.autoDial.autoDial()
-      .catch(err => {
-        log.error(err)
-      })
+    this.autoDial.afterStart()
   }
 
   /**
    * Stops the Connection Manager
    */
   async stop (): Promise<void> {
-    this.dialQueue.cancelPendingDials()
+    this.dialQueue.stop()
     this.autoDial.stop()
 
     // Close all connections we're tracking
@@ -545,8 +549,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
     // check deny list
-    const denyConnection = this.deny.some(filter => {
-      return filter.contains(maConn.remoteAddr)
+    const denyConnection = this.deny.some(ma => {
+      return maConn.remoteAddr.toString().startsWith(ma.toString())
     })
 
     if (denyConnection) {
@@ -555,8 +559,8 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     // check allow list
-    const allowConnection = this.allow.some(filter => {
-      return filter.contains(maConn.remoteAddr)
+    const allowConnection = this.allow.some(ma => {
+      return maConn.remoteAddr.toString().startsWith(ma.toString())
     })
 
     if (allowConnection) {

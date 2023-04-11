@@ -35,7 +35,7 @@ describe('dial queue', () => {
 
   afterEach(() => {
     if (dialer != null) {
-      dialer.cancelPendingDials()
+      dialer.stop()
     }
 
     sinon.reset()

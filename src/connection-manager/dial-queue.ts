@@ -148,7 +148,7 @@ export class DialQueue {
   /**
    * Clears any pending dials
    */
-  cancelPendingDials (): void {
+  stop (): void {
     this.shutDownController.abort()
   }
 

@@ -258,7 +258,7 @@ describe('dialing (direct, TCP)', () => {
 
     // Perform dial
     await dialer.dial(remoteComponents.peerId)
-    dialer.cancelPendingDials()
+    dialer.stop()
 
     // Dialled each address
     expect(transportManagerDialStub).to.have.property('callCount', 4)

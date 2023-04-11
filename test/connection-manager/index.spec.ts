@@ -11,7 +11,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import pWaitFor from 'p-wait-for'
-import { multiaddr, MultiaddrFilter } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'sinon-ts'
 import type { Connection } from '@libp2p/interface-connection'
 import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
@@ -186,7 +186,7 @@ describe('Connection Manager', () => {
           maxConnections: max,
           minConnections: 0,
           allow: [
-            new MultiaddrFilter('/ip4/83.13.55.32/ipcidr/32')
+            '/ip4/83.13.55.32'
           ]
         }
       }),
@@ -333,7 +333,7 @@ describe('Connection Manager', () => {
     }, {
       ...defaultOptions,
       deny: [
-        new MultiaddrFilter('/ip4/83.13.55.32/ipcidr/32')
+        '/ip4/83.13.55.32'
       ]
     })
 
@@ -422,7 +422,7 @@ describe('Connection Manager', () => {
       ...defaultOptions,
       maxConnections: 1,
       allow: [
-        new MultiaddrFilter('/ip4/83.13.55.32/ipcidr/32')
+        '/ip4/83.13.55.32'
       ]
     })
 

@@ -461,7 +461,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     await libp2p.start()
 
     const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
-    const dialerDestroyStub = sinon.spy(connectionManager.dialQueue, 'cancelPendingDials')
+    const dialerDestroyStub = sinon.spy(connectionManager.dialQueue, 'stop')
 
     await libp2p.stop()
 

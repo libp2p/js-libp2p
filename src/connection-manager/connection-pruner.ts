@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import { PeerMap } from '@libp2p/peer-collections'
-import type { MultiaddrFilter } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import { MAX_CONNECTIONS } from './constants.js'
 import { CustomEvent } from '@libp2p/interfaces/events'
 
@@ -10,7 +10,7 @@ const log = logger('libp2p:connection-manager:connection-pruner')
 
 interface ConnectionPrunerInit {
   maxConnections?: number
-  allow?: MultiaddrFilter[]
+  allow?: Multiaddr[]
 }
 
 interface ConnectionPrunerComponents {
@@ -30,7 +30,7 @@ export class ConnectionPruner {
   private readonly maxConnections: number
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
-  private readonly allow: MultiaddrFilter[]
+  private readonly allow: Multiaddr[]
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
@@ -107,7 +107,7 @@ export class ConnectionPruner {
       log('too many connections open - closing a connection to %p', connection.remotePeer)
       // check allow list
       const connectionInAllowList = this.allow.some((ma) => {
-        return ma.contains(connection.remoteAddr)
+        return connection.remoteAddr.toString().startsWith(ma.toString())
       })
 
       // Connections in the allow list should be excluded from pruning

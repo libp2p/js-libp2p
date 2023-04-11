@@ -22,10 +22,9 @@ export default function Libp2pBundle ({peerInfo, peerBook}) {
   return createLibp2p({
     peerInfo,
     peerBook,
-    // Lets limit the connection managers peers and have it check peer health less frequently
+    // Let's limit the number of connections the connection managers can have
     connectionManager: {
-      maxPeers: 10,
-      pollInterval: 5000
+      maxConnections: 10
     },
     contentRouting: [
       delegatedPeerRouting(client)

@@ -3,7 +3,8 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import { PeerMap } from '@libp2p/peer-collections'
 import PQueue from 'p-queue'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:connection-manager:auto-dial')
 
@@ -11,6 +12,7 @@ interface AutoDialInit {
   minConnections?: number
   autoDialConcurrency?: number
   autoDialPriority?: number
+  autoDialInterval?: number
 }
 
 interface AutoDialComponents {
@@ -21,15 +23,19 @@ interface AutoDialComponents {
 const defaultOptions = {
   minConnections: MIN_CONNECTIONS,
   autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
-  autoDialPriority: AUTO_DIAL_PRIORITY
+  autoDialPriority: AUTO_DIAL_PRIORITY,
+  autoDialInterval: AUTO_DIAL_INTERVAL
 }
 
-export class AutoDial {
+export class AutoDial implements Startable {
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
   private readonly queue: PQueue
   private readonly minConnections: number
   private readonly autoDialPriority: number
+  private readonly autoDialIntervalMs: number
+  private autoDialInterval?: ReturnType<typeof setInterval>
+  private started: boolean
 
   /**
    * Proactively tries to connect to known peers stored in the PeerStore.
@@ -41,12 +47,42 @@ export class AutoDial {
     this.peerStore = components.peerStore
     this.minConnections = init.minConnections ?? defaultOptions.minConnections
     this.autoDialPriority = init.autoDialPriority ?? defaultOptions.autoDialPriority
+    this.autoDialIntervalMs = init.autoDialInterval ?? defaultOptions.autoDialInterval
+    this.started = false
     this.queue = new PQueue({
       concurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency
     })
     this.queue.addListener('error', (err) => {
       log.error('error during auto-dial', err)
     })
+  }
+
+  isStarted (): boolean {
+    return this.started
+  }
+
+  start (): void {
+    this.autoDialInterval = setInterval(() => {
+      this.autoDial()
+        .catch(err => {
+          log.error('error while autodialing', err)
+        })
+    }, this.autoDialIntervalMs)
+    this.started = true
+  }
+
+  afterStart (): void {
+    this.autoDial()
+      .catch(err => {
+        log.error('error while autodialing', err)
+      })
+  }
+
+  stop (): void {
+    // clear the queue
+    this.queue.clear()
+    clearInterval(this.autoDialInterval)
+    this.started = false
   }
 
   async autoDial (): Promise<void> {
@@ -131,10 +167,5 @@ export class AutoDial {
         log.error('could not connect to peerStore stored peer', err)
       })
     }
-  }
-
-  stop (): void {
-    // clear the queue
-    this.queue.clear()
   }
 }
