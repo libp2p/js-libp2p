@@ -6,7 +6,7 @@ import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { codes } from '../errors.js'
 import {
   DIAL_TIMEOUT,
-  MAX_DIALS_PER_PEER,
+  MAX_PARALLEL_DIALS_PER_PEER,
   MAX_PARALLEL_DIALS,
   MAX_PEER_ADDRS_TO_DIAL
 } from './constants.js'
@@ -57,7 +57,7 @@ const defaultOptions = {
   addressSorter: publicAddressesFirst,
   maxParallelDials: MAX_PARALLEL_DIALS,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
-  maxParallelDialsPerPeer: MAX_DIALS_PER_PEER,
+  maxParallelDialsPerPeer: MAX_PARALLEL_DIALS_PER_PEER,
   dialTimeout: DIAL_TIMEOUT,
   resolvers: {
     dnsaddr: dnsaddrResolver

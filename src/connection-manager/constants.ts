@@ -20,9 +20,9 @@ export const MAX_PARALLEL_DIALS = 100
 export const MAX_PEER_ADDRS_TO_DIAL = 25
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxDialsPerPeer
+ * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxParallelDialsPerPeer
  */
-export const MAX_DIALS_PER_PEER = 10
+export const MAX_PARALLEL_DIALS_PER_PEER = 10
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#minConnections
