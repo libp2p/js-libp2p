@@ -365,7 +365,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
-    // @ts-expect-error
     return await this.components.connectionManager.openConnection(peer, options)
   }
 
