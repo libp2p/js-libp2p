@@ -246,7 +246,7 @@ export class PeerStoreAddressBook {
     const release = await this.store.lock.writeLock()
     log.trace('add got write lock')
 
-    let hasPeer
+    let hasPeer = false
     let peer: Peer | undefined
     let updatedPeer
 
@@ -291,7 +291,7 @@ export class PeerStoreAddressBook {
     }))
 
     // Notify the existence of a new peer
-    if (hasPeer === true) {
+    if (!hasPeer) {
       this.dispatchEvent(new CustomEvent<PeerInfo>('peer', {
         detail: {
           id: peerId,

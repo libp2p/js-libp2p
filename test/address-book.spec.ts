@@ -201,6 +201,32 @@ describe('addressBook', () => {
       await defer.promise
     })
 
+    it('emits peer event if new peer has addresses added', async () => {
+      const defer = pDefer()
+
+      peerStore.addEventListener('peer', () => {
+        defer.resolve()
+      })
+
+      await ab.add(await createEd25519PeerId(), [
+        multiaddr('/ip4/42.14.53.21/tcp/3981')
+      ])
+      await defer.promise
+    })
+
+    it('emits peer event if new peer has addresses set', async () => {
+      const defer = pDefer()
+
+      peerStore.addEventListener('peer', () => {
+        defer.resolve()
+      })
+
+      await ab.set(await createEd25519PeerId(), [
+        multiaddr('/ip4/42.14.53.21/tcp/3981')
+      ])
+      await defer.promise
+    })
+
     it('adds the new content and emits change event', async () => {
       const defer = pDefer()
 
