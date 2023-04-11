@@ -1,3 +1,10 @@
+## [7.0.2](https://github.com/libp2p/js-libp2p-peer-store/compare/v7.0.1...v7.0.2) (2023-04-11)
+
+
+### Bug Fixes
+
+* dispatch peer event on adding new addresses as well as set ([#74](https://github.com/libp2p/js-libp2p-peer-store/issues/74)) ([f6d7658](https://github.com/libp2p/js-libp2p-peer-store/commit/f6d76580eb463b09ab737d817d0a0e609212ed6e))
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v7.0.0...v7.0.1) (2023-03-17)
 
 
