@@ -92,6 +92,12 @@ play.describe('browser to browser example:', () => {
     // Received message '${message}'
     expect(connections).toContain(`Sending message '${message}'`)
     expect(connections).toContain(`Received message '${message}'`)
+
+    const connListFromPage = await page.textContent('#connections')
+    const connListFromPageTwo = await pageTwo.textContent('#connections')
+    // Expect to see the webrtc multiaddr in the connections list
+    expect(connListFromPage).toContain('/webrtc/')
+    expect(connListFromPageTwo).toContain('/webrtc/')
   })
 })
 

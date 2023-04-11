@@ -58,6 +58,25 @@ await node.handle("/echo/1.0.0", ({ stream }) => {
   )
 })
 
+function updateConnList() {
+  // Update connections list
+  const connListEls = node.getConnections()
+    .map((connection) => { return connection.remoteAddr.toString() })
+    .map((addr) => {
+      const el = document.createElement("li")
+      el.textContent = addr
+      return el
+    })
+  document.getElementById("connections").replaceChildren(...connListEls)
+}
+
+node.addEventListener("peer:connect", (event) => {
+  updateConnList()
+})
+node.addEventListener("peer:disconnect", (event) => {
+  updateConnList()
+})
+
 node.peerStore.addEventListener("change:multiaddrs", (event) => {
   const { peerId } = event.detail
 

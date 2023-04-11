@@ -4,6 +4,7 @@ import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
 import { multiaddr, Multiaddr, protocols } from '@multiformats/multiaddr'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { WebRTCPeerListener } from './listener.js'
@@ -75,15 +76,7 @@ export class WebRTCTransport implements Transport, Startable {
     })
   }
 
-  /*
-   * dial connects to a remote via the circuit relay or any other protocol
-   * and proceeds to upgrade to a webrtc connection.
-   * multiaddr of the form: <multiaddr>/webrtc/p2p/<destination-peer>
-   * For a circuit relay, this will be of the form
-   * <relay address>/p2p/<relay-peer>/p2p-circuit/webrtc/p2p/<destination-peer>
-  */
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
-    log.trace('dialing address: ', ma)
+  private splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId } {
     const addrs = ma.toString().split(`${TRANSPORT}/`)
     if (addrs.length !== 2) {
       throw new CodeError('invalid multiaddr', codes.ERR_INVALID_MULTIADDR)
@@ -97,11 +90,6 @@ export class WebRTCTransport implements Transport, Startable {
       throw new CodeError('bad destination', codes.ERR_INVALID_MULTIADDR)
     }
 
-    if (options.signal == null) {
-      const controller = new AbortController()
-      options.signal = controller.signal
-    }
-
     const lastProtoInRemote = remoteAddr.protos().pop()
     if (lastProtoInRemote === undefined) {
       throw new CodeError('invalid multiaddr', codes.ERR_INVALID_MULTIADDR)
@@ -110,7 +98,26 @@ export class WebRTCTransport implements Transport, Startable {
       remoteAddr = remoteAddr.encapsulate(`/p2p/${destinationIdString}`)
     }
 
-    const connection = await this.components.transportManager.dial(remoteAddr)
+    return { baseAddr: remoteAddr, peerId: peerIdFromString(destinationIdString) }
+  }
+
+  /*
+   * dial connects to a remote via the circuit relay or any other protocol
+   * and proceeds to upgrade to a webrtc connection.
+   * multiaddr of the form: <multiaddr>/webrtc/p2p/<destination-peer>
+   * For a circuit relay, this will be of the form
+   * <relay address>/p2p/<relay-peer>/p2p-circuit/webrtc/p2p/<destination-peer>
+  */
+  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+    log.trace('dialing address: ', ma)
+    const { baseAddr, peerId } = this.splitAddr(ma)
+
+    if (options.signal == null) {
+      const controller = new AbortController()
+      options.signal = controller.signal
+    }
+
+    const connection = await this.components.transportManager.dial(baseAddr)
 
     const rawStream = await connection.newStream([SIGNALING_PROTO_ID], options)
 
@@ -120,11 +127,12 @@ export class WebRTCTransport implements Transport, Startable {
         rtcConfiguration: this.init.rtcConfiguration,
         signal: options.signal
       })
+      const webrtcMultiaddr = baseAddr.encapsulate(`${TRANSPORT}/p2p/${peerId.toString()}`)
       const result = await options.upgrader.upgradeOutbound(
         new WebRTCMultiaddrConnection({
           peerConnection: pc,
           timeline: { open: (new Date()).getTime() },
-          remoteAddr: connection.remoteAddr
+          remoteAddr: webrtcMultiaddr
         }),
         {
           skipProtection: true,
@@ -150,10 +158,12 @@ export class WebRTCTransport implements Transport, Startable {
         connection,
         stream
       })
+      const remotePeerId = connection.remoteAddr.getPeerId()
+      const webrtcMultiaddr = connection.remoteAddr.encapsulate(`${TRANSPORT}/p2p/${remotePeerId}`)
       await this.components.upgrader.upgradeInbound(new WebRTCMultiaddrConnection({
         peerConnection: pc,
         timeline: { open: (new Date()).getTime() },
-        remoteAddr: connection.remoteAddr
+        remoteAddr: webrtcMultiaddr
       }), {
         skipEncryption: true,
         skipProtection: true,
