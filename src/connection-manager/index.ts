@@ -500,7 +500,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     }
 
     try {
-      // @ts-expect-error until https://github.com/libp2p/js-libp2p-interfaces/pull/351 is merged
       const connection = await this.components.dialer.dial(peerIdOrMultiaddr, options)
       let peerConnections = this.connections.get(connection.remotePeer.toString())
 
