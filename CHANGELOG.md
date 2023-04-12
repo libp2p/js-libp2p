@@ -1,3 +1,10 @@
+## [6.0.6](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.5...v6.0.6) (2023-04-12)
+
+
+### Dependencies
+
+* bump @libp2p/interface-connection from 3.1.1 to 4.0.0 ([#135](https://github.com/libp2p/js-libp2p-pubsub/issues/135)) ([96b0c41](https://github.com/libp2p/js-libp2p-pubsub/commit/96b0c41ea3ecca6cf28ce8417ab0a5d782531658))
+
 ## [6.0.5](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.4...v6.0.5) (2023-04-03)
 
 
