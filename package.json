@@ -178,7 +178,7 @@
   },
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",
-    "@libp2p/interface-connection": "^3.0.1",
+    "@libp2p/interface-connection": "^4.0.0",
     "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/interface-pubsub": "^3.0.0",
     "@libp2p/interface-registrar": "^2.0.0",
