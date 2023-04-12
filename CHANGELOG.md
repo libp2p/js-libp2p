@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.2...v1.1.3) (2023-04-12)
+
+
+### Dependencies
+
+* bump @libp2p/interface-connection from 3.1.1 to 4.0.0 ([#124](https://github.com/libp2p/js-libp2p-webrtc/issues/124)) ([4146761](https://github.com/libp2p/js-libp2p-webrtc/commit/4146761226118268d510c8834f894083ba5408d3))
+
 ## [1.1.2](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.1...v1.1.2) (2023-04-11)
 
 
