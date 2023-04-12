@@ -130,24 +130,14 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       await new Promise<void>((resolve, reject) => {
         const start = Date.now()
 
-        // Attempt to end the socket. If it takes longer to close than the
-        // timeout, destroy it manually.
-        const timeout = setTimeout(() => {
-          if (socket.destroyed) {
-            log('%s is already destroyed', lOptsStr)
-            resolve()
-          } else {
-            log('%s socket close timeout after %dms, destroying it manually', lOptsStr, Date.now() - start)
-
-            // will trigger 'error' and 'close' events that resolves promise
-            socket.destroy(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
-          }
-        }, closeTimeout).unref()
+        let timeout: NodeJS.Timeout | undefined
 
         socket.once('close', () => {
           log('%s socket closed', lOptsStr)
           // socket completely closed
-          clearTimeout(timeout)
+          if (timeout !== undefined) {
+            clearTimeout(timeout)
+          }
           resolve()
         })
         socket.once('error', (err: Error) => {
@@ -159,7 +149,9 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           }
 
           if (socket.destroyed) {
-            clearTimeout(timeout)
+            if (timeout !== undefined) {
+              clearTimeout(timeout)
+            }
           }
 
           reject(err)
@@ -172,6 +164,19 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         socket.end()
 
         if (socket.writableLength > 0) {
+          // Attempt to end the socket. If it takes longer to close than the
+          // timeout, destroy it manually.
+          timeout = setTimeout(() => {
+            if (socket.destroyed) {
+              log('%s is already destroyed', lOptsStr)
+              resolve()
+            } else {
+              log('%s socket close timeout after %dms, destroying it manually', lOptsStr, Date.now() - start)
+
+              // will trigger 'error' and 'close' events that resolves promise
+              socket.destroy(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
+            }
+          }, closeTimeout).unref()
           // there are outgoing bytes waiting to be sent
           socket.once('drain', () => {
             log('%s socket drained', lOptsStr)
@@ -180,7 +185,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             socket.destroy()
           })
         } else {
-          // nothing to send, destroy immediately
+          // nothing to send, destroy immediately, no need the timeout
           socket.destroy()
         }
       })
