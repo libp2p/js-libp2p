@@ -1,3 +1,15 @@
+## [6.1.6](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.5...v6.1.6) (2023-04-12)
+
+
+### Bug Fixes
+
+* on MultiaddrConnection close() only create timer if needed ([#262](https://github.com/libp2p/js-libp2p-tcp/issues/262)) ([3637489](https://github.com/libp2p/js-libp2p-tcp/commit/36374895366eb82e321b021d3768a369c59ab3ba))
+
+
+### Dependencies
+
+* bump @libp2p/interface-connection from 3.1.1 to 4.0.0 ([#265](https://github.com/libp2p/js-libp2p-tcp/issues/265)) ([d2ef2d0](https://github.com/libp2p/js-libp2p-tcp/commit/d2ef2d09374b889907d5e9e68ffd566add31bf87))
+
 ## [6.1.5](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.4...v6.1.5) (2023-03-30)
 
 
