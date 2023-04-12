@@ -1,3 +1,10 @@
+## [7.1.4](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.3...v7.1.4) (2023-04-12)
+
+
+### Dependencies
+
+* bump @libp2p/interface-connection from 3.1.1 to 4.0.0 ([#269](https://github.com/libp2p/js-libp2p-mplex/issues/269)) ([d14a122](https://github.com/libp2p/js-libp2p-mplex/commit/d14a122772680db171746acb9b639f3e7ffb46f4))
+
 ## [7.1.3](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.2...v7.1.3) (2023-03-31)
 
 
