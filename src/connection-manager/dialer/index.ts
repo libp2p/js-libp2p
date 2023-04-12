@@ -297,6 +297,11 @@ export class DefaultDialer implements Startable, Dialer {
           return addr
         }
 
+        // always encapsulate circuit relay multiaddrs
+        if (lastProto?.name === "p2p-circuit") {
+          return addr.encapsulate(peerIdMultiaddr)
+        }
+
         if (addressPeerId == null) {
           return addr.encapsulate(peerIdMultiaddr)
         }
