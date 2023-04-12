@@ -1,3 +1,10 @@
+## [6.2.0](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.6...v6.2.0) (2023-04-12)
+
+
+### Features
+
+* add socket backlog option ([#263](https://github.com/libp2p/js-libp2p-tcp/issues/263)) ([8dba9c7](https://github.com/libp2p/js-libp2p-tcp/commit/8dba9c72e8cb2b5de545a9d1f25eb9988ace4cad))
+
 ## [6.1.6](https://github.com/libp2p/js-libp2p-tcp/compare/v6.1.5...v6.1.6) (2023-04-12)
 
 
