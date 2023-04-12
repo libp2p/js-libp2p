@@ -177,7 +177,7 @@
   },
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
-    "@libp2p/interface-connection": "^3.0.2",
+    "@libp2p/interface-connection": "^4.0.0",
     "@libp2p/interface-peer-store": "^1.2.1",
     "@libp2p/interfaces": "^3.2.0",
     "@libp2p/logger": "^2.0.0",
