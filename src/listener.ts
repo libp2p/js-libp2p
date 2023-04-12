@@ -41,6 +41,7 @@ interface Context extends TCPCreateListenerOptions {
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
   maxConnections?: number
+  backlog?: number
   metrics?: Metrics
   closeServerOnMaxConnections?: CloseServerOnMaxConnectionsOpts
 }
@@ -269,12 +270,13 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
 
     const peerId = ma.getPeerId()
     const listeningAddr = peerId == null ? ma.decapsulateCode(CODE_P2P) : ma
+    const { backlog } = this.context
 
     this.status = {
       started: true,
       listeningAddr,
       peerId,
-      netConfig: multiaddrToNetConfig(listeningAddr)
+      netConfig: multiaddrToNetConfig(listeningAddr, { backlog })
     }
 
     await this.netListen()

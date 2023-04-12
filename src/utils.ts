@@ -8,7 +8,7 @@ const ProtoFamily = { ip4: 'IPv4', ip6: 'IPv6' }
 
 export type NetConfig = ListenOptions | (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
-export function multiaddrToNetConfig (addr: Multiaddr): NetConfig {
+export function multiaddrToNetConfig (addr: Multiaddr, config: NetConfig = {}): NetConfig {
   const listenPath = addr.getPath()
 
   // unix socket listening
@@ -22,7 +22,7 @@ export function multiaddrToNetConfig (addr: Multiaddr): NetConfig {
   }
 
   // tcp listening
-  return addr.toOptions()
+  return { ...addr.toOptions(), ...config }
 }
 
 export function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number): Multiaddr[] {

@@ -37,6 +37,12 @@ export interface TCPOptions {
   maxConnections?: number
 
   /**
+   * Parameter to specify the maximum length of the queue of pending connections
+   * https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+   */
+  backlog?: number
+
+  /**
    * Close server (stop listening for new connections) if connections exceed a limit.
    * Open server (start listening for new connections) if connections fall below a limit.
    */
@@ -215,6 +221,7 @@ class TCP implements Transport {
     return new TCPListener({
       ...options,
       maxConnections: this.opts.maxConnections,
+      backlog: this.opts.backlog,
       closeServerOnMaxConnections: this.opts.closeServerOnMaxConnections,
       socketInactivityTimeout: this.opts.inboundSocketInactivityTimeout,
       socketCloseTimeout: this.opts.socketCloseTimeout,
