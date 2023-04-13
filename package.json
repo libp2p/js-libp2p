@@ -154,7 +154,7 @@
     "it-length-prefixed": "^8.0.3",
     "it-merge": "^2.0.0",
     "it-pb-stream": "^3.2.1",
-    "it-pipe": "^2.0.4",
+    "it-pipe": "^3.0.1",
     "it-pushable": "^3.1.0",
     "it-stream-types": "^1.0.4",
     "multiformats": "^11.0.2",
