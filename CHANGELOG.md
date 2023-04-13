@@ -1,3 +1,10 @@
+## [7.1.5](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.4...v7.1.5) (2023-04-13)
+
+
+### Dependencies
+
+* update any-signal to 4.x.x ([#270](https://github.com/libp2p/js-libp2p-mplex/issues/270)) ([2820884](https://github.com/libp2p/js-libp2p-mplex/commit/2820884d005dfe44bf6009cf7a0c5d28bdc23f14))
+
 ## [7.1.4](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.3...v7.1.4) (2023-04-12)
 
 
