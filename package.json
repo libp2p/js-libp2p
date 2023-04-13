@@ -139,7 +139,7 @@
     "any-signal": "^4.1.1",
     "datastore-core": "^9.0.0",
     "interface-datastore": "^8.0.0",
-    "it-all": "^2.0.0",
+    "it-all": "^3.0.1",
     "it-drain": "^2.0.0",
     "it-filter": "^3.0.1",
     "it-first": "^2.0.0",
