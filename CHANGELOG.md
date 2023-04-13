@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.3...v1.1.4) (2023-04-13)
+
+
+### Dependencies
+
+* Update multiaddr to 12.1.1 and multiformats 11.0.2 ([#123](https://github.com/libp2p/js-libp2p-webrtc/issues/123)) ([e069784](https://github.com/libp2p/js-libp2p-webrtc/commit/e069784229f2495b3cebc2c2a85969f23f0e7acf))
+
 ## [1.1.3](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.2...v1.1.3) (2023-04-12)
 
 
