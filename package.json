@@ -171,7 +171,7 @@
     "eslint-plugin-etc": "^2.0.2",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
-    "it-drain": "^2.0.0",
+    "it-drain": "^3.0.1",
     "it-foreach": "^2.0.2",
     "it-map": "^3.0.1",
     "it-pipe": "^3.0.1",
