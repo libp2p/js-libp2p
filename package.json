@@ -174,7 +174,7 @@
     "it-drain": "^2.0.0",
     "it-foreach": "^1.0.0",
     "it-map": "^3.0.1",
-    "it-pipe": "^2.0.3",
+    "it-pipe": "^3.0.1",
     "it-to-buffer": "^3.0.0",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0"
