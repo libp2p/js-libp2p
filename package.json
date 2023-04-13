@@ -170,7 +170,7 @@
     "delay": "^5.0.0",
     "eslint-plugin-etc": "^2.0.2",
     "iso-random-stream": "^2.0.2",
-    "it-all": "^2.0.0",
+    "it-all": "^3.0.1",
     "it-drain": "^2.0.0",
     "it-foreach": "^1.0.0",
     "it-map": "^3.0.1",
