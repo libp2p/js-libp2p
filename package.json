@@ -175,7 +175,7 @@
     "it-foreach": "^2.0.2",
     "it-map": "^3.0.1",
     "it-pipe": "^3.0.1",
-    "it-to-buffer": "^3.0.0",
+    "it-to-buffer": "^4.0.1",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0"
   },
