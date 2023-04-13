@@ -12,7 +12,7 @@ import type { Sink } from 'it-stream-types'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import type { Stream } from '@libp2p/interface-connection'
 import type { MplexInit } from './index.js'
-import anySignal from 'any-signal'
+import { anySignal } from 'any-signal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:mplex')
@@ -192,14 +192,11 @@ export class MplexStreamMuxer implements StreamMuxer {
    */
   _createSink (): Sink<Uint8Array> {
     const sink: Sink<Uint8Array> = async source => {
-      // see: https://github.com/jacobheun/any-signal/pull/18
-      const abortSignals = [this.closeController.signal]
-      if (this._init.signal != null) {
-        abortSignals.push(this._init.signal)
-      }
-      source = abortableSource(source, anySignal(abortSignals))
+      const signal = anySignal([this.closeController.signal, this._init.signal])
 
       try {
+        source = abortableSource(source, signal)
+
         const decoder = new Decoder(this._init.maxMsgSize, this._init.maxUnprocessedMessageQueueSize)
 
         for await (const chunk of source) {
@@ -212,6 +209,8 @@ export class MplexStreamMuxer implements StreamMuxer {
       } catch (err: any) {
         log('error in sink', err)
         this._source.end(err) // End the source with an error
+      } finally {
+        signal.clear()
       }
     }
 

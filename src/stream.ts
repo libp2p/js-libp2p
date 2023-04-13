@@ -160,13 +160,15 @@ export function createStream (options: Options): MplexStream {
         throw new CodeError('stream closed for writing', ERR_SINK_ENDED)
       }
 
-      source = abortableSource(source, anySignal([
+      const signal = anySignal([
         abortController.signal,
         resetController.signal,
         closeController.signal
-      ]))
+      ])
 
       try {
+        source = abortableSource(source, signal)
+
         if (type === 'initiator') { // If initiator, open a new stream
           send({ id, type: InitiatorMessageTypes.NEW_STREAM, data: new Uint8ArrayList(uint8ArrayFromString(streamName)) })
         }
@@ -214,6 +216,8 @@ export function createStream (options: Options): MplexStream {
         streamSource.end(err)
         onSinkEnd(err)
         return
+      } finally {
+        signal.clear()
       }
 
       try {
