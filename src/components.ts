@@ -12,7 +12,7 @@ import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { Datastore } from 'interface-datastore'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { DualDHT } from '@libp2p/interface-dht'
-import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 export interface Components {
@@ -28,7 +28,6 @@ export interface Components {
   peerRouting: PeerRouting
   datastore: Datastore
   connectionProtector?: ConnectionProtector
-  dialer: Dialer
   metrics?: Metrics
   dht?: DualDHT
   pubsub?: PubSub
@@ -50,7 +49,6 @@ export interface ComponentsInit {
   connectionProtector?: ConnectionProtector
   dht?: DualDHT
   pubsub?: PubSub
-  dialer?: Dialer
 }
 
 export class DefaultComponents implements Components, Startable {
@@ -69,7 +67,6 @@ export class DefaultComponents implements Components, Startable {
   private _connectionProtector?: ConnectionProtector
   private _dht?: DualDHT
   private _pubsub?: PubSub
-  private _dialer?: Dialer
   private _started = false
 
   constructor (init: ComponentsInit = {}) {
@@ -88,7 +85,6 @@ export class DefaultComponents implements Components, Startable {
     this._connectionProtector = init.connectionProtector
     this._dht = init.dht
     this._pubsub = init.pubsub
-    this._dialer = init.dialer
   }
 
   isStarted (): boolean {
@@ -293,18 +289,6 @@ export class DefaultComponents implements Components, Startable {
 
   set connectionProtector (connectionProtector: ConnectionProtector | undefined) {
     this._connectionProtector = connectionProtector
-  }
-
-  get dialer (): Dialer {
-    if (this._dialer == null) {
-      throw new CodeError('dialer not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._dialer
-  }
-
-  set dialer (dialer: Dialer) {
-    this._dialer = dialer
   }
 
   get metrics (): Metrics | undefined {

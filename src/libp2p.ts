@@ -9,7 +9,6 @@ import { CompoundContentRouting } from './content-routing/index.js'
 import { codes } from './errors.js'
 import { DefaultAddressManager } from './address-manager/index.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
-import { AutoDialler } from './connection-manager/auto-dialler.js'
 import { DefaultKeyChain } from '@libp2p/keychain'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
@@ -46,7 +45,6 @@ import type { Metrics } from '@libp2p/interface-metrics'
 import { DummyDHT } from './dht/dummy-dht.js'
 import { DummyPubSub } from './pubsub/dummy-pubsub.js'
 import { PeerSet } from '@libp2p/peer-collections'
-import { DefaultDialer } from './connection-manager/dialer/index.js'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Datastore } from 'interface-datastore'
 import type { KeyChain } from '@libp2p/interface-keychain'
@@ -54,6 +52,15 @@ import mergeOptions from 'merge-options'
 import type { CircuitRelayService } from './circuit-relay/index.js'
 
 const log = logger('libp2p')
+
+export type PendingDialStatus = 'queued' | 'active' | 'error' | 'success'
+
+export interface PendingDial {
+  id: string
+  status: PendingDialStatus
+  peerId?: PeerId
+  multiaddrs: Multiaddr[]
+}
 
 export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public peerId: PeerId
@@ -131,8 +138,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
     })
 
-    // Create the dialer
-    this.components.dialer = new DefaultDialer(this.components, init.connectionManager)
+    // Setup the transport manager
+    this.components.transportManager = new DefaultTransportManager(this.components, init.transportManager)
 
     // Create the Connection Manager
     this.connectionManager = this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
@@ -147,9 +154,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     // Create the Registrar
     this.registrar = this.components.registrar = new DefaultRegistrar(this.components)
-
-    // Setup the transport manager
-    this.components.transportManager = new DefaultTransportManager(this.components, init.transportManager)
 
     // Addresses {listen, announce, noAnnounce}
     this.components.addressManager = new DefaultAddressManager(this.components, init.addresses)
@@ -228,11 +232,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     this.autonatService = this.configureComponent(new AutonatService(this.components, {
       ...init.autonat
-    }))
-
-    this.configureComponent(new AutoDialler(this.components, {
-      minConnections: init.connectionManager.minConnections,
-      autoDialInterval: init.connectionManager.autoDialInterval
     }))
 
     if (init.relay != null) {
@@ -352,6 +351,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
   getConnections (peerId?: PeerId): Connection[] {
     return this.components.connectionManager.getConnections(peerId)
+  }
+
+  getDialQueue (): PendingDial[] {
+    // @ts-expect-error needs adding to the API
+    return this.components.connectionManager.getDialQueue()
   }
 
   getPeers (): PeerId[] {
@@ -492,8 +496,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   /**
-   * Called whenever peer discovery services emit `peer` events.
-   * Known peers may be emitted.
+   * Called whenever peer discovery services emit `peer` events and adds peers
+   * to the peer store.
    */
   onDiscoveryPeer (evt: CustomEvent<PeerInfo>): void {
     const { detail: peer } = evt

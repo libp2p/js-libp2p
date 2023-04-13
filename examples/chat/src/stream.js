@@ -15,7 +15,7 @@ export function stdinToStream(stream) {
     // Turn strings into buffers
     (source) => map(source, (string) => uint8ArrayFromString(string)),
     // Encode with length prefix (so receiving side knows how much data is coming)
-    lp.encode(),
+    (source) => lp.encode(source),
     // Write to the stream (the sink)
     stream.sink
   )
@@ -26,7 +26,7 @@ export function streamToConsole(stream) {
     // Read from the stream (the source)
     stream.source,
     // Decode length-prefixed data
-    lp.decode(),
+    (source) => lp.decode(source),
     // Turn buffers into strings
     (source) => map(source, (buf) => uint8ArrayToString(buf.subarray())),
     // Sink function

@@ -348,7 +348,7 @@ export class IdentifyService implements Startable {
             await this.components.peerStore.metadataBook.setValue(id, 'ProtocolVersion', uint8ArrayFromString(protocolVersion))
           }
 
-          log('identify completed for peer %p with and protocols %o', id, protocols)
+          log('identify completed for peer %p with protocols %o', id, protocols)
 
           return
         }

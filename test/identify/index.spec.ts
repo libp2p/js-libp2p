@@ -29,6 +29,8 @@ import { TimeoutController } from 'timeout-abort-controller'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 import { DefaultComponents } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -54,13 +56,13 @@ async function createComponents (index: number): Promise<DefaultComponents> {
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
+    transportManager: stubInterface<TransportManager>(),
     connectionGater: mockConnectionGater()
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
     minConnections: 50,
     maxConnections: 1000,
-    autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
   })
   components.addressManager = new DefaultAddressManager(components, {

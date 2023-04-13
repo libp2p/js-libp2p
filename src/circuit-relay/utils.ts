@@ -7,7 +7,7 @@ import { logger } from '@libp2p/logger'
 import type { Stream } from '@libp2p/interface-connection'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 import { abortableSource } from 'abortable-iterator'
-import anySignal from 'any-signal'
+import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:circuit-relay:utils')
 
@@ -69,6 +69,7 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
         srcDstFinished = true
 
         if (dstSrcFinished) {
+          signal.clear()
           clearTimeout(timeout)
         }
       })
@@ -86,6 +87,7 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
         dstSrcFinished = true
 
         if (srcDstFinished) {
+          signal.clear()
           clearTimeout(timeout)
         }
       })
