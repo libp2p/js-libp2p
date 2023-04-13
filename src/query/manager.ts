@@ -184,6 +184,8 @@ export class QueryManager implements Startable {
         throw err
       }
     } finally {
+      signal.clear()
+
       this.controllers.delete(abortController)
 
       if (timeoutController != null) {

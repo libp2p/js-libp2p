@@ -168,6 +168,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           })
         }
       } finally {
+        compoundSignal.clear()
         timeout?.clear()
       }
     }, {

@@ -54,7 +54,7 @@ describe('Network', () => {
       const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
 
       // mock it
-      dht.components.connectionManager.openConnection = async (peer: PeerId | Multiaddr) => {
+      dht.components.connectionManager.openConnection = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
         // @ts-expect-error incomplete implementation
         const connection: Connection = {
           newStream: async (protocols: string | string[]) => {

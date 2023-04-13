@@ -72,16 +72,17 @@ export class QuerySelf implements Startable {
   _querySelf (): void {
     Promise.resolve().then(async () => {
       const timeoutController = new TimeoutController(this.queryTimeout)
+      this.controller = new AbortController()
+      const signal = anySignal([this.controller.signal, timeoutController.signal])
+
+      // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
+      try {
+        if (setMaxListeners != null) {
+          setMaxListeners(Infinity, signal)
+        }
+      } catch {} // fails on node < 15.4
 
       try {
-        this.controller = new AbortController()
-        const signal = anySignal([this.controller.signal, timeoutController.signal])
-        // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
-        try {
-          if (setMaxListeners != null) {
-            setMaxListeners(Infinity, signal)
-          }
-        } catch {} // fails on node < 15.4
         const found = await pipe(
           this.peerRouting.getClosestPeers(this.components.peerId.toBytes(), {
             signal
@@ -96,6 +97,7 @@ export class QuerySelf implements Startable {
       } finally {
         this.timeoutId = setTimeout(this._querySelf.bind(this), this.interval)
         timeoutController.clear()
+        signal.clear()
       }
     }).catch(err => {
       this.log('query error', err)
