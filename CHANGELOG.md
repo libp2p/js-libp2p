@@ -1,3 +1,10 @@
+## [8.0.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.6...v8.0.7) (2023-04-13)
+
+
+### Dependencies
+
+* update any-signal to 4.x.x ([#453](https://github.com/libp2p/js-libp2p-kad-dht/issues/453)) ([852d757](https://github.com/libp2p/js-libp2p-kad-dht/commit/852d757cc09bfa468b7c405c3a1506d3e3cfb90b))
+
 ## [8.0.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.5...v8.0.6) (2023-04-03)
 
 
