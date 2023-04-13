@@ -22,6 +22,7 @@ import PQueue from 'p-queue'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
 import pDefer from 'p-defer'
+import type { ClearableSignal } from 'any-signal'
 
 const log = logger('libp2p:connection-manager:dial-queue')
 
@@ -184,6 +185,7 @@ export class DialQueue {
         signal
       })
     } catch (err) {
+      signal.clear()
       timeoutController.clear()
       throw err
     }
@@ -206,6 +208,7 @@ export class DialQueue {
 
     if (existingDial != null) {
       log('joining existing dial target for %p', peerId)
+      signal.clear()
       timeoutController.clear()
       return await existingDial.promise
     }
@@ -227,7 +230,8 @@ export class DialQueue {
         // remove our pending dial entry
         this.pendingDials = this.pendingDials.filter(p => p.id !== pendingDial.id)
 
-        // clear the dial timeout if it's not fired already
+        // clean up abort signals/controllers
+        signal.clear()
         timeoutController.clear()
       })
       .catch(err => {
@@ -248,7 +252,7 @@ export class DialQueue {
     return await pendingDial.promise
   }
 
-  private createDialAbortControllers (userSignal?: AbortSignal): { timeoutController: TimeoutController, signal: AbortSignal } {
+  private createDialAbortControllers (userSignal?: AbortSignal): { timeoutController: TimeoutController, signal: ClearableSignal } {
     // ensure we throw if the dial takes longer than the dial timeout
     const timeoutController = new TimeoutController(this.dialTimeout)
 
@@ -463,6 +467,8 @@ export class DialQueue {
           signal
         }).catch(err => {
           deferred.reject(err)
+        }).finally(() => {
+          signal.clear()
         })
 
         return await deferred.promise

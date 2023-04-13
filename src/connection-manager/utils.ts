@@ -1,7 +1,7 @@
 import { AbortOptions, multiaddr } from '@multiformats/multiaddr'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { logger } from '@libp2p/logger'
-import { anySignal } from 'any-signal'
+import { ClearableSignal, anySignal } from 'any-signal'
 import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:connection-manager:utils')
@@ -51,8 +51,8 @@ async function resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Mul
   }
 }
 
-export function combineSignals (...signals: Array<AbortSignal | undefined>): AbortSignal {
-  const sigs = []
+export function combineSignals (...signals: Array<AbortSignal | undefined>): ClearableSignal {
+  const sigs: AbortSignal[] = []
 
   for (const sig of signals) {
     if (sig != null) {
