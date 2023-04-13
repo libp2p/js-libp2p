@@ -140,7 +140,7 @@
     "datastore-core": "^9.0.0",
     "interface-datastore": "^8.0.0",
     "it-all": "^3.0.1",
-    "it-drain": "^2.0.0",
+    "it-drain": "^3.0.1",
     "it-filter": "^3.0.1",
     "it-first": "^2.0.0",
     "it-handshake": "^4.1.2",
