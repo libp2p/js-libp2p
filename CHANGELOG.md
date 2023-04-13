@@ -1,3 +1,12 @@
+## [1.1.5](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.4...v1.1.5) (2023-04-13)
+
+
+### Dependencies
+
+* bump it-pipe from 2.0.5 to 3.0.1 ([#111](https://github.com/libp2p/js-libp2p-webrtc/issues/111)) ([7e593a3](https://github.com/libp2p/js-libp2p-webrtc/commit/7e593a34b44b7a2cf4758df2218b3ba9ebacfce9))
+* bump protons-runtime from 4.0.2 to 5.0.0 ([#117](https://github.com/libp2p/js-libp2p-webrtc/issues/117)) ([87cbb19](https://github.com/libp2p/js-libp2p-webrtc/commit/87cbb193e2a45642333498d9317ab17eb527d34d))
+* **dev:** bump protons from 6.1.3 to 7.0.2 ([#119](https://github.com/libp2p/js-libp2p-webrtc/issues/119)) ([fd20f4f](https://github.com/libp2p/js-libp2p-webrtc/commit/fd20f4f7a182a8edca5a511fe747885d24a60652))
+
 ## [1.1.4](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.3...v1.1.4) (2023-04-13)
 
 
