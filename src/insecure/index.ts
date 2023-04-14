@@ -71,8 +71,12 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
   log('write pubkey exchange to peer %p', remoteId)
 
   // Get the Exchange message
-  // @ts-expect-error needs to be generator
   const response = (await lp.decode.fromReader(shake.reader).next()).value
+
+  if (response == null) {
+    throw new Error('Did not read response')
+  }
+
   const id = Exchange.decode(response)
   log('read pubkey exchange from peer %p', remoteId)
 
