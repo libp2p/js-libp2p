@@ -102,7 +102,7 @@
     "@achingbrain/nat-port-mapper": "^1.0.3",
     "@libp2p/crypto": "^1.0.4",
     "@libp2p/interface-address-manager": "^2.0.0",
-    "@libp2p/interface-connection": "^3.0.2",
+    "@libp2p/interface-connection": "^4.0.0",
     "@libp2p/interface-connection-encrypter": "^3.0.1",
     "@libp2p/interface-connection-gater": "^1.0.0",
     "@libp2p/interface-connection-manager": "^1.1.1",
