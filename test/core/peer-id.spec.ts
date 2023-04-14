@@ -6,7 +6,7 @@ import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2p, Libp2p } from '../../src/index.js'
 import { MemoryDatastore } from 'datastore-core'
 
-describe.skip('peer-id', () => {
+describe('peer-id', () => {
   let libp2p: Libp2p
 
   afterEach(async () => {

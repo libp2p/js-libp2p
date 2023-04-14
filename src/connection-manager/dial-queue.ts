@@ -364,7 +364,6 @@ export class DialQueue {
     const gatedAdrs: Address[] = []
 
     for (const addr of dedupedMultiaddrs) {
-      // @ts-expect-error needs updating in the interface
       if (this.connectionGater.denyDialMultiaddr != null && await this.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
         continue
       }

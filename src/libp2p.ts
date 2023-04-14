@@ -354,7 +354,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   getDialQueue (): PendingDial[] {
-    // @ts-expect-error needs adding to the API
     return this.components.connectionManager.getDialQueue()
   }
 
