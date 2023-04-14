@@ -17,6 +17,7 @@ import type { Libp2p } from '@libp2p/interface-libp2p'
 import { pbStream } from 'it-pb-stream'
 import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { Circuit } from '@multiformats/mafmt'
+import { multiaddr } from '@multiformats/multiaddr'
 
 describe('circuit-relay', () => {
   describe('flows with 1 listener', () => {
@@ -390,6 +391,27 @@ describe('circuit-relay', () => {
       // dial the remote through the relay
       const ma = getRelayAddress(remote)
       await local.dial(ma)
+    })
+
+    it('should be able to dial a peer from its relayed address without peer id', async () => {
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+
+      // remove the peer id from the multiaddr
+      const maWithoutPeerId = multiaddr(`${ma.toString().split('/p2p-circuit')[0]}/p2p-circuit`)
+      expect(maWithoutPeerId.getPeerId()).to.not.equal(remote.peerId.toString())
+
+      // ensure this is the only address we have for the peer
+      await local.peerStore.addressBook.set(remote.peerId, [
+        maWithoutPeerId
+      ])
+
+      // dial via peer id so we load the address from the address book
+      await local.dial(remote.peerId)
     })
 
     it('should not stay connected to a relay when not already connected and HOP fails', async () => {
