@@ -197,7 +197,7 @@ export class IdentifyService implements Startable {
             signedPeerRecord,
             protocols
           })],
-          lp.encode()
+          (source) => lp.encode(source)
         ))
       } catch (err: any) {
         // Just log errors
@@ -266,7 +266,7 @@ export class IdentifyService implements Startable {
       const data = await pipe(
         [],
         source,
-        lp.decode({
+        (source) => lp.decode(source, {
           maxDataLength: this.init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
         }),
         async (source) => await first(source)
@@ -431,7 +431,7 @@ export class IdentifyService implements Startable {
       // make stream abortable
       const source = abortableDuplex(stream, timeoutController.signal)
 
-      const msgWithLenPrefix = pipe([message], lp.encode())
+      const msgWithLenPrefix = pipe([message], (source) => lp.encode(source))
       await source.sink(msgWithLenPrefix)
     } catch (err: any) {
       log.error('could not respond to identify request', err)
@@ -461,7 +461,7 @@ export class IdentifyService implements Startable {
       const data = await pipe(
         [],
         source,
-        lp.decode({
+        (source) => lp.decode(source, {
           maxDataLength: this.init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
         }),
         async (source) => await first(source)

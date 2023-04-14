@@ -203,7 +203,7 @@ describe('identify', () => {
 
         await pipe(
           [message],
-          lp.encode(),
+          (source) => lp.encode(source),
           stream,
           drain
         )
@@ -305,7 +305,7 @@ describe('identify', () => {
       void Promise.resolve().then(async () => {
         await pipe(
           [data],
-          lp.encode(),
+          (source) => lp.encode(source),
           stream,
           async (source) => { await drain(source) }
         )
@@ -351,7 +351,7 @@ describe('identify', () => {
       void Promise.resolve().then(async () => {
         await pipe(
           [data],
-          lp.encode(),
+          (source) => lp.encode(source),
           async (source) => {
             await stream.sink(async function * () {
               for await (const buf of source) {
