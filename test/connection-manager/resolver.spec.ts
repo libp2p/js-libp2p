@@ -35,7 +35,7 @@ const getDnsRelayedAddrStub = (peerId: PeerId): string[] => [
   `${relayedAddr(peerId)}`
 ]
 
-describe('Dialing (resolvable addresses)', () => {
+describe('dialing (resolvable addresses)', () => {
   let libp2p: Libp2pNode, remoteLibp2p: Libp2pNode
   let resolver: sinon.SinonStub<[Multiaddr], Promise<string[]>>
 
@@ -73,6 +73,7 @@ describe('Dialing (resolvable addresses)', () => {
 
   afterEach(async () => {
     sinon.restore()
+
     await Promise.all([libp2p, remoteLibp2p].map(async n => {
       if (n != null) {
         await n.stop()
