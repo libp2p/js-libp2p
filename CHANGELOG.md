@@ -1,3 +1,10 @@
+## [8.0.8](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.7...v8.0.8) (2023-04-14)
+
+
+### Dependencies
+
+* bump @libp2p/interface-connection-manager from 1.5.0 to 2.0.0 ([#455](https://github.com/libp2p/js-libp2p-kad-dht/issues/455)) ([e4ed616](https://github.com/libp2p/js-libp2p-kad-dht/commit/e4ed6168add1653400853c5c2bc416790b0699a2))
+
 ## [8.0.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.6...v8.0.7) (2023-04-13)
 
 
