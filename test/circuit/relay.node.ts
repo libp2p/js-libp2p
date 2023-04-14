@@ -398,10 +398,8 @@ describe('circuit-relay', () => {
       await remote.dial(relay1.getMultiaddrs()[0])
       await usingAsRelay(remote, relay1)
 
-      // dial the remote through the relay
+      // get the relayed multiaddr without the remote's peer id
       const ma = getRelayAddress(remote)
-
-      // remove the peer id from the multiaddr
       const maWithoutPeerId = multiaddr(`${ma.toString().split('/p2p-circuit')[0]}/p2p-circuit`)
       expect(maWithoutPeerId.getPeerId()).to.not.equal(remote.peerId.toString())
 
