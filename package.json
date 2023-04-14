@@ -105,7 +105,7 @@
     "@libp2p/interface-connection": "^4.0.0",
     "@libp2p/interface-connection-encrypter": "^3.0.1",
     "@libp2p/interface-connection-gater": "^2.0.1",
-    "@libp2p/interface-connection-manager": "^2.0.0",
+    "@libp2p/interface-connection-manager": "^2.1.0",
     "@libp2p/interface-content-routing": "^2.0.0",
     "@libp2p/interface-dht": "^2.0.0",
     "@libp2p/interface-keychain": "^2.0.4",
