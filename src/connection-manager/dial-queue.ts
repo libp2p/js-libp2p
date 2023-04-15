@@ -235,7 +235,7 @@ export class DialQueue {
         timeoutController.clear()
       })
       .catch(err => {
-        log.error('dial failed to %s', addrsToDial.map(({ multiaddr }) => multiaddr.toString()).join(', '), err)
+        log.error('dial failed to %s', addrsToDial.map(({ multiaddr }) => multiaddr.toString()).join(', '), err.errors ?? err)
 
         // Error is a timeout
         if (timeoutController.signal.aborted) {
@@ -454,7 +454,7 @@ export class DialQueue {
               deferred.resolve(conn)
             } catch (err: any) {
               // something only went wrong if our signal was not aborted
-              log.error('error during dial of %s', addr, err)
+              log.error('error during dial of %s', addr, err.errors ?? err)
               deferred.reject(err)
             }
           }, {

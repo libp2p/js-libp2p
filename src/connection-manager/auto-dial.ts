@@ -86,7 +86,9 @@ export class AutoDial implements Startable {
   }
 
   async autoDial (): Promise<void> {
-    const numConnections = this.connectionManager.getConnections().length
+    const connections = this.connectionManager.getConnectionsMap()
+    const numConnections = connections.size
+    const dialQueue = this.connectionManager.getDialQueue()
 
     // Already has enough connections
     if (numConnections >= this.minConnections) {
@@ -105,6 +107,16 @@ export class AutoDial implements Startable {
     peers = peers.filter((peer) => {
       // Remove peers without addresses
       if (peer.addresses.length === 0) {
+        return false
+      }
+
+      // remove peers we are already connected to
+      if (connections.has(peer.id)) {
+        return false
+      }
+
+      // remove peers already in the dial queue
+      if (dialQueue.some(dial => dial.peerId?.equals(peer.id) === true)) {
         return false
       }
 
@@ -164,7 +176,7 @@ export class AutoDial implements Startable {
           priority: this.autoDialPriority
         })
       }).catch(err => {
-        log.error('could not connect to peerStore stored peer', err)
+        log.error(`could not connect to peerStore stored peer ${peer.id.toString()}`, err.errors ?? err)
       })
     }
   }
