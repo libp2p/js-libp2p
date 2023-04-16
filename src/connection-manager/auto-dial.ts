@@ -99,7 +99,7 @@ export class AutoDial implements Startable {
     log('not enough connections %d/%d - will dial peers to increase the number of connections', numConnections, this.minConnections)
 
     // Sort peers on whether we know protocols or public keys for them
-    let peers = await this.peerStore.all()
+    const peers = await this.peerStore.all()
 
     // Remove some peers
     const filteredPeers = peers.filter((peer) => {
