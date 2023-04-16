@@ -121,7 +121,8 @@ export class AutoDial implements Startable {
       return true
     })
 
-    // shuffle the peers
+    // shuffle the peers so peers with equal tag values will be dialled in a
+    // different order each time
     const shuffledPeers = filteredPeers.sort(() => Math.random() > 0.5 ? 1 : -1)
 
     // Sort shuffled peers by tag value
@@ -139,8 +140,8 @@ export class AutoDial implements Startable {
       }, 0))
     }
 
-    // sort by value, highest to lowest
-    const sortedPeers = peers.sort((a, b) => {
+    // sort by tag value, highest to lowest
+    const sortedPeers = shuffledPeers.sort((a, b) => {
       const peerAValue = peerValues.get(a.id) ?? 0
       const peerBValue = peerValues.get(b.id) ?? 0
 
