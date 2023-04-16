@@ -97,12 +97,10 @@ export class AutoDial implements Startable {
     log('not enough connections %d/%d - will dial peers to increase the number of connections', numConnections, this.minConnections)
 
     // Sort peers on whether we know protocols or public keys for them
-    let peers = await this.peerStore.all()
-
-    log('loaded %d peers from the peer store', peers.length)
+    const peers = await this.peerStore.all()
 
     // Remove some peers
-    peers = peers.filter((peer) => {
+    const filteredPeers = peers.filter((peer) => {
       // Remove peers without addresses
       if (peer.addresses.length === 0) {
         return false
@@ -111,12 +109,13 @@ export class AutoDial implements Startable {
       return true
     })
 
-    // shuffle the peers
-    peers = peers.sort(() => Math.random() > 0.5 ? 1 : -1)
+    // shuffle the peers - this is so peers with the same tag values will be
+    // dialled in a different order each time
+    const shuffledPeers = filteredPeers.sort(() => Math.random() > 0.5 ? 1 : -1)
 
     // Sort shuffled peers by tag value
     const peerValues = new PeerMap<number>()
-    for (const peer of peers) {
+    for (const peer of shuffledPeers) {
       if (peerValues.has(peer.id)) {
         continue
       }
@@ -130,7 +129,7 @@ export class AutoDial implements Startable {
     }
 
     // sort by value, highest to lowest
-    const sortedPeers = peers.sort((a, b) => {
+    const sortedPeers = shuffledPeers.sort((a, b) => {
       const peerAValue = peerValues.get(a.id) ?? 0
       const peerBValue = peerValues.get(b.id) ?? 0
 
@@ -145,7 +144,7 @@ export class AutoDial implements Startable {
       return 0
     })
 
-    log('selected %d peers to dial', sortedPeers.length)
+    log('selected %d/%d peers to dial', sortedPeers.length, peers.length)
 
     for (const peer of sortedPeers) {
       this.queue.add(async () => {
