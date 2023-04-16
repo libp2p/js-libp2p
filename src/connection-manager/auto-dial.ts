@@ -161,7 +161,7 @@ export class AutoDial implements Startable {
 
     for (const peer of sortedPeers) {
       this.queue.add(async () => {
-        const numConnections = this.connectionManager.getConnections().length
+        const numConnections = this.connectionManager.getConnectionsMap().size
 
         // Check to see if we still need to auto dial
         if (numConnections >= this.minConnections) {
