@@ -86,10 +86,24 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   constructor (init: Libp2pInit) {
     super()
 
+    // event bus - components can listen to this emitter to be notified of system events
+    // and also cause them to be emitted
+    const events = new EventEmitter<Libp2pEvents>()
+    const originalDispatch = events.dispatchEvent.bind(events)
+    events.dispatchEvent = (evt: any) => {
+      const internalResult = originalDispatch(evt)
+      const externalResult = this.dispatchEvent(
+        new CustomEvent(evt.type, { detail: evt.detail })
+      )
+
+      return internalResult || externalResult
+    }
+
     this.started = false
     this.peerId = init.peerId
     const components = this.components = new DefaultComponents({
       peerId: init.peerId,
+      events,
       datastore: init.datastore ?? new MemoryDatastore(),
       connectionGater: {
         denyDialPeer: async () => await Promise.resolve(false),

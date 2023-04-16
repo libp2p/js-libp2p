@@ -11,6 +11,7 @@ import type { Startable } from '@libp2p/interfaces/startable'
 import { trackedMap } from '@libp2p/tracked-map'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:transports')
 
@@ -22,6 +23,7 @@ export interface DefaultTransportManagerComponents {
   metrics?: Metrics
   addressManager: AddressManager
   upgrader: Upgrader
+  events: EventEmitter<Libp2pEvents>
 }
 
 export class DefaultTransportManager extends EventEmitter<TransportManagerEvents> implements TransportManager, Startable {
@@ -237,6 +239,8 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
       }
       log(`libp2p in dial mode only: ${message}`)
     }
+
+    this.components.events.safeDispatchEvent('multiaddrs:change', { detail: this.getAddrs() })
   }
 
   /**
