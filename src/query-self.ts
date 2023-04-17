@@ -2,7 +2,6 @@ import { setMaxListeners } from 'events'
 import take from 'it-take'
 import length from 'it-length'
 import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K } from './constants.js'
-import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
 import { logger, Logger } from '@libp2p/logger'
 import type { PeerRouting } from './peer-routing/index.js'
@@ -71,9 +70,8 @@ export class QuerySelf implements Startable {
 
   _querySelf (): void {
     Promise.resolve().then(async () => {
-      const timeoutController = new TimeoutController(this.queryTimeout)
       this.controller = new AbortController()
-      const signal = anySignal([this.controller.signal, timeoutController.signal])
+      const signal = anySignal([this.controller.signal, AbortSignal.timeout(this.queryTimeout)])
 
       // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
       try {
@@ -96,7 +94,6 @@ export class QuerySelf implements Startable {
         this.log('query error', err)
       } finally {
         this.timeoutId = setTimeout(this._querySelf.bind(this), this.interval)
-        timeoutController.clear()
         signal.clear()
       }
     }).catch(err => {

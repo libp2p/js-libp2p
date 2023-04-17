@@ -1,4 +1,3 @@
-import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
 import {
   ALPHA, K, DEFAULT_QUERY_TIMEOUT
@@ -39,7 +38,7 @@ export class QueryManager implements Startable {
   private readonly lan: boolean
   public disjointPaths: number
   private readonly alpha: number
-  private readonly controllers: Set<AbortController>
+  private readonly shutDownController: AbortController
   private running: boolean
   private queries: number
   private metrics?: {
@@ -52,11 +51,19 @@ export class QueryManager implements Startable {
 
     this.components = components
     this.disjointPaths = disjointPaths ?? K
-    this.controllers = new Set()
     this.running = false
     this.alpha = alpha ?? ALPHA
     this.lan = lan
     this.queries = 0
+
+    // allow us to stop queries on shut down
+    this.shutDownController = new AbortController()
+    // make sure we don't make a lot of noise in the logs
+    try {
+      if (setMaxListeners != null) {
+        setMaxListeners(Infinity, this.shutDownController.signal)
+      }
+    } catch {} // fails on node < 15.4
   }
 
   isStarted (): boolean {
@@ -83,11 +90,7 @@ export class QueryManager implements Startable {
   async stop (): Promise<void> {
     this.running = false
 
-    for (const controller of this.controllers) {
-      controller.abort()
-    }
-
-    this.controllers.clear()
+    this.shutDownController.abort()
   }
 
   async * run (key: Uint8Array, peers: PeerId[], queryFunc: QueryFunc, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
@@ -96,32 +99,21 @@ export class QueryManager implements Startable {
     }
 
     const stopQueryTimer = this.metrics?.queryTime.timer()
-    let timeoutController
 
     if (options.signal == null) {
       // don't let queries run forever
-      timeoutController = new TimeoutController(DEFAULT_QUERY_TIMEOUT)
-      options.signal = timeoutController.signal
+      options.signal = AbortSignal.timeout(DEFAULT_QUERY_TIMEOUT)
 
       // this signal will get listened to for network requests, etc
       // so make sure we don't make a lot of noise in the logs
       try {
         if (setMaxListeners != null) {
-          setMaxListeners(Infinity, timeoutController.signal)
+          setMaxListeners(Infinity, options.signal)
         }
       } catch {} // fails on node < 15.4
     }
 
-    // allow us to stop queries on shut down
-    const abortController = new AbortController()
-    this.controllers.add(abortController)
-    const signals = [abortController.signal]
-
-    if (options.signal != null) {
-      signals.push(options.signal)
-    }
-
-    const signal = anySignal(signals)
+    const signal = anySignal([this.shutDownController.signal, options.signal])
 
     // this signal will get listened to for every invocation of queryFunc
     // so make sure we don't make a lot of noise in the logs
@@ -185,12 +177,6 @@ export class QueryManager implements Startable {
       }
     } finally {
       signal.clear()
-
-      this.controllers.delete(abortController)
-
-      if (timeoutController != null) {
-        timeoutController.clear()
-      }
 
       this.queries--
       this.metrics?.runningQueries.update(this.queries)

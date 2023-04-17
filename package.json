@@ -182,7 +182,6 @@
     "p-queue": "^7.3.4",
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
-    "timeout-abort-controller": "^3.0.0",
     "uint8arraylist": "^2.0.0",
     "uint8arrays": "^4.0.2",
     "varint": "^6.0.0"

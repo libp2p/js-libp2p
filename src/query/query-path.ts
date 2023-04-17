@@ -4,7 +4,6 @@ import { toString } from 'uint8arrays/to-string'
 import defer from 'p-defer'
 import { CodeError } from '@libp2p/interfaces/errors'
 import { convertPeerId, convertBuffer } from '../utils.js'
-import { TimeoutController } from 'timeout-abort-controller'
 import { anySignal } from 'any-signal'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { EventEmitter } from '@libp2p/interfaces/events'
@@ -108,12 +107,10 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
     const peerXor = BigInt('0x' + toString(xor(peerKadId, kadId), 'base16'))
 
     queue.add(async () => {
-      let timeout
       const signals = [signal]
 
       if (queryFuncTimeout != null) {
-        timeout = new TimeoutController(queryFuncTimeout)
-        signals.push(timeout.signal)
+        signals.push(AbortSignal.timeout(queryFuncTimeout))
       }
 
       const compoundSignal = anySignal(signals)
@@ -158,8 +155,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           }
           queue.emit('completed', event)
         }
-
-        timeout?.clear()
       } catch (err: any) {
         if (!signal.aborted) {
           return queryErrorEvent({
@@ -169,7 +164,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
         }
       } finally {
         compoundSignal.clear()
-        timeout?.clear()
       }
     }, {
       // use xor value as the queue priority - closer peers should execute first

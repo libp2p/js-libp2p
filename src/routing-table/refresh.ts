@@ -5,7 +5,6 @@ import { randomBytes } from '@libp2p/crypto'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { logger } from '@libp2p/logger'
 import length from 'it-length'
-import { TimeoutController } from 'timeout-abort-controller'
 import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constants.js'
 import type { RoutingTable } from './index.js'
 import type { Logger } from '@libp2p/logger'
@@ -135,16 +134,10 @@ export class RoutingTableRefresh {
 
     this.log('starting refreshing cpl %s with key %p (routing table size was %s)', cpl, peerId, this.routingTable.size)
 
-    const controller = new TimeoutController(this.refreshQueryTimeout)
+    const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), { signal: AbortSignal.timeout(this.refreshQueryTimeout) }))
 
-    try {
-      const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), { signal: controller.signal }))
-
-      this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
-      this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
-    } finally {
-      controller.clear()
-    }
+    this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
+    this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
   }
 
   _getTrackedCommonPrefixLengthsForRefresh (maxCommonPrefix: number): Date[] {

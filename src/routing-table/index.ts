@@ -2,7 +2,6 @@
 import KBuck from 'k-bucket'
 import * as utils from '../utils.js'
 import Queue from 'p-queue'
-import { TimeoutController } from 'timeout-abort-controller'
 import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
@@ -222,13 +221,9 @@ export class RoutingTable implements Startable {
       try {
         await Promise.all(
           oldContacts.map(async oldContact => {
-            let timeoutController
-
             try {
-              timeoutController = new TimeoutController(this.pingTimeout)
-
               const options = {
-                signal: timeoutController.signal
+                signal: AbortSignal.timeout(this.pingTimeout)
               }
 
               this.log('pinging old contact %p', oldContact.peer)
@@ -245,10 +240,6 @@ export class RoutingTable implements Startable {
                 this.kb.remove(oldContact.id)
               }
             } finally {
-              if (timeoutController != null) {
-                timeoutController.clear()
-              }
-
               this.metrics?.routingTableSize.update(this.size)
             }
           })
