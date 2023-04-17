@@ -156,7 +156,7 @@
     "@libp2p/interface-transport-compliance-tests": "^3.0.0",
     "aegir": "^38.1.0",
     "it-all": "^3.0.1",
-    "it-pipe": "^2.0.3",
+    "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0",
     "sinon": "^15.0.0",
     "uint8arrays": "^4.0.2"
