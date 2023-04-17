@@ -1,3 +1,10 @@
+## [6.2.2](https://github.com/libp2p/js-libp2p-tcp/compare/v6.2.1...v6.2.2) (2023-04-17)
+
+
+### Dependencies
+
+* **dev:** bump it-pipe from 2.0.5 to 3.0.1 ([#261](https://github.com/libp2p/js-libp2p-tcp/issues/261)) ([f8b4bf7](https://github.com/libp2p/js-libp2p-tcp/commit/f8b4bf757e650bda232f1f6f21506212427db9f4))
+
 ## [6.2.1](https://github.com/libp2p/js-libp2p-tcp/compare/v6.2.0...v6.2.1) (2023-04-14)
 
 
