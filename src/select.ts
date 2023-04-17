@@ -68,18 +68,18 @@ export async function select (stream: Duplex<any>, protocols: string | string[],
     throw new Error('At least one protocol must be specified')
   }
 
-  log('select: write ["%s", "%s"]', PROTOCOL_ID, protocol)
+  log.trace('select: write ["%s", "%s"]', PROTOCOL_ID, protocol)
   const p1 = uint8ArrayFromString(PROTOCOL_ID)
   const p2 = uint8ArrayFromString(protocol)
   multistream.writeAll(writer, [p1, p2], options)
 
   let response = await multistream.readString(reader, options)
-  log('select: read "%s"', response)
+  log.trace('select: read "%s"', response)
 
   // Read the protocol response if we got the protocolId in return
   if (response === PROTOCOL_ID) {
     response = await multistream.readString(reader, options)
-    log('select: read "%s"', response)
+    log.trace('select: read "%s"', response)
   }
 
   // We're done
@@ -90,10 +90,10 @@ export async function select (stream: Duplex<any>, protocols: string | string[],
 
   // We haven't gotten a valid ack, try the other protocols
   for (const protocol of protocols) {
-    log('select: write "%s"', protocol)
+    log.trace('select: write "%s"', protocol)
     multistream.write(writer, uint8ArrayFromString(protocol), options)
     const response = await multistream.readString(reader, options)
-    log('select: read "%s" for "%s"', response, protocol)
+    log.trace('select: read "%s" for "%s"', response, protocol)
 
     if (response === protocol) {
       rest() // End our writer so others can start writing to stream

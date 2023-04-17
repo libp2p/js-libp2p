@@ -63,17 +63,17 @@ export async function handle (stream: Duplex<any>, protocols: string | string[],
 
   while (true) {
     const protocol = await multistream.readString(reader, options)
-    log('read "%s"', protocol)
+    log.trace('read "%s"', protocol)
 
     if (protocol === PROTOCOL_ID) {
-      log('respond with "%s" for "%s"', PROTOCOL_ID, protocol)
+      log.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol)
       multistream.write(writer, uint8ArrayFromString(PROTOCOL_ID), options)
       continue
     }
 
     if (protocols.includes(protocol)) {
       multistream.write(writer, uint8ArrayFromString(protocol), options)
-      log('respond with "%s" for "%s"', protocol, protocol)
+      log.trace('respond with "%s" for "%s"', protocol, protocol)
       rest()
       return { stream: shakeStream, protocol }
     }
@@ -82,7 +82,7 @@ export async function handle (stream: Duplex<any>, protocols: string | string[],
       // <varint-msg-len><varint-proto-name-len><proto-name>\n<varint-proto-name-len><proto-name>\n\n
       multistream.write(writer, new Uint8ArrayList(...protocols.map(p => multistream.encode(uint8ArrayFromString(p)))), options)
       // multistream.writeAll(writer, protocols.map(p => uint8ArrayFromString(p)))
-      log('respond with "%s" for %s', protocols, protocol)
+      log.trace('respond with "%s" for %s', protocols, protocol)
       continue
     }
 
