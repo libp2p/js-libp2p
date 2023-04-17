@@ -1,3 +1,10 @@
+## [8.0.10](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.9...v8.0.10) (2023-04-17)
+
+
+### Bug Fixes
+
+* remove timeout-abort-controller dependency ([#454](https://github.com/libp2p/js-libp2p-kad-dht/issues/454)) ([7f3245e](https://github.com/libp2p/js-libp2p-kad-dht/commit/7f3245e5b9379c7fcf0eb3f7cccb60d2b81aaadb))
+
 ## [8.0.9](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.8...v8.0.9) (2023-04-14)
 
 
