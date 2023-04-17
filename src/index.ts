@@ -32,7 +32,6 @@ import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { Metrics } from '@libp2p/interface-metrics'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PingServiceInit } from './ping/index.js'
 import type { FetchServiceInit } from './fetch/index.js'
 import type { AutonatServiceInit } from './autonat/index.js'
@@ -156,23 +155,6 @@ export interface Libp2pInit {
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
   connectionProtector?: (components: Components) => ConnectionProtector
-}
-
-/**
- * Once you have a libp2p instance, you can listen to several events it emits, so that you can be notified of relevant network events.
- */
-export interface Libp2pEvents {
-  /**
-   * @example
-   *
-   * ```js
-   * libp2p.addEventListener('peer:discovery', (event) => {
-   *    const peerInfo = event.detail
-   *    // ...
-   * })
-   * ```
-   */
-  'peer:discovery': CustomEvent<PeerInfo>
 }
 
 export type { Libp2p }

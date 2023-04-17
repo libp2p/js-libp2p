@@ -32,7 +32,7 @@ import type { PubSub } from '@libp2p/interface-pubsub'
 import type { Registrar, StreamHandler, StreamHandlerOptions, Topology } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
+import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
 import { validateConfig } from './config.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerStore } from '@libp2p/interface-peer-store'
@@ -50,6 +50,7 @@ import type { Datastore } from 'interface-datastore'
 import type { KeyChain } from '@libp2p/interface-keychain'
 import mergeOptions from 'merge-options'
 import type { CircuitRelayService } from './circuit-relay/index.js'
+import { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p')
 
