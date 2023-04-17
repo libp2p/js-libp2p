@@ -1,3 +1,10 @@
+## [3.1.5](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.4...v3.1.5) (2023-04-17)
+
+
+### Bug Fixes
+
+* use trace logging for happy paths ([#59](https://github.com/libp2p/js-libp2p-multistream-select/issues/59)) ([184ef21](https://github.com/libp2p/js-libp2p-multistream-select/commit/184ef21c930c1557d657ce0891471d86f76fb271))
+
 ## [3.1.4](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.3...v3.1.4) (2023-04-03)
 
 
