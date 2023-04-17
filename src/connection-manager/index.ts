@@ -7,7 +7,7 @@ import { codes } from '../errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
-import type { ConnectionManager, ConnectionManagerEvents } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager, ConnectionManagerEvents, PendingDial } from '@libp2p/interface-connection-manager'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import { Multiaddr, Resolver, multiaddr } from '@multiformats/multiaddr'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
@@ -23,7 +23,6 @@ import { PeerMap } from '@libp2p/peer-collections'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import type { PendingDial } from '../libp2p.js'
 
 const log = logger('libp2p:connection-manager')
 
