@@ -47,6 +47,7 @@ function lpEncodeExchange (exchange: Exchange): Uint8ArrayList {
  * Encrypt connection
  */
 async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
+  // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
   const shake = handshake(conn)
 
   let type = KeyType.RSA
