@@ -19,7 +19,7 @@
   - [Connection](#connection)
 - [API Docs](#api-docs)
 - [License](#license)
-- [Contribute](#contribute)
+- [Contribution](#contribution)
 
 ## Install
 
@@ -60,10 +60,10 @@ await node.start()
 await node.dial('/ip4/127.0.0.1/tcp/9090/ws')
 ```
 
-| Name     | Type                                                                                                                       | Description                                                            | Default                                                                 |
-| -------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| upgrader | [`Upgrader`](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#upgrader) | connection upgrader object with `upgradeOutbound` and `upgradeInbound` | **REQUIRED**                                                            |
-| filter   | `(multiaddrs: Array<Multiaddr>) => Array<Multiaddr>`                                                                       | override transport addresses filter                                    | **Browser:** DNS+WSS multiaddrs / **Node.js:** DNS+[WS, WSS] multiaddrs |
+| Name     | Type                                                                                                                       | Description                                                            | Default                                                                  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| upgrader | [`Upgrader`](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#upgrader) | connection upgrader object with `upgradeOutbound` and `upgradeInbound` | **REQUIRED**                                                             |
+| filter   | `(multiaddrs: Array<Multiaddr>) => Array<Multiaddr>`                                                                       | override transport addresses filter                                    | **Browser:** DNS+WSS multiaddrs / **Node.js:** DNS+\[WS, WSS] multiaddrs |
 
 You can create your own address filters for this transports, or rely in the filters [provided](./src/filters.js).
 
@@ -125,6 +125,6 @@ Licensed under either of
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribute
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
