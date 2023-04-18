@@ -1,3 +1,11 @@
+## [3.0.9](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.8...v3.0.9) (2023-04-18)
+
+
+### Dependencies
+
+* **dev:** bump it-all from 2.0.1 to 3.0.1 ([#85](https://github.com/libp2p/js-libp2p-utils/issues/85)) ([b029517](https://github.com/libp2p/js-libp2p-utils/commit/b0295176c2c6553209ebb26149497a5f9a73fc9e))
+* **dev:** bump it-map from 2.0.1 to 3.0.2 ([#88](https://github.com/libp2p/js-libp2p-utils/issues/88)) ([6e24d5a](https://github.com/libp2p/js-libp2p-utils/commit/6e24d5a91b4df40c7a395d3d3c9379120de0754d))
+
 ## [3.0.8](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.7...v3.0.8) (2023-04-12)
 
 
