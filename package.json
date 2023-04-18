@@ -190,7 +190,7 @@
   },
   "devDependencies": {
     "aegir": "^38.1.7",
-    "it-all": "^2.0.0",
+    "it-all": "^3.0.1",
     "it-map": "^2.0.0",
     "it-pipe": "^3.0.0",
     "p-defer": "^4.0.0",
