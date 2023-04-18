@@ -1,3 +1,10 @@
+## [3.1.6](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.5...v3.1.6) (2023-04-18)
+
+
+### Dependencies
+
+* bump it-stream-types from 1.0.5 to 2.0.1 ([#58](https://github.com/libp2p/js-libp2p-multistream-select/issues/58)) ([0b0ebca](https://github.com/libp2p/js-libp2p-multistream-select/commit/0b0ebcadd0ccbbfd373ebbf8e9fb5a8b793fc924))
+
 ## [3.1.5](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.4...v3.1.5) (2023-04-17)
 
 
