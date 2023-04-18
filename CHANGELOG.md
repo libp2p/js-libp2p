@@ -1,3 +1,14 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v6.2.2...v7.0.0) (2023-04-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* update stream types (#266)
+
+### Dependencies
+
+* update stream types ([#266](https://github.com/libp2p/js-libp2p-tcp/issues/266)) ([d2b69b6](https://github.com/libp2p/js-libp2p-tcp/commit/d2b69b6b08b40e76e0bda1796ebe641cf2ca4c6e))
+
 ## [6.2.2](https://github.com/libp2p/js-libp2p-tcp/compare/v6.2.1...v6.2.2) (2023-04-17)
 
 
