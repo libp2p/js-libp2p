@@ -4,8 +4,8 @@ import type { AbortOptions } from '@libp2p/interfaces'
 
 export { PROTOCOL_ID }
 
-export interface ProtocolStream<TSource, TSink = TSource> {
-  stream: Duplex<AsyncGenerator<TSource>, Source<TSink>>
+export interface ProtocolStream<TSource, TSink = TSource, RSink = Promise<void>> {
+  stream: Duplex<AsyncGenerator<TSource>, Source<TSink>, RSink>
   protocol: string
 }
 
