@@ -75,30 +75,10 @@ Examples can be found in the [examples folder](examples/README.md).
 
 ![https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interface-transport](https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/interface-transport/img/badge.png)
 
-Browsers can only `dial`, so `listen` is not supported.
-
-```js
-interface Transport {
-  [Symbol.toStringTag]: string
-  [symbol]: true
-  dial: (ma: Multiaddr, options: DialOptions) => Promise<Connection>
-  createListener: (options: CreateListenerOptions) => Listener
-  filter: MultiaddrFilter
-}
-
-class WebRTCTransport implements Transport {
-
-  async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
-    const rawConn = await this._connect(ma, options)
-    log(`dialing address - ${ma.toString()}`)
-    return rawConn
-  }
-
-  createListener (options: CreateListenerOptions): Listener {
-    throw unimplemented('WebRTCTransport.createListener')
-  }
-}
-```
+Browsers can usually only `dial`, but `listen` is supported in the WebRTC
+transport when paired with another listener like CircuitV2, where you listen on
+a relayed connection. Take a look at [index.js](examples/browser-to-browser/index.js) for
+an example.
 
 ### Connection
 
