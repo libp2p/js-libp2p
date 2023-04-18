@@ -1,3 +1,14 @@
+## [6.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.10...v6.0.0) (2023-04-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* the type of the source/sink properties have changed
+
+### Dependencies
+
+* update stream types ([#232](https://github.com/libp2p/js-libp2p-websockets/issues/232)) ([5a69d38](https://github.com/libp2p/js-libp2p-websockets/commit/5a69d38f68f0796f869d8becb5d02be1772cda94))
+
 ## [5.0.10](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.9...v5.0.10) (2023-04-12)
 
 
