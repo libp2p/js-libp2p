@@ -25,7 +25,7 @@ export class Decoder {
     this._maxUnprocessedMessageQueueSize = maxUnprocessedMessageQueueSize
   }
 
-  write (chunk: Uint8Array): Message[] {
+  write (chunk: Uint8Array | Uint8ArrayList): Message[] {
     if (chunk == null || chunk.length === 0) {
       return []
     }

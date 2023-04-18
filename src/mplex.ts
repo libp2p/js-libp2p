@@ -8,7 +8,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays'
 import { logger } from '@libp2p/logger'
 import { CodeError } from '@libp2p/interfaces/errors'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
-import type { Sink } from 'it-stream-types'
+import type { Sink, Source } from 'it-stream-types'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import type { Stream } from '@libp2p/interface-connection'
 import type { MplexInit } from './index.js'
@@ -49,8 +49,8 @@ interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {}
 export class MplexStreamMuxer implements StreamMuxer {
   public protocol = '/mplex/6.7.0'
 
-  public sink: Sink<Uint8Array>
-  public source: AsyncIterable<Uint8Array>
+  public sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>>
+  public source: AsyncGenerator<Uint8Array>
 
   private _streamId: number
   private readonly _streams: { initiators: Map<number, MplexStream>, receivers: Map<number, MplexStream> }
@@ -190,8 +190,8 @@ export class MplexStreamMuxer implements StreamMuxer {
    * Creates a sink with an abortable source. Incoming messages will
    * also have their size restricted. All messages will be varint decoded.
    */
-  _createSink (): Sink<Uint8Array> {
-    const sink: Sink<Uint8Array> = async source => {
+  _createSink (): Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> {
+    const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
       const signal = anySignal([this.closeController.signal, this._init.signal])
 
       try {
