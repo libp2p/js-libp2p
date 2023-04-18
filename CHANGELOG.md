@@ -1,3 +1,10 @@
+## [3.0.10](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.9...v3.0.10) (2023-04-18)
+
+
+### Dependencies
+
+* bump it-stream-types from 1.0.5 to 2.0.1 ([#89](https://github.com/libp2p/js-libp2p-utils/issues/89)) ([0de4a85](https://github.com/libp2p/js-libp2p-utils/commit/0de4a85bd6caa3dfec673ceb3be9130d4051e407))
+
 ## [3.0.9](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.8...v3.0.9) (2023-04-18)
 
 
