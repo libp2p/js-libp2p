@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v7.0.0...v7.0.1) (2023-04-18)
+
+
+### Dependencies
+
+* update pubsub interface ([#220](https://github.com/libp2p/js-libp2p-floodsub/issues/220)) ([c38bbb7](https://github.com/libp2p/js-libp2p-floodsub/commit/c38bbb700c333a5d0e19dd3ceb74ce2a3fc79974))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.3...v7.0.0) (2023-04-18)
 
 
