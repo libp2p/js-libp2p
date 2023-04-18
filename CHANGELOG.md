@@ -1,3 +1,14 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.6...v7.0.0) (2023-04-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* update stream deps (#136)
+
+### Dependencies
+
+* update stream deps ([#136](https://github.com/libp2p/js-libp2p-pubsub/issues/136)) ([8d6af79](https://github.com/libp2p/js-libp2p-pubsub/commit/8d6af79820700e2b7ffb4f11e939211cf2191f6e))
+
 ## [6.0.6](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.5...v6.0.6) (2023-04-12)
 
 
