@@ -1,3 +1,10 @@
+## [3.1.7](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.6...v3.1.7) (2023-04-18)
+
+
+### Bug Fixes
+
+* specify protocol stream sink return type ([#60](https://github.com/libp2p/js-libp2p-multistream-select/issues/60)) ([12d6b9c](https://github.com/libp2p/js-libp2p-multistream-select/commit/12d6b9c4ea26b26d0428df2d05c3078464068392))
+
 ## [3.1.6](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.5...v3.1.6) (2023-04-18)
 
 
