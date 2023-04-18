@@ -2,7 +2,7 @@ import { abortableSource } from 'abortable-iterator'
 import { logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:stream:converter')
@@ -30,7 +30,7 @@ export interface StreamOptions {
 }
 
 export interface StreamProperties {
-  stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>
+  stream: Duplex<AsyncIterable<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>>
   remoteAddr: Multiaddr
   localAddr: Multiaddr
 }
@@ -45,7 +45,11 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
 
   const mapSource = (async function * () {
     for await (const list of source) {
-      yield * list
+      if (list instanceof Uint8Array) {
+        yield list
+      } else {
+        yield * list
+      }
     }
   }())
 
@@ -70,7 +74,6 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
     },
     source: (options.signal != null) ? abortableSource(mapSource, options.signal) : mapSource,
     remoteAddr,
-    /** @type {Timeline} */
     timeline: { open: Date.now(), close: undefined },
     async close () {
       await sink(async function * () {

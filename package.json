@@ -177,23 +177,22 @@
   },
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
-    "@libp2p/interface-connection": "^4.0.0",
+    "@libp2p/interface-connection": "^5.0.1",
     "@libp2p/interface-peer-store": "^1.2.1",
     "@libp2p/interfaces": "^3.2.0",
     "@libp2p/logger": "^2.0.0",
     "@multiformats/multiaddr": "^12.0.0",
-    "abortable-iterator": "^4.0.2",
+    "abortable-iterator": "^5.0.0",
     "is-loopback-addr": "^2.0.1",
-    "it-stream-types": "^1.0.4",
+    "it-stream-types": "^2.0.1",
     "private-ip": "^3.0.0",
     "uint8arraylist": "^2.3.2"
   },
   "devDependencies": {
     "aegir": "^38.1.7",
     "it-all": "^3.0.1",
-    "it-map": "^3.0.2",
+    "it-pair": "^2.0.6",
     "it-pipe": "^3.0.0",
-    "p-defer": "^4.0.0",
     "uint8arrays": "^4.0.2"
   }
 }
