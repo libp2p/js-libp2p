@@ -13,8 +13,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { AbortError } from '@libp2p/interfaces/errors'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import * as Constants from '../../src/constants.js'
-import { DefaultDialer, DialTarget } from '../../src/connection-manager/dialer/index.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
@@ -31,11 +29,12 @@ import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
 import { DefaultComponents } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
 import { yamux } from '@chainsafe/libp2p-yamux'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
-describe('Dialing (direct, WebSockets)', () => {
+describe('dialing (direct, WebSockets)', () => {
   let localTM: TransportManager
   let localComponents: DefaultComponents
   let remoteAddr: Multiaddr
@@ -46,7 +45,8 @@ describe('Dialing (direct, WebSockets)', () => {
       peerId: await createFromJSON(Peers[0]),
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader(),
-      connectionGater: mockConnectionGater()
+      connectionGater: mockConnectionGater(),
+      transportManager: stubInterface<TransportManager>()
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents, {
       addressFilter: localComponents.connectionGater.filterMultiaddrForPeer
@@ -54,7 +54,6 @@ describe('Dialing (direct, WebSockets)', () => {
     localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
       maxConnections: 100,
       minConnections: 50,
-      autoDialInterval: 1000,
       inboundUpgradeTimeout: 1000
     })
 
@@ -73,83 +72,49 @@ describe('Dialing (direct, WebSockets)', () => {
     sinon.restore()
   })
 
-  it('should limit the number of tokens it provides', () => {
-    const dialer = new DefaultDialer(localComponents)
-
-    const maxPerPeer = Constants.MAX_PER_PEER_DIALS
-    expect(dialer.tokens).to.have.lengthOf(Constants.MAX_PARALLEL_DIALS)
-    const tokens = dialer.getTokens(maxPerPeer + 1)
-    expect(tokens).to.have.length(maxPerPeer)
-    expect(dialer.tokens).to.have.lengthOf(Constants.MAX_PARALLEL_DIALS - maxPerPeer)
-  })
-
-  it('should not return tokens if none are left', () => {
-    const dialer = new DefaultDialer(localComponents, {
-      maxDialsPerPeer: Infinity
-    })
-
-    const maxTokens = dialer.tokens.length
-
-    const tokens = dialer.getTokens(maxTokens)
-
-    expect(tokens).to.have.lengthOf(maxTokens)
-    expect(dialer.getTokens(1)).to.be.empty()
-  })
-
-  it('should NOT be able to return a token twice', () => {
-    const dialer = new DefaultDialer(localComponents)
-
-    const tokens = dialer.getTokens(1)
-    expect(tokens).to.have.length(1)
-    expect(dialer.tokens).to.have.lengthOf(Constants.MAX_PARALLEL_DIALS - 1)
-    dialer.releaseToken(tokens[0])
-    dialer.releaseToken(tokens[0])
-    expect(dialer.tokens).to.have.lengthOf(Constants.MAX_PARALLEL_DIALS)
-  })
-
   it('should be able to connect to a remote node via its multiaddr', async () => {
-    const dialer = new DefaultDialer(localComponents)
+    const connectionManager = new DefaultConnectionManager(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
 
-    const connection = await dialer.dial(remoteAddr)
+    const connection = await connectionManager.openConnection(remoteAddr)
     expect(connection).to.exist()
     await connection.close()
   })
 
   it('should fail to connect to an unsupported multiaddr', async () => {
-    const dialer = new DefaultDialer(localComponents)
+    const connectionManager = new DefaultConnectionManager(localComponents)
 
-    await expect(dialer.dial(unsupportedAddr.encapsulate(`/p2p/${remoteComponents.peerId.toString()}`)))
+    await expect(connectionManager.openConnection(unsupportedAddr.encapsulate(`/p2p/${remoteComponents.peerId.toString()}`)))
       .to.eventually.be.rejectedWith(Error)
       .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
 
   it('should be able to connect to a given peer', async () => {
-    const dialer = new DefaultDialer(localComponents)
+    const connectionManager = new DefaultConnectionManager(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
 
-    const connection = await dialer.dial(remotePeerId)
+    const connection = await connectionManager.openConnection(remotePeerId)
     expect(connection).to.exist()
     await connection.close()
   })
 
   it('should fail to connect to a given peer with unsupported addresses', async () => {
-    const dialer = new DefaultDialer(localComponents)
+    const connectionManager = new DefaultConnectionManager(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.addressBook.set(remotePeerId, [unsupportedAddr])
 
-    await expect(dialer.dial(remotePeerId))
+    await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejectedWith(Error)
       .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
 
   it('should abort dials on queue task timeout', async () => {
-    const dialer = new DefaultDialer(localComponents, {
+    const connectionManager = new DefaultConnectionManager(localComponents, {
       dialTimeout: 50
     })
 
@@ -165,20 +130,20 @@ describe('Dialing (direct, WebSockets)', () => {
       throw new AbortError()
     })
 
-    await expect(dialer.dial(remoteAddr))
+    await expect(connectionManager.openConnection(remoteAddr))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
   })
 
-  it('should throw when a peer advertises more than the allowed number of peers', async () => {
-    const dialer = new DefaultDialer(localComponents, {
-      maxAddrsToDial: 10
+  it('should throw when a peer advertises more than the allowed number of addresses', async () => {
+    const connectionManager = new DefaultConnectionManager(localComponents, {
+      maxPeerAddrsToDial: 10
     })
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.addressBook.set(remotePeerId, Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`)))
 
-    await expect(dialer.dial(remotePeerId))
+    await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_TOO_MANY_ADDRESSES)
   })
@@ -193,16 +158,16 @@ describe('Dialing (direct, WebSockets)', () => {
     const publicAddressesFirstSpy = sinon.spy(publicAddressesFirst)
     const localTMDialStub = sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
-    const dialer = new DefaultDialer(localComponents, {
+    const connectionManager = new DefaultConnectionManager(localComponents, {
       addressSorter: publicAddressesFirstSpy,
       maxParallelDials: 3
     })
 
-    // Inject data in the AddressBook
+    // Inject data into the AddressBook
     await localComponents.peerStore.addressBook.add(remoteComponents.peerId, peerMultiaddrs)
 
     // Perform 3 multiaddr dials
-    await dialer.dial(remoteComponents.peerId)
+    await connectionManager.openConnection(remoteComponents.peerId)
 
     const sortedAddresses = peerMultiaddrs
       .map((m) => ({ multiaddr: m, isCertified: false }))
@@ -213,60 +178,18 @@ describe('Dialing (direct, WebSockets)', () => {
     expect(localTMDialStub.getCall(2).args[0].equals(sortedAddresses[2].multiaddr))
   })
 
-  it('should dial to the max concurrency', async () => {
+  it('shutting down should abort pending dials', async () => {
     const addrs = [
       multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
       multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
     ]
-    const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-
-    const dialer = new DefaultDialer(localComponents, {
+    const connectionManager = new DefaultConnectionManager(localComponents, {
       maxParallelDials: 2
     })
 
-    // Inject data in the AddressBook
-    await localComponents.peerStore.addressBook.add(remotePeerId, addrs)
-
-    expect(dialer.tokens).to.have.lengthOf(2)
-
-    const deferredDial = pDefer<Connection>()
-    const localTMDialStub = sinon.stub(localTM, 'dial').callsFake(async () => await deferredDial.promise)
-
-    // Perform 3 multiaddr dials
-    void dialer.dial(remotePeerId)
-
-    // Let the call stack run
-    await delay(0)
-
-    // We should have 2 in progress, and 1 waiting
-    expect(dialer.tokens).to.have.lengthOf(0)
-
-    deferredDial.resolve(mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId)))
-
-    // Let the call stack run
-    await delay(0)
-
-    // Only two dials will be run, as the first two succeeded
-    expect(localTMDialStub.callCount).to.equal(2)
-    expect(dialer.tokens).to.have.lengthOf(2)
-    expect(dialer.pendingDials.size).to.equal(0)
-  })
-
-  it('.destroy should abort pending dials', async () => {
-    const addrs = [
-      multiaddr('/ip4/0.0.0.0/tcp/8000/ws'),
-      multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
-      multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
-    ]
-    const dialer = new DefaultDialer(localComponents, {
-      maxParallelDials: 2
-    })
-
-    // Inject data in the AddressBook
+    // Inject data into the AddressBook
     await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
-
-    expect(dialer.tokens).to.have.lengthOf(2)
 
     sinon.stub(localTM, 'dial').callsFake(async (_, options) => {
       const deferredDial = pDefer<Connection>()
@@ -279,49 +202,18 @@ describe('Dialing (direct, WebSockets)', () => {
     })
 
     // Perform 3 multiaddr dials
-    const dialPromise = dialer.dial(remoteComponents.peerId)
+    const dialPromise = connectionManager.openConnection(remoteComponents.peerId)
 
     // Let the call stack run
     await delay(0)
-
-    // We should have 2 in progress, and 1 waiting
-    expect(dialer.tokens).to.have.length(0)
-    expect(dialer.pendingDials.size).to.equal(1) // 1 dial request
 
     try {
-      await dialer.stop()
+      await connectionManager.stop()
       await dialPromise
       expect.fail('should have failed')
-    } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateError')
-      expect(dialer.pendingDials.size).to.equal(0) // 1 dial request
+    } catch {
+      expect(connectionManager.getDialQueue()).to.have.lengthOf(0) // 0 dial requests
     }
-  })
-
-  it('should cancel pending dial targets before proceeding', async () => {
-    const dialer = new DefaultDialer(localComponents)
-
-    sinon.stub(dialer, '_createDialTarget').callsFake(async (addr, options) => {
-      const deferredDial = pDefer<DialTarget>()
-
-      options.signal?.addEventListener('abort', () => {
-        deferredDial.reject(new AbortError())
-      })
-
-      return await deferredDial.promise
-    })
-
-    // Perform dial
-    const dialPromise = dialer.dial(remoteComponents.peerId)
-
-    // Let the call stack run
-    await delay(0)
-
-    await dialer.stop()
-
-    await expect(dialPromise)
-      .to.eventually.be.rejected()
-      .and.to.have.property('code', 'ABORT_ERR')
   })
 
   it('should dial all multiaddrs for a passed peer id', async () => {
@@ -334,21 +226,16 @@ describe('Dialing (direct, WebSockets)', () => {
     // Inject data into the AddressBook
     await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
 
-    const dialer = new DefaultDialer(localComponents)
-    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
+    const connectionManager = new DefaultConnectionManager(localComponents)
 
-    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+    const transactionManagerDialStub = sinon.stub(localTM, 'dial')
+    transactionManagerDialStub.callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
     // Perform dial
-    await dialer.dial(remoteComponents.peerId)
-    await dialer.stop()
+    await connectionManager.openConnection(remoteComponents.peerId)
+    await connectionManager.stop()
 
-    expect(createDialTargetSpy.called).to.be.true()
-
-    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
-
-    expect(dialTarget).to.have.property('addrs').with.lengthOf(3)
-    expect(dialTarget.addrs).to.deep.equal(addrs)
+    expect(transactionManagerDialStub).to.have.property('callCount', 3)
   })
 
   it('should dial only the multiaddr that is passed', async () => {
@@ -364,21 +251,60 @@ describe('Dialing (direct, WebSockets)', () => {
     // different address not in the address book, same peer id
     const dialMultiaddr = multiaddr(`/ip4/0.0.0.0/tcp/8003/ws/p2p/${remoteComponents.peerId.toString()}`)
 
-    const dialer = new DefaultDialer(localComponents)
-    const createDialTargetSpy = sinon.spy(dialer, '_createDialTarget')
+    const connectionManager = new DefaultConnectionManager(localComponents)
 
-    sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
+    const transactionManagerDialStub = sinon.stub(localTM, 'dial')
+    transactionManagerDialStub.callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
     // Perform dial
-    await dialer.dial(dialMultiaddr)
-    await dialer.stop()
+    await connectionManager.openConnection(dialMultiaddr)
+    await connectionManager.stop()
 
-    expect(createDialTargetSpy.called).to.be.true()
+    expect(transactionManagerDialStub).to.have.property('callCount', 1)
+    expect(transactionManagerDialStub.getCall(0).args[0].toString()).to.equal(dialMultiaddr.toString())
+  })
 
-    const dialTarget = await createDialTargetSpy.getCall(0).returnValue
+  it('should throw if dialling an empty array is attempted', async () => {
+    const connectionManager = new DefaultConnectionManager(localComponents)
 
-    expect(dialTarget).to.have.property('addrs').with.lengthOf(1)
-    expect(dialTarget.addrs[0].toString()).to.equal(dialMultiaddr.toString())
+    // Perform dial
+    await expect(connectionManager.openConnection([])).to.eventually.rejected
+      .with.property('code', 'ERR_NO_VALID_ADDRESSES')
+
+    await connectionManager.stop()
+  })
+
+  it('should throw if dialling multiaddrs with mismatched peer ids', async () => {
+    const connectionManager = new DefaultConnectionManager(localComponents)
+
+    // Perform dial
+    await expect(connectionManager.openConnection([
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createPeerId()).toString()}`)
+    ])).to.eventually.rejected
+      .with.property('code', 'ERR_INVALID_PARAMETERS')
+
+    await connectionManager.stop()
+  })
+
+  it('should throw if dialling multiaddrs with inconsistent peer ids', async () => {
+    const connectionManager = new DefaultConnectionManager(localComponents)
+
+    // Perform dial
+    await expect(connectionManager.openConnection([
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`),
+      multiaddr('/ip4/0.0.0.0/tcp/8001/ws')
+    ])).to.eventually.rejected
+      .with.property('code', 'ERR_INVALID_PARAMETERS')
+
+    // Perform dial
+    await expect(connectionManager.openConnection([
+      multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`)
+    ])).to.eventually.rejected
+      .with.property('code', 'ERR_INVALID_PARAMETERS')
+
+    await connectionManager.stop()
   })
 })
 
@@ -399,7 +325,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     }
   })
 
-  it('should create a dialer', async () => {
+  it('should use the connection manager for connecting', async () => {
     libp2p = await createLibp2pNode({
       peerId,
       transports: [
@@ -416,63 +342,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       ]
     })
 
-    const dialer = libp2p.components.dialer
-
-    expect(dialer).to.exist()
-    expect(dialer).to.have.property('tokens').with.lengthOf(Constants.MAX_PARALLEL_DIALS)
-    expect(dialer).to.have.property('maxDialsPerPeer', Constants.MAX_PER_PEER_DIALS)
-    expect(dialer).to.have.property('timeout', Constants.DIAL_TIMEOUT)
-  })
-
-  it('should be able to override dialer options', async () => {
-    const config = {
-      peerId,
-      transports: [
-        webSockets({
-          filter: filters.all
-        })
-      ],
-      streamMuxers: [
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ],
-      connectionManager: {
-        maxParallelDials: 10,
-        maxDialsPerPeer: 1,
-        dialTimeout: 1e3 // 30 second dial timeout per peer
-      }
-    }
-    libp2p = await createLibp2pNode(config)
-
-    const dialer = libp2p.components.dialer
-
-    expect(dialer).to.exist()
-    expect(dialer).to.have.property('tokens').with.lengthOf(config.connectionManager.maxParallelDials)
-    expect(dialer).to.have.property('maxDialsPerPeer', config.connectionManager.maxDialsPerPeer)
-    expect(dialer).to.have.property('timeout', config.connectionManager.dialTimeout)
-  })
-
-  it('should use the dialer for connecting', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
-      transports: [
-        webSockets({
-          filter: filters.all
-        })
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-
-    const dialerDialSpy = sinon.spy(libp2p.components.dialer, 'dial')
-    const addressBookAddSpy = sinon.spy(libp2p.components.peerStore.addressBook, 'add')
+    const dialerDialSpy = sinon.spy(libp2p.components.connectionManager, 'openConnection')
 
     await libp2p.start()
 
@@ -483,7 +353,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
     await connection.close()
     expect(dialerDialSpy.callCount).to.be.at.least(1)
-    expect(addressBookAddSpy.callCount).to.be.at.least(1)
 
     await libp2p.stop()
   })
@@ -578,51 +447,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     await libp2p.hangUp(MULTIADDRS_WEBSOCKETS[0])
   })
 
-  it('should cancel pending dial targets and stop', async () => {
-    const remotePeerId = await createPeerId()
-
-    libp2p = await createLibp2pNode({
-      peerId,
-      transports: [
-        webSockets({
-          filter: filters.all
-        })
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-
-    const dialer = libp2p.components.dialer as DefaultDialer
-    sinon.stub(dialer, '_createDialTarget').callsFake(async (addr, options) => {
-      const deferredDial = pDefer<DialTarget>()
-
-      options.signal?.addEventListener('abort', () => {
-        deferredDial.reject(new AbortError())
-      })
-
-      return await deferredDial.promise
-    })
-
-    await libp2p.start()
-
-    // Perform dial
-    const dialPromise = libp2p.dial(remotePeerId)
-
-    // Let the call stack run
-    await delay(0)
-
-    await libp2p.stop()
-
-    await expect(dialPromise)
-      .to.eventually.be.rejected()
-      .and.to.have.property('code', 'ABORT_ERR')
-  })
-
   it('should abort pending dials on stop', async () => {
     libp2p = await createLibp2pNode({
       peerId,
@@ -642,8 +466,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await libp2p.start()
 
-    const dialer = libp2p.components.dialer as DefaultDialer
-    const dialerDestroyStub = sinon.spy(dialer, 'stop')
+    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
+    const dialerDestroyStub = sinon.spy(connectionManager.dialQueue, 'stop')
 
     await libp2p.stop()
 

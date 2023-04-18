@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { createNode } from '../utils/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { createNodeOptions, getRelayAddress, hasRelay, MockContentRouting, mockContentRouting } from './utils.js'
-import { circuitRelayServer, circuitRelayTransport } from '../../src/circuit/index.js'
+import { circuitRelayServer, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { tcp } from '@libp2p/tcp'
 import { pEvent } from 'p-event'
 

@@ -9,8 +9,8 @@ import type { Message, PublishResult, PubSubInit, PubSubRPC, PubSubRPCMessage } 
 import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import * as cborg from 'cborg'
+import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayTransport } from '../../src/circuit/index.js'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 

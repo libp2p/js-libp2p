@@ -43,7 +43,7 @@ import type { NatManagerInit } from './nat-manager.js'
 import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
-import type { CircuitRelayService } from './circuit/index.js'
+import type { CircuitRelayService } from './circuit-relay/index.js'
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).

@@ -14,8 +14,8 @@ import pDefer from 'p-defer'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { RELAY_V2_HOP_CODEC } from '../../src/circuit/constants.js'
-import { circuitRelayServer } from '../../src/circuit/index.js'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
+import { circuitRelayServer } from '../../src/circuit-relay/index.js'
 import type { Transport } from '@libp2p/interface-transport'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
@@ -35,7 +35,7 @@ const getDnsRelayedAddrStub = (peerId: PeerId): string[] => [
   `${relayedAddr(peerId)}`
 ]
 
-describe('Dialing (resolvable addresses)', () => {
+describe('dialing (resolvable addresses)', () => {
   let libp2p: Libp2pNode, remoteLibp2p: Libp2pNode
   let resolver: sinon.SinonStub<[Multiaddr], Promise<string[]>>
 
@@ -49,7 +49,6 @@ describe('Dialing (resolvable addresses)', () => {
             listen: [`${relayAddr.toString()}/p2p-circuit`]
           },
           connectionManager: {
-            autoDial: false,
             resolvers: {
               dnsaddr: resolver
             }
@@ -62,7 +61,6 @@ describe('Dialing (resolvable addresses)', () => {
             listen: [`${relayAddr.toString()}/p2p-circuit`]
           },
           connectionManager: {
-            autoDial: false,
             resolvers: {
               dnsaddr: resolver
             }
@@ -75,6 +73,7 @@ describe('Dialing (resolvable addresses)', () => {
 
   afterEach(async () => {
     sinon.restore()
+
     await Promise.all([libp2p, remoteLibp2p].map(async n => {
       if (n != null) {
         await n.stop()

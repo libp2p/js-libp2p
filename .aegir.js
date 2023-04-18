@@ -17,7 +17,7 @@ export default {
       const { MULTIADDRS_WEBSOCKETS } = await import('./dist/test/fixtures/browser.js')
       const { plaintext } = await import('./dist/src/insecure/index.js')
       const { default: Peers } = await import('./dist/test/fixtures/peers.js')
-      const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit/index.js')
+      const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
 
       // Use the last peer
       const peerId = await createFromJSON(Peers[Peers.length - 1])

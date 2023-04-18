@@ -7,7 +7,7 @@ import { logger } from '@libp2p/logger'
 import type { Stream } from '@libp2p/interface-connection'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 import { abortableSource } from 'abortable-iterator'
-import anySignal from 'any-signal'
+import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:circuit-relay:utils')
 
@@ -69,6 +69,7 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
         srcDstFinished = true
 
         if (dstSrcFinished) {
+          signal.clear()
           clearTimeout(timeout)
         }
       })
@@ -86,6 +87,7 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
         dstSrcFinished = true
 
         if (srcDstFinished) {
+          signal.clear()
           clearTimeout(timeout)
         }
       })
@@ -115,6 +117,10 @@ export async function namespaceToCid (namespace: string): Promise<CID> {
 /**
  * returns number of ms between now and expiration time
  */
-export function getExpiration (expireTime: bigint): number {
-  return Number(expireTime) - new Date().getTime()
+export function getExpirationMilliseconds (expireTimeSeconds: bigint): number {
+  const expireTimeMillis = expireTimeSeconds * BigInt(1000)
+  const currentTime = new Date().getTime()
+
+  // downcast to number to use with setTimeout
+  return Number(expireTimeMillis - BigInt(currentTime))
 }

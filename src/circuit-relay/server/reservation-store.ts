@@ -88,13 +88,18 @@ export class ReservationStore implements Startable {
     if (this.reservations.size >= this.maxReservations && !this.reservations.has(peer)) {
       return { status: Status.RESERVATION_REFUSED }
     }
+
     const expire = new Date(Date.now() + this.reservationTtl)
     let checkedLimit: Limit | undefined
+
     if (this.applyDefaultLimit) {
       checkedLimit = limit ?? { data: this.defaultDataLimit, duration: this.defaultDurationLimit }
     }
+
     this.reservations.set(peer, { addr, expire, limit: checkedLimit })
-    return { status: Status.OK, expire: expire.getTime() }
+
+    // return expiry time in seconds
+    return { status: Status.OK, expire: Math.round(expire.getTime() / 1000) }
   }
 
   removeReservation (peer: PeerId): void {

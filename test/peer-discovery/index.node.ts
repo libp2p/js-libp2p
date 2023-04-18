@@ -74,9 +74,6 @@ describe('peer discovery scenarios', () => {
           listenAddr.toString()
         ]
       },
-      connectionManager: {
-        autoDial: false
-      },
       peerDiscovery: [
         bootstrap({
           list: bootstrappers
@@ -122,10 +119,7 @@ describe('peer discovery scenarios', () => {
           interval: 200, // discover quickly
           serviceTag
         })
-      ],
-      connectionManager: {
-        autoDial: false
-      }
+      ]
     })
 
     libp2p = await createLibp2pNode(getConfig(peerId))
@@ -169,9 +163,6 @@ describe('peer discovery scenarios', () => {
         listen: [
           listenAddr.toString()
         ]
-      },
-      connectionManager: {
-        autoDial: false
       },
       dht: kadDHT()
     })

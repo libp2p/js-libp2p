@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from '../errors.js'
 import * as lp from 'it-length-prefixed'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
@@ -127,14 +127,14 @@ export class FetchService implements Startable {
 
       const result = await pipe(
         [FetchRequest.encode({ identifier: key })],
-        lp.encode(),
+        (source) => lp.encode(source),
         source,
-        lp.decode(),
+        (source) => lp.decode(source),
         async function (source) {
           const buf = await first(source)
 
           if (buf == null) {
-            throw errCode(new Error('No data received'), codes.ERR_INVALID_MESSAGE)
+            throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
           }
 
           const response = FetchResponse.decode(buf)
@@ -151,11 +151,11 @@ export class FetchService implements Startable {
             case (FetchResponse.StatusCode.ERROR): {
               log('received status for %s error', key)
               const errmsg = uint8arrayToString(response.data)
-              throw errCode(new Error('Error in fetch protocol response: ' + errmsg), codes.ERR_INVALID_PARAMETERS)
+              throw new CodeError('Error in fetch protocol response: ' + errmsg, codes.ERR_INVALID_PARAMETERS)
             }
             default: {
               log('received status for %s unknown', key)
-              throw errCode(new Error('Unknown response status'), codes.ERR_INVALID_MESSAGE)
+              throw new CodeError('Unknown response status', codes.ERR_INVALID_MESSAGE)
             }
           }
         }
@@ -184,12 +184,12 @@ export class FetchService implements Startable {
 
     await pipe(
       stream,
-      lp.decode(),
+      (source) => lp.decode(source),
       async function * (source) {
         const buf = await first(source)
 
         if (buf == null) {
-          throw errCode(new Error('No data received'), codes.ERR_INVALID_MESSAGE)
+          throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
         }
 
         // for await (const buf of source) {
@@ -215,7 +215,7 @@ export class FetchService implements Startable {
 
         yield FetchResponse.encode(response)
       },
-      lp.encode(),
+      (source) => lp.encode(source),
       stream
     )
   }
@@ -245,7 +245,7 @@ export class FetchService implements Startable {
    */
   registerLookupFunction (prefix: string, lookup: LookupFunction): void {
     if (this.lookupFunctions.has(prefix)) {
-      throw errCode(new Error("Fetch protocol handler for key prefix '" + prefix + "' already registered"), codes.ERR_KEY_ALREADY_EXISTS)
+      throw new CodeError(`Fetch protocol handler for key prefix '${prefix}' already registered`, codes.ERR_KEY_ALREADY_EXISTS)
     }
 
     this.lookupFunctions.set(prefix, lookup)

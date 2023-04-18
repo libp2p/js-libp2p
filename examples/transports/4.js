@@ -14,8 +14,8 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 const httpServer = https.createServer({
   cert: fs.readFileSync('./test_certs/cert.pem'),
-  key: fs.readFileSync('./test_certs/key.pem'),
-});
+  key: fs.readFileSync('./test_certs/key.pem')
+})
 
 const createNode = async (addresses = []) => {
   if (!Array.isArray(addresses)) {
@@ -36,18 +36,13 @@ const createNode = async (addresses = []) => {
       })
     ],
     connectionEncryption: [noise()],
-    streamMuxers: [yamux(), mplex()],
-    connectionManager: {
-      // Disable autoDial as it would fail because we are using a self-signed cert.
-      // `dialProtocol` does not fail because we pass `rejectUnauthorized: false`.
-      autoDial: false
-    }
+    streamMuxers: [mplex(), yamux()]
   })
 
   return node
 }
 
-function printAddrs(node, number) {
+function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
@@ -63,7 +58,7 @@ function print ({ stream }) {
   )
 }
 
-;(async () => {
+(async () => {
   const [node1, node2] = await Promise.all([
     createNode('/ip4/127.0.0.1/tcp/10000/wss'),
     createNode([])
@@ -75,7 +70,7 @@ function print ({ stream }) {
   node1.handle('/print', print)
   node2.handle('/print', print)
 
-  const targetAddr = node1.getMultiaddrs()[0];
+  const targetAddr = node1.getMultiaddrs()[0]
 
   // node 2 (Secure WebSockets) dials to node 1 (Secure Websockets)
   const stream = await node2.dialProtocol(targetAddr, '/print')
@@ -83,4 +78,4 @@ function print ({ stream }) {
     [uint8ArrayFromString('node 2 dialed to node 1 successfully')],
     stream
   )
-})();
+})()

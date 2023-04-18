@@ -6,7 +6,7 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { bootstrap } from '@libp2p/bootstrap'
-import bootstrapers from './bootstrappers.js'
+import bootstrappers from './bootstrappers.js'
 
 (async () => {
   const node = await createLibp2p({
@@ -18,8 +18,7 @@ import bootstrapers from './bootstrappers.js'
     connectionEncryption: [noise()],
     peerDiscovery: [
       bootstrap({
-        interval: 60e3,
-        list: bootstrapers
+        list: bootstrappers
       })
     ]
   })
@@ -31,7 +30,7 @@ import bootstrapers from './bootstrappers.js'
 
   node.addEventListener('peer:discovery', (evt) => {
     const peer = evt.detail
-    // No need to dial, autoDial is on
+
     console.log('Discovered:', peer.id.toString())
   })
 })()

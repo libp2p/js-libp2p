@@ -22,7 +22,7 @@
 * To ensure reasonable resource usage, discovered peers are not connected to automatically
 * Applications should lisen for the `peer:connect` event if they wish to take a specific action when new connections are established
 * Libp2p functions best with a good number of network connections to a diverse set of peers. When the number of connected peers a node has falls under the [ConnectionManager](./CONFIGURATION.md#configuring-connection-manager) `minConnections` setting, randomly selected peers from the peer store will be dialed until the node's number of connections rises above this number.
-  * Applications can disable this behaviour via the `connectionManager.autoDial` config property, and handle increasing the current number of connections themselves
+* Applications can disable this behaviour by setting the `connectionManager.minConnections` config property to `0`, but they will have to manage increasing the current number of connections themselves.
 
 ## Scenarios
 

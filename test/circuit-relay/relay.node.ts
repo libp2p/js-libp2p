@@ -5,17 +5,19 @@ import { expect } from 'aegir/chai'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
-import { RELAY_V2_HOP_CODEC } from '../../src/circuit/constants.js'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import { createNode } from '../utils/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { createNodeOptions, discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
-import { circuitRelayServer, circuitRelayTransport } from '../../src/circuit/index.js'
+import { circuitRelayServer, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { tcp } from '@libp2p/tcp'
 import { Uint8ArrayList } from 'uint8arraylist'
 import delay from 'delay'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import { pbStream } from 'it-pb-stream'
-import { HopMessage, Status } from '../../src/circuit/pb/index.js'
+import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
+import { Circuit } from '@multiformats/mafmt'
+import { multiaddr } from '@multiformats/multiaddr'
 
 describe('circuit-relay', () => {
   describe('flows with 1 listener', () => {
@@ -226,6 +228,63 @@ describe('circuit-relay', () => {
       // Wait for failed dial
       await deferred.promise
     })
+
+    it('should announce new addresses when using a peer as a relay', async () => {
+      // should not have have a circuit address to start with
+      expect(local.getMultiaddrs().find(ma => Circuit.matches(ma))).to.be.undefined()
+
+      // set up listener for address change
+      const deferred = defer()
+
+      local.peerStore.addEventListener('change:multiaddrs', ({ detail }) => {
+        const isLocalPeerId = local.peerId.equals(detail.peerId)
+        const hasCircuitRelayAddress = detail.multiaddrs.find(ma => Circuit.matches(ma)) != null
+
+        if (isLocalPeerId && hasCircuitRelayAddress) {
+          deferred.resolve()
+        }
+      })
+
+      // discover relay
+      await local.dial(relay1.getMultiaddrs()[0])
+      await discoveredRelayConfig(local, relay1)
+
+      // wait for peer added as listen relay
+      await usingAsRelay(local, relay1)
+
+      // should have emitted a change:multiaddrs event with a circuit address
+      await deferred.promise
+    })
+
+    it('should announce new addresses when using no longer using peer as a relay', async () => {
+      // should not have have a circuit address to start with
+      expect(local.getMultiaddrs().find(ma => Circuit.matches(ma))).to.be.undefined()
+
+      // discover relay
+      await local.dial(relay1.getMultiaddrs()[0])
+      await discoveredRelayConfig(local, relay1)
+
+      // wait for peer added as listen relay
+      await usingAsRelay(local, relay1)
+
+      // set up listener for address change
+      const deferred = defer()
+
+      local.peerStore.addEventListener('change:multiaddrs', ({ detail }) => {
+        const isLocalPeerId = local.peerId.equals(detail.peerId)
+        const hasNoCircuitRelayAddress = detail.multiaddrs.find(ma => Circuit.matches(ma)) == null
+
+        if (isLocalPeerId && hasNoCircuitRelayAddress) {
+          deferred.resolve()
+        }
+      })
+
+      // shut down the relay
+      await relay1.stop()
+
+      // should no longer have a circuit address
+      await deferred.promise
+    })
   })
 
   describe('flows with 2 listeners', () => {
@@ -332,6 +391,25 @@ describe('circuit-relay', () => {
       // dial the remote through the relay
       const ma = getRelayAddress(remote)
       await local.dial(ma)
+    })
+
+    it('should be able to dial a peer from its relayed address without peer id', async () => {
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // get the relayed multiaddr without the remote's peer id
+      const ma = getRelayAddress(remote)
+      const maWithoutPeerId = multiaddr(`${ma.toString().split('/p2p-circuit')[0]}/p2p-circuit`)
+      expect(maWithoutPeerId.getPeerId()).to.not.equal(remote.peerId.toString())
+
+      // ensure this is the only address we have for the peer
+      await local.peerStore.addressBook.set(remote.peerId, [
+        maWithoutPeerId
+      ])
+
+      // dial via peer id so we load the address from the address book
+      await local.dial(remote.peerId)
     })
 
     it('should not stay connected to a relay when not already connected and HOP fails', async () => {

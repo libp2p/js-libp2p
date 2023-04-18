@@ -22,7 +22,6 @@
     - [Setup with Automatic Reservations](#setup-with-automatic-reservations)
     - [Setup with Preconfigured Reservations](#setup-with-preconfigured-reservations)
     - [Setup with Keychain](#setup-with-keychain)
-    - [Configuring Dialing](#configuring-dialing)
     - [Configuring Connection Manager](#configuring-connection-manager)
     - [Configuring Connection Gater](#configuring-connection-gater)
       - [Outgoing connections](#outgoing-connections)
@@ -286,12 +285,7 @@ const node = await createLibp2p({
       ],
       interval: 2000
     )
-  ],
-  connectionManager: {
-    autoDial: true             // Auto connect to discovered peers (limited by ConnectionManager minConnections)
-    // The `tag` property will be searched when creating the instance of your Peer Discovery service.
-    // The associated object, will be passed to the service when it is instantiated.
-  }
+  ]
 })
 ```
 
@@ -558,51 +552,12 @@ const node = await createLibp2p({
 })
 ```
 
-#### Configuring Dialing
-
-Dialing in libp2p can be configured to limit the rate of dialing, and how long dials are allowed to take. The dialer configuration object should have the following properties:
-
-| Name                    | Type                                 | Description                                                                                                                                          |
-| ----------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| maxParallelDials        | `number`                             | How many multiaddrs we can dial in parallel.                                                                                                         |
-| maxAddrsToDial          | `number`                             | How many multiaddrs is the dial allowed to dial for a single peer.                                                                                   |
-| maxDialsPerPeer         | `number`                             | How many multiaddrs we can dial per peer, in parallel.                                                                                               |
-| dialTimeout             | `number`                             | Second dial timeout per peer in ms.                                                                                                                  |
-| resolvers               | `object`                             | Dial [Resolvers](https://github.com/multiformats/js-multiaddr/blob/master/src/resolvers/index.js) for resolving multiaddrs                           |
-| addressSorter           | `(Array<Address>) => Array<Address>` | Sort the known addresses of a peer before trying to dial.                                                                                            |
-| startupReconnectTimeout | `number`                             | When a node is restarted, we try to connect to any peers marked with the `keep-alive` tag up until to this timeout in ms is reached (default: 60000) |
-
-The below configuration example shows how the dialer should be configured, with the current defaults:
-
-```js
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
-
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { publicAddressesFirst } from '@libp2p-utils/address-sort'
-
-const node = await createLibp2p({
-  transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
-  dialer: {
-    maxParallelDials: 100,
-    maxAddrsToDial: 25,
-    maxDialsPerPeer: 4,
-    dialTimeout: 30e3,
-    resolvers: {
-      dnsaddr: dnsaddrResolver
-    },
-    addressSorter: publicAddressesFirst
-  }
-```
-
 #### Configuring Connection Manager
 
-The Connection Manager prunes Connections in libp2p whenever certain limits are exceeded. If Metrics are enabled, you can also configure the Connection Manager to monitor the bandwidth of libp2p and prune connections as needed. You can read more about what Connection Manager does at [./CONNECTION_MANAGER.md](https://libp2p.github.io/js-libp2p-interfaces/modules/_libp2p_interface_connection_manager.html). The configuration values below show the defaults for Connection Manager.
+The Connection Manager manages connections to peers in libp2p.  It controls opening closing connections but also pruning connections when certain limits are exceeded. If Metrics are enabled, you can also configure the Connection Manager to monitor the bandwidth of libp2p and prune connections as needed. You can read more about what Connection Manager does at [./CONNECTION_MANAGER.md](https://libp2p.github.io/js-libp2p-interfaces/modules/_libp2p_interface_connection_manager.html). The configuration values below show the defaults for Connection Manager.
+
+See the [API docs](https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html) for a full run list and discussion of all Connection Manager options.
+
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -617,14 +572,7 @@ const node = await createLibp2p({
   connectionEncryption: [noise()],
   connectionManager: {
     maxConnections: Infinity,
-    minConnections: 0,
-    pollInterval: 2000,
-    // The below values will only be taken into account when Metrics are enabled
-    maxData: Infinity,
-    maxSentData: Infinity,
-    maxReceivedData: Infinity,
-    maxEventLoopDelay: Infinity,
-    movingAverageInterval: 60000
+    minConnections: 0
   }
 })
 ```
@@ -674,7 +622,7 @@ const node = await createLibp2p({
      *
      * Return true to prevent dialing the passed peer on the passed multiaddr.
      */
-    denyDialMultiaddr: (peerId: PeerId, multiaddr: Multiaddr) => Promise<boolean>
+    denyDialMultiaddr: (multiaddr: Multiaddr) => Promise<boolean>
 
     /**
      * denyInboundConnection tests whether an incipient inbound connection is allowed.

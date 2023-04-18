@@ -1,4 +1,4 @@
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import filter from 'it-filter'
 import map from 'it-map'
 import type { Source } from 'it-stream-types'
@@ -49,6 +49,6 @@ export async function * requirePeers (source: Source<PeerInfo>, min: number = 1)
   }
 
   if (seen < min) {
-    throw errCode(new Error('not found'), 'NOT_FOUND')
+    throw new CodeError(`more peers required, seen: ${seen}  min: ${min}`, 'NOT_FOUND')
   }
 }
