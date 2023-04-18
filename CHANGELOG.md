@@ -10,6 +10,13 @@
 
 
 
+### [0.44.1](https://www.github.com/libp2p/js-libp2p/compare/v0.44.0...v0.44.1) (2023-04-18)
+
+
+### Bug Fixes
+
+* remove autodial log line ([#1692](https://www.github.com/libp2p/js-libp2p/issues/1692)) ([102d4c2](https://www.github.com/libp2p/js-libp2p/commit/102d4c209bd7a33641e352dbd250da7ba74b6f36))
+
 ## [0.44.0](https://www.github.com/libp2p/js-libp2p/compare/v0.43.4...v0.44.0) (2023-04-14)
 
 
