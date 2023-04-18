@@ -1,3 +1,14 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.3...v7.0.0) (2023-04-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* update stream types (#219)
+
+### Dependencies
+
+* update stream types ([#219](https://github.com/libp2p/js-libp2p-floodsub/issues/219)) ([7b95773](https://github.com/libp2p/js-libp2p-floodsub/commit/7b95773fad0adf3fe7c8c93cd489ca4df5719c75))
+
 ## [6.0.3](https://github.com/libp2p/js-libp2p-floodsub/compare/v6.0.2...v6.0.3) (2023-03-20)
 
 
