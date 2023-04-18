@@ -1,11 +1,11 @@
 import { PROTOCOL_ID } from './constants.js'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
 
 export { PROTOCOL_ID }
 
 export interface ProtocolStream<TSource, TSink = TSource> {
-  stream: Duplex<TSource, TSink>
+  stream: Duplex<AsyncGenerator<TSource>, Source<TSink>>
   protocol: string
 }
 

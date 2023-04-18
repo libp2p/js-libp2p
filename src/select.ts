@@ -4,7 +4,7 @@ import * as multistream from './multistream.js'
 import { handshake } from 'it-handshake'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PROTOCOL_ID } from './index.js'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { pushable } from 'it-pushable'
 import merge from 'it-merge'
@@ -56,9 +56,9 @@ const log = logger('libp2p:mss:select')
  * // }
  * ```
  */
-export async function select (stream: Duplex<Uint8Array>, protocols: string | string[], options: ByteArrayInit): Promise<ProtocolStream<Uint8Array>>
-export async function select (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, protocols: string | string[], options?: ByteListInit): Promise<ProtocolStream<Uint8ArrayList, Uint8ArrayList | Uint8Array>>
-export async function select (stream: Duplex<any>, protocols: string | string[], options: MultistreamSelectInit = {}): Promise<ProtocolStream<any>> {
+export async function select (stream: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>, protocols: string | string[], options: ByteArrayInit): Promise<ProtocolStream<Uint8Array>>
+export async function select (stream: Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Source<Uint8ArrayList | Uint8Array>>, protocols: string | string[], options?: ByteListInit): Promise<ProtocolStream<Uint8ArrayList, Uint8ArrayList | Uint8Array>>
+export async function select (stream: any, protocols: string | string[], options: MultistreamSelectInit = {}): Promise<ProtocolStream<any>> {
   protocols = Array.isArray(protocols) ? [...protocols] : [protocols]
   const { reader, writer, rest, stream: shakeStream } = handshake(stream)
 
@@ -113,8 +113,8 @@ export async function select (stream: Duplex<any>, protocols: string | string[],
  *
  * Use when it is known that the receiver supports the desired protocol.
  */
-export function lazySelect (stream: Duplex<Uint8Array>, protocol: string): ProtocolStream<Uint8Array>
-export function lazySelect (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, protocol: string): ProtocolStream<Uint8ArrayList, Uint8ArrayList | Uint8Array>
+export function lazySelect (stream: Duplex<Source<Uint8Array>, Source<Uint8Array>>, protocol: string): ProtocolStream<Uint8Array>
+export function lazySelect (stream: Duplex<Source<Uint8ArrayList | Uint8Array>, Source<Uint8ArrayList | Uint8Array>>, protocol: string): ProtocolStream<Uint8ArrayList, Uint8ArrayList | Uint8Array>
 export function lazySelect (stream: Duplex<any>, protocol: string): ProtocolStream<any> {
   // This is a signal to write the multistream headers if the consumer tries to
   // read from the source

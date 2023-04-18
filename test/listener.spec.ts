@@ -12,7 +12,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as mss from '../src/index.js'
 import map from 'it-map'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 
 describe('Listener', () => {
   describe('listener.handle', () => {
@@ -21,7 +21,7 @@ describe('Listener', () => {
       const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
       let output: Uint8ArrayList[] = []
 
-      const duplex: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> = {
+      const duplex: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>> = {
         sink: async source => {
           const read = reader(source)
           let msg: string
@@ -37,7 +37,7 @@ describe('Listener', () => {
           // Rest is data
           output = await all(read)
         },
-        source: (function * () {
+        source: (async function * () {
           yield Multistream.encode(uint8ArrayFromString(mss.PROTOCOL_ID))
           yield Multistream.encode(uint8ArrayFromString(protocol))
           yield * input
@@ -59,7 +59,7 @@ describe('Listener', () => {
       const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
       let output: Uint8ArrayList[] = []
 
-      const duplex: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> = {
+      const duplex: Duplex<Generator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>> = {
         sink: async source => {
           const read = reader(source)
           let msg: string
@@ -103,7 +103,7 @@ describe('Listener', () => {
       const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
       let output: Uint8ArrayList[] = []
 
-      const duplex: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> = {
+      const duplex: Duplex<Generator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>> = {
         sink: async source => {
           const read = reader(source)
           let msg: string

@@ -5,22 +5,23 @@ import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { pair } from './fixtures/pair.js'
+import { pair } from 'it-pair'
 import { reader } from 'it-reader'
 import pTimeout from 'p-timeout'
 import randomBytes from 'iso-random-stream/src/random.js'
 import * as Multistream from '../src/multistream.js'
 import * as mss from '../src/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { Duplex } from 'it-stream-types'
 
 describe('Dialer', () => {
   describe('dialer.select', () => {
     it('should select from single protocol', async () => {
       const protocol = '/echo/1.0.0'
-      const duplex = pair()
+      const duplex = pair<Uint8Array>()
 
-      const selection = await mss.select(duplex, protocol)
+      const selection = await mss.select(duplex, protocol, {
+        writeBytes: true
+      })
       expect(selection.protocol).to.equal(protocol)
 
       // Ensure stream is usable after selection
@@ -32,13 +33,17 @@ describe('Dialer', () => {
     it('should fail to select twice', async () => {
       const protocol = '/echo/1.0.0'
       const protocol2 = '/echo/2.0.0'
-      const duplex = pair()
+      const duplex = pair<Uint8Array>()
 
-      const selection = await mss.select(duplex, protocol)
+      const selection = await mss.select(duplex, protocol, {
+        writeBytes: true
+      })
       expect(selection.protocol).to.equal(protocol)
 
       // A second select will timeout
-      await pTimeout(mss.select(duplex, protocol2), {
+      await pTimeout(mss.select(duplex, protocol2, {
+        writeBytes: true
+      }), {
         milliseconds: 1e3
       })
         .then(() => expect.fail('should have timed out'), (err) => {
@@ -49,8 +54,8 @@ describe('Dialer', () => {
     it('should select from multiple protocols', async () => {
       const protocols = ['/echo/2.0.0', '/echo/1.0.0']
       const selectedProtocol = protocols[protocols.length - 1]
-      const stream = pair()
-      const duplex: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> = {
+      const stream = pair<Uint8ArrayList | Uint8Array>()
+      const duplex = {
         sink: stream.sink,
         source: (async function * () {
           const source = reader(stream.source)
@@ -91,7 +96,7 @@ describe('Dialer', () => {
 
     it('should throw if protocol selection fails', async () => {
       const protocol = ['/echo/2.0.0', '/echo/1.0.0']
-      const stream = pair()
+      const stream = pair<Uint8ArrayList | Uint8Array>()
       const duplex = {
         sink: stream.sink,
         source: (async function * () {
@@ -120,7 +125,7 @@ describe('Dialer', () => {
   describe('dialer.lazySelect', () => {
     it('should lazily select a single protocol', async () => {
       const protocol = '/echo/1.0.0'
-      const duplex = pair()
+      const duplex = pair<Uint8Array>()
 
       const selection = mss.lazySelect(duplex, protocol)
       expect(selection.protocol).to.equal(protocol)
