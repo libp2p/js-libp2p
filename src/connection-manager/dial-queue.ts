@@ -337,7 +337,7 @@ export class DialQueue {
       throw new CodeError('dial with more addresses than allowed', codes.ERR_TOO_MANY_ADDRESSES)
     }
 
-    // append peer id to multiaddrs if it is not already present
+    // ensure the peer id is appended to the multiaddr
     if (peerId != null) {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`
       dedupedMultiaddrs = dedupedMultiaddrs.map(addr => {
@@ -349,7 +349,8 @@ export class DialQueue {
           return addr
         }
 
-        if (addressPeerId == null) {
+        // append peer id to multiaddr if it is not already present
+        if (addressPeerId !== peerId.toString()) {
           return {
             multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
             isCertified: addr.isCertified
@@ -363,7 +364,6 @@ export class DialQueue {
     const gatedAdrs: Address[] = []
 
     for (const addr of dedupedMultiaddrs) {
-      // @ts-expect-error needs updating in the interface
       if (this.connectionGater.denyDialMultiaddr != null && await this.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
         continue
       }

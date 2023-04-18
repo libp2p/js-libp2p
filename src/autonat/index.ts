@@ -150,7 +150,7 @@ export class AutonatService implements Startable {
 
       await pipe(
         source,
-        lp.decode(),
+        (source) => lp.decode(source),
         async function * (stream) {
           const buf = await first(stream)
 
@@ -357,7 +357,7 @@ export class AutonatService implements Startable {
             }
           })
         },
-        lp.encode(),
+        (source) => lp.encode(source),
         // pipe to the stream, not the abortable source other wise we
         // can't tell the remote when a dial timed out..
         data.stream
@@ -446,9 +446,9 @@ export class AutonatService implements Startable {
 
           const buf = await pipe(
             [request],
-            lp.encode(),
+            (source) => lp.encode(source),
             source,
-            lp.decode(),
+            (source) => lp.decode(source),
             async (stream) => await first(stream)
           )
           if (buf == null) {

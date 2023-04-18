@@ -47,6 +47,7 @@ function lpEncodeExchange (exchange: Exchange): Uint8ArrayList {
  * Encrypt connection
  */
 async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
+  // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
   const shake = handshake(conn)
 
   let type = KeyType.RSA
@@ -71,8 +72,12 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
   log('write pubkey exchange to peer %p', remoteId)
 
   // Get the Exchange message
-  // @ts-expect-error needs to be generator
   const response = (await lp.decode.fromReader(shake.reader).next()).value
+
+  if (response == null) {
+    throw new Error('Did not read response')
+  }
+
   const id = Exchange.decode(response)
   log('read pubkey exchange from peer %p', remoteId)
 
