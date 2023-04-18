@@ -1,3 +1,14 @@
+## [8.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.7...v8.0.0) (2023-04-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* update to new stream type deps (#272)
+
+### Dependencies
+
+* update to new stream type deps ([#272](https://github.com/libp2p/js-libp2p-mplex/issues/272)) ([04c8c7f](https://github.com/libp2p/js-libp2p-mplex/commit/04c8c7fa69335a3c1495265666140f97a6287626))
+
 ## [7.1.7](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.6...v7.1.7) (2023-04-13)
 
 
