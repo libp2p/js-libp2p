@@ -396,6 +396,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               // after the handshake the returned stream can have early data so override
               // the souce/sink
               muxedStream.source = stream.source
+              // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
               muxedStream.sink = stream.sink
               muxedStream.stat.protocol = protocol
 
@@ -444,6 +445,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             } catch { }
           }
 
+          // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
           const { stream, protocol } = await mss.select(muxedStream, protocols, options)
 
           const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar)
@@ -463,6 +465,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           // after the handshake the returned stream can have early data so override
           // the souce/sink
           muxedStream.source = stream.source
+          // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
           muxedStream.sink = stream.sink
           muxedStream.stat.protocol = protocol
 
@@ -587,6 +590,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       log('encrypting inbound connection...')
 
       return {
+        // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
         ...await encrypter.secureInbound(this.components.peerId, stream),
         protocol
       }
@@ -604,6 +608,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     log('selecting outbound crypto protocol', protocols)
 
     try {
+      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
       const { stream, protocol } = await mss.select(connection, protocols, {
         writeBytes: true
       })
@@ -616,6 +621,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       log('encrypting outbound connection to %p', remotePeerId)
 
       return {
+        // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
         ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
         protocol
       }
@@ -632,11 +638,13 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     const protocols = Array.from(muxers.keys())
     log('outbound selecting muxer %s', protocols)
     try {
+      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
       const { stream, protocol } = await mss.select(connection, protocols, {
         writeBytes: true
       })
       log('%s selected as muxer protocol', protocol)
       const muxerFactory = muxers.get(protocol)
+      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
       return { stream, muxerFactory }
     } catch (err: any) {
       log.error('error multiplexing outbound stream', err)
@@ -656,6 +664,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         writeBytes: true
       })
       const muxerFactory = muxers.get(protocol)
+      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
       return { stream, muxerFactory }
     } catch (err: any) {
       log.error('error multiplexing inbound stream', err)
