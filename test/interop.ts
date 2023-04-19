@@ -124,6 +124,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
+    // @ts-expect-error remove after https://github.com/ChainSafe/js-libp2p-noise/pull/306
     connectionEncryption: [noise()],
     nat: {
       enabled: false

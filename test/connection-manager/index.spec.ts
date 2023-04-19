@@ -215,7 +215,9 @@ describe('Connection Manager', () => {
     const remotePeer = await createEd25519PeerId()
     const connection = mockConnection(mockMultiaddrConnection({
       remoteAddr,
-      source: [],
+      source: (async function * () {
+        yield * []
+      })(),
       sink: async () => {}
     }, remotePeer))
 
@@ -340,7 +342,9 @@ describe('Connection Manager', () => {
     const remotePeer = await createEd25519PeerId()
     const maConn = mockMultiaddrConnection({
       remoteAddr,
-      source: [],
+      source: (async function * () {
+        yield * []
+      })(),
       sink: async () => {}
     }, remotePeer)
 
@@ -369,7 +373,9 @@ describe('Connection Manager', () => {
     // an inbound connection is opened
     const remotePeer = await createEd25519PeerId()
     const maConn = mockMultiaddrConnection({
-      source: [],
+      source: (async function * () {
+        yield * []
+      })(),
       sink: async () => {}
     }, remotePeer)
 
@@ -394,7 +400,9 @@ describe('Connection Manager', () => {
     // an inbound connection is opened
     const remotePeer = await createEd25519PeerId()
     const maConn = mockMultiaddrConnection({
-      source: [],
+      source: (async function * () {
+        yield * []
+      })(),
       sink: async () => {},
       // has to be thin waist, which it will be since we've not done the peer id handshake
       // yet in the code being exercised by this test
@@ -436,7 +444,9 @@ describe('Connection Manager', () => {
     const remotePeer = await createEd25519PeerId()
     const maConn = mockMultiaddrConnection({
       remoteAddr,
-      source: [],
+      source: (async function * () {
+        yield * []
+      })(),
       sink: async () => {}
     }, remotePeer)
 
@@ -460,7 +470,9 @@ describe('Connection Manager', () => {
 
     // start the upgrade
     const maConn1 = mockMultiaddrConnection({
-      source: [],
+      source: (async function * () {
+        yield * []
+      })(),
       sink: async () => {}
     }, await createEd25519PeerId())
 
@@ -469,7 +481,9 @@ describe('Connection Manager', () => {
 
     // start the upgrade
     const maConn2 = mockMultiaddrConnection({
-      source: [],
+      source: (async function * () {
+        yield * []
+      })(),
       sink: async () => {}
     }, await createEd25519PeerId())
 
