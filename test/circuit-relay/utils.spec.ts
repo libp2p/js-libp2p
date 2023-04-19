@@ -6,7 +6,7 @@ import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '.
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import delay from 'delay'
 import drain from 'it-drain'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import { pushable } from 'it-pushable'
 import Sinon from 'sinon'
 import toBuffer from 'it-to-buffer'
@@ -15,7 +15,7 @@ describe('circuit-relay utils', () => {
   it('should create relay', async () => {
     const received = pushable()
 
-    const local: Duplex<any> = {
+    const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
@@ -28,7 +28,7 @@ describe('circuit-relay utils', () => {
         await drain(source)
       }
     }
-    const remote: Duplex<any> = {
+    const remote: Duplex<any, Source<any>, any> = {
       source: [],
       sink: async (source) => {
         try {
@@ -58,7 +58,7 @@ describe('circuit-relay utils', () => {
   it('should create data limited relay', async () => {
     const received = pushable()
 
-    const local: Duplex<any> = {
+    const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
@@ -70,7 +70,7 @@ describe('circuit-relay utils', () => {
         await drain(source)
       }
     }
-    const remote: Duplex<any> = {
+    const remote: Duplex<any, Source<any>, any> = {
       source: [],
       sink: async (source) => {
         try {
@@ -104,7 +104,7 @@ describe('circuit-relay utils', () => {
   it('should create data limited relay that limits data in both directions', async () => {
     const received = pushable()
 
-    const local: Duplex<any> = {
+    const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
@@ -122,7 +122,7 @@ describe('circuit-relay utils', () => {
         }
       }
     }
-    const remote: Duplex<any> = {
+    const remote: Duplex<any, Source<any>, any> = {
       source: (async function * () {
         await delay(10)
         yield uint8arrayFromString('8912')
@@ -162,7 +162,7 @@ describe('circuit-relay utils', () => {
   it('should create time limited relay', async () => {
     const received = pushable()
 
-    const local: Duplex<any> = {
+    const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
@@ -175,7 +175,7 @@ describe('circuit-relay utils', () => {
         await drain(source)
       }
     }
-    const remote: Duplex<any> = {
+    const remote: Duplex<any, Source<any>, any> = {
       source: [],
       sink: async (source) => {
         try {

@@ -277,7 +277,10 @@ describe('Upgrader', () => {
         throw new Error('Not implemented')
       }
 
-      source = []
+      source = (async function * () {
+        yield * []
+      })()
+
       async sink (): Promise<void> {}
       close (): void {}
     }
