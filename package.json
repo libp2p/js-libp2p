@@ -149,7 +149,7 @@
     "it-merge": "^3.0.0",
     "it-pair": "^2.0.2",
     "it-parallel": "^3.0.0",
-    "it-pb-stream": "^4.0.0",
+    "it-pb-stream": "^4.0.1",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "merge-options": "^3.0.4",
