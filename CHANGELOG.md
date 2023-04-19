@@ -1,3 +1,10 @@
+## [8.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v8.0.0...v8.0.1) (2023-04-19)
+
+
+### Dependencies
+
+* update abortable-iterator to 5.x.x ([#273](https://github.com/libp2p/js-libp2p-mplex/issues/273)) ([c667204](https://github.com/libp2p/js-libp2p-mplex/commit/c6672049409bf25c07467774bdb46385fbc9a594))
+
 ## [8.0.0](https://github.com/libp2p/js-libp2p-mplex/compare/v7.1.7...v8.0.0) (2023-04-18)
 
 
