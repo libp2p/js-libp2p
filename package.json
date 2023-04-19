@@ -105,7 +105,7 @@
     "@libp2p/interface-connection": "^5.0.0",
     "@libp2p/interface-connection-encrypter": "^4.0.0",
     "@libp2p/interface-connection-gater": "^3.0.0",
-    "@libp2p/interface-connection-manager": "^2.1.0",
+    "@libp2p/interface-connection-manager": "^2.1.1",
     "@libp2p/interface-content-routing": "^2.0.0",
     "@libp2p/interface-dht": "^2.0.0",
     "@libp2p/interface-keychain": "^2.0.4",
@@ -172,7 +172,7 @@
   "devDependencies": {
     "@chainsafe/libp2p-gossipsub": "^6.2.0",
     "@chainsafe/libp2p-noise": "^11.0.0",
-    "@chainsafe/libp2p-yamux": "^3.0.8",
+    "@chainsafe/libp2p-yamux": "^4.0.0",
     "@libp2p/bootstrap": "^6.0.0",
     "@libp2p/daemon-client": "^6.0.0",
     "@libp2p/daemon-server": "^5.0.0",

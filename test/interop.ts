@@ -134,7 +134,6 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.muxer === 'mplex') {
     opts.streamMuxers?.push(mplex())
   } else {
-    // @ts-expect-error remove after https://github.com/ChainSafe/js-libp2p-yamux/pull/36
     opts.streamMuxers?.push(yamux())
   }
 
