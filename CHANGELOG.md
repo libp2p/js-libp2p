@@ -1,3 +1,10 @@
+## [8.0.11](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.10...v8.0.11) (2023-04-19)
+
+
+### Dependencies
+
+* update it-stream-types ([#456](https://github.com/libp2p/js-libp2p-kad-dht/issues/456)) ([2dfccee](https://github.com/libp2p/js-libp2p-kad-dht/commit/2dfccee3614bbcde1bf0ff9b1c8dbded79f86d91))
+
 ## [8.0.10](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.9...v8.0.10) (2023-04-17)
 
 
