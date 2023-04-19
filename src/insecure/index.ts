@@ -30,7 +30,7 @@ import { Exchange, KeyType } from './pb/proto.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import map from 'it-map'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -46,8 +46,7 @@ function lpEncodeExchange (exchange: Exchange): Uint8ArrayList {
 /**
  * Encrypt connection
  */
-async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
-  // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
+async function encrypt (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
   const shake = handshake(conn)
 
   let type = KeyType.RSA
@@ -125,11 +124,11 @@ async function encrypt (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: Pe
 class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
 
-  async secureInbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
+  async secureInbound (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
     return await encrypt(localId, conn, remoteId)
   }
 
-  async secureOutbound (localId: PeerId, conn: Duplex<Uint8Array>, remoteId?: PeerId): Promise<SecuredConnection> {
+  async secureOutbound (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
     return await encrypt(localId, conn, remoteId)
   }
 }

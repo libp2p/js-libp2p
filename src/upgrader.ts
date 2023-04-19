@@ -10,7 +10,7 @@ import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-c
 import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Upgrader, UpgraderEvents, UpgraderOptions } from '@libp2p/interface-transport'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Registrar } from '@libp2p/interface-registrar'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
@@ -25,11 +25,11 @@ import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 
 const log = logger('libp2p:upgrader')
 
-interface CreateConectionOptions {
+interface CreateConnectionOptions {
   cryptoProtocol: string
   direction: 'inbound' | 'outbound'
   maConn: MultiaddrConnection
-  upgradedConn: Duplex<Uint8Array>
+  upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
   remotePeer: PeerId
   muxerFactory?: StreamMuxerFactory
 }
@@ -142,7 +142,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
     let encryptedConn
     let remotePeer
-    let upgradedConn: Duplex<Uint8Array>
+    let upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
@@ -264,7 +264,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
     let encryptedConn
     let remotePeer: PeerId
-    let upgradedConn
+    let upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
     let cryptoProtocol
     let muxerFactory
 
@@ -350,7 +350,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
   /**
    * A convenience method for generating a new `Connection`
    */
-  _createConnection (opts: CreateConectionOptions): Connection {
+  _createConnection (opts: CreateConnectionOptions): Connection {
     const {
       cryptoProtocol,
       direction,
@@ -396,7 +396,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
               // after the handshake the returned stream can have early data so override
               // the souce/sink
               muxedStream.source = stream.source
-              // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
               muxedStream.sink = stream.sink
               muxedStream.stat.protocol = protocol
 
@@ -445,7 +444,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             } catch { }
           }
 
-          // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
           const { stream, protocol } = await mss.select(muxedStream, protocols, options)
 
           const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar)
@@ -465,7 +463,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           // after the handshake the returned stream can have early data so override
           // the souce/sink
           muxedStream.source = stream.source
-          // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
           muxedStream.sink = stream.sink
           muxedStream.stat.protocol = protocol
 
@@ -573,7 +570,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
   /**
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
-  async _encryptInbound (connection: Duplex<Uint8Array>): Promise<CryptoResult> {
+  async _encryptInbound (connection: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>): Promise<CryptoResult> {
     const protocols = Array.from(this.connectionEncryption.keys())
     log('handling inbound crypto protocol selection', protocols)
 
@@ -590,7 +587,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       log('encrypting inbound connection...')
 
       return {
-        // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
         ...await encrypter.secureInbound(this.components.peerId, stream),
         protocol
       }
@@ -608,7 +604,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     log('selecting outbound crypto protocol', protocols)
 
     try {
-      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
       const { stream, protocol } = await mss.select(connection, protocols, {
         writeBytes: true
       })
@@ -621,7 +616,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       log('encrypting outbound connection to %p', remotePeerId)
 
       return {
-        // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
         ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
         protocol
       }
@@ -634,17 +628,16 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * Selects one of the given muxers via multistream-select. That
    * muxer will be used for all future streams on the connection.
    */
-  async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory }> {
+  async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
     log('outbound selecting muxer %s', protocols)
     try {
-      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
       const { stream, protocol } = await mss.select(connection, protocols, {
         writeBytes: true
       })
       log('%s selected as muxer protocol', protocol)
       const muxerFactory = muxers.get(protocol)
-      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
+
       return { stream, muxerFactory }
     } catch (err: any) {
       log.error('error multiplexing outbound stream', err)
@@ -656,7 +649,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
    * Registers support for one of the given muxers via multistream-select. The
    * selected muxer will be used for all future streams on the connection.
    */
-  async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<Uint8Array>, muxerFactory?: StreamMuxerFactory }> {
+  async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
     log('inbound handling muxers %s', protocols)
     try {
@@ -664,7 +657,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
         writeBytes: true
       })
       const muxerFactory = muxers.get(protocol)
-      // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
+
       return { stream, muxerFactory }
     } catch (err: any) {
       log.error('error multiplexing inbound stream', err)
