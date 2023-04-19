@@ -1,3 +1,10 @@
+## [8.0.12](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.11...v8.0.12) (2023-04-19)
+
+
+### Tests
+
+* enable skipped xor test ([#458](https://github.com/libp2p/js-libp2p-kad-dht/issues/458)) ([4acfd70](https://github.com/libp2p/js-libp2p-kad-dht/commit/4acfd7047154276ae70a2c1f07775abcacd82170))
+
 ## [8.0.11](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.10...v8.0.11) (2023-04-19)
 
 
