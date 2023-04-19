@@ -21,7 +21,6 @@ import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import { TimeoutController } from 'timeout-abort-controller'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import { setMaxListeners } from 'events'
@@ -29,6 +28,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:identify')
 
@@ -176,20 +176,21 @@ export class IdentifyService implements Startable {
 
     const pushes = connections.map(async connection => {
       let stream: Stream | undefined
-      const timeoutController = new TimeoutController(this.init.timeout)
+
+      const signal = AbortSignal.timeout(this.init.timeout)
 
       try {
         // fails on node < 15.4
-        setMaxListeners?.(Infinity, timeoutController.signal)
+        setMaxListeners?.(Infinity, signal)
       } catch {}
 
       try {
         stream = await connection.newStream([this.identifyPushProtocolStr], {
-          signal: timeoutController.signal
+          signal
         })
 
         // make stream abortable
-        const source = abortableDuplex(stream, timeoutController.signal)
+        const source = abortableDuplex(stream, signal)
 
         await source.sink(pipe(
           [Identify.encode({
@@ -206,8 +207,6 @@ export class IdentifyService implements Startable {
         if (stream != null) {
           stream.close()
         }
-
-        timeoutController.clear()
       }
     })
 
@@ -240,18 +239,16 @@ export class IdentifyService implements Startable {
   }
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
-    let timeoutController
     let signal = options.signal
     let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      timeoutController = new TimeoutController(this.init.timeout)
-      signal = timeoutController.signal
+      signal = anySignal([AbortSignal.timeout(this.init.timeout), options.signal])
 
       try {
         // fails on node < 15.4
-        setMaxListeners?.(Infinity, timeoutController.signal)
+        setMaxListeners?.(Infinity, signal)
       } catch {}
     }
 
@@ -282,10 +279,6 @@ export class IdentifyService implements Startable {
         throw new CodeError(String(err), codes.ERR_INVALID_MESSAGE)
       }
     } finally {
-      if (timeoutController != null) {
-        timeoutController.clear()
-      }
-
       if (stream != null) {
         stream.close()
       }
@@ -394,11 +387,12 @@ export class IdentifyService implements Startable {
    */
   async _handleIdentify (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
-    const timeoutController = new TimeoutController(this.init.timeout)
+
+    const signal = AbortSignal.timeout(this.init.timeout)
 
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, timeoutController.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch {}
 
     try {
@@ -429,7 +423,7 @@ export class IdentifyService implements Startable {
       })
 
       // make stream abortable
-      const source = abortableDuplex(stream, timeoutController.signal)
+      const source = abortableDuplex(stream, signal)
 
       const msgWithLenPrefix = pipe([message], (source) => lp.encode(source))
       await source.sink(msgWithLenPrefix)
@@ -437,7 +431,6 @@ export class IdentifyService implements Startable {
       log.error('could not respond to identify request', err)
     } finally {
       stream.close()
-      timeoutController.clear()
     }
   }
 
@@ -446,17 +439,17 @@ export class IdentifyService implements Startable {
    */
   async _handlePush (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
-    const timeoutController = new TimeoutController(this.init.timeout)
+    const signal = AbortSignal.timeout(this.init.timeout)
 
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, timeoutController.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch {}
 
     let message: Identify | undefined
     try {
       // make stream abortable
-      const source = abortableDuplex(stream, timeoutController.signal)
+      const source = abortableDuplex(stream, signal)
 
       const data = await pipe(
         [],
@@ -475,7 +468,6 @@ export class IdentifyService implements Startable {
       return
     } finally {
       stream.close()
-      timeoutController.clear()
     }
 
     if (message == null) {

@@ -11,10 +11,10 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
-import { TimeoutController } from 'timeout-abort-controller'
 import type { Stream } from '@libp2p/interface-connection'
 import { setMaxListeners } from 'events'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:ping')
 
@@ -88,18 +88,16 @@ export class PingService implements Startable {
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
-    let timeoutController
     let signal = options.signal
     let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      timeoutController = new TimeoutController(this.init.timeout)
-      signal = timeoutController.signal
+      signal = anySignal([AbortSignal.timeout(this.init.timeout), options.signal])
 
       try {
         // fails on node < 15.4
-        setMaxListeners?.(Infinity, timeoutController.signal)
+        setMaxListeners?.(Infinity, signal)
       } catch {}
     }
 
@@ -124,10 +122,6 @@ export class PingService implements Startable {
 
       return end - start
     } finally {
-      if (timeoutController != null) {
-        timeoutController.clear()
-      }
-
       if (stream != null) {
         stream.close()
       }

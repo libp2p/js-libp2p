@@ -14,7 +14,6 @@ import type { Duplex, Source } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Registrar } from '@libp2p/interface-registrar'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import { TimeoutController } from 'timeout-abort-controller'
 import { abortableDuplex } from 'abortable-iterator'
 import { setMaxListeners } from 'events'
 import type { Metrics } from '@libp2p/interface-metrics'
@@ -22,6 +21,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
+import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:upgrader')
 
@@ -146,15 +146,15 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
-    const timeoutController = new TimeoutController(this.inboundUpgradeTimeout)
+    const signal = anySignal([AbortSignal.timeout(this.inboundUpgradeTimeout)])
 
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, timeoutController.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch { }
 
     try {
-      const abortableStream = abortableDuplex(maConn, timeoutController.signal)
+      const abortableStream = abortableDuplex(maConn, signal)
       maConn.source = abortableStream.source
       maConn.sink = abortableStream.sink
 
@@ -243,7 +243,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       })
     } finally {
       this.components.connectionManager.afterUpgradeInbound()
-      timeoutController.clear()
     }
   }
 
@@ -429,18 +428,16 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
         log('%s: starting new stream on %s', direction, protocols)
         const muxedStream = await muxer.newStream()
-        let controller: TimeoutController | undefined
 
         try {
           if (options.signal == null) {
             log('No abort signal was passed while trying to negotiate protocols %s falling back to default timeout', protocols)
 
-            controller = new TimeoutController(30000)
-            options.signal = controller.signal
+            options.signal = AbortSignal.timeout(30000)
 
             try {
               // fails on node < 15.4
-              setMaxListeners?.(Infinity, controller.signal)
+              setMaxListeners?.(Infinity, options.signal)
             } catch { }
           }
 
@@ -481,10 +478,6 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
           }
 
           throw new CodeError(String(err), codes.ERR_UNSUPPORTED_PROTOCOL)
-        } finally {
-          if (controller != null) {
-            controller.clear()
-          }
         }
       }
 

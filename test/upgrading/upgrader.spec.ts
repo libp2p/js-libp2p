@@ -24,7 +24,6 @@ import type { ConnectionProtector, Stream } from '@libp2p/interface-connection'
 import pDefer from 'p-defer'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
-import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import drain from 'it-drain'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -424,7 +423,7 @@ describe('Upgrader', () => {
     ])
 
     // 10 ms timeout
-    const timeoutController = new TimeoutController(10)
+    const signal = AbortSignal.timeout(10)
 
     // should have created muxer for connection
     expect(createStreamMuxerSpy).to.have.property('callCount', 1)
@@ -443,7 +442,7 @@ describe('Upgrader', () => {
     }
 
     await expect(connections[0].newStream('/echo/1.0.0', {
-      signal: timeoutController.signal
+      signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
   })

@@ -9,7 +9,6 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { CustomEvent } from '@libp2p/interfaces/events'
-import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -129,11 +128,11 @@ describe('fetch', () => {
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
 
     // 10 ms timeout
-    const timeoutController = new TimeoutController(10)
+    const signal = AbortSignal.timeout(10)
 
     // Run fetch, should time out
     await expect(localFetch.fetch(remoteComponents.peerId, key, {
-      signal: timeoutController.signal
+      signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
 
