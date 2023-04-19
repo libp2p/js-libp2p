@@ -175,7 +175,7 @@
     "@chainsafe/libp2p-yamux": "^3.0.8",
     "@libp2p/bootstrap": "^6.0.0",
     "@libp2p/daemon-client": "^5.0.0",
-    "@libp2p/daemon-server": "^4.1.0",
+    "@libp2p/daemon-server": "^5.0.0",
     "@libp2p/floodsub": "^6.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.2",
     "@libp2p/interface-connection-compliance-tests": "^2.0.3",
