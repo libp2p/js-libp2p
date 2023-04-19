@@ -1,3 +1,10 @@
+## [3.1.8](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.7...v3.1.8) (2023-04-19)
+
+
+### Dependencies
+
+* update abortable iterator to 5.x.x ([#61](https://github.com/libp2p/js-libp2p-multistream-select/issues/61)) ([5bc4293](https://github.com/libp2p/js-libp2p-multistream-select/commit/5bc42936e25e14791d19fdd790d3c3987c56e784))
+
 ## [3.1.7](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.6...v3.1.7) (2023-04-18)
 
 
