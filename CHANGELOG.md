@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v7.0.0...v7.0.1) (2023-04-19)
+
+
+### Dependencies
+
+* bump abortable-iterator from 4.0.3 to 5.0.1 ([#137](https://github.com/libp2p/js-libp2p-pubsub/issues/137)) ([695ad25](https://github.com/libp2p/js-libp2p-pubsub/commit/695ad25b3b9b53ddbe646b507e7e7e3051b834cf))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-pubsub/compare/v6.0.6...v7.0.0) (2023-04-18)
 
 
