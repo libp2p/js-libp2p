@@ -669,7 +669,7 @@ describe('QueryManager', () => {
     await manager.stop()
   })
 
-  it.skip('should end paths when they have no closer peers to those already queried', async () => {
+  it('should end paths when they have no closer peers to those already queried', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
@@ -694,20 +694,20 @@ describe('QueryManager', () => {
 
     // should have traversed peers 3, 2 & 1
     expect(results).to.containSubset([{
-      peer: peers[3]
+      from: peers[3]
     }, {
-      peer: peers[2]
+      from: peers[2]
     }, {
-      peer: peers[1]
+      from: peers[1]
     }])
 
     // should not have traversed peers 4, 5 & 6
     expect(results).to.not.containSubset([{
-      peer: peers[4]
+      from: peers[4]
     }, {
-      peer: peers[5]
+      from: peers[5]
     }, {
-      peer: peers[6]
+      from: peers[6]
     }])
 
     await manager.stop()
