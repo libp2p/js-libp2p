@@ -88,7 +88,6 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     log('protecting the connection')
     const localNonce = randomBytes(NONCE_LENGTH)
 
-    // @ts-expect-error - remove after https://github.com/libp2p/js-libp2p/pull/1674
     const shake = handshake(connection)
     shake.write(localNonce)
 
