@@ -12,7 +12,7 @@ import { mockStream } from '@libp2p/interface-mocks'
 import type { DualKadDHT } from '../src/dual-kad-dht.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Sink } from 'it-stream-types'
+import type { Sink, Source } from 'it-stream-types'
 import { Uint8ArrayList } from 'uint8arraylist'
 import map from 'it-map'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -68,13 +68,13 @@ describe('Network', () => {
               async (source) => all(source)
             )
 
-            const source = (function * () {
+            const source = (async function * () {
               const array = data
 
               yield * array
             })()
 
-            const sink: Sink<Uint8ArrayList | Uint8Array> = async source => {
+            const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
               const res = await pipe(
                 source,
                 (source) => lp.decode(source),

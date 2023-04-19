@@ -16,7 +16,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Stream } from '@libp2p/interface-connection'
 import { abortableDuplex } from 'abortable-iterator'
@@ -149,7 +149,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Write a message to the given stream
    */
-  async _writeMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<void> {
+  async _writeMessage (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<void> {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }
@@ -167,7 +167,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
    * If no response is received after the specified timeout
    * this will error out.
    */
-  async _writeReadMessage (stream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<Message> {
+  async _writeReadMessage (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<Message> {
     if (options.signal != null) {
       stream = abortableDuplex(stream, options.signal)
     }

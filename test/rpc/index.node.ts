@@ -18,7 +18,7 @@ import { PeerRouting } from '../../src/peer-routing/index.js'
 import type { Validators } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
 import { RoutingTable } from '../../src/routing-table/index.js'
-import type { Duplex } from 'it-stream-types'
+import type { Duplex, Source } from 'it-stream-types'
 import { mockStream } from '@libp2p/interface-mocks'
 import { start } from '@libp2p/interfaces/startable'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -85,8 +85,10 @@ describe('rpc', () => {
       (source) => all(source)
     )
 
-    const duplexStream: Duplex<Uint8ArrayList, Uint8ArrayList | Uint8Array> = {
-      source,
+    const duplexStream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>> = {
+      source: (async function * () {
+        yield * source
+      })(),
       sink: async (source) => {
         const res = await pipe(
           source,
