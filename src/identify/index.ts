@@ -29,6 +29,8 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:identify')
 
@@ -74,6 +76,7 @@ export interface IdentifyServiceComponents {
   connectionManager: ConnectionManager
   registrar: Registrar
   addressManager: AddressManager
+  events: EventEmitter<Libp2pEvents>
 }
 
 export class IdentifyService implements Startable {
@@ -103,9 +106,9 @@ export class IdentifyService implements Startable {
     }
 
     // When a new connection happens, trigger identify
-    this.components.connectionManager.addEventListener('peer:connect', (evt) => {
+    this.components.events.addEventListener('connection:open', (evt) => {
       const connection = evt.detail
-      this.identify(connection).catch(log.error)
+      this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
     })
 
     // When self multiaddrs change, trigger identify-push

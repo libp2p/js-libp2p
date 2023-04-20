@@ -26,7 +26,7 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import delay from 'delay'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { TimeoutController } from 'timeout-abort-controller'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 import { DefaultComponents } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
@@ -57,7 +57,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
     transportManager: stubInterface<TransportManager>(),
-    connectionGater: mockConnectionGater()
+    connectionGater: mockConnectionGater(),
+    events: new EventEmitter()
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
@@ -315,12 +316,12 @@ describe('identify', () => {
     })
 
     // ensure connections are registered by connection manager
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    localComponents.events.safeDispatchEvent('connection:open', {
       detail: localToRemote
-    }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    })
+    remoteComponents.events.safeDispatchEvent('connection:open', {
       detail: remoteToLocal
-    }))
+    })
 
     await deferred.promise
     await stop(remoteIdentify)
@@ -370,12 +371,12 @@ describe('identify', () => {
     })
 
     // ensure connections are registered by connection manager
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    localComponents.events.safeDispatchEvent('connection:open', {
       detail: localToRemote
-    }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    })
+    remoteComponents.events.safeDispatchEvent('connection:open', {
       detail: remoteToLocal
-    }))
+    })
 
     await deferred.promise
     await stop(remoteIdentify)

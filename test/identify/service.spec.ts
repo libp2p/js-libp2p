@@ -113,7 +113,7 @@ describe('libp2p.dialer.identifyService', () => {
 
     const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
     const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
     const connection = await libp2p.dial(remoteAddr)
 
     expect(connection).to.exist()
@@ -213,7 +213,7 @@ describe('libp2p.dialer.identifyService', () => {
 
     const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
     const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
     const connection = await libp2p.dial(remoteAddr)
 
     expect(connection).to.exist()

@@ -2,18 +2,19 @@ import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
 import { protocols } from '@multiformats/multiaddr'
-import type { TransportManager } from '@libp2p/interface-transport'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:peer-record-updater')
 
 export interface PeerRecordUpdaterComponents {
   peerId: PeerId
   peerStore: PeerStore
-  transportManager: TransportManager
   addressManager: AddressManager
+  events: EventEmitter<Libp2pEvents>
 }
 
 export class PeerRecordUpdater implements Startable {
@@ -32,16 +33,16 @@ export class PeerRecordUpdater implements Startable {
 
   async start (): Promise<void> {
     this.started = true
-    this.components.transportManager.addEventListener('listener:listening', this.update)
-    this.components.transportManager.addEventListener('listener:close', this.update)
-    this.components.addressManager.addEventListener('change:addresses', this.update)
+    this.components.events.addEventListener('transport:listening', this.update)
+    this.components.events.addEventListener('transport:close', this.update)
+    this.components.events.addEventListener('self:peer:update', this.update)
   }
 
   async stop (): Promise<void> {
     this.started = false
-    this.components.transportManager.removeEventListener('listener:listening', this.update)
-    this.components.transportManager.removeEventListener('listener:close', this.update)
-    this.components.addressManager.removeEventListener('change:addresses', this.update)
+    this.components.events.removeEventListener('transport:listening', this.update)
+    this.components.events.removeEventListener('transport:close', this.update)
+    this.components.events.removeEventListener('self:peer:update', this.update)
   }
 
   /**

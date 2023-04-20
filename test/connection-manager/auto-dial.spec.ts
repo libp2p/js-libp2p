@@ -9,6 +9,7 @@ import { stubInterface } from 'sinon-ts'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 describe('auto-dial', () => {
   it('should not dial peers without multiaddrs', async () => {
@@ -42,7 +43,8 @@ describe('auto-dial', () => {
 
     const autoDialler = new AutoDial({
       peerStore,
-      connectionManager
+      connectionManager,
+      events: new EventEmitter()
     }, {
       minConnections: 10
     })

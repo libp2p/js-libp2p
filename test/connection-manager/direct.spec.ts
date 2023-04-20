@@ -30,6 +30,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
 import { DefaultComponents } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
@@ -45,7 +46,8 @@ describe('dialing (direct, WebSockets)', () => {
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader(),
       connectionGater: mockConnectionGater(),
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      events: new EventEmitter()
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents, {
       addressFilter: localComponents.connectionGater.filterMultiaddrForPeer
@@ -377,7 +379,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     const identifySpy = sinon.spy(libp2p.identifyService, 'identify')
     const protobookSetSpy = sinon.spy(libp2p.components.peerStore.protoBook, 'set')
-    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
 
     await libp2p.start()
 

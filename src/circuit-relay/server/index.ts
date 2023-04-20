@@ -24,7 +24,7 @@ import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { setMaxListeners } from 'events'
 import type { PeerMap } from '@libp2p/peer-collections'
 
@@ -128,7 +128,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     if (init.advertise != null && init.advertise !== false) {
       this.advertService = new AdvertService(components, init.advertise === true ? undefined : init.advertise)
       this.advertService.addEventListener('advert:success', () => {
-        this.dispatchEvent(new CustomEvent('relay:advert:success'))
+        this.safeDispatchEvent('relay:advert:success', {})
       })
       this.advertService.addEventListener('advert:error', (evt) => {
         this.safeDispatchEvent('relay:advert:error', { detail: evt.detail })

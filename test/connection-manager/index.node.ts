@@ -2,24 +2,24 @@
 
 import { expect } from 'aegir/chai'
 import { createNode, createPeerId } from '../utils/creators/peer.js'
-import { mockConnection, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-mocks'
+import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Libp2p } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import * as STATUS from '@libp2p/interface-connection/status'
 import { stubInterface } from 'sinon-ts'
 import type { KeyBook, PeerStore } from '@libp2p/interface-peer-store'
 import sinon from 'sinon'
 import pWaitFor from 'p-wait-for'
-import type { Connection } from '@libp2p/interface-connection'
 import delay from 'delay'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { codes } from '../../src/errors.js'
 import { start } from '@libp2p/interfaces/startable'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { DefaultComponents } from '../../src/components.js'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p
@@ -48,17 +48,16 @@ describe('Connection Manager', () => {
   })
 
   it('should filter connections on disconnect, removing the closed one', async () => {
-    const upgrader = mockUpgrader()
     const peerStore = stubInterface<PeerStore>()
     peerStore.keyBook = stubInterface<KeyBook>()
-
-    const connectionManager = new DefaultConnectionManager({
+    const components = new DefaultComponents({
       peerId: peerIds[0],
-      upgrader,
       peerStore,
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
-    }, {
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
+    })
+    const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
       minConnections: 50,
       inboundUpgradeTimeout: 1000
@@ -72,13 +71,13 @@ describe('Connection Manager', () => {
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(0)
 
     // Add connection to the connectionManager
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn1 }))
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn2 }))
+    components.events.safeDispatchEvent('connection:open', { detail: conn1 })
+    components.events.safeDispatchEvent('connection:open', { detail: conn2 })
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
 
     await conn2.close()
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connectionEnd', { detail: conn2 }))
+    components.events.safeDispatchEvent('connection:close', { detail: conn2 })
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(1)
 
@@ -88,17 +87,16 @@ describe('Connection Manager', () => {
   })
 
   it('should close connections on stop', async () => {
-    const upgrader = mockUpgrader()
     const peerStore = stubInterface<PeerStore>()
     peerStore.keyBook = stubInterface<KeyBook>()
-
-    const connectionManager = new DefaultConnectionManager({
+    const components = new DefaultComponents({
       peerId: peerIds[0],
-      upgrader,
       peerStore,
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
-    }, {
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
+    })
+    const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
       minConnections: 50,
       inboundUpgradeTimeout: 1000
@@ -110,8 +108,8 @@ describe('Connection Manager', () => {
     const conn2 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
 
     // Add connection to the connectionManager
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn1 }))
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn2 }))
+    components.events.safeDispatchEvent('connection:open', { detail: conn1 })
+    components.events.safeDispatchEvent('connection:open', { detail: conn2 })
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
 

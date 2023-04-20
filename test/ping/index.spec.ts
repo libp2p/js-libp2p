@@ -8,7 +8,7 @@ import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-m
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
@@ -35,7 +35,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
     upgrader: mockUpgrader(),
     datastore: new MemoryDatastore(),
     transportManager: stubInterface<TransportManager>(),
-    connectionGater: stubInterface<ConnectionGater>()
+    connectionGater: stubInterface<ConnectionGater>(),
+    events: new EventEmitter()
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
@@ -79,8 +80,8 @@ describe('ping', () => {
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // Run ping
     await expect(localPing.ping(remoteComponents.peerId)).to.eventually.be.gte(0)
@@ -95,8 +96,8 @@ describe('ping', () => {
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // replace existing handler with a really slow one
     await remoteComponents.registrar.unhandle(remotePing.protocol)

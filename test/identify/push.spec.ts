@@ -19,7 +19,7 @@ import {
 } from '../../src/identify/consts.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import delay from 'delay'
 import { pEvent } from 'p-event'
 import { start, stop } from '@libp2p/interfaces/startable'
@@ -52,7 +52,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
     transportManager: stubInterface<TransportManager>(),
-    connectionGater: mockConnectionGater()
+    connectionGater: mockConnectionGater(),
+    events: new EventEmitter()
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
@@ -109,12 +110,12 @@ describe('identify (push)', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // ensure connections are registered by connection manager
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    localComponents.events.safeDispatchEvent('connection:open', {
       detail: localToRemote
-    }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    })
+    remoteComponents.events.safeDispatchEvent('connection:open', {
       detail: remoteToLocal
-    }))
+    })
 
     // identify both ways
     await localIdentify.identify(localToRemote)
@@ -240,12 +241,12 @@ describe('identify (push)', () => {
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
 
     // ensure connections are registered by connection manager
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    localComponents.events.safeDispatchEvent('connection:open', {
       detail: localToRemote
-    }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    })
+    remoteComponents.events.safeDispatchEvent('connection:open', {
       detail: remoteToLocal
-    }))
+    })
 
     // identify both ways
     await localIdentify.identify(localToRemote)

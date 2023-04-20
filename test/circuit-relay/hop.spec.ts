@@ -24,6 +24,7 @@ import type { CircuitRelayServerInit } from '../../src/circuit-relay/server/inde
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import Sinon from 'sinon'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 interface Node {
   peerId: PeerId
@@ -67,16 +68,18 @@ describe('circuit-relay hop protocol', function () {
       registrar
     })
 
-    const upgrader = mockUpgrader({
-      registrar
-    })
-    upgrader.addEventListener('connection', (evt) => {
+    const events = new EventEmitter()
+    events.addEventListener('connection:open', (evt) => {
       const conn = evt.detail
       connections.set(conn.remotePeer, conn)
     })
-    upgrader.addEventListener('connectionEnd', (evt) => {
+    events.addEventListener('connection:close', (evt) => {
       const conn = evt.detail
       connections.delete(conn.remotePeer)
+    })
+
+    const upgrader = mockUpgrader({
+      registrar
     })
 
     const connectionGater = mockConnectionGater()
@@ -104,7 +107,8 @@ describe('circuit-relay hop protocol', function () {
       registrar,
       transportManager: stubInterface<TransportManager>(),
       upgrader,
-      connectionGater
+      connectionGater,
+      events
     })
 
     if (isStartable(transport)) {

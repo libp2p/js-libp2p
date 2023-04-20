@@ -50,7 +50,8 @@ import type { Datastore } from 'interface-datastore'
 import type { KeyChain } from '@libp2p/interface-keychain'
 import mergeOptions from 'merge-options'
 import type { CircuitRelayService } from './circuit-relay/index.js'
-import { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p')
 
@@ -100,6 +101,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       return internalResult || externalResult
     }
 
+    try {
+      // This emitter gets listened to a lot
+      setMaxListeners?.(Infinity, events)
+    } catch {}
+
     this.started = false
     this.peerId = init.peerId
     const components = this.components = new DefaultComponents({
@@ -138,7 +144,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     this.peerStore.addEventListener('peer', evt => {
       const { detail: peerData } = evt
 
-      this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peerData }))
+      this.safeDispatchEvent('peer:discovery', { detail: peerData })
     })
 
     // Set up connection protector if configured
@@ -158,14 +164,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     // Create the Connection Manager
     this.connectionManager = this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
-
-    // forward connection manager events
-    this.components.connectionManager.addEventListener('peer:disconnect', (event) => {
-      this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: event.detail }))
-    })
-    this.components.connectionManager.addEventListener('peer:connect', (event) => {
-      this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: event.detail }))
-    })
 
     // Create the Registrar
     this.registrar = this.components.registrar = new DefaultRegistrar(this.components)
@@ -529,7 +527,7 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       void this.components.peerStore.protoBook.set(peer.id, peer.protocols).catch(err => { log.error(err) })
     }
 
-    this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peer }))
+    this.safeDispatchEvent('peer:discovery', { detail: peer })
   }
 }
 

@@ -1,19 +1,18 @@
 import { logger } from '@libp2p/logger'
 import { CodeError } from '@libp2p/interfaces/errors'
 import type { AbortOptions } from '@libp2p/interfaces'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { codes } from '../errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { setMaxListeners } from 'events'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
-import type { ConnectionManager, ConnectionManagerEvents } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
 import { Multiaddr, Resolver, multiaddr } from '@multiformats/multiaddr'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import type { Metrics } from '@libp2p/interface-metrics'
-import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
+import type { TransportManager } from '@libp2p/interface-transport'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
 import { DialQueue } from './dial-queue.js'
@@ -24,6 +23,7 @@ import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import type { PendingDial } from '../libp2p.js'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:connection-manager')
 
@@ -143,10 +143,10 @@ const defaultOptions = {
 export interface DefaultConnectionManagerComponents {
   peerId: PeerId
   metrics?: Metrics
-  upgrader: Upgrader
   peerStore: PeerStore
   transportManager: TransportManager
   connectionGater: ConnectionGater
+  events: EventEmitter<Libp2pEvents>
 }
 
 export interface OpenConnectionOptions extends AbortOptions {
@@ -156,7 +156,7 @@ export interface OpenConnectionOptions extends AbortOptions {
 /**
  * Responsible for managing known connections.
  */
-export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEvents> implements ConnectionManager, Startable {
+export class DefaultConnectionManager implements ConnectionManager, Startable {
   private started: boolean
   private readonly connections: PeerMap<Connection[]>
   private readonly allow: Multiaddr[]
@@ -172,10 +172,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
   private readonly peerStore: PeerStore
   private readonly metrics?: Metrics
+  private readonly events: EventEmitter<Libp2pEvents>
 
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
-    super()
-
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
     const minConnections = init.minConnections ?? defaultOptions.minConnections
 
@@ -189,17 +188,14 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     this.connections = new PeerMap()
 
     this.started = false
-
-    try {
-      // This emitter gets listened to a lot
-      setMaxListeners?.(Infinity, this)
-    } catch {}
-
     this.peerStore = components.peerStore
     this.metrics = components.metrics
+    this.events = components.events
 
     this.onConnect = this.onConnect.bind(this)
     this.onDisconnect = this.onDisconnect.bind(this)
+    this.events.addEventListener('connection:open', this.onConnect)
+    this.events.addEventListener('connection:close', this.onDisconnect)
 
     // allow/deny lists
     this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
@@ -217,34 +213,22 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
     // controls what happens when we don't have enough connections
     this.autoDial = new AutoDial({
       connectionManager: this,
-      peerStore: components.peerStore
+      peerStore: components.peerStore,
+      events: components.events
     }, {
       minConnections,
       autoDialConcurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency,
       autoDialPriority: init.autoDialPriority ?? defaultOptions.autoDialPriority
     })
-    // check the min connection limit whenever a peer disconnects
-    this.addEventListener('peer:disconnect', () => {
-      this.autoDial.autoDial()
-        .catch(err => {
-          log.error(err)
-        })
-    })
 
     // controls what happens when we have too many connections
     this.connectionPruner = new ConnectionPruner({
       connectionManager: this,
-      peerStore: components.peerStore
+      peerStore: components.peerStore,
+      events: components.events
     }, {
       maxConnections: this.maxConnections,
       allow: this.allow
-    })
-    // check the max connection limit whenever a peer connects
-    this.addEventListener('peer:connect', () => {
-      this.connectionPruner.maybePruneConnections()
-        .catch(err => {
-          log.error(err)
-        })
     })
 
     this.dialQueue = new DialQueue({
@@ -262,9 +246,6 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
         dnsaddr: dnsaddrResolver
       }
     })
-
-    components.upgrader.addEventListener('connection', this.onConnect)
-    components.upgrader.addEventListener('connectionEnd', this.onDisconnect)
   }
 
   isStarted (): boolean {
@@ -439,10 +420,12 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
 
     const peerId = connection.remotePeer
     const storedConns = this.connections.get(peerId)
+    let isNewPeer = false
 
     if (storedConns != null) {
       storedConns.push(connection)
     } else {
+      isNewPeer = true
       this.connections.set(peerId, [connection])
     }
 
@@ -450,7 +433,9 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       await this.peerStore.keyBook.set(peerId, peerId.publicKey)
     }
 
-    this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: connection }))
+    if (isNewPeer) {
+      this.events.safeDispatchEvent('peer:connect', { detail: connection.remotePeer })
+    }
   }
 
   /**
@@ -472,7 +457,7 @@ export class DefaultConnectionManager extends EventEmitter<ConnectionManagerEven
       this.connections.set(peerId, storedConn)
     } else if (storedConn != null) {
       this.connections.delete(peerId)
-      this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: connection }))
+      this.events.safeDispatchEvent('peer:disconnect', { detail: connection.remotePeer })
     }
   }
 

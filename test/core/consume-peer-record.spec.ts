@@ -28,12 +28,11 @@ describe('Consume peer record', () => {
     await libp2p.stop()
   })
 
-  it('should consume peer record when observed addrs are confirmed', async () => {
+  it('should update addresses when observed addrs are confirmed', async () => {
     let done: () => void
 
-    libp2p.components.peerStore.addressBook.consumePeerRecord = async () => {
+    libp2p.components.peerStore.addressBook.set = async () => {
       done()
-      return true
     }
 
     const p = new Promise<void>(resolve => {

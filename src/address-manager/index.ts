@@ -1,10 +1,12 @@
-import type { AddressManagerEvents } from '@libp2p/interface-address-manager'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { TransportManager } from '@libp2p/interface-transport'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import { logger } from '@libp2p/logger'
+
+const log = logger('libp2p:address-manager')
 
 export interface AddressManagerInit {
   /**
@@ -32,6 +34,7 @@ export interface AddressManagerInit {
 export interface DefaultAddressManagerComponents {
   peerId: PeerId
   transportManager: TransportManager
+  peerStore: PeerStore
 }
 
 /**
@@ -67,7 +70,7 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
   return ma
 }
 
-export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
+export class DefaultAddressManager {
   private readonly components: DefaultAddressManagerComponents
   // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
   private readonly listen: string[]
@@ -81,9 +84,7 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
    * The listen addresses will be used by the libp2p transports to listen for new connections,
    * while the announce addresses will be used for the peer addresses' to other peers in the network.
    */
-  constructor (components: DefaultAddressManagerComponents, init: AddressManagerInit) {
-    super()
-
+  constructor (components: DefaultAddressManagerComponents, init: AddressManagerInit = {}) {
     const { listen = [], announce = [] } = init
 
     this.components = components
@@ -145,9 +146,10 @@ export class DefaultAddressManager extends EventEmitter<AddressManagerEvents> {
       confident: true
     })
 
-    // only trigger the change:addresses event if our confidence in an address has changed
+    // only trigger the 'self:peer:update' event if our confidence in an address has changed
     if (!startingConfidence) {
-      this.dispatchEvent(new CustomEvent('change:addresses'))
+      this.components.peerStore.addressBook.set(this.components.peerId, this.getAddresses())
+        .catch(err => { log.error('error updating addresses', err) })
     }
   }
 
