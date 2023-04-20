@@ -50,17 +50,9 @@ import type { Datastore } from 'interface-datastore'
 import type { KeyChain } from '@libp2p/interface-keychain'
 import mergeOptions from 'merge-options'
 import type { CircuitRelayService } from './circuit-relay/index.js'
+import type { PendingDial } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p')
-
-export type PendingDialStatus = 'queued' | 'active' | 'error' | 'success'
-
-export interface PendingDial {
-  id: string
-  status: PendingDialStatus
-  peerId?: PeerId
-  multiaddrs: Multiaddr[]
-}
 
 export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   public peerId: PeerId
