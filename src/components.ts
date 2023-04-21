@@ -1,5 +1,5 @@
-import errCode from 'err-code'
-import type { ConnectionGater, ConnectionProtector } from '@libp2p/interface-connection'
+import { CodeError } from '@libp2p/interfaces/errors'
+import type { ConnectionProtector } from '@libp2p/interface-connection'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import { isStartable, Startable } from '@libp2p/interfaces/startable'
@@ -12,7 +12,8 @@ import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { Datastore } from 'interface-datastore'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { DualDHT } from '@libp2p/interface-dht'
-import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 export interface Components {
   peerId: PeerId
@@ -27,7 +28,6 @@ export interface Components {
   peerRouting: PeerRouting
   datastore: Datastore
   connectionProtector?: ConnectionProtector
-  dialer: Dialer
   metrics?: Metrics
   dht?: DualDHT
   pubsub?: PubSub
@@ -49,7 +49,6 @@ export interface ComponentsInit {
   connectionProtector?: ConnectionProtector
   dht?: DualDHT
   pubsub?: PubSub
-  dialer?: Dialer
 }
 
 export class DefaultComponents implements Components, Startable {
@@ -68,7 +67,6 @@ export class DefaultComponents implements Components, Startable {
   private _connectionProtector?: ConnectionProtector
   private _dht?: DualDHT
   private _pubsub?: PubSub
-  private _dialer?: Dialer
   private _started = false
 
   constructor (init: ComponentsInit = {}) {
@@ -87,14 +85,13 @@ export class DefaultComponents implements Components, Startable {
     this._connectionProtector = init.connectionProtector
     this._dht = init.dht
     this._pubsub = init.pubsub
-    this._dialer = init.dialer
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this._started
   }
 
-  async beforeStart () {
+  async beforeStart (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.beforeStart != null) {
@@ -104,7 +101,7 @@ export class DefaultComponents implements Components, Startable {
     )
   }
 
-  async start () {
+  async start (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         await startable.start()
@@ -114,7 +111,7 @@ export class DefaultComponents implements Components, Startable {
     this._started = true
   }
 
-  async afterStart () {
+  async afterStart (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.afterStart != null) {
@@ -124,7 +121,7 @@ export class DefaultComponents implements Components, Startable {
     )
   }
 
-  async beforeStop () {
+  async beforeStop (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.beforeStop != null) {
@@ -134,7 +131,7 @@ export class DefaultComponents implements Components, Startable {
     )
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         await startable.stop()
@@ -144,7 +141,7 @@ export class DefaultComponents implements Components, Startable {
     this._started = false
   }
 
-  async afterStop () {
+  async afterStop (): Promise<void> {
     await Promise.all(
       Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
         if (startable.afterStop != null) {
@@ -156,7 +153,7 @@ export class DefaultComponents implements Components, Startable {
 
   get peerId (): PeerId {
     if (this._peerId == null) {
-      throw errCode(new Error('peerId not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('peerId not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._peerId
@@ -168,7 +165,7 @@ export class DefaultComponents implements Components, Startable {
 
   get addressManager (): AddressManager {
     if (this._addressManager == null) {
-      throw errCode(new Error('addressManager not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('addressManager not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._addressManager
@@ -180,7 +177,7 @@ export class DefaultComponents implements Components, Startable {
 
   get peerStore (): PeerStore {
     if (this._peerStore == null) {
-      throw errCode(new Error('peerStore not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('peerStore not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._peerStore
@@ -192,7 +189,7 @@ export class DefaultComponents implements Components, Startable {
 
   get upgrader (): Upgrader {
     if (this._upgrader == null) {
-      throw errCode(new Error('upgrader not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('upgrader not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._upgrader
@@ -204,7 +201,7 @@ export class DefaultComponents implements Components, Startable {
 
   get registrar (): Registrar {
     if (this._registrar == null) {
-      throw errCode(new Error('registrar not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('registrar not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._registrar
@@ -216,7 +213,7 @@ export class DefaultComponents implements Components, Startable {
 
   get connectionManager (): ConnectionManager {
     if (this._connectionManager == null) {
-      throw errCode(new Error('connectionManager not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('connectionManager not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._connectionManager
@@ -228,7 +225,7 @@ export class DefaultComponents implements Components, Startable {
 
   get transportManager (): TransportManager {
     if (this._transportManager == null) {
-      throw errCode(new Error('transportManager not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('transportManager not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._transportManager
@@ -240,7 +237,7 @@ export class DefaultComponents implements Components, Startable {
 
   get connectionGater (): ConnectionGater {
     if (this._connectionGater == null) {
-      throw errCode(new Error('connectionGater not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('connectionGater not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._connectionGater
@@ -252,7 +249,7 @@ export class DefaultComponents implements Components, Startable {
 
   get contentRouting (): ContentRouting {
     if (this._contentRouting == null) {
-      throw errCode(new Error('contentRouting not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('contentRouting not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._contentRouting
@@ -264,7 +261,7 @@ export class DefaultComponents implements Components, Startable {
 
   get peerRouting (): PeerRouting {
     if (this._peerRouting == null) {
-      throw errCode(new Error('peerRouting not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('peerRouting not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._peerRouting
@@ -276,7 +273,7 @@ export class DefaultComponents implements Components, Startable {
 
   get datastore (): Datastore {
     if (this._datastore == null) {
-      throw errCode(new Error('datastore not set'), 'ERR_SERVICE_MISSING')
+      throw new CodeError('datastore not set', 'ERR_SERVICE_MISSING')
     }
 
     return this._datastore
@@ -292,18 +289,6 @@ export class DefaultComponents implements Components, Startable {
 
   set connectionProtector (connectionProtector: ConnectionProtector | undefined) {
     this._connectionProtector = connectionProtector
-  }
-
-  get dialer (): Dialer {
-    if (this._dialer == null) {
-      throw errCode(new Error('dialer not set'), 'ERR_SERVICE_MISSING')
-    }
-
-    return this._dialer
-  }
-
-  set dialer (dialer: Dialer) {
-    this._dialer = dialer
   }
 
   get metrics (): Metrics | undefined {

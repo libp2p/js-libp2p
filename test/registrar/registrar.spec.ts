@@ -21,6 +21,9 @@ import { webSockets } from '@libp2p/websockets'
 import { mplex } from '@libp2p/mplex'
 import type { PeerProtocolsChangeData } from '@libp2p/interface-peer-store'
 import { DefaultComponents } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 const protocol = '/test/1.0.0'
 
@@ -38,13 +41,14 @@ describe('registrar', () => {
       components = new DefaultComponents({
         peerId,
         datastore: new MemoryDatastore(),
-        upgrader: mockUpgrader()
+        upgrader: mockUpgrader(),
+        transportManager: stubInterface<TransportManager>(),
+        connectionGater: stubInterface<ConnectionGater>()
       })
       components.peerStore = new PersistentPeerStore(components)
       components.connectionManager = new DefaultConnectionManager(components, {
         minConnections: 50,
         maxConnections: 1000,
-        autoDialInterval: 1000,
         inboundUpgradeTimeout: 1000
       })
       registrar = new DefaultRegistrar(components)
@@ -75,7 +79,7 @@ describe('registrar', () => {
       })
     })
 
-    afterEach(async () => await libp2p.stop())
+    afterEach(async () => { await libp2p.stop() })
 
     it('should be able to register a protocol', async () => {
       const topology = createTopology({
@@ -143,13 +147,13 @@ describe('registrar', () => {
       await libp2p.peerStore.protoBook.set(remotePeerId, [protocol])
 
       // remote peer connects
-      await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
+      libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
       }))
       await onConnectDefer.promise
       // remote peer disconnects
       await conn.close()
-      await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
+      libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
         detail: conn
       }))
       await onDisconnectDefer.promise
@@ -181,12 +185,12 @@ describe('registrar', () => {
       await libp2p.peerStore.protoBook.set(remotePeerId, [])
 
       // remote peer connects
-      await libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
+      libp2p.components.upgrader.dispatchEvent(new CustomEvent<Connection>('connection', {
         detail: conn
       }))
 
       // identify completes
-      await libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+      libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
         detail: {
           peerId: conn.remotePeer,
           protocols: [protocol],
@@ -197,7 +201,7 @@ describe('registrar', () => {
       await onConnectDefer.promise
 
       // Peer no longer supports the protocol our topology is registered for
-      await libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
+      libp2p.components.peerStore.dispatchEvent(new CustomEvent<PeerProtocolsChangeData>('change:protocols', {
         detail: {
           peerId: conn.remotePeer,
           protocols: [],
@@ -226,7 +230,7 @@ describe('registrar', () => {
 
       expect(registrar.getProtocols()).to.not.have.any.keys(['/echo/1.0.0', '/echo/1.0.1'])
 
-      const echoHandler = () => {}
+      const echoHandler = (): void => {}
       await libp2p.handle(['/echo/1.0.0', '/echo/1.0.1'], echoHandler)
       expect(registrar.getHandler('/echo/1.0.0')).to.have.property('handler', echoHandler)
       expect(registrar.getHandler('/echo/1.0.1')).to.have.property('handler', echoHandler)

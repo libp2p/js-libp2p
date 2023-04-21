@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from '../errors.js'
 import { randomBytes } from '@libp2p/crypto'
 import { pipe } from 'it-pipe'
@@ -47,7 +47,7 @@ export class PingService implements Startable {
     this.init = init
   }
 
-  async start () {
+  async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, this.handleMessage, {
       maxInboundStreams: this.init.maxInboundStreams,
       maxOutboundStreams: this.init.maxOutboundStreams
@@ -55,19 +55,19 @@ export class PingService implements Startable {
     this.started = true
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     await this.components.registrar.unhandle(this.protocol)
     this.started = false
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * A handler to register with Libp2p to process ping messages
    */
-  handleMessage (data: IncomingStreamData) {
+  handleMessage (data: IncomingStreamData): void {
     const { stream } = data
 
     void pipe(stream, stream)
@@ -119,7 +119,7 @@ export class PingService implements Startable {
       const end = Date.now()
 
       if (result == null || !uint8ArrayEquals(data, result.subarray())) {
-        throw errCode(new Error('Received wrong ping ack'), codes.ERR_WRONG_PING_ACK)
+        throw new CodeError('Received wrong ping ack', codes.ERR_WRONG_PING_ACK)
       }
 
       return end - start

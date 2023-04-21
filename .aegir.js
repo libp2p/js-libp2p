@@ -16,6 +16,7 @@ export default {
       const { MULTIADDRS_WEBSOCKETS } = await import('./dist/test/fixtures/browser.js')
       const { plaintext } = await import('./dist/src/insecure/index.js')
       const { default: Peers } = await import('./dist/test/fixtures/peers.js')
+      const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
 
       // Use the last peer
       const peerId = await createFromJSON(Peers[Peers.length - 1])
@@ -28,6 +29,7 @@ export default {
         },
         peerId,
         transports: [
+          circuitRelayTransport(),
           webSockets()
         ],
         streamMuxers: [
@@ -37,13 +39,7 @@ export default {
           noise(),
           plaintext()
         ],
-        relay: {
-          enabled: true,
-          hop: {
-            enabled: true,
-            active: false
-          }
-        },
+        relay: circuitRelayServer(),
         nat: {
           enabled: false
         }

@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface FetchRequest {
   identifier: string
@@ -21,7 +22,7 @@ export namespace FetchRequest {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || obj.identifier !== '') {
+        if ((obj.identifier != null && obj.identifier !== '')) {
           w.uint32(10)
           w.string(obj.identifier)
         }
@@ -56,7 +57,7 @@ export namespace FetchRequest {
     return _codec
   }
 
-  export const encode = (obj: FetchRequest): Uint8Array => {
+  export const encode = (obj: Partial<FetchRequest>): Uint8Array => {
     return encodeMessage(obj, FetchRequest.codec())
   }
 
@@ -84,7 +85,7 @@ export namespace FetchResponse {
   }
 
   export namespace StatusCode {
-    export const codec = () => {
+    export const codec = (): Codec<StatusCode> => {
       return enumeration<StatusCode>(__StatusCodeValues)
     }
   }
@@ -98,12 +99,12 @@ export namespace FetchResponse {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.status != null && __StatusCodeValues[obj.status] !== 0)) {
+        if (obj.status != null && __StatusCodeValues[obj.status] !== 0) {
           w.uint32(8)
           FetchResponse.StatusCode.codec().encode(obj.status, w)
         }
 
-        if (opts.writeDefaults === true || (obj.data != null && obj.data.byteLength > 0)) {
+        if ((obj.data != null && obj.data.byteLength > 0)) {
           w.uint32(18)
           w.bytes(obj.data)
         }
@@ -142,7 +143,7 @@ export namespace FetchResponse {
     return _codec
   }
 
-  export const encode = (obj: FetchResponse): Uint8Array => {
+  export const encode = (obj: Partial<FetchResponse>): Uint8Array => {
     return encodeMessage(obj, FetchResponse.codec())
   }
 

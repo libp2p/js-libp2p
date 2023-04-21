@@ -152,7 +152,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
+          # breaking changes should rev the minor (remove after v1)
           bump-minor-pre-major: true
+          # features should rev the patch (remove after v1)
+          bump-patch-for-minor-pre-major: true
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0

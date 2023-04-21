@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes, messages } from './errors.js'
 import {
   storeAddresses,
@@ -76,14 +76,14 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
     this._findClosestPeersTask = this._findClosestPeersTask.bind(this)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
   /**
    * Start peer routing service.
    */
-  async start () {
+  async start (): Promise<void> {
     if (this.started || this.routers.length === 0 || this.timeoutId != null || this.refreshManagerInit.enabled === false) {
       return
     }
@@ -98,7 +98,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
   /**
    * Recurrent task to find closest peers and add their addresses to the Address Book.
    */
-  async _findClosestPeersTask () {
+  async _findClosestPeersTask (): Promise<void> {
     if (this.abortController != null) {
       // we are already running the query
       return
@@ -127,7 +127,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
   /**
    * Stop peer routing service.
    */
-  async stop () {
+  async stop (): Promise<void> {
     clearDelayedInterval(this.timeoutId)
 
     // abort query if it is in-flight
@@ -141,11 +141,11 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
    */
   async findPeer (id: PeerId, options?: AbortOptions): Promise<PeerInfo> {
     if (this.routers.length === 0) {
-      throw errCode(new Error('No peer routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     if (id.toString() === this.components.peerId.toString()) {
-      throw errCode(new Error('Should not try to find self'), codes.ERR_FIND_SELF)
+      throw new CodeError('Should not try to find self', codes.ERR_FIND_SELF)
     }
 
     const output = await pipe(
@@ -167,7 +167,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       return output
     }
 
-    throw errCode(new Error(messages.NOT_FOUND), codes.ERR_NOT_FOUND)
+    throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
   }
 
   /**
@@ -175,7 +175,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
    */
   async * getClosestPeers (key: Uint8Array, options?: AbortOptions): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
-      throw errCode(new Error('No peer routers available'), codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     yield * pipe(

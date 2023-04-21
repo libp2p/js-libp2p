@@ -6,7 +6,6 @@ import { mplex } from '@libp2p/mplex'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import all from 'it-all'
-import pSettle from 'p-settle'
 import { webSockets } from '@libp2p/websockets'
 import { preSharedKey } from '../../src/pnet/index.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -187,7 +186,7 @@ describe('Upgrader', () => {
     // Verify the MultiaddrConnection close method is called
     const inboundCloseSpy = sinon.spy(inbound, 'close')
     const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(inboundCloseSpy.callCount).to.equal(1)
     expect(outboundCloseSpy.callCount).to.equal(1)
   })
@@ -255,7 +254,7 @@ describe('Upgrader', () => {
     })
 
     // Wait for the results of each side of the connection
-    const results = await pSettle([
+    const results = await Promise.allSettled([
       localUpgrader.upgradeOutbound(outbound),
       remoteUpgrader.upgradeInbound(inbound)
     ])
@@ -263,7 +262,7 @@ describe('Upgrader', () => {
     // Ensure both sides fail
     expect(results).to.have.length(2)
     results.forEach(result => {
-      expect(result).to.have.property('isRejected', true)
+      expect(result).to.have.property('status', 'rejected')
       expect(result).to.have.nested.property('reason.code', codes.ERR_ENCRYPTION_FAILED)
     })
   })
@@ -278,9 +277,12 @@ describe('Upgrader', () => {
         throw new Error('Not implemented')
       }
 
-      source = []
-      async sink () {}
-      close () {}
+      source = (async function * () {
+        yield * []
+      })()
+
+      async sink (): Promise<void> {}
+      close (): void {}
     }
 
     class OtherMuxerFactory implements StreamMuxerFactory {
@@ -311,7 +313,7 @@ describe('Upgrader', () => {
     })
 
     // Wait for the results of each side of the connection
-    const results = await pSettle([
+    const results = await Promise.allSettled([
       localUpgrader.upgradeOutbound(outbound),
       remoteUpgrader.upgradeInbound(inbound)
     ])
@@ -319,7 +321,7 @@ describe('Upgrader', () => {
     // Ensure both sides fail
     expect(results).to.have.length(2)
     results.forEach(result => {
-      expect(result).to.have.property('isRejected', true)
+      expect(result).to.have.property('status', 'rejected')
       expect(result).to.have.nested.property('reason.code', codes.ERR_MUXER_UNAVAILABLE)
     })
   })
@@ -345,7 +347,7 @@ describe('Upgrader', () => {
     // Verify the MultiaddrConnection close method is called
     const inboundCloseSpy = sinon.spy(inbound, 'close')
     const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(inboundCloseSpy.callCount).to.equal(1)
     expect(outboundCloseSpy.callCount).to.equal(1)
   })
@@ -383,7 +385,7 @@ describe('Upgrader', () => {
     ])
 
     // Verify onConnectionEnd is called with the connection
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
 
     await Promise.all([
       localConnectionEndEventReceived.promise,
@@ -401,13 +403,13 @@ describe('Upgrader', () => {
 
     expect(connections).to.have.length(2)
 
-    const results = await pSettle([
+    const results = await Promise.allSettled([
       connections[0].newStream('/unsupported/1.0.0'),
       connections[1].newStream('/unsupported/1.0.0')
     ])
     expect(results).to.have.length(2)
     results.forEach(result => {
-      expect(result).to.have.property('isRejected', true)
+      expect(result).to.have.property('status', 'rejected')
       expect(result).to.have.nested.property('reason.code', codes.ERR_UNSUPPORTED_PROTOCOL)
     })
   })
@@ -594,7 +596,7 @@ describe('libp2p.upgrader', () => {
       ]
     })
     await libp2p.start()
-    const echoHandler = () => {}
+    const echoHandler = (): void => {}
     await libp2p.handle(['/echo/1.0.0'], echoHandler)
 
     remoteLibp2p = await createLibp2pNode({
@@ -676,7 +678,7 @@ describe('libp2p.upgrader', () => {
     expect(remotePeer.equals(event.detail.remotePeer)).to.equal(true)
 
     // Close and check the disconnect event
-    await Promise.all(connections.map(async conn => await conn.close()))
+    await Promise.all(connections.map(async conn => { await conn.close() }))
     expect(connectionManagerDispatchEventSpy.callCount).to.equal(2)
     ;([event] = connectionManagerDispatchEventSpy.getCall(1).args)
     expect(event).to.have.property('type', 'peer:disconnect')

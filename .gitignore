@@ -7,3 +7,4 @@ yarn.lock
 
 # IDE
 .DS_STORE
+.vscode

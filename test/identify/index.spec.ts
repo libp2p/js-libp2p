@@ -29,6 +29,8 @@ import { TimeoutController } from 'timeout-abort-controller'
 import { CustomEvent } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 import { DefaultComponents } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -46,7 +48,7 @@ const defaultInit: IdentifyServiceInit = {
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
-async function createComponents (index: number) {
+async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
   const components = new DefaultComponents({
@@ -54,13 +56,13 @@ async function createComponents (index: number) {
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
     upgrader: mockUpgrader(),
+    transportManager: stubInterface<TransportManager>(),
     connectionGater: mockConnectionGater()
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
     minConnections: 50,
     maxConnections: 1000,
-    autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
   })
   components.addressManager = new DefaultAddressManager(components, {
@@ -115,7 +117,7 @@ describe('identify', () => {
     const localProtoBookSetSpy = sinon.spy(localComponents.peerStore.protoBook, 'set')
 
     // Make sure the remote peer has a peer record to share during identify
-    await remotePeerRecordUpdater.update()
+    remotePeerRecordUpdater.update()
 
     // Run identify
     await localIdentify.identify(localToRemote)
@@ -139,7 +141,7 @@ describe('identify', () => {
       ...defaultInit,
       protocolPrefix: 'ipfs',
       host: {
-        agentVersion: agentVersion
+        agentVersion
       }
     })
     await start(localIdentify)
@@ -147,7 +149,7 @@ describe('identify', () => {
       ...defaultInit,
       protocolPrefix: 'ipfs',
       host: {
-        agentVersion: agentVersion
+        agentVersion
       }
     })
     await start(remoteIdentify)
@@ -201,7 +203,7 @@ describe('identify', () => {
 
         await pipe(
           [message],
-          lp.encode(),
+          (source) => lp.encode(source),
           stream,
           drain
         )
@@ -303,9 +305,9 @@ describe('identify', () => {
       void Promise.resolve().then(async () => {
         await pipe(
           [data],
-          lp.encode(),
+          (source) => lp.encode(source),
           stream,
-          async (source) => await drain(source)
+          async (source) => { await drain(source) }
         )
 
         deferred.resolve()
@@ -349,7 +351,7 @@ describe('identify', () => {
       void Promise.resolve().then(async () => {
         await pipe(
           [data],
-          lp.encode(),
+          (source) => lp.encode(source),
           async (source) => {
             await stream.sink(async function * () {
               for await (const buf of source) {

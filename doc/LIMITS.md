@@ -9,7 +9,6 @@ This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_atta
 - [Connection limits](#connection-limits)
 - [Closing connections](#closing-connections)
 - [Inbound connection threshold](#inbound-connection-threshold)
-- [Data transfer and Event Loop limits](#data-transfer-and-event-loop-limits)
 - [Stream limits](#stream-limits)
   - [Mplex](#mplex)
   - [Yamux](#yamux)
@@ -84,59 +83,6 @@ const node = await createLibp2pNode({
   },
 });
 
-export {};
-```
-
-## Data transfer and Event Loop limits
-
-If metrics are enabled the node will track the amount of data being sent to and from the network. If the rate of data sent is over the threshold connections will be trimmed to free up resources. The default rate is `Ininity` so this must be explicitly enabled.
-
-Connections may also be trimmed if [event loop](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick) latency exceeds the configured limit.
-
-All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
-
-```ts
-const node = await createLibp2pNode({
-  metrics: {
-    enabled: true,
-  },
-  connectionManager: {
-    /**
-     * If the node transfers more than this amount of data in bytes/second
-     * connections to untagged peers or those not in the allow list may be
-     * closed.
-     *
-     * It is bytes per second.
-     */
-    maxData: number,
-
-    /**
-     * If the node sends more than this amount of data in bytes/second
-     * connections to untagged peers or those not in the allow list may be
-     * closed.
-     *
-     * It is bytes per second.
-     */
-    maxSentData: number,
-
-    /**
-     * If the node receives more than this amount of data in bytes/second
-     * connections to untagged peers or those not in the allow list may be
-     * closed.
-     *
-     * It is bytes per second.
-     */
-    maxReceivedData: number,
-
-    /**
-     * If the event loop takes longer than this many ms to run, connections
-     * to untagged peers or those not in the allow list may be closed.
-     *
-     * It is milliseconds.
-     */
-    maxEventLoopDelay: number,
-  },
-});
 export {};
 ```
 
