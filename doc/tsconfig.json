@@ -11,7 +11,7 @@
     "strict": true /* Enable all strict type-checking options. */,
     /* Completeness */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "noImplicitAny": false,
-    "isolatedModules": false
+    "noImplicitAny": true,
+    "isolatedModules": true
   }
 }

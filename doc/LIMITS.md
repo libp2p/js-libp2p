@@ -29,27 +29,28 @@ We can also limit the number of connections in a "pending" state. These connecti
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
+import { createLibp2p } from 'libp2p'
+
+const node = await createLibp2p({
   connectionManager: {
     /**
      * The total number of connections allowed to be open at one time
      */
-    maxConnections: number,
+    maxConnections: 100,
 
     /**
      * If the number of open connections goes below this number, the node
      * will try to connect to randomly selected peers from the peer store
      */
-    minConnections: number,
+    minConnections: 50,
 
     /**
      * How many connections can be open but not yet upgraded
      */
-    maxIncomingPendingConnections: number,
+    maxIncomingPendingConnections: 100,
   },
 });
 
-export {};
 ```
 
 ## Closing connections
@@ -57,13 +58,21 @@ export {};
 When choosing connections to close the connection manager sorts the list of connections by the value derived from the tags given to each peer. The values of all tags are summed and connections with lower valued peers are eligible for closing first. If there are tags with equal values, the shortest-lived connection will be closed first.
 
 ```ts
+import { createLibp2p } from 'libp2p'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+
+
+const libp2p = await createLibp2p({})
+
+const peerId = await createEd25519PeerId()
+
 // tag a peer
 await libp2p.peerStore.tagPeer(peerId, "my-tag", {
   value: 50, // 0-100 is the typical value range
   ttl: 1000, // optional field, this tag will be deleted after this many ms
 });
 
-export {};
+
 ```
 
 ## Inbound connection threshold
@@ -73,17 +82,19 @@ To prevent individual peers from opening multiple connections to a node, an `inb
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
+import { createLibp2p } from 'libp2p'
+
+const node = await createLibp2p({
   connectionManager: {
     /**
      * A remote peer may attempt to open up to this many connections per second,
      * any more than that will be automatically rejected
      */
-    inboundConnectionThreshold: number,
+    inboundConnectionThreshold: 100,
   },
 });
 
-export {};
+
 ```
 
 ## Stream limits
@@ -99,38 +110,41 @@ These settings are done on a per-muxer basis, please see the README of the relev
 All fields are optional. The default values are defined in [@libp2p/mplex/src/mplex.ts](https://github.com/libp2p/js-libp2p-mplex/blob/master/src/mplex.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
-  muxers: [
+import { createLibp2p } from 'libp2p'
+import { mplex } from '@libp2p/mplex'
+
+const node = await createLibp2p({
+  streamMuxers: [
     mplex({
       /**
        * The total number of inbound protocol streams that can be opened on a given connection
        */
-      maxInboundStreams: number,
+      maxInboundStreams: 100,
 
       /**
        * The total number of outbound protocol streams that can be opened on a given connection
        */
-      maxOutboundStreams: number,
+      maxOutboundStreams: 100,
 
       /**
        * How much incoming data in bytes to buffer while attempting to parse messages - peers sending many small messages in batches may cause this buffer to grow
        */
-      maxUnprocessedMessageQueueSize: number,
+      maxUnprocessedMessageQueueSize: 50,
 
       /**
        * How much message data in bytes to buffer after parsing - slow stream consumers may cause this buffer to grow
        */
-      maxStreamBufferSize: number,
+      maxStreamBufferSize: 20,
 
       /**
        * Mplex does not support backpressure so to protect ourselves, if `maxInboundStreams` is
        * hit and the remote opens more than this many streams per second, close the connection
        */
-      disconnectThreshold: number,
+      disconnectThreshold: 20,
     }),
   ],
 });
-export {};
+
 ```
 
 ### Yamux
@@ -140,27 +154,30 @@ export {};
 All fields are optional. The default values are defined in [@chainsafe/libp2p-yamux/src/config.ts](https://github.com/ChainSafe/js-libp2p-yamux/blob/master/src/config.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({
-  muxers: [
+import { createLibp2p } from 'libp2p'
+import { yamux } from '@chainsafe/libp2p-yamux'
+
+const node = await createLibp2p({
+  streamMuxers: [
     yamux({
       /**
        * The total number of inbound protocol streams that can be opened on a given connection
        *
        * This field is optional, the default value is shown
        */
-      maxInboundStreams: number,
+      maxInboundStreams: 100,
 
       /**
        * The total number of outbound protocol streams that can be opened on a given connection
        *
        * This field is optional, the default value is shown
        */
-      maxOutboundStreams: number,
+      maxOutboundStreams: 100,
     }),
   ],
 });
 
-export {};
+
 ```
 
 ### Protocol limits
@@ -174,7 +191,9 @@ Since incoming stream data is buffered until it is consumed, you should attempt 
 All fields are optional. The default values are defined in [src/registrar.ts](https://github.com/libp2p/js-libp2p/blob/master/src/registrar.ts) - please see that file for the current values.
 
 ```ts
-const node = await createLibp2pNode({});
+import { createLibp2p } from "libp2p";
+
+const node = await createLibp2p({});
 
 node.handle(
   "/my-protocol/1.0.0",
@@ -182,11 +201,11 @@ node.handle(
     // ..handle stream
   },
   {
-    maxInboundStreams: number,
-    maxOutboundStreams: number,
+    maxInboundStreams: 100,
+    maxOutboundStreams: 100,
   }
 );
-export {};
+
 ```
 
 ## Transport specific limits
@@ -202,30 +221,33 @@ The [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) transport allows addi
 All fields are optional. The full list of options is defined in [@libp2p/tcp/src/index.ts](https://github.com/libp2p/js-libp2p-tcp/blob/master/src/index.ts) - please see that file for more details.
 
 ```ts
-const node = await createLibp2pNode({
+import { createLibp2p } from 'libp2p'
+import {tcp } from '@libp2p/tcp'
+
+const node = await createLibp2p({
   transports: [
     tcp({
       /**
        * Inbound connections with no activity in this time frame (ms) will be closed
        */
-      inboundSocketInactivityTimeout: number,
+      inboundSocketInactivityTimeout: 20,
 
       /**
        * Outbound connections with no activity in this time frame (ms) will be closed
        */
-      outboundSocketInactivityTimeout: number,
+      outboundSocketInactivityTimeout: 20,
 
       /**
        * Once this many connections are open on this listener any further connections
        * will be rejected - this will have no effect if it is larger than the value
        * configured for the ConnectionManager maxConnections parameter
        */
-      maxConnections: number,
+      maxConnections: 50,
     }),
   ],
 });
 
-export {};
+
 ```
 
 ## Allow/deny lists
@@ -233,7 +255,9 @@ export {};
 It is possible to configure some hosts to always accept connections from and some to always reject connections from.
 
 ```ts
-const node = await createLibp2pNode({
+import { createLibp2p } from 'libp2p'
+
+const node = await createLibp2p({
   connectionManager: {
     /**
      * A list of multiaddrs, any connection with a `remoteAddress` property
@@ -260,7 +284,7 @@ const node = await createLibp2pNode({
   },
 });
 
-export {};
+
 ```
 
 ## How much memory will be used for buffering?
