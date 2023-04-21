@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.5...v1.1.6) (2023-04-21)
+
+
+### Bug Fixes
+
+* readme: Remove confusing section ([#122](https://github.com/libp2p/js-libp2p-webrtc/issues/122)) ([dc78154](https://github.com/libp2p/js-libp2p-webrtc/commit/dc781543b8175c6c40c6745029a4ba53587aef29))
+
 ## [1.1.5](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.4...v1.1.5) (2023-04-13)
 
 
