@@ -1,3 +1,10 @@
+## [3.0.11](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.10...v3.0.11) (2023-04-24)
+
+
+### Dependencies
+
+* bump @libp2p/interface-peer-store from 1.2.9 to 2.0.0 ([#91](https://github.com/libp2p/js-libp2p-utils/issues/91)) ([c7569d7](https://github.com/libp2p/js-libp2p-utils/commit/c7569d77a56d5fc3a5323c89ba93230206c35d2b))
+
 ## [3.0.10](https://github.com/libp2p/js-libp2p-utils/compare/v3.0.9...v3.0.10) (2023-04-18)
 
 
