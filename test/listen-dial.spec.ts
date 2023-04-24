@@ -10,6 +10,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Transport, Upgrader } from '@libp2p/interface-transport'
 import pDefer from 'p-defer'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 const isCI = process.env.CI
 
@@ -20,7 +21,9 @@ describe('listen', () => {
 
   beforeEach(() => {
     transport = tcp()()
-    upgrader = mockUpgrader()
+    upgrader = mockUpgrader({
+      events: new EventEmitter()
+    })
   })
 
   afterEach(async () => {
@@ -171,7 +174,8 @@ describe('dial', () => {
       )
     })
     upgrader = mockUpgrader({
-      registrar
+      registrar,
+      events: new EventEmitter()
     })
 
     transport = tcp()()

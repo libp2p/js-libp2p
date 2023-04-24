@@ -4,6 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Transport, Upgrader } from '@libp2p/interface-transport'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 describe('valid localAddr and remoteAddr', () => {
   let transport: Transport
@@ -11,7 +12,9 @@ describe('valid localAddr and remoteAddr', () => {
 
   beforeEach(() => {
     transport = tcp()()
-    upgrader = mockUpgrader()
+    upgrader = mockUpgrader({
+      events: new EventEmitter()
+    })
   })
 
   const ma = multiaddr('/ip4/127.0.0.1/tcp/0')

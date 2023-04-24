@@ -5,6 +5,7 @@ import { mockUpgrader } from '@libp2p/interface-mocks'
 import { multiaddr } from '@multiformats/multiaddr'
 import { tcp } from '../src/index.js'
 import type { TCPListener } from '../src/listener.js'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 describe('close server on maxConnections', () => {
   const afterEachCallbacks: Array<() => Promise<any> | any> = []
@@ -21,7 +22,9 @@ describe('close server on maxConnections', () => {
     const seenRemoteConnections = new Set<string>()
     const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })()
 
-    const upgrader = mockUpgrader()
+    const upgrader = mockUpgrader({
+      events: new EventEmitter()
+    })
     const listener = trasnport.createListener({ upgrader }) as TCPListener
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())

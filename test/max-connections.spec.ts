@@ -4,6 +4,7 @@ import { promisify } from 'node:util'
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { multiaddr } from '@multiformats/multiaddr'
 import { tcp } from '../src/index.js'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 describe('maxConnections', () => {
   const afterEachCallbacks: Array<() => Promise<any> | any> = []
@@ -20,7 +21,9 @@ describe('maxConnections', () => {
     const seenRemoteConnections = new Set<string>()
     const transport = tcp({ maxConnections })()
 
-    const upgrader = mockUpgrader()
+    const upgrader = mockUpgrader({
+      events: new EventEmitter()
+    })
     const listener = transport.createListener({ upgrader })
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())

@@ -143,7 +143,7 @@
   "dependencies": {
     "@libp2p/interface-connection": "^5.0.0",
     "@libp2p/interface-metrics": "^4.0.0",
-    "@libp2p/interface-transport": "^3.0.0",
+    "@libp2p/interface-transport": "^4.0.0",
     "@libp2p/interfaces": "^3.2.0",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/utils": "^3.0.2",
@@ -152,8 +152,8 @@
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^10.0.0",
-    "@libp2p/interface-transport-compliance-tests": "^3.0.0",
+    "@libp2p/interface-mocks": "^11.0.0",
+    "@libp2p/interface-transport-compliance-tests": "^4.0.0",
     "aegir": "^38.1.0",
     "it-all": "^3.0.1",
     "it-pipe": "^3.0.1",
