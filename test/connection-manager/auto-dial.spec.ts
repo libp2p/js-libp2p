@@ -51,7 +51,7 @@ describe('auto-dial', () => {
     const connectionManager = stubInterface<ConnectionManager>()
     connectionManager.getConnections.returns([])
 
-    const autoDialler = new AutoDial({
+    autoDialler = new AutoDial({
       peerStore,
       connectionManager,
       events: new EventEmitter()
