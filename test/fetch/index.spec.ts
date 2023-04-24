@@ -29,14 +29,15 @@ const defaultInit: FetchServiceInit = {
 async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
+  const events = new EventEmitter()
   const components = new DefaultComponents({
     peerId,
     registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
+    upgrader: mockUpgrader({ events }),
     datastore: new MemoryDatastore(),
     transportManager: stubInterface<TransportManager>(),
     connectionGater: stubInterface<ConnectionGater>(),
-    events: new EventEmitter()
+    events
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {

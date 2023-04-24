@@ -17,7 +17,7 @@ import { Message } from '../../src/autonat/pb/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pushable } from 'it-pushable'
 import type { Transport, TransportManager } from '@libp2p/interface-transport'
-import type { AddressBook, PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import * as lp from 'it-length-prefixed'
 import all from 'it-all'
@@ -54,7 +54,6 @@ describe('autonat', () => {
     connectionManager = stubInterface<DefaultConnectionManager>()
     transportManager = stubInterface<TransportManager>()
     peerStore = stubInterface<PeerStore>()
-    peerStore.addressBook = stubInterface<AddressBook>()
 
     components = new DefaultComponents({
       peerId: await createEd25519PeerId(),

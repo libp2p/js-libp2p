@@ -20,7 +20,6 @@ import type { TransportManagerInit } from './transport-manager.js'
 import type { IdentifyServiceInit } from './identify/index.js'
 import type { DualDHT } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
-import type { PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
 import type { ConnectionProtector } from '@libp2p/interface-connection'
@@ -43,6 +42,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { CircuitRelayService } from './circuit-relay/index.js'
+import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
@@ -83,7 +83,7 @@ export interface Libp2pInit {
   /**
    * libp2p PeerStore configuration
    */
-  peerStore: PeerStoreInit
+  peerStore: PersistentPeerStoreInit
 
   /**
    * libp2p Peer routing service configuration

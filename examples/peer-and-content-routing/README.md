@@ -43,8 +43,12 @@ const [node1, node2, node3] = await Promise.all([
   createNode()
 ])
 
-await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
-await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
+await node1.peerStore.patch(node2.peerId, {
+  multiaddrs: node2.getMultiaddrs()
+})
+await node2.peerStore.patch(node3.peerId, {
+  mulitaddrs: node3.getMultiaddrs()
+})
 
 await Promise.all([
   node1.dial(node2.peerId),

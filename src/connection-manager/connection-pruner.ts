@@ -76,12 +76,20 @@ export class ConnectionPruner {
         continue
       }
 
-      const tags = await this.peerStore.getTags(remotePeer)
+      peerValues.set(remotePeer, 0)
 
-      // sum all tag values
-      peerValues.set(remotePeer, tags.reduce((acc, curr) => {
-        return acc + curr.value
-      }, 0))
+      try {
+        const peer = await this.peerStore.get(remotePeer)
+
+        // sum all tag values
+        peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
+          return acc + curr.value
+        }, 0))
+      } catch (err: any) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          log.error('error loading peer tags', err)
+        }
+      }
     }
 
     // sort by value, lowest to highest

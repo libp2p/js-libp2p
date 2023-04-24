@@ -39,12 +39,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 
   // Listen for new connections to peers
-  libp2p.connectionManager.addEventListener('peer:connect', (evt) => {
+  libp2p.addEventListener('peer:connect', (evt) => {
     log(`Connected to ${evt.detail.remotePeer.toString()}`)
   })
 
   // Listen for peers disconnecting
-  libp2p.connectionManager.addEventListener('peer:disconnect', (evt) => {
+  libp2p.addEventListener('peer:disconnect', (evt) => {
     log(`Disconnected from ${evt.detail.remotePeer.toString()}`)
   })
 

@@ -4,12 +4,12 @@ import { codes } from './errors.js'
 import { isTopology, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-registrar'
 import merge from 'merge-options'
 import type { Registrar, StreamHandler, Topology } from '@libp2p/interface-registrar'
-import type { PeerStore, PeerUpdate } from '@libp2p/interface-peer-store'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Connection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { EventEmitter } from '@libp2p/interfaces/events'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:registrar')
 
@@ -47,7 +47,6 @@ export class DefaultRegistrar implements Registrar {
 
   getProtocols (): string[] {
     return Array.from(new Set<string>([
-      ...this.topologies.keys(),
       ...this.handlers.keys()
     ])).sort()
   }
@@ -92,8 +91,10 @@ export class DefaultRegistrar implements Registrar {
       options
     })
 
-    // Add new protocols to self protocols in the Protobook
-    await this.components.peerStore.protoBook.add(this.components.peerId, [protocol])
+    // Add new protocol to self protocols in the peer store
+    await this.components.peerStore.merge(this.components.peerId, {
+      protocols: [protocol]
+    })
   }
 
   /**
@@ -107,8 +108,10 @@ export class DefaultRegistrar implements Registrar {
       this.handlers.delete(protocol)
     })
 
-    // Remove protocols from self protocols in the Protobook
-    await this.components.peerStore.protoBook.remove(this.components.peerId, protocolList)
+    // Update self protocols in the peer store
+    await this.components.peerStore.patch(this.components.peerId, {
+      protocols: protocolList
+    })
   }
 
   /**
@@ -159,9 +162,9 @@ export class DefaultRegistrar implements Registrar {
   _onDisconnect (evt: CustomEvent<Connection>): void {
     const connection = evt.detail
 
-    void this.components.peerStore.protoBook.get(connection.remotePeer)
-      .then(peerProtocols => {
-        for (const protocol of peerProtocols) {
+    void this.components.peerStore.get(connection.remotePeer)
+      .then(peer => {
+        for (const protocol of peer.protocols) {
           const topologies = this.topologies.get(protocol)
 
           if (topologies == null) {
@@ -186,9 +189,9 @@ export class DefaultRegistrar implements Registrar {
   _onConnect (evt: CustomEvent<Connection>): void {
     const connection = evt.detail
 
-    void this.components.peerStore.protoBook.get(connection.remotePeer)
-      .then(peerProtocols => {
-        for (const protocol of peerProtocols) {
+    void this.components.peerStore.get(connection.remotePeer)
+      .then(peer => {
+        for (const protocol of peer.protocols) {
           const topologies = this.topologies.get(protocol)
 
           if (topologies == null) {

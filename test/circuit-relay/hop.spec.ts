@@ -25,6 +25,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import Sinon from 'sinon'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 interface Node {
   peerId: PeerId
@@ -36,6 +37,7 @@ interface Node {
   connectionManager: ConnectionManager
   circuitRelayTransport: Transport
   connectionGater: ConnectionGater
+  events: EventEmitter<Libp2pEvents>
 }
 
 let peerIndex = 0
@@ -63,11 +65,6 @@ describe('circuit-relay hop protocol', function () {
     ])
     const peerStore = stubInterface<PeerStore>()
 
-    const connectionManager = mockConnectionManager({
-      peerId,
-      registrar
-    })
-
     const events = new EventEmitter()
     events.addEventListener('connection:open', (evt) => {
       const conn = evt.detail
@@ -78,8 +75,15 @@ describe('circuit-relay hop protocol', function () {
       connections.delete(conn.remotePeer)
     })
 
+    const connectionManager = mockConnectionManager({
+      peerId,
+      registrar,
+      events
+    })
+
     const upgrader = mockUpgrader({
-      registrar
+      registrar,
+      events
     })
 
     const connectionGater = mockConnectionGater()
@@ -124,7 +128,8 @@ describe('circuit-relay hop protocol', function () {
       upgrader,
       connectionManager,
       circuitRelayTransport: transport,
-      connectionGater
+      connectionGater,
+      events
     }
 
     mockNetwork.addNode(node)
@@ -287,7 +292,15 @@ describe('circuit-relay hop protocol', function () {
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.OK)
 
-      expect(relayNode.peerStore.tagPeer.calledWith(matchPeerId(clientNode.peerId), RELAY_SOURCE_TAG)).to.be.true()
+      expect(relayNode.peerStore.merge.calledWith(matchPeerId(clientNode.peerId), {
+        tags: {
+          [RELAY_SOURCE_TAG]: {
+            value: 1,
+            // @ts-expect-error ttl is a number not a matcher
+            ttl: Sinon.match.number
+          }
+        }
+      })).to.be.true()
     })
   })
 

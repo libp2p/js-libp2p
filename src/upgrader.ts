@@ -403,7 +403,9 @@ export class DefaultUpgrader implements Upgrader {
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
               // the peerstore should ensure that the peer is registered with that protocol
-              this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => { log.error(err) })
+              await this.components.peerStore.merge(remotePeer, {
+                protocols: [protocol]
+              })
 
               connection.addStream(muxedStream)
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
@@ -460,7 +462,9 @@ export class DefaultUpgrader implements Upgrader {
 
           // If a protocol stream has been successfully negotiated and is to be passed to the application,
           // the peerstore should ensure that the peer is registered with that protocol
-          this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => { log.error(err) })
+          await this.components.peerStore.merge(remotePeer, {
+            protocols: [protocol]
+          })
 
           // after the handshake the returned stream can have early data so override
           // the souce/sink

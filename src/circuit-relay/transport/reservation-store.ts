@@ -188,9 +188,13 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
         })
 
         // ensure we don't close the connection to the relay
-        await this.peerStore.tagPeer(peerId, RELAY_TAG, {
-          value: 1,
-          ttl: expiration
+        await this.peerStore.merge(peerId, {
+          tags: {
+            [RELAY_TAG]: {
+              value: 1,
+              ttl: expiration
+            }
+          }
         })
 
         await this.transportManager.listen(

@@ -22,7 +22,7 @@ import bootstrappers from './bootstrappers.js'
     ]
   })
 
-  node.connectionManager.addEventListener('peer:connect', (evt) => {
+  node.addEventListener('peer:connect', (evt) => {
     const connection = evt.detail
     console.log('Connection established to:', connection.remotePeer.toString())	// Emitted when a peer has been found
   })

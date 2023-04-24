@@ -113,7 +113,9 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
 
           found++
           log('found relay peer %p in content routing', peerId)
-          await this.peerStore.addressBook.add(peerId, provider.multiaddrs)
+          await this.peerStore.merge(peerId, {
+            multiaddrs: provider.multiaddrs
+          })
 
           this.safeDispatchEvent('relay:discover', { detail: peerId })
         }

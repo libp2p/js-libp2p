@@ -148,7 +148,9 @@ export class DefaultAddressManager {
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
     if (!startingConfidence) {
-      this.components.peerStore.addressBook.set(this.components.peerId, this.getAddresses())
+      this.components.peerStore.patch(this.components.peerId, {
+        multiaddrs: this.getAddresses()
+      })
         .catch(err => { log.error('error updating addresses', err) })
     }
   }

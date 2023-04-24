@@ -10,7 +10,7 @@ import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '../../src/index.js'
-import type { AddressBook, PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']
@@ -21,8 +21,10 @@ describe('Address Manager', () => {
 
   before(async () => {
     peerId = await createFromJSON(Peers[0])
-    peerStore = stubInterface<PeerStore>()
-    peerStore.addressBook = stubInterface<AddressBook>()
+    peerStore = stubInterface<PeerStore>({
+      // @ts-expect-error incorrect return type
+      patch: Promise.resolve({})
+    })
   })
 
   it('should not need any addresses', () => {
@@ -147,7 +149,7 @@ describe('Address Manager', () => {
     am.confirmObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
-    expect(peerStore.addressBook.set).to.have.property('callCount', 1)
+    expect(peerStore.patch).to.have.property('callCount', 1)
   })
 
   it('should strip our peer address from added observed addresses', () => {

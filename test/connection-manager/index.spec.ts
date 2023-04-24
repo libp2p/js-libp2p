@@ -93,8 +93,12 @@ describe('Connection Manager', () => {
 
       const value = i * 10
       spies.set(value, spy)
-      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
-        value
+      await libp2p.peerStore.merge(connection.remotePeer, {
+        tags: {
+          'test-tag': {
+            value
+          }
+        }
       })
 
       libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
@@ -146,8 +150,12 @@ describe('Connection Manager', () => {
 
       // The lowest tag value will have the longest connection
       spies.set(peerTag, spy)
-      await libp2p.peerStore.tagPeer(connection.remotePeer, peerTag, {
-        value
+      await libp2p.peerStore.merge(connection.remotePeer, {
+        tags: {
+          [peerTag]: {
+            value
+          }
+        }
       })
 
       libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
@@ -209,8 +217,12 @@ describe('Connection Manager', () => {
       const spy = sinon.spy(connection, 'close')
       const value = (i + 1) * 10
       spies.set(value, spy)
-      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
-        value
+      await libp2p.peerStore.merge(connection.remotePeer, {
+        tags: {
+          'test-tag': {
+            value
+          }
+        }
       })
       libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
     }
@@ -230,8 +242,12 @@ describe('Connection Manager', () => {
     spies.set(value, spy)
 
     // Tag that allowed peer with lowest value
-    await libp2p.peerStore.tagPeer(remotePeer, 'test-tag', {
-      value
+    await libp2p.peerStore.merge(connection.remotePeer, {
+      tags: {
+        'test-tag': {
+          value
+        }
+      }
     })
 
     libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
@@ -319,7 +335,11 @@ describe('Connection Manager', () => {
 
     expect(connectionManagerOpenConnectionSpy.called).to.be.false('Attempted to connect to peers')
 
-    await libp2p.peerStore.tagPeer(peerId, KEEP_ALIVE)
+    await libp2p.peerStore.merge(peerId, {
+      tags: {
+        [KEEP_ALIVE]: {}
+      }
+    })
 
     await libp2p.stop()
     await libp2p.start()

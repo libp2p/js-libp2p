@@ -183,7 +183,9 @@ class CircuitRelayTransport implements Transport {
     let relayConnection = relayConnections[0]
 
     if (relayConnection == null) {
-      await this.peerStore.addressBook.add(relayPeer, [relayAddr])
+      await this.peerStore.merge(relayPeer, {
+        multiaddrs: [relayAddr]
+      })
       relayConnection = await this.connectionManager.openConnection(relayPeer, options)
       disconnectOnFailure = true
     }

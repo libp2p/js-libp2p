@@ -12,7 +12,6 @@ import drain from 'it-drain'
 import { pipe } from 'it-pipe'
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH
@@ -46,14 +45,15 @@ const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
+  const events = new EventEmitter()
   const components = new DefaultComponents({
     peerId,
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
+    upgrader: mockUpgrader({ events }),
     transportManager: stubInterface<TransportManager>(),
     connectionGater: mockConnectionGater(),
-    events: new EventEmitter()
+    events
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
@@ -68,7 +68,9 @@ async function createComponents (index: number): Promise<DefaultComponents> {
   const transportManager = new DefaultTransportManager(components)
   components.transportManager = transportManager
 
-  await components.peerStore.protoBook.set(peerId, protocols)
+  await components.peerStore.patch(peerId, {
+    protocols
+  })
 
   return components
 }
@@ -77,13 +79,9 @@ describe('identify (push)', () => {
   let localComponents: DefaultComponents
   let remoteComponents: DefaultComponents
 
-  let localPeerRecordUpdater: PeerRecordUpdater
-
   beforeEach(async () => {
     localComponents = await createComponents(0)
     remoteComponents = await createComponents(1)
-
-    localPeerRecordUpdater = new PeerRecordUpdater(localComponents)
 
     await Promise.all([
       start(localComponents),
@@ -124,19 +122,14 @@ describe('identify (push)', () => {
     const updatedProtocol = '/special-new-protocol/1.0.0'
     const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
+    const peer = await remoteComponents.peerStore.get(localComponents.peerId)
     // should have protocols but not our new one
-    const identifiedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
-    expect(identifiedProtocols).to.not.be.empty()
-    expect(identifiedProtocols).to.not.include(updatedProtocol)
+    expect(peer.protocols).to.not.be.empty()
+    expect(peer.protocols).to.not.include(updatedProtocol)
 
     // should have addresses but not our new one
-    const identifiedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
-    expect(identifiedAddresses).to.not.be.empty()
-    expect(identifiedAddresses.map(a => a.multiaddr.toString())).to.not.include(updatedAddress.toString())
-
-    // update local data - change event will trigger push
-    await localComponents.peerStore.protoBook.add(localComponents.peerId, [updatedProtocol])
-    await localComponents.peerStore.addressBook.add(localComponents.peerId, [updatedAddress])
+    expect(peer.addresses).to.not.be.empty()
+    expect(peer.addresses.map(a => a.multiaddr.toString())).to.not.include(updatedAddress.toString())
 
     // needed to update the peer record and send our supported addresses
     const addressManager = localComponents.addressManager
@@ -147,25 +140,24 @@ describe('identify (push)', () => {
     // ensure sequence number of peer record we are about to create is different
     await delay(1000)
 
-    // make sure we have a peer record to send
-    localPeerRecordUpdater.update()
-
     // wait for the remote peer store to notice the changes
-    const eventPromise = pEvent(remoteComponents.peerStore, 'change:multiaddrs')
+    const eventPromise = pEvent(remoteComponents.events, 'peer:update')
 
-    // push updated peer record to connections
-    await localIdentify.pushToPeerStore()
+    // update local data - change event will trigger push
+    await localComponents.registrar.handle(updatedProtocol, () => {})
+    await localComponents.peerStore.merge(localComponents.peerId, {
+      multiaddrs: [updatedAddress]
+    })
 
     await eventPromise
 
     // should have new protocol
-    const updatedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
-    expect(updatedProtocols).to.not.be.empty()
-    expect(updatedProtocols).to.include(updatedProtocol)
+    const updatedPeer = await remoteComponents.peerStore.get(localComponents.peerId)
+    expect(updatedPeer.protocols).to.not.be.empty()
+    expect(updatedPeer.protocols).to.include(updatedProtocol)
 
     // should have new address
-    const updatedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
-    expect(updatedAddresses.map(a => {
+    expect(updatedPeer.addresses.map(a => {
       return {
         multiaddr: a.multiaddr.toString(),
         isCertified: a.isCertified
@@ -228,78 +220,5 @@ describe('identify (push)', () => {
     // method should have returned before the remote handler completes as we timed
     // out so we ignore the return value
     expect(streamEnded).to.be.false()
-  })
-
-  // LEGACY
-  it('should be able to push identify updates to another peer with no certified peer records support', async () => {
-    const localIdentify = new IdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
-
-    await start(localIdentify)
-    await start(remoteIdentify)
-
-    const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-
-    // ensure connections are registered by connection manager
-    localComponents.events.safeDispatchEvent('connection:open', {
-      detail: localToRemote
-    })
-    remoteComponents.events.safeDispatchEvent('connection:open', {
-      detail: remoteToLocal
-    })
-
-    // identify both ways
-    await localIdentify.identify(localToRemote)
-    await remoteIdentify.identify(remoteToLocal)
-
-    const updatedProtocol = '/special-new-protocol/1.0.0'
-    const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
-
-    // should have protocols but not our new one
-    const identifiedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
-    expect(identifiedProtocols).to.not.be.empty()
-    expect(identifiedProtocols).to.not.include(updatedProtocol)
-
-    // should have addresses but not our new one
-    const identifiedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
-    expect(identifiedAddresses).to.not.be.empty()
-    expect(identifiedAddresses.map(a => a.multiaddr.toString())).to.not.include(updatedAddress.toString())
-
-    // update local data - change event will trigger push
-    await localComponents.peerStore.protoBook.add(localComponents.peerId, [updatedProtocol])
-    await localComponents.peerStore.addressBook.add(localComponents.peerId, [updatedAddress])
-
-    // needed to send our supported addresses
-    const addressManager = localComponents.addressManager
-    addressManager.getAddresses = () => {
-      return [updatedAddress]
-    }
-
-    // wait until remote peer store notices protocol list update
-    const waitForUpdate = pEvent(remoteComponents.peerStore, 'change:protocols')
-
-    await localIdentify.pushToPeerStore()
-
-    await waitForUpdate
-
-    // should have new protocol
-    const updatedProtocols = await remoteComponents.peerStore.protoBook.get(localComponents.peerId)
-    expect(updatedProtocols).to.not.be.empty()
-    expect(updatedProtocols).to.include(updatedProtocol)
-
-    // should have new address
-    const updatedAddresses = await remoteComponents.peerStore.addressBook.get(localComponents.peerId)
-    expect(updatedAddresses.map(a => {
-      return {
-        multiaddr: a.multiaddr.toString(),
-        isCertified: a.isCertified
-      }
-    })).to.deep.equal([{
-      multiaddr: updatedAddress.toString(),
-      isCertified: false
-    }])
-
-    await stop(localIdentify)
-    await stop(remoteIdentify)
   })
 })

@@ -260,7 +260,11 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       // result.expire is non-null if `ReservationStore.reserve` returns with status == OK
       if (result.expire != null) {
         const ttl = (result.expire * 1000) - Date.now()
-        await this.peerStore.tagPeer(connection.remotePeer, RELAY_SOURCE_TAG, { value: 1, ttl })
+        await this.peerStore.merge(connection.remotePeer, {
+          tags: {
+            [RELAY_SOURCE_TAG]: { value: 1, ttl }
+          }
+        })
       }
 
       hopstr.write({

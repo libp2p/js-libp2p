@@ -36,13 +36,14 @@ describe('registrar', () => {
 
   describe('errors', () => {
     beforeEach(() => {
+      const events = new EventEmitter()
       components = new DefaultComponents({
         peerId,
+        events,
         datastore: new MemoryDatastore(),
-        upgrader: mockUpgrader(),
+        upgrader: mockUpgrader({ events }),
         transportManager: stubInterface<TransportManager>(),
-        connectionGater: stubInterface<ConnectionGater>(),
-        events: new EventEmitter()
+        connectionGater: stubInterface<ConnectionGater>()
       })
       components.peerStore = new PersistentPeerStore(components)
       components.connectionManager = new DefaultConnectionManager(components, {
@@ -143,7 +144,9 @@ describe('registrar', () => {
       await libp2p.components.registrar.register(protocol, topology)
 
       // Add connected peer with protocol to peerStore and registrar
-      await libp2p.peerStore.protoBook.set(remotePeerId, [protocol])
+      await libp2p.peerStore.patch(remotePeerId, {
+        protocols: [protocol]
+      })
 
       // remote peer connects
       libp2p.components.events.safeDispatchEvent('connection:open', {
@@ -181,7 +184,9 @@ describe('registrar', () => {
       await libp2p.components.registrar.register(protocol, topology)
 
       // Add connected peer to peerStore and registrar
-      await libp2p.peerStore.protoBook.set(remotePeerId, [])
+      await libp2p.peerStore.patch(remotePeerId, {
+        protocols: []
+      })
 
       // remote peer connects
       libp2p.components.events.safeDispatchEvent('connection:open', {

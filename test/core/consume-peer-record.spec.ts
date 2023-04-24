@@ -31,8 +31,9 @@ describe('Consume peer record', () => {
   it('should update addresses when observed addrs are confirmed', async () => {
     let done: () => void
 
-    libp2p.components.peerStore.addressBook.set = async () => {
+    libp2p.components.peerStore.patch = async () => {
       done()
+      return {} as any
     }
 
     const p = new Promise<void>(resolve => {

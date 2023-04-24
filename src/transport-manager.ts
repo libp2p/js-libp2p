@@ -201,14 +201,30 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
         // Track listen/close events
         listener.addEventListener('listening', () => {
-          this.components.events.safeDispatchEvent('transport:listening', {
-            detail: listener
+          this.components.peerStore.patch(this.components.peerId, {
+            multiaddrs: this.getAddrs()
           })
+            .then(() => {
+              this.components.events.safeDispatchEvent('transport:listening', {
+                detail: listener
+              })
+            })
+            .catch(err => {
+              log.error('error while updating peer record after listener began listening', err)
+            })
         })
         listener.addEventListener('close', () => {
-          this.components.events.safeDispatchEvent('transport:close', {
-            detail: listener
+          this.components.peerStore.patch(this.components.peerId, {
+            multiaddrs: this.getAddrs()
           })
+            .then(() => {
+              this.components.events.safeDispatchEvent('transport:close', {
+                detail: listener
+              })
+            })
+            .catch(err => {
+              log.error('error while updating peer record after listener stopped listening', err)
+            })
         })
 
         // We need to attempt to listen on everything
@@ -241,8 +257,6 @@ export class DefaultTransportManager implements TransportManager, Startable {
       }
       log(`libp2p in dial mode only: ${message}`)
     }
-
-    await this.components.peerStore.addressBook.set(this.components.peerId, this.getAddrs())
   }
 
   /**

@@ -97,6 +97,10 @@ export class AutoDial implements Startable {
   }
 
   async autoDial (): Promise<void> {
+    if (!this.started) {
+      return
+    }
+
     const numConnections = this.connectionManager.getConnections().length
 
     // Already has enough connections
@@ -131,10 +135,8 @@ export class AutoDial implements Startable {
         continue
       }
 
-      const tags = await this.peerStore.getTags(peer.id)
-
       // sum all tag values
-      peerValues.set(peer.id, (tags ?? []).reduce((acc, curr) => {
+      peerValues.set(peer.id, [...peer.tags.values()].reduce((acc, curr) => {
         return acc + curr.value
       }, 0))
     }

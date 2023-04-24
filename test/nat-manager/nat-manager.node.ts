@@ -17,6 +17,8 @@ import { start, stop } from '@libp2p/interfaces/startable'
 import { multiaddr } from '@multiformats/multiaddr'
 import { DefaultComponents } from '../../src/components.js'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -28,11 +30,23 @@ describe('Nat Manager (TCP)', () => {
   let client: StubbedInstance<NatAPI>
 
   async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: NatManager, components: DefaultComponents }> {
+    const events = new EventEmitter()
     const components: any = {
       peerId: await createFromJSON(Peers[0]),
-      upgrader: mockUpgrader(),
-      events: new EventEmitter()
+      upgrader: mockUpgrader({ events }),
+      events,
+      peerStore: stubInterface<PeerStore>()
     }
+
+    components.peerStore.patch.callsFake(async (peerId: PeerId, details: PeerData) => {
+      components.events.safeDispatchEvent('self:peer:update', {
+        peer: {
+          id: peerId,
+          ...details
+        }
+      })
+    })
+
     components.addressManager = new DefaultAddressManager(components, { listen: addrs })
     components.transportManager = new DefaultTransportManager(components, {
       faultTolerance: FaultTolerance.NO_FATAL
