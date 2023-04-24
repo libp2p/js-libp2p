@@ -1,3 +1,14 @@
+## [7.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.3...v7.0.0) (2023-04-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump @libp2p/interface-peer-store from 1.2.9 to 2.0.0 (#171)
+
+### Dependencies
+
+* bump @libp2p/interface-peer-store from 1.2.9 to 2.0.0 ([#171](https://github.com/libp2p/js-libp2p-bootstrap/issues/171)) ([9f36bb2](https://github.com/libp2p/js-libp2p-bootstrap/commit/9f36bb2d1f966b46d73b50a590f0141894ef511f))
+
 ## [6.0.3](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.2...v6.0.3) (2023-03-20)
 
 
