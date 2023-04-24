@@ -1,6 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
 import { pipe }from 'it-pipe'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 /** @type {import('aegir/types').PartialOptions} */
 export default {
@@ -17,7 +18,8 @@ export default {
         )
       })
       const upgrader = mockUpgrader({
-        registrar
+        registrar,
+        events: new EventEmitter()
       })
 
       const ws = webSockets()()

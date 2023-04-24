@@ -10,6 +10,7 @@ import { mockUpgrader } from '@libp2p/interface-mocks'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Transport } from '@libp2p/interface-transport'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 const protocol = '/echo/1.0.0'
 
@@ -20,7 +21,11 @@ describe('libp2p-websockets', () => {
 
   beforeEach(async () => {
     ws = webSockets()()
-    conn = await ws.dial(ma, { upgrader: mockUpgrader() })
+    conn = await ws.dial(ma, {
+      upgrader: mockUpgrader({
+        events: new EventEmitter()
+      })
+    })
   })
 
   afterEach(async () => {

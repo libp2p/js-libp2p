@@ -21,6 +21,7 @@ import type { Listener, Transport } from '@libp2p/interface-transport'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Source } from 'it-stream-types'
 import './compliance.node.js'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
   for await (const list of source) {
@@ -39,7 +40,8 @@ void registrar.handle(protocol, (evt) => {
   )
 })
 const upgrader = mockUpgrader({
-  registrar
+  registrar,
+  events: new EventEmitter()
 })
 
 describe('instantiate the transport', () => {
