@@ -109,7 +109,7 @@
     "@libp2p/interface-content-routing": "^2.0.0",
     "@libp2p/interface-dht": "^2.0.0",
     "@libp2p/interface-keychain": "^2.0.4",
-    "@libp2p/interface-libp2p": "^1.0.0",
+    "@libp2p/interface-libp2p": "^1.3.0",
     "@libp2p/interface-metrics": "^4.0.0",
     "@libp2p/interface-peer-discovery": "^1.0.1",
     "@libp2p/interface-peer-id": "^2.0.1",
@@ -169,7 +169,7 @@
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-gossipsub": "^6.2.0",
+    "@chainsafe/libp2p-gossipsub": "^7.0.0",
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@chainsafe/libp2p-yamux": "^4.0.0",
     "@libp2p/bootstrap": "^6.0.0",
