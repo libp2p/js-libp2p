@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v7.0.0...v7.0.1) (2023-04-24)
+
+
+### Dependencies
+
+* bump @libp2p/interface-transport from 3.0.0 to 4.0.0 ([#269](https://github.com/libp2p/js-libp2p-tcp/issues/269)) ([1b06059](https://github.com/libp2p/js-libp2p-tcp/commit/1b06059b4dc5164367ebde1194434426ee4893d1))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-tcp/compare/v6.2.2...v7.0.0) (2023-04-18)
 
 
