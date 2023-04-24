@@ -1,241 +1,154 @@
-import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
+import { base32 } from 'multiformats/bases/base32'
+import { Peer as PeerPB } from './pb/peer.js'
+import type { Peer, PeerData } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datastore-key.js'
+import { bytesToPeer } from './utils/bytes-to-peer.js'
 import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
-import { Key } from 'interface-datastore/key'
-import { base32 } from 'multiformats/bases/base32'
-import { multiaddr } from '@multiformats/multiaddr'
-import { Metadata, Peer as PeerPB } from './pb/peer.js'
-import mortice from 'mortice'
-import { equals as uint8arrayEquals } from 'uint8arrays/equals'
-import type { Peer } from '@libp2p/interface-peer-store'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PersistentPeerStoreComponents } from './index.js'
+import type { Datastore } from 'interface-datastore'
+import type { PeerUpdate as PeerUpdateExternal } from '@libp2p/interface-libp2p'
+import mortice, { Mortice } from 'mortice'
+import { toPeerPB } from './utils/to-peer-pb.js'
 
-const log = logger('libp2p:peer-store:store')
-
-const NAMESPACE_COMMON = '/peers/'
-
-export interface Store {
-  has: (peerId: PeerId) => Promise<boolean>
-  save: (peer: Peer) => Promise<Peer>
-  load: (peerId: PeerId) => Promise<Peer>
-  delete: (peerId: PeerId) => Promise<void>
-  merge: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
-  mergeOrCreate: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
-  patch: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
-  patchOrCreate: (peerId: PeerId, data: Partial<Peer>) => Promise<Peer>
-  all: () => AsyncIterable<Peer>
-
-  lock: {
-    readLock: () => Promise<() => void>
-    writeLock: () => Promise<() => void>
-  }
+/**
+ * Event detail emitted when peer data changes
+ */
+export interface PeerUpdate extends PeerUpdateExternal {
+  updated: boolean
 }
 
 export class PersistentStore {
-  private readonly components: PersistentPeerStoreComponents
-  public lock: any
+  private readonly peerId: PeerId
+  private readonly datastore: Datastore
+  public readonly lock: Mortice
+  private readonly addressFilter?: AddressFilter
 
-  constructor (components: PersistentPeerStoreComponents) {
-    this.components = components
+  constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
+    this.peerId = components.peerId
+    this.datastore = components.datastore
+    this.addressFilter = init.addressFilter
     this.lock = mortice({
       name: 'peer-store',
       singleProcess: true
     })
   }
 
-  _peerIdToDatastoreKey (peerId: PeerId): Key {
-    if (peerId.type == null) {
-      log.error('peerId must be an instance of peer-id to store data')
-      throw new CodeError('peerId must be an instance of peer-id', codes.ERR_INVALID_PARAMETERS)
-    }
-
-    const b32key = peerId.toCID().toString()
-    return new Key(`${NAMESPACE_COMMON}${b32key}`)
-  }
-
   async has (peerId: PeerId): Promise<boolean> {
-    return await this.components.datastore.has(this._peerIdToDatastoreKey(peerId))
+    return await this.datastore.has(peerIdToDatastoreKey(peerId))
   }
 
   async delete (peerId: PeerId): Promise<void> {
-    await this.components.datastore.delete(this._peerIdToDatastoreKey(peerId))
+    if (this.peerId.equals(peerId)) {
+      throw new CodeError('Cannot delete self peer', codes.ERR_INVALID_PARAMETERS)
+    }
+
+    await this.datastore.delete(peerIdToDatastoreKey(peerId))
   }
 
   async load (peerId: PeerId): Promise<Peer> {
-    const buf = await this.components.datastore.get(this._peerIdToDatastoreKey(peerId))
-    const peer = PeerPB.decode(buf)
-    const metadata = new Map()
+    const buf = await this.datastore.get(peerIdToDatastoreKey(peerId))
 
-    for (const meta of peer.metadata) {
-      metadata.set(meta.key, meta.value)
-    }
-
-    return {
-      ...peer,
-      id: peerId,
-      addresses: peer.addresses.map(({ multiaddr: ma, isCertified }) => {
-        return {
-          multiaddr: multiaddr(ma),
-          isCertified: isCertified ?? false
-        }
-      }),
-      metadata,
-      pubKey: peer.pubKey ?? undefined,
-      peerRecordEnvelope: peer.peerRecordEnvelope ?? undefined
-    }
+    return await bytesToPeer(peerId, buf)
   }
 
-  async save (peer: Peer): Promise<Peer> {
-    if (peer.pubKey != null && peer.id.publicKey != null && !uint8arrayEquals(peer.pubKey, peer.id.publicKey)) {
-      log.error('peer publicKey bytes do not match peer id publicKey bytes')
-      throw new CodeError('publicKey bytes do not match peer id publicKey bytes', codes.ERR_INVALID_PARAMETERS)
-    }
+  async save (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
+    const {
+      existingBuf,
+      existingPeer
+    } = await this.#findExistingPeer(peerId)
 
-    // dedupe addresses
-    const addressSet = new Set()
-    const addresses = peer.addresses
-      .filter(address => {
-        if (addressSet.has(address.multiaddr.toString())) {
-          return false
-        }
-
-        addressSet.add(address.multiaddr.toString())
-        return true
-      })
-      .sort((a, b) => {
-        return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
-      })
-      .map(({ multiaddr, isCertified }) => ({
-        multiaddr: multiaddr.bytes,
-        isCertified
-      }))
-
-    const metadata: Metadata[] = []
-
-    ;[...peer.metadata.keys()].sort().forEach(key => {
-      const value = peer.metadata.get(key)
-
-      if (value != null) {
-        metadata.push({ key, value })
-      }
+    const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
+      addressFilter: this.addressFilter
     })
 
-    const buf = PeerPB.encode({
-      addresses,
-      protocols: peer.protocols.sort(),
-      pubKey: peer.pubKey,
-      metadata,
-      peerRecordEnvelope: peer.peerRecordEnvelope
+    return await this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
+  }
+
+  async patch (peerId: PeerId, data: Partial<PeerData>): Promise<PeerUpdate> {
+    const {
+      existingBuf,
+      existingPeer
+    } = await this.#findExistingPeer(peerId)
+
+    const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
+      addressFilter: this.addressFilter,
+      existingPeer
     })
 
-    await this.components.datastore.put(this._peerIdToDatastoreKey(peer.id), buf.subarray())
-
-    return await this.load(peer.id)
+    return await this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
   }
 
-  async patch (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
-    const peer = await this.load(peerId)
+  async merge (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
+    const {
+      existingBuf,
+      existingPeer
+    } = await this.#findExistingPeer(peerId)
 
-    return await this._patch(peerId, data, peer)
-  }
-
-  async patchOrCreate (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
-    let peer: Peer
-
-    try {
-      peer = await this.load(peerId)
-    } catch (err: any) {
-      if (err.code !== codes.ERR_NOT_FOUND) {
-        throw err
-      }
-
-      peer = { id: peerId, addresses: [], protocols: [], metadata: new Map() }
-    }
-
-    return await this._patch(peerId, data, peer)
-  }
-
-  async _patch (peerId: PeerId, data: Partial<Peer>, peer: Peer): Promise<Peer> {
-    return await this.save({
-      ...peer,
-      ...data,
-      id: peerId
-    })
-  }
-
-  async merge (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
-    const peer = await this.load(peerId)
-
-    return await this._merge(peerId, data, peer)
-  }
-
-  async mergeOrCreate (peerId: PeerId, data: Partial<Peer>): Promise<Peer> {
-    /** @type {Peer} */
-    let peer
-
-    try {
-      peer = await this.load(peerId)
-    } catch (err: any) {
-      if (err.code !== codes.ERR_NOT_FOUND) {
-        throw err
-      }
-
-      peer = { id: peerId, addresses: [], protocols: [], metadata: new Map() }
-    }
-
-    return await this._merge(peerId, data, peer)
-  }
-
-  async _merge (peerId: PeerId, data: Partial<Peer>, peer: Peer): Promise<Peer> {
-    // if the peer has certified addresses, use those in
-    // favour of the supplied versions
-    const addresses = new Map<string, boolean>()
-
-    peer.addresses.forEach((addr) => {
-      addresses.set(addr.multiaddr.toString(), addr.isCertified)
+    const peerPb: PeerPB = await toPeerPB(peerId, data, 'merge', {
+      addressFilter: this.addressFilter,
+      existingPeer
     })
 
-    ;(data.addresses ?? []).forEach(addr => {
-      const addrString = addr.multiaddr.toString()
-      const isAlreadyCertified = Boolean(addresses.get(addrString))
-
-      const isCertified = isAlreadyCertified || addr.isCertified
-
-      addresses.set(addrString, isCertified)
-    })
-
-    return await this.save({
-      id: peerId,
-      addresses: Array.from(addresses.entries()).map(([addrStr, isCertified]) => {
-        return {
-          multiaddr: multiaddr(addrStr),
-          isCertified
-        }
-      }),
-      protocols: Array.from(new Set([
-        ...(peer.protocols ?? []),
-        ...(data.protocols ?? [])
-      ])),
-      metadata: new Map([
-        ...(peer.metadata?.entries() ?? []),
-        ...(data.metadata?.entries() ?? [])
-      ]),
-      pubKey: data.pubKey ?? (peer != null ? peer.pubKey : undefined),
-      peerRecordEnvelope: data.peerRecordEnvelope ?? (peer != null ? peer.peerRecordEnvelope : undefined)
-    })
+    return await this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
   }
 
   async * all (): AsyncGenerator<Peer, void, unknown> {
-    for await (const key of this.components.datastore.queryKeys({
+    for await (const { key, value } of this.datastore.query({
       prefix: NAMESPACE_COMMON
     })) {
       // /peers/${peer-id-as-libp2p-key-cid-string-in-base-32}
       const base32Str = key.toString().split('/')[2]
       const buf = base32.decode(base32Str)
+      const peerId = peerIdFromBytes(buf)
 
-      yield this.load(peerIdFromBytes(buf))
+      if (peerId.equals(this.peerId)) {
+        // Skip self peer if present
+        continue
+      }
+
+      yield bytesToPeer(peerId, value)
+    }
+  }
+
+  async #findExistingPeer (peerId: PeerId): Promise<{ existingBuf?: Uint8Array, existingPeer?: Peer }> {
+    try {
+      const existingBuf = await this.datastore.get(peerIdToDatastoreKey(peerId))
+      const existingPeer = await bytesToPeer(peerId, existingBuf)
+
+      return {
+        existingBuf,
+        existingPeer
+      }
+    } catch (err: any) {
+      if (err.code !== 'ERR_NOT_FOUND') {
+        throw err
+      }
+    }
+
+    return {}
+  }
+
+  async #saveIfDifferent (peerId: PeerId, peer: PeerPB, existingBuf?: Uint8Array, existingPeer?: Peer): Promise<PeerUpdate> {
+    const buf = PeerPB.encode(peer)
+
+    if (existingBuf != null && uint8ArrayEquals(buf, existingBuf)) {
+      return {
+        peer: await bytesToPeer(peerId, buf),
+        previous: existingPeer,
+        updated: false
+      }
+    }
+
+    await this.datastore.put(peerIdToDatastoreKey(peerId), buf)
+
+    return {
+      peer: await bytesToPeer(peerId, buf),
+      previous: existingPeer,
+      updated: true
     }
   }
 }

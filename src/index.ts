@@ -1,79 +1,79 @@
-import { logger } from '@libp2p/logger'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { PeerStoreAddressBook } from './address-book.js'
-import { PeerStoreKeyBook } from './key-book.js'
-import { PeerStoreMetadataBook } from './metadata-book.js'
-import { PeerStoreProtoBook } from './proto-book.js'
-import { PersistentStore, Store } from './store.js'
-import type { PeerStore, AddressBook, KeyBook, MetadataBook, ProtoBook, PeerStoreEvents, PeerStoreInit, Peer, TagOptions } from '@libp2p/interface-peer-store'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import { PersistentStore, PeerUpdate } from './store.js'
+import type { PeerStore, Peer, PeerData } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { Tag, Tags } from './pb/tags.js'
 import type { Datastore } from 'interface-datastore'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import { logger } from '@libp2p/logger'
 
 const log = logger('libp2p:peer-store')
 
 export interface PersistentPeerStoreComponents {
   peerId: PeerId
   datastore: Datastore
+  events: EventEmitter<Libp2pEvents>
+}
+
+/**
+ * Return true to allow storing the passed multiaddr for the passed peer
+ */
+export interface AddressFilter {
+  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean>
+}
+
+export interface PersistentPeerStoreInit {
+  addressFilter?: AddressFilter
 }
 
 /**
  * An implementation of PeerStore that stores data in a Datastore
  */
-export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implements PeerStore {
-  public addressBook: AddressBook
-  public keyBook: KeyBook
-  public metadataBook: MetadataBook
-  public protoBook: ProtoBook
+export class PersistentPeerStore implements PeerStore {
+  private readonly store: PersistentStore
+  private readonly events: EventEmitter<Libp2pEvents>
+  private readonly peerId: PeerId
 
-  private readonly components: PersistentPeerStoreComponents
-  private readonly store: Store
-
-  constructor (components: PersistentPeerStoreComponents, init: PeerStoreInit = {}) {
-    super()
-
-    this.components = components
-    this.store = new PersistentStore(components)
-    this.addressBook = new PeerStoreAddressBook(this.dispatchEvent.bind(this), this.store, init.addressFilter)
-    this.keyBook = new PeerStoreKeyBook(this.dispatchEvent.bind(this), this.store)
-    this.metadataBook = new PeerStoreMetadataBook(this.dispatchEvent.bind(this), this.store)
-    this.protoBook = new PeerStoreProtoBook(this.dispatchEvent.bind(this), this.store)
+  constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
+    this.events = components.events
+    this.peerId = components.peerId
+    this.store = new PersistentStore(components, init)
   }
 
   async forEach (fn: (peer: Peer) => void): Promise<void> {
-    log.trace('getPeers await read lock')
+    log.trace('forEach await read lock')
     const release = await this.store.lock.readLock()
-    log.trace('getPeers got read lock')
+    log.trace('forEach got read lock')
 
     try {
       for await (const peer of this.store.all()) {
-        if (peer.id.equals(this.components.peerId)) {
-          // Skip self peer if present
-          continue
-        }
-
         fn(peer)
       }
     } finally {
-      log.trace('getPeers release read lock')
+      log.trace('forEach release read lock')
       release()
     }
   }
 
   async all (): Promise<Peer[]> {
-    const output: Peer[] = []
+    log.trace('all await read lock')
+    const release = await this.store.lock.readLock()
+    log.trace('all got read lock')
 
-    await this.forEach(peer => {
-      output.push(peer)
-    })
+    try {
+      const output: Peer[] = []
 
-    return output
+      for await (const peer of this.store.all()) {
+        output.push(peer)
+      }
+
+      return output
+    } finally {
+      log.trace('all release read lock')
+      release()
+    }
   }
 
-  /**
-   * Delete the information of the given peer in every book
-   */
   async delete (peerId: PeerId): Promise<void> {
     log.trace('delete await write lock')
     const release = await this.store.lock.writeLock()
@@ -87,25 +87,6 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
     }
   }
 
-  /**
-   * Get the stored information of a given peer
-   */
-  async get (peerId: PeerId): Promise<Peer> {
-    log.trace('get await read lock')
-    const release = await this.store.lock.readLock()
-    log.trace('get got read lock')
-
-    try {
-      return await this.store.load(peerId)
-    } finally {
-      log.trace('get release read lock')
-      release()
-    }
-  }
-
-  /**
-   * Returns true if we have a record of the peer
-   */
   async has (peerId: PeerId): Promise<boolean> {
     log.trace('has await read lock')
     const release = await this.store.lock.readLock()
@@ -119,66 +100,79 @@ export class PersistentPeerStore extends EventEmitter<PeerStoreEvents> implement
     }
   }
 
-  async tagPeer (peerId: PeerId, tag: string, options: TagOptions = {}): Promise<void> {
-    const providedValue = options.value ?? 0
-    const value = Math.round(providedValue)
-    const ttl = options.ttl ?? undefined
+  async get (peerId: PeerId): Promise<Peer> {
+    log.trace('get await read lock')
+    const release = await this.store.lock.readLock()
+    log.trace('get got read lock')
 
-    if (value !== providedValue || value < 0 || value > 100) {
-      throw new CodeError('Tag value must be between 0-100', 'ERR_TAG_VALUE_OUT_OF_BOUNDS')
+    try {
+      return await this.store.load(peerId)
+    } finally {
+      log.trace('get release read lock')
+      release()
     }
-
-    const buf = await this.metadataBook.getValue(peerId, 'tags')
-    let tags: Tag[] = []
-
-    if (buf != null) {
-      tags = Tags.decode(buf).tags
-    }
-
-    // do not allow duplicate tags
-    tags = tags.filter(t => t.name !== tag)
-
-    tags.push({
-      name: tag,
-      value,
-      expiry: ttl == null ? undefined : BigInt(Date.now() + ttl)
-    })
-
-    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }).subarray())
   }
 
-  async unTagPeer (peerId: PeerId, tag: string): Promise<void> {
-    const buf = await this.metadataBook.getValue(peerId, 'tags')
-    let tags: Tag[] = []
+  async save (id: PeerId, data: PeerData): Promise<Peer> {
+    log.trace('save await write lock')
+    const release = await this.store.lock.writeLock()
+    log.trace('save got write lock')
 
-    if (buf != null) {
-      tags = Tags.decode(buf).tags
+    try {
+      const result = await this.store.save(id, data)
+
+      this.#emitIfUpdated(id, result)
+
+      return result.peer
+    } finally {
+      log.trace('save release write lock')
+      release()
     }
-
-    tags = tags.filter(t => t.name !== tag)
-
-    await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags }).subarray())
   }
 
-  async getTags (peerId: PeerId): Promise<Array<{ name: string, value: number }>> {
-    const buf = await this.metadataBook.getValue(peerId, 'tags')
-    let tags: Tag[] = []
+  async patch (id: PeerId, data: PeerData): Promise<Peer> {
+    log.trace('patch await write lock')
+    const release = await this.store.lock.writeLock()
+    log.trace('patch got write lock')
 
-    if (buf != null) {
-      tags = Tags.decode(buf).tags
+    try {
+      const result = await this.store.patch(id, data)
+
+      this.#emitIfUpdated(id, result)
+
+      return result.peer
+    } finally {
+      log.trace('patch release write lock')
+      release()
+    }
+  }
+
+  async merge (id: PeerId, data: PeerData): Promise<Peer> {
+    log.trace('merge await write lock')
+    const release = await this.store.lock.writeLock()
+    log.trace('merge got write lock')
+
+    try {
+      const result = await this.store.merge(id, data)
+
+      this.#emitIfUpdated(id, result)
+
+      return result.peer
+    } finally {
+      log.trace('merge release write lock')
+      release()
+    }
+  }
+
+  #emitIfUpdated (id: PeerId, result: PeerUpdate): void {
+    if (!result.updated) {
+      return
     }
 
-    const now = BigInt(Date.now())
-    const unexpiredTags = tags.filter(tag => tag.expiry == null || tag.expiry > now)
-
-    if (unexpiredTags.length !== tags.length) {
-      // remove any expired tags
-      await this.metadataBook.setValue(peerId, 'tags', Tags.encode({ tags: unexpiredTags }).subarray())
+    if (this.peerId.equals(id)) {
+      this.events.safeDispatchEvent('self:peer:update', { detail: result })
+    } else {
+      this.events.safeDispatchEvent('peer:update', { detail: result })
     }
-
-    return unexpiredTags.map(t => ({
-      name: t.name,
-      value: t.value ?? 0
-    }))
   }
 }

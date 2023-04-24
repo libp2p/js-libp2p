@@ -7,14 +7,17 @@ message Peer {
   // The protocols the peer supports
   repeated string protocols = 2;
 
-  // Any peer metadata
-  repeated Metadata metadata = 3;
-
   // The public key of the peer
-  optional bytes pub_key = 4;
+  optional bytes public_key = 4;
 
   // The most recently received signed PeerRecord
   optional bytes peer_record_envelope = 5;
+
+  // Any peer metadata
+  map<string, bytes> metadata = 6;
+
+  // Any tags the peer has
+  map<string, Tag> tags = 7;
 }
 
 // Address represents a single multiaddr
@@ -25,7 +28,7 @@ message Address {
   optional bool isCertified = 2;
 }
 
-message Metadata {
-  string key = 1;
-  bytes value = 2;
+message Tag {
+  uint32 value = 1; // tag value 0-100
+  optional uint64 expiry = 2; // ms timestamp after which the tag is no longer valid
 }
