@@ -1,3 +1,10 @@
+## [7.0.4](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.3...v7.0.4) (2023-04-24)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-address-manager from 2.0.5 to 3.0.0 ([#193](https://github.com/libp2p/js-libp2p-mdns/issues/193)) ([5044392](https://github.com/libp2p/js-libp2p-mdns/commit/5044392191b4ea3149c2e4c6c75120eaa1441fde))
+
 ## [7.0.3](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.2...v7.0.3) (2023-04-07)
 
 
