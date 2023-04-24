@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v6.0.0...v6.0.1) (2023-04-24)
+
+
+### Dependencies
+
+* bump @libp2p/interface-transport from 3.0.0 to 4.0.0 ([#233](https://github.com/libp2p/js-libp2p-websockets/issues/233)) ([da0367f](https://github.com/libp2p/js-libp2p-websockets/commit/da0367f7a02a23a819d9a768ab209a53e791ae6b))
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p-websockets/compare/v5.0.10...v6.0.0) (2023-04-18)
 
 
