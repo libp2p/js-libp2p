@@ -23,7 +23,7 @@ import wrtc from 'wrtc'
     connectionEncryption: [noise()]
   })
 
-  node.connectionManager.addEventListener('peer:connect', (evt) => {
+  node.addEventListener('peer:connect', (evt) => {
     console.info(`Connected to ${evt.detail.remotePeer.toString()}!`)
   })
 

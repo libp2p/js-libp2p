@@ -216,7 +216,7 @@ node.addEventListener('peer:discovery', (evt) => {
   console.log('Discovered %s', evt.detail.id.toString()) // Log discovered peer
 })
 
-node.connectionManager.addEventListener('peer:connect', (evt) => {
+node.addEventListener('peer:connect', (evt) => {
   console.log('Connected to %s', evt.detail.remotePeer.toString()) // Log connected peer
 })
 ```
