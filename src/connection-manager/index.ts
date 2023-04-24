@@ -22,7 +22,7 @@ import { PeerMap } from '@libp2p/peer-collections'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import type { PendingDial } from '../libp2p.js'
+import type { PendingDial } from '@libp2p/interface-libp2p'
 import type { AddressSorter, Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:connection-manager')
