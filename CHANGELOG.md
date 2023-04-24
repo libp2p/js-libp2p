@@ -1,3 +1,14 @@
+## [8.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v7.0.2...v8.0.0) (2023-04-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* make peerstore atomic (#75)
+
+### Features
+
+* make peerstore atomic ([#75](https://github.com/libp2p/js-libp2p-peer-store/issues/75)) ([4e89d3b](https://github.com/libp2p/js-libp2p-peer-store/commit/4e89d3bfeef0b64ccb7ccc09185a9d682ab376e3))
+
 ## [7.0.2](https://github.com/libp2p/js-libp2p-peer-store/compare/v7.0.1...v7.0.2) (2023-04-11)
 
 
