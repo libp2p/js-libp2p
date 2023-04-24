@@ -1,3 +1,10 @@
+## [1.1.7](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.6...v1.1.7) (2023-04-24)
+
+
+### Dependencies
+
+* bump @libp2p/interface-peer-store from 1.2.9 to 2.0.0 ([#135](https://github.com/libp2p/js-libp2p-webrtc/issues/135)) ([2fc8399](https://github.com/libp2p/js-libp2p-webrtc/commit/2fc839912a65c310ca7c8935d1901cc56849a21d))
+
 ## [1.1.6](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.5...v1.1.6) (2023-04-21)
 
 
