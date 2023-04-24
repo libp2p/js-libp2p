@@ -1,3 +1,14 @@
+## [9.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.12...v9.0.0) (2023-04-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* bump @libp2p/interface-peer-store from 1.2.9 to 2.0.0 (#460)
+
+### Dependencies
+
+* bump @libp2p/interface-peer-store from 1.2.9 to 2.0.0 ([#460](https://github.com/libp2p/js-libp2p-kad-dht/issues/460)) ([e3f15f1](https://github.com/libp2p/js-libp2p-kad-dht/commit/e3f15f17a65d98940fcba4ba7a46fd17ab509785))
+
 ## [8.0.12](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.11...v8.0.12) (2023-04-19)
 
 
