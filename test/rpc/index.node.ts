@@ -27,6 +27,8 @@ import { stubInterface } from 'ts-sinon'
 import type { Connection } from '@libp2p/interface-connection'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 describe('rpc', () => {
   let peerId: PeerId
@@ -47,7 +49,10 @@ describe('rpc', () => {
       peerStore: stubInterface<PeerStore>(),
       addressManager: stubInterface<AddressManager>()
     }
-    components.peerStore = new PersistentPeerStore(components)
+    components.peerStore = new PersistentPeerStore({
+      ...components,
+      events: new EventEmitter<Libp2pEvents>()
+    })
 
     await start(...Object.values(components))
 

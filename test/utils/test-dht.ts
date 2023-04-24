@@ -16,6 +16,8 @@ import delay from 'delay'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:kad-dht:test-dht')
 
@@ -27,6 +29,7 @@ export class TestDHT {
   }
 
   async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<DualKadDHT> {
+    const events = new EventEmitter<Libp2pEvents>()
     const components: KadDHTComponents = {
       peerId: await createPeerId(),
       datastore: new MemoryDatastore(),
@@ -36,12 +39,21 @@ export class TestDHT {
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>()
     }
-    components.connectionManager = mockConnectionManager(components)
-    components.peerStore = new PersistentPeerStore(components)
+    components.connectionManager = mockConnectionManager({
+      ...components,
+      events
+    })
+    components.peerStore = new PersistentPeerStore({
+      ...components,
+      events
+    })
 
     await start(...Object.values(components))
 
-    mockNetwork.addNode(components)
+    mockNetwork.addNode({
+      ...components,
+      events
+    })
 
     const addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([
@@ -91,10 +103,11 @@ export class TestDHT {
         return
       }
 
-      Promise.all([
-        components.peerStore.addressBook.add(peerData.id, peerData.multiaddrs),
-        components.peerStore.protoBook.set(peerData.id, peerData.protocols)
-      ]).catch(err => { log.error(err) })
+      components.peerStore.merge(peerData.id, {
+        multiaddrs: peerData.multiaddrs,
+        protocols: peerData.protocols
+      })
+        .catch(err => { log.error(err) })
     })
 
     if (autoStart) {
@@ -112,8 +125,12 @@ export class TestDHT {
   async connect (dhtA: DualKadDHT, dhtB: DualKadDHT): Promise<void> {
     // need addresses in the address book otherwise we won't know whether to add
     // the peer to the public or private DHT and will do nothing
-    await dhtA.components.peerStore.addressBook.add(dhtB.components.peerId, dhtB.components.addressManager.getAddresses())
-    await dhtB.components.peerStore.addressBook.add(dhtA.components.peerId, dhtA.components.addressManager.getAddresses())
+    await dhtA.components.peerStore.merge(dhtB.components.peerId, {
+      multiaddrs: dhtB.components.addressManager.getAddresses()
+    })
+    await dhtB.components.peerStore.merge(dhtA.components.peerId, {
+      multiaddrs: dhtA.components.addressManager.getAddresses()
+    })
 
     await dhtA.components.connectionManager.openConnection(dhtB.components.peerId)
 

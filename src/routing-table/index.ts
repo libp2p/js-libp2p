@@ -173,13 +173,21 @@ export class RoutingTable implements Startable {
       Promise.resolve()
         .then(async () => {
           for (const peer of addedPeers) {
-            await this.components.peerStore.tagPeer(peer, this.tagName, {
-              value: this.tagValue
+            await this.components.peerStore.merge(peer, {
+              tags: {
+                [this.tagName]: {
+                  value: this.tagValue
+                }
+              }
             })
           }
 
           for (const peer of removedPeers) {
-            await this.components.peerStore.unTagPeer(peer, this.tagName)
+            await this.components.peerStore.merge(peer, {
+              tags: {
+                [this.tagName]: undefined
+              }
+            })
           }
         })
         .catch(err => {

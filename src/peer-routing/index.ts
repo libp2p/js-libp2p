@@ -241,15 +241,23 @@ export class PeerRouting {
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (const peer of peers.peers) {
-      yield finalPeerEvent({
-        from: this.components.peerId,
-        peer: {
-          id: peer,
-          multiaddrs: (await (this.components.peerStore.addressBook.get(peer)) ?? []).map(addr => addr.multiaddr),
-          protocols: []
+    for (const peerId of peers.peers) {
+      try {
+        const peer = await this.components.peerStore.get(peerId)
+
+        yield finalPeerEvent({
+          from: this.components.peerId,
+          peer: {
+            id: peerId,
+            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
+            protocols: peer.protocols
+          }
+        })
+      } catch (err: any) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
         }
-      })
+      }
     }
   }
 
@@ -307,13 +315,12 @@ export class PeerRouting {
       }
 
       try {
-        const addresses = await this.components.peerStore.addressBook.get(peerId)
-        const protocols = await this.components.peerStore.protoBook.get(peerId)
+        const peer = await this.components.peerStore.get(peerId)
 
         output.push({
           id: peerId,
-          multiaddrs: addresses.map((address) => address.multiaddr),
-          protocols
+          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
+          protocols: peer.protocols
         })
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {

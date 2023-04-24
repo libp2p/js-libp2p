@@ -623,6 +623,14 @@ describe('KadDHT', () => {
 
       const dht = await tdht.spawn()
 
+      sinon.stub(dht.components.peerStore, 'get').withArgs(dht.components.peerId)
+        .resolves({
+          id: dht.components.peerId,
+          addresses: [],
+          protocols: [],
+          tags: new Map(),
+          metadata: new Map()
+        })
       sinon.stub(dht.lan.providers, 'getProviders').resolves([dht.components.peerId])
 
       // Find provider

@@ -139,11 +139,21 @@ export class ContentRouting {
       const providers: PeerInfo[] = []
 
       for (const peerId of provs.slice(0, toFind)) {
-        providers.push({
-          id: peerId,
-          multiaddrs: ((await this.components.peerStore.addressBook.get(peerId)) ?? []).map(address => address.multiaddr),
-          protocols: []
-        })
+        try {
+          const peer = await this.components.peerStore.get(peerId)
+
+          providers.push({
+            id: peerId,
+            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
+            protocols: peer.protocols
+          })
+        } catch (err: any) {
+          if (err.code !== 'ERR_NOT_FOUND') {
+            throw err
+          }
+
+          this.log('no peer store entry for %p', peerId)
+        }
       }
 
       yield peerResponseEvent({ from: this.components.peerId, messageType: MESSAGE_TYPE.GET_PROVIDERS, providers })

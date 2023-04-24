@@ -21,6 +21,8 @@ import type { Registrar } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import { MemoryDatastore } from 'datastore-core'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 describe('Routing Table', () => {
   let table: RoutingTable
@@ -29,6 +31,8 @@ describe('Routing Table', () => {
   beforeEach(async function () {
     this.timeout(20 * 1000)
 
+    const events = new EventEmitter<Libp2pEvents>()
+
     components = {
       peerId: await createPeerId(),
       connectionManager: stubInterface<ConnectionManager>(),
@@ -36,11 +40,13 @@ describe('Routing Table', () => {
     }
     components.connectionManager = mockConnectionManager({
       ...components,
-      registrar: stubInterface<Registrar>()
+      registrar: stubInterface<Registrar>(),
+      events
     })
     components.peerStore = new PersistentPeerStore({
       ...components,
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      events
     })
 
     table = new RoutingTable(components, {
@@ -229,7 +235,7 @@ describe('Routing Table', () => {
 
   it('tags newly found kad-close peers', async () => {
     const remotePeer = await createEd25519PeerId()
-    const tagPeerSpy = sinon.spy(components.peerStore, 'tagPeer')
+    const tagPeerSpy = sinon.spy(components.peerStore, 'merge')
 
     await table.add(remotePeer)
 
@@ -241,8 +247,11 @@ describe('Routing Table', () => {
 
     expect(tagPeerSpy.callCount).to.equal(1, 'did not tag kad-close peer')
     expect(tagPeerSpy.getCall(0).args[0].toString()).to.equal(remotePeer.toString())
-    expect(tagPeerSpy.getCall(0).args[1]).to.equal(KAD_CLOSE_TAG_NAME)
-    expect(tagPeerSpy.getCall(0).args[2]).to.have.property('value', KAD_CLOSE_TAG_VALUE)
+    expect(tagPeerSpy.getCall(0).args[1].tags).to.deep.equal({
+      [KAD_CLOSE_TAG_NAME]: {
+        value: KAD_CLOSE_TAG_VALUE
+      }
+    })
   })
 
   it('removes tags from kad-close peers when closer peers are found', async () => {
@@ -251,10 +260,9 @@ describe('Routing Table', () => {
         await components.peerStore.all(),
         async function * (source) {
           for await (const peer of source) {
-            const tags = await components.peerStore.getTags(peer.id)
-            const kadCloseTags = tags.filter(tag => tag.name === KAD_CLOSE_TAG_NAME)
+            const peerData = await components.peerStore.get(peer.id)
 
-            if (kadCloseTags.length > 0) {
+            if (peerData.tags.has(KAD_CLOSE_TAG_NAME)) {
               yield peer.id
             }
           }
@@ -263,8 +271,7 @@ describe('Routing Table', () => {
       ))
     }
 
-    const tagPeerSpy = sinon.spy(components.peerStore, 'tagPeer')
-    const unTagPeerSpy = sinon.spy(components.peerStore, 'unTagPeer')
+    const tagPeerSpy = sinon.spy(components.peerStore, 'merge')
     const localNodeId = await kadUtils.convertPeerId(components.peerId)
     const sortedPeerList = await sortClosestPeers(
       await Promise.all(
@@ -305,7 +312,7 @@ describe('Routing Table', () => {
 
     // wait for tag new peer and untag old peer
     await pWaitFor(() => {
-      return tagPeerSpy.callCount === 1 && unTagPeerSpy.callCount === 1
+      return tagPeerSpy.callCount === 2
     })
 
     // should have updated list of tagged peers

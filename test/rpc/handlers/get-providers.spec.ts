@@ -8,13 +8,15 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import { createValues, Value } from '../../utils/create-values.js'
 import Sinon, { SinonStubbedInstance } from 'sinon'
-import type { AddressBook } from '@libp2p/interface-peer-store'
 import { Providers } from '../../../src/providers.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const T = MESSAGE_TYPE.GET_PROVIDERS
 
@@ -23,7 +25,7 @@ describe('rpc - handlers - GetProviders', () => {
   let sourcePeer: PeerId
   let closerPeer: PeerId
   let providerPeer: PeerId
-  let addressBook: AddressBook
+  let peerStore: PeerStore
   let providers: SinonStubbedInstance<Providers>
   let peerRouting: SinonStubbedInstance<PeerRouting>
   let handler: GetProvidersHandler
@@ -38,12 +40,14 @@ describe('rpc - handlers - GetProviders', () => {
 
     peerRouting = Sinon.createStubInstance(PeerRouting)
     providers = Sinon.createStubInstance(Providers)
+    peerStore = new PersistentPeerStore({
+      peerId,
+      datastore: new MemoryDatastore(),
+      events: new EventEmitter<Libp2pEvents>()
+    })
 
     const components: GetProvidersHandlerComponents = {
-      peerStore: new PersistentPeerStore({
-        peerId,
-        datastore: new MemoryDatastore()
-      })
+      peerStore
     }
 
     handler = new GetProvidersHandler(components, {
@@ -51,8 +55,6 @@ describe('rpc - handlers - GetProviders', () => {
       providers,
       lan: false
     })
-
-    addressBook = components.peerStore.addressBook
   })
 
   it('errors with an invalid key ', async () => {
@@ -88,8 +90,12 @@ describe('rpc - handlers - GetProviders', () => {
     providers.getProviders.withArgs(v.cid).resolves([providerPeer])
     peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer).resolves(closer)
 
-    await addressBook.set(providerPeer, provider[0].multiaddrs)
-    await addressBook.set(closerPeer, closer[0].multiaddrs)
+    await peerStore.merge(providerPeer, {
+      multiaddrs: provider[0].multiaddrs
+    })
+    await peerStore.merge(closerPeer, {
+      multiaddrs: closer[0].multiaddrs
+    })
 
     const response = await handler.handle(sourcePeer, msg)
 

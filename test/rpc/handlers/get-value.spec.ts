@@ -10,11 +10,13 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { SinonStubbedInstance } from 'sinon'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import Sinon from 'sinon'
-import type { KeyBook } from '@libp2p/interface-peer-store'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import type { Datastore } from 'interface-datastore'
 import { Libp2pRecord } from '@libp2p/record'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const T = MESSAGE_TYPE.GET_VALUE
 
@@ -25,7 +27,7 @@ describe('rpc - handlers - GetValue', () => {
   let targetPeer: PeerId
   let handler: GetValueHandler
   let peerRouting: SinonStubbedInstance<PeerRouting>
-  let keyBook: KeyBook
+  let peerStore: PeerStore
   let datastore: Datastore
 
   beforeEach(async () => {
@@ -35,20 +37,20 @@ describe('rpc - handlers - GetValue', () => {
     targetPeer = await createPeerId()
     peerRouting = Sinon.createStubInstance(PeerRouting)
     datastore = new MemoryDatastore()
+    peerStore = new PersistentPeerStore({
+      peerId,
+      datastore,
+      events: new EventEmitter<Libp2pEvents>()
+    })
 
     const components: GetValueHandlerComponents = {
       datastore,
-      peerStore: new PersistentPeerStore({
-        peerId,
-        datastore
-      })
+      peerStore
     }
 
     handler = new GetValueHandler(components, {
       peerRouting
     })
-
-    keyBook = components.peerStore.keyBook
   })
 
   it('errors when missing key', async () => {
@@ -115,7 +117,9 @@ describe('rpc - handlers - GetValue', () => {
         throw new Error('targetPeer had no public key')
       }
 
-      await keyBook.set(targetPeer, targetPeer.publicKey)
+      await peerStore.merge(targetPeer, {
+        publicKey: targetPeer.publicKey
+      })
 
       const response = await handler.handle(sourcePeer, msg)
 

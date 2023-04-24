@@ -51,13 +51,13 @@ export class GetValueHandler implements DHTMessageHandler {
       let pubKey: Uint8Array | undefined
 
       try {
-        const key = await this.components.peerStore.keyBook.get(idFromKey)
+        const peer = await this.components.peerStore.get(idFromKey)
 
-        if (key == null) {
+        if (peer.id.publicKey == null) {
           throw new CodeError('No public key found in key book', 'ERR_NOT_FOUND')
         }
 
-        pubKey = key
+        pubKey = peer.id.publicKey
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err

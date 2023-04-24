@@ -73,9 +73,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
   }
 
   async _getAddresses (peerId: PeerId): Promise<Multiaddr[]> {
-    const addrs = await this.components.peerStore.addressBook.get(peerId)
-
-    return addrs.map(address => address.multiaddr)
+    return []
   }
 
   async _getPeers (peerIds: PeerId[]): Promise<PeerInfo[]> {
@@ -83,14 +81,22 @@ export class GetProvidersHandler implements DHTMessageHandler {
     const addrFilter = this.lan ? removePublicAddresses : removePrivateAddresses
 
     for (const peerId of peerIds) {
-      const peer = addrFilter({
-        id: peerId,
-        multiaddrs: await this._getAddresses(peerId),
-        protocols: []
-      })
+      try {
+        const peer = await this.components.peerStore.get(peerId)
 
-      if (peer.multiaddrs.length > 0) {
-        output.push(peer)
+        const peerAfterFilter = addrFilter({
+          id: peerId,
+          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
+          protocols: peer.protocols
+        })
+
+        if (peerAfterFilter.multiaddrs.length > 0) {
+          output.push(peerAfterFilter)
+        }
+      } catch (err: any) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
       }
     }
 
