@@ -6,23 +6,21 @@ import { bootstrap, BootstrapComponents } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 import partialValidPeerList from './fixtures/some-invalid-peers.js'
 import { isPeerId } from '@libp2p/interface-peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { MemoryDatastore } from 'datastore-core'
 import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromString } from '@libp2p/peer-id'
-import delay from 'delay'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 describe('bootstrap', () => {
   let components: BootstrapComponents
+  let peerStore: StubbedInstance<PeerStore>
 
   beforeEach(async () => {
+    peerStore = stubInterface<PeerStore>()
+
     components = {
-      peerStore: new PersistentPeerStore({
-        peerId: await createEd25519PeerId(),
-        datastore: new MemoryDatastore()
-      })
+      peerStore
     }
   })
 
@@ -83,17 +81,18 @@ describe('bootstrap', () => {
 
     const bootstrapper0PeerId = peerIdFromString(bootstrapper0PeerIdStr)
 
-    const tags = await components.peerStore.getTags(bootstrapper0PeerId)
+    expect(peerStore.merge).to.have.property('called', true)
 
-    expect(tags).to.have.lengthOf(1, 'bootstrap tag was not set')
-    expect(tags).to.have.nested.property('[0].name', tagName, 'bootstrap tag had incorrect name')
-    expect(tags).to.have.nested.property('[0].value', tagValue, 'bootstrap tag had incorrect value')
-
-    await delay(tagTTL * 2)
-
-    const tags2 = await components.peerStore.getTags(bootstrapper0PeerId)
-
-    expect(tags2).to.have.lengthOf(0, 'bootstrap tag did not expire')
+    const call = peerStore.merge.getCall(0)
+    expect(call).to.have.deep.nested.property('args[0]', bootstrapper0PeerId)
+    expect(call).to.have.deep.nested.property('args[1]', {
+      tags: {
+        [tagName]: {
+          value: tagValue,
+          ttl: tagTTL
+        }
+      }
+    })
 
     await stop(r)
   })

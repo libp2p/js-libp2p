@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/mafmt'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -133,9 +133,13 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
     }
 
     for (const peerData of this.list) {
-      await this.components.peerStore.tagPeer(peerData.id, this._init.tagName ?? DEFAULT_BOOTSTRAP_TAG_NAME, {
-        value: this._init.tagValue ?? DEFAULT_BOOTSTRAP_TAG_VALUE,
-        ttl: this._init.tagTTL ?? DEFAULT_BOOTSTRAP_TAG_TTL
+      await this.components.peerStore.merge(peerData.id, {
+        tags: {
+          [this._init.tagName ?? DEFAULT_BOOTSTRAP_TAG_NAME]: {
+            value: this._init.tagValue ?? DEFAULT_BOOTSTRAP_TAG_VALUE,
+            ttl: this._init.tagTTL ?? DEFAULT_BOOTSTRAP_TAG_TTL
+          }
+        }
       })
 
       // check we are still running
@@ -143,7 +147,7 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
         return
       }
 
-      this.dispatchEvent(new CustomEvent<PeerInfo>('peer', { detail: peerData }))
+      this.safeDispatchEvent('peer', { detail: peerData })
     }
   }
 

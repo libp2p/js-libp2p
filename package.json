@@ -141,7 +141,7 @@
   "dependencies": {
     "@libp2p/interface-peer-discovery": "^1.0.1",
     "@libp2p/interface-peer-info": "^1.0.7",
-    "@libp2p/interface-peer-store": "^1.2.2",
+    "@libp2p/interface-peer-store": "^2.0.0",
     "@libp2p/interfaces": "^3.0.3",
     "@libp2p/logger": "^2.0.1",
     "@libp2p/peer-id": "^2.0.0",
@@ -151,10 +151,7 @@
   "devDependencies": {
     "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.0",
     "@libp2p/interface-peer-id": "^2.0.0",
-    "@libp2p/peer-id-factory": "^2.0.0",
-    "@libp2p/peer-store": "^7.0.0",
     "aegir": "^38.1.7",
-    "datastore-core": "^9.0.3",
-    "delay": "^5.0.0"
+    "sinon-ts": "^1.0.0"
   }
 }
