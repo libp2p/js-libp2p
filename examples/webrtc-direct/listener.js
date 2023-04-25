@@ -24,9 +24,9 @@ import wrtc from 'wrtc'
   })
 
   node.addEventListener('peer:connect', (evt) => {
-    console.info(`Connected to ${evt.detail.toString()}!`)
+    console.info(`Listener connected to ${evt.detail.toString()}!`)
   })
 
-  console.log('Listening on:')
+  console.log('Listener listening on:')
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 })()

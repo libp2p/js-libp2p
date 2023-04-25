@@ -30,24 +30,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Listen for new peers
   libp2p.addEventListener('peer:discovery', (evt) => {
-    log(`Found peer ${evt.detail.id.toString()}`)
+    log(`Dialer found peer ${evt.detail.id.toString()}`)
 
     // dial them when we discover them
     libp2p.dial(evt.detail.id).catch(err => {
-      log(`Could not dial ${evt.detail.id}`, err)
+      log(`Dialer could not dial ${evt.detail.id}`, err)
     })
   })
 
   // Listen for new connections to peers
   libp2p.addEventListener('peer:connect', (evt) => {
-    log(`Connected to ${evt.detail.remotePeer.toString()}`)
+    log(`Dialer connected to ${evt.detail.toString()}`)
   })
 
   // Listen for peers disconnecting
   libp2p.addEventListener('peer:disconnect', (evt) => {
-    log(`Disconnected from ${evt.detail.remotePeer.toString()}`)
+    log(`Dialer disconnected from ${evt.detail.remotePeer.toString()}`)
   })
 
   status.innerText = 'libp2p started!'
-  log(`libp2p id is ${libp2p.peerId.toString()}`)
+  log(`Dialer libp2p id is ${libp2p.peerId.toString()}`)
 })
