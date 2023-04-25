@@ -3,13 +3,13 @@ import { CodeError } from '@libp2p/interfaces/errors'
 import * as mss from '@libp2p/multistream-select'
 import { codes } from './errors.js'
 import { createConnection } from './connection/index.js'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { MultiaddrConnection, Connection, Stream, ConnectionProtector } from '@libp2p/interface-connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Upgrader, UpgraderEvents, UpgraderOptions } from '@libp2p/interface-transport'
+import type { Upgrader, UpgraderOptions } from '@libp2p/interface-transport'
 import type { Duplex, Source } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Registrar } from '@libp2p/interface-registrar'
@@ -22,6 +22,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:upgrader')
 
@@ -103,17 +104,17 @@ export interface DefaultUpgraderComponents {
   connectionProtector?: ConnectionProtector
   registrar: Registrar
   peerStore: PeerStore
+  events: EventEmitter<Libp2pEvents>
 }
 
-export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upgrader {
+export class DefaultUpgrader implements Upgrader {
   private readonly components: DefaultUpgraderComponents
   private readonly connectionEncryption: Map<string, ConnectionEncrypter>
   private readonly muxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
+  private readonly events: EventEmitter<Libp2pEvents>
 
   constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
-    super()
-
     this.components = components
     this.connectionEncryption = new Map()
 
@@ -128,6 +129,7 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
     })
 
     this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
+    this.events = components.events
   }
 
   /**
@@ -401,7 +403,9 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
               // the peerstore should ensure that the peer is registered with that protocol
-              this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => { log.error(err) })
+              await this.components.peerStore.merge(remotePeer, {
+                protocols: [protocol]
+              })
 
               connection.addStream(muxedStream)
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
@@ -458,7 +462,9 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
 
           // If a protocol stream has been successfully negotiated and is to be passed to the application,
           // the peerstore should ensure that the peer is registered with that protocol
-          this.components.peerStore.protoBook.add(remotePeer, [protocol]).catch(err => { log.error(err) })
+          await this.components.peerStore.merge(remotePeer, {
+            protocols: [protocol]
+          })
 
           // after the handshake the returned stream can have early data so override
           // the souce/sink
@@ -510,9 +516,9 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
             } catch (err: any) {
               log.error(err)
             } finally {
-              this.dispatchEvent(new CustomEvent<Connection>('connectionEnd', {
+              this.events.safeDispatchEvent('connection:close', {
                 detail: connection
-              }))
+              })
             }
           })().catch(err => {
             log.error(err)
@@ -550,9 +556,9 @@ export class DefaultUpgrader extends EventEmitter<UpgraderEvents> implements Upg
       }
     })
 
-    this.dispatchEvent(new CustomEvent<Connection>('connection', {
+    this.events.safeDispatchEvent('connection:open', {
       detail: connection
-    }))
+    })
 
     return connection
   }

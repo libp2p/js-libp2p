@@ -57,7 +57,9 @@ const [node1, node2] = await Promise.all([
 ])
 
 // Add node's 2 data to the PeerStore
-await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+await node1.peerStore.patch(node2.peerId, {
+  multiaddrs: node2.getMultiaddrs()
+})
 await node1.dial(node2.peerId)
 
 node1.pubsub.addEventListener("message", (evt) => {

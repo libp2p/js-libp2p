@@ -8,13 +8,13 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
 import pWaitFor from 'p-wait-for'
 import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'sinon-ts'
 import type { Connection } from '@libp2p/interface-connection'
-import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
+import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import { pEvent } from 'p-event'
@@ -83,6 +83,9 @@ describe('Connection Manager', () => {
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
 
+    // wait for prune event
+    const eventPromise = pEvent(libp2p, 'connection:prune')
+
     // Add 1 connection too many
     for (let i = 0; i < max + 1; i++) {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
@@ -90,15 +93,18 @@ describe('Connection Manager', () => {
 
       const value = i * 10
       spies.set(value, spy)
-      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
-        value
+      await libp2p.peerStore.merge(connection.remotePeer, {
+        tags: {
+          'test-tag': {
+            value
+          }
+        }
       })
 
-      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
     }
 
-    // wait for prune event
-    await pEvent(connectionManager, 'peer:prune')
+    await eventPromise
 
     // get the lowest value
     const lowest = Array.from(spies.keys()).sort((a, b) => {
@@ -135,6 +141,7 @@ describe('Connection Manager', () => {
     const connectionManager = libp2p.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<string, sinon.SinonSpy<[], Promise<void>>>()
+    const eventPromise = pEvent(libp2p, 'connection:prune')
 
     const createConnection = async (value: number, open: number = Date.now(), peerTag: string = 'test-tag'): Promise<void> => {
       // #TODO: Mock the connection timeline to simulate an older connection
@@ -143,11 +150,15 @@ describe('Connection Manager', () => {
 
       // The lowest tag value will have the longest connection
       spies.set(peerTag, spy)
-      await libp2p.peerStore.tagPeer(connection.remotePeer, peerTag, {
-        value
+      await libp2p.peerStore.merge(connection.remotePeer, {
+        tags: {
+          [peerTag]: {
+            value
+          }
+        }
       })
 
-      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
     }
 
     // Create one short of enough connections to initiate pruning
@@ -163,7 +174,7 @@ describe('Connection Manager', () => {
     await createConnection(value, Date.now(), 'shortest')
 
     // wait for prune event
-    await pEvent(connectionManager, 'peer:prune')
+    await eventPromise
 
     // get the lowest tagged value, but this would be also the longest lived connection
     const longestLivedWithLowestTagSpy = spies.get('longest')
@@ -198,6 +209,7 @@ describe('Connection Manager', () => {
     const connectionManager = libp2p.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
+    const eventPromise = pEvent(libp2p, 'connection:prune')
 
     // Max out connections
     for (let i = 0; i < max; i++) {
@@ -205,10 +217,14 @@ describe('Connection Manager', () => {
       const spy = sinon.spy(connection, 'close')
       const value = (i + 1) * 10
       spies.set(value, spy)
-      await libp2p.peerStore.tagPeer(connection.remotePeer, 'test-tag', {
-        value
+      await libp2p.peerStore.merge(connection.remotePeer, {
+        tags: {
+          'test-tag': {
+            value
+          }
+        }
       })
-      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
     }
 
     // an outbound connection is opened from an address in the allow list
@@ -226,11 +242,18 @@ describe('Connection Manager', () => {
     spies.set(value, spy)
 
     // Tag that allowed peer with lowest value
-    await libp2p.peerStore.tagPeer(remotePeer, 'test-tag', {
-      value
+    await libp2p.peerStore.merge(connection.remotePeer, {
+      tags: {
+        'test-tag': {
+          value
+        }
+      }
     })
 
-    await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+    libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
+
+    // wait for prune event
+    await eventPromise
 
     // get the lowest value
     const lowest = Array.from(spies.keys()).sort((a, b) => {
@@ -267,17 +290,18 @@ describe('Connection Manager', () => {
 
     const connectionManager = libp2p.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
+    const eventPromise = pEvent(libp2p, 'connection:prune')
 
     // Add 1 too many connections
     const spy = sinon.spy()
     for (let i = 0; i < max + 1; i++) {
       const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
       sinon.stub(connection, 'close').callsFake(async () => spy()) // eslint-disable-line
-      await connectionManager._onConnect(new CustomEvent('connection', { detail: connection }))
+      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
     }
 
     // wait for prune event
-    await pEvent(connectionManager, 'peer:prune')
+    await eventPromise
 
     expect(connectionManagerMaybePruneConnectionsSpy.callCount).to.equal(6)
 
@@ -311,7 +335,11 @@ describe('Connection Manager', () => {
 
     expect(connectionManagerOpenConnectionSpy.called).to.be.false('Attempted to connect to peers')
 
-    await libp2p.peerStore.tagPeer(peerId, KEEP_ALIVE)
+    await libp2p.peerStore.merge(peerId, {
+      tags: {
+        [KEEP_ALIVE]: {}
+      }
+    })
 
     await libp2p.stop()
     await libp2p.start()
@@ -328,10 +356,10 @@ describe('Connection Manager', () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
     }, {
       ...defaultOptions,
       deny: [
@@ -355,10 +383,10 @@ describe('Connection Manager', () => {
   it('should deny connections when maxConnections is exceeded', async () => {
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
     }, {
       ...defaultOptions,
       maxConnections: 1
@@ -386,10 +414,10 @@ describe('Connection Manager', () => {
   it('should deny connections from peers that connect too frequently', async () => {
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
     }, {
       ...defaultOptions,
       inboundConnectionThreshold: 1
@@ -422,10 +450,10 @@ describe('Connection Manager', () => {
 
     const connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
-      upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
     }, {
       ...defaultOptions,
       maxConnections: 1,
@@ -457,10 +485,10 @@ describe('Connection Manager', () => {
   it('should limit the number of inbound pending connections', async () => {
     const connectionManager = new DefaultConnectionManager({
       peerId: await createEd25519PeerId(),
-      upgrader: stubInterface<Upgrader>(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
     }, {
       ...defaultOptions,
       maxIncomingPendingConnections: 1

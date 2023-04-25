@@ -2,15 +2,18 @@ import { logger } from '@libp2p/logger'
 import { codes } from './errors.js'
 import { CodeError } from '@libp2p/interfaces/errors'
 import { FaultTolerance } from '@libp2p/interface-transport'
-import type { Listener, Transport, TransportManager, TransportManagerEvents, Upgrader } from '@libp2p/interface-transport'
+import type { Listener, Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { trackedMap } from '@libp2p/tracked-map'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:transports')
 
@@ -22,9 +25,12 @@ export interface DefaultTransportManagerComponents {
   metrics?: Metrics
   addressManager: AddressManager
   upgrader: Upgrader
+  events: EventEmitter<Libp2pEvents>
+  peerId: PeerId
+  peerStore: PeerStore
 }
 
-export class DefaultTransportManager extends EventEmitter<TransportManagerEvents> implements TransportManager, Startable {
+export class DefaultTransportManager implements TransportManager, Startable {
   private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
   private readonly listeners: Map<string, Listener[]>
@@ -32,8 +38,6 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
   private started: boolean
 
   constructor (components: DefaultTransportManagerComponents, init: TransportManagerInit = {}) {
-    super()
-
     this.components = components
     this.started = false
     this.transports = new Map<string, Transport>()
@@ -197,14 +201,30 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
 
         // Track listen/close events
         listener.addEventListener('listening', () => {
-          this.dispatchEvent(new CustomEvent<Listener>('listener:listening', {
-            detail: listener
-          }))
+          this.components.peerStore.patch(this.components.peerId, {
+            multiaddrs: this.getAddrs()
+          })
+            .then(() => {
+              this.components.events.safeDispatchEvent('transport:listening', {
+                detail: listener
+              })
+            })
+            .catch(err => {
+              log.error('error while updating peer record after listener began listening', err)
+            })
         })
         listener.addEventListener('close', () => {
-          this.dispatchEvent(new CustomEvent<Listener>('listener:close', {
-            detail: listener
-          }))
+          this.components.peerStore.patch(this.components.peerId, {
+            multiaddrs: this.getAddrs()
+          })
+            .then(() => {
+              this.components.events.safeDispatchEvent('transport:close', {
+                detail: listener
+              })
+            })
+            .catch(err => {
+              log.error('error while updating peer record after listener stopped listening', err)
+            })
         })
 
         // We need to attempt to listen on everything

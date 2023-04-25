@@ -87,7 +87,9 @@ describe('dialing (resolvable addresses)', () => {
     // Use the last peer
     const peerId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.peerStore.protoBook.add(peerId, [RELAY_V2_HOP_CODEC])
+    await remoteLibp2p.components.peerStore.merge(peerId, {
+      protocols: [RELAY_V2_HOP_CODEC]
+    })
     const remoteId = remoteLibp2p.peerId
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
@@ -118,7 +120,9 @@ describe('dialing (resolvable addresses)', () => {
     // Use the last peer
     const relayId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
+    await remoteLibp2p.components.peerStore.merge(relayId, {
+      protocols: [RELAY_V2_HOP_CODEC]
+    })
 
     // Transport spy
     const transport = getTransport(libp2p, 'libp2p/circuit-relay-v2')
@@ -184,7 +188,9 @@ describe('dialing (resolvable addresses)', () => {
     // Use the last peer
     const relayId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.peerStore.protoBook.add(relayId, [RELAY_V2_HOP_CODEC])
+    await remoteLibp2p.components.peerStore.merge(relayId, {
+      protocols: [RELAY_V2_HOP_CODEC]
+    })
 
     // Transport spy
     const transport = getTransport(libp2p, 'libp2p/circuit-relay-v2')

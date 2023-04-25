@@ -20,8 +20,12 @@ describe('ping', () => {
     ])
     await populateAddressBooks(nodes)
 
-    await nodes[0].components.peerStore.addressBook.set(nodes[1].peerId, nodes[1].getMultiaddrs())
-    await nodes[1].components.peerStore.addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
+    await nodes[0].components.peerStore.patch(nodes[1].peerId, {
+      multiaddrs: nodes[1].getMultiaddrs()
+    })
+    await nodes[1].components.peerStore.patch(nodes[0].peerId, {
+      multiaddrs: nodes[0].getMultiaddrs()
+    })
   })
 
   afterEach(async () => await Promise.all(nodes.map(async n => { await n.stop() })))
@@ -87,7 +91,9 @@ describe('ping', () => {
         }
       })
     })
-    await client.components.peerStore.addressBook.set(remote.peerId, remote.getMultiaddrs())
+    await client.components.peerStore.patch(remote.peerId, {
+      multiaddrs: remote.getMultiaddrs()
+    })
     // register our new node for shutdown after the test finishes
     // otherwise the Mocha/Node.js process never finishes
     nodes.push(client)

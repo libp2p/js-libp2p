@@ -6,25 +6,32 @@ import { AddressFilter, DefaultAddressManager } from '../../src/address-manager/
 import { createNode } from '../utils/creators/peer.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
-import { stubInterface } from 'sinon-ts'
+import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '../../src/index.js'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']
 
 describe('Address Manager', () => {
   let peerId: PeerId
+  let peerStore: StubbedInstance<PeerStore>
 
   before(async () => {
     peerId = await createFromJSON(Peers[0])
+    peerStore = stubInterface<PeerStore>({
+      // @ts-expect-error incorrect return type
+      patch: Promise.resolve({})
+    })
   })
 
   it('should not need any addresses', () => {
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -36,7 +43,8 @@ describe('Address Manager', () => {
   it('should return listen multiaddrs on get', () => {
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses
@@ -54,7 +62,8 @@ describe('Address Manager', () => {
   it('should return announce multiaddrs on get', () => {
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses,
@@ -72,7 +81,8 @@ describe('Address Manager', () => {
   it('should add observed addresses', () => {
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -88,7 +98,8 @@ describe('Address Manager', () => {
     const ma = multiaddr('/ip4/0.0.0.0/tcp/0')
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: [
@@ -107,7 +118,8 @@ describe('Address Manager', () => {
     const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -122,18 +134,14 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
-  it('should only emit one change:addresses event', () => {
+  it('should only set addresses once', () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
-    }, {
-      announceFilter: stubInterface<AddressFilter>()
-    })
-    let eventCount = 0
-
-    am.addEventListener('change:addresses', () => {
-      eventCount++
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: []
+      }),
+      peerStore
     })
 
     am.confirmObservedAddr(multiaddr(ma))
@@ -141,16 +149,15 @@ describe('Address Manager', () => {
     am.confirmObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
 
-    expect(eventCount).to.equal(1)
+    expect(peerStore.patch).to.have.property('callCount', 1)
   })
 
   it('should strip our peer address from added observed addresses', () => {
     const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
-    }, {
-      announceFilter: stubInterface<AddressFilter>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     })
 
     expect(am.getObservedAddrs()).to.be.empty()
@@ -166,9 +173,8 @@ describe('Address Manager', () => {
     const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new DefaultAddressManager({
       peerId,
-      transportManager: stubInterface<TransportManager>()
-    }, {
-      announceFilter: stubInterface<AddressFilter>()
+      transportManager: stubInterface<TransportManager>(),
+      peerStore
     })
 
     expect(am.getObservedAddrs()).to.be.empty()
@@ -185,7 +191,8 @@ describe('Address Manager', () => {
     const transportManager = stubInterface<TransportManager>()
     const am = new DefaultAddressManager({
       peerId,
-      transportManager
+      transportManager,
+      peerStore
     }, {
       listen: [ma],
       announce: []

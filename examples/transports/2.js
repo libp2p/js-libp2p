@@ -51,7 +51,9 @@ function printAddrs (node, number) {
     console.log(uint8ArrayToString(result))
   })
 
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
   const stream = await node1.dialProtocol(node2.peerId, '/print')
 
   await pipe(
