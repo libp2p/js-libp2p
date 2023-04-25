@@ -1,3 +1,10 @@
+## [1.1.8](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.7...v1.1.8) (2023-04-25)
+
+
+### Bug Fixes
+
+* added peer connection state listener to emit closed events ([#134](https://github.com/libp2p/js-libp2p-webrtc/issues/134)) ([16e8503](https://github.com/libp2p/js-libp2p-webrtc/commit/16e85030e78ed9edb2ebecf81bac3ad33d622111)), closes [#138](https://github.com/libp2p/js-libp2p-webrtc/issues/138) [#138](https://github.com/libp2p/js-libp2p-webrtc/issues/138) [#138](https://github.com/libp2p/js-libp2p-webrtc/issues/138)
+
 ## [1.1.7](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.6...v1.1.7) (2023-04-24)
 
 
