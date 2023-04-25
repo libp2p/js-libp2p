@@ -31,7 +31,7 @@ const createNode = async () => {
   await node1.peerStore.patch(node2.peerId, {
     multiaddrs: node2.getMultiaddrs()
   })
-  await node2.peerStore(node3.peerId, {
+  await node2.peerStore.patch(node3.peerId, {
     multiaddrs: node3.getMultiaddrs()
   })
 

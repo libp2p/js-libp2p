@@ -167,6 +167,7 @@
     "uint8arraylist": "^2.3.2",
     "uint8arrays": "^4.0.2",
     "wherearewe": "^2.0.0",
+    "why-is-node-running": "^2.2.2",
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
