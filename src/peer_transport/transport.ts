@@ -131,7 +131,7 @@ export class WebRTCTransport implements Transport, Startable {
       const result = await options.upgrader.upgradeOutbound(
         new WebRTCMultiaddrConnection({
           peerConnection: pc,
-          timeline: { open: (new Date()).getTime() },
+          timeline: { open: Date.now() },
           remoteAddr: webrtcMultiaddr
         }),
         {

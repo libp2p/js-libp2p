@@ -4,7 +4,7 @@ import * as pb from './pb/index.js'
 import { detect } from 'detect-browser'
 
 const browser = detect()
-const isFirefox = ((browser != null) && browser.name === 'firefox')
+export const isFirefox = ((browser != null) && browser.name === 'firefox')
 
 interface MessageStream {
   read: () => Promise<pb.Message>
