@@ -115,7 +115,7 @@
     "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/interface-peer-info": "^1.0.3",
     "@libp2p/interface-peer-routing": "^1.0.1",
-    "@libp2p/interface-peer-store": "^1.2.2",
+    "@libp2p/interface-peer-store": "^2.0.1",
     "@libp2p/interface-pubsub": "^4.0.0",
     "@libp2p/interface-record": "^2.0.6",
     "@libp2p/interface-registrar": "^2.0.3",
