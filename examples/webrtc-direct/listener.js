@@ -24,7 +24,7 @@ import wrtc from 'wrtc'
   })
 
   node.addEventListener('peer:connect', (evt) => {
-    console.info(`Connected to ${evt.detail.remotePeer.toString()}!`)
+    console.info(`Connected to ${evt.detail.toString()}!`)
   })
 
   console.log('Listening on:')
