@@ -19,7 +19,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { floodsub } from '@libp2p/floodsub'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-import { circuitRelayServer, circuitRelayTransport } from '../src/circuit/index.js'
+import { circuitRelayServer, circuitRelayTransport } from '../src/circuit-relay/index.js'
 
 /**
  * @packageDocumentation
@@ -124,6 +124,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
+    // @ts-expect-error remove after https://github.com/ChainSafe/js-libp2p-noise/pull/306
     connectionEncryption: [noise()],
     nat: {
       enabled: false

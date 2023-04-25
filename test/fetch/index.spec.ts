@@ -8,13 +8,16 @@ import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-m
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { TimeoutController } from 'timeout-abort-controller'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import { DefaultComponents } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 const defaultInit: FetchServiceInit = {
   protocolPrefix: 'ipfs',
@@ -26,17 +29,20 @@ const defaultInit: FetchServiceInit = {
 async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
+  const events = new EventEmitter()
   const components = new DefaultComponents({
     peerId,
     registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
-    datastore: new MemoryDatastore()
+    upgrader: mockUpgrader({ events }),
+    datastore: new MemoryDatastore(),
+    transportManager: stubInterface<TransportManager>(),
+    connectionGater: stubInterface<ConnectionGater>(),
+    events
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
     minConnections: 50,
     maxConnections: 1000,
-    autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
   })
 
@@ -83,8 +89,8 @@ describe('fetch', () => {
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // Run fetch
     const result = await localFetch.fetch(remoteComponents.peerId, key)
@@ -102,8 +108,8 @@ describe('fetch', () => {
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // replace existing handler with a really slow one
     await remoteComponents.registrar.unhandle(remoteFetch.protocol)

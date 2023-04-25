@@ -17,13 +17,12 @@ import { Message } from '../../src/autonat/pb/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pushable } from 'it-pushable'
 import type { Transport, TransportManager } from '@libp2p/interface-transport'
-import type { AddressBook, PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import * as lp from 'it-length-prefixed'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { Components, DefaultComponents } from '../../src/components.js'
-import type { Dialer } from '@libp2p/interface-connection-manager'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 
@@ -43,7 +42,6 @@ describe('autonat', () => {
   let registrar: StubbedInstance<Registrar>
   let addressManager: StubbedInstance<AddressManager>
   let connectionManager: StubbedInstance<DefaultConnectionManager>
-  let dialer: StubbedInstance<Dialer>
   let transportManager: StubbedInstance<TransportManager>
   let peerStore: StubbedInstance<PeerStore>
 
@@ -53,17 +51,12 @@ describe('autonat', () => {
     addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([])
 
-    dialer = stubInterface<Dialer>()
     connectionManager = stubInterface<DefaultConnectionManager>()
-    // @ts-expect-error read-only property
-    connectionManager.dialer = dialer
     transportManager = stubInterface<TransportManager>()
     peerStore = stubInterface<PeerStore>()
-    peerStore.addressBook = stubInterface<AddressBook>()
 
     components = new DefaultComponents({
       peerId: await createEd25519PeerId(),
-      dialer,
       peerRouting,
       registrar,
       addressManager,
@@ -453,9 +446,9 @@ describe('autonat', () => {
       newConnection.remoteAddr = remoteAddr
 
       if (opts.canDial === false) {
-        dialer.dial.rejects(new Error('Could not dial'))
+        connectionManager.openConnection.rejects(new Error('Could not dial'))
       } else if (opts.canDial === true) {
-        dialer.dial.resolves(newConnection)
+        connectionManager.openConnection.resolves(newConnection)
       }
 
       let buf: Uint8Array | undefined
@@ -491,7 +484,7 @@ describe('autonat', () => {
 
       const slice = await pipe(
         sink,
-        lp.decode(),
+        (source) => lp.decode(source),
         async source => await all(source)
       )
 
@@ -642,7 +635,7 @@ describe('autonat', () => {
     })
 
     it('should time out when dialing a requested address', async () => {
-      dialer.dial.callsFake(async function (ma, options = {}) {
+      connectionManager.openConnection.callsFake(async function (ma, options = {}) {
         return await Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {

@@ -127,9 +127,9 @@ export class FetchService implements Startable {
 
       const result = await pipe(
         [FetchRequest.encode({ identifier: key })],
-        lp.encode(),
+        (source) => lp.encode(source),
         source,
-        lp.decode(),
+        (source) => lp.decode(source),
         async function (source) {
           const buf = await first(source)
 
@@ -184,7 +184,7 @@ export class FetchService implements Startable {
 
     await pipe(
       stream,
-      lp.decode(),
+      (source) => lp.decode(source),
       async function * (source) {
         const buf = await first(source)
 
@@ -215,7 +215,7 @@ export class FetchService implements Startable {
 
         yield FetchResponse.encode(response)
       },
-      lp.encode(),
+      (source) => lp.encode(source),
       stream
     )
   }

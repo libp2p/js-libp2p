@@ -12,11 +12,14 @@ import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { Datastore } from 'interface-datastore'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { DualDHT } from '@libp2p/interface-dht'
-import type { ConnectionManager, Dialer } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 
 export interface Components {
   peerId: PeerId
+  events: EventEmitter<Libp2pEvents>
   addressManager: AddressManager
   peerStore: PeerStore
   upgrader: Upgrader
@@ -28,7 +31,6 @@ export interface Components {
   peerRouting: PeerRouting
   datastore: Datastore
   connectionProtector?: ConnectionProtector
-  dialer: Dialer
   metrics?: Metrics
   dht?: DualDHT
   pubsub?: PubSub
@@ -36,6 +38,7 @@ export interface Components {
 
 export interface ComponentsInit {
   peerId?: PeerId
+  events?: EventEmitter<Libp2pEvents>
   addressManager?: AddressManager
   peerStore?: PeerStore
   upgrader?: Upgrader
@@ -50,11 +53,11 @@ export interface ComponentsInit {
   connectionProtector?: ConnectionProtector
   dht?: DualDHT
   pubsub?: PubSub
-  dialer?: Dialer
 }
 
 export class DefaultComponents implements Components, Startable {
   private _peerId?: PeerId
+  private _events?: EventEmitter<Libp2pEvents>
   private _addressManager?: AddressManager
   private _peerStore?: PeerStore
   private _upgrader?: Upgrader
@@ -69,11 +72,11 @@ export class DefaultComponents implements Components, Startable {
   private _connectionProtector?: ConnectionProtector
   private _dht?: DualDHT
   private _pubsub?: PubSub
-  private _dialer?: Dialer
   private _started = false
 
   constructor (init: ComponentsInit = {}) {
     this._peerId = init.peerId
+    this._events = init.events
     this._addressManager = init.addressManager
     this._peerStore = init.peerStore
     this._upgrader = init.upgrader
@@ -88,7 +91,6 @@ export class DefaultComponents implements Components, Startable {
     this._connectionProtector = init.connectionProtector
     this._dht = init.dht
     this._pubsub = init.pubsub
-    this._dialer = init.dialer
   }
 
   isStarted (): boolean {
@@ -165,6 +167,18 @@ export class DefaultComponents implements Components, Startable {
 
   set peerId (peerId: PeerId) {
     this._peerId = peerId
+  }
+
+  get events (): EventEmitter<Libp2pEvents> {
+    if (this._events == null) {
+      throw new CodeError('events not set', 'ERR_SERVICE_MISSING')
+    }
+
+    return this._events
+  }
+
+  set events (events: EventEmitter<Libp2pEvents>) {
+    this._events = events
   }
 
   get addressManager (): AddressManager {
@@ -293,18 +307,6 @@ export class DefaultComponents implements Components, Startable {
 
   set connectionProtector (connectionProtector: ConnectionProtector | undefined) {
     this._connectionProtector = connectionProtector
-  }
-
-  get dialer (): Dialer {
-    if (this._dialer == null) {
-      throw new CodeError('dialer not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._dialer
-  }
-
-  set dialer (dialer: Dialer) {
-    this._dialer = dialer
   }
 
   get metrics (): Metrics | undefined {

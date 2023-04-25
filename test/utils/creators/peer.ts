@@ -67,7 +67,9 @@ export async function populateAddressBooks (peers: Libp2pNode[]): Promise<void> 
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
-        await peers[i].components.peerStore.addressBook.set(peers[j].peerId, peers[j].components.addressManager.getAddresses())
+        await peers[i].components.peerStore.patch(peers[j].peerId, {
+          multiaddrs: peers[j].components.addressManager.getAddresses()
+        })
       }
     }
   }

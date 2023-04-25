@@ -20,7 +20,7 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
 import { plaintext } from '../../src/insecure/index.js'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
-import type { ConnectionProtector, Stream } from '@libp2p/interface-connection'
+import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface-connection'
 import pDefer from 'p-defer'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
@@ -32,6 +32,7 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import { DefaultComponents } from '../../src/components.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -69,7 +70,8 @@ describe('Upgrader', () => {
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       datastore: new MemoryDatastore(),
-      connectionProtector: localConnectionProtector
+      connectionProtector: localConnectionProtector,
+      events: new EventEmitter()
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
@@ -93,7 +95,8 @@ describe('Upgrader', () => {
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       datastore: new MemoryDatastore(),
-      connectionProtector: remoteConnectionProtector
+      connectionProtector: remoteConnectionProtector,
+      events: new EventEmitter()
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
@@ -277,7 +280,10 @@ describe('Upgrader', () => {
         throw new Error('Not implemented')
       }
 
-      source = []
+      source = (async function * () {
+        yield * []
+      })()
+
       async sink (): Promise<void> {}
       close (): void {}
     }
@@ -356,16 +362,16 @@ describe('Upgrader', () => {
     const remoteConnectionEventReceived = pDefer()
     const remoteConnectionEndEventReceived = pDefer()
 
-    localUpgrader.addEventListener('connection', () => {
+    localComponents.events.addEventListener('connection:open', () => {
       localConnectionEventReceived.resolve()
     })
-    localUpgrader.addEventListener('connectionEnd', () => {
+    localComponents.events.addEventListener('connection:close', () => {
       localConnectionEndEventReceived.resolve()
     })
-    remoteUpgrader.addEventListener('connection', () => {
+    remoteComponents.events.addEventListener('connection:open', () => {
       remoteConnectionEventReceived.resolve()
     })
-    remoteUpgrader.addEventListener('connectionEnd', () => {
+    remoteComponents.events.addEventListener('connection:close', () => {
       remoteConnectionEndEventReceived.resolve()
     })
 
@@ -657,30 +663,32 @@ describe('libp2p.upgrader', () => {
 
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
-    // Spy on emit for easy verification
-    const connectionManagerDispatchEventSpy = sinon.spy(libp2p.connectionManager, 'dispatchEvent')
-
     // Upgrade and check the connect event
-    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
     const connections = await Promise.all([
       libp2p.components.upgrader.upgradeOutbound(outbound),
       remoteLibp2p.components.upgrader.upgradeInbound(inbound)
     ])
-    await connectionPromise
-    expect(connectionManagerDispatchEventSpy.callCount).to.equal(1)
+    const connectEvent = await connectionPromise as CustomEvent<Connection>
 
-    let [event] = connectionManagerDispatchEventSpy.getCall(0).args
-    expect(event).to.have.property('type', 'peer:connect')
-    // @ts-expect-error detail is only on CustomEvent type
-    expect(remotePeer.equals(event.detail.remotePeer)).to.equal(true)
+    if (connectEvent.type !== 'connection:open') {
+      throw new Error(`Incorrect event type, expected: 'connection:open' actual: ${connectEvent.type}`)
+    }
+
+    expect(remotePeer.equals(connectEvent.detail.remotePeer)).to.equal(true)
+
+    const disconnectionPromise = pEvent(libp2p, 'peer:disconnect')
 
     // Close and check the disconnect event
     await Promise.all(connections.map(async conn => { await conn.close() }))
-    expect(connectionManagerDispatchEventSpy.callCount).to.equal(2)
-    ;([event] = connectionManagerDispatchEventSpy.getCall(1).args)
-    expect(event).to.have.property('type', 'peer:disconnect')
-    // @ts-expect-error detail is only on CustomEvent type
-    expect(remotePeer.equals(event.detail.remotePeer)).to.equal(true)
+
+    const disconnectEvent = await disconnectionPromise as CustomEvent<PeerId>
+
+    if (disconnectEvent.type !== 'peer:disconnect') {
+      throw new Error(`Incorrect event type, expected: 'peer:disconnect' actual: ${disconnectEvent.type}`)
+    }
+
+    expect(remotePeer.equals(disconnectEvent.detail)).to.equal(true)
   })
 
   it('should limit the number of incoming streams that can be opened using a protocol', async () => {

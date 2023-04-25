@@ -17,6 +17,7 @@ import { createEd25519PeerId, createFromJSON } from '@libp2p/peer-id-factory'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import type { DefaultComponents } from '../../src/components.js'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -25,9 +26,11 @@ describe('Transport Manager (WebSockets)', () => {
   let components: DefaultComponents
 
   before(async () => {
+    const events = new EventEmitter()
     components = {
       peerId: await createEd25519PeerId(),
-      upgrader: mockUpgrader()
+      events,
+      upgrader: mockUpgrader({ events })
     } as any
     components.addressManager = new DefaultAddressManager(components, { listen: [listenAddr.toString()] })
 

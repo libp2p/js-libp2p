@@ -48,7 +48,9 @@ describe('getPublicKey', () => {
       throw new Error('Public key was missing')
     }
 
-    await libp2p.peerStore.keyBook.set(otherPeer, otherPeer.publicKey)
+    await libp2p.peerStore.patch(otherPeer, {
+      publicKey: otherPeer.publicKey
+    })
 
     const key = await libp2p.getPublicKey(otherPeer)
 

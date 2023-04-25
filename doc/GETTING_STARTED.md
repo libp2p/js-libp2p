@@ -12,6 +12,9 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
       - [Running Libp2p](#running-libp2p)
     - [Custom setup](#custom-setup)
       - [Peer Discovery](#peer-discovery)
+  - [Debugging](#debugging)
+    - [Node](#node)
+    - [Browser](#browser)
   - [What is next](#what-is-next)
 
 ## Install
@@ -58,7 +61,7 @@ There are multiple libp2p transports available, you should evaluate the needs of
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://docs.libp2p.io/concepts/transport
+- https://docs.libp2p.io/concepts/transports
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
@@ -213,7 +216,7 @@ node.addEventListener('peer:discovery', (evt) => {
   console.log('Discovered %s', evt.detail.id.toString()) // Log discovered peer
 })
 
-node.connectionManager.addEventListener('peer:connect', (evt) => {
+node.addEventListener('peer:connect', (evt) => {
   console.log('Connected to %s', evt.detail.remotePeer.toString()) // Log connected peer
 })
 ```
@@ -223,6 +226,30 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 - https://github.com/libp2p/specs/blob/master/discovery/mdns.md
 </details>
+
+## Debugging
+
+When running libp2p you may want to see what things are happening behind the scenes. You can see trace logs by setting the `DEBUG` environment variable when running in Node.js, and by setting `debug` as a localStorage item when running in the browser. Some examples:
+
+### Node
+
+```javascript
+# all libp2p debug logs
+DEBUG="libp2p:*" node myscript.js
+
+# networking debug logs
+DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer" node myscript.js
+```
+
+### Browser
+
+```javascript
+// all libp2p debug logs
+localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the libraries can read this when spinning up.
+
+// networking debug logs
+localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer')
+```
 
 ## What is next
 

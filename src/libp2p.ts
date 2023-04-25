@@ -9,7 +9,6 @@ import { CompoundContentRouting } from './content-routing/index.js'
 import { codes } from './errors.js'
 import { DefaultAddressManager } from './address-manager/index.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
-import { AutoDialler } from './connection-manager/auto-dialler.js'
 import { DefaultKeyChain } from '@libp2p/keychain'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
@@ -18,7 +17,6 @@ import { IdentifyService } from './identify/index.js'
 import { FetchService } from './fetch/index.js'
 import { PingService } from './ping/index.js'
 import { NatManager } from './nat-manager.js'
-import { PeerRecordUpdater } from './peer-record-updater.js'
 import { DHTPeerRouting } from './dht/dht-peer-routing.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DHTContentRouting } from './dht/dht-content-routing.js'
@@ -33,7 +31,7 @@ import type { PubSub } from '@libp2p/interface-pubsub'
 import type { Registrar, StreamHandler, StreamHandlerOptions, Topology } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { Libp2p, Libp2pEvents, Libp2pInit, Libp2pOptions } from './index.js'
+import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
 import { validateConfig } from './config.js'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import type { PeerStore } from '@libp2p/interface-peer-store'
@@ -41,17 +39,17 @@ import type { DualDHT } from '@libp2p/interface-dht'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import type { Metrics } from '@libp2p/interface-metrics'
 import { DummyDHT } from './dht/dummy-dht.js'
 import { DummyPubSub } from './pubsub/dummy-pubsub.js'
 import { PeerSet } from '@libp2p/peer-collections'
-import { DefaultDialer } from './connection-manager/dialer/index.js'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Datastore } from 'interface-datastore'
 import type { KeyChain } from '@libp2p/interface-keychain'
 import mergeOptions from 'merge-options'
-import type { CircuitRelayService } from './circuit/index.js'
+import type { CircuitRelayService } from './circuit-relay/index.js'
+import type { Libp2pEvents, PendingDial } from '@libp2p/interface-libp2p'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p')
 
@@ -79,10 +77,29 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   constructor (init: Libp2pInit) {
     super()
 
+    // event bus - components can listen to this emitter to be notified of system events
+    // and also cause them to be emitted
+    const events = new EventEmitter<Libp2pEvents>()
+    const originalDispatch = events.dispatchEvent.bind(events)
+    events.dispatchEvent = (evt: any) => {
+      const internalResult = originalDispatch(evt)
+      const externalResult = this.dispatchEvent(
+        new CustomEvent(evt.type, { detail: evt.detail })
+      )
+
+      return internalResult || externalResult
+    }
+
+    try {
+      // This emitter gets listened to a lot
+      setMaxListeners?.(Infinity, events)
+    } catch {}
+
     this.started = false
     this.peerId = init.peerId
     const components = this.components = new DefaultComponents({
       peerId: init.peerId,
+      events,
       datastore: init.datastore ?? new MemoryDatastore(),
       connectionGater: {
         denyDialPeer: async () => await Promise.resolve(false),
@@ -113,10 +130,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     this.peerStore = this.components.peerStore
 
-    this.peerStore.addEventListener('peer', evt => {
-      const { detail: peerData } = evt
-
-      this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peerData }))
+    this.components.events.addEventListener('peer:update', evt => {
+      // if there was no peer previously in the peer store this is a new peer
+      if (evt.detail.previous == null) {
+        this.safeDispatchEvent('peer:discovery', { detail: evt.detail.peer })
+      }
     })
 
     // Set up connection protector if configured
@@ -131,31 +149,17 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
     })
 
-    // Create the dialer
-    this.components.dialer = new DefaultDialer(this.components, init.connectionManager)
+    // Setup the transport manager
+    this.components.transportManager = new DefaultTransportManager(this.components, init.transportManager)
 
     // Create the Connection Manager
     this.connectionManager = this.components.connectionManager = new DefaultConnectionManager(this.components, init.connectionManager)
 
-    // forward connection manager events
-    this.components.connectionManager.addEventListener('peer:disconnect', (event) => {
-      this.dispatchEvent(new CustomEvent<Connection>('peer:disconnect', { detail: event.detail }))
-    })
-    this.components.connectionManager.addEventListener('peer:connect', (event) => {
-      this.dispatchEvent(new CustomEvent<Connection>('peer:connect', { detail: event.detail }))
-    })
-
     // Create the Registrar
     this.registrar = this.components.registrar = new DefaultRegistrar(this.components)
 
-    // Setup the transport manager
-    this.components.transportManager = new DefaultTransportManager(this.components, init.transportManager)
-
     // Addresses {listen, announce, noAnnounce}
     this.components.addressManager = new DefaultAddressManager(this.components, init.addresses)
-
-    // update our peer record when addresses change
-    this.configureComponent(new PeerRecordUpdater(this.components))
 
     // Create keychain
     const keychainOpts = DefaultKeyChain.generateOptions()
@@ -228,11 +232,6 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     this.autonatService = this.configureComponent(new AutonatService(this.components, {
       ...init.autonat
-    }))
-
-    this.configureComponent(new AutoDialler(this.components, {
-      minConnections: init.connectionManager.minConnections,
-      autoDialInterval: init.connectionManager.autoDialInterval
     }))
 
     if (init.relay != null) {
@@ -354,6 +353,10 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return this.components.connectionManager.getConnections(peerId)
   }
 
+  getDialQueue (): PendingDial[] {
+    return this.components.connectionManager.getDialQueue()
+  }
+
   getPeers (): PeerId[] {
     const peerSet = new PeerSet()
 
@@ -364,11 +367,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
     return Array.from(peerSet)
   }
 
-  async dial (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+  async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
     return await this.components.connectionManager.openConnection(peer, options)
   }
 
-  async dialProtocol (peer: PeerId | Multiaddr, protocols: string | string[], options: AbortOptions = {}): Promise<Stream> {
+  async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: AbortOptions = {}): Promise<Stream> {
     if (protocols == null) {
       throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
     }
@@ -412,12 +415,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
 
     const peerInfo = await this.peerStore.get(peer)
 
-    if (peerInfo.pubKey != null) {
-      return peerInfo.pubKey
-    }
-
-    if (this.dht == null) {
-      throw new CodeError('Public key was not in the peer store and the DHT is not enabled', codes.ERR_NO_ROUTERS_AVAILABLE)
+    if (peerInfo.id.publicKey != null) {
+      return peerInfo.id.publicKey
     }
 
     const peerKey = uint8ArrayConcat([
@@ -425,24 +424,22 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       peer.multihash.digest
     ])
 
-    // search the dht
-    for await (const event of this.dht.get(peerKey, options)) {
-      if (event.name === 'VALUE') {
-        const key = unmarshalPublicKey(event.value)
+    // search any available content routing methods
+    const bytes = await this.contentRouting.get(peerKey, options)
 
-        await this.peerStore.keyBook.set(peer, event.value)
+    await this.peerStore.patch(peer, {
+      publicKey: bytes
+    })
 
-        return key.bytes
-      }
-    }
-
-    throw new CodeError(`Node not responding with its public key: ${peer.toString()}`, codes.ERR_INVALID_RECORD)
+    return bytes
   }
 
   async fetch (peer: PeerId | Multiaddr, key: string, options: AbortOptions = {}): Promise<Uint8Array | null> {
     if (isMultiaddr(peer)) {
       const peerId = peerIdFromString(peer.getPeerId() ?? '')
-      await this.components.peerStore.addressBook.add(peerId, [peer])
+      await this.components.peerStore.merge(peerId, {
+        multiaddrs: [peer]
+      })
       peer = peerId
     }
 
@@ -452,7 +449,9 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   async ping (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<number> {
     if (isMultiaddr(peer)) {
       const peerId = peerIdFromString(peer.getPeerId() ?? '')
-      await this.components.peerStore.addressBook.add(peerId, [peer])
+      await this.components.peerStore.merge(peerId, {
+        multiaddrs: [peer]
+      })
       peer = peerId
     }
 
@@ -492,8 +491,8 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
   }
 
   /**
-   * Called whenever peer discovery services emit `peer` events.
-   * Known peers may be emitted.
+   * Called whenever peer discovery services emit `peer` events and adds peers
+   * to the peer store.
    */
   onDiscoveryPeer (evt: CustomEvent<PeerInfo>): void {
     const { detail: peer } = evt
@@ -503,15 +502,11 @@ export class Libp2pNode extends EventEmitter<Libp2pEvents> implements Libp2p {
       return
     }
 
-    if (peer.multiaddrs.length > 0) {
-      void this.components.peerStore.addressBook.add(peer.id, peer.multiaddrs).catch(err => { log.error(err) })
-    }
-
-    if (peer.protocols.length > 0) {
-      void this.components.peerStore.protoBook.set(peer.id, peer.protocols).catch(err => { log.error(err) })
-    }
-
-    this.dispatchEvent(new CustomEvent<PeerInfo>('peer:discovery', { detail: peer }))
+    void this.components.peerStore.merge(peer.id, {
+      multiaddrs: peer.multiaddrs,
+      protocols: peer.protocols
+    })
+      .catch(err => { log.error(err) })
   }
 }
 

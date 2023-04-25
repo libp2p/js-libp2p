@@ -1,6 +1,5 @@
 import mergeOptions from 'merge-options'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import * as Constants from './constants.js'
 import { AGENT_VERSION } from './identify/consts.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { FaultTolerance } from '@libp2p/interface-transport'
@@ -19,19 +18,11 @@ const DefaultConfig: Partial<Libp2pInit> = {
     announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs
   },
   connectionManager: {
-    maxConnections: 300,
-    minConnections: 50,
-    autoDialInterval: 10000,
-    maxParallelDials: Constants.MAX_PARALLEL_DIALS,
-    maxDialsPerPeer: Constants.MAX_PER_PEER_DIALS,
-    dialTimeout: Constants.DIAL_TIMEOUT,
-    inboundUpgradeTimeout: Constants.INBOUND_UPGRADE_TIMEOUT,
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
     addressSorter: publicAddressesFirst
   },
-  connectionGater: {},
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
   },

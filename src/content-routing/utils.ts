@@ -11,7 +11,9 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 export async function * storeAddresses (source: Source<PeerInfo>, peerStore: PeerStore): AsyncIterable<PeerInfo> {
   yield * map(source, async (peer) => {
     // ensure we have the addresses for a given peer
-    await peerStore.addressBook.add(peer.id, peer.multiaddrs)
+    await peerStore.merge(peer.id, {
+      multiaddrs: peer.multiaddrs
+    })
 
     return peer
   })
@@ -49,6 +51,6 @@ export async function * requirePeers (source: Source<PeerInfo>, min: number = 1)
   }
 
   if (seen < min) {
-    throw new CodeError('not found', 'NOT_FOUND')
+    throw new CodeError(`more peers required, seen: ${seen}  min: ${min}`, 'NOT_FOUND')
   }
 }
