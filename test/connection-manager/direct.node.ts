@@ -37,6 +37,7 @@ import fs from 'node:fs'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -57,10 +58,12 @@ describe('dialing (direct, TCP)', () => {
       createFromJSON(Peers[1])
     ])
 
+    const remoteEvents = new EventEmitter()
     remoteComponents = new DefaultComponents({
       peerId: remotePeerId,
+      events: remoteEvents,
       datastore: new MemoryDatastore(),
-      upgrader: mockUpgrader(),
+      upgrader: mockUpgrader({ events: remoteEvents }),
       connectionGater: mockConnectionGater()
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
@@ -72,10 +75,12 @@ describe('dialing (direct, TCP)', () => {
     remoteTM = new DefaultTransportManager(remoteComponents)
     remoteTM.add(tcp()())
 
+    const localEvents = new EventEmitter()
     localComponents = new DefaultComponents({
       peerId: localPeerId,
+      events: localEvents,
       datastore: new MemoryDatastore(),
-      upgrader: mockUpgrader(),
+      upgrader: mockUpgrader({ events: localEvents }),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: mockConnectionGater()
     })
@@ -113,9 +118,11 @@ describe('dialing (direct, TCP)', () => {
   it('should be able to connect to remote node with duplicated addresses', async () => {
     const remotePeer = peerIdFromString(remoteAddr.getPeerId() ?? '')
     const dnsaddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remotePeer}`)
-    await localComponents.peerStore.addressBook.add(remotePeer, [
-      dnsaddr
-    ])
+    await localComponents.peerStore.merge(remotePeer, {
+      multiaddrs: [
+        dnsaddr
+      ]
+    })
     const dialer = new DialQueue(localComponents, {
       resolvers: {
         dnsaddr: resolver
@@ -149,7 +156,9 @@ describe('dialing (direct, TCP)', () => {
   })
 
   it('should be able to connect to a given peer id', async () => {
-    await localComponents.peerStore.addressBook.set(remoteComponents.peerId, remoteTM.getAddrs())
+    await localComponents.peerStore.patch(remoteComponents.peerId, {
+      multiaddrs: remoteTM.getAddrs()
+    })
 
     const dialer = new DialQueue(localComponents)
 
@@ -159,7 +168,9 @@ describe('dialing (direct, TCP)', () => {
   })
 
   it('should fail to connect to a given peer with unsupported addresses', async () => {
-    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, [unsupportedAddr])
+    await localComponents.peerStore.patch(remoteComponents.peerId, {
+      multiaddrs: [unsupportedAddr]
+    })
 
     const dialer = new DialQueue(localComponents)
 
@@ -172,7 +183,9 @@ describe('dialing (direct, TCP)', () => {
     const remoteAddrs = remoteTM.getAddrs()
 
     const peerId = await createFromJSON(Peers[1])
-    await localComponents.peerStore.addressBook.add(peerId, [...remoteAddrs, unsupportedAddr])
+    await localComponents.peerStore.patch(peerId, {
+      multiaddrs: [...remoteAddrs, unsupportedAddr]
+    })
 
     const dialer = new DialQueue(localComponents)
 
@@ -246,7 +259,9 @@ describe('dialing (direct, TCP)', () => {
     ]
 
     // Inject data into the AddressBook
-    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      multiaddrs: addrs
+    })
 
     const dialer = new DialQueue(localComponents)
 
@@ -371,7 +386,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const dialerDialSpy = sinon.spy(libp2p.connectionManager, 'openConnection')
 
-    await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
+    await libp2p.components.peerStore.patch(remotePeerId, {
+      multiaddrs: remoteLibp2p.getMultiaddrs()
+    })
 
     const connection = await libp2p.dial(remotePeerId)
     expect(connection).to.exist()
@@ -412,7 +429,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
       void pipe(stream, stream)
     })
 
-    await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
+    await libp2p.components.peerStore.patch(remotePeerId, {
+      multiaddrs: remoteLibp2p.getMultiaddrs()
+    })
     const connection = await libp2p.dial(remotePeerId)
 
     // Create local to remote streams
@@ -553,7 +572,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
     // PeerId should be in multiaddr
     expect(remoteAddr.getPeerId()).to.equal(remoteLibp2p.peerId.toString())
 
-    await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
+    await libp2p.components.peerStore.patch(remotePeerId, {
+      multiaddrs: remoteLibp2p.getMultiaddrs()
+    })
     const dialResults = await Promise.all([...new Array(dials)].map(async (_, index) => {
       if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
       return await libp2p.dial(remoteAddr)
@@ -590,7 +611,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
     const error = new Error('Boom')
     sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => await Promise.reject(error))
 
-    await libp2p.components.peerStore.addressBook.set(remotePeerId, remoteLibp2p.getMultiaddrs())
+    await libp2p.components.peerStore.patch(remotePeerId, {
+      multiaddrs: remoteLibp2p.getMultiaddrs()
+    })
     const dialResults = await Promise.allSettled([...new Array(dials)].map(async (_, index) => {
       if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
       return await libp2p.dial(remoteAddr)

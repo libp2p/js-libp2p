@@ -20,10 +20,12 @@ import type { Libp2pOptions } from '../../src/index.js'
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 describe('peer discovery scenarios', () => {
-  let peerId: PeerId, remotePeerId1: PeerId, remotePeerId2: PeerId
+  let peerId: PeerId
+  let remotePeerId1: PeerId
+  let remotePeerId2: PeerId
   let libp2p: Libp2pNode
 
-  before(async () => {
+  beforeEach(async () => {
     [peerId, remotePeerId1, remotePeerId2] = await Promise.all([
       createPeerId(),
       createPeerId(),
@@ -189,8 +191,12 @@ describe('peer discovery scenarios', () => {
       remoteLibp2p2.start()
     ])
 
-    await libp2p.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.getMultiaddrs())
-    await remoteLibp2p2.peerStore.addressBook.set(remotePeerId1, remoteLibp2p1.getMultiaddrs())
+    await libp2p.peerStore.patch(remotePeerId1, {
+      multiaddrs: remoteLibp2p1.getMultiaddrs()
+    })
+    await remoteLibp2p2.peerStore.patch(remotePeerId1, {
+      multiaddrs: remoteLibp2p1.getMultiaddrs()
+    })
 
     // Topology:
     // A -> B

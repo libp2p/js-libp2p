@@ -33,7 +33,7 @@ export async function test () {
     listenerProc.all.on('data', async (data) => {
         process.stdout.write(data)
         listenerOutput += uint8ArrayToString(data)
-        if (listenerOutput.includes('Listening on:') && listenerOutput.includes('12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m')) {
+        if (listenerOutput.includes('Listener listening on:') && listenerOutput.includes('12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m')) {
             listenerProcReady.resolve()
         }
     })
@@ -59,9 +59,9 @@ export async function test () {
                 await page.waitForFunction(
                   selector => {
                       const text = document.querySelector(selector).innerText
-                      return text.includes('libp2p id is') &&
-                        text.includes('Found peer 12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m') &&
-                        text.includes('Connected to 12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m')
+                      return text.includes('Dialer libp2p id is') &&
+                        text.includes('Dialer found peer 12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m') &&
+                        text.includes('Dialer connected to 12D3KooWCuo3MdXfMgaqpLC5Houi1TRoFqgK9aoxok4NK5udMu8m')
                   },
                   '#output',
                   { timeout: 10000 }

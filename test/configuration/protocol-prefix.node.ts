@@ -30,8 +30,8 @@ describe('Protocol prefix is configurable', () => {
     }))
     await libp2p.start()
 
-    const protocols = await libp2p.peerStore.protoBook.get(libp2p.peerId)
-    expect(protocols).to.include.members([
+    const peer = await libp2p.peerStore.get(libp2p.peerId)
+    expect(peer.protocols).to.include.members([
       `/${testProtocol}/fetch/0.0.1`,
       `/${testProtocol}/id/1.0.0`,
       `/${testProtocol}/id/push/1.0.0`,
@@ -43,8 +43,8 @@ describe('Protocol prefix is configurable', () => {
     libp2p = await createLibp2pNode(validateConfig(baseOptions))
     await libp2p.start()
 
-    const protocols = await libp2p.peerStore.protoBook.get(libp2p.peerId)
-    expect(protocols).to.include.members([
+    const peer = await libp2p.peerStore.get(libp2p.peerId)
+    expect(peer.protocols).to.include.members([
       '/ipfs/id/1.0.0',
       '/ipfs/id/push/1.0.0',
       '/ipfs/ping/1.0.0',

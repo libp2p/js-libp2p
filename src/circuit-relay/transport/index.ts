@@ -23,6 +23,8 @@ import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../
 import { RelayStoreInit, ReservationStore } from './reservation-store.js'
 import { RelayDiscovery, RelayDiscoveryComponents } from './discovery.js'
 import { CodeError } from '@libp2p/interfaces/errors'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:circuit-relay:transport')
 
@@ -49,6 +51,7 @@ export interface CircuitRelayTransportComponents extends RelayDiscoveryComponent
   addressManager: AddressManager
   contentRouting: ContentRouting
   connectionGater: ConnectionGater
+  events: EventEmitter<Libp2pEvents>
 }
 
 interface ConnectOptions {
@@ -81,6 +84,7 @@ class CircuitRelayTransport implements Transport {
   private readonly upgrader: Upgrader
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
+  private readonly events: EventEmitter<Libp2pEvents>
   private readonly reservationStore: ReservationStore
   private started: boolean
 
@@ -92,6 +96,7 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
+    this.events = components.events
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -178,7 +183,9 @@ class CircuitRelayTransport implements Transport {
     let relayConnection = relayConnections[0]
 
     if (relayConnection == null) {
-      await this.peerStore.addressBook.add(relayPeer, [relayAddr])
+      await this.peerStore.merge(relayPeer, {
+        multiaddrs: [relayAddr]
+      })
       relayConnection = await this.connectionManager.openConnection(relayPeer, options)
       disconnectOnFailure = true
     }
@@ -249,7 +256,8 @@ class CircuitRelayTransport implements Transport {
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
       connectionManager: this.connectionManager,
-      relayStore: this.reservationStore
+      relayStore: this.reservationStore,
+      events: this.events
     })
   }
 

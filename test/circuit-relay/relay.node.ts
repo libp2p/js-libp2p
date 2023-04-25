@@ -93,8 +93,8 @@ describe('circuit-relay', () => {
       await usingAsRelay(local, relay1)
 
       // peer has relay multicodec
-      const knownProtocols = await local.peerStore.protoBook.get(relay1.peerId)
-      expect(knownProtocols).to.include(RELAY_V2_HOP_CODEC)
+      const peer = await local.peerStore.get(relay1.peerId)
+      expect(peer.protocols).to.include(RELAY_V2_HOP_CODEC)
     })
 
     it('should only add discovered relays relayed addresses', async () => {
@@ -236,11 +236,12 @@ describe('circuit-relay', () => {
       // set up listener for address change
       const deferred = defer()
 
-      local.peerStore.addEventListener('change:multiaddrs', ({ detail }) => {
-        const isLocalPeerId = local.peerId.equals(detail.peerId)
-        const hasCircuitRelayAddress = detail.multiaddrs.find(ma => Circuit.matches(ma)) != null
+      local.addEventListener('self:peer:update', ({ detail }) => {
+        const hasCircuitRelayAddress = detail.peer.addresses
+          .map(({ multiaddr }) => multiaddr)
+          .find(ma => Circuit.matches(ma)) != null
 
-        if (isLocalPeerId && hasCircuitRelayAddress) {
+        if (hasCircuitRelayAddress) {
           deferred.resolve()
         }
       })
@@ -270,11 +271,12 @@ describe('circuit-relay', () => {
       // set up listener for address change
       const deferred = defer()
 
-      local.peerStore.addEventListener('change:multiaddrs', ({ detail }) => {
-        const isLocalPeerId = local.peerId.equals(detail.peerId)
-        const hasNoCircuitRelayAddress = detail.multiaddrs.find(ma => Circuit.matches(ma)) == null
+      local.addEventListener('self:peer:update', ({ detail }) => {
+        const hasNoCircuitRelayAddress = detail.peer.addresses
+          .map(({ multiaddr }) => multiaddr)
+          .find(ma => Circuit.matches(ma)) == null
 
-        if (isLocalPeerId && hasNoCircuitRelayAddress) {
+        if (hasNoCircuitRelayAddress) {
           deferred.resolve()
         }
       })
@@ -363,18 +365,24 @@ describe('circuit-relay', () => {
 
     it('should not add listener to a already relayed connection', async () => {
       // Relay 1 discovers Relay 3 and connect
-      await relay1.peerStore.addressBook.add(relay3.peerId, relay3.getMultiaddrs())
+      await relay1.peerStore.merge(relay3.peerId, {
+        multiaddrs: relay3.getMultiaddrs()
+      })
       await relay1.dial(relay3.peerId)
       await usingAsRelay(relay1, relay3)
 
       // Relay 2 discovers Relay 3 and connect
-      await relay2.peerStore.addressBook.add(relay3.peerId, relay3.getMultiaddrs())
+      await relay2.peerStore.merge(relay3.peerId, {
+        multiaddrs: relay3.getMultiaddrs()
+      })
       await relay2.dial(relay3.peerId)
       await usingAsRelay(relay2, relay3)
 
       // Relay 1 discovers Relay 2 relayed multiaddr via Relay 3
       const ma2RelayedBy3 = relay2.getMultiaddrs()[relay2.getMultiaddrs().length - 1]
-      await relay1.peerStore.addressBook.add(relay2.peerId, [ma2RelayedBy3])
+      await relay1.peerStore.merge(relay2.peerId, {
+        multiaddrs: [ma2RelayedBy3]
+      })
       await relay1.dial(relay2.peerId)
 
       // Peer not added as listen relay
@@ -404,9 +412,11 @@ describe('circuit-relay', () => {
       expect(maWithoutPeerId.getPeerId()).to.not.equal(remote.peerId.toString())
 
       // ensure this is the only address we have for the peer
-      await local.peerStore.addressBook.set(remote.peerId, [
-        maWithoutPeerId
-      ])
+      await local.peerStore.patch(remote.peerId, {
+        multiaddrs: [
+          maWithoutPeerId
+        ]
+      })
 
       // dial via peer id so we load the address from the address book
       await local.dial(remote.peerId)

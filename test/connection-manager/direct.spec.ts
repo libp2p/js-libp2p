@@ -30,6 +30,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
 import { DefaultComponents } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
+import { EventEmitter } from '@libp2p/interfaces/events'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
@@ -40,12 +41,14 @@ describe('dialing (direct, WebSockets)', () => {
   let remoteComponents: DefaultComponents
 
   beforeEach(async () => {
+    const localEvents = new EventEmitter()
     localComponents = new DefaultComponents({
       peerId: await createFromJSON(Peers[0]),
       datastore: new MemoryDatastore(),
-      upgrader: mockUpgrader(),
+      upgrader: mockUpgrader({ events: localEvents }),
       connectionGater: mockConnectionGater(),
-      transportManager: stubInterface<TransportManager>()
+      transportManager: stubInterface<TransportManager>(),
+      events: localEvents
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents, {
       addressFilter: localComponents.connectionGater.filterMultiaddrForPeer
@@ -75,7 +78,9 @@ describe('dialing (direct, WebSockets)', () => {
     const connectionManager = new DefaultConnectionManager(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
+    await localComponents.peerStore.patch(remotePeerId, {
+      multiaddrs: [remoteAddr]
+    })
 
     const connection = await connectionManager.openConnection(remoteAddr)
     expect(connection).to.exist()
@@ -94,7 +99,9 @@ describe('dialing (direct, WebSockets)', () => {
     const connectionManager = new DefaultConnectionManager(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
+    await localComponents.peerStore.patch(remotePeerId, {
+      multiaddrs: [remoteAddr]
+    })
 
     const connection = await connectionManager.openConnection(remotePeerId)
     expect(connection).to.exist()
@@ -105,7 +112,9 @@ describe('dialing (direct, WebSockets)', () => {
     const connectionManager = new DefaultConnectionManager(localComponents)
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.peerStore.addressBook.set(remotePeerId, [unsupportedAddr])
+    await localComponents.peerStore.patch(remotePeerId, {
+      multiaddrs: [unsupportedAddr]
+    })
 
     await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejectedWith(Error)
@@ -118,7 +127,9 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.peerStore.addressBook.set(remotePeerId, [remoteAddr])
+    await localComponents.peerStore.patch(remotePeerId, {
+      multiaddrs: [remoteAddr]
+    })
 
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
       expect(options.signal).to.exist()
@@ -140,7 +151,9 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
-    await localComponents.peerStore.addressBook.set(remotePeerId, Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`)))
+    await localComponents.peerStore.patch(remotePeerId, {
+      multiaddrs: Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`))
+    })
 
     await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejected()
@@ -163,7 +176,9 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     // Inject data into the AddressBook
-    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, peerMultiaddrs)
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      multiaddrs: peerMultiaddrs
+    })
 
     // Perform 3 multiaddr dials
     await connectionManager.openConnection(remoteComponents.peerId)
@@ -188,7 +203,9 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     // Inject data into the AddressBook
-    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      multiaddrs: addrs
+    })
 
     sinon.stub(localTM, 'dial').callsFake(async (_, options) => {
       const deferredDial = pDefer<Connection>()
@@ -223,7 +240,9 @@ describe('dialing (direct, WebSockets)', () => {
     ]
 
     // Inject data into the AddressBook
-    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      multiaddrs: addrs
+    })
 
     const connectionManager = new DefaultConnectionManager(localComponents)
 
@@ -245,7 +264,9 @@ describe('dialing (direct, WebSockets)', () => {
     ]
 
     // Inject data into the AddressBook
-    await localComponents.peerStore.addressBook.add(remoteComponents.peerId, addrs)
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      multiaddrs: addrs
+    })
 
     // different address not in the address book, same peer id
     const dialMultiaddr = multiaddr(`/ip4/0.0.0.0/tcp/8003/ws/p2p/${remoteComponents.peerId.toString()}`)
@@ -376,8 +397,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     }
 
     const identifySpy = sinon.spy(libp2p.identifyService, 'identify')
-    const protobookSetSpy = sinon.spy(libp2p.components.peerStore.protoBook, 'set')
-    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
+    const peerStorePatchSpy = sinon.spy(libp2p.components.peerStore, 'patch')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
 
     await libp2p.start()
 
@@ -390,7 +411,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     expect(identifySpy.callCount).to.equal(1)
     await identifySpy.firstCall.returnValue
 
-    expect(protobookSetSpy.callCount).to.equal(1)
+    expect(peerStorePatchSpy.callCount).to.equal(1)
 
     await libp2p.stop()
   })

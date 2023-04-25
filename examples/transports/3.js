@@ -57,9 +57,15 @@ function print ({ stream }) {
   node2.handle('/print', print)
   node3.handle('/print', print)
 
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
-  await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
-  await node3.peerStore.addressBook.set(node1.peerId, node1.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
+  await node2.peerStore.patch(node3.peerId, {
+    multiaddrs: node3.getMultiaddrs()
+  })
+  await node3.peerStore.patch(node1.peerId, {
+    multiaddrs: node1.getMultiaddrs()
+  })
 
   // node 1 (TCP) dials to node 2 (TCP+WebSockets)
   const stream = await node1.dialProtocol(node2.peerId, '/print')
