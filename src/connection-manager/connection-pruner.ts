@@ -4,7 +4,8 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 import { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { MAX_CONNECTIONS } from './constants.js'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:connection-manager:connection-pruner')
 
@@ -16,6 +17,7 @@ interface ConnectionPrunerInit {
 interface ConnectionPrunerComponents {
   connectionManager: ConnectionManager
   peerStore: PeerStore
+  events: EventEmitter<Libp2pEvents>
 }
 
 const defaultOptions = {
@@ -31,12 +33,22 @@ export class ConnectionPruner {
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
   private readonly allow: Multiaddr[]
+  private readonly events: EventEmitter<Libp2pEvents>
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
     this.allow = init.allow ?? defaultOptions.allow
     this.connectionManager = components.connectionManager
     this.peerStore = components.peerStore
+    this.events = components.events
+
+    // check the max connection limit whenever a peer connects
+    components.events.addEventListener('connection:open', () => {
+      this.maybePruneConnections()
+        .catch(err => {
+          log.error(err)
+        })
+    })
   }
 
   /**
@@ -48,7 +60,7 @@ export class ConnectionPruner {
     const numConnections = connections.length
     const toPrune = Math.max(numConnections - this.maxConnections, 0)
 
-    log.trace('checking max connections limit %d/%d', numConnections, this.maxConnections)
+    log('checking max connections limit %d/%d', numConnections, this.maxConnections)
     if (numConnections <= this.maxConnections) {
       return
     }
@@ -64,12 +76,20 @@ export class ConnectionPruner {
         continue
       }
 
-      const tags = await this.peerStore.getTags(remotePeer)
+      peerValues.set(remotePeer, 0)
 
-      // sum all tag values
-      peerValues.set(remotePeer, tags.reduce((acc, curr) => {
-        return acc + curr.value
-      }, 0))
+      try {
+        const peer = await this.peerStore.get(remotePeer)
+
+        // sum all tag values
+        peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
+          return acc + curr.value
+        }, 0))
+      } catch (err: any) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          log.error('error loading peer tags', err)
+        }
+      }
     }
 
     // sort by value, lowest to highest
@@ -132,6 +152,6 @@ export class ConnectionPruner {
     )
 
     // despatch prune event
-    this.connectionManager.dispatchEvent(new CustomEvent('peer:prune', { detail: toClose.map(conn => conn.remotePeer) }))
+    this.events.safeDispatchEvent('connection:prune', { detail: toClose })
   }
 }

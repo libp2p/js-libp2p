@@ -54,7 +54,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async * findProviders (key: CID, options: AbortOptions = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
-      throw new CodeError('No content this.routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new CodeError('No content routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
     yield * pipe(

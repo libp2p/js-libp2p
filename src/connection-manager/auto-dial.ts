@@ -5,6 +5,8 @@ import { PeerMap } from '@libp2p/peer-collections'
 import PQueue from 'p-queue'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
 import type { Startable } from '@libp2p/interfaces/startable'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:connection-manager:auto-dial')
 
@@ -18,6 +20,7 @@ interface AutoDialInit {
 interface AutoDialComponents {
   connectionManager: ConnectionManager
   peerStore: PeerStore
+  events: EventEmitter<Libp2pEvents>
 }
 
 const defaultOptions = {
@@ -55,6 +58,14 @@ export class AutoDial implements Startable {
     this.queue.addListener('error', (err) => {
       log.error('error during auto-dial', err)
     })
+
+    // check the min connection limit whenever a peer disconnects
+    components.events.addEventListener('connection:close', () => {
+      this.autoDial()
+        .catch(err => {
+          log.error(err)
+        })
+    })
   }
 
   isStarted (): boolean {
@@ -86,6 +97,10 @@ export class AutoDial implements Startable {
   }
 
   async autoDial (): Promise<void> {
+    if (!this.started) {
+      return
+    }
+
     const numConnections = this.connectionManager.getConnections().length
 
     // Already has enough connections
@@ -120,10 +135,8 @@ export class AutoDial implements Startable {
         continue
       }
 
-      const tags = await this.peerStore.getTags(peer.id)
-
       // sum all tag values
-      peerValues.set(peer.id, (tags ?? []).reduce((acc, curr) => {
+      peerValues.set(peer.id, [...peer.tags.values()].reduce((acc, curr) => {
         return acc + curr.value
       }, 0))
     }

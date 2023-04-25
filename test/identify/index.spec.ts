@@ -16,7 +16,6 @@ import drain from 'it-drain'
 import { pipe } from 'it-pipe'
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { PeerRecordUpdater } from '../../src/peer-record-updater.js'
 import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH
@@ -25,7 +24,7 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import delay from 'delay'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 import { DefaultComponents } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
@@ -50,13 +49,15 @@ const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 async function createComponents (index: number): Promise<DefaultComponents> {
   const peerId = await createFromJSON(Peers[index])
 
+  const events = new EventEmitter()
   const components = new DefaultComponents({
     peerId,
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
+    upgrader: mockUpgrader({ events }),
     transportManager: stubInterface<TransportManager>(),
-    connectionGater: mockConnectionGater()
+    connectionGater: mockConnectionGater(),
+    events
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
@@ -71,7 +72,9 @@ async function createComponents (index: number): Promise<DefaultComponents> {
   const transportManager = new DefaultTransportManager(components)
   components.transportManager = transportManager
 
-  await components.peerStore.protoBook.set(peerId, protocols)
+  await components.peerStore.patch(peerId, {
+    protocols
+  })
 
   return components
 }
@@ -80,13 +83,9 @@ describe('identify', () => {
   let localComponents: DefaultComponents
   let remoteComponents: DefaultComponents
 
-  let remotePeerRecordUpdater: PeerRecordUpdater
-
   beforeEach(async () => {
     localComponents = await createComponents(0)
     remoteComponents = await createComponents(1)
-
-    remotePeerRecordUpdater = new PeerRecordUpdater(remoteComponents)
 
     await Promise.all([
       start(localComponents),
@@ -112,65 +111,18 @@ describe('identify', () => {
 
     const [localToRemote] = connectionPair(localComponents, remoteComponents)
 
-    const localAddressBookConsumePeerRecordSpy = sinon.spy(localComponents.peerStore.addressBook, 'consumePeerRecord')
-    const localProtoBookSetSpy = sinon.spy(localComponents.peerStore.protoBook, 'set')
-
-    // Make sure the remote peer has a peer record to share during identify
-    remotePeerRecordUpdater.update()
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
 
     // Run identify
     await localIdentify.identify(localToRemote)
 
-    expect(localAddressBookConsumePeerRecordSpy.callCount).to.equal(1)
-    expect(localProtoBookSetSpy.callCount).to.equal(1)
+    expect(localPeerStorePatchSpy.callCount).to.equal(1)
 
     // Validate the remote peer gets updated in the peer store
-    const addresses = await localComponents.peerStore.addressBook.get(remoteComponents.peerId)
-    expect(addresses).to.exist()
-
-    expect(addresses).have.lengthOf(listenMaddrs.length)
-    expect(addresses.map((a) => a.multiaddr)[0].equals(listenMaddrs[0]))
-    expect(addresses.map((a) => a.isCertified)[0]).to.be.true()
-  })
-
-  // LEGACY
-  it('should be able to identify another peer with no certified peer records support', async () => {
-    const agentVersion = 'js-libp2p/5.0.0'
-    const localIdentify = new IdentifyService(localComponents, {
-      ...defaultInit,
-      protocolPrefix: 'ipfs',
-      host: {
-        agentVersion
-      }
-    })
-    await start(localIdentify)
-    const remoteIdentify = new IdentifyService(remoteComponents, {
-      ...defaultInit,
-      protocolPrefix: 'ipfs',
-      host: {
-        agentVersion
-      }
-    })
-    await start(remoteIdentify)
-
-    const [localToRemote] = connectionPair(localComponents, remoteComponents)
-
-    sinon.stub(localComponents.peerStore.addressBook, 'consumePeerRecord').throws()
-
-    const localProtoBookSetSpy = sinon.spy(localComponents.peerStore.protoBook, 'set')
-
-    // Run identify
-    await localIdentify.identify(localToRemote)
-
-    expect(localProtoBookSetSpy.callCount).to.equal(1)
-
-    // Validate the remote peer gets updated in the peer store
-    const addresses = await localComponents.peerStore.addressBook.get(remoteComponents.peerId)
-    expect(addresses).to.exist()
-
-    expect(addresses).have.lengthOf(listenMaddrs.length)
-    expect(addresses.map((a) => a.multiaddr)[0].equals(listenMaddrs[0]))
-    expect(addresses.map((a) => a.isCertified)[0]).to.be.false()
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peer.addresses).have.lengthOf(listenMaddrs.length)
+    expect(peer.addresses.map((a) => a.multiaddr)[0].equals(listenMaddrs[0]))
+    expect(peer.addresses.map((a) => a.isCertified)[0]).to.be.true()
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
@@ -187,7 +139,7 @@ describe('identify', () => {
     await remoteComponents.registrar.handle(MULTICODEC_IDENTIFY, (data) => {
       void Promise.resolve().then(async () => {
         const { connection, stream } = data
-        const signedPeerRecord = await remoteComponents.peerStore.addressBook.getRawEnvelope(remoteComponents.peerId)
+        const peer = await remoteComponents.peerStore.get(remoteComponents.peerId)
 
         const message = Message.Identify.encode({
           protocolVersion: '123',
@@ -195,7 +147,7 @@ describe('identify', () => {
           // send bad public key
           publicKey: localComponents.peerId.publicKey ?? new Uint8Array(0),
           listenAddrs: [],
-          signedPeerRecord,
+          signedPeerRecord: peer.peerRecordEnvelope,
           observedAddr: connection.remoteAddr.bytes,
           protocols: []
         })
@@ -225,17 +177,15 @@ describe('identify', () => {
       }
     })
 
-    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'AgentVersion'))
-      .to.eventually.be.undefined()
-    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'ProtocolVersion'))
-      .to.eventually.be.undefined()
+    const peer = await localComponents.peerStore.get(localComponents.peerId)
+    expect(peer.metadata.get('AgentVersion')).to.be.undefined()
+    expect(peer.metadata.get('ProtocolVersion')).to.be.undefined()
 
     await start(localIdentify)
 
-    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'AgentVersion'))
-      .to.eventually.deep.equal(uint8ArrayFromString(agentVersion))
-    await expect(localComponents.peerStore.metadataBook.getValue(localComponents.peerId, 'ProtocolVersion'))
-      .to.eventually.be.ok()
+    const updatedPeer = await localComponents.peerStore.get(localComponents.peerId)
+    expect(updatedPeer.metadata.get('AgentVersion')).to.deep.equal(uint8ArrayFromString(agentVersion))
+    expect(updatedPeer.metadata.get('ProtocolVersion')).to.be.ok()
 
     await stop(localIdentify)
   })
@@ -314,12 +264,12 @@ describe('identify', () => {
     })
 
     // ensure connections are registered by connection manager
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    localComponents.events.safeDispatchEvent('connection:open', {
       detail: localToRemote
-    }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    })
+    remoteComponents.events.safeDispatchEvent('connection:open', {
       detail: remoteToLocal
-    }))
+    })
 
     await deferred.promise
     await stop(remoteIdentify)
@@ -369,12 +319,12 @@ describe('identify', () => {
     })
 
     // ensure connections are registered by connection manager
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    localComponents.events.safeDispatchEvent('connection:open', {
       detail: localToRemote
-    }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', {
+    })
+    remoteComponents.events.safeDispatchEvent('connection:open', {
       detail: remoteToLocal
-    }))
+    })
 
     await deferred.promise
     await stop(remoteIdentify)

@@ -11,9 +11,10 @@ import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/startable'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:circuit-relay:transport:reservation-store')
 
@@ -31,6 +32,7 @@ export interface RelayStoreComponents {
   connectionManager: ConnectionManager
   transportManager: TransportManager
   peerStore: PeerStore
+  events: EventEmitter<Libp2pEvents>
 }
 
 export interface RelayStoreInit {
@@ -68,6 +70,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   private readonly connectionManager: ConnectionManager
   private readonly transportManager: TransportManager
   private readonly peerStore: PeerStore
+  private readonly events: EventEmitter<Libp2pEvents>
   private readonly reserveQueue: PQueue
   private readonly reservations: PeerMap<RelayEntry>
   private readonly maxDiscoveredRelays: number
@@ -80,6 +83,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.connectionManager = components.connectionManager
     this.transportManager = components.transportManager
     this.peerStore = components.peerStore
+    this.events = components.events
     this.reservations = new PeerMap()
     this.maxDiscoveredRelays = init?.discoverRelays ?? 0
     this.started = false
@@ -92,7 +96,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     // When a peer disconnects, if we had a reservation on that peer
     // remove the reservation and multiaddr and maybe trigger search
     // for new relays
-    this.connectionManager.addEventListener('peer:disconnect', (evt) => {
+    this.events.addEventListener('connection:close', (evt) => {
       this.removeRelay(evt.detail.remotePeer)
     })
   }
@@ -184,9 +188,13 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
         })
 
         // ensure we don't close the connection to the relay
-        await this.peerStore.tagPeer(peerId, RELAY_TAG, {
-          value: 1,
-          ttl: expiration
+        await this.peerStore.merge(peerId, {
+          tags: {
+            [RELAY_TAG]: {
+              value: 1,
+              ttl: expiration
+            }
+          }
         })
 
         await this.transportManager.listen(
@@ -250,7 +258,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.safeDispatchEvent('relay:removed', { detail: peerId })
 
     if (this.reservations.size < this.maxDiscoveredRelays) {
-      this.dispatchEvent(new CustomEvent('relay:not-enough-relays'))
+      this.safeDispatchEvent('relay:not-enough-relays', {})
     }
   }
 }

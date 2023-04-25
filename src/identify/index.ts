@@ -26,9 +26,13 @@ import { abortableDuplex } from 'abortable-iterator'
 import { setMaxListeners } from 'events'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Peer, PeerStore } from '@libp2p/interface-peer-store'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import { anySignal } from 'any-signal'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { pbStream } from 'it-pb-stream'
 
 const log = logger('libp2p:identify')
 
@@ -74,6 +78,7 @@ export interface IdentifyServiceComponents {
   connectionManager: ConnectionManager
   registrar: Registrar
   addressManager: AddressManager
+  events: EventEmitter<Libp2pEvents>
 }
 
 export class IdentifyService implements Startable {
@@ -103,27 +108,14 @@ export class IdentifyService implements Startable {
     }
 
     // When a new connection happens, trigger identify
-    this.components.connectionManager.addEventListener('peer:connect', (evt) => {
+    this.components.events.addEventListener('connection:open', (evt) => {
       const connection = evt.detail
-      this.identify(connection).catch(log.error)
+      this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
     })
 
-    // When self multiaddrs change, trigger identify-push
-    this.components.peerStore.addEventListener('change:multiaddrs', (evt) => {
-      const { peerId } = evt.detail
-
-      if (this.components.peerId.equals(peerId)) {
-        void this.pushToPeerStore().catch(err => { log.error(err) })
-      }
-    })
-
-    // When self protocols change, trigger identify-push
-    this.components.peerStore.addEventListener('change:protocols', (evt) => {
-      const { peerId } = evt.detail
-
-      if (this.components.peerId.equals(peerId)) {
-        void this.pushToPeerStore().catch(err => { log.error(err) })
-      }
+    // When self peer record changes, trigger identify-push
+    this.components.events.addEventListener('self:peer:update', (evt) => {
+      void this.pushToPeerStore().catch(err => { log.error(err) })
     })
   }
 
@@ -136,8 +128,12 @@ export class IdentifyService implements Startable {
       return
     }
 
-    await this.components.peerStore.metadataBook.setValue(this.components.peerId, 'AgentVersion', uint8ArrayFromString(this.host.agentVersion))
-    await this.components.peerStore.metadataBook.setValue(this.components.peerId, 'ProtocolVersion', uint8ArrayFromString(this.host.protocolVersion))
+    await this.components.peerStore.merge(this.components.peerId, {
+      metadata: {
+        AgentVersion: uint8ArrayFromString(this.host.agentVersion),
+        ProtocolVersion: uint8ArrayFromString(this.host.protocolVersion)
+      }
+    })
 
     await this.components.registrar.handle(this.identifyProtocolStr, (data) => {
       void this._handleIdentify(data).catch(err => {
@@ -170,9 +166,16 @@ export class IdentifyService implements Startable {
    * Send an Identify Push update to the list of connections
    */
   async push (connections: Connection[]): Promise<void> {
-    const signedPeerRecord = await this.components.peerStore.addressBook.getRawEnvelope(this.components.peerId)
-    const listenAddrs = this.components.addressManager.getAddresses().map((ma) => ma.bytes)
-    const protocols = await this.components.peerStore.protoBook.get(this.components.peerId)
+    const listenAddresses = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+    const peerRecord = new PeerRecord({
+      peerId: this.components.peerId,
+      multiaddrs: listenAddresses
+    })
+    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.components.peerId)
+    const supportedProtocols = this.components.registrar.getProtocols()
+    const peer = await this.components.peerStore.get(this.components.peerId)
+    const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
+    const protocolVersion = uint8ArrayToString(peer.metadata.get('ProtocolVersion') ?? uint8ArrayFromString(this.host.protocolVersion))
 
     const pushes = connections.map(async connection => {
       let stream: Stream | undefined
@@ -194,9 +197,11 @@ export class IdentifyService implements Startable {
 
         await source.sink(pipe(
           [Identify.encode({
-            listenAddrs,
-            signedPeerRecord,
-            protocols
+            listenAddrs: listenAddresses.map(ma => ma.bytes),
+            signedPeerRecord: signedPeerRecord.marshal(),
+            protocols: supportedProtocols,
+            agentVersion,
+            protocolVersion
           })],
           (source) => lp.encode(source)
         ))
@@ -292,15 +297,10 @@ export class IdentifyService implements Startable {
    */
   async identify (connection: Connection, options: AbortOptions = {}): Promise<void> {
     const message = await this._identify(connection, options)
-
     const {
       publicKey,
-      listenAddrs,
       protocols,
-      observedAddr,
-      signedPeerRecord,
-      agentVersion,
-      protocolVersion
+      observedAddr
     } = message
 
     if (publicKey == null) {
@@ -320,57 +320,6 @@ export class IdentifyService implements Startable {
     // Get the observedAddr if there is one
     const cleanObservedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
 
-    if (signedPeerRecord != null) {
-      log('received signed peer record from %p', id)
-
-      try {
-        const envelope = await RecordEnvelope.openAndCertify(signedPeerRecord, PeerRecord.DOMAIN)
-
-        if (!envelope.peerId.equals(id)) {
-          throw new CodeError('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
-        }
-
-        if (await this.components.peerStore.addressBook.consumePeerRecord(envelope)) {
-          await this.components.peerStore.protoBook.set(id, protocols)
-
-          if (agentVersion != null) {
-            await this.components.peerStore.metadataBook.setValue(id, 'AgentVersion', uint8ArrayFromString(agentVersion))
-          }
-
-          if (protocolVersion != null) {
-            await this.components.peerStore.metadataBook.setValue(id, 'ProtocolVersion', uint8ArrayFromString(protocolVersion))
-          }
-
-          log('identify completed for peer %p with protocols %o', id, protocols)
-
-          return
-        }
-      } catch (err: any) {
-        log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
-      }
-    } else {
-      log('no signed peer record received from %p', id)
-    }
-
-    log('falling back to legacy addresses from %p', id)
-
-    // LEGACY: Update peers data in PeerStore
-    try {
-      await this.components.peerStore.addressBook.set(id, listenAddrs.map((addr) => multiaddr(addr)))
-    } catch (err: any) {
-      log.error('received invalid addrs', err)
-    }
-
-    await this.components.peerStore.protoBook.set(id, protocols)
-
-    if (agentVersion != null) {
-      await this.components.peerStore.metadataBook.setValue(id, 'AgentVersion', uint8ArrayFromString(agentVersion))
-    }
-
-    if (protocolVersion != null) {
-      await this.components.peerStore.metadataBook.setValue(id, 'ProtocolVersion', uint8ArrayFromString(protocolVersion))
-    }
-
     log('identify completed for peer %p and protocols %o', id, protocols)
     log('our observed address is %s', cleanObservedAddr)
 
@@ -379,6 +328,8 @@ export class IdentifyService implements Startable {
       log('storing our observed address %s', cleanObservedAddr?.toString())
       this.components.addressManager.addObservedAddr(cleanObservedAddr)
     }
+
+    await this.#consumeIdentifyMessage(connection.remotePeer, message)
   }
 
   /**
@@ -408,7 +359,6 @@ export class IdentifyService implements Startable {
         })
 
         const envelope = await RecordEnvelope.seal(peerRecord, this.components.peerId)
-        await this.components.peerStore.addressBook.consumePeerRecord(envelope)
         signedPeerRecord = envelope.marshal().subarray()
       }
 
@@ -439,30 +389,20 @@ export class IdentifyService implements Startable {
    */
   async _handlePush (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
-    const signal = AbortSignal.timeout(this.init.timeout)
 
     try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
-
-    let message: Identify | undefined
-    try {
-      // make stream abortable
-      const source = abortableDuplex(stream, signal)
-
-      const data = await pipe(
-        [],
-        source,
-        (source) => lp.decode(source, {
-          maxDataLength: this.init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
-        }),
-        async (source) => await first(source)
-      )
-
-      if (data != null) {
-        message = Identify.decode(data)
+      if (this.components.peerId.equals(connection.remotePeer)) {
+        throw new Error('received push from ourselves?')
       }
+
+      // make stream abortable
+      const source = abortableDuplex(stream, AbortSignal.timeout(this.init.timeout))
+      const pb = pbStream(source, {
+        maxDataLength: this.init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+      })
+      const message = await pb.readPB(Identify)
+
+      await this.#consumeIdentifyMessage(connection.remotePeer, message)
     } catch (err: any) {
       log.error('received invalid message', err)
       return
@@ -470,56 +410,77 @@ export class IdentifyService implements Startable {
       stream.close()
     }
 
+    log('handled push from %p', connection.remotePeer)
+  }
+
+  async #consumeIdentifyMessage (remotePeer: PeerId, message: Identify): Promise<void> {
     if (message == null) {
-      log.error('received invalid message')
+      throw new Error('Message was null or undefined')
+    }
+
+    log('received identify from %p', remotePeer)
+
+    if (message.signedPeerRecord == null) {
       return
     }
 
-    const id = connection.remotePeer
+    const envelope = await RecordEnvelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
+    const peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
 
-    if (this.components.peerId.equals(id)) {
-      log('received push from ourselves?')
-      return
+    // Verify peerId
+    if (!peerRecord.peerId.equals(envelope.peerId)) {
+      throw new Error('signing key does not match PeerId in the PeerRecord')
     }
 
-    log('received push from %p', id)
+    // Make sure remote peer is the one sending the record
+    if (!remotePeer.equals(peerRecord.peerId)) {
+      throw new Error('signing key does not match remote PeerId')
+    }
 
-    if (message.signedPeerRecord != null) {
-      log('received signedPeerRecord in push')
+    let peer: Peer | undefined
 
-      try {
-        const envelope = await RecordEnvelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
-
-        if (await this.components.peerStore.addressBook.consumePeerRecord(envelope)) {
-          log('consumed signedPeerRecord sent in push')
-
-          await this.components.peerStore.protoBook.set(id, message.protocols)
-          return
-        } else {
-          log('failed to consume signedPeerRecord sent in push')
-        }
-      } catch (err: any) {
-        log('received invalid envelope, discard it and fallback to listenAddrs is available', err)
+    try {
+      peer = await this.components.peerStore.get(peerRecord.peerId)
+    } catch (err: any) {
+      if (err.code !== 'ERR_NOT_FOUND') {
+        throw err
       }
-    } else {
-      log('did not receive signedPeerRecord in push')
     }
 
-    // LEGACY: Update peers data in PeerStore
-    try {
-      await this.components.peerStore.addressBook.set(id, message.listenAddrs.map((addr) => multiaddr(addr)))
-    } catch (err: any) {
-      log.error('received invalid addrs', err)
+    log('received signedPeerRecord in push from %p', remotePeer)
+    let metadata = new Map()
+
+    if (peer?.peerRecordEnvelope != null) {
+      const storedEnvelope = await RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
+      const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
+
+      // ensure seq is greater than, or equal to, the last received
+      if (storedRecord.seqNumber >= peerRecord.seqNumber) {
+        log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+      }
+
+      metadata = peer.metadata
     }
 
-    // Update the protocols
-    try {
-      await this.components.peerStore.protoBook.set(id, message.protocols)
-    } catch (err: any) {
-      log.error('received invalid protocols', err)
+    if (message.agentVersion != null) {
+      metadata.set('AgentVersion', uint8ArrayFromString(message.agentVersion))
     }
 
-    log('handled push from %p', id)
+    if (message.protocolVersion != null) {
+      metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
+    }
+
+    await this.components.peerStore.patch(peerRecord.peerId, {
+      peerRecordEnvelope: message.signedPeerRecord,
+      protocols: message.protocols,
+      addresses: peerRecord.multiaddrs.map(multiaddr => ({
+        isCertified: true,
+        multiaddr
+      })),
+      metadata
+    })
+
+    log('consumed signedPeerRecord sent in push from %p', remotePeer)
   }
 
   /**

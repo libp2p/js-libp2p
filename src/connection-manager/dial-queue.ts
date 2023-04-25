@@ -13,7 +13,7 @@ import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { getPeerAddress } from '../get-peer.js'
-import type { Address, AddressSorter, PeerStore } from '@libp2p/interface-peer-store'
+import type { Address, PeerStore } from '@libp2p/interface-peer-store'
 import type { Metric, Metrics } from '@libp2p/interface-metrics'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
@@ -22,6 +22,7 @@ import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
 import pDefer from 'p-defer'
 import { ClearableSignal, anySignal } from 'any-signal'
+import type { AddressSorter } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:connection-manager:dial-queue')
 
@@ -274,8 +275,15 @@ export class DialQueue {
       // if just a peer id was passed, load available multiaddrs for this peer from the address book
       if (addrs.length === 0) {
         log('loading multiaddrs for %p', peerId)
-        addrs.push(...(await this.peerStore.addressBook.get(peerId)))
-        log('loaded multiaddrs for %p', peerId, addrs.map(({ multiaddr }) => multiaddr.toString()))
+        try {
+          const peer = await this.peerStore.get(peerId)
+          addrs.push(...peer.addresses)
+          log('loaded multiaddrs for %p', peerId, addrs.map(({ multiaddr }) => multiaddr.toString()))
+        } catch (err: any) {
+          if (err.code !== codes.ERR_NOT_FOUND) {
+            throw err
+          }
+        }
       }
     }
 

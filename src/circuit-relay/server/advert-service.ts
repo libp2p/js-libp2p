@@ -7,7 +7,7 @@ import {
 } from '../constants.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import pRetry from 'p-retry'
 
 const log = logger('libp2p:circuit-relay:advert-service')
@@ -90,7 +90,7 @@ export class AdvertService extends EventEmitter<AdvertServiceEvents> implements 
         const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
         await this.contentRouting.provide(cid)
 
-        this.dispatchEvent(new CustomEvent('advert:success'))
+        this.safeDispatchEvent('advert:success', { detail: undefined })
       } catch (err: any) {
         this.safeDispatchEvent('advert:error', { detail: err })
 
