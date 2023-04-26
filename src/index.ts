@@ -20,7 +20,6 @@ import type { TransportManagerInit } from './transport-manager.js'
 import type { IdentifyServiceInit } from './identify/index.js'
 import type { DualDHT } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
-import type { PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
 import type { ConnectionProtector } from '@libp2p/interface-connection'
@@ -32,7 +31,6 @@ import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PubSub } from '@libp2p/interface-pubsub'
 import type { Metrics } from '@libp2p/interface-metrics'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PingServiceInit } from './ping/index.js'
 import type { FetchServiceInit } from './fetch/index.js'
 import type { AutonatServiceInit } from './autonat/index.js'
@@ -44,6 +42,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { CircuitRelayService } from './circuit-relay/index.js'
+import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
@@ -84,7 +83,7 @@ export interface Libp2pInit {
   /**
    * libp2p PeerStore configuration
    */
-  peerStore: PeerStoreInit
+  peerStore: PersistentPeerStoreInit
 
   /**
    * libp2p Peer routing service configuration
@@ -156,23 +155,6 @@ export interface Libp2pInit {
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
   connectionProtector?: (components: Components) => ConnectionProtector
-}
-
-/**
- * Once you have a libp2p instance, you can listen to several events it emits, so that you can be notified of relevant network events.
- */
-export interface Libp2pEvents {
-  /**
-   * @example
-   *
-   * ```js
-   * libp2p.addEventListener('peer:discovery', (event) => {
-   *    const peerInfo = event.detail
-   *    // ...
-   * })
-   * ```
-   */
-  'peer:discovery': CustomEvent<PeerInfo>
 }
 
 export type { Libp2p }

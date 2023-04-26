@@ -79,7 +79,7 @@ const node = await createLibp2p({
   ]
 })
 
-node.connectionManager.addEventListener('peer:connect', (evt) => {
+node.addEventListener('peer:connect', (evt) => {
   console.log('Connection established to:', evt.detail.remotePeer.toString())	// Emitted when a new connection has been created
 })
 

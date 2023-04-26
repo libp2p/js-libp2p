@@ -24,10 +24,10 @@ import wrtc from 'wrtc'
     connectionEncryption: [noise()]
   })
 
-  node.connectionManager.addEventListener('peer:connect', (evt) => {
-    console.info(`Connected to ${evt.detail.remotePeer.toString()}!`)
+  node.addEventListener('peer:connect', (evt) => {
+    console.info(`Listener connected to ${evt.detail.toString()}!`)
   })
 
-  console.log('Listening on:')
+  console.log('Listener listening on:')
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 })()

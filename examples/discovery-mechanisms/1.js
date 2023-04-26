@@ -23,14 +23,14 @@ import bootstrappers from './bootstrappers.js'
     ]
   })
 
-  node.connectionManager.addEventListener('peer:connect', (evt) => {
-    const connection = evt.detail
-    console.log('Connection established to:', connection.remotePeer.toString())	// Emitted when a peer has been found
+  node.addEventListener('peer:connect', (evt) => {
+    const peerId = evt.detail
+    console.log('Connection established to:', peerId.toString())	// Emitted when a peer has been found
   })
 
   node.addEventListener('peer:discovery', (evt) => {
-    const peer = evt.detail
+    const peerId = evt.detail
 
-    console.log('Discovered:', peer.id.toString())
+    console.log('Discovered:', peerId.toString())
   })
 })()

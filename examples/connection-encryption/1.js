@@ -26,7 +26,9 @@ const createNode = async () => {
     createNode()
   ])
 
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
 
   node2.handle('/a-protocol', ({ stream }) => {
     pipe(

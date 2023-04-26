@@ -24,7 +24,9 @@ generateKey(otherSwarmKey)
   console.log('nodes started...')
 
   // Add node 2 data to node1's PeerStore
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
   await node1.dial(node2.peerId)
 
   node2.handle('/private', ({ stream }) => {

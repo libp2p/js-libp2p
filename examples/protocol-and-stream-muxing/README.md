@@ -24,7 +24,9 @@ const [node1, node2] = await Promise.all([
 ])
 
 // Add node's 2 data to the PeerStore
-await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+await node1.peerStore.patch(node2.peerId, {
+  multiaddrs: node2.getMultiaddrs()
+})
 
 // Here we are telling libp2p that if someone dials this node to talk with the `/your-protocol`
 // multicodec, the protocol identifier, please call this handler and give it the stream
@@ -202,7 +204,9 @@ const [node1, node2] = await Promise.all([
 
 Since, we want to connect these nodes `node1` & `node2`, we add our `node2` multiaddr in key-value pair in `node1` peer store.
 ```js
-await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+await node1.peerStore.patch(node2.peerId, {
+  multiaddrs: node2.getMultiaddrs()
+})
 ```
 
 You may notice that we are only adding `node2` to `node1` peer store. This is because we want to dial up a bidirectional connection between these two nodes.

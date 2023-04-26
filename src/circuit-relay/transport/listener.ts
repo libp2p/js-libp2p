@@ -1,4 +1,4 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Listener, ListenerEvents } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -7,24 +7,28 @@ import type { ReservationStore } from './reservation-store.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { PeerMap } from '@libp2p/peer-collections'
 import { logger } from '@libp2p/logger'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:circuit-relay:transport:listener')
 
 export interface CircuitRelayTransportListenerComponents {
   connectionManager: ConnectionManager
   relayStore: ReservationStore
+  events: EventEmitter<Libp2pEvents>
 }
 
 class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> implements Listener {
   private readonly connectionManager: ConnectionManager
   private readonly relayStore: ReservationStore
   private readonly listeningAddrs: PeerMap<Multiaddr>
+  private readonly events: EventEmitter<Libp2pEvents>
 
   constructor (components: CircuitRelayTransportListenerComponents) {
     super()
 
     this.connectionManager = components.connectionManager
     this.relayStore = components.relayStore
+    this.events = components.events
     this.listeningAddrs = new PeerMap()
 
     // remove listening addrs when a relay is removed
@@ -33,7 +37,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     })
 
     // remove listening addrs when a peer disconnects
-    this.connectionManager.addEventListener('peer:disconnect', (evt) => {
+    this.events.addEventListener('connection:close', (evt) => {
       this.#removeRelayPeer(evt.detail.remotePeer)
     })
   }
@@ -57,7 +61,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     }
 
     this.listeningAddrs.set(relayConn.remotePeer, addr)
-    this.dispatchEvent(new CustomEvent('listening'))
+    this.safeDispatchEvent('listening', {})
   }
 
   /**
@@ -89,7 +93,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
 
     if (had) {
       // Announce listen addresses change
-      this.dispatchEvent(new CustomEvent('close'))
+      this.safeDispatchEvent('close', {})
     }
   }
 }

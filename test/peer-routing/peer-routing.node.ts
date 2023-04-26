@@ -440,7 +440,7 @@ describe('peer-routing', () => {
         throw new Error('DHT not configured')
       }
 
-      const spy = sinon.spy(node.peerStore.addressBook, 'add')
+      const spy = sinon.spy(node.peerStore, 'merge')
 
       sinon.stub(node.dht, 'findPeer').callsFake(async function * () {
         yield {
@@ -459,7 +459,9 @@ describe('peer-routing', () => {
 
       await node.peerRouting.findPeer(remotePeerId)
 
-      expect(spy.calledWith(result.id, result.multiaddrs)).to.be.true()
+      expect(spy.calledWith(result.id, {
+        multiaddrs: result.multiaddrs
+      })).to.be.true()
     })
 
     it('should use the delegate if the dht fails to get the closest peer', async () => {
@@ -500,7 +502,7 @@ describe('peer-routing', () => {
         throw new Error('DHT not configured')
       }
 
-      const spy = sinon.spy(node.peerStore.addressBook, 'add')
+      const spy = sinon.spy(node.peerStore, 'merge')
 
       sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () { })
 
@@ -510,7 +512,9 @@ describe('peer-routing', () => {
 
       await drain(node.peerRouting.getClosestPeers(remotePeerId.toBytes()))
 
-      expect(spy.calledWith(result.id, result.multiaddrs)).to.be.true()
+      expect(spy.calledWith(result.id, {
+        multiaddrs: result.multiaddrs
+      })).to.be.true()
     })
 
     it('should dedupe closest peers', async () => {
@@ -590,7 +594,7 @@ describe('peer-routing', () => {
         throw new Error('DHT not configured')
       }
 
-      const peerStoreAddressBookAddStub = sinon.spy(node.peerStore.addressBook, 'add')
+      const peerStoreMergeStub = sinon.spy(node.peerStore, 'merge')
       const dhtGetClosestPeersStub = sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () {
         yield {
           name: 'FINAL_PEER',
@@ -613,19 +617,15 @@ describe('peer-routing', () => {
       await node.start()
 
       await pWaitFor(() => dhtGetClosestPeersStub.callCount === 1)
-      await pWaitFor(() => peerStoreAddressBookAddStub.callCount === results.length)
+      await pWaitFor(() => peerStoreMergeStub.callCount >= results.length)
 
-      const call0 = peerStoreAddressBookAddStub.getCall(0)
-      expect(call0.args[0].equals(results[0].id))
-      call0.args[1].forEach((m, index) => {
-        expect(m.equals(results[0].multiaddrs[index]))
-      })
+      const peer0 = await node.peerStore.get(peerIds[0])
+      expect(peer0.addresses.map(({ multiaddr }) => multiaddr.toString()))
+        .to.include.members(results[0].multiaddrs.map(ma => ma.toString()))
 
-      const call1 = peerStoreAddressBookAddStub.getCall(1)
-      expect(call1.args[0].equals(results[1].id))
-      call0.args[1].forEach((m, index) => {
-        expect(m.equals(results[1].multiaddrs[index]))
-      })
+      const peer1 = await node.peerStore.get(peerIds[1])
+      expect(peer1.addresses.map(({ multiaddr }) => multiaddr.toString()))
+        .to.include.members(results[1].multiaddrs.map(ma => ma.toString()))
     })
 
     it('should support being disabled', async () => {

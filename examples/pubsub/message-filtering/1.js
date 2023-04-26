@@ -33,10 +33,14 @@ const createNode = async () => {
   ])
 
   // node1 conect to node2 and node2 conect to node3
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
   await node1.dial(node2.peerId)
 
-  await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
+  await node2.peerStore.patch(node3.peerId, {
+    multiaddrs: node3.getMultiaddrs()
+  })
   await node2.dial(node3.peerId)
 
   // subscribe

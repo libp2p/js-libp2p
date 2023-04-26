@@ -2,24 +2,24 @@
 
 import { expect } from 'aegir/chai'
 import { createNode, createPeerId } from '../utils/creators/peer.js'
-import { mockConnection, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-mocks'
+import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { Libp2p } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import * as STATUS from '@libp2p/interface-connection/status'
 import { stubInterface } from 'sinon-ts'
-import type { KeyBook, PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 import sinon from 'sinon'
 import pWaitFor from 'p-wait-for'
-import type { Connection } from '@libp2p/interface-connection'
 import delay from 'delay'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import { codes } from '../../src/errors.js'
 import { start } from '@libp2p/interfaces/startable'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { DefaultComponents } from '../../src/components.js'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p
@@ -48,17 +48,15 @@ describe('Connection Manager', () => {
   })
 
   it('should filter connections on disconnect, removing the closed one', async () => {
-    const upgrader = mockUpgrader()
     const peerStore = stubInterface<PeerStore>()
-    peerStore.keyBook = stubInterface<KeyBook>()
-
-    const connectionManager = new DefaultConnectionManager({
+    const components = new DefaultComponents({
       peerId: peerIds[0],
-      upgrader,
       peerStore,
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
-    }, {
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
+    })
+    const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
       minConnections: 50,
       inboundUpgradeTimeout: 1000
@@ -72,13 +70,13 @@ describe('Connection Manager', () => {
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(0)
 
     // Add connection to the connectionManager
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn1 }))
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn2 }))
+    components.events.safeDispatchEvent('connection:open', { detail: conn1 })
+    components.events.safeDispatchEvent('connection:open', { detail: conn2 })
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
 
     await conn2.close()
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connectionEnd', { detail: conn2 }))
+    components.events.safeDispatchEvent('connection:close', { detail: conn2 })
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(1)
 
@@ -88,17 +86,15 @@ describe('Connection Manager', () => {
   })
 
   it('should close connections on stop', async () => {
-    const upgrader = mockUpgrader()
     const peerStore = stubInterface<PeerStore>()
-    peerStore.keyBook = stubInterface<KeyBook>()
-
-    const connectionManager = new DefaultConnectionManager({
+    const components = new DefaultComponents({
       peerId: peerIds[0],
-      upgrader,
       peerStore,
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
-    }, {
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new EventEmitter()
+    })
+    const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
       minConnections: 50,
       inboundUpgradeTimeout: 1000
@@ -110,8 +106,8 @@ describe('Connection Manager', () => {
     const conn2 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
 
     // Add connection to the connectionManager
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn1 }))
-    upgrader.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn2 }))
+    components.events.safeDispatchEvent('connection:open', { detail: conn1 })
+    components.events.safeDispatchEvent('connection:open', { detail: conn2 })
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
 
@@ -156,7 +152,9 @@ describe('libp2p.connections', () => {
       })
     })
 
-    await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
+    await libp2p.peerStore.patch(remoteLibp2p.peerId, {
+      multiaddrs: remoteLibp2p.getMultiaddrs()
+    })
     const conn = await libp2p.dial(remoteLibp2p.peerId)
 
     expect(conn).to.be.ok()
@@ -213,8 +211,12 @@ describe('libp2p.connections', () => {
       })
 
       // Populate PeerStore before starting
-      await libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
-      await libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].getMultiaddrs())
+      await libp2p.peerStore.patch(nodes[0].peerId, {
+        multiaddrs: nodes[0].getMultiaddrs()
+      })
+      await libp2p.peerStore.patch(nodes[1].peerId, {
+        multiaddrs: nodes[1].getMultiaddrs()
+      })
 
       await libp2p.start()
 
@@ -240,8 +242,12 @@ describe('libp2p.connections', () => {
       })
 
       // Populate PeerStore before starting
-      await libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
-      await libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].getMultiaddrs())
+      await libp2p.peerStore.patch(nodes[0].peerId, {
+        multiaddrs: nodes[0].getMultiaddrs()
+      })
+      await libp2p.peerStore.patch(nodes[1].peerId, {
+        multiaddrs: nodes[1].getMultiaddrs()
+      })
 
       await libp2p.start()
 
@@ -272,9 +278,13 @@ describe('libp2p.connections', () => {
       })
 
       // Populate PeerStore before starting
-      await libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
-      await libp2p.peerStore.addressBook.set(nodes[1].peerId, nodes[1].getMultiaddrs())
-      await libp2p.peerStore.protoBook.set(nodes[1].peerId, ['/protocol-min-conns'])
+      await libp2p.peerStore.patch(nodes[0].peerId, {
+        multiaddrs: nodes[0].getMultiaddrs()
+      })
+      await libp2p.peerStore.patch(nodes[1].peerId, {
+        multiaddrs: nodes[1].getMultiaddrs(),
+        protocols: ['/protocol-min-conns']
+      })
 
       await libp2p.start()
 
@@ -303,7 +313,9 @@ describe('libp2p.connections', () => {
       })
 
       // Populate PeerStore after starting (discovery)
-      await libp2p.peerStore.addressBook.set(nodes[0].peerId, nodes[0].getMultiaddrs())
+      await libp2p.peerStore.patch(nodes[0].peerId, {
+        multiaddrs: nodes[0].getMultiaddrs()
+      })
 
       // Wait for peer to connect
       const conn = await libp2p.dial(nodes[0].peerId)
@@ -338,7 +350,9 @@ describe('libp2p.connections', () => {
         })
       })
 
-      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
+      await libp2p.peerStore.patch(remoteLibp2p.peerId, {
+        multiaddrs: remoteLibp2p.getMultiaddrs()
+      })
       await libp2p.dial(remoteLibp2p.peerId)
 
       const conns = libp2p.connectionManager.getConnections()
@@ -391,7 +405,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
+      await libp2p.peerStore.patch(remoteLibp2p.peerId, {
+        multiaddrs: remoteLibp2p.getMultiaddrs()
+      })
 
       await expect(libp2p.dial(remoteLibp2p.peerId))
         .to.eventually.be.rejected().with.property('code', codes.ERR_PEER_DIAL_INTERCEPTED)
@@ -411,7 +427,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
+      await libp2p.peerStore.patch(remoteLibp2p.peerId, {
+        multiaddrs: remoteLibp2p.getMultiaddrs()
+      })
       await libp2p.connectionManager.openConnection(remoteLibp2p.peerId)
 
       for (const multiaddr of remoteLibp2p.getMultiaddrs()) {
@@ -436,7 +454,9 @@ describe('libp2p.connections', () => {
 
       const fullMultiaddr = remoteLibp2p.getMultiaddrs()[0]
 
-      await libp2p.peerStore.addressBook.add(remoteLibp2p.peerId, [fullMultiaddr])
+      await libp2p.peerStore.merge(remoteLibp2p.peerId, {
+        multiaddrs: [fullMultiaddr]
+      })
 
       expect(filterMultiaddrForPeer.callCount).to.equal(2)
 
@@ -459,7 +479,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.getMultiaddrs())
+      await remoteLibp2p.peerStore.patch(libp2p.peerId, {
+        multiaddrs: libp2p.getMultiaddrs()
+      })
       await remoteLibp2p.dial(libp2p.peerId)
 
       expect(denyInboundConnection.called).to.be.true()
@@ -479,7 +501,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
+      await libp2p.peerStore.patch(remoteLibp2p.peerId, {
+        multiaddrs: remoteLibp2p.getMultiaddrs()
+      })
       await libp2p.dial(remoteLibp2p.peerId)
 
       expect(denyOutboundConnection.called).to.be.true()
@@ -499,7 +523,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.getMultiaddrs())
+      await remoteLibp2p.peerStore.patch(libp2p.peerId, {
+        multiaddrs: libp2p.getMultiaddrs()
+      })
       await remoteLibp2p.dial(libp2p.peerId)
 
       expect(denyInboundEncryptedConnection.called).to.be.true()
@@ -520,7 +546,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
+      await libp2p.peerStore.patch(remoteLibp2p.peerId, {
+        multiaddrs: remoteLibp2p.getMultiaddrs()
+      })
       await libp2p.dial(remoteLibp2p.peerId)
 
       expect(denyOutboundEncryptedConnection.called).to.be.true()
@@ -541,7 +569,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await remoteLibp2p.peerStore.addressBook.set(libp2p.peerId, libp2p.getMultiaddrs())
+      await remoteLibp2p.peerStore.patch(libp2p.peerId, {
+        multiaddrs: libp2p.getMultiaddrs()
+      })
       await remoteLibp2p.dial(libp2p.peerId)
 
       expect(denyInboundUpgradedConnection.called).to.be.true()
@@ -562,7 +592,9 @@ describe('libp2p.connections', () => {
           }
         })
       })
-      await libp2p.peerStore.addressBook.set(remoteLibp2p.peerId, remoteLibp2p.getMultiaddrs())
+      await libp2p.peerStore.patch(remoteLibp2p.peerId, {
+        multiaddrs: remoteLibp2p.getMultiaddrs()
+      })
       await libp2p.dial(remoteLibp2p.peerId)
 
       expect(denyOutboundUpgradedConnection.called).to.be.true()

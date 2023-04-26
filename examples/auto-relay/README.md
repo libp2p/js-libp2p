@@ -99,11 +99,9 @@ const conn = await node.dial(relayAddr)
 console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`)
 
 // Wait for connection and relay to be bind for the example purpose
-node.peerStore.addEventListener('change:multiaddrs', (evt) => {
+node.addEventListener('self:peer:update', (evt) => {
   // Updated self multiaddrs?
-  if (evt.detail.peerId.equals(node.peerId)) {
-    console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
-  }
+  console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
 })
 ```
 

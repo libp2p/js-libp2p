@@ -85,8 +85,12 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
 
 export async function discoveredRelayConfig (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   await pWaitFor(async () => {
-    const peerData = await node.peerStore.get(relay.peerId)
-    return peerData.protocols.includes(RELAY_V2_HOP_CODEC)
+    try {
+      const peerData = await node.peerStore.get(relay.peerId)
+      return peerData.protocols.includes(RELAY_V2_HOP_CODEC)
+    } catch {
+      return false
+    }
   }, opts)
 }
 

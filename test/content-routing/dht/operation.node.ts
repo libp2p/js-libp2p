@@ -15,20 +15,22 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
 
 async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2pNode): Promise<Multiaddr> {
-  const addrs = await libp2p.components.peerStore.addressBook.get(remotePeerId)
+  const { addresses } = await libp2p.components.peerStore.get(remotePeerId)
 
-  if (addrs.length === 0) {
+  if (addresses.length === 0) {
     throw new Error('No addrs found')
   }
 
-  const addr = addrs[0]
+  const addr = addresses[0]
 
   return addr.multiaddr.encapsulate(`/p2p/${remotePeerId.toString()}`)
 }
 
 describe('DHT subsystem operates correctly', () => {
-  let peerId: PeerId, remotePeerId: PeerId
-  let libp2p: Libp2pNode, remoteLibp2p: Libp2pNode
+  let peerId: PeerId
+  let remotePeerId: PeerId
+  let libp2p: Libp2pNode
+  let remoteLibp2p: Libp2pNode
   let remAddr: Multiaddr
 
   beforeEach(async () => {
@@ -59,7 +61,9 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      await libp2p.components.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
+      await libp2p.components.peerStore.patch(remotePeerId, {
+        multiaddrs: [remoteListenAddr]
+      })
       remAddr = await getRemoteAddr(remotePeerId, libp2p)
     })
 
@@ -88,7 +92,7 @@ describe('DHT subsystem operates correctly', () => {
       const key = uint8ArrayFromString('hello')
       const value = uint8ArrayFromString('world')
 
-      await libp2p.dialProtocol(remAddr, subsystemMulticodecs)
+      await libp2p.dialProtocol(remotePeerId, subsystemMulticodecs)
       await Promise.all([
         pWaitFor(() => libp2p.dht.lan.routingTable.size === 1),
         pWaitFor(() => remoteLibp2p.dht.lan.routingTable.size === 1)
@@ -120,7 +124,9 @@ describe('DHT subsystem operates correctly', () => {
       await libp2p.start()
       await remoteLibp2p.start()
 
-      await libp2p.components.peerStore.addressBook.set(remotePeerId, [remoteListenAddr])
+      await libp2p.components.peerStore.patch(remotePeerId, {
+        multiaddrs: [remoteListenAddr]
+      })
       remAddr = await getRemoteAddr(remotePeerId, libp2p)
     })
 

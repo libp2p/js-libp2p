@@ -14,9 +14,12 @@ import type { PubSub } from '@libp2p/interface-pubsub'
 import type { DualDHT } from '@libp2p/interface-dht'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 
 export interface Components {
   peerId: PeerId
+  events: EventEmitter<Libp2pEvents>
   addressManager: AddressManager
   peerStore: PeerStore
   upgrader: Upgrader
@@ -35,6 +38,7 @@ export interface Components {
 
 export interface ComponentsInit {
   peerId?: PeerId
+  events?: EventEmitter<Libp2pEvents>
   addressManager?: AddressManager
   peerStore?: PeerStore
   upgrader?: Upgrader
@@ -53,6 +57,7 @@ export interface ComponentsInit {
 
 export class DefaultComponents implements Components, Startable {
   private _peerId?: PeerId
+  private _events?: EventEmitter<Libp2pEvents>
   private _addressManager?: AddressManager
   private _peerStore?: PeerStore
   private _upgrader?: Upgrader
@@ -71,6 +76,7 @@ export class DefaultComponents implements Components, Startable {
 
   constructor (init: ComponentsInit = {}) {
     this._peerId = init.peerId
+    this._events = init.events
     this._addressManager = init.addressManager
     this._peerStore = init.peerStore
     this._upgrader = init.upgrader
@@ -161,6 +167,18 @@ export class DefaultComponents implements Components, Startable {
 
   set peerId (peerId: PeerId) {
     this._peerId = peerId
+  }
+
+  get events (): EventEmitter<Libp2pEvents> {
+    if (this._events == null) {
+      throw new CodeError('events not set', 'ERR_SERVICE_MISSING')
+    }
+
+    return this._events
+  }
+
+  set events (events: EventEmitter<Libp2pEvents>) {
+    this._events = events
   }
 
   get addressManager (): AddressManager {
