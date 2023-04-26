@@ -49,7 +49,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import first from "it-first";
 import { pipe } from "it-pipe";
 import { fromString, toString } from "uint8arrays";
-import { webRTC } from 'js-libp2p-webrtc'
+import { webRTC } from '@libp2p/webrtc'
 
 const node = await createLibp2p({
   transports: [webRTC()],
