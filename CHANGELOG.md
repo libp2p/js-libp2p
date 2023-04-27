@@ -1,3 +1,10 @@
+## [9.1.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.0.0...v9.1.0) (2023-04-27)
+
+
+### Features
+
+* use symbols to return routers ([#464](https://github.com/libp2p/js-libp2p-kad-dht/issues/464)) ([d681aaf](https://github.com/libp2p/js-libp2p-kad-dht/commit/d681aaf49425e6e8638dc31eba5f158085cd4485))
+
 ## [9.0.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.12...v9.0.0) (2023-04-24)
 
 
