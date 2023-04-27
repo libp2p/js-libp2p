@@ -89,7 +89,7 @@
     "generate:proto:fetch": "protons ./src/fetch/pb/proto.proto",
     "generate:proto:identify": "protons ./src/identify/pb/message.proto",
     "generate:proto:plaintext": "protons ./src/insecure/pb/proto.proto",
-    "test": "aegir test",
+    "test": "aegir test -t node -f \"./dist/test/upgrading/upgrader.spec.js\" -g \"should limit the number of incoming streams that can be opened using a protocol\"",
     "test:node": "aegir test -t node -f \"./dist/test/**/*.{node,spec}.js\" --cov",
     "test:chrome": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" --cov",
     "test:chrome-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\"",
