@@ -111,9 +111,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
       // appearing in the console
       try {
-        if (setMaxListeners != null) {
-          setMaxListeners(Infinity, signal)
-        }
+        setMaxListeners?.(Infinity, signal)
       } catch {}
 
       // nb getClosestPeers adds the addresses to the address book
@@ -122,6 +120,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       log.error(err)
     } finally {
       this.abortController?.abort()
+      this.abortController = undefined
     }
   }
 
