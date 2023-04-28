@@ -184,10 +184,6 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
         this.services[name as keyof T] = service
         this.configureComponent(name, service)
 
-        if (service == null) {
-          throw new Error('wtf ' + name)
-        }
-
         if (service[contentRouting] != null) {
           log('registering service %s for content routing', name)
           contentRouters.push(service[contentRouting])
