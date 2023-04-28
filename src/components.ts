@@ -65,7 +65,7 @@ class DefaultComponents implements Startable {
     return this._started
   }
 
-  async #invoke (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop') {
+  async #invokeStartableMethod (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop') {
     await Promise.all(
       Object.values(this.components)
         .filter(obj => isStartable(obj))
@@ -76,29 +76,29 @@ class DefaultComponents implements Startable {
   }
 
   async beforeStart (): Promise<void> {
-    await this.#invoke('beforeStart')
+    await this.#invokeStartableMethod('beforeStart')
   }
 
   async start (): Promise<void> {
-    await this.#invoke('start')
+    await this.#invokeStartableMethod('start')
     this._started = true
   }
 
   async afterStart (): Promise<void> {
-    await this.#invoke('afterStart')
+    await this.#invokeStartableMethod('afterStart')
   }
 
   async beforeStop (): Promise<void> {
-    await this.#invoke('beforeStop')
+    await this.#invokeStartableMethod('beforeStop')
   }
 
   async stop (): Promise<void> {
-    await this.#invoke('stop')
+    await this.#invokeStartableMethod('stop')
     this._started = false
   }
 
   async afterStop (): Promise<void> {
-    await this.#invoke('afterStop')
+    await this.#invokeStartableMethod('afterStop')
   }
 }
 
