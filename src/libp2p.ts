@@ -178,6 +178,7 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
         const service: any = createService(this.components)
 
         if (service == null) {
+          log.error('service factory %s returned null or undefined instance', name)
           continue
         }
 
@@ -205,6 +206,10 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
   }
 
   private configureComponent <T> (name: string, component: T): T {
+    if (component == null) {
+      log.error('component %s was null or undefined', name)
+    }
+
     this.components[name] = component
 
     return component

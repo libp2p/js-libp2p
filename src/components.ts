@@ -65,76 +65,40 @@ class DefaultComponents implements Startable {
     return this._started
   }
 
-  async beforeStart (): Promise<void> {
+  async #invoke (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop') {
     await Promise.all(
       Object.values(this.components)
         .filter(obj => isStartable(obj))
         .map(async (startable: Startable) => {
-          if (startable.beforeStart != null) {
-            await startable.beforeStart()
-          }
+          await startable[methodName]?.()
         })
     )
   }
 
-  async start (): Promise<void> {
-    await Promise.all(
-      Object.values(this.components)
-        .filter(obj => isStartable(obj))
-        .map(async (startable: Startable) => {
-          await startable.start()
-        })
-    )
+  async beforeStart (): Promise<void> {
+    await this.#invoke('beforeStart')
+  }
 
+  async start (): Promise<void> {
+    await this.#invoke('start')
     this._started = true
   }
 
   async afterStart (): Promise<void> {
-    await Promise.all(
-      Object.values(this.components)
-        .filter(obj => isStartable(obj))
-        .map(async (startable: Startable) => {
-          if (startable.afterStart != null) {
-            await startable.afterStart()
-          }
-        })
-    )
+    await this.#invoke('afterStart')
   }
 
   async beforeStop (): Promise<void> {
-    await Promise.all(
-      Object.values(this.components)
-        .filter(obj => isStartable(obj))
-        .map(async (startable: Startable) => {
-          if (startable.beforeStop != null) {
-            await startable.beforeStop()
-          }
-        })
-    )
+    await this.#invoke('beforeStop')
   }
 
   async stop (): Promise<void> {
-    await Promise.all(
-      Object.values(this.components)
-        .filter(obj => isStartable(obj))
-        .map(async (startable: Startable) => {
-          await startable.stop()
-        })
-    )
-
+    await this.#invoke('stop')
     this._started = false
   }
 
   async afterStop (): Promise<void> {
-    await Promise.all(
-      Object.values(this.components)
-        .filter(obj => isStartable(obj))
-        .map(async (startable: Startable) => {
-          if (startable.afterStop != null) {
-            await startable.afterStop()
-          }
-        })
-    )
+    await this.#invoke('afterStop')
   }
 }
 
