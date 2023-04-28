@@ -54,7 +54,7 @@ declare global {
   window.fetchBtn.onclick = async () => {
     const c = CID.parse(window.cidInput.value)
     window.statusEl.hidden = false
-    const val = await bitswap.get(c)
+    const val = await bitswap.want(c)
     window.statusEl.hidden = true
 
     window.downloadEl.href = window.URL.createObjectURL(new Blob([val], { type: 'bytes' }))

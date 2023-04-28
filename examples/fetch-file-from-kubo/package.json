@@ -7,19 +7,19 @@
     "start": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "npm run build && playwright test tests"
+    "test": "npm run build && test-browser-example tests"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@libp2p/webtransport": "../..",
-    "@multiformats/multiaddr": "^11.1.5",
-    "blockstore-core": "^3.0.0",
-    "ipfs-bitswap": "^15.0.0",
-    "libp2p": "^0.42.0",
-    "test-util-ipfs-example": "^1.0.2"
+    "@multiformats/multiaddr": "^12.1.2",
+    "blockstore-core": "^4.1.0",
+    "ipfs-bitswap": "^17.0.2",
+    "libp2p": "^0.44.0",
+    "multiformats": "^11.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.27.1",
+    "test-ipfs-example": "^1.0.0",
     "typescript": "^4.6.4",
     "vite": "^3.1.0"
   }

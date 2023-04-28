@@ -1,13 +1,10 @@
 /* eslint-disable no-console */
-import { test, expect } from '@playwright/test'
-import { playwright } from 'test-util-ipfs-example'
+import { setup, expect } from 'test-ipfs-example/browser'
 import { spawn, exec } from 'child_process'
 import { existsSync } from 'fs'
 
 // Setup
-const play = test.extend({
-  ...playwright.servers()
-})
+const test = setup()
 
 async function spinUpGoLibp2p() {
   if (!existsSync('../../go-libp2p-webtransport-server/main')) {
@@ -41,7 +38,7 @@ async function spinUpGoLibp2p() {
   return { server, serverAddr }
 }
 
-play.describe('bundle ipfs with parceljs:', () => {
+test.describe('bundle ipfs with parceljs:', () => {
   // DOM
   const connectBtn = '#connectBtn'
   const connectAddr = '#peerInput'
@@ -51,7 +48,7 @@ play.describe('bundle ipfs with parceljs:', () => {
   let serverAddr
 
   // eslint-disable-next-line no-empty-pattern
-  play.beforeAll(async ({ }, testInfo) => {
+  test.beforeAll(async ({ }, testInfo) => {
     testInfo.setTimeout(5 * 60_000)
     const s = await spinUpGoLibp2p()
     server = s.server
@@ -59,15 +56,15 @@ play.describe('bundle ipfs with parceljs:', () => {
     console.log('Server addr:', serverAddr)
   }, {})
 
-  play.afterAll(() => {
+  test.afterAll(() => {
     server.kill('SIGINT')
   })
 
-  play.beforeEach(async ({ servers, page }) => {
-    await page.goto(`http://localhost:${servers[0].port}/`)
+  test.beforeEach(async ({ servers, page }) => {
+    await page.goto(servers[0].url)
   })
 
-  play('should connect to a go-libp2p node over webtransport', async ({ page }) => {
+  test('should connect to a go-libp2p node over webtransport', async ({ page }) => {
     await page.fill(connectAddr, serverAddr)
     await page.click(connectBtn)
 
