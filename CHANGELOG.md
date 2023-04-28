@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-webtransport/compare/v2.0.0...v2.0.1) (2023-04-28)
+
+
+### Dependencies
+
+* bump @libp2p/interface-transport from 2.1.3 to 4.0.1 ([#72](https://github.com/libp2p/js-libp2p-webtransport/issues/72)) ([04b977d](https://github.com/libp2p/js-libp2p-webtransport/commit/04b977db00bf0d71574f4618eaf0f070a5ce9441))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.11...v2.0.0) (2023-04-28)
 
 
