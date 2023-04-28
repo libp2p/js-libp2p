@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.11...v2.0.0) (2023-04-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the type of the source/sink properties have changed
+
+### Dependencies
+
+* update stream types ([#66](https://github.com/libp2p/js-libp2p-webtransport/issues/66)) ([3772060](https://github.com/libp2p/js-libp2p-webtransport/commit/3772060df436f72976d9aaaa9d619ef5e7d93408))
+
 ## [1.0.11](https://github.com/libp2p/js-libp2p-webtransport/compare/v1.0.10...v1.0.11) (2023-03-28)
 
 
