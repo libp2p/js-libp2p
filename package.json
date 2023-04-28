@@ -159,7 +159,7 @@
     "@libp2p/interface-connection": "^5.0.0",
     "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/interface-stream-muxer": "^4.0.0",
-    "@libp2p/interface-transport": "^3.0.0",
+    "@libp2p/interface-transport": "^4.0.1",
     "@libp2p/logger": "^2.0.2",
     "@libp2p/peer-id": "^2.0.0",
     "@multiformats/multiaddr": "^12.1.0",
@@ -168,7 +168,7 @@
     "uint8arraylist": "^2.3.3"
   },
   "devDependencies": {
-    "aegir": "^38.1.7",
+    "aegir": "^39.0.3",
     "libp2p": "^0.44.0",
     "p-defer": "^4.0.0"
   },

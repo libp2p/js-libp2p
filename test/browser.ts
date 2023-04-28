@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { multiaddr } from '@multiformats/multiaddr'
 import { noise } from '@chainsafe/libp2p-noise'
-import { webTransport, isSubset } from '../src/index'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
+import { webTransport, isSubset } from '../src/index'
 
 declare global {
   interface Window {

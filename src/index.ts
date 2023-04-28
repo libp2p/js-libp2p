@@ -1,15 +1,15 @@
-import { logger } from '@libp2p/logger'
 import { noise } from '@chainsafe/libp2p-noise'
-import { Transport, symbol, CreateListenerOptions, DialOptions, Listener } from '@libp2p/interface-transport'
-import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface-connection'
-import { Multiaddr, protocols } from '@multiformats/multiaddr'
+import { type Transport, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface-transport'
+import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { type Multiaddr, protocols } from '@multiformats/multiaddr'
 import { bases, digest } from 'multiformats/basics'
-import type { MultihashDigest } from 'multiformats/hashes/interface'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Duplex, Source } from 'it-stream-types'
-import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface-stream-muxer'
 import { Uint8ArrayList } from 'uint8arraylist'
+import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface-stream-muxer'
+import type { Duplex, Source } from 'it-stream-types'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 declare global {
   var WebTransport: any
@@ -32,14 +32,14 @@ function inertDuplex (): Duplex<any, any, any> {
         return {
           async next () {
             // This will never resolve
-            return await new Promise(() => { })
+            return new Promise(() => { })
           }
         }
       }
     },
     sink: async (source: Source<any>) => {
       // This will never resolve
-      return await new Promise(() => { })
+      return new Promise(() => { })
     }
   }
 }
@@ -288,13 +288,9 @@ class WebTransportTransport implements Transport {
     }
   }
 
-  get [Symbol.toStringTag] (): '@libp2p/webtransport' {
-    return '@libp2p/webtransport'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/webtransport'
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log('dialing %s', ma)
@@ -358,7 +354,7 @@ class WebTransportTransport implements Transport {
       throw e
     }
 
-    return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
+    return options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
   }
 
   async authenticateWebTransport (wt: InstanceType<typeof WebTransport>, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
