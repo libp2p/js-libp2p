@@ -109,7 +109,7 @@
     "@libp2p/interface-content-routing": "^2.0.0",
     "@libp2p/interface-dht": "^2.0.0",
     "@libp2p/interface-keychain": "^2.0.4",
-    "@libp2p/interface-libp2p": "^2.0.0",
+    "@libp2p/interface-libp2p": "^3.0.0",
     "@libp2p/interface-metrics": "^4.0.0",
     "@libp2p/interface-peer-discovery": "^1.0.1",
     "@libp2p/interface-peer-id": "^2.0.1",
