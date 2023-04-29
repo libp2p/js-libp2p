@@ -65,7 +65,7 @@ class DefaultComponents implements Startable {
     return this._started
   }
 
-  async #invokeStartableMethod (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop') {
+  async #invokeStartableMethod (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop'): Promise<void> {
     await Promise.all(
       Object.values(this.components)
         .filter(obj => isStartable(obj))
