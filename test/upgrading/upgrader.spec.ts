@@ -34,7 +34,6 @@ import { DefaultComponents } from '../../src/components.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { logger } from '@libp2p/logger'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -665,10 +664,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        yamux({
-          log: logger('yamux:local')
-        })
-        // mplex()
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
@@ -682,10 +678,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        yamux({
-          log: logger('yamux:remote')
-        })
-        // mplex()
+        yamux()
       ],
       connectionEncryption: [
         plaintext()
