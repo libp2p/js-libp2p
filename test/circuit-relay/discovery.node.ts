@@ -1,68 +1,91 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { createNode } from '../utils/creators/peer.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
-import { createNodeOptions, getRelayAddress, hasRelay, MockContentRouting, mockContentRouting } from './utils.js'
-import { circuitRelayServer, circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { getRelayAddress, hasRelay, MockContentRouting, mockContentRouting } from './utils.js'
+import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { tcp } from '@libp2p/tcp'
 import { pEvent } from 'p-event'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import { createLibp2p } from '../../src/index.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 describe('circuit-relay discovery', () => {
-  let local: Libp2pNode
-  let remote: Libp2pNode
-  let relay: Libp2pNode
+  let local: Libp2p
+  let remote: Libp2p
+  let relay: Libp2p<{ relay: CircuitRelayService }>
 
   beforeEach(async () => {
     // create relay first so it has time to advertise itself via content routing
-    relay = await createNode({
-      config: createNodeOptions({
-        transports: [
-          tcp()
-        ],
+    relay = await createLibp2p({
+      addresses: {
+        listen: ['/ip4/127.0.0.1/tcp/0']
+      },
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ],
+      contentRouters: [
+        mockContentRouting()
+      ],
+      services: {
         relay: circuitRelayServer({
           advertise: {
             bootDelay: 10
           }
-        }),
+        })
+      }
+    })
+
+    // wait for relay to advertise service successfully
+    await pEvent(relay.services.relay, 'relay:advert:success')
+
+    // now create client nodes
+    ;[local, remote] = await Promise.all([
+      createLibp2p({
+        addresses: {
+          listen: ['/ip4/127.0.0.1/tcp/0']
+        },
+        transports: [
+          tcp(),
+          circuitRelayTransport({
+            discoverRelays: 1
+          })
+        ],
+        streamMuxers: [
+          yamux()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ],
         contentRouters: [
           mockContentRouting()
         ]
-      })
-    })
-
-    if (relay.circuitService != null) {
-      // wait for relay to advertise service successfully
-      await pEvent(relay.circuitService, 'relay:advert:success')
-    }
-
-    // now create client nodes
-    [local, remote] = await Promise.all([
-      createNode({
-        config: createNodeOptions({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          contentRouters: [
-            mockContentRouting()
-          ]
-        })
       }),
-      createNode({
-        config: createNodeOptions({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          contentRouters: [
-            mockContentRouting()
-          ]
-        })
+      createLibp2p({
+        addresses: {
+          listen: ['/ip4/127.0.0.1/tcp/0']
+        },
+        transports: [
+          tcp(),
+          circuitRelayTransport({
+            discoverRelays: 1
+          })
+        ],
+        streamMuxers: [
+          yamux()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ],
+        contentRouters: [
+          mockContentRouting()
+        ]
       })
     ])
   })

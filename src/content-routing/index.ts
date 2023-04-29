@@ -5,7 +5,6 @@ import {
   uniquePeers,
   requirePeers
 } from './utils.js'
-import drain from 'it-drain'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
@@ -13,9 +12,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { CID } from 'multiformats/cid'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { DualDHT } from '@libp2p/interface-dht'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerId } from '@libp2p/interface-peer-id'
 
 export interface CompoundContentRoutingInit {
   routers: ContentRouting[]
@@ -23,7 +20,6 @@ export interface CompoundContentRoutingInit {
 
 export interface CompoundContentRoutingComponents {
   peerStore: PeerStore
-  dht?: DualDHT
 }
 
 export class CompoundContentRouting implements ContentRouting, Startable {
@@ -87,11 +83,9 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
 
-    const dht = this.components.dht
-
-    if (dht != null) {
-      await drain(dht.put(key, value, options))
-    }
+    await Promise.all(this.routers.map(async (router) => {
+      await router.put(key, value, options)
+    }))
   }
 
   /**
@@ -103,50 +97,8 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
 
-    const dht = this.components.dht
-
-    if (dht != null) {
-      for await (const event of dht.get(key, options)) {
-        if (event.name === 'VALUE') {
-          return event.value
-        }
-      }
-    }
-
-    throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
-  }
-
-  /**
-   * Get the `n` values to the given key without sorting
-   */
-  async * getMany (key: Uint8Array, nVals: number, options: AbortOptions): AsyncIterable<{ from: PeerId, val: Uint8Array }> {
-    if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
-    }
-
-    if (nVals == null || nVals === 0) {
-      return
-    }
-
-    let gotValues = 0
-    const dht = this.components.dht
-
-    if (dht != null) {
-      for await (const event of dht.get(key, options)) {
-        if (event.name === 'VALUE') {
-          yield { from: event.from, val: event.value }
-
-          gotValues++
-
-          if (gotValues === nVals) {
-            break
-          }
-        }
-      }
-    }
-
-    if (gotValues === 0) {
-      throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
-    }
+    return await Promise.any(this.routers.map(async (router) => {
+      return await router.get(key, options)
+    }))
   }
 }

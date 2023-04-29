@@ -6,8 +6,7 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { FaultTolerance } from '@libp2p/interface-transport'
 import { tcp } from '@libp2p/tcp'
 import { mockUpgrader } from '@libp2p/interface-mocks'
-import { NatManager } from '../../src/nat-manager.js'
-import delay from 'delay'
+import { uPnPNAT } from '../../src/upnp-nat/index.js'
 import Peers from '../fixtures/peers.js'
 import { codes } from '../../src/errors.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -15,7 +14,7 @@ import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { multiaddr } from '@multiformats/multiaddr'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -25,11 +24,11 @@ const DEFAULT_ADDRESSES = [
   '/ip4/0.0.0.0/tcp/0'
 ]
 
-describe('Nat Manager (TCP)', () => {
+describe('UPnP NAT (TCP)', () => {
   const teardown: Array<() => Promise<void>> = []
   let client: StubbedInstance<NatAPI>
 
-  async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: NatManager, components: DefaultComponents }> {
+  async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: any, components: Components }> {
     const events = new EventEmitter()
     const components: any = {
       peerId: await createFromJSON(Peers[0]),
@@ -52,11 +51,10 @@ describe('Nat Manager (TCP)', () => {
       faultTolerance: FaultTolerance.NO_FATAL
     })
 
-    const natManager = new NatManager(components, {
-      enabled: true,
+    const natManager: any = uPnPNAT({
       keepAlive: true,
       ...natManagerOptions
-    })
+    })(components)
 
     client = stubInterface<NatAPI>()
 
@@ -139,21 +137,6 @@ describe('Nat Manager (TCP)', () => {
     observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    expect(client.map.called).to.be.false()
-  })
-
-  it('should do nothing when disabled', async () => {
-    const {
-      natManager
-    } = await createNatManager(DEFAULT_ADDRESSES, {
-      enabled: false
-    })
-
-    await start(natManager)
-
-    await delay(100)
-
-    expect(client.externalIp.called).to.be.false()
     expect(client.map.called).to.be.false()
   })
 
@@ -246,7 +229,7 @@ describe('Nat Manager (TCP)', () => {
     const peerId = await createFromJSON(Peers[0])
 
     expect(() => {
-      new NatManager(new DefaultComponents({ peerId }), { ttl: 5, enabled: true, keepAlive: true }) // eslint-disable-line no-new
+      uPnPNAT({ ttl: 5, keepAlive: true })(defaultComponents({ peerId }))
     }).to.throw().with.property('code', codes.ERR_INVALID_PARAMETERS)
   })
 })

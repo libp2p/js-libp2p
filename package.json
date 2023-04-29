@@ -52,13 +52,33 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./autonat": {
+      "types": "./dist/src/autonat/index.d.ts",
+      "import": "./dist/src/autonat/index.js"
+    },
     "./circuit-relay": {
       "types": "./dist/src/circuit-relay/index.d.ts",
       "import": "./dist/src/circuit-relay/index.js"
     },
+    "./fetch": {
+      "types": "./dist/src/fetch/index.d.ts",
+      "import": "./dist/src/fetch/index.js"
+    },
+    "./identify": {
+      "types": "./dist/src/identify/index.d.ts",
+      "import": "./dist/src/identify/index.js"
+    },
     "./insecure": {
       "types": "./dist/src/insecure/index.d.ts",
       "import": "./dist/src/insecure/index.js"
+    },
+    "./upnp-nat": {
+      "types": "./dist/src/upnp-nat/index.d.ts",
+      "import": "./dist/src/upnp-nat/index.js"
+    },
+    "./ping": {
+      "types": "./dist/src/ping/index.d.ts",
+      "import": "./dist/src/ping/index.js"
     },
     "./pnet": {
       "types": "./dist/src/pnet/index.d.ts",
@@ -106,15 +126,15 @@
     "@libp2p/interface-connection-encrypter": "^4.0.0",
     "@libp2p/interface-connection-gater": "^3.0.0",
     "@libp2p/interface-connection-manager": "^3.0.0",
-    "@libp2p/interface-content-routing": "^2.0.0",
-    "@libp2p/interface-dht": "^2.0.0",
+    "@libp2p/interface-content-routing": "^2.1.0",
+    "@libp2p/interface-dht": "^2.0.1",
     "@libp2p/interface-keychain": "^2.0.4",
-    "@libp2p/interface-libp2p": "^2.0.0",
+    "@libp2p/interface-libp2p": "^3.0.0",
     "@libp2p/interface-metrics": "^4.0.0",
-    "@libp2p/interface-peer-discovery": "^1.0.1",
+    "@libp2p/interface-peer-discovery": "^1.1.0",
     "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/interface-peer-info": "^1.0.3",
-    "@libp2p/interface-peer-routing": "^1.0.1",
+    "@libp2p/interface-peer-routing": "^1.1.0",
     "@libp2p/interface-peer-store": "^2.0.0",
     "@libp2p/interface-pubsub": "^4.0.0",
     "@libp2p/interface-record": "^2.0.6",
@@ -155,19 +175,16 @@
     "merge-options": "^3.0.4",
     "multiformats": "^11.0.0",
     "p-defer": "^4.0.0",
-    "p-fifo": "^1.0.0",
     "p-queue": "^7.3.4",
     "p-retry": "^5.0.0",
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
     "rate-limiter-flexible": "^2.3.11",
-    "retimer": "^3.0.0",
     "set-delayed-interval": "^1.0.0",
     "timeout-abort-controller": "^3.0.0",
     "uint8arraylist": "^2.3.2",
     "uint8arrays": "^4.0.2",
     "wherearewe": "^2.0.0",
-    "why-is-node-running": "^2.2.2",
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
@@ -175,21 +192,20 @@
     "@chainsafe/libp2p-noise": "^11.0.0",
     "@chainsafe/libp2p-yamux": "^4.0.0",
     "@libp2p/bootstrap": "^7.0.0",
-    "@libp2p/daemon-client": "^6.0.0",
-    "@libp2p/daemon-server": "^5.0.0",
+    "@libp2p/daemon-client": "^6.0.2",
+    "@libp2p/daemon-server": "^5.0.2",
     "@libp2p/floodsub": "^7.0.1",
     "@libp2p/interface-compliance-tests": "^3.0.6",
     "@libp2p/interface-connection-compliance-tests": "^2.0.8",
     "@libp2p/interface-connection-encrypter-compliance-tests": "^5.0.0",
     "@libp2p/interface-mocks": "^11.0.0",
     "@libp2p/interop": "^8.0.0",
-    "@libp2p/kad-dht": "^9.0.0",
+    "@libp2p/kad-dht": "^9.1.0",
     "@libp2p/mdns": "^7.0.0",
     "@libp2p/mplex": "^8.0.1",
     "@libp2p/pubsub": "^7.0.1",
     "@libp2p/tcp": "^7.0.1",
     "@libp2p/websockets": "^6.0.1",
-    "@types/p-fifo": "^1.0.0",
     "@types/varint": "^6.0.0",
     "@types/xsalsa20": "^1.1.0",
     "aegir": "^38.1.7",
