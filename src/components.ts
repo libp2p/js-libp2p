@@ -65,7 +65,7 @@ class DefaultComponents implements Startable {
     return this._started
   }
 
-  async #invokeStartableMethod (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop'): Promise<void> {
+  private async _invokeStartableMethod (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop'): Promise<void> {
     await Promise.all(
       Object.values(this.components)
         .filter(obj => isStartable(obj))
@@ -76,29 +76,29 @@ class DefaultComponents implements Startable {
   }
 
   async beforeStart (): Promise<void> {
-    await this.#invokeStartableMethod('beforeStart')
+    await this._invokeStartableMethod('beforeStart')
   }
 
   async start (): Promise<void> {
-    await this.#invokeStartableMethod('start')
+    await this._invokeStartableMethod('start')
     this._started = true
   }
 
   async afterStart (): Promise<void> {
-    await this.#invokeStartableMethod('afterStart')
+    await this._invokeStartableMethod('afterStart')
   }
 
   async beforeStop (): Promise<void> {
-    await this.#invokeStartableMethod('beforeStop')
+    await this._invokeStartableMethod('beforeStop')
   }
 
   async stop (): Promise<void> {
-    await this.#invokeStartableMethod('stop')
+    await this._invokeStartableMethod('stop')
     this._started = false
   }
 
   async afterStop (): Promise<void> {
-    await this.#invokeStartableMethod('afterStop')
+    await this._invokeStartableMethod('afterStop')
   }
 }
 
@@ -116,7 +116,8 @@ const NON_SERVICE_PROPERTIES = [
   'beforeStop',
   'stop',
   'afterStop',
-  'then'
+  'then',
+  '_invokeStartableMethod'
 ]
 
 export function defaultComponents (init: ComponentsInit = {}): Components {
