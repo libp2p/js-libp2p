@@ -10,12 +10,12 @@ import all from 'it-all'
 import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createRoutingOptions } from './utils.js'
-import type { Libp2p } from '../../src/index.js'
+import { createLibp2p, Libp2p } from '../../src/index.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { Libp2pNode } from '../../src/libp2p.js'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { peerIdFromString } from '@libp2p/peer-id'
+import type { DHT } from '@libp2p/interface-dht'
 
 describe('content-routing', () => {
   describe('no routers', () => {
@@ -50,15 +50,15 @@ describe('content-routing', () => {
 
   describe('via dht router', () => {
     const number = 5
-    let nodes: Libp2pNode[]
+    let nodes: Array<Libp2p<{ dht: DHT }>>
 
     before(async () => {
       nodes = await Promise.all([
-        createNode({ config: createRoutingOptions() }),
-        createNode({ config: createRoutingOptions() }),
-        createNode({ config: createRoutingOptions() }),
-        createNode({ config: createRoutingOptions() }),
-        createNode({ config: createRoutingOptions() })
+        createLibp2p(createRoutingOptions()),
+        createLibp2p(createRoutingOptions()),
+        createLibp2p(createRoutingOptions()),
+        createLibp2p(createRoutingOptions()),
+        createLibp2p(createRoutingOptions())
       ])
       await populateAddressBooks(nodes)
 
@@ -77,11 +77,11 @@ describe('content-routing', () => {
     it('should use the nodes dht to provide', async () => {
       const deferred = pDefer()
 
-      if (nodes[0].dht == null) {
+      if (nodes[0].services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(nodes[0].dht, 'provide').callsFake(async function * () { // eslint-disable-line require-yield
+      sinon.stub(nodes[0].services.dht, 'provide').callsFake(async function * () { // eslint-disable-line require-yield
         deferred.resolve()
       })
 
@@ -93,11 +93,11 @@ describe('content-routing', () => {
     it('should use the nodes dht to find providers', async () => {
       const deferred = pDefer()
 
-      if (nodes[0].dht == null) {
+      if (nodes[0].services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(nodes[0].dht, 'findProviders').callsFake(async function * () {
+      sinon.stub(nodes[0].services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: nodes[0].peerId,
           type: 0,
@@ -118,7 +118,7 @@ describe('content-routing', () => {
   })
 
   describe('via delegate router', () => {
-    let node: Libp2pNode
+    let node: Libp2p
     let delegate: StubbedInstance<ContentRouting>
 
     beforeEach(async () => {
@@ -130,8 +130,7 @@ describe('content-routing', () => {
         config: createBaseOptions({
           contentRouters: [
             () => delegate
-          ],
-          dht: undefined
+          ]
         })
       })
     })
@@ -223,7 +222,7 @@ describe('content-routing', () => {
   })
 
   describe('via dht and delegate routers', () => {
-    let node: Libp2pNode
+    let node: Libp2p<{ dht: DHT }>
     let delegate: StubbedInstance<ContentRouting>
 
     beforeEach(async () => {
@@ -256,11 +255,11 @@ describe('content-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {})
+      sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {})
       delegate.findProviders.callsFake(async function * () {
         yield result
       })
@@ -285,13 +284,13 @@ describe('content-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
       const defer = pDefer()
 
-      sinon.stub(node.dht, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
+      sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () { // eslint-disable-line require-yield
         await defer.promise
       })
       delegate.findProviders.callsFake(async function * () {
@@ -316,11 +315,11 @@ describe('content-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {
+      sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: providerPeerId,
           type: 0,
@@ -356,11 +355,11 @@ describe('content-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {
+      sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: providerPeerId,
           type: 0,
@@ -389,11 +388,11 @@ describe('content-routing', () => {
       const dhtDeferred = pDefer()
       const delegatedDeferred = pDefer()
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(node.dht, 'provide').callsFake(async function * () { // eslint-disable-line require-yield
+      sinon.stub(node.services.dht, 'provide').callsFake(async function * () { // eslint-disable-line require-yield
         dhtDeferred.resolve()
       })
 
@@ -417,11 +416,11 @@ describe('content-routing', () => {
         protocols: []
       }]
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {
+      sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: providerPeerId,
           type: 0,
@@ -452,11 +451,11 @@ describe('content-routing', () => {
         protocols: []
       }]
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT was not configured')
       }
 
-      sinon.stub(node.dht, 'findProviders').callsFake(async function * () {})
+      sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {})
 
       delegate.findProviders.callsFake(async function * () {
         yield results[0]

@@ -7,10 +7,11 @@ import pTimes from 'p-times'
 import type { Libp2pOptions } from '../../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressManagerInit } from '../../../src/address-manager/index.js'
+import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
-export interface CreatePeerOptions {
+export interface CreatePeerOptions <T extends ServiceMap> {
   /**
    * number of peers (default: 1)
    */
@@ -26,13 +27,13 @@ export interface CreatePeerOptions {
    */
   started?: boolean
 
-  config?: Libp2pOptions
+  config?: Libp2pOptions<T>
 }
 
 /**
  * Create libp2p nodes.
  */
-export async function createNode (options: CreatePeerOptions = {}): Promise<Libp2pNode> {
+export async function createNode <T extends ServiceMap> (options: CreatePeerOptions<T> = {}): Promise<Libp2pNode<T>> {
   const started = options.started ?? true
   const config = options.config ?? {}
   const peerId = await createPeerId({ fixture: options.fixture })
@@ -63,12 +64,12 @@ export async function createNode (options: CreatePeerOptions = {}): Promise<Libp
   return peer
 }
 
-export async function populateAddressBooks (peers: Libp2pNode[]): Promise<void> {
+export async function populateAddressBooks (peers: Libp2p[]): Promise<void> {
   for (let i = 0; i < peers.length; i++) {
     for (let j = 0; j < peers.length; j++) {
       if (i !== j) {
-        await peers[i].components.peerStore.patch(peers[j].peerId, {
-          multiaddrs: peers[j].components.addressManager.getAddresses()
+        await peers[i].peerStore.patch(peers[j].peerId, {
+          multiaddrs: peers[j].getMultiaddrs()
         })
       }
     }

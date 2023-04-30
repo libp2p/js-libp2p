@@ -178,7 +178,7 @@ export class DefaultRegistrar implements Registrar {
         }
       })
       .catch(err => {
-        log.error(err)
+        log.error('could not inform topologies of disconnecting peer %p', connection.remotePeer, err)
       })
   }
 
@@ -205,7 +205,7 @@ export class DefaultRegistrar implements Registrar {
         }
       })
       .catch(err => {
-        log.error(err)
+        log.error('could not inform topologies of connecting peer %p', connection.remotePeer, err)
       })
   }
 

@@ -3,16 +3,16 @@ import { logger } from '@libp2p/logger'
 import { fromNodeAddress } from '@multiformats/multiaddr'
 import { isBrowser } from 'wherearewe'
 import isPrivateIp from 'private-ip'
-import * as pkg from './version.js'
+import * as pkg from '../version.js'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from './errors.js'
+import { codes } from '../errors.js'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 
-const log = logger('libp2p:nat')
+const log = logger('libp2p:upnp-nat')
 const DEFAULT_TTL = 7200
 
 function highPort (min = 1024, max = 65535): number {
@@ -26,12 +26,7 @@ export interface PMPOptions {
   enabled?: boolean
 }
 
-export interface NatManagerInit {
-  /**
-   * Whether to enable the NAT manager
-   */
-  enabled: boolean
-
+export interface UPnPNATInit {
   /**
    * Pass a value to use instead of auto-detection
    */
@@ -63,15 +58,14 @@ export interface NatManagerInit {
   gateway?: string
 }
 
-export interface NatManagerComponents {
+export interface UPnPNATComponents {
   peerId: PeerId
   transportManager: TransportManager
   addressManager: AddressManager
 }
 
-export class NatManager implements Startable {
-  private readonly components: NatManagerComponents
-  private readonly enabled: boolean
+class UPnPNAT implements Startable {
+  private readonly components: UPnPNATComponents
   private readonly externalAddress?: string
   private readonly localAddress?: string
   private readonly description: string
@@ -81,11 +75,10 @@ export class NatManager implements Startable {
   private started: boolean
   private client?: NatAPI
 
-  constructor (components: NatManagerComponents, init: NatManagerInit) {
+  constructor (components: UPnPNATComponents, init: UPnPNATInit) {
     this.components = components
 
     this.started = false
-    this.enabled = init.enabled
     this.externalAddress = init.externalAddress
     this.localAddress = init.localAddress
     this.description = init.description ?? `${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`
@@ -112,7 +105,7 @@ export class NatManager implements Startable {
    * Run after start to ensure the transport manager has all addresses configured.
    */
   afterStart (): void {
-    if (isBrowser || !this.enabled || this.started) {
+    if (isBrowser || this.started) {
       return
     }
 
@@ -209,5 +202,11 @@ export class NatManager implements Startable {
     } catch (err: any) {
       log.error(err)
     }
+  }
+}
+
+export function uPnPNAT (init: UPnPNATInit): (components: UPnPNATComponents) => {} {
+  return (components: UPnPNATComponents) => {
+    return new UPnPNAT(components, init)
   }
 }

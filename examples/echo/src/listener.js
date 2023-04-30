@@ -22,8 +22,8 @@ async function run() {
 
   // Log a message when we receive a connection
   listenerNode.addEventListener('peer:connect', (evt) => {
-    const connection = evt.detail
-    console.log('received dial to me from:', connection.remotePeer.toString())
+    const remotePeer = evt.detail
+    console.log('received dial to me from:', remotePeer.toString())
   })
 
   // Handle incoming connections for the protocol by piping from the stream

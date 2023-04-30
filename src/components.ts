@@ -10,14 +10,12 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { Datastore } from 'interface-datastore'
-import type { PubSub } from '@libp2p/interface-pubsub'
-import type { DualDHT } from '@libp2p/interface-dht'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { EventEmitter } from '@libp2p/interfaces/events'
 
-export interface Components {
+export interface Components extends Record<string, any>, Startable {
   peerId: PeerId
   events: EventEmitter<Libp2pEvents>
   addressManager: AddressManager
@@ -32,8 +30,6 @@ export interface Components {
   datastore: Datastore
   connectionProtector?: ConnectionProtector
   metrics?: Metrics
-  dht?: DualDHT
-  pubsub?: PubSub
 }
 
 export interface ComponentsInit {
@@ -51,285 +47,108 @@ export interface ComponentsInit {
   peerRouting?: PeerRouting
   datastore?: Datastore
   connectionProtector?: ConnectionProtector
-  dht?: DualDHT
-  pubsub?: PubSub
 }
 
-export class DefaultComponents implements Components, Startable {
-  private _peerId?: PeerId
-  private _events?: EventEmitter<Libp2pEvents>
-  private _addressManager?: AddressManager
-  private _peerStore?: PeerStore
-  private _upgrader?: Upgrader
-  private _metrics?: Metrics
-  private _registrar?: Registrar
-  private _connectionManager?: ConnectionManager
-  private _transportManager?: TransportManager
-  private _connectionGater?: ConnectionGater
-  private _contentRouting?: ContentRouting
-  private _peerRouting?: PeerRouting
-  private _datastore?: Datastore
-  private _connectionProtector?: ConnectionProtector
-  private _dht?: DualDHT
-  private _pubsub?: PubSub
+class DefaultComponents implements Startable {
+  public components: Record<string, any> = {}
   private _started = false
 
   constructor (init: ComponentsInit = {}) {
-    this._peerId = init.peerId
-    this._events = init.events
-    this._addressManager = init.addressManager
-    this._peerStore = init.peerStore
-    this._upgrader = init.upgrader
-    this._metrics = init.metrics
-    this._registrar = init.registrar
-    this._connectionManager = init.connectionManager
-    this._transportManager = init.transportManager
-    this._connectionGater = init.connectionGater
-    this._contentRouting = init.contentRouting
-    this._peerRouting = init.peerRouting
-    this._datastore = init.datastore
-    this._connectionProtector = init.connectionProtector
-    this._dht = init.dht
-    this._pubsub = init.pubsub
+    this.components = {}
+
+    for (const [key, value] of Object.entries(init)) {
+      this.components[key] = value
+    }
   }
 
   isStarted (): boolean {
     return this._started
   }
 
-  async beforeStart (): Promise<void> {
+  private async _invokeStartableMethod (methodName: 'beforeStart' | 'start' | 'afterStart' | 'beforeStop' | 'stop' | 'afterStop'): Promise<void> {
     await Promise.all(
-      Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
-        if (startable.beforeStart != null) {
-          await startable.beforeStart()
-        }
-      })
+      Object.values(this.components)
+        .filter(obj => isStartable(obj))
+        .map(async (startable: Startable) => {
+          await startable[methodName]?.()
+        })
     )
   }
 
-  async start (): Promise<void> {
-    await Promise.all(
-      Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
-        await startable.start()
-      })
-    )
+  async beforeStart (): Promise<void> {
+    await this._invokeStartableMethod('beforeStart')
+  }
 
+  async start (): Promise<void> {
+    await this._invokeStartableMethod('start')
     this._started = true
   }
 
   async afterStart (): Promise<void> {
-    await Promise.all(
-      Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
-        if (startable.afterStart != null) {
-          await startable.afterStart()
-        }
-      })
-    )
+    await this._invokeStartableMethod('afterStart')
   }
 
   async beforeStop (): Promise<void> {
-    await Promise.all(
-      Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
-        if (startable.beforeStop != null) {
-          await startable.beforeStop()
-        }
-      })
-    )
+    await this._invokeStartableMethod('beforeStop')
   }
 
   async stop (): Promise<void> {
-    await Promise.all(
-      Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
-        await startable.stop()
-      })
-    )
-
+    await this._invokeStartableMethod('stop')
     this._started = false
   }
 
   async afterStop (): Promise<void> {
-    await Promise.all(
-      Object.values(this).filter(obj => isStartable(obj)).map(async (startable: Startable) => {
-        if (startable.afterStop != null) {
-          await startable.afterStop()
+    await this._invokeStartableMethod('afterStop')
+  }
+}
+
+const OPTIONAL_SERVICES = [
+  'metrics',
+  'connectionProtector'
+]
+
+const NON_SERVICE_PROPERTIES = [
+  'components',
+  'isStarted',
+  'beforeStart',
+  'start',
+  'afterStart',
+  'beforeStop',
+  'stop',
+  'afterStop',
+  'then',
+  '_invokeStartableMethod'
+]
+
+export function defaultComponents (init: ComponentsInit = {}): Components {
+  const components = new DefaultComponents(init)
+
+  const proxy = new Proxy(components, {
+    get (target, prop, receiver) {
+      if (typeof prop === 'string' && !NON_SERVICE_PROPERTIES.includes(prop)) {
+        const service = components.components[prop]
+
+        if (service == null && !OPTIONAL_SERVICES.includes(prop)) {
+          throw new CodeError(`${prop} not set`, 'ERR_SERVICE_MISSING')
         }
-      })
-    )
-  }
 
-  get peerId (): PeerId {
-    if (this._peerId == null) {
-      throw new CodeError('peerId not set', 'ERR_SERVICE_MISSING')
+        return service
+      }
+
+      return Reflect.get(target, prop, receiver)
+    },
+
+    set (target, prop, value) {
+      if (typeof prop === 'string') {
+        components.components[prop] = value
+      } else {
+        Reflect.set(target, prop, value)
+      }
+
+      return true
     }
+  })
 
-    return this._peerId
-  }
-
-  set peerId (peerId: PeerId) {
-    this._peerId = peerId
-  }
-
-  get events (): EventEmitter<Libp2pEvents> {
-    if (this._events == null) {
-      throw new CodeError('events not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._events
-  }
-
-  set events (events: EventEmitter<Libp2pEvents>) {
-    this._events = events
-  }
-
-  get addressManager (): AddressManager {
-    if (this._addressManager == null) {
-      throw new CodeError('addressManager not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._addressManager
-  }
-
-  set addressManager (addressManager: AddressManager) {
-    this._addressManager = addressManager
-  }
-
-  get peerStore (): PeerStore {
-    if (this._peerStore == null) {
-      throw new CodeError('peerStore not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._peerStore
-  }
-
-  set peerStore (peerStore: PeerStore) {
-    this._peerStore = peerStore
-  }
-
-  get upgrader (): Upgrader {
-    if (this._upgrader == null) {
-      throw new CodeError('upgrader not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._upgrader
-  }
-
-  set upgrader (upgrader: Upgrader) {
-    this._upgrader = upgrader
-  }
-
-  get registrar (): Registrar {
-    if (this._registrar == null) {
-      throw new CodeError('registrar not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._registrar
-  }
-
-  set registrar (registrar: Registrar) {
-    this._registrar = registrar
-  }
-
-  get connectionManager (): ConnectionManager {
-    if (this._connectionManager == null) {
-      throw new CodeError('connectionManager not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._connectionManager
-  }
-
-  set connectionManager (connectionManager: ConnectionManager) {
-    this._connectionManager = connectionManager
-  }
-
-  get transportManager (): TransportManager {
-    if (this._transportManager == null) {
-      throw new CodeError('transportManager not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._transportManager
-  }
-
-  set transportManager (transportManager: TransportManager) {
-    this._transportManager = transportManager
-  }
-
-  get connectionGater (): ConnectionGater {
-    if (this._connectionGater == null) {
-      throw new CodeError('connectionGater not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._connectionGater
-  }
-
-  set connectionGater (connectionGater: ConnectionGater) {
-    this._connectionGater = connectionGater
-  }
-
-  get contentRouting (): ContentRouting {
-    if (this._contentRouting == null) {
-      throw new CodeError('contentRouting not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._contentRouting
-  }
-
-  set contentRouting (contentRouting: ContentRouting) {
-    this._contentRouting = contentRouting
-  }
-
-  get peerRouting (): PeerRouting {
-    if (this._peerRouting == null) {
-      throw new CodeError('peerRouting not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._peerRouting
-  }
-
-  set peerRouting (peerRouting: PeerRouting) {
-    this._peerRouting = peerRouting
-  }
-
-  get datastore (): Datastore {
-    if (this._datastore == null) {
-      throw new CodeError('datastore not set', 'ERR_SERVICE_MISSING')
-    }
-
-    return this._datastore
-  }
-
-  set datastore (datastore: Datastore) {
-    this._datastore = datastore
-  }
-
-  get connectionProtector (): ConnectionProtector | undefined {
-    return this._connectionProtector
-  }
-
-  set connectionProtector (connectionProtector: ConnectionProtector | undefined) {
-    this._connectionProtector = connectionProtector
-  }
-
-  get metrics (): Metrics | undefined {
-    return this._metrics
-  }
-
-  set metrics (metrics: Metrics | undefined) {
-    this._metrics = metrics
-  }
-
-  get dht (): DualDHT | undefined {
-    return this._dht
-  }
-
-  set dht (dht: DualDHT | undefined) {
-    this._dht = dht
-  }
-
-  get pubsub (): PubSub | undefined {
-    return this._pubsub
-  }
-
-  set pubsub (pubsub: PubSub | undefined) {
-    this._pubsub = pubsub
-  }
+  // @ts-expect-error component keys are proxied
+  return proxy
 }

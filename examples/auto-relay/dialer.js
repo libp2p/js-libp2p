@@ -4,6 +4,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
 import { multiaddr } from '@multiformats/multiaddr'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { identifyService } from 'libp2p/identify'
 
 async function main () {
   const autoRelayNodeAddr = process.argv[2]
@@ -21,7 +22,10 @@ async function main () {
     ],
     streamMuxers: [
       mplex()
-    ]
+    ],
+    services: {
+      identify: identifyService()
+    }
   })
 
   console.log(`Node started with id ${node.peerId.toString()}`)

@@ -2,7 +2,7 @@ import { interopTests } from '@libp2p/interop'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 import { createServer } from '@libp2p/daemon-server'
 import { createClient } from '@libp2p/daemon-client'
-import { createLibp2p, Libp2pOptions } from '../src/index.js'
+import { createLibp2p, Libp2pOptions, ServiceFactoryMap } from '../src/index.js'
 import { noise } from '@chainsafe/libp2p-noise'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -20,6 +20,11 @@ import { peerIdFromKeys } from '@libp2p/peer-id'
 import { floodsub } from '@libp2p/floodsub'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { circuitRelayServer, circuitRelayTransport } from '../src/circuit-relay/index.js'
+import type { ServiceMap } from '@libp2p/interface-libp2p'
+import { identifyService } from '../src/identify/index.js'
+import { contentRouting } from '@libp2p/interface-content-routing'
+import { peerRouting } from '@libp2p/interface-peer-routing'
+import { peerDiscovery } from '@libp2p/interface-peer-discovery'
 
 /**
  * @packageDocumentation
@@ -117,7 +122,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     peerId = await peerIdFromKeys(privateKey.public.bytes, privateKey.bytes)
   }
 
-  const opts: Libp2pOptions = {
+  const opts: Libp2pOptions<ServiceMap> = {
     peerId,
     addresses: {
       listen: options.noListen === true ? [] : ['/ip4/127.0.0.1/tcp/0']
@@ -125,10 +130,11 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
     // @ts-expect-error remove after https://github.com/ChainSafe/js-libp2p-noise/pull/306
-    connectionEncryption: [noise()],
-    nat: {
-      enabled: false
-    }
+    connectionEncryption: [noise()]
+  }
+
+  const services: ServiceFactoryMap = {
+    identify: identifyService()
   }
 
   if (options.muxer === 'mplex') {
@@ -139,39 +145,59 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.pubsub === true) {
     if (options.pubsubRouter === 'floodsub') {
-      opts.pubsub = floodsub()
+      services.pubsub = floodsub()
     } else {
-      opts.pubsub = gossipsub()
+      // @ts-expect-error remove after gossipsub is upgraded to @libp2p/interface-peer-store@2.x.x
+      services.pubsub = gossipsub()
     }
   }
 
   if (options.relay === true) {
-    opts.relay = circuitRelayServer()
+    services.relay = circuitRelayServer()
   }
 
   if (options.dht === true) {
-    opts.dht = (components: any) => {
-      const dht = kadDHT({
+    services.dht = (components: any) => {
+      const dht: any = kadDHT({
         clientMode: false
       })(components)
 
       // go-libp2p-daemon only has the older single-table DHT instead of the dual
       // lan/wan version found in recent go-ipfs versions. unfortunately it's been
       // abandoned so here we simulate the older config with the js implementation
-      const lan = dht.lan
+      const lan: any = dht.lan
 
       const protocol = '/ipfs/kad/1.0.0'
       lan.protocol = protocol
-      // @ts-expect-error
       lan.network.protocol = protocol
-      // @ts-expect-error
       lan.topologyListener.protocol = protocol
+
+      Object.defineProperties(lan, {
+        [contentRouting]: {
+          get () {
+            return dht[contentRouting]
+          }
+        },
+        [peerRouting]: {
+          get () {
+            return dht[peerRouting]
+          }
+        },
+        [peerDiscovery]: {
+          get () {
+            return dht[peerDiscovery]
+          }
+        }
+      })
 
       return lan
     }
   }
 
-  const node = await createLibp2p(opts)
+  const node: any = await createLibp2p({
+    ...opts,
+    services
+  })
 
   const server = createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
   await server.start()

@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { FetchService, FetchServiceInit } from '../../src/fetch/index.js'
+import { fetchService, FetchServiceInit } from '../../src/fetch/index.js'
 import Peers from '../fixtures/peers.js'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -14,7 +14,7 @@ import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
@@ -26,11 +26,11 @@ const defaultInit: FetchServiceInit = {
   timeout: 1000
 }
 
-async function createComponents (index: number): Promise<DefaultComponents> {
+async function createComponents (index: number): Promise<Components> {
   const peerId = await createFromJSON(Peers[index])
 
   const events = new EventEmitter()
-  const components = new DefaultComponents({
+  const components = defaultComponents({
     peerId,
     registrar: mockRegistrar(),
     upgrader: mockUpgrader({ events }),
@@ -50,8 +50,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
 }
 
 describe('fetch', () => {
-  let localComponents: DefaultComponents
-  let remoteComponents: DefaultComponents
+  let localComponents: Components
+  let remoteComponents: Components
 
   beforeEach(async () => {
     localComponents = await createComponents(0)
@@ -75,8 +75,8 @@ describe('fetch', () => {
   it('should be able to fetch from another peer', async () => {
     const key = 'key'
     const value = Uint8Array.from([0, 1, 2, 3, 4])
-    const localFetch = new FetchService(localComponents, defaultInit)
-    const remoteFetch = new FetchService(remoteComponents, defaultInit)
+    const localFetch = fetchService(defaultInit)(localComponents)
+    const remoteFetch = fetchService(defaultInit)(remoteComponents)
 
     remoteFetch.registerLookupFunction(key, async (identifier) => {
       expect(identifier).to.equal(key)
@@ -100,8 +100,8 @@ describe('fetch', () => {
 
   it('should time out fetching from another peer when waiting for the record', async () => {
     const key = 'key'
-    const localFetch = new FetchService(localComponents, defaultInit)
-    const remoteFetch = new FetchService(remoteComponents, defaultInit)
+    const localFetch = fetchService(defaultInit)(localComponents)
+    const remoteFetch = fetchService(defaultInit)(remoteComponents)
 
     await start(localFetch)
     await start(remoteFetch)
