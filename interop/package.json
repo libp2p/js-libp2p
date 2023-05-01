@@ -1,0 +1,44 @@
+{
+  "name": "multidim-interop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Multidimension Interop Test",
+  "type": "module",
+  "main": "index.js",
+  "author": "Glen De Cauwsemaecker <glen@littlebearlabs.io> / @marcopolo",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "build": "aegir build",
+    "test": "aegir test"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^10.2.0",
+    "@chainsafe/libp2p-yamux": "^3.0.4",
+    "@libp2p/mplex": "^7.1.1",
+    "@libp2p/tcp": "^6.0.8",
+    "@libp2p/webrtc": "^1.0.3",
+    "@libp2p/websockets": "^5.0.4",
+    "@libp2p/webtransport": "^1.0.7",
+    "@multiformats/mafmt": "^11.1.0",
+    "@multiformats/multiaddr": "^11.1.4",
+    "libp2p": "../",
+    "node-fetch": "^3.3.0",
+    "playwright": "^1.31.2",
+    "redis": "4.5.1"
+  },
+  "browser": {
+    "@libp2p/tcp": false
+  },
+  "devDependencies": {
+    "aegir": "^38.1.0",
+    "standard": "^17.0.0",
+    "typescript": "^4.9.4"
+  },
+  "overrides": {
+    "playwright-core": "^1.31.2"
+  }
+}

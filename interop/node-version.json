@@ -1,0 +1,19 @@
+{
+    "id": "node-js-libp2p-head",
+    "containerImageID": "node-js-libp2p-head",
+    "transports": [
+        "tcp",
+        "ws",
+        {
+            "name": "wss",
+            "onlyDial": true
+        }
+    ],
+    "secureChannels": [
+        "noise"
+    ],
+    "muxers": [
+        "mplex",
+        "yamux"
+    ]
+}

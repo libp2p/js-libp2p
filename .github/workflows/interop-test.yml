@@ -1,0 +1,36 @@
+name: Interoperability Testing
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  run-multidim-interop:
+    name: Run multidimensional interoperability tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+        with:
+          directories: |
+            ./interop/node_modules
+      - name: Build interop
+        run: (cd interop && npm i && npm run build)
+      - name: Build images
+        run: (cd interop && make)
+      # - name: Save package-lock.json as artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: package locks
+      #     path: |
+      #       package-lock.json
+      #       interop/package-lock.json
+      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@marco/image-caching
+        with:
+          test-filter: js-libp2p-head
+          extra-versions: ${{ github.workspace }}/interop/node-version.json
+          # extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json
+          s3-cache-bucket: ${{ vars.S3_LIBP2P_BUILD_CACHE_BUCKET_NAME }}
+          s3-access-key-id: ${{ vars.S3_LIBP2P_BUILD_CACHE_AWS_ACCESS_KEY_ID }}
+          s3-secret-access-key: ${{ secrets.S3_LIBP2P_BUILD_CACHE_AWS_SECRET_ACCESS_KEY }}

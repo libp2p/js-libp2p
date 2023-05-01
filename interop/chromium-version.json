@@ -1,0 +1,25 @@
+{
+    "id": "chromium-js-libp2p-head",
+    "containerImageID": "chromium-js-libp2p-head",
+    "transports": [
+        {
+            "name": "webtransport",
+            "onlyDial": true
+        },
+        {
+            "name": "webrtc",
+            "onlyDial": true
+        },
+        {
+            "name": "wss",
+            "onlyDial": true
+        }
+    ],
+    "secureChannels": [
+        "noise"
+    ],
+    "muxers": [
+        "mplex",
+        "yamux"
+    ]
+}
