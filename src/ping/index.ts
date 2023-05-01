@@ -14,6 +14,7 @@ import { abortableDuplex } from 'abortable-iterator'
 import type { Stream } from '@libp2p/interface-connection'
 import { setMaxListeners } from 'events'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import { anySignal } from 'any-signal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:ping')
@@ -101,7 +102,7 @@ class DefaultPingService implements Startable, PingService {
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      signal = AbortSignal.timeout(this.timeout)
+      signal = anySignal([AbortSignal.timeout(this.timeout), options.signal])
 
       try {
         // fails on node < 15.4

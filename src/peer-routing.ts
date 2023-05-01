@@ -6,7 +6,6 @@ import {
   uniquePeers,
   requirePeers
 } from './content-routing/utils.js'
-import { TimeoutController } from 'timeout-abort-controller'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
@@ -24,6 +23,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:peer-routing')
 
@@ -65,7 +65,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
   private readonly refreshManagerInit: RefreshManagerInit
   private timeoutId?: ReturnType<typeof setTimeout>
   private started: boolean
-  private abortController?: TimeoutController
+  private abortController?: AbortController
 
   constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit) {
     this.components = components
@@ -105,21 +105,21 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
     }
 
     try {
-      this.abortController = new TimeoutController(this.refreshManagerInit.timeout ?? 10e3)
+      this.abortController = new AbortController()
+      const signal = anySignal([this.abortController.signal, AbortSignal.timeout(this.refreshManagerInit.timeout ?? 10e3)])
 
       // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
       // appearing in the console
       try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, this.abortController.signal)
+        setMaxListeners?.(Infinity, signal)
       } catch {}
 
       // nb getClosestPeers adds the addresses to the address book
-      await drain(this.getClosestPeers(this.components.peerId.toBytes(), { signal: this.abortController.signal }))
+      await drain(this.getClosestPeers(this.components.peerId.toBytes(), { signal }))
     } catch (err: any) {
       log.error(err)
     } finally {
-      this.abortController?.clear()
+      this.abortController?.abort()
       this.abortController = undefined
     }
   }

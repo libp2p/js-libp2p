@@ -19,11 +19,11 @@ import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
-import { TimeoutController } from 'timeout-abort-controller'
 import {
   PROTOCOL
 } from './constants.js'
 import { Message } from './pb/index.js'
+import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:autonat')
 
@@ -132,20 +132,20 @@ export class AutonatService implements Startable {
    * Handle an incoming autonat request
    */
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
-    const controller = new TimeoutController(this._init.timeout)
+    const signal = anySignal([AbortSignal.timeout(this._init.timeout)])
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, controller.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch {}
 
     const ourHosts = this.components.addressManager.getAddresses()
       .map(ma => ma.toOptions().host)
 
     try {
-      const source = abortableDuplex(data.stream, controller.signal)
+      const source = abortableDuplex(data.stream, signal)
       const self = this
 
       await pipe(
@@ -319,7 +319,7 @@ export class AutonatService implements Startable {
 
             try {
               connection = await self.components.connectionManager.openConnection(multiaddr, {
-                signal: controller.signal
+                signal
               })
 
               if (!connection.remoteAddr.equals(multiaddr)) {
@@ -362,8 +362,8 @@ export class AutonatService implements Startable {
         // can't tell the remote when a dial timed out..
         data.stream
       )
-    } finally {
-      controller.clear()
+    } catch (err) {
+      log.error(err)
     }
   }
 
@@ -401,13 +401,13 @@ export class AutonatService implements Startable {
       return
     }
 
-    const controller = new TimeoutController(this._init.timeout)
+    const signal = AbortSignal.timeout(this._init.timeout)
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, controller.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch {}
 
     const self = this
@@ -436,13 +436,13 @@ export class AutonatService implements Startable {
           log('Asking %p to verify multiaddr', peer.id)
 
           const connection = await self.components.connectionManager.openConnection(peer.id, {
-            signal: controller.signal
+            signal
           })
 
           const stream = await connection.newStream(PROTOCOL, {
-            signal: controller.signal
+            signal
           })
-          const source = abortableDuplex(stream, controller.signal)
+          const source = abortableDuplex(stream, signal)
 
           const buf = await pipe(
             [request],
@@ -493,7 +493,7 @@ export class AutonatService implements Startable {
       }
 
       for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
-        signal: controller.signal
+        signal
       }), (peer) => async () => await verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
       })) {
@@ -557,7 +557,6 @@ export class AutonatService implements Startable {
         }
       }
     } finally {
-      controller.clear()
       this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
     }
   }
