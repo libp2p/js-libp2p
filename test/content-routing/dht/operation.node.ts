@@ -15,6 +15,7 @@ import { kadDHT } from '@libp2p/kad-dht'
 import { tcp } from '@libp2p/tcp'
 import { plaintext } from '../../../src/insecure/index.js'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
@@ -59,6 +60,7 @@ describe('DHT subsystem operates correctly', () => {
           plaintext()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         services: {
@@ -78,6 +80,7 @@ describe('DHT subsystem operates correctly', () => {
           plaintext()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         services: {

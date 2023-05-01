@@ -617,8 +617,8 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        mplex(),
-        yamux()
+        yamux(),
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -638,6 +638,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        yamux(),
         mplex()
       ],
       connectionEncryption: [
@@ -662,10 +663,10 @@ describe('libp2p.upgrader', () => {
     const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteComponents.upgrader as DefaultUpgrader, '_onStream')
 
     const stream = await localConnection.newStream(['/echo/1.0.0'])
-    expect(stream).to.include.keys(['id', 'close', 'reset', 'stat'])
+    expect(stream).to.include.keys(['id', 'recvWindowCapacity', 'sendWindowCapacity', 'sourceInput'])
 
     const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
-    expect(arg0.stream).to.include.keys(['id', 'close', 'reset', 'stat'])
+    expect(arg0.stream).to.include.keys(['id', 'recvWindowCapacity', 'sendWindowCapacity', 'sourceInput'])
   })
 
   it('should emit connect and disconnect events', async () => {

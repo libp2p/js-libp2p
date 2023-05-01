@@ -20,6 +20,7 @@ import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { mplex } from '@libp2p/mplex'
 import { identifyService } from '../../src/identify/index.js'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 describe('circuit-relay', () => {
   describe('flows with 1 listener', () => {
@@ -42,6 +43,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -62,27 +64,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
-            mplex()
-          ],
-          connectionEncryption: [
-            plaintext()
-          ],
-          services: {
-            relay: circuitRelayServer(),
-            identify: identifyService()
-          }
-        }),
-        createLibp2p({
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0']
-          },
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -104,6 +86,29 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
+        }),
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -351,6 +356,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -371,6 +377,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -391,27 +398,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
-            mplex()
-          ],
-          connectionEncryption: [
-            plaintext()
-          ],
-          services: {
-            relay: circuitRelayServer(),
-            identify: identifyService()
-          }
-        }),
-        createLibp2p({
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0']
-          },
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -433,6 +420,29 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
+        }),
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -624,6 +634,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -644,6 +655,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -664,6 +676,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -752,6 +765,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -772,6 +786,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -792,6 +807,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -876,6 +892,7 @@ describe('circuit-relay', () => {
           circuitRelayTransport()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionEncryption: [
@@ -897,6 +914,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -917,6 +935,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -960,6 +979,7 @@ describe('circuit-relay', () => {
           circuitRelayTransport()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionEncryption: [
@@ -981,6 +1001,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -1001,6 +1022,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [

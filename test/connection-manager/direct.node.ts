@@ -474,6 +474,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        yamux(),
         mplex()
       ],
       connectionEncryption: [

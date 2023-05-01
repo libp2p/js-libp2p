@@ -526,7 +526,10 @@ const node = await createLibp2p({
       '/ip4/123.123.123.123/p2p/QmRelay/p2p-circuit' // a known relay node with reservation slots available
     ]
   },
-  streamMuxers: [mplex()],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
   connectionEncryption: [noise()]
 })
 ```
