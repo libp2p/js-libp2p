@@ -1,6 +1,5 @@
 import mergeOptions from 'merge-options'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { AGENT_VERSION } from './identify/consts.js'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { FaultTolerance } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -8,7 +7,7 @@ import type { Libp2pInit } from './index.js'
 import { codes, messages } from './errors.js'
 import { CodeError } from '@libp2p/interfaces/errors'
 import type { RecursivePartial } from '@libp2p/interfaces'
-import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
+import type { ServiceMap } from '@libp2p/interface-libp2p'
 
 const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
@@ -32,7 +31,9 @@ const DefaultConfig: Partial<Libp2pInit> = {
       interval: 6e5,
       bootDelay: 10e3
     }
-  },
+  }
+/*
+
   nat: {
     enabled: true,
     ttl: 7200,
@@ -77,10 +78,12 @@ const DefaultConfig: Partial<Libp2pInit> = {
     startupDelay: 5000,
     refreshInterval: 60000
   }
+
+*/
 }
 
-export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit {
-  const resultingOptions: Libp2pInit = mergeOptions(DefaultConfig, opts)
+export function validateConfig <T extends ServiceMap = {}> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
+  const resultingOptions: Libp2pInit<T> = mergeOptions(DefaultConfig, opts)
 
   if (resultingOptions.transports == null || resultingOptions.transports.length < 1) {
     throw new CodeError(messages.ERR_TRANSPORTS_REQUIRED, codes.ERR_TRANSPORTS_REQUIRED)
@@ -92,15 +95,6 @@ export function validateConfig (opts: RecursivePartial<Libp2pInit>): Libp2pInit 
 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes.ERR_PROTECTOR_REQUIRED)
-  }
-
-  // Append user agent version to default AGENT_VERSION depending on the environment
-  if (resultingOptions.identify.host.agentVersion === AGENT_VERSION) {
-    if (isNode || isElectronMain) {
-      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.process.version}`
-    } else if (isBrowser || isWebWorker || isElectronRenderer || isReactNative) {
-      resultingOptions.identify.host.agentVersion += ` UserAgent=${globalThis.navigator.userAgent}`
-    }
   }
 
   return resultingOptions

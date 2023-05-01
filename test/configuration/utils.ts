@@ -5,7 +5,7 @@ import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import mergeOptions from 'merge-options'
-import type { Message, PublishResult, PubSubInit, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import type { Message, PublishResult, PubSub, PubSubInit, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import * as cborg from 'cborg'
@@ -13,8 +13,18 @@ import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
-export const baseOptions: Partial<Libp2pInit> = {
-  transports: [webSockets()],
+export const baseOptions: Partial<Libp2pInit<{ pubsub: PubSub }>> = {
+  addresses: {
+    listen: [
+      `${relayAddr}/p2p-circuit`
+    ]
+  },
+  transports: [
+    webSockets({
+      filter: filters.all
+    }),
+    circuitRelayTransport()
+  ],
   streamMuxers: [mplex()],
   connectionEncryption: [plaintext()]
 }
@@ -68,13 +78,15 @@ class MockPubSub extends PubSubBaseProtocol {
   }
 }
 
-export const pubsubSubsystemOptions: Libp2pOptions = mergeOptions(baseOptions, {
-  pubsub: (components: PubSubComponents) => new MockPubSub(components),
+export const pubsubSubsystemOptions: Libp2pOptions<{ pubsub: PubSub }> = mergeOptions(baseOptions, {
   addresses: {
     listen: [`${relayAddr.toString()}/p2p-circuit`]
   },
   transports: [
     webSockets({ filter: filters.all }),
     circuitRelayTransport()
-  ]
+  ],
+  services: {
+    pubsub: (components: PubSubComponents) => new MockPubSub(components)
+  }
 })

@@ -67,9 +67,13 @@ const libp2p = await createLibp2p({})
 const peerId = await createEd25519PeerId()
 
 // tag a peer
-await libp2p.peerStore.tagPeer(peerId, "my-tag", {
-  value: 50, // 0-100 is the typical value range
-  ttl: 1000, // optional field, this tag will be deleted after this many ms
+await libp2p.peerStore.merge(peerId, {
+  tags: {
+    "my-tag": {
+      value: 50, // 0-100 is the typical value range
+      ttl: 1000, // optional field, this tag will be deleted after this many ms
+    }
+  }
 });
 
 

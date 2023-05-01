@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { PingService, PingServiceInit } from '../../src/ping/index.js'
+import { pingService, PingServiceInit } from '../../src/ping/index.js'
 import Peers from '../fixtures/peers.js'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -14,10 +14,11 @@ import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { PROTOCOL } from '../../src/ping/constants.js'
 
 const defaultInit: PingServiceInit = {
   protocolPrefix: 'ipfs',
@@ -26,11 +27,11 @@ const defaultInit: PingServiceInit = {
   timeout: 1000
 }
 
-async function createComponents (index: number): Promise<DefaultComponents> {
+async function createComponents (index: number): Promise<Components> {
   const peerId = await createFromJSON(Peers[index])
 
   const events = new EventEmitter()
-  const components = new DefaultComponents({
+  const components = defaultComponents({
     peerId,
     registrar: mockRegistrar(),
     upgrader: mockUpgrader({ events }),
@@ -50,8 +51,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
 }
 
 describe('ping', () => {
-  let localComponents: DefaultComponents
-  let remoteComponents: DefaultComponents
+  let localComponents: Components
+  let remoteComponents: Components
 
   beforeEach(async () => {
     localComponents = await createComponents(0)
@@ -73,8 +74,8 @@ describe('ping', () => {
   })
 
   it('should be able to ping another peer', async () => {
-    const localPing = new PingService(localComponents, defaultInit)
-    const remotePing = new PingService(remoteComponents, defaultInit)
+    const localPing = pingService(defaultInit)(localComponents)
+    const remotePing = pingService(defaultInit)(remoteComponents)
 
     await start(localPing)
     await start(remotePing)
@@ -89,8 +90,8 @@ describe('ping', () => {
   })
 
   it('should time out pinging another peer when waiting for a pong', async () => {
-    const localPing = new PingService(localComponents, defaultInit)
-    const remotePing = new PingService(remoteComponents, defaultInit)
+    const localPing = pingService(defaultInit)(localComponents)
+    const remotePing = pingService(defaultInit)(remoteComponents)
 
     await start(localPing)
     await start(remotePing)
@@ -101,8 +102,8 @@ describe('ping', () => {
     remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // replace existing handler with a really slow one
-    await remoteComponents.registrar.unhandle(remotePing.protocol)
-    await remoteComponents.registrar.handle(remotePing.protocol, ({ stream }) => {
+    await remoteComponents.registrar.unhandle(PROTOCOL)
+    await remoteComponents.registrar.handle(PROTOCOL, ({ stream }) => {
       void pipe(
         stream,
         async function * (source) {
