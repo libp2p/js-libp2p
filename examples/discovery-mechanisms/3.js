@@ -9,6 +9,7 @@ import { floodsub } from '@libp2p/floodsub'
 import { bootstrap } from '@libp2p/bootstrap'
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { circuitRelayTransport, circuitRelayServer } from 'libp2p/circuit-relay'
+import { identifyService } from 'libp2p/identify'
 
 const createNode = async (bootstrappers) => {
   const node = await createLibp2p({
@@ -18,7 +19,6 @@ const createNode = async (bootstrappers) => {
     transports: [tcp()],
     streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
-    pubsub: floodsub(),
     peerDiscovery: [
       bootstrap({
         list: bootstrappers
@@ -26,7 +26,11 @@ const createNode = async (bootstrappers) => {
       pubsubPeerDiscovery({
         interval: 1000
       })
-    ]
+    ],
+    services: {
+      pubsub: floodsub(),
+      identify: identifyService()
+    }
   })
 
   return node
@@ -42,13 +46,16 @@ const createNode = async (bootstrappers) => {
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
-    pubsub: floodsub(),
     peerDiscovery: [
       pubsubPeerDiscovery({
         interval: 1000
       })
     ],
-    relay: circuitRelayServer()
+    services: {
+      relay: circuitRelayServer(),
+      identify: identifyService(),
+      pubsub: floodsub()
+    }
   })
   console.log(`libp2p relay started with id: ${relay.peerId.toString()}`)
 

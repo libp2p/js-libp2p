@@ -4,11 +4,23 @@ import { plaintext } from '../../src/insecure/index.js'
 import type { Libp2pOptions } from '../../src'
 import mergeOptions from 'merge-options'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import type { ServiceMap } from '@libp2p/interface-libp2p'
+import { webSockets } from '@libp2p/websockets'
+import * as filters from '@libp2p/websockets/filters'
+import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 
-export function createBaseOptions (...overrides: Libp2pOptions[]): Libp2pOptions {
+export function createBaseOptions <T extends ServiceMap = {}> (...overrides: Array<Libp2pOptions<T>>): Libp2pOptions<T> {
   const options: Libp2pOptions = {
+    addresses: {
+      listen: [`${MULTIADDRS_WEBSOCKETS}/p2p-circuit`]
+    },
     transports: [
-      tcp()
+      tcp(),
+      webSockets({
+        filter: filters.all
+      }),
+      circuitRelayTransport()
     ],
     streamMuxers: [
       yamux(),
@@ -16,10 +28,7 @@ export function createBaseOptions (...overrides: Libp2pOptions[]): Libp2pOptions
     ],
     connectionEncryption: [
       plaintext()
-    ],
-    nat: {
-      enabled: false
-    }
+    ]
   }
 
   return mergeOptions(options, ...overrides)

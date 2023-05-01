@@ -17,8 +17,6 @@
 import { createLibp2pNode } from './libp2p.js'
 import type { RecursivePartial } from '@libp2p/interfaces'
 import type { TransportManagerInit } from './transport-manager.js'
-import type { IdentifyServiceInit } from './identify/index.js'
-import type { DualDHT } from '@libp2p/interface-dht'
 import type { Datastore } from 'interface-datastore'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
@@ -29,25 +27,23 @@ import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { PubSub } from '@libp2p/interface-pubsub'
 import type { Metrics } from '@libp2p/interface-metrics'
-import type { PingServiceInit } from './ping/index.js'
-import type { FetchServiceInit } from './fetch/index.js'
-import type { AutonatServiceInit } from './autonat/index.js'
 import type { Components } from './components.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
 import type { KeyChainInit } from '@libp2p/keychain'
-import type { NatManagerInit } from './nat-manager.js'
 import type { AddressManagerInit } from './address-manager/index.js'
 import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
-import type { CircuitRelayService } from './circuit-relay/index.js'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
+
+export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string, unknown>> = {
+  [Property in keyof T]: (components: Components) => T[Property]
+}
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
  */
-export interface Libp2pInit {
+export interface Libp2pInit<T extends ServiceMap = {}> {
   /**
    * peerId instance (it will be created if not provided)
    */
@@ -96,37 +92,6 @@ export interface Libp2pInit {
   keychain: KeyChainInit
 
   /**
-   * The NAT manager controls uPNP hole punching
-   */
-  nat: NatManagerInit
-
-  /**
-   * If configured as a relay this node will relay certain
-   * types of traffic for other peers
-   */
-  relay: (components: Components) => CircuitRelayService
-
-  /**
-   * identify protocol options
-   */
-  identify: IdentifyServiceInit
-
-  /**
-   * ping protocol options
-   */
-  ping: PingServiceInit
-
-  /**
-   * fetch protocol options
-   */
-  fetch: FetchServiceInit
-
-  /**
-   * autonat protocol options
-   */
-  autonat: AutonatServiceInit
-
-  /**
    * An array that must include at least 1 compliant transport
    */
   transports: Array<(components: Components) => Transport>
@@ -137,29 +102,24 @@ export interface Libp2pInit {
   contentRouters?: Array<(components: Components) => ContentRouting>
 
   /**
-   * Pass a DHT implementation to enable DHT operations
-   */
-  dht?: (components: Components) => DualDHT
-
-  /**
    * A Metrics implementation can be supplied to collect metrics on this node
    */
   metrics?: (components: Components) => Metrics
 
   /**
-   * If a PubSub implmentation is supplied, PubSub operations will become available
-   */
-  pubsub?: (components: Components) => PubSub
-
-  /**
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
   connectionProtector?: (components: Components) => ConnectionProtector
+
+  /**
+   * Arbitrary libp2p modules
+   */
+  services: ServiceFactoryMap<T>
 }
 
 export type { Libp2p }
 
-export type Libp2pOptions = RecursivePartial<Libp2pInit> & { start?: boolean }
+export type Libp2pOptions<T extends ServiceMap = {}> = RecursivePartial<Libp2pInit<T>> & { start?: boolean }
 
 /**
  * Returns a new instance of the Libp2p interface, generating a new PeerId
@@ -187,7 +147,7 @@ export type Libp2pOptions = RecursivePartial<Libp2pInit> & { start?: boolean }
  * const libp2p = await createLibp2p(options)
  * ```
  */
-export async function createLibp2p (options: Libp2pOptions): Promise<Libp2p> {
+export async function createLibp2p <T extends ServiceMap = {}> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
   const node = await createLibp2pNode(options)
 
   if (options.start !== false) {

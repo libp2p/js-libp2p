@@ -21,29 +21,32 @@ import { createPeerId } from '../utils/creators/peer.js'
 import type { TransportManager } from '@libp2p/interface-transport'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Connection } from '@libp2p/interface-connection'
-import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
+import { createLibp2p } from '../../src/index.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import { IdentifyService, identifyService } from '../../src/identify/index.js'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
 describe('dialing (direct, WebSockets)', () => {
   let localTM: TransportManager
-  let localComponents: DefaultComponents
+  let localComponents: Components
   let remoteAddr: Multiaddr
-  let remoteComponents: DefaultComponents
+  let remoteComponents: Components
+  let connectionManager: DefaultConnectionManager
 
   beforeEach(async () => {
     const localEvents = new EventEmitter()
-    localComponents = new DefaultComponents({
+    localComponents = defaultComponents({
       peerId: await createFromJSON(Peers[0]),
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader({ events: localEvents }),
@@ -66,17 +69,22 @@ describe('dialing (direct, WebSockets)', () => {
 
     // this peer is spun up in .aegir.cjs
     remoteAddr = MULTIADDRS_WEBSOCKETS[0]
-    remoteComponents = new DefaultComponents({
+    remoteComponents = defaultComponents({
       peerId: peerIdFromString(remoteAddr.getPeerId() ?? '')
     })
   })
 
   afterEach(async () => {
     sinon.restore()
+
+    if (connectionManager != null) {
+      await connectionManager.stop()
+    }
   })
 
   it('should be able to connect to a remote node via its multiaddr', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.patch(remotePeerId, {
@@ -89,7 +97,8 @@ describe('dialing (direct, WebSockets)', () => {
   })
 
   it('should fail to connect to an unsupported multiaddr', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     await expect(connectionManager.openConnection(unsupportedAddr.encapsulate(`/p2p/${remoteComponents.peerId.toString()}`)))
       .to.eventually.be.rejectedWith(Error)
@@ -97,7 +106,8 @@ describe('dialing (direct, WebSockets)', () => {
   })
 
   it('should be able to connect to a given peer', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.patch(remotePeerId, {
@@ -110,7 +120,8 @@ describe('dialing (direct, WebSockets)', () => {
   })
 
   it('should fail to connect to a given peer with unsupported addresses', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.patch(remotePeerId, {
@@ -123,9 +134,10 @@ describe('dialing (direct, WebSockets)', () => {
   })
 
   it('should abort dials on queue task timeout', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents, {
+    connectionManager = new DefaultConnectionManager(localComponents, {
       dialTimeout: 50
     })
+    await connectionManager.start()
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.patch(remotePeerId, {
@@ -147,9 +159,10 @@ describe('dialing (direct, WebSockets)', () => {
   })
 
   it('should throw when a peer advertises more than the allowed number of addresses', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents, {
+    connectionManager = new DefaultConnectionManager(localComponents, {
       maxPeerAddrsToDial: 10
     })
+    await connectionManager.start()
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.patch(remotePeerId, {
@@ -171,10 +184,11 @@ describe('dialing (direct, WebSockets)', () => {
     const publicAddressesFirstSpy = sinon.spy(publicAddressesFirst)
     const localTMDialStub = sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
-    const connectionManager = new DefaultConnectionManager(localComponents, {
+    connectionManager = new DefaultConnectionManager(localComponents, {
       addressSorter: publicAddressesFirstSpy,
       maxParallelDials: 3
     })
+    await connectionManager.start()
 
     // Inject data into the AddressBook
     await localComponents.peerStore.merge(remoteComponents.peerId, {
@@ -199,9 +213,10 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
       multiaddr('/ip4/0.0.0.0/tcp/8002/ws')
     ]
-    const connectionManager = new DefaultConnectionManager(localComponents, {
+    connectionManager = new DefaultConnectionManager(localComponents, {
       maxParallelDials: 2
     })
+    await connectionManager.start()
 
     // Inject data into the AddressBook
     await localComponents.peerStore.merge(remoteComponents.peerId, {
@@ -245,14 +260,14 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddrs: addrs
     })
 
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     const transactionManagerDialStub = sinon.stub(localTM, 'dial')
     transactionManagerDialStub.callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
     // Perform dial
     await connectionManager.openConnection(remoteComponents.peerId)
-    await connectionManager.stop()
 
     expect(transactionManagerDialStub).to.have.property('callCount', 3)
   })
@@ -272,31 +287,31 @@ describe('dialing (direct, WebSockets)', () => {
     // different address not in the address book, same peer id
     const dialMultiaddr = multiaddr(`/ip4/0.0.0.0/tcp/8003/ws/p2p/${remoteComponents.peerId.toString()}`)
 
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     const transactionManagerDialStub = sinon.stub(localTM, 'dial')
     transactionManagerDialStub.callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
     // Perform dial
     await connectionManager.openConnection(dialMultiaddr)
-    await connectionManager.stop()
 
     expect(transactionManagerDialStub).to.have.property('callCount', 1)
     expect(transactionManagerDialStub.getCall(0).args[0].toString()).to.equal(dialMultiaddr.toString())
   })
 
   it('should throw if dialling an empty array is attempted', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     // Perform dial
     await expect(connectionManager.openConnection([])).to.eventually.rejected
       .with.property('code', 'ERR_NO_VALID_ADDRESSES')
-
-    await connectionManager.stop()
   })
 
   it('should throw if dialling multiaddrs with mismatched peer ids', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     // Perform dial
     await expect(connectionManager.openConnection([
@@ -304,12 +319,11 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createPeerId()).toString()}`)
     ])).to.eventually.rejected
       .with.property('code', 'ERR_INVALID_PARAMETERS')
-
-    await connectionManager.stop()
   })
 
   it('should throw if dialling multiaddrs with inconsistent peer ids', async () => {
-    const connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
 
     // Perform dial
     await expect(connectionManager.openConnection([
@@ -324,14 +338,12 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`)
     ])).to.eventually.rejected
       .with.property('code', 'ERR_INVALID_PARAMETERS')
-
-    await connectionManager.stop()
   })
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
   // const connectionGater = mockConnectionGater()
-  let libp2p: Libp2pNode
+  let libp2p: Libp2p<{ identify: IdentifyService }>
   let peerId: PeerId
 
   beforeEach(async () => {
@@ -346,40 +358,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     }
   })
 
-  it('should use the connection manager for connecting', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
-      transports: [
-        webSockets({
-          filter: filters.all
-        })
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-
-    const dialerDialSpy = sinon.spy(libp2p.components.connectionManager, 'openConnection')
-
-    await libp2p.start()
-
-    const connection = await libp2p.dial(MULTIADDRS_WEBSOCKETS[0])
-    expect(connection).to.exist()
-    const stream = await connection.newStream('/echo/1.0.0')
-    expect(stream).to.exist()
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
-    await connection.close()
-    expect(dialerDialSpy.callCount).to.be.at.least(1)
-
-    await libp2p.stop()
-  })
-
   it('should run identify automatically after connecting', async () => {
-    libp2p = await createLibp2pNode({
+    libp2p = await createLibp2p({
       peerId,
       transports: [
         webSockets({
@@ -392,15 +372,18 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       ],
       connectionEncryption: [
         plaintext()
-      ]
+      ],
+      services: {
+        identify: identifyService()
+      }
     })
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identify service missing')
     }
 
-    const identifySpy = sinon.spy(libp2p.identifyService, 'identify')
-    const peerStorePatchSpy = sinon.spy(libp2p.components.peerStore, 'patch')
+    const identifySpy = sinon.spy(libp2p.services.identify, 'identify')
+    const peerStorePatchSpy = sinon.spy(libp2p.peerStore, 'patch')
     const connectionPromise = pEvent(libp2p, 'connection:open')
 
     await libp2p.start()
@@ -420,7 +403,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
   })
 
   it('should be able to use hangup to close connections', async () => {
-    libp2p = await createLibp2pNode({
+    libp2p = await createLibp2p({
       peerId,
       transports: [
         webSockets({
@@ -449,7 +432,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
   })
 
   it('should be able to use hangup when no connection exists', async () => {
-    libp2p = await createLibp2pNode({
+    libp2p = await createLibp2p({
       peerId,
       transports: [
         webSockets({
@@ -468,35 +451,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     await libp2p.hangUp(MULTIADDRS_WEBSOCKETS[0])
   })
 
-  it('should abort pending dials on stop', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
-      transports: [
-        webSockets({
-          filter: filters.all
-        })
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-
-    await libp2p.start()
-
-    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
-    const dialerDestroyStub = sinon.spy(connectionManager.dialQueue, 'stop')
-
-    await libp2p.stop()
-
-    expect(dialerDestroyStub.callCount).to.equal(1)
-  })
-
   it('should fail to dial self', async () => {
-    libp2p = await createLibp2pNode({
+    libp2p = await createLibp2p({
       peerId,
       transports: [
         webSockets({

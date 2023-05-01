@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
+import { identifyService } from 'libp2p/identify'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
@@ -16,7 +17,10 @@ const createNode = async () => {
     transports: [tcp()],
     streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
-    dht: kadDHT()
+    services: {
+      dht: kadDHT(),
+      identify: identifyService()
+    }
   })
 
   return node

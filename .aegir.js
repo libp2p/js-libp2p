@@ -18,6 +18,9 @@ export default {
       const { plaintext } = await import('./dist/src/insecure/index.js')
       const { default: Peers } = await import('./dist/test/fixtures/peers.js')
       const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
+      const { identifyService } = await import('./dist/src/identify/index.js')
+      const { pingService } = await import('./dist/src/ping/index.js')
+      const { fetchService } = await import('./dist/src/fetch/index.js')
 
       // Use the last peer
       const peerId = await createFromJSON(Peers[Peers.length - 1])
@@ -41,9 +44,15 @@ export default {
           noise(),
           plaintext()
         ],
-        relay: circuitRelayServer(),
-        nat: {
-          enabled: false
+        services: {
+          identify: identifyService(),
+          ping: pingService(),
+          fetch: fetchService(),
+          relay: circuitRelayServer({
+            reservations: {
+              maxReservations: Infinity
+            }
+          })
         }
       })
       // Add the echo protocol

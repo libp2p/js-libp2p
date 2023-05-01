@@ -30,7 +30,7 @@
     - [Configuring Metrics](#configuring-metrics)
     - [Configuring PeerStore](#configuring-peerstore)
     - [Customizing Transports](#customizing-transports)
-    - [Configuring the NAT Manager](#configuring-the-nat-manager)
+    - [Configuring UPnP NAT Traversal](#configuring-upnp-nat-traversal)
       - [Browser support](#browser-support)
       - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
     - [Configuring protocol name](#configuring-protocol-name)
@@ -142,8 +142,9 @@ Some available content routing modules are:
 
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
 - [@libp2p/delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
+- [@libp2p/ipni-content-routing](https://github.com/libp2p/js-ipni-content-routing)
 
-If none of the available content routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/content-routing). **(WIP: This module is not yet implemented)**
+If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/content-routing).
 
 If you want to know more about libp2p content routing, you should read the following content:
 
@@ -205,8 +206,9 @@ const modules = {
   contentRouting: [],
   peerRouting: [],
   peerDiscovery: [],
-  dht: dhtImplementation,
-  pubsub: pubsubImplementation
+  services: {
+    serviceKey: serviceImplementation
+  }
 }
 ```
 
@@ -253,8 +255,10 @@ const node = await createLibp2p({
   streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
   peerDiscovery: [MulticastDNS],
-  dht: kadDHT(),
-  pubsub: gossipsub()
+  services: {
+    dht: kadDHT(),
+    pubsub: gossipsub()
+  }
 })
 ```
 
@@ -340,10 +344,12 @@ const node = await createLibp2p({
     connectionEncryption: [
       noise()
     ],
-    pubsub: gossipsub({
-      emitSelf: false,                                  // whether the node should emit to self on publish
-      globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
-    })
+    services: {
+      pubsub: gossipsub({
+        emitSelf: false,                                  // whether the node should emit to self on publish
+        globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
+      })
+    }
   }
 })
 ```
@@ -368,10 +374,12 @@ const node = await createLibp2p({
   connectionEncryption: [
     noise()
   ],
-  dht: kadDHT({
-    kBucketSize: 20,
-    clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
-  })
+  services: {
+    dht: kadDHT({
+      kBucketSize: 20,
+      clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
+    })
+  }
 })
 ```
 
@@ -443,21 +451,6 @@ const node = await createLibp2p({
   ],
   streamMuxers: [yamux(), mplex()],
   connectionEncryption: [noise()],
-  relay: circuitRelayServer({ // makes the node function as a relay server
-    hopTimeout: 30 * 1000, // incoming relay requests must be resolved within this time limit
-    advertise: { // if set, use content routing to broadcast availability of this relay
-      bootDelay: 30 * 1000 // how long to wait after startup before broadcast
-    },
-    reservations: {
-      maxReservations: 15 // how many peers are allowed to reserve relay slots on this server
-      reservationClearInterval: 300 * 1000 // how often to reclaim stale reservations
-      applyDefaultLimit: true // whether to apply default data/duration limits to each relayed connection
-      defaultDurationLimit: 2 * 60 * 1000 // the default maximum amount of time a relayed connection can be open for
-      defaultDataLimit: BigInt(2 << 7) // the default maximum number of bytes that can be transferred over a relayed connection
-      maxInboundHopStreams: 32 // how many inbound HOP streams are allow simultaneously
-      maxOutboundHopStreams: 64 // how many outbound HOP streams are allow simultaneously
-    }
-  }),
   connectionGater: {
     // used by the server - return true to deny a reservation to the remote peer
     denyInboundRelayReservation: (source: PeerId) => Promise<boolean>
@@ -467,6 +460,23 @@ const node = await createLibp2p({
 
     // used by the client - return true to deny a relay connection from the remote relay and peer
     denyInboundRelayedConnection: (relay: PeerId, remotePeer: PeerId) => Promise<boolean>
+  },
+  services: {
+    relay: circuitRelayServer({ // makes the node function as a relay server
+      hopTimeout: 30 * 1000, // incoming relay requests must be resolved within this time limit
+      advertise: { // if set, use content routing to broadcast availability of this relay
+        bootDelay: 30 * 1000 // how long to wait after startup before broadcast
+      },
+      reservations: {
+        maxReservations: 15 // how many peers are allowed to reserve relay slots on this server
+        reservationClearInterval: 300 * 1000 // how often to reclaim stale reservations
+        applyDefaultLimit: true // whether to apply default data/duration limits to each relayed connection
+        defaultDurationLimit: 2 * 60 * 1000 // the default maximum amount of time a relayed connection can be open for
+        defaultDataLimit: BigInt(2 << 7) // the default maximum number of bytes that can be transferred over a relayed connection
+        maxInboundHopStreams: 32 // how many inbound HOP streams are allow simultaneously
+        maxOutboundHopStreams: 64 // how many outbound HOP streams are allow simultaneously
+      }
+    }),
   }
 })
 ```
@@ -861,24 +871,28 @@ const node = await createLibp2p({
 })
 ```
 
-#### Configuring the NAT Manager
+#### Configuring UPnP NAT Traversal
 
 Network Address Translation (NAT) is a function performed by your router to enable multiple devices on your local network to share a single IPv4 address. It's done transparently for outgoing connections, ensuring the correct response traffic is routed to your computer, but if you wish to accept incoming connections some configuration is necessary.
 
-The NAT manager can be configured as follows:
+Some home routers support [UPnP NAT](https://en.wikipedia.org/wiki/Universal_Plug_and_Play) which allows network devices to request traffic to be forwarded from public facing ports that would otherwise be firewalled.
+
+If your router supports this, libp2p can be configured to use it as follows:
 
 ```js
+import { createLibp2p } from 'libp2p'
+import { uPnPNAT } from 'libp2p/upnp-nat'
+
 const node = await createLibp2p({
-  config: {
-    nat: {
-      enabled: true, // defaults to true
+  services: {
+    nat: uPnPNAT({
       description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
       gateway: '192.168.1.1', // leave unset to auto-discover
       externalIp: '80.1.1.1', // leave unset to auto-discover
       localAddress: '129.168.1.123', // leave unset to auto-discover
       ttl: 7200, // TTL for port mappings (min 20 minutes)
       keepAlive: true, // Refresh port mapping after TTL expires
-    }
+    })
   }
 })
 ```
@@ -898,12 +912,18 @@ By default under nodejs libp2p will attempt to use [UPnP](https://en.wikipedia.o
 Changing the protocol name prefix can isolate default public network (IPFS) for custom purposes.
 
 ```js
+import { createLibp2p } from 'libp2p'
+import { identifyService } from 'libp2p/identify'
+import { pingService } from 'libp2p/ping'
+
 const node = await createLibp2p({
-  identify: {
-    protocolPrefix: 'ipfs' // default
-  },
-  ping: {
-    protocolPrefix: 'ipfs' // default
+  services: {
+    identify: identifyService({
+      protocolPrefix: 'ipfs' // default
+    }),
+    ping: pingService({
+      protocolPrefix: 'ipfs' // default
+    })
   }
 })
 /*

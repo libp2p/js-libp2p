@@ -75,13 +75,15 @@ export class DefaultTransportManager implements TransportManager, Startable {
     return this.started
   }
 
-  async start (): Promise<void> {
+  start (): void {
+    this.started = true
+  }
+
+  async afterStart (): Promise<void> {
     // Listen on the provided transports for the provided addresses
     const addrs = this.components.addressManager.getListenAddrs()
 
     await this.listen(addrs)
-
-    this.started = true
   }
 
   /**
