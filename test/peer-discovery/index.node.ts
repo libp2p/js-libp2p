@@ -12,18 +12,31 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
-import { CustomEvent } from '@libp2p/interfaces/events'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { createLibp2p } from '../../src/index.js'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pOptions } from '../../src/index.js'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { DHT } from '@libp2p/interface-dht'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import { symbol } from '@libp2p/interface-peer-discovery'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
+
+class TestPeerDiscovery extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
+  get [symbol] (): true {
+    return true
+  }
+
+  get [Symbol.toStringTag] (): '@libp2p/test-peer-discovery' {
+    return '@libp2p/test-peer-discovery'
+  }
+}
 
 describe('peer discovery scenarios', () => {
   let peerId: PeerId
   let remotePeerId1: PeerId
   let remotePeerId2: PeerId
-  let libp2p: Libp2pNode
+  let libp2p: Libp2p
 
   beforeEach(async () => {
     [peerId, remotePeerId1, remotePeerId2] = await Promise.all([
@@ -40,23 +53,25 @@ describe('peer discovery scenarios', () => {
   })
 
   it('should ignore self on discovery', async () => {
-    libp2p = await createLibp2pNode(createBaseOptions({
+    const discovery = new TestPeerDiscovery()
+
+    libp2p = await createLibp2p(createBaseOptions({
       peerId,
       peerDiscovery: [
-        mdns()
+        () => discovery
       ]
     }))
 
     await libp2p.start()
     const discoverySpy = sinon.spy()
     libp2p.addEventListener('peer:discovery', discoverySpy)
-    libp2p.onDiscoveryPeer(new CustomEvent<PeerInfo>('peer', {
+    discovery.safeDispatchEvent('peer', {
       detail: {
         id: libp2p.peerId,
         multiaddrs: [],
         protocols: []
       }
-    }))
+    })
 
     expect(discoverySpy.called).to.eql(false)
   })
@@ -69,7 +84,7 @@ describe('peer discovery scenarios', () => {
       `${listenAddr.toString()}/p2p/${remotePeerId2.toString()}`
     ]
 
-    libp2p = await createLibp2pNode(createBaseOptions({
+    libp2p = await createLibp2p(createBaseOptions({
       peerId,
       addresses: {
         listen: [
@@ -124,9 +139,9 @@ describe('peer discovery scenarios', () => {
       ]
     })
 
-    libp2p = await createLibp2pNode(getConfig(peerId))
-    const remoteLibp2p1 = await createLibp2pNode(getConfig(remotePeerId1))
-    const remoteLibp2p2 = await createLibp2pNode(getConfig(remotePeerId2))
+    libp2p = await createLibp2p(getConfig(peerId))
+    const remoteLibp2p1 = await createLibp2p(getConfig(remotePeerId1))
+    const remoteLibp2p2 = await createLibp2p(getConfig(remotePeerId2))
 
     const expectedPeers = new Set([
       remotePeerId1.toString(),
@@ -159,22 +174,24 @@ describe('peer discovery scenarios', () => {
   it('kad-dht should discover other peers', async () => {
     const deferred = defer()
 
-    const getConfig = (peerId: PeerId): Libp2pOptions => createBaseOptions({
+    const getConfig = (peerId: PeerId): Libp2pOptions<{ dht: DHT }> => createBaseOptions({
       peerId,
       addresses: {
         listen: [
           listenAddr.toString()
         ]
       },
-      dht: kadDHT()
+      services: {
+        dht: kadDHT()
+      }
     })
 
     const localConfig = getConfig(peerId)
 
-    libp2p = await createLibp2pNode(localConfig)
+    libp2p = await createLibp2p(localConfig)
 
-    const remoteLibp2p1 = await createLibp2pNode(getConfig(remotePeerId1))
-    const remoteLibp2p2 = await createLibp2pNode(getConfig(remotePeerId2))
+    const remoteLibp2p1 = await createLibp2p(getConfig(remotePeerId1))
+    const remoteLibp2p2 = await createLibp2p(getConfig(remotePeerId2))
 
     libp2p.addEventListener('peer:discovery', (evt) => {
       const { id } = evt.detail

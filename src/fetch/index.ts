@@ -19,15 +19,17 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 const log = logger('libp2p:fetch')
 
+const DEFAULT_TIMEOUT = 10000
+
 export interface FetchServiceInit {
-  protocolPrefix: string
-  maxInboundStreams: number
-  maxOutboundStreams: number
+  protocolPrefix?: string
+  maxInboundStreams?: number
+  maxOutboundStreams?: number
 
   /**
    * How long we should wait for a remote peer to send any data
    */
-  timeout: number
+  timeout?: number
 }
 
 export interface HandleMessageOptions {
@@ -44,13 +46,51 @@ export interface FetchServiceComponents {
   connectionManager: ConnectionManager
 }
 
+export interface FetchService {
+  /**
+   * The protocol name used by this fetch service
+   */
+  protocol: string
+
+  /**
+   * Sends a request to fetch the value associated with the given key from the given peer
+   */
+  fetch: (peer: PeerId, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
+
+  /**
+   * Registers a new lookup callback that can map keys to values, for a given set of keys that
+   * share the same prefix
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
+   * ```
+   */
+  registerLookupFunction: (prefix: string, lookup: LookupFunction) => void
+
+  /**
+   * Registers a new lookup callback that can map keys to values, for a given set of keys that
+   * share the same prefix.
+   *
+   * @example
+   *
+   * ```js
+   * // ...
+   * libp2p.fetchService.unregisterLookupFunction('/prefix')
+   * ```
+   */
+  unregisterLookupFunction: (prefix: string, lookup?: LookupFunction) => void
+}
+
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
  * Developers can register one or more lookup function for retrieving the value corresponding to
  * a given key.  Each lookup function must act on a distinct part of the overall key space, defined
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
-export class FetchService implements Startable {
+class DefaultFetchService implements Startable, FetchService {
   public readonly protocol: string
   private readonly components: FetchServiceComponents
   private readonly lookupFunctions: Map<string, LookupFunction>
@@ -104,7 +144,7 @@ export class FetchService implements Startable {
     // create a timeout if no abort signal passed
     if (signal == null) {
       log('using default timeout of %d ms', this.init.timeout)
-      signal = AbortSignal.timeout(this.init.timeout)
+      signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
 
       try {
         // fails on node < 15.4
@@ -266,4 +306,8 @@ export class FetchService implements Startable {
 
     this.lookupFunctions.delete(prefix)
   }
+}
+
+export function fetchService (init: FetchServiceInit = {}): (components: FetchServiceComponents) => FetchService {
+  return (components) => new DefaultFetchService(components, init)
 }

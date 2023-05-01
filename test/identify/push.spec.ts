@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { multiaddr } from '@multiformats/multiaddr'
-import { IdentifyService, IdentifyServiceInit } from '../../src/identify/index.js'
+import { identifyService, IdentifyServiceInit } from '../../src/identify/index.js'
 import Peers from '../fixtures/peers.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
@@ -22,7 +22,7 @@ import { EventEmitter } from '@libp2p/interfaces/events'
 import delay from 'delay'
 import { pEvent } from 'p-event'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
 import type { TransportManager } from '@libp2p/interface-transport'
 import { stubInterface } from 'sinon-ts'
 
@@ -30,9 +30,7 @@ const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
 const defaultInit: IdentifyServiceInit = {
   protocolPrefix: 'ipfs',
-  host: {
-    agentVersion: 'v1.0.0'
-  },
+  agentVersion: 'v1.0.0',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
   maxPushIncomingStreams: 1,
@@ -42,11 +40,11 @@ const defaultInit: IdentifyServiceInit = {
 
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
-async function createComponents (index: number): Promise<DefaultComponents> {
+async function createComponents (index: number): Promise<Components> {
   const peerId = await createFromJSON(Peers[index])
 
   const events = new EventEmitter()
-  const components = new DefaultComponents({
+  const components = defaultComponents({
     peerId,
     datastore: new MemoryDatastore(),
     registrar: mockRegistrar(),
@@ -76,8 +74,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
 }
 
 describe('identify (push)', () => {
-  let localComponents: DefaultComponents
-  let remoteComponents: DefaultComponents
+  let localComponents: Components
+  let remoteComponents: Components
 
   beforeEach(async () => {
     localComponents = await createComponents(0)
@@ -99,8 +97,8 @@ describe('identify (push)', () => {
   })
 
   it('should be able to push identify updates to another peer', async () => {
-    const localIdentify = new IdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -173,11 +171,11 @@ describe('identify (push)', () => {
 
   it('should time out during push identify', async () => {
     let streamEnded = false
-    const localIdentify = new IdentifyService(localComponents, {
+    const localIdentify = identifyService({
       ...defaultInit,
       timeout: 10
-    })
-    const remoteIdentify = new IdentifyService(remoteComponents, defaultInit)
+    })(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -207,10 +205,18 @@ describe('identify (push)', () => {
       )
     })
 
+    // make sure we'll return the connection
+    await localComponents.peerStore.patch(localToRemote.remotePeer, {
+      protocols: [
+        MULTICODEC_IDENTIFY_PUSH
+      ]
+    })
+    localComponents.connectionManager.getConnections = sinon.stub().returns([localToRemote])
+
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
 
     // push updated peer record to remote
-    await localIdentify.push([localToRemote])
+    await localIdentify.push()
 
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)

@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
-import { createNode } from '../utils/creators/peer.js'
+import { createLibp2p } from '../../src/index.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
@@ -11,6 +11,8 @@ import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '../../src/index.js'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import { webSockets } from '@libp2p/websockets'
+import { plaintext } from '../../src/insecure/index.js'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']
@@ -215,14 +217,18 @@ describe('libp2p.addressManager', () => {
   })
 
   it('should populate the AddressManager from the config', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddreses
-        }
-      }
+    libp2p = await createLibp2p({
+      start: false,
+      addresses: {
+        listen: listenAddresses,
+        announce: announceAddreses
+      },
+      transports: [
+        webSockets()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
     })
 
     expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.have.members(announceAddreses)

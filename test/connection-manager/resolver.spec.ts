@@ -5,18 +5,20 @@ import sinon from 'sinon'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { createNode } from '../utils/creators/peer.js'
-import { createBaseOptions } from '../utils/base-options.browser.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Libp2pNode } from '../../src/libp2p.js'
 import pDefer from 'p-defer'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
-import { circuitRelayServer } from '../../src/circuit-relay/index.js'
+import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import type { Transport } from '@libp2p/interface-transport'
+import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
+import { webSockets } from '@libp2p/websockets'
+import * as filters from '@libp2p/websockets/filters'
+import { mplex } from '@libp2p/mplex'
+import { plaintext } from '../../src/insecure/index.js'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -36,38 +38,66 @@ const getDnsRelayedAddrStub = (peerId: PeerId): string[] => [
 ]
 
 describe('dialing (resolvable addresses)', () => {
-  let libp2p: Libp2pNode, remoteLibp2p: Libp2pNode
+  let libp2p: Libp2pNode
+  let remoteLibp2p: Libp2pNode<{ relay: CircuitRelayService }>
   let resolver: sinon.SinonStub<[Multiaddr], Promise<string[]>>
 
   beforeEach(async () => {
     resolver = sinon.stub<[Multiaddr], Promise<string[]>>();
 
     [libp2p, remoteLibp2p] = await Promise.all([
-      createNode({
-        config: createBaseOptions({
-          addresses: {
-            listen: [`${relayAddr.toString()}/p2p-circuit`]
-          },
-          connectionManager: {
-            resolvers: {
-              dnsaddr: resolver
-            }
+      createLibp2pNode({
+        addresses: {
+          listen: [`${relayAddr.toString()}/p2p-circuit`]
+        },
+        transports: [
+          circuitRelayTransport(),
+          webSockets({
+            filter: filters.all
+          })
+        ],
+        streamMuxers: [
+          mplex()
+        ],
+        connectionManager: {
+          resolvers: {
+            dnsaddr: resolver
           }
-        })
+        },
+        connectionEncryption: [
+          plaintext()
+        ]
       }),
-      createNode({
-        config: createBaseOptions({
-          addresses: {
-            listen: [`${relayAddr.toString()}/p2p-circuit`]
-          },
-          connectionManager: {
-            resolvers: {
-              dnsaddr: resolver
-            }
-          },
+      createLibp2pNode({
+        addresses: {
+          listen: [`${relayAddr.toString()}/p2p-circuit`]
+        },
+        transports: [
+          circuitRelayTransport(),
+          webSockets({
+            filter: filters.all
+          })
+        ],
+        streamMuxers: [
+          mplex()
+        ],
+        connectionManager: {
+          resolvers: {
+            dnsaddr: resolver
+          }
+        },
+        connectionEncryption: [
+          plaintext()
+        ],
+        services: {
           relay: circuitRelayServer()
-        })
+        }
       })
+    ])
+
+    await Promise.all([
+      libp2p.start(),
+      remoteLibp2p.start()
     ])
   })
 
@@ -87,7 +117,7 @@ describe('dialing (resolvable addresses)', () => {
     // Use the last peer
     const peerId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.peerStore.merge(peerId, {
+    await remoteLibp2p.peerStore.merge(peerId, {
       protocols: [RELAY_V2_HOP_CODEC]
     })
     const remoteId = remoteLibp2p.peerId
@@ -120,7 +150,7 @@ describe('dialing (resolvable addresses)', () => {
     // Use the last peer
     const relayId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.peerStore.merge(relayId, {
+    await remoteLibp2p.peerStore.merge(relayId, {
       protocols: [RELAY_V2_HOP_CODEC]
     })
 
@@ -188,7 +218,7 @@ describe('dialing (resolvable addresses)', () => {
     // Use the last peer
     const relayId = await createFromJSON(Peers[Peers.length - 1])
     // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.components.peerStore.merge(relayId, {
+    await remoteLibp2p.peerStore.merge(relayId, {
       protocols: [RELAY_V2_HOP_CODEC]
     })
 

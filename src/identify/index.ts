@@ -8,6 +8,7 @@ import { Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
 import { Identify } from './pb/message.js'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import {
+  AGENT_VERSION,
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH,
   IDENTIFY_PROTOCOL_VERSION,
@@ -33,42 +34,39 @@ import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { pbStream } from 'it-pb-stream'
+import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 
 const log = logger('libp2p:identify')
 
 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
 const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
 
-export interface HostProperties {
-  agentVersion: string
-}
-
 export interface IdentifyServiceInit {
   /**
    * The prefix to use for the protocol (default: 'ipfs')
    */
-  protocolPrefix: string
+  protocolPrefix?: string
 
   /**
    * What details we should send as part of an identify message
    */
-  host: HostProperties
+  agentVersion?: string
 
   /**
    * How long we should wait for a remote peer to send their identify response
    */
-  timeout: number
+  timeout?: number
 
   /**
    * Identify responses larger than this in bytes will be rejected (default: 8192)
    */
   maxIdentifyMessageSize?: number
 
-  maxInboundStreams: number
-  maxOutboundStreams: number
+  maxInboundStreams?: number
+  maxOutboundStreams?: number
 
-  maxPushIncomingStreams: number
-  maxPushOutgoingStreams: number
+  maxPushIncomingStreams?: number
+  maxPushOutgoingStreams?: number
   maxObservedAddresses?: number
 }
 
@@ -81,8 +79,34 @@ export interface IdentifyServiceComponents {
   events: EventEmitter<Libp2pEvents>
 }
 
-export class IdentifyService implements Startable {
-  private readonly components: IdentifyServiceComponents
+export interface IdentifyService {
+  /**
+   * Requests the `Identify` message from peer associated with the given `connection`.
+   * If the identified peer does not match the `PeerId` associated with the connection,
+   * an error will be thrown.
+   */
+  identify: (connection: Connection, options?: AbortOptions) => Promise<void>
+
+  /**
+   * Calls `push` on all peer connections
+   */
+  push: () => Promise<void>
+}
+
+const defaultValues = {
+  protocolPrefix: 'ipfs',
+  agentVersion: AGENT_VERSION,
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
+  timeout: 60000,
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1,
+  maxPushIncomingStreams: 1,
+  maxPushOutgoingStreams: 1,
+  maxObservedAddresses: 10,
+  maxIdentifyMessageSize: 8192
+}
+
+class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly identifyProtocolStr: string
   private readonly identifyPushProtocolStr: string
   public readonly host: {
@@ -90,33 +114,63 @@ export class IdentifyService implements Startable {
     agentVersion: string
   }
 
-  private readonly init: IdentifyServiceInit
   private started: boolean
+  private readonly timeout: number
+  private readonly peerId: PeerId
+  private readonly peerStore: PeerStore
+  private readonly registrar: Registrar
+  private readonly connectionManager: ConnectionManager
+  private readonly addressManager: AddressManager
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
+  private readonly maxPushIncomingStreams: number
+  private readonly maxPushOutgoingStreams: number
+  private readonly maxIdentifyMessageSize: number
+  private readonly maxObservedAddresses: number
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
-    this.components = components
     this.started = false
-    this.init = init
+    this.peerId = components.peerId
+    this.peerStore = components.peerStore
+    this.registrar = components.registrar
+    this.addressManager = components.addressManager
+    this.connectionManager = components.connectionManager
 
-    this.identifyProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
-    this.identifyPushProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    this.identifyProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
+    this.identifyPushProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    this.timeout = init.timeout ?? defaultValues.timeout
+    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
+    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
+    this.maxPushIncomingStreams = init.maxPushIncomingStreams ?? defaultValues.maxPushIncomingStreams
+    this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? defaultValues.maxPushOutgoingStreams
+    this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? defaultValues.maxIdentifyMessageSize
+    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
 
     // Store self host metadata
     this.host = {
-      protocolVersion: `${init.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      ...init.host
+      protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
+      agentVersion: init.agentVersion ?? defaultValues.agentVersion
     }
 
     // When a new connection happens, trigger identify
-    this.components.events.addEventListener('connection:open', (evt) => {
+    components.events.addEventListener('connection:open', (evt) => {
       const connection = evt.detail
       this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
     })
 
     // When self peer record changes, trigger identify-push
-    this.components.events.addEventListener('self:peer:update', (evt) => {
-      void this.pushToPeerStore().catch(err => { log.error(err) })
+    components.events.addEventListener('self:peer:update', (evt) => {
+      void this.push().catch(err => { log.error(err) })
     })
+
+    // Append user agent version to default AGENT_VERSION depending on the environment
+    if (this.host.agentVersion === AGENT_VERSION) {
+      if (isNode || isElectronMain) {
+        this.host.agentVersion += ` UserAgent=${globalThis.process.version}`
+      } else if (isBrowser || isWebWorker || isElectronRenderer || isReactNative) {
+        this.host.agentVersion += ` UserAgent=${globalThis.navigator.userAgent}`
+      }
+    }
   }
 
   isStarted (): boolean {
@@ -128,36 +182,36 @@ export class IdentifyService implements Startable {
       return
     }
 
-    await this.components.peerStore.merge(this.components.peerId, {
+    await this.peerStore.merge(this.peerId, {
       metadata: {
         AgentVersion: uint8ArrayFromString(this.host.agentVersion),
         ProtocolVersion: uint8ArrayFromString(this.host.protocolVersion)
       }
     })
 
-    await this.components.registrar.handle(this.identifyProtocolStr, (data) => {
+    await this.registrar.handle(this.identifyProtocolStr, (data) => {
       void this._handleIdentify(data).catch(err => {
         log.error(err)
       })
     }, {
-      maxInboundStreams: this.init.maxInboundStreams,
-      maxOutboundStreams: this.init.maxOutboundStreams
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
     })
-    await this.components.registrar.handle(this.identifyPushProtocolStr, (data) => {
+    await this.registrar.handle(this.identifyPushProtocolStr, (data) => {
       void this._handlePush(data).catch(err => {
         log.error(err)
       })
     }, {
-      maxInboundStreams: this.init.maxPushIncomingStreams,
-      maxOutboundStreams: this.init.maxPushOutgoingStreams
+      maxInboundStreams: this.maxPushIncomingStreams,
+      maxOutboundStreams: this.maxPushOutgoingStreams
     })
 
     this.started = true
   }
 
   async stop (): Promise<void> {
-    await this.components.registrar.unhandle(this.identifyProtocolStr)
-    await this.components.registrar.unhandle(this.identifyPushProtocolStr)
+    await this.registrar.unhandle(this.identifyProtocolStr)
+    await this.registrar.unhandle(this.identifyPushProtocolStr)
 
     this.started = false
   }
@@ -165,22 +219,22 @@ export class IdentifyService implements Startable {
   /**
    * Send an Identify Push update to the list of connections
    */
-  async push (connections: Connection[]): Promise<void> {
-    const listenAddresses = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+  async pushToConnections (connections: Connection[]): Promise<void> {
+    const listenAddresses = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
     const peerRecord = new PeerRecord({
-      peerId: this.components.peerId,
+      peerId: this.peerId,
       multiaddrs: listenAddresses
     })
-    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.components.peerId)
-    const supportedProtocols = this.components.registrar.getProtocols()
-    const peer = await this.components.peerStore.get(this.components.peerId)
+    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.peerId)
+    const supportedProtocols = this.registrar.getProtocols()
+    const peer = await this.peerStore.get(this.peerId)
     const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
     const protocolVersion = uint8ArrayToString(peer.metadata.get('ProtocolVersion') ?? uint8ArrayFromString(this.host.protocolVersion))
 
     const pushes = connections.map(async connection => {
       let stream: Stream | undefined
 
-      const signal = AbortSignal.timeout(this.init.timeout)
+      const signal = AbortSignal.timeout(this.timeout)
 
       try {
         // fails on node < 15.4
@@ -221,7 +275,7 @@ export class IdentifyService implements Startable {
   /**
    * Calls `push` on all peer connections
    */
-  async pushToPeerStore (): Promise<void> {
+  async push (): Promise<void> {
     // Do not try to push if we are not running
     if (!this.isStarted()) {
       return
@@ -229,18 +283,25 @@ export class IdentifyService implements Startable {
 
     const connections: Connection[] = []
 
-    for (const conn of this.components.connectionManager.getConnections()) {
-      const peerId = conn.remotePeer
-      const peer = await this.components.peerStore.get(peerId)
+    await Promise.all(
+      this.connectionManager.getConnections().map(async conn => {
+        try {
+          const peer = await this.peerStore.get(conn.remotePeer)
 
-      if (!peer.protocols.includes(this.identifyPushProtocolStr)) {
-        continue
-      }
+          if (!peer.protocols.includes(this.identifyPushProtocolStr)) {
+            return
+          }
 
-      connections.push(conn)
-    }
+          connections.push(conn)
+        } catch (err: any) {
+          if (err.code !== codes.ERR_NOT_FOUND) {
+            throw err
+          }
+        }
+      })
+    )
 
-    await this.push(connections)
+    await this.pushToConnections(connections)
   }
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
@@ -249,7 +310,7 @@ export class IdentifyService implements Startable {
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      signal = anySignal([AbortSignal.timeout(this.init.timeout), options.signal])
+      signal = anySignal([AbortSignal.timeout(this.timeout), options.signal])
 
       try {
         // fails on node < 15.4
@@ -269,7 +330,7 @@ export class IdentifyService implements Startable {
         [],
         source,
         (source) => lp.decode(source, {
-          maxDataLength: this.init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+          maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
         }),
         async (source) => await first(source)
       )
@@ -290,11 +351,6 @@ export class IdentifyService implements Startable {
     }
   }
 
-  /**
-   * Requests the `Identify` message from peer associated with the given `connection`.
-   * If the identified peer does not match the `PeerId` associated with the connection,
-   * an error will be thrown.
-   */
   async identify (connection: Connection, options: AbortOptions = {}): Promise<void> {
     const message = await this._identify(connection, options)
     const {
@@ -313,20 +369,20 @@ export class IdentifyService implements Startable {
       throw new CodeError('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
     }
 
-    if (this.components.peerId.equals(id)) {
+    if (this.peerId.equals(id)) {
       throw new CodeError('identified peer is our own peer id?', codes.ERR_INVALID_PEER)
     }
 
     // Get the observedAddr if there is one
-    const cleanObservedAddr = IdentifyService.getCleanMultiaddr(observedAddr)
+    const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
     log('identify completed for peer %p and protocols %o', id, protocols)
     log('our observed address is %s', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
-        this.components.addressManager.getObservedAddrs().length < (this.init.maxObservedAddresses ?? Infinity)) {
+        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
       log('storing our observed address %s', cleanObservedAddr?.toString())
-      this.components.addressManager.addObservedAddr(cleanObservedAddr)
+      this.addressManager.addObservedAddr(cleanObservedAddr)
     }
 
     await this.#consumeIdentifyMessage(connection.remotePeer, message)
@@ -339,7 +395,7 @@ export class IdentifyService implements Startable {
   async _handleIdentify (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
 
-    const signal = AbortSignal.timeout(this.init.timeout)
+    const signal = AbortSignal.timeout(this.timeout)
 
     try {
       // fails on node < 15.4
@@ -347,18 +403,18 @@ export class IdentifyService implements Startable {
     } catch {}
 
     try {
-      const publicKey = this.components.peerId.publicKey ?? new Uint8Array(0)
-      const peerData = await this.components.peerStore.get(this.components.peerId)
-      const multiaddrs = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+      const publicKey = this.peerId.publicKey ?? new Uint8Array(0)
+      const peerData = await this.peerStore.get(this.peerId)
+      const multiaddrs = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
       let signedPeerRecord = peerData.peerRecordEnvelope
 
       if (multiaddrs.length > 0 && signedPeerRecord == null) {
         const peerRecord = new PeerRecord({
-          peerId: this.components.peerId,
+          peerId: this.peerId,
           multiaddrs
         })
 
-        const envelope = await RecordEnvelope.seal(peerRecord, this.components.peerId)
+        const envelope = await RecordEnvelope.seal(peerRecord, this.peerId)
         signedPeerRecord = envelope.marshal().subarray()
       }
 
@@ -391,14 +447,14 @@ export class IdentifyService implements Startable {
     const { connection, stream } = data
 
     try {
-      if (this.components.peerId.equals(connection.remotePeer)) {
+      if (this.peerId.equals(connection.remotePeer)) {
         throw new Error('received push from ourselves?')
       }
 
       // make stream abortable
-      const source = abortableDuplex(stream, AbortSignal.timeout(this.init.timeout))
+      const source = abortableDuplex(stream, AbortSignal.timeout(this.timeout))
       const pb = pbStream(source, {
-        maxDataLength: this.init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+        maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
       })
       const message = await pb.readPB(Identify)
 
@@ -440,7 +496,7 @@ export class IdentifyService implements Startable {
     let peer: Peer | undefined
 
     try {
-      peer = await this.components.peerStore.get(peerRecord.peerId)
+      peer = await this.peerStore.get(peerRecord.peerId)
     } catch (err: any) {
       if (err.code !== 'ERR_NOT_FOUND') {
         throw err
@@ -470,7 +526,7 @@ export class IdentifyService implements Startable {
       metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
     }
 
-    await this.components.peerStore.patch(peerRecord.peerId, {
+    await this.peerStore.patch(peerRecord.peerId, {
       peerRecordEnvelope: message.signedPeerRecord,
       protocols: message.protocols,
       addresses: peerRecord.multiaddrs.map(multiaddr => ({
@@ -482,17 +538,17 @@ export class IdentifyService implements Startable {
 
     log('consumed signedPeerRecord sent in push from %p', remotePeer)
   }
+}
 
-  /**
-   * Takes the `addr` and converts it to a Multiaddr if possible
-   */
-  static getCleanMultiaddr (addr: Uint8Array | string | null | undefined): Multiaddr | undefined {
-    if (addr != null && addr.length > 0) {
-      try {
-        return multiaddr(addr)
-      } catch {
+/**
+ * Takes the `addr` and converts it to a Multiaddr if possible
+ */
+function getCleanMultiaddr (addr: Uint8Array | string | null | undefined): Multiaddr | undefined {
+  if (addr != null && addr.length > 0) {
+    try {
+      return multiaddr(addr)
+    } catch {
 
-      }
     }
   }
 }
@@ -506,3 +562,7 @@ export const multicodecs = {
 }
 
 export const Message = { Identify }
+
+export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => IdentifyService {
+  return (components) => new DefaultIdentifyService(components, init)
+}

@@ -28,9 +28,14 @@ const defaultOptions = {
 
 describe('Connection Manager', () => {
   let libp2p: Libp2pNode
+  let connectionManager: DefaultConnectionManager
 
   afterEach(async () => {
     sinon.restore()
+
+    if (connectionManager != null) {
+      await connectionManager.stop()
+    }
 
     if (libp2p != null) {
       await libp2p.stop()
@@ -43,7 +48,7 @@ describe('Connection Manager', () => {
       started: false
     })
 
-    const spy = sinon.spy(libp2p.connectionManager as DefaultConnectionManager, 'start')
+    const spy = sinon.spy(libp2p.components.connectionManager as DefaultConnectionManager, 'start')
 
     await libp2p.start()
     expect(spy).to.have.property('callCount', 1)
@@ -58,7 +63,7 @@ describe('Connection Manager', () => {
       started: false
     })
 
-    const spy = sinon.spy(libp2p.connectionManager as DefaultConnectionManager, 'start')
+    const spy = sinon.spy(libp2p.components.connectionManager as DefaultConnectionManager, 'start')
 
     await libp2p.start()
     expect(spy).to.have.property('callCount', 1)
@@ -79,7 +84,7 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
 
@@ -138,7 +143,7 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<string, sinon.SinonSpy<[], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
@@ -206,7 +211,7 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
@@ -288,7 +293,7 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
@@ -328,7 +333,7 @@ describe('Connection Manager', () => {
       started: false
     })
 
-    const connectionManager = libp2p.connectionManager as DefaultConnectionManager
+    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerOpenConnectionSpy = sinon.spy(connectionManager, 'openConnection')
 
     await libp2p.start()
@@ -354,7 +359,7 @@ describe('Connection Manager', () => {
 
   it('should deny connections from denylist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-    const connectionManager = new DefaultConnectionManager({
+    connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
@@ -366,6 +371,7 @@ describe('Connection Manager', () => {
         '/ip4/83.13.55.32'
       ]
     })
+    await connectionManager.start()
 
     const remotePeer = await createEd25519PeerId()
     const maConn = mockMultiaddrConnection({
@@ -381,7 +387,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections when maxConnections is exceeded', async () => {
-    const connectionManager = new DefaultConnectionManager({
+    connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
@@ -391,6 +397,7 @@ describe('Connection Manager', () => {
       ...defaultOptions,
       maxConnections: 1
     })
+    await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
@@ -412,7 +419,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
-    const connectionManager = new DefaultConnectionManager({
+    connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
@@ -422,6 +429,7 @@ describe('Connection Manager', () => {
       ...defaultOptions,
       inboundConnectionThreshold: 1
     })
+    await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
@@ -447,8 +455,7 @@ describe('Connection Manager', () => {
 
   it('should allow connections from allowlist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-
-    const connectionManager = new DefaultConnectionManager({
+    connectionManager = new DefaultConnectionManager({
       peerId: libp2p.peerId,
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
@@ -461,6 +468,7 @@ describe('Connection Manager', () => {
         '/ip4/83.13.55.32'
       ]
     })
+    await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
@@ -483,7 +491,7 @@ describe('Connection Manager', () => {
   })
 
   it('should limit the number of inbound pending connections', async () => {
-    const connectionManager = new DefaultConnectionManager({
+    connectionManager = new DefaultConnectionManager({
       peerId: await createEd25519PeerId(),
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
@@ -493,6 +501,7 @@ describe('Connection Manager', () => {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
     })
+    await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
