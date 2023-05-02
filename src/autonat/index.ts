@@ -505,7 +505,7 @@ export class AutonatService implements Startable {
           // they either told us which address worked/didn't work, or we only sent them one address
           const addr = dialResponse.addr == null ? multiaddrs[0] : multiaddr(dialResponse.addr)
 
-          log('Autonat response for %s is %s', addr, dialResponse.status)
+          log('Autonat response for %s is %s', addr.toString(), dialResponse.status)
 
           if (dialResponse.status === Message.ResponseStatus.E_BAD_REQUEST) {
             // the remote could not parse our request
@@ -548,7 +548,7 @@ export class AutonatService implements Startable {
 
           if (results[addrStr].failure === REQUIRED_SUCCESSFUL_DIALS) {
             // we are now unconvinced
-            log('%s is not externally dialable', addr)
+            log('%s is not externally dialable', addr.toString())
             addressManager.removeObservedAddr(addr)
             return
           }

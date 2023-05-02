@@ -6,7 +6,7 @@ import sinon from 'sinon'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { AutonatService, AutonatServiceInit } from '../../src/autonat/index.js'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
+import { StubbedInstance, stubInterface, stubObject } from 'sinon-ts'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import type { Registrar } from '@libp2p/interface-registrar'
@@ -92,19 +92,27 @@ describe('autonat', () => {
       connection.remoteAddr = multiaddr(`/ip4/${host}/tcp/28319/p2p/${peer.id.toString()}`)
       connectionManager.openConnection.withArgs(peer.id).resolves(connection)
 
-      // stub autonat protocol stream
-      const stream = stubInterface<Stream>()
-      connection.newStream.withArgs(PROTOCOL).resolves(stream)
-
-      // stub autonat response
       const response = Message.encode({
         type: Message.MessageType.DIAL_RESPONSE,
         dialResponse
       })
-      stream.source = (async function * () {
-        yield lp.encode.single(response)
-      }())
-      stream.sink.returns(Promise.resolve())
+
+      // stub autonat protocol stream
+      const stream = stubObject<Stream>({
+        close: sinon.stub(),
+        closeRead: sinon.stub(),
+        closeWrite: sinon.stub(),
+        abort: sinon.stub(),
+        reset: sinon.stub(),
+        id: '',
+        stat: { direction: 'outbound', timeline: { open: Date.now() } },
+        metadata: {},
+        source: (async function * () {
+          yield lp.encode.single(response)
+        }()),
+        sink: sinon.stub().returns(Promise.resolve())
+      })
+      connection.newStream.withArgs(PROTOCOL).resolves(stream)
 
       return peer
     }
@@ -289,7 +297,6 @@ describe('autonat', () => {
           status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
-
       peerRouting.getClosestPeers.returns(async function * () {
         yield * peers
       }())
