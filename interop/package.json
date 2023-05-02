@@ -16,9 +16,9 @@
     "test": "aegir test"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^10.2.0",
-    "@chainsafe/libp2p-yamux": "^3.0.4",
-    "@libp2p/mplex": "^7.1.1",
+    "@chainsafe/libp2p-noise": "^11.0.4",
+    "@chainsafe/libp2p-yamux": "^4.0.1",
+    "@libp2p/mplex": "^8.0.1",
     "@libp2p/tcp": "^6.0.8",
     "@libp2p/webrtc": "^1.0.3",
     "@libp2p/websockets": "^5.0.4",

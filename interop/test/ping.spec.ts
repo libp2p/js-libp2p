@@ -11,6 +11,7 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { multiaddr } from '@multiformats/multiaddr'
 import { webRTC } from '@libp2p/webrtc'
+import { pingService, PingService } from 'libp2p/ping/index.js'
 
 async function redisProxy (commands: any[]): Promise<any> {
   const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, { body: JSON.stringify(commands), method: 'POST' })
@@ -30,8 +31,11 @@ describe('ping test', () => {
     const IP = process.env.ip ?? '0.0.0.0'
     const timeoutSecs: string = process.env.test_timeout_secs ?? '180'
 
-    const options: Libp2pOptions = {
-      start: true
+    const options: Libp2pOptions<{ ping: PingService }> = {
+      start: true,
+      services: {
+        ping: pingService()
+      }
     }
 
     switch (TRANSPORT) {
@@ -125,7 +129,7 @@ describe('ping test', () => {
         console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
         const handshakeStartInstant = Date.now()
         await node.dial(multiaddr(otherMa))
-        const pingRTT = await node.ping(multiaddr(otherMa))
+        const pingRTT = await node.services.ping.ping(multiaddr(otherMa))
         const handshakePlusOneRTT = Date.now() - handshakeStartInstant
         console.log(JSON.stringify({
           handshakePlusOneRTTMillis: handshakePlusOneRTT,
