@@ -305,18 +305,14 @@ class DefaultIdentifyService implements Startable, IdentifyService {
   }
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
-    let signal = options.signal
     let stream: Stream | undefined
 
-    // create a timeout if no abort signal passed
-    if (signal == null) {
-      signal = anySignal([AbortSignal.timeout(this.timeout), options.signal])
+    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
 
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, signal)
-      } catch {}
-    }
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, signal)
+    } catch {}
 
     try {
       stream = await connection.newStream([this.identifyProtocolStr], {
@@ -348,6 +344,7 @@ class DefaultIdentifyService implements Startable, IdentifyService {
       if (stream != null) {
         stream.close()
       }
+      signal.clear()
     }
   }
 
