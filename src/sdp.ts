@@ -15,6 +15,37 @@ const log = logger('libp2p:webrtc:sdp')
 // @ts-expect-error - Not easy to combine these types.
 export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
+export function getLocalFingerprint (pc: RTCPeerConnection): string | undefined {
+  // try to fetch fingerprint from local certificate
+  const localCert = pc.getConfiguration().certificates?.at(0)
+  if (localCert == null || localCert.getFingerprints == null) {
+    log.trace('fetching fingerprint from local SDP')
+    const localDescription = pc.localDescription
+    if (localDescription == null) {
+      return undefined
+    }
+    return getFingerprintFromSdp(localDescription.sdp)
+  }
+
+  log.trace('fetching fingerprint from local certificate')
+
+  if (localCert.getFingerprints().length === 0) {
+    return undefined
+  }
+
+  const fingerprint = localCert.getFingerprints()[0].value
+  if (fingerprint == null) {
+    throw invalidFingerprint('', 'no fingerprint on local certificate')
+  }
+
+  return fingerprint
+}
+
+const fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m
+export function getFingerprintFromSdp (sdp: string): string | undefined {
+  const searchResult = sdp.match(fingerprintRegex)
+  return searchResult?.groups?.fingerprint
+}
 /**
  * Get base2 | identity decoders
  */

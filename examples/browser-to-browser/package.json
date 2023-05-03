@@ -9,7 +9,7 @@
     "relay": "node relay.js",
     "test:firefox": "npm run build && playwright test --browser=firefox tests",
     "test:chrome": "npm run build && playwright test tests",
-    "test": "npm run test:firefox && npm run test:chrome"
+    "test": "npm run build && playwright test tests && playwright test --browser firefox tests"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",

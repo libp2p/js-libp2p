@@ -7,7 +7,9 @@
     "start": "vite",
     "build": "vite build",
     "go-libp2p-server": "cd ../go-libp2p-server && go run ./main.go",
-    "test": "npm run build && playwright test tests"
+    "test:chrome": "npm run build && playwright test tests",
+    "test:firefox": "npm run build && playwright test --browser firefox tests",
+    "test": "npm run build && playwright test tests && playwright test --browser firefox tests"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^11.0.0",

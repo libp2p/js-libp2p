@@ -90,11 +90,8 @@ play.describe('bundle ipfs with parceljs:', () => {
     // Received message '${message}'
     const connections = await page.textContent(output)
 
-
     expect(connections).toContain(`Dialing '${serverAddr}'`)
     expect(connections).toContain(`Peer connected '${serverAddr}'`)
-
-
 
     expect(connections).toContain(`Sending message '${message}'`)
     expect(connections).toContain(`Received message '${message}'`)

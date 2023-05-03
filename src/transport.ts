@@ -118,6 +118,7 @@ export class WebRTCDirectTransport implements Transport {
       namedCurve: 'P-256',
       hash: sdp.toSupportedHashFunction(remoteCerthash.name)
     } as any)
+
     const peerConnection = new RTCPeerConnection({ certificates: [certificate] })
 
     // create data channel for running the noise handshake. Once the data channel is opened,
@@ -181,11 +182,23 @@ export class WebRTCDirectTransport implements Transport {
       source: {
         [Symbol.asyncIterator]: async function * () {
           for await (const list of wrappedChannel.source) {
-            yield list.subarray()
+            for (const buf of list) {
+              yield buf
+            }
           }
         }
       }
     }
+
+    // Creating the connection before completion of the noise
+    // handshake ensures that the stream opening callback is set up
+    const maConn = new WebRTCMultiaddrConnection({
+      peerConnection,
+      remoteAddr: ma,
+      timeline: {
+        open: Date.now()
+      }
+    })
 
     const eventListeningName = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
@@ -206,16 +219,6 @@ export class WebRTCDirectTransport implements Transport {
       }
     }, { signal })
 
-    // Creating the connection before completion of the noise
-    // handshake ensures that the stream opening callback is set up
-    const maConn = new WebRTCMultiaddrConnection({
-      peerConnection,
-      remoteAddr: ma,
-      timeline: {
-        open: Date.now()
-      }
-    })
-
     const muxerFactory = new DataChannelMuxerFactory(peerConnection)
 
     // For outbound connections, the remote is expected to start the noise handshake.
@@ -234,19 +237,12 @@ export class WebRTCDirectTransport implements Transport {
       throw invalidArgument('no local certificate')
     }
 
-    const localCert = pc.getConfiguration().certificates?.at(0)
-
-    if (localCert === undefined || localCert.getFingerprints().length === 0) {
-      throw invalidArgument('no fingerprint on local certificate')
+    const localFingerprint = sdp.getLocalFingerprint(pc)
+    if (localFingerprint == null) {
+      throw invalidArgument('no local fingerprint found')
     }
 
-    const localFingerprint = localCert.getFingerprints()[0]
-
-    if (localFingerprint.value === undefined) {
-      throw invalidArgument('no fingerprint on local certificate')
-    }
-
-    const localFpString = localFingerprint.value.replace(/:/g, '')
+    const localFpString = localFingerprint.trim().toLowerCase().replaceAll(':', '')
     const localFpArray = uint8arrayFromString(localFpString, 'hex')
     const local = multihashes.encode(localFpArray, hashCode)
     const remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(ma))
