@@ -24,7 +24,7 @@ It's possible to limit the total amount of connections a node is able to make (c
 
 - Note: there currently isn't a way to specify different limits for incoming vs. outgoing. Connection limits are applied across both incoming and outgoing connections combined. There is a backlog item for this [here](https://github.com/libp2p/js-libp2p/issues/1508).
 
-We can also limit the number of connections in a "pending" state. These connections have been opened by a remote peer but peer IDs have yet to be exchanged and/or connection encryption and multiplexing negotiated. Once this limit is hit further connections will be closed unless the remote peer has an address in the [allow list](#allowdeny-lists).
+We can also limit the number of connections in a 'pending' state. These connections have been opened by a remote peer but peer IDs have yet to be exchanged and/or connection encryption and multiplexing negotiated. Once this limit is hit further connections will be closed unless the remote peer has an address in the [allow list](#allowdeny-lists).
 
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
 
@@ -69,7 +69,7 @@ const peerId = await createEd25519PeerId()
 // tag a peer
 await libp2p.peerStore.merge(peerId, {
   tags: {
-    "my-tag": {
+    'my-tag': {
       value: 50, // 0-100 is the typical value range
       ttl: 1000, // optional field, this tag will be deleted after this many ms
     }
@@ -195,12 +195,12 @@ Since incoming stream data is buffered until it is consumed, you should attempt 
 All fields are optional. The default values are defined in [src/registrar.ts](https://github.com/libp2p/js-libp2p/blob/master/src/registrar.ts) - please see that file for the current values.
 
 ```ts
-import { createLibp2p } from "libp2p";
+import { createLibp2p } from 'libp2p';
 
 const node = await createLibp2p({});
 
 node.handle(
-  "/my-protocol/1.0.0",
+  '/my-protocol/1.0.0',
   (streamData) => {
     // ..handle stream
   },
@@ -269,9 +269,9 @@ const node = await createLibp2p({
      * all connection limits
      */
     allow: [
-      "/ip4/43.123.5.23/tcp/3984",
-      "/ip4/234.243.64.2",
-      "/ip4/52.55",
+      '/ip4/43.123.5.23/tcp/3984',
+      '/ip4/234.243.64.2',
+      '/ip4/52.55',
       // etc
     ],
 
@@ -280,9 +280,9 @@ const node = await createLibp2p({
      * addresses as a prefix will be immediately rejected
      */
     deny: [
-      "/ip4/132.14.52.64/tcp/3984",
-      "/ip4/234.243.64.2",
-      "/ip4/34.42",
+      '/ip4/132.14.52.64/tcp/3984',
+      '/ip4/234.243.64.2',
+      '/ip4/34.42',
       // etc
     ],
   },
