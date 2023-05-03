@@ -1,3 +1,10 @@
+## [1.1.10](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.9...v1.1.10) (2023-05-03)
+
+
+### Bug Fixes
+
+* Fetch local fingerprint from SDP ([#109](https://github.com/libp2p/js-libp2p-webrtc/issues/109)) ([3673d6c](https://github.com/libp2p/js-libp2p-webrtc/commit/3673d6c2637c21e488e684cdff4eedbb7f5b3692))
+
 ## [1.1.9](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.8...v1.1.9) (2023-04-26)
 
 
