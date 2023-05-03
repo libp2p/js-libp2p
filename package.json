@@ -99,7 +99,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "doc-check": "aegir doc-check --inputFiles doc/*.md --tsConfigPath doc/",
+    "doc-check": "aegir doc-check --inputFiles doc/*.md",
     "dep-check": "aegir dep-check -i protons",
     "prepublishOnly": "node scripts/update-version.js",
     "build": "aegir build",
