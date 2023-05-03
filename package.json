@@ -161,7 +161,6 @@
     "multihashes": "^4.0.3",
     "p-defer": "^4.0.0",
     "protons-runtime": "^5.0.0",
-    "timeout-abort-controller": "^3.0.0",
     "uint8arraylist": "^2.3.3",
     "uint8arrays": "^4.0.2",
     "detect-browser": "^5.3.0"
