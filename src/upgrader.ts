@@ -254,6 +254,7 @@ export class DefaultUpgrader implements Upgrader {
       })
     } finally {
       this.components.connectionManager.afterUpgradeInbound()
+      signal.clear()
     }
   }
 

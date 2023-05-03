@@ -104,10 +104,11 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
       return
     }
 
-    try {
-      this.abortController = new AbortController()
-      const signal = anySignal([this.abortController.signal, AbortSignal.timeout(this.refreshManagerInit.timeout ?? 10e3)])
+    this.abortController = new AbortController()
 
+    const signal = anySignal([this.abortController.signal, AbortSignal.timeout(this.refreshManagerInit.timeout ?? 10e3)])
+
+    try {
       // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
       // appearing in the console
       try {
@@ -121,6 +122,7 @@ export class DefaultPeerRouting implements PeerRouting, Startable {
     } finally {
       this.abortController?.abort()
       this.abortController = undefined
+      signal.clear()
     }
   }
 

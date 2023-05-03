@@ -97,18 +97,14 @@ class DefaultPingService implements Startable, PingService {
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
-    let signal = options.signal
     let stream: Stream | undefined
 
-    // create a timeout if no abort signal passed
-    if (signal == null) {
-      signal = anySignal([AbortSignal.timeout(this.timeout), options.signal])
+    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
 
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, signal)
-      } catch {}
-    }
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, signal)
+    } catch {}
 
     try {
       stream = await connection.newStream([this.protocol], {
@@ -134,6 +130,7 @@ class DefaultPingService implements Startable, PingService {
       if (stream != null) {
         stream.close()
       }
+      signal.clear()
     }
   }
 }

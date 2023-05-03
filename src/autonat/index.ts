@@ -364,6 +364,8 @@ export class AutonatService implements Startable {
       )
     } catch (err) {
       log.error(err)
+    } finally {
+      signal.clear()
     }
   }
 
