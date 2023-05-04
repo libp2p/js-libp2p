@@ -101,7 +101,8 @@ export class AutoDial implements Startable {
       return
     }
 
-    const numConnections = this.connectionManager.getConnections().length
+    const connections = this.connectionManager.getConnectionsMap()
+    const numConnections = connections.size
 
     // Already has enough connections
     if (numConnections >= this.minConnections) {
@@ -118,6 +119,11 @@ export class AutoDial implements Startable {
     const filteredPeers = peers.filter((peer) => {
       // Remove peers without addresses
       if (peer.addresses.length === 0) {
+        return false
+      }
+
+      // remove peers we are already connected to
+      if (connections.has(peer.id)) {
         return false
       }
 
@@ -161,7 +167,7 @@ export class AutoDial implements Startable {
 
     for (const peer of sortedPeers) {
       this.queue.add(async () => {
-        const numConnections = this.connectionManager.getConnections().length
+        const numConnections = this.connectionManager.getConnectionsMap().size
 
         // Check to see if we still need to auto dial
         if (numConnections >= this.minConnections) {
