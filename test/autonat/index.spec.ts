@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { autonatService, AutonatService, AutonatServiceInit } from '../../src/autonat/index.js'
+import { autonatService, AutonatServiceInit } from '../../src/autonat/index.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
@@ -36,7 +36,7 @@ const defaultInit: AutonatServiceInit = {
 }
 
 describe('autonat', () => {
-  let service: AutonatService
+  let service: any
   let components: Components
   let peerRouting: StubbedInstance<PeerRouting>
   let registrar: StubbedInstance<Registrar>
@@ -133,7 +133,6 @@ describe('autonat', () => {
         yield * peers
       }())
 
-      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.confirmObservedAddr.calledWith(observedAddress))
@@ -164,7 +163,6 @@ describe('autonat', () => {
         yield * peers
       }())
 
-      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -204,7 +202,6 @@ describe('autonat', () => {
         yield * peers
       }())
 
-      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.confirmObservedAddr.calledWith(observedAddress))
@@ -250,7 +247,6 @@ describe('autonat', () => {
         yield * peers
       }())
 
-      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -298,7 +294,6 @@ describe('autonat', () => {
         yield * peers
       }())
 
-      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -351,7 +346,6 @@ describe('autonat', () => {
         yield * peers
       }())
 
-      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -402,7 +396,6 @@ describe('autonat', () => {
         ])
       })
 
-      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.addObservedAddr.called)
@@ -484,7 +477,6 @@ describe('autonat', () => {
 
       source.end()
 
-      // @ts-expect-error not part of interface
       await service.handleIncomingAutonatStream({
         stream,
         connection
