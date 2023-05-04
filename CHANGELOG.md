@@ -1,3 +1,14 @@
+## [8.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v7.0.1...v8.0.0) (2023-05-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* update @libp2p/interface-peer-discovery to 2.0.0 (#176)
+
+### Dependencies
+
+* update @libp2p/interface-peer-discovery to 2.0.0 ([#176](https://github.com/libp2p/js-libp2p-bootstrap/issues/176)) ([1954e75](https://github.com/libp2p/js-libp2p-bootstrap/commit/1954e75fa4b1e6b3b42f885f663f989fd0e422ab))
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v7.0.0...v7.0.1) (2023-05-04)
 
 
