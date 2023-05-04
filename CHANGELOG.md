@@ -1,3 +1,10 @@
+## [9.1.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.0...v9.1.1) (2023-05-04)
+
+
+### Bug Fixes
+
+* wait for self-query to have run before running queries ([#457](https://github.com/libp2p/js-libp2p-kad-dht/issues/457)) ([9d5bdb9](https://github.com/libp2p/js-libp2p-kad-dht/commit/9d5bdb98e8ed9183064b895f9fc858bbde5f1127))
+
 ## [9.1.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.0.0...v9.1.0) (2023-04-27)
 
 
