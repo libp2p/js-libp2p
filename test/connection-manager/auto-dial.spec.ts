@@ -10,6 +10,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import { PeerMap } from '@libp2p/peer-collections'
 
 describe('auto-dial', () => {
   let autoDialler: AutoDial
@@ -49,7 +50,7 @@ describe('auto-dial', () => {
     ]))
 
     const connectionManager = stubInterface<ConnectionManager>()
-    connectionManager.getConnections.returns([])
+    connectionManager.getConnectionsMap.returns(new PeerMap())
 
     autoDialler = new AutoDial({
       peerStore,
