@@ -75,9 +75,7 @@ export interface AutonatComponents {
   peerRouting: PeerRouting
 }
 
-export type AutonatService = {}
-
-class DefaultAutonatService implements Startable, AutonatService {
+class DefaultAutonatService implements Startable {
   private readonly components: AutonatComponents
   private readonly startupDelay: number
   private readonly refreshInterval: number
@@ -88,7 +86,7 @@ class DefaultAutonatService implements Startable, AutonatService {
   private verifyAddressTimeout?: ReturnType<typeof setTimeout>
   private started: boolean
 
-  constructor (components: AutonatComponents , init: AutonatServiceInit) {
+  constructor (components: AutonatComponents, init: AutonatServiceInit) {
     this.components = components
     this.started = false
     this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
@@ -567,7 +565,7 @@ class DefaultAutonatService implements Startable, AutonatService {
   }
 }
 
-export function autonatService (init: AutonatServiceInit = {}): (components: AutonatComponents) => AutonatService {
+export function autonatService (init: AutonatServiceInit = {}): (components: AutonatComponents) => {} {
   return (components) => {
     return new DefaultAutonatService(components, init)
   }
