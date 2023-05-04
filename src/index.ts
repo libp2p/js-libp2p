@@ -1,4 +1,4 @@
-import { symbol } from '@libp2p/interface-peer-discovery'
+import { peerDiscovery } from '@libp2p/interface-peer-discovery'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -95,7 +95,7 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
     this._init = options
   }
 
-  readonly [symbol] = true
+  readonly [peerDiscovery] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/bootstrap'
 

@@ -139,7 +139,7 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface-peer-discovery": "^1.0.1",
+    "@libp2p/interface-peer-discovery": "^2.0.0",
     "@libp2p/interface-peer-info": "^1.0.7",
     "@libp2p/interface-peer-store": "^2.0.0",
     "@libp2p/interfaces": "^3.0.3",
