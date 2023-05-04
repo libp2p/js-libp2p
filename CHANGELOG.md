@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/libp2p/js-libp2p-bootstrap/compare/v7.0.0...v7.0.1) (2023-05-04)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.5 ([#175](https://github.com/libp2p/js-libp2p-bootstrap/issues/175)) ([e8d7ed7](https://github.com/libp2p/js-libp2p-bootstrap/commit/e8d7ed76e60b64c2e5a554cd10173a1176e5e2b1))
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p-bootstrap/compare/v6.0.3...v7.0.0) (2023-04-24)
 
 
