@@ -677,7 +677,8 @@ describe('libp2p.upgrader', () => {
       ],
       connectionEncryption: [
         plaintext()
-      ]
+      ],
+      connectionGater: mockConnectionGater()
     })
     await libp2p.start()
 
@@ -694,7 +695,8 @@ describe('libp2p.upgrader', () => {
       ],
       connectionEncryption: [
         plaintext()
-      ]
+      ],
+      connectionGater: mockConnectionGater()
     })
     await remoteLibp2p.start()
 
@@ -745,7 +747,8 @@ describe('libp2p.upgrader', () => {
         test: (components: any) => {
           localDeferred.resolve(components)
         }
-      }
+      },
+      connectionGater: mockConnectionGater()
     })
 
     remoteLibp2p = await createLibp2p({
@@ -763,7 +766,8 @@ describe('libp2p.upgrader', () => {
         test: (components: any) => {
           remoteDeferred.resolve(components)
         }
-      }
+      },
+      connectionGater: mockConnectionGater()
     })
 
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
@@ -820,7 +824,8 @@ describe('libp2p.upgrader', () => {
         test: (components: any) => {
           localDeferred.resolve(components)
         }
-      }
+      },
+      connectionGater: mockConnectionGater()
     })
 
     remoteLibp2p = await createLibp2p({
