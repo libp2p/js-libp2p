@@ -151,7 +151,7 @@
   "devDependencies": {
     "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.0",
     "@libp2p/interface-peer-id": "^2.0.0",
-    "aegir": "^38.1.7",
+    "aegir": "^39.0.5",
     "sinon-ts": "^1.0.0"
   }
 }

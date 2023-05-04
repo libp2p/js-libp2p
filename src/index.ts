@@ -1,13 +1,13 @@
-import { multiaddr } from '@multiformats/multiaddr'
-import { P2P } from '@multiformats/mafmt'
+import { symbol } from '@libp2p/interface-peer-discovery'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { P2P } from '@multiformats/mafmt'
+import { multiaddr } from '@multiformats/multiaddr'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { symbol } from '@libp2p/interface-peer-discovery'
-import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Startable } from '@libp2p/interfaces/dist/src/startable'
 
 const log = logger('libp2p:bootstrap')
 
@@ -95,13 +95,9 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
     this._init = options
   }
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
-  get [Symbol.toStringTag] (): '@libp2p/bootstrap' {
-    return '@libp2p/bootstrap'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/bootstrap'
 
   isStarted (): boolean {
     return Boolean(this.timer)

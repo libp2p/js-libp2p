@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
+import { isPeerId } from '@libp2p/interface-peer-id'
+import { start, stop } from '@libp2p/interfaces/startable'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { IPFS } from '@multiformats/mafmt'
-import { bootstrap, BootstrapComponents } from '../src/index.js'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { bootstrap, type BootstrapComponents } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 import partialValidPeerList from './fixtures/some-invalid-peers.js'
-import { isPeerId } from '@libp2p/interface-peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { start, stop } from '@libp2p/interfaces/startable'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 
 describe('bootstrap', () => {
