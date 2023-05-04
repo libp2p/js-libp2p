@@ -1,3 +1,10 @@
+## [9.1.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.3...v9.1.4) (2023-05-04)
+
+
+### Dependencies
+
+* update @libp2p/interface-peer-discovery to 2.0.0 ([#469](https://github.com/libp2p/js-libp2p-kad-dht/issues/469)) ([2c0fc68](https://github.com/libp2p/js-libp2p-kad-dht/commit/2c0fc6865c4e6ddc5b598b1693cf8fb408a31ecf))
+
 ## [9.1.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.2...v9.1.3) (2023-05-04)
 
 
