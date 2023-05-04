@@ -41,8 +41,11 @@ export const ALPHA = 3
 // How often we look for our closest DHT neighbours
 export const QUERY_SELF_INTERVAL = Number(5 * minute)
 
+// How often we look for the first set of our closest DHT neighbours
+export const QUERY_SELF_INITIAL_INTERVAL = Number(Number(second))
+
 // How long to look for our closest DHT neighbours for
-export const QUERY_SELF_TIMEOUT = Number(30 * second)
+export const QUERY_SELF_TIMEOUT = Number(5 * second)
 
 // How often we try to find new peers
 export const TABLE_REFRESH_INTERVAL = Number(5 * minute)

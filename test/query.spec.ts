@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { QueryManager } from '../src/query/manager.js'
+import { QueryManager, QueryManagerInit } from '../src/query/manager.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import all from 'it-all'
 import drain from 'it-drain'
@@ -18,6 +18,7 @@ import { EventTypes, QueryEvent } from '@libp2p/interface-dht'
 import { MESSAGE_TYPE } from '../src/message/index.js'
 import type { QueryFunc } from '../src/query/types.js'
 import { convertBuffer } from '../src/utils.js'
+import pDefer from 'p-defer'
 
 interface TopologyEntry {
   delay?: number
@@ -31,6 +32,16 @@ type Topology = Record<string, {
   error?: Error | undefined
   event: QueryEvent
 }>
+
+const defaultInit = (): QueryManagerInit => {
+  const init: QueryManagerInit = {
+    initialQuerySelfHasRun: pDefer<any>()
+  }
+
+  init.initialQuerySelfHasRun.resolve()
+
+  return init
+}
 
 describe('QueryManager', () => {
   let ourPeerId: PeerId
@@ -104,6 +115,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1
     })
 
@@ -115,6 +127,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1
     })
 
@@ -129,6 +142,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1
     })
     await manager.start()
@@ -161,6 +175,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1,
       alpha: 1
     })
@@ -211,6 +226,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1,
       alpha: 1
     })
@@ -251,6 +267,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 2,
       alpha: 1
     })
@@ -295,6 +312,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 2,
       alpha: 2
     })
@@ -344,6 +362,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 10
     })
     await manager.start()
@@ -381,6 +400,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 10
     })
     await manager.start()
@@ -400,6 +420,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1,
       alpha: 1
     })
@@ -450,6 +471,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 20,
       alpha: 1
     })
@@ -484,6 +506,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1,
       alpha: 1
     })
@@ -514,6 +537,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 3
     })
     await manager.start()
@@ -547,6 +571,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 1,
       alpha: 1
     })
@@ -598,6 +623,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 2
     })
     await manager.start()
@@ -637,6 +663,7 @@ describe('QueryManager', () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
+      ...defaultInit(),
       disjointPaths: 2
     })
     await manager.start()
@@ -669,11 +696,93 @@ describe('QueryManager', () => {
     await manager.stop()
   })
 
+  it('should allow the self-query query to run', async () => {
+    const manager = new QueryManager({
+      peerId: ourPeerId
+    }, {
+      initialQuerySelfHasRun: pDefer<any>()
+    })
+    await manager.start()
+
+    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+      // yield query result
+      yield valueEvent({
+        from: peer,
+        value: uint8ArrayFromString('cool')
+      })
+    }
+
+    const results = await all(manager.run(key, [peers[7]], queryFunc, {
+      // this bypasses awaiting on the initialQuerySelfHasRun deferred promise
+      isSelfQuery: true
+    }))
+
+    // should have the result
+    expect(results).to.containSubset([{
+      value: uint8ArrayFromString('cool')
+    }])
+
+    await manager.stop()
+  })
+
+  it('should wait for the self-query query to run before running other queries', async () => {
+    const initialQuerySelfHasRun = pDefer<any>()
+
+    const manager = new QueryManager({
+      peerId: ourPeerId
+    }, {
+      initialQuerySelfHasRun,
+      alpha: 2
+    })
+    await manager.start()
+
+    let regularQueryTimeStarted: number = 0
+    let selfQueryTimeStarted: number = Infinity
+
+    // run a regular query and the self query together
+    await Promise.all([
+      all(manager.run(key, [peers[7]], async function * ({ peer }) { // eslint-disable-line require-await
+        regularQueryTimeStarted = Date.now()
+
+        // yield query result
+        yield valueEvent({
+          from: peer,
+          value: uint8ArrayFromString('cool')
+        })
+      })),
+      all(manager.run(key, [peers[7]], async function * ({ peer }) { // eslint-disable-line require-await
+        selfQueryTimeStarted = Date.now()
+
+        // make sure we take enough time so that the `regularQuery` time diff is big enough to measure
+        await delay(100)
+
+        // yield query result
+        yield valueEvent({
+          from: peer,
+          value: uint8ArrayFromString('it me')
+        })
+
+        // normally done by the QuerySelf component
+        initialQuerySelfHasRun.resolve()
+      }, {
+        // this bypasses awaiting on the initialQuerySelfHasRun deferred promise
+        isSelfQuery: true
+      }))
+    ])
+
+    // should have started the regular query after the self query finished
+    expect(regularQueryTimeStarted).to.be.greaterThan(selfQueryTimeStarted)
+
+    await manager.stop()
+  })
+
   it('should end paths when they have no closer peers to those already queried', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId
     }, {
-      disjointPaths: 1, alpha: 1
+      ...defaultInit(),
+      disjointPaths: 1,
+      alpha: 1
     })
     await manager.start()
 

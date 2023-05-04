@@ -77,6 +77,8 @@ export class TestDHT {
         v: () => 0
       },
       querySelfInterval: 600000,
+      initialQuerySelfInterval: 600000,
+      allowQueryWithZeroPeers: true,
       ...options
     }
 

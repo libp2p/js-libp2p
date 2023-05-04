@@ -343,13 +343,23 @@ describe('KadDHT', () => {
       expect(resA).to.have.property('value').that.equalBytes(valueA)
       expect(resB).to.have.property('value').that.equalBytes(valueA)
 
-      expect(dhtASpy.callCount).to.eql(2)
+      let foundGetValue = false
+      let foundPutValue = false
 
-      expect(dhtASpy.getCall(0).args[0].equals(dhtB.components.peerId)).to.be.true() // query B
-      expect(dhtASpy.getCall(0).args[1].type).to.equal('GET_VALUE') // query B
+      for (const call of dhtASpy.getCalls()) {
+        if (call.args[0].equals(dhtB.components.peerId) && call.args[1].type === 'GET_VALUE') {
+          // query B
+          foundGetValue = true
+        }
 
-      expect(dhtASpy.getCall(1).args[0].equals(dhtB.components.peerId)).to.be.true() // update B
-      expect(dhtASpy.getCall(1).args[1].type).to.equal('PUT_VALUE') // update B
+        if (call.args[0].equals(dhtB.components.peerId) && call.args[1].type === 'PUT_VALUE') {
+          // update B
+          foundPutValue = true
+        }
+      }
+
+      expect(foundGetValue).to.be.true('did not get value from dhtB')
+      expect(foundPutValue).to.be.true('did not update value on dhtB')
     })
 
     it('layered get', async function () {
@@ -676,7 +686,7 @@ describe('KadDHT', () => {
       this.timeout(240 * 1000)
 
       // Create 101 nodes
-      const nDHTs = 100
+      const nDHTs = 101
 
       const dhts = await Promise.all(
         new Array(nDHTs).fill(0).map(async () => await tdht.spawn())

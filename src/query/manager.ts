@@ -11,9 +11,12 @@ import { logger } from '@libp2p/logger'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { QueryFunc } from './types.js'
-import type { QueryEvent, QueryOptions } from '@libp2p/interface-dht'
+import type { QueryEvent } from '@libp2p/interface-dht'
 import { PeerSet } from '@libp2p/peer-collections'
 import type { Metric, Metrics } from '@libp2p/interface-metrics'
+import type { DeferredPromise } from 'p-defer'
+import type { AbortOptions } from '@libp2p/interfaces'
+import { AbortError } from '@libp2p/interfaces/errors'
 
 export interface CleanUpEvents {
   'cleanup': CustomEvent
@@ -23,11 +26,17 @@ export interface QueryManagerInit {
   lan?: boolean
   disjointPaths?: number
   alpha?: number
+  initialQuerySelfHasRun: DeferredPromise<void>
 }
 
 export interface QueryManagerComponents {
   peerId: PeerId
   metrics?: Metrics
+}
+
+export interface QueryOptions extends AbortOptions {
+  queryFuncTimeout?: number
+  isSelfQuery?: boolean
 }
 
 /**
@@ -46,6 +55,8 @@ export class QueryManager implements Startable {
     queryTime: Metric
   }
 
+  private initialQuerySelfHasRun?: DeferredPromise<void>
+
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
     const { lan = false, disjointPaths = K, alpha = ALPHA } = init
 
@@ -55,6 +66,7 @@ export class QueryManager implements Startable {
     this.alpha = alpha ?? ALPHA
     this.lan = lan
     this.queries = 0
+    this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
 
     // allow us to stop queries on shut down
     this.shutDownController = new AbortController()
@@ -131,6 +143,21 @@ export class QueryManager implements Startable {
     const cleanUp = new EventEmitter<CleanUpEvents>()
 
     try {
+      if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
+        log('waiting for initial query-self query before continuing')
+
+        await Promise.race([
+          new Promise((resolve, reject) => {
+            signal.addEventListener('abort', () => {
+              reject(new AbortError('Query was aborted before self-query ran'))
+            })
+          }),
+          this.initialQuerySelfHasRun.promise
+        ])
+
+        this.initialQuerySelfHasRun = undefined
+      }
+
       log('query:start')
       this.queries++
       this.metrics?.runningQueries.update(this.queries)
