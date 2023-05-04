@@ -1,3 +1,10 @@
+## [9.1.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.1...v9.1.2) (2023-05-04)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.5 ([#468](https://github.com/libp2p/js-libp2p-kad-dht/issues/468)) ([dc53728](https://github.com/libp2p/js-libp2p-kad-dht/commit/dc53728db6772323bbac6e1e876e3d999f1d8fd0))
+
 ## [9.1.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.0...v9.1.1) (2023-05-04)
 
 
