@@ -2,19 +2,22 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { PingService, PingServiceInit } from '../../src/ping/index.js'
+import { pingService, PingServiceInit } from '../../src/ping/index.js'
 import Peers from '../fixtures/peers.js'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { CustomEvent } from '@libp2p/interfaces/events'
-import { TimeoutController } from 'timeout-abort-controller'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { PROTOCOL } from '../../src/ping/constants.js'
 
 const defaultInit: PingServiceInit = {
   protocolPrefix: 'ipfs',
@@ -23,20 +26,23 @@ const defaultInit: PingServiceInit = {
   timeout: 1000
 }
 
-async function createComponents (index: number): Promise<DefaultComponents> {
+async function createComponents (index: number): Promise<Components> {
   const peerId = await createFromJSON(Peers[index])
 
-  const components = new DefaultComponents({
+  const events = new EventEmitter()
+  const components = defaultComponents({
     peerId,
     registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
-    datastore: new MemoryDatastore()
+    upgrader: mockUpgrader({ events }),
+    datastore: new MemoryDatastore(),
+    transportManager: stubInterface<TransportManager>(),
+    connectionGater: stubInterface<ConnectionGater>(),
+    events
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
     minConnections: 50,
     maxConnections: 1000,
-    autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
   })
 
@@ -44,8 +50,8 @@ async function createComponents (index: number): Promise<DefaultComponents> {
 }
 
 describe('ping', () => {
-  let localComponents: DefaultComponents
-  let remoteComponents: DefaultComponents
+  let localComponents: Components
+  let remoteComponents: Components
 
   beforeEach(async () => {
     localComponents = await createComponents(0)
@@ -67,36 +73,36 @@ describe('ping', () => {
   })
 
   it('should be able to ping another peer', async () => {
-    const localPing = new PingService(localComponents, defaultInit)
-    const remotePing = new PingService(remoteComponents, defaultInit)
+    const localPing = pingService(defaultInit)(localComponents)
+    const remotePing = pingService(defaultInit)(remoteComponents)
 
     await start(localPing)
     await start(remotePing)
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // Run ping
     await expect(localPing.ping(remoteComponents.peerId)).to.eventually.be.gte(0)
   })
 
   it('should time out pinging another peer when waiting for a pong', async () => {
-    const localPing = new PingService(localComponents, defaultInit)
-    const remotePing = new PingService(remoteComponents, defaultInit)
+    const localPing = pingService(defaultInit)(localComponents)
+    const remotePing = pingService(defaultInit)(remoteComponents)
 
     await start(localPing)
     await start(remotePing)
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // replace existing handler with a really slow one
-    await remoteComponents.registrar.unhandle(remotePing.protocol)
-    await remoteComponents.registrar.handle(remotePing.protocol, ({ stream }) => {
+    await remoteComponents.registrar.unhandle(PROTOCOL)
+    await remoteComponents.registrar.handle(PROTOCOL, ({ stream }) => {
       void pipe(
         stream,
         async function * (source) {
@@ -114,11 +120,11 @@ describe('ping', () => {
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
 
     // 10 ms timeout
-    const timeoutController = new TimeoutController(10)
+    const signal = AbortSignal.timeout(10)
 
     // Run ping, should time out
     await expect(localPing.ping(remoteComponents.peerId, {
-      signal: timeoutController.signal
+      signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
 

@@ -21,7 +21,6 @@ const createNode = async () => {
     ]
   })
 
-  await node.start()
   return node
 }
 

@@ -1,219 +1,157 @@
+/**
+ * @packageDocumentation
+ *
+ * Use the `createLibp2p` function to create a libp2p node.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ * })
+ * ```
+ */
+
 import { createLibp2pNode } from './libp2p.js'
-import type { AbortOptions, RecursivePartial } from '@libp2p/interfaces'
-import type { EventEmitter } from '@libp2p/interfaces/events'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { FaultTolerance } from './transport-manager.js'
-import type { IdentifyServiceInit } from './identify/index.js'
-import type { DualDHT } from '@libp2p/interface-dht'
+import type { RecursivePartial } from '@libp2p/interfaces'
+import type { TransportManagerInit } from './transport-manager.js'
 import type { Datastore } from 'interface-datastore'
-import type { PeerStore, PeerStoreInit } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { AutoRelayConfig, RelayAdvertiseConfig } from './circuit/index.js'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
-import type { Connection, ConnectionGater, ConnectionProtector, Stream } from '@libp2p/interface-connection'
+import type { ConnectionProtector } from '@libp2p/interface-connection'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { Transport } from '@libp2p/interface-transport'
 import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { PubSub } from '@libp2p/interface-pubsub'
-import type { Registrar, StreamHandler, StreamHandlerOptions } from '@libp2p/interface-registrar'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Metrics } from '@libp2p/interface-metrics'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { KeyChain } from './keychain/index.js'
-import type { ConnectionManagerInit } from './connection-manager/index.js'
-import type { PingServiceInit } from './ping/index.js'
-import type { FetchServiceInit } from './fetch/index.js'
 import type { Components } from './components.js'
+import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
+import type { KeyChainInit } from '@libp2p/keychain'
+import type { AddressManagerInit } from './address-manager/index.js'
+import type { PeerRoutingInit } from './peer-routing.js'
+import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 
-export interface PersistentPeerStoreOptions {
-  threshold?: number
+export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string, unknown>> = {
+  [Property in keyof T]: (components: Components) => T[Property]
 }
 
-export interface DEKConfig {
-  keyLength: number
-  iterationCount: number
-  salt: string
-  hash: string
-}
-
-export interface KeychainConfig {
-  pass?: string
-  dek?: DEKConfig
-}
-
-export interface MetricsConfig {
-  enabled?: boolean
-}
-
-export interface HopConfig {
-  enabled?: boolean
-  active?: boolean
-  timeout: number
-}
-
-export interface RelayConfig {
-  enabled: boolean
-  advertise: RelayAdvertiseConfig
-  hop: HopConfig
-  autoRelay: AutoRelayConfig
-}
-
-export interface NatManagerConfig {
-  enabled: boolean
-  externalAddress?: string
-  localAddress?: string
-  description?: string
-  ttl?: number
-  keepAlive: boolean
-  gateway?: string
-}
-
-export interface AddressesConfig {
-  listen: string[]
-  announce: string[]
-  noAnnounce: string[]
-  announceFilter: (multiaddrs: Multiaddr[]) => Multiaddr[]
-}
-
-export interface TransportManagerConfig {
-  faultTolerance?: FaultTolerance
-}
-
-export interface PeerStoreConfig {
-  persistence?: boolean
-  threshold?: number
-}
-
-export interface PeerRoutingConfig {
-  refreshManager: RefreshManagerConfig
-}
-
-export interface RefreshManagerConfig {
-  enabled?: boolean
-  interval: number
-  bootDelay: number
-}
-
-export interface Libp2pInit {
+/**
+ * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
+ */
+export interface Libp2pInit<T extends ServiceMap = {}> {
+  /**
+   * peerId instance (it will be created if not provided)
+   */
   peerId: PeerId
-  addresses: AddressesConfig
-  connectionManager: ConnectionManagerInit
-  connectionGater: Partial<ConnectionGater>
-  transportManager: TransportManagerConfig
-  datastore: Datastore
-  peerStore: PeerStoreInit
-  peerRouting: PeerRoutingConfig
-  keychain: KeychainConfig
-  nat: NatManagerConfig
-  relay: RelayConfig
-  identify: IdentifyServiceInit
-  ping: PingServiceInit
-  fetch: FetchServiceInit
 
+  /**
+   * Addresses for transport listening and to advertise to the network
+   */
+  addresses: AddressManagerInit
+
+  /**
+   * libp2p Connection Manager configuration
+   */
+  connectionManager: ConnectionManagerInit
+
+  /**
+   * A connection gater can deny new connections based on user criteria
+   */
+  connectionGater: ConnectionGater
+
+  /**
+   * libp2p transport manager configuration
+   */
+  transportManager: TransportManagerInit
+
+  /**
+   * An optional datastore to persist peer information, DHT records, etc.
+   *
+   * An in-memory datastore will be used if one is not provided.
+   */
+  datastore: Datastore
+
+  /**
+   * libp2p PeerStore configuration
+   */
+  peerStore: PersistentPeerStoreInit
+
+  /**
+   * libp2p Peer routing service configuration
+   */
+  peerRouting: PeerRoutingInit
+
+  /**
+   * keychain configuration
+   */
+  keychain: KeyChainInit
+
+  /**
+   * An array that must include at least 1 compliant transport
+   */
   transports: Array<(components: Components) => Transport>
   streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
   connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
   peerDiscovery?: Array<(components: Components) => PeerDiscovery>
   peerRouters?: Array<(components: Components) => PeerRouting>
   contentRouters?: Array<(components: Components) => ContentRouting>
-  dht?: (components: Components) => DualDHT
+
+  /**
+   * A Metrics implementation can be supplied to collect metrics on this node
+   */
   metrics?: (components: Components) => Metrics
-  pubsub?: (components: Components) => PubSub
+
+  /**
+   * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
+   */
   connectionProtector?: (components: Components) => ConnectionProtector
+
+  /**
+   * Arbitrary libp2p modules
+   */
+  services: ServiceFactoryMap<T>
 }
 
-export interface Libp2pEvents {
-  'peer:discovery': CustomEvent<PeerInfo>
-}
+export type { Libp2p }
 
-export interface Libp2p extends Startable, EventEmitter<Libp2pEvents> {
-  peerId: PeerId
-  peerStore: PeerStore
-  peerRouting: PeerRouting
-  contentRouting: ContentRouting
-  keychain: KeyChain
-  connectionManager: ConnectionManager
-  registrar: Registrar
-  metrics?: Metrics
-  pubsub: PubSub
-  dht: DualDHT
-
-  /**
-   * Get a deduplicated list of peer advertising multiaddrs by concatenating
-   * the listen addresses used by transports with any configured
-   * announce addresses as well as observed addresses reported by peers.
-   *
-   * If Announce addrs are specified, configured listen addresses will be
-   * ignored though observed addresses will still be included.
-   */
-  getMultiaddrs: () => Multiaddr[]
-
-  /**
-   * Return a list of all connections this node has open, optionally filtering
-   * by a PeerId
-   */
-  getConnections: (peerId?: PeerId) => Connection[]
-
-  /**
-   * Return a list of all peers we currently have a connection open to
-   */
-  getPeers: () => PeerId[]
-
-  /**
-   * Dials to the provided peer. If successful, the known metadata of the
-   * peer will be added to the nodes `peerStore`
-   */
-  dial: (peer: PeerId | Multiaddr, options?: AbortOptions) => Promise<Connection>
-
-  /**
-   * Dials to the provided peer and tries to handshake with the given protocols in order.
-   * If successful, the known metadata of the peer will be added to the nodes `peerStore`,
-   * and the `MuxedStream` will be returned together with the successful negotiated protocol.
-   */
-  dialProtocol: (peer: PeerId | Multiaddr, protocols: string | string[], options?: AbortOptions) => Promise<Stream>
-
-  /**
-   * Disconnects all connections to the given `peer`
-   */
-  hangUp: (peer: PeerId | Multiaddr | string) => Promise<void>
-
-  /**
-   * Registers the `handler` for each protocol
-   */
-  handle: (protocol: string | string[], handler: StreamHandler, options?: StreamHandlerOptions) => Promise<void>
-
-  /**
-   * Removes the handler for each protocol. The protocol
-   * will no longer be supported on streams.
-   */
-  unhandle: (protocols: string[] | string) => Promise<void>
-
-  /**
-   * Pings the given peer in order to obtain the operation latency
-   */
-  ping: (peer: Multiaddr | PeerId, options?: AbortOptions) => Promise<number>
-
-  /**
-   * Sends a request to fetch the value associated with the given key from the given peer.
-   */
-  fetch: (peer: PeerId | Multiaddr | string, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
-
-  /**
-   * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
-   * this may mean searching the DHT if the key is not present in the KeyStore.
-   */
-  getPublicKey: (peer: PeerId, options?: AbortOptions) => Promise<Uint8Array>
-}
-
-export type Libp2pOptions = RecursivePartial<Libp2pInit>
+export type Libp2pOptions<T extends ServiceMap = {}> = RecursivePartial<Libp2pInit<T>> & { start?: boolean }
 
 /**
  * Returns a new instance of the Libp2p interface, generating a new PeerId
  * if one is not passed as part of the options.
+ *
+ * The node will be started unless `start: false` is passed as an option.
+ *
+ * @example
+ *
+ * ```js
+ * import { createLibp2p } from 'libp2p'
+ * import { tcp } from '@libp2p/tcp'
+ * import { mplex } from '@libp2p/mplex'
+ * import { noise } from '@chainsafe/libp2p-noise'
+ *
+ * // specify options
+ * const options = {
+ *   transports: [tcp()],
+ *   streamMuxers: [mplex()],
+ *   connectionEncryption: [noise()]
+ * }
+ *
+ * // create libp2p
+ * const libp2p = await createLibp2p(options)
+ * ```
  */
-export async function createLibp2p (options: Libp2pOptions): Promise<Libp2p> {
-  return await createLibp2pNode(options)
+export async function createLibp2p <T extends ServiceMap = {}> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
+  const node = await createLibp2pNode(options)
+
+  if (options.start !== false) {
+    await node.start()
+  }
+
+  return node
 }

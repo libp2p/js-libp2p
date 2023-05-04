@@ -5,14 +5,13 @@ import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
-import type { Libp2pOptions } from '../../src/index.js'
 
 describe('Consume peer record', () => {
   let libp2p: Libp2pNode
 
   beforeEach(async () => {
     const peerId = await createPeerId()
-    const config: Libp2pOptions = {
+    libp2p = await createLibp2pNode({
       peerId,
       transports: [
         webSockets()
@@ -20,20 +19,19 @@ describe('Consume peer record', () => {
       connectionEncryption: [
         plaintext()
       ]
-    }
-    libp2p = await createLibp2pNode(config)
+    })
   })
 
   afterEach(async () => {
     await libp2p.stop()
   })
 
-  it('should consume peer record when observed addrs are added', async () => {
+  it('should update addresses when observed addrs are confirmed', async () => {
     let done: () => void
 
-    libp2p.components.peerStore.addressBook.consumePeerRecord = async () => {
+    libp2p.peerStore.patch = async () => {
       done()
-      return true
+      return {} as any
     }
 
     const p = new Promise<void>(resolve => {
@@ -42,7 +40,7 @@ describe('Consume peer record', () => {
 
     await libp2p.start()
 
-    libp2p.components.addressManager.addObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/3983'))
+    libp2p.components.addressManager.confirmObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/3983'))
 
     await p
 

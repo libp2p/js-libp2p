@@ -1,7 +1,12 @@
-libp2p-fetch JavaScript Implementation
+libp2p-fetch JavaScript Implementation  <!-- omit in toc -->
 =====================================
 
 > Libp2p fetch protocol JavaScript implementation
+
+## Table of contents <!-- omit in toc -->
+
+- [Overview](#overview)
+- [Usage](#usage)
 
 ## Overview
 
@@ -27,7 +32,7 @@ async function my_subsystem_key_lookup(key) {
 }
 
 // Enable this peer to respond to fetch requests for keys that begin with '/my_subsystem_key_prefix/'
-const libp2p = Libp2p.create(...)
+const libp2p = createLibp2p()
 libp2p.fetchService.registerLookupFunction('/my_subsystem_key_prefix/', my_subsystem_key_lookup)
 
 const key = '/my_subsystem_key_prefix/{...}'

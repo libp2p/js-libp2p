@@ -14,11 +14,11 @@ import { createBaseOptions } from '../utils/base-options.js'
 import { createRoutingOptions } from './utils.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { EventTypes, MessageType } from '@libp2p/interface-dht'
+import { DHT, EventTypes, MessageType } from '@libp2p/interface-dht'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { kadDHT } from '@libp2p/kad-dht'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('peer-routing', () => {
   let peerId: PeerId
@@ -36,7 +36,7 @@ describe('peer-routing', () => {
       })
     })
 
-    after(async () => await node.stop())
+    after(async () => { await node.stop() })
 
     it('.findPeer should return an error', async () => {
       await expect(node.peerRouting.findPeer(peerId))
@@ -56,7 +56,7 @@ describe('peer-routing', () => {
   })
 
   describe('via dht router', () => {
-    let nodes: Libp2pNode[]
+    let nodes: Array<Libp2p<{ dht: DHT }>>
 
     before(async () => {
       nodes = await Promise.all([
@@ -78,14 +78,14 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    after(async () => await Promise.all(nodes.map(async (n) => await n.stop())))
+    after(async () => await Promise.all(nodes.map(async (n) => { await n.stop() })))
 
     it('should use the nodes dht', async () => {
-      if (nodes[0].dht == null) {
+      if (nodes[0].services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      const dhtFindPeerStub = sinon.stub(nodes[0].dht, 'findPeer').callsFake(async function * () {
+      const dhtFindPeerStub = sinon.stub(nodes[0].services.dht, 'findPeer').callsFake(async function * () {
         yield {
           from: nodes[2].peerId,
           type: EventTypes.FINAL_PEER,
@@ -105,11 +105,11 @@ describe('peer-routing', () => {
     })
 
     it('should use the nodes dht to get the closest peers', async () => {
-      if (nodes[0].dht == null) {
+      if (nodes[0].services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      const dhtGetClosestPeersStub = sinon.stub(nodes[0].dht, 'getClosestPeers').callsFake(async function * () {
+      const dhtGetClosestPeersStub = sinon.stub(nodes[0].services.dht, 'getClosestPeers').callsFake(async function * () {
         yield {
           from: nodes[2].peerId,
           type: EventTypes.FINAL_PEER,
@@ -253,7 +253,7 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    afterEach(async () => await node.stop())
+    afterEach(async () => { await node.stop() })
 
     it('should only have one router', () => {
       // @ts-expect-error private field
@@ -312,7 +312,7 @@ describe('peer-routing', () => {
   })
 
   describe('via dht and delegate routers', () => {
-    let node: Libp2pNode
+    let node: Libp2p<{ dht: DHT }>
     let delegate: StubbedInstance<PeerRouting>
 
     beforeEach(async () => {
@@ -324,8 +324,7 @@ describe('peer-routing', () => {
         config: createRoutingOptions({
           peerRouters: [
             () => delegate
-          ],
-          dht: kadDHT()
+          ]
         })
       })
     })
@@ -334,7 +333,7 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    afterEach(async () => await node.stop())
+    afterEach(async () => { await node.stop() })
 
     it('should use the delegate if the dht fails to find the peer', async () => {
       const remotePeerId = await createPeerId()
@@ -344,11 +343,11 @@ describe('peer-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      sinon.stub(node.dht, 'findPeer').callsFake(async function * () {})
+      sinon.stub(node.services.dht, 'findPeer').callsFake(async function * () {})
       delegate.findPeer.reset()
       delegate.findPeer.callsFake(async () => {
         return results
@@ -366,13 +365,13 @@ describe('peer-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
       const defer = pDefer()
 
-      sinon.stub(node.dht, 'findPeer').callsFake(async function * () {
+      sinon.stub(node.services.dht, 'findPeer').callsFake(async function * () {
         yield {
           name: 'SENDING_QUERY',
           type: EventTypes.SENDING_QUERY,
@@ -401,13 +400,13 @@ describe('peer-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
       const defer = pDefer<PeerInfo>()
 
-      sinon.stub(node.dht, 'findPeer').callsFake(async function * () {
+      sinon.stub(node.services.dht, 'findPeer').callsFake(async function * () {
         yield {
           from: remotePeerId,
           name: 'FINAL_PEER',
@@ -436,13 +435,13 @@ describe('peer-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      const spy = sinon.spy(node.peerStore.addressBook, 'add')
+      const spy = sinon.spy(node.peerStore, 'merge')
 
-      sinon.stub(node.dht, 'findPeer').callsFake(async function * () {
+      sinon.stub(node.services.dht, 'findPeer').callsFake(async function * () {
         yield {
           from: remotePeerId,
           name: 'FINAL_PEER',
@@ -459,7 +458,9 @@ describe('peer-routing', () => {
 
       await node.peerRouting.findPeer(remotePeerId)
 
-      expect(spy.calledWith(result.id, result.multiaddrs)).to.be.true()
+      expect(spy.calledWith(result.id, {
+        multiaddrs: result.multiaddrs
+      })).to.be.true()
     })
 
     it('should use the delegate if the dht fails to get the closest peer', async () => {
@@ -470,11 +471,11 @@ describe('peer-routing', () => {
         protocols: []
       }]
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () { })
+      sinon.stub(node.services.dht, 'getClosestPeers').callsFake(async function * () { })
 
       delegate.getClosestPeers.callsFake(async function * () {
         yield results[0]
@@ -496,13 +497,13 @@ describe('peer-routing', () => {
         protocols: []
       }
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      const spy = sinon.spy(node.peerStore.addressBook, 'add')
+      const spy = sinon.spy(node.peerStore, 'merge')
 
-      sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () { })
+      sinon.stub(node.services.dht, 'getClosestPeers').callsFake(async function * () { })
 
       delegate.getClosestPeers.callsFake(async function * () {
         yield result
@@ -510,7 +511,9 @@ describe('peer-routing', () => {
 
       await drain(node.peerRouting.getClosestPeers(remotePeerId.toBytes()))
 
-      expect(spy.calledWith(result.id, result.multiaddrs)).to.be.true()
+      expect(spy.calledWith(result.id, {
+        multiaddrs: result.multiaddrs
+      })).to.be.true()
     })
 
     it('should dedupe closest peers', async () => {
@@ -523,11 +526,11 @@ describe('peer-routing', () => {
         protocols: []
       }]
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () {
+      sinon.stub(node.services.dht, 'getClosestPeers').callsFake(async function * () {
         for (const peer of results) {
           yield {
             from: remotePeerId,
@@ -549,7 +552,7 @@ describe('peer-routing', () => {
   })
 
   describe('peer routing refresh manager service', () => {
-    let node: Libp2pNode
+    let node: Libp2p<{ dht: DHT }>
     let peerIds: PeerId[]
 
     before(async () => {
@@ -575,6 +578,7 @@ describe('peer-routing', () => {
 
       node = await createNode({
         config: createRoutingOptions({
+          start: false,
           peerRouting: {
             refreshManager: {
               enabled: true,
@@ -585,12 +589,12 @@ describe('peer-routing', () => {
         started: false
       })
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      const peerStoreAddressBookAddStub = sinon.spy(node.peerStore.addressBook, 'add')
-      const dhtGetClosestPeersStub = sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () {
+      const peerStoreMergeStub = sinon.spy(node.peerStore, 'merge')
+      const dhtGetClosestPeersStub = sinon.stub(node.services.dht, 'getClosestPeers').callsFake(async function * () {
         yield {
           name: 'FINAL_PEER',
           type: EventTypes.FINAL_PEER,
@@ -612,24 +616,21 @@ describe('peer-routing', () => {
       await node.start()
 
       await pWaitFor(() => dhtGetClosestPeersStub.callCount === 1)
-      await pWaitFor(() => peerStoreAddressBookAddStub.callCount === results.length)
+      await pWaitFor(() => peerStoreMergeStub.callCount >= results.length)
 
-      const call0 = peerStoreAddressBookAddStub.getCall(0)
-      expect(call0.args[0].equals(results[0].id))
-      call0.args[1].forEach((m, index) => {
-        expect(m.equals(results[0].multiaddrs[index]))
-      })
+      const peer0 = await node.peerStore.get(peerIds[0])
+      expect(peer0.addresses.map(({ multiaddr }) => multiaddr.toString()))
+        .to.include.members(results[0].multiaddrs.map(ma => ma.toString()))
 
-      const call1 = peerStoreAddressBookAddStub.getCall(1)
-      expect(call1.args[0].equals(results[1].id))
-      call0.args[1].forEach((m, index) => {
-        expect(m.equals(results[1].multiaddrs[index]))
-      })
+      const peer1 = await node.peerStore.get(peerIds[1])
+      expect(peer1.addresses.map(({ multiaddr }) => multiaddr.toString()))
+        .to.include.members(results[1].multiaddrs.map(ma => ma.toString()))
     })
 
     it('should support being disabled', async () => {
       node = await createNode({
         config: createRoutingOptions({
+          start: false,
           peerRouting: {
             refreshManager: {
               bootDelay: 100,
@@ -640,11 +641,11 @@ describe('peer-routing', () => {
         started: false
       })
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      const dhtGetClosestPeersStub = sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () {
+      const dhtGetClosestPeersStub = sinon.stub(node.services.dht, 'getClosestPeers').callsFake(async function * () {
         yield {
           name: 'SENDING_QUERY',
           type: EventTypes.SENDING_QUERY,
@@ -664,6 +665,7 @@ describe('peer-routing', () => {
     it('should start and run on interval', async () => {
       node = await createNode({
         config: createRoutingOptions({
+          start: false,
           peerRouting: {
             refreshManager: {
               interval: 500,
@@ -674,11 +676,11 @@ describe('peer-routing', () => {
         started: false
       })
 
-      if (node.dht == null) {
+      if (node.services.dht == null) {
         throw new Error('DHT not configured')
       }
 
-      const dhtGetClosestPeersStub = sinon.stub(node.dht, 'getClosestPeers').callsFake(async function * () {
+      const dhtGetClosestPeersStub = sinon.stub(node.services.dht, 'getClosestPeers').callsFake(async function * () {
         yield {
           name: 'PEER_RESPONSE',
           type: EventTypes.PEER_RESPONSE,

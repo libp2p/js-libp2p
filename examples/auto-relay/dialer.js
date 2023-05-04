@@ -2,6 +2,9 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
+import { multiaddr } from '@multiformats/multiaddr'
+import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { identifyService } from 'libp2p/identify'
 
 async function main () {
   const autoRelayNodeAddr = process.argv[2]
@@ -11,20 +14,23 @@ async function main () {
 
   const node = await createLibp2p({
     transports: [
-      webSockets()
+      webSockets(),
+      circuitRelayTransport()
     ],
     connectionEncryption: [
       noise()
     ],
     streamMuxers: [
       mplex()
-    ]
+    ],
+    services: {
+      identify: identifyService()
+    }
   })
 
-  await node.start()
   console.log(`Node started with id ${node.peerId.toString()}`)
 
-  const conn = await node.dial(autoRelayNodeAddr)
+  const conn = await node.dial(multiaddr(autoRelayNodeAddr))
   console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`)
 }
 

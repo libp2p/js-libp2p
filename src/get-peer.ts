@@ -1,58 +1,62 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import { multiaddr, isMultiaddr } from '@multiformats/multiaddr'
-import errCode from 'err-code'
+import { isMultiaddr } from '@multiformats/multiaddr'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { codes } from './errors.js'
 import { isPeerId } from '@libp2p/interface-peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { logger } from '@libp2p/logger'
 
-function peerIdFromMultiaddr (ma: Multiaddr) {
-  const idStr = ma.getPeerId()
+const log = logger('libp2p:get-peer')
 
-  if (idStr == null) {
-    throw errCode(
-      new Error(`${ma.toString()} does not have a valid peer type`),
-      codes.ERR_INVALID_MULTIADDR
-    )
-  }
-
-  try {
-    return peerIdFromString(idStr)
-  } catch (err: any) {
-    throw errCode(
-      new Error(`${ma.toString()} is not a valid peer type`),
-      codes.ERR_INVALID_MULTIADDR
-    )
-  }
+export interface PeerAddress {
+  peerId?: PeerId
+  multiaddrs: Multiaddr[]
 }
 
 /**
- * Converts the given `peer` to a `Peer` object.
+ * Extracts a PeerId and/or multiaddr from the passed PeerId or Multiaddr or an array of Multiaddrs
  */
-export function getPeer (peer: PeerId | Multiaddr | string): PeerInfo {
+export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAddress {
   if (isPeerId(peer)) {
-    return {
-      id: peer,
-      multiaddrs: [],
-      protocols: []
-    }
+    return { peerId: peer, multiaddrs: [] }
   }
 
-  if (typeof peer === 'string') {
-    peer = multiaddr(peer)
+  if (!Array.isArray(peer)) {
+    peer = [peer]
   }
 
-  let addr
+  let peerId: PeerId | undefined
 
-  if (isMultiaddr(peer)) {
-    addr = peer
-    peer = peerIdFromMultiaddr(peer)
+  if (peer.length > 0) {
+    const peerIdStr = peer[0].getPeerId()
+    peerId = peerIdStr == null ? undefined : peerIdFromString(peerIdStr)
+
+    // ensure PeerId is either not set or is consistent
+    peer.forEach(ma => {
+      if (!isMultiaddr(ma)) {
+        log.error('multiaddr %s was invalid', ma)
+        throw new CodeError('Invalid Multiaddr', codes.ERR_INVALID_MULTIADDR)
+      }
+
+      const maPeerIdStr = ma.getPeerId()
+
+      if (maPeerIdStr == null) {
+        if (peerId != null) {
+          throw new CodeError('Multiaddrs must all have the same peer id or have no peer id', codes.ERR_INVALID_PARAMETERS)
+        }
+      } else {
+        const maPeerId = peerIdFromString(maPeerIdStr)
+
+        if (peerId == null || !peerId.equals(maPeerId)) {
+          throw new CodeError('Multiaddrs must all have the same peer id or have no peer id', codes.ERR_INVALID_PARAMETERS)
+        }
+      }
+    })
   }
 
   return {
-    id: peer,
-    multiaddrs: addr != null ? [addr] : [],
-    protocols: []
+    peerId,
+    multiaddrs: peer
   }
 }

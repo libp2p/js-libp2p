@@ -32,10 +32,10 @@ Although designed to primarily integrate with tools such as [Prometheus](https:/
 First enable metrics tracking by supplying a [Metrics](https://www.npmjs.com/package/@libp2p/interface-metrics) implementation:
 
 ```js
-import { createLibp2pNode } from 'libp2p'
+import { createLibp2p } from 'libp2p'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
-const node = await createLibp2pNode({
+const node = await createLibp2p({
   metrics: prometheusMetrics()
   //... other config
 })
@@ -164,7 +164,7 @@ Metrics implementations will allow extracting the values for presentation in an 
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import client from 'prom-client'
 
-const libp2p = createLibp2pNode({
+const libp2p = createLibp2p({
   metrics: prometheusMetrics()
   //... other config
 })

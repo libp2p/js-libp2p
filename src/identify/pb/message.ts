@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Identify {
   protocolVersion?: string
@@ -115,7 +116,7 @@ export namespace Identify {
     return _codec
   }
 
-  export const encode = (obj: Identify): Uint8Array => {
+  export const encode = (obj: Partial<Identify>): Uint8Array => {
     return encodeMessage(obj, Identify.codec())
   }
 

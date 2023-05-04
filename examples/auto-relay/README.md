@@ -41,8 +41,6 @@ const node = await createLibp2p({
   }
 })
 
-await node.start()
-
 console.log(`Node started with id ${node.peerId.toString()}`)
 console.log('Listening on:')
 node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
@@ -93,7 +91,6 @@ const node = await createLibp2p({
   }
 })
 
-await node.start()
 console.log(`Node started with id ${node.peerId.toString()}`)
 
 const conn = await node.dial(relayAddr)
@@ -101,11 +98,9 @@ const conn = await node.dial(relayAddr)
 console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`)
 
 // Wait for connection and relay to be bind for the example purpose
-node.peerStore.addEventListener('change:multiaddrs', (evt) => {
+node.addEventListener('self:peer:update', (evt) => {
   // Updated self multiaddrs?
-  if (evt.detail.peerId.equals(node.peerId)) {
-    console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
-  }
+  console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
 })
 ```
 
@@ -150,7 +145,6 @@ const node = await createLibp2p({
   streamMuxers: [mplex()]
 })
 
-await node.start()
 console.log(`Node started with id ${node.peerId.toString()}`)
 
 const conn = await node.dial(autoRelayNodeAddr)

@@ -2,19 +2,21 @@
 
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { FetchService, FetchServiceInit } from '../../src/fetch/index.js'
+import { fetchService, FetchServiceInit } from '../../src/fetch/index.js'
 import Peers from '../fixtures/peers.js'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { CustomEvent } from '@libp2p/interfaces/events'
-import { TimeoutController } from 'timeout-abort-controller'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
-import { DefaultComponents } from '../../src/components.js'
+import { defaultComponents, Components } from '../../src/components.js'
+import { stubInterface } from 'sinon-ts'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 
 const defaultInit: FetchServiceInit = {
   protocolPrefix: 'ipfs',
@@ -23,20 +25,23 @@ const defaultInit: FetchServiceInit = {
   timeout: 1000
 }
 
-async function createComponents (index: number) {
+async function createComponents (index: number): Promise<Components> {
   const peerId = await createFromJSON(Peers[index])
 
-  const components = new DefaultComponents({
+  const events = new EventEmitter()
+  const components = defaultComponents({
     peerId,
     registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
-    datastore: new MemoryDatastore()
+    upgrader: mockUpgrader({ events }),
+    datastore: new MemoryDatastore(),
+    transportManager: stubInterface<TransportManager>(),
+    connectionGater: stubInterface<ConnectionGater>(),
+    events
   })
   components.peerStore = new PersistentPeerStore(components)
   components.connectionManager = new DefaultConnectionManager(components, {
     minConnections: 50,
     maxConnections: 1000,
-    autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
   })
 
@@ -44,8 +49,8 @@ async function createComponents (index: number) {
 }
 
 describe('fetch', () => {
-  let localComponents: DefaultComponents
-  let remoteComponents: DefaultComponents
+  let localComponents: Components
+  let remoteComponents: Components
 
   beforeEach(async () => {
     localComponents = await createComponents(0)
@@ -69,8 +74,8 @@ describe('fetch', () => {
   it('should be able to fetch from another peer', async () => {
     const key = 'key'
     const value = Uint8Array.from([0, 1, 2, 3, 4])
-    const localFetch = new FetchService(localComponents, defaultInit)
-    const remoteFetch = new FetchService(remoteComponents, defaultInit)
+    const localFetch = fetchService(defaultInit)(localComponents)
+    const remoteFetch = fetchService(defaultInit)(remoteComponents)
 
     remoteFetch.registerLookupFunction(key, async (identifier) => {
       expect(identifier).to.equal(key)
@@ -83,8 +88,8 @@ describe('fetch', () => {
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // Run fetch
     const result = await localFetch.fetch(remoteComponents.peerId, key)
@@ -94,16 +99,16 @@ describe('fetch', () => {
 
   it('should time out fetching from another peer when waiting for the record', async () => {
     const key = 'key'
-    const localFetch = new FetchService(localComponents, defaultInit)
-    const remoteFetch = new FetchService(remoteComponents, defaultInit)
+    const localFetch = fetchService(defaultInit)(localComponents)
+    const remoteFetch = fetchService(defaultInit)(remoteComponents)
 
     await start(localFetch)
     await start(remoteFetch)
 
     // simulate connection between nodes
     const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: localToRemote }))
-    remoteComponents.upgrader.dispatchEvent(new CustomEvent('connection', { detail: remoteToLocal }))
+    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
+    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // replace existing handler with a really slow one
     await remoteComponents.registrar.unhandle(remoteFetch.protocol)
@@ -125,11 +130,11 @@ describe('fetch', () => {
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
 
     // 10 ms timeout
-    const timeoutController = new TimeoutController(10)
+    const signal = AbortSignal.timeout(10)
 
     // Run fetch, should time out
     await expect(localFetch.fetch(remoteComponents.peerId, key, {
-      signal: timeoutController.signal
+      signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
 

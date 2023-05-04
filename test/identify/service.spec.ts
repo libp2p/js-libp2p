@@ -5,21 +5,23 @@ import sinon from 'sinon'
 import { multiaddr } from '@multiformats/multiaddr'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import Peers from '../fixtures/peers.js'
-import { createLibp2pNode } from '../../src/libp2p.js'
+import { createLibp2p } from '../../src/index.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import pWaitFor from 'p-wait-for'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Libp2pNode } from '../../src/libp2p.js'
 import { pEvent } from 'p-event'
 import { AGENT_VERSION } from '../../src/identify/consts.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import { identifyService, IdentifyService } from '../../src/identify/index.js'
 
-describe('libp2p.dialer.identifyService', () => {
+describe('identify', () => {
   let peerId: PeerId
-  let libp2p: Libp2pNode
-  let remoteLibp2p: Libp2pNode
+  let libp2p: Libp2p<{ identify: IdentifyService }>
+  let remoteLibp2p: Libp2p<{ identify: IdentifyService }>
   const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
 
   before(async () => {
@@ -41,26 +43,25 @@ describe('libp2p.dialer.identifyService', () => {
   })
 
   it('should run identify automatically after connecting', async () => {
-    libp2p = await createLibp2pNode(createBaseOptions({
-      peerId
+    libp2p = await createLibp2p(createBaseOptions({
+      peerId,
+      services: {
+        identify: identifyService()
+      }
     }))
 
     await libp2p.start()
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
 
-    const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
-    const peerStoreSpyConsumeRecord = sinon.spy(libp2p.peerStore.addressBook, 'consumePeerRecord')
-    const peerStoreSpyAdd = sinon.spy(libp2p.peerStore.addressBook, 'add')
+    const identityServiceIdentifySpy = sinon.spy(libp2p.services.identify, 'identify')
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
 
     // Wait for peer store to be updated
-    // Dialer._createDialTarget (add), Identify (consume)
-    await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 1 && peerStoreSpyAdd.callCount === 1)
     expect(identityServiceIdentifySpy.callCount).to.equal(1)
 
     // The connection should have no open streams
@@ -69,55 +70,55 @@ describe('libp2p.dialer.identifyService', () => {
   })
 
   it('should store remote agent and protocol versions in metadataBook after connecting', async () => {
-    libp2p = await createLibp2pNode(createBaseOptions({
-      peerId
+    libp2p = await createLibp2p(createBaseOptions({
+      peerId,
+      services: {
+        identify: identifyService()
+      }
     }))
 
     await libp2p.start()
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
 
-    const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
-    const peerStoreSpyConsumeRecord = sinon.spy(libp2p.peerStore.addressBook, 'consumePeerRecord')
-    const peerStoreSpyAdd = sinon.spy(libp2p.peerStore.addressBook, 'add')
+    const identityServiceIdentifySpy = sinon.spy(libp2p.services.identify, 'identify')
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
 
     // Wait for peer store to be updated
-    // Dialer._createDialTarget (add), Identify (consume)
-    await pWaitFor(() => peerStoreSpyConsumeRecord.callCount === 1 && peerStoreSpyAdd.callCount === 1)
     expect(identityServiceIdentifySpy.callCount).to.equal(1)
 
     // The connection should have no open streams
     await pWaitFor(() => connection.streams.length === 0)
     await connection.close()
 
-    const remotePeer = peerIdFromString(remoteAddr.getPeerId() ?? '')
+    const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
 
-    const storedAgentVersion = await libp2p.peerStore.metadataBook.getValue(remotePeer, 'AgentVersion')
-    const storedProtocolVersion = await libp2p.peerStore.metadataBook.getValue(remotePeer, 'ProtocolVersion')
-
-    expect(storedAgentVersion).to.exist()
-    expect(storedProtocolVersion).to.exist()
+    const remotePeer = await libp2p.peerStore.get(remotePeerId)
+    expect(remotePeer.metadata.get('AgentVersion')).to.exist()
+    expect(remotePeer.metadata.get('ProtocolVersion')).to.exist()
   })
 
   it('should push protocol updates to an already connected peer', async () => {
-    libp2p = await createLibp2pNode(createBaseOptions({
-      peerId
+    libp2p = await createLibp2p(createBaseOptions({
+      peerId,
+      services: {
+        identify: identifyService()
+      }
     }))
 
     await libp2p.start()
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
 
-    const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
-    const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
+    const identityServiceIdentifySpy = sinon.spy(libp2p.services.identify, 'identify')
+    const identityServicePushSpy = sinon.spy(libp2p.services.identify, 'push')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
     const connection = await libp2p.dial(remoteAddr)
 
     expect(connection).to.exist()
@@ -145,13 +146,6 @@ describe('libp2p.dialer.identifyService', () => {
     // Verify the remote peer is notified of both changes
     expect(identityServicePushSpy.callCount).to.equal(2)
 
-    for (const call of identityServicePushSpy.getCalls()) {
-      const [connections] = call.args
-      expect(connections.length).to.equal(1)
-      expect(connections[0].remotePeer.toString()).to.equal(remoteAddr.getPeerId())
-      await call.returnValue
-    }
-
     // Verify the streams close
     await pWaitFor(() => connection.streams.length === 0)
   })
@@ -164,60 +158,65 @@ describe('libp2p.dialer.identifyService', () => {
       sinon.stub(navigator, 'userAgent').value('vTEST')
     }
 
-    libp2p = await createLibp2pNode(createBaseOptions({
-      peerId
-    }))
-
-    await libp2p.start()
-
-    if (libp2p.identifyService == null) {
-      throw new Error('Identity service was not configured')
-    }
-
-    const storedAgentVersion = await libp2p.peerStore.metadataBook.getValue(peerId, 'AgentVersion')
-
-    expect(AGENT_VERSION + ' UserAgent=vTEST').to.equal(uint8ArrayToString(storedAgentVersion ?? new Uint8Array()))
-  })
-
-  it('should store host data and protocol version into metadataBook', async () => {
-    const agentVersion = 'js-project/1.0.0'
-
-    libp2p = await createLibp2pNode(createBaseOptions({
+    libp2p = await createLibp2p(createBaseOptions({
       peerId,
-      identify: {
-        host: {
-          agentVersion
-        }
+      services: {
+        identify: identifyService()
       }
     }))
 
     await libp2p.start()
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
 
-    const storedAgentVersion = await libp2p.peerStore.metadataBook.getValue(peerId, 'AgentVersion')
-    const storedProtocolVersion = await libp2p.peerStore.metadataBook.getValue(peerId, 'ProtocolVersion')
+    const peer = await libp2p.peerStore.get(peerId)
+    const storedAgentVersion = peer.metadata.get('AgentVersion')
 
-    expect(agentVersion).to.equal(uint8ArrayToString(storedAgentVersion ?? new Uint8Array()))
-    expect(storedProtocolVersion).to.exist()
+    expect(AGENT_VERSION + ' UserAgent=vTEST').to.equal(uint8ArrayToString(storedAgentVersion ?? new Uint8Array()))
   })
 
-  it('should push multiaddr updates to an already connected peer', async () => {
-    libp2p = await createLibp2pNode(createBaseOptions({
-      peerId
+  it('should store host data and protocol version into peer store', async () => {
+    const agentVersion = 'js-project/1.0.0'
+
+    libp2p = await createLibp2p(createBaseOptions({
+      peerId,
+      services: {
+        identify: identifyService({
+          agentVersion
+        })
+      }
     }))
 
     await libp2p.start()
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
 
-    const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
-    const identityServicePushSpy = sinon.spy(libp2p.identifyService, 'push')
-    const connectionPromise = pEvent(libp2p.connectionManager, 'peer:connect')
+    const remotePeer = await libp2p.peerStore.get(peerId)
+    expect(remotePeer.metadata.get('AgentVersion')).to.deep.equal(uint8ArrayFromString(agentVersion))
+    expect(remotePeer.metadata.get('ProtocolVersion')).to.exist()
+  })
+
+  it('should push multiaddr updates to an already connected peer', async () => {
+    libp2p = await createLibp2p(createBaseOptions({
+      peerId,
+      services: {
+        identify: identifyService()
+      }
+    }))
+
+    await libp2p.start()
+
+    if (libp2p.services.identify == null) {
+      throw new Error('Identity service was not configured')
+    }
+
+    const identityServiceIdentifySpy = sinon.spy(libp2p.services.identify, 'identify')
+    const identityServicePushSpy = sinon.spy(libp2p.services.identify, 'push')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
     const connection = await libp2p.dial(remoteAddr)
 
     expect(connection).to.exist()
@@ -228,19 +227,15 @@ describe('libp2p.dialer.identifyService', () => {
     await identityServiceIdentifySpy.firstCall.returnValue
     sinon.stub(libp2p, 'isStarted').returns(true)
 
-    await libp2p.peerStore.addressBook.add(libp2p.peerId, [multiaddr('/ip4/180.0.0.1/tcp/15001/ws')])
+    await libp2p.peerStore.merge(libp2p.peerId, {
+      multiaddrs: [multiaddr('/ip4/180.0.0.1/tcp/15001/ws')]
+    })
 
     // the protocol change event listener in the identity service is async
     await pWaitFor(() => identityServicePushSpy.callCount === 1)
 
     // Verify the remote peer is notified of change
     expect(identityServicePushSpy.callCount).to.equal(1)
-    for (const call of identityServicePushSpy.getCalls()) {
-      const [connections] = call.args
-      expect(connections.length).to.equal(1)
-      expect(connections[0].remotePeer.toString()).to.equal(remoteAddr.getPeerId())
-      await call.returnValue
-    }
 
     // Verify the streams close
     await pWaitFor(() => connection.streams.length === 0)

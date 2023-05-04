@@ -1,16 +1,19 @@
 import { logger } from '@libp2p/logger'
-import pSettle from 'p-settle'
 import { codes } from './errors.js'
-import errCode from 'err-code'
-import type { Listener, Transport, TransportManager, TransportManagerEvents, Upgrader } from '@libp2p/interface-transport'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { FaultTolerance } from '@libp2p/interface-transport'
+import type { Listener, Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 import { trackedMap } from '@libp2p/tracked-map'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:transports')
 
@@ -22,9 +25,12 @@ export interface DefaultTransportManagerComponents {
   metrics?: Metrics
   addressManager: AddressManager
   upgrader: Upgrader
+  events: EventEmitter<Libp2pEvents>
+  peerId: PeerId
+  peerStore: PeerStore
 }
 
-export class DefaultTransportManager extends EventEmitter<TransportManagerEvents> implements TransportManager, Startable {
+export class DefaultTransportManager implements TransportManager, Startable {
   private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
   private readonly listeners: Map<string, Listener[]>
@@ -32,8 +38,6 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
   private started: boolean
 
   constructor (components: DefaultTransportManagerComponents, init: TransportManagerInit = {}) {
-    super()
-
     this.components = components
     this.started = false
     this.transports = new Map<string, Transport>()
@@ -47,15 +51,15 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
   /**
    * Adds a `Transport` to the manager
    */
-  add (transport: Transport) {
+  add (transport: Transport): void {
     const tag = transport[Symbol.toStringTag]
 
     if (tag == null) {
-      throw errCode(new Error('Transport must have a valid tag'), codes.ERR_INVALID_KEY)
+      throw new CodeError('Transport must have a valid tag', codes.ERR_INVALID_KEY)
     }
 
     if (this.transports.has(tag)) {
-      throw errCode(new Error('There is already a transport with this tag'), codes.ERR_DUPLICATE_TRANSPORT)
+      throw new CodeError(`There is already a transport with the tag ${tag}`, codes.ERR_DUPLICATE_TRANSPORT)
     }
 
     log('adding transport %s', tag)
@@ -67,23 +71,25 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     }
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  async start () {
+  start (): void {
+    this.started = true
+  }
+
+  async afterStart (): Promise<void> {
     // Listen on the provided transports for the provided addresses
     const addrs = this.components.addressManager.getListenAddrs()
 
     await this.listen(addrs)
-
-    this.started = true
   }
 
   /**
    * Stops all listeners
    */
-  async stop () {
+  async stop (): Promise<void> {
     const tasks = []
     for (const [key, listeners] of this.listeners) {
       log('closing listeners for %s', key)
@@ -114,7 +120,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     const transport = this.transportForMultiaddr(ma)
 
     if (transport == null) {
-      throw errCode(new Error(`No transport available for address ${String(ma)}`), codes.ERR_TRANSPORT_UNAVAILABLE)
+      throw new CodeError(`No transport available for address ${String(ma)}`, codes.ERR_TRANSPORT_UNAVAILABLE)
     }
 
     try {
@@ -147,14 +153,14 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
   /**
    * Returns all the transports instances
    */
-  getTransports () {
+  getTransports (): Transport[] {
     return Array.of(...this.transports.values())
   }
 
   /**
    * Finds a transport that matches the given Multiaddr
    */
-  transportForMultiaddr (ma: Multiaddr) {
+  transportForMultiaddr (ma: Multiaddr): Transport | undefined {
     for (const transport of this.transports.values()) {
       const addrs = transport.filter([ma])
 
@@ -167,7 +173,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
   /**
    * Starts listeners for each listen Multiaddr
    */
-  async listen (addrs: Multiaddr[]) {
+  async listen (addrs: Multiaddr[]): Promise<void> {
     if (addrs == null || addrs.length === 0) {
       log('no addresses were provided for listening, this node is dial only')
       return
@@ -197,14 +203,30 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
 
         // Track listen/close events
         listener.addEventListener('listening', () => {
-          this.dispatchEvent(new CustomEvent<Listener>('listener:listening', {
-            detail: listener
-          }))
+          this.components.peerStore.patch(this.components.peerId, {
+            multiaddrs: this.getAddrs()
+          })
+            .then(() => {
+              this.components.events.safeDispatchEvent('transport:listening', {
+                detail: listener
+              })
+            })
+            .catch(err => {
+              log.error('error while updating peer record after listener began listening', err)
+            })
         })
         listener.addEventListener('close', () => {
-          this.dispatchEvent(new CustomEvent<Listener>('listener:close', {
-            detail: listener
-          }))
+          this.components.peerStore.patch(this.components.peerId, {
+            multiaddrs: this.getAddrs()
+          })
+            .then(() => {
+              this.components.events.safeDispatchEvent('transport:close', {
+                detail: listener
+              })
+            })
+            .catch(err => {
+              log.error('error while updating peer record after listener stopped listening', err)
+            })
         })
 
         // We need to attempt to listen on everything
@@ -217,14 +239,14 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
         continue
       }
 
-      const results = await pSettle(tasks)
+      const results = await Promise.allSettled(tasks)
       // If we are listening on at least 1 address, succeed.
       // TODO: we should look at adding a retry (`p-retry`) here to better support
       // listening on remote addresses as they may be offline. We could then potentially
       // just wait for any (`p-any`) listener to succeed on each transport before returning
-      const isListening = results.find(r => r.isFulfilled)
+      const isListening = results.find(r => r.status === 'fulfilled')
       if ((isListening == null) && this.faultTolerance !== FaultTolerance.NO_FATAL) {
-        throw errCode(new Error(`Transport (${key}) could not listen on any available address`), codes.ERR_NO_VALID_ADDRESSES)
+        throw new CodeError(`Transport (${key}) could not listen on any available address`, codes.ERR_NO_VALID_ADDRESSES)
       }
     }
 
@@ -233,7 +255,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
     if (couldNotListen.length === this.transports.size) {
       const message = `no valid addresses were provided for transports [${couldNotListen.join(', ')}]`
       if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
-        throw errCode(new Error(message), codes.ERR_NO_VALID_ADDRESSES)
+        throw new CodeError(message, codes.ERR_NO_VALID_ADDRESSES)
       }
       log(`libp2p in dial mode only: ${message}`)
     }
@@ -243,7 +265,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
    * Removes the given transport from the manager.
    * If a transport has any running listeners, they will be closed.
    */
-  async remove (key: string) {
+  async remove (key: string): Promise<void> {
     log('removing %s', key)
 
     // Close any running listeners
@@ -261,7 +283,7 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
    *
    * @async
    */
-  async removeAll () {
+  async removeAll (): Promise<void> {
     const tasks = []
     for (const key of this.transports.keys()) {
       tasks.push(this.remove(key))
@@ -269,19 +291,4 @@ export class DefaultTransportManager extends EventEmitter<TransportManagerEvents
 
     await Promise.all(tasks)
   }
-}
-
-/**
- * Enum Transport Manager Fault Tolerance values
- */
-export enum FaultTolerance {
-  /**
-   * should be used for failing in any listen circumstance
-   */
-  FATAL_ALL = 0,
-
-  /**
-   * should be used for not failing when not listening
-   */
-  NO_FATAL
 }

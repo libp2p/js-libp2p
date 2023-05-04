@@ -21,15 +21,12 @@ generateKey(otherSwarmKey)
   const node2 = await privateLibp2pNode(swarmKey)
   // const node2 = await privateLibp2pNode(otherSwarmKey)
 
-  await Promise.all([
-    node1.start(),
-    node2.start()
-  ])
-
   console.log('nodes started...')
 
   // Add node 2 data to node1's PeerStore
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
   await node1.dial(node2.peerId)
 
   node2.handle('/private', ({ stream }) => {

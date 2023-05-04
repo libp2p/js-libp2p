@@ -25,16 +25,9 @@ export async function test () {
         const page = await browser.newPage();
         await page.goto(url);
         await page.waitForFunction(selector => document.querySelector(selector).innerText === 'libp2p started!', '#status')
-        await page.waitForFunction(
-          selector => {
-            const text = document.querySelector(selector).innerText
-            return text.includes('libp2p id is') &&
-              text.includes('Found peer') &&
-              text.includes('Connected to')
-          },
-          '#output',
-          { timeout: 5000 }
-        )
+        await page.waitForFunction(selector => document.querySelector(selector).innerText.includes('libp2p id is'), '#output')
+        await page.waitForFunction(selector => document.querySelector(selector).innerText.includes('Found peer'), '#output')
+        await page.waitForFunction(selector => document.querySelector(selector).innerText.includes('Connected to'), '#output')
         await browser.close()
       } catch (err) {
         console.error(err)

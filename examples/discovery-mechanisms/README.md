@@ -55,6 +55,7 @@ Now, once we create and start the node, we can listen for events such as `peer:d
 
 ```JavaScript
 const node = await createLibp2p({
+  start: false,
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
@@ -75,7 +76,7 @@ const node = await createLibp2p({
   ]
 })
 
-node.connectionManager.addEventListener('peer:connect', (evt) => {
+node.addEventListener('peer:connect', (evt) => {
   console.log('Connection established to:', evt.detail.remotePeer.toString())	// Emitted when a new connection has been created
 })
 
@@ -151,11 +152,6 @@ const [node1, node2] = await Promise.all([
 
 node1.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
 node2.addEventListener('peer:discovery', (evt) => console.log('Discovered:', evt.detail.id.toString()))
-
-await Promise.all([
-  node1.start(),
-  node2.start()
-])
 ```
 
 If you run this example, you will see the other peers being discovered.

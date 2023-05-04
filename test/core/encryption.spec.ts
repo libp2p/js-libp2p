@@ -42,6 +42,7 @@ describe('Connection encryption configuration', () => {
   it('can be created', async () => {
     const config: Libp2pOptions = {
       peerId,
+      start: false,
       transports: [
         webSockets()
       ],

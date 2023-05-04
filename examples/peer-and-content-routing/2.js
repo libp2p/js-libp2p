@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 import { createLibp2p } from 'libp2p'
+import { identifyService } from 'libp2p/identify'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
@@ -17,10 +18,12 @@ const createNode = async () => {
     transports: [tcp()],
     streamMuxers: [mplex()],
     connectionEncryption: [noise()],
-    dht: kadDHT()
+    services: {
+      dht: kadDHT(),
+      identify: identifyService()
+    }
   })
 
-  await node.start()
   return node
 }
 
@@ -31,8 +34,12 @@ const createNode = async () => {
     createNode()
   ])
 
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
-  await node2.peerStore.addressBook.set(node3.peerId, node3.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
+  await node2.peerStore.patch(node3.peerId, {
+    multiaddrs: node3.getMultiaddrs()
+  })
 
   await Promise.all([
     node1.dial(node2.peerId),

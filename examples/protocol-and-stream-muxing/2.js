@@ -16,8 +16,6 @@ const createNode = async () => {
     connectionEncryption: [noise()]
   })
 
-  await node.start()
-
   return node
 }
 
@@ -28,7 +26,9 @@ const createNode = async () => {
   ])
 
   // Add node's 2 data to the PeerStore
-  await node1.peerStore.addressBook.set(node2.peerId, node2.getMultiaddrs())
+  await node1.peerStore.patch(node2.peerId, {
+    multiaddrs: node2.getMultiaddrs()
+  })
 
   node2.handle(['/a', '/b'], ({ protocol, stream }) => {
     pipe(

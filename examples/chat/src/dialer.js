@@ -21,9 +21,6 @@ async function run () {
     }
   })
 
-  // Start the libp2p host
-  await nodeDialer.start()
-
   // Output this node's address
   console.log('Dialer ready, listening on:')
   nodeDialer.getMultiaddrs().forEach((ma) => {

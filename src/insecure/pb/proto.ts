@@ -2,10 +2,11 @@
 /* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Codec } from 'protons-runtime'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Exchange {
   id?: Uint8Array
@@ -29,9 +30,7 @@ export namespace Exchange {
 
         if (obj.pubkey != null) {
           w.uint32(18)
-          PublicKey.codec().encode(obj.pubkey, w, {
-            writeDefaults: false
-          })
+          PublicKey.codec().encode(obj.pubkey, w)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -65,7 +64,7 @@ export namespace Exchange {
     return _codec
   }
 
-  export const encode = (obj: Exchange): Uint8Array => {
+  export const encode = (obj: Partial<Exchange>): Uint8Array => {
     return encodeMessage(obj, Exchange.codec())
   }
 
@@ -89,7 +88,7 @@ enum __KeyTypeValues {
 }
 
 export namespace KeyType {
-  export const codec = () => {
+  export const codec = (): Codec<KeyType> => {
     return enumeration<KeyType>(__KeyTypeValues)
   }
 }
@@ -108,12 +107,12 @@ export namespace PublicKey {
           w.fork()
         }
 
-        if (opts.writeDefaults === true || (obj.Type != null && __KeyTypeValues[obj.Type] !== 0)) {
+        if (obj.Type != null && __KeyTypeValues[obj.Type] !== 0) {
           w.uint32(8)
           KeyType.codec().encode(obj.Type, w)
         }
 
-        if (opts.writeDefaults === true || (obj.Data != null && obj.Data.byteLength > 0)) {
+        if ((obj.Data != null && obj.Data.byteLength > 0)) {
           w.uint32(18)
           w.bytes(obj.Data)
         }
@@ -152,7 +151,7 @@ export namespace PublicKey {
     return _codec
   }
 
-  export const encode = (obj: PublicKey): Uint8Array => {
+  export const encode = (obj: Partial<PublicKey>): Uint8Array => {
     return encodeMessage(obj, PublicKey.codec())
   }
 

@@ -16,6 +16,10 @@ export default {
       const { MULTIADDRS_WEBSOCKETS } = await import('./dist/test/fixtures/browser.js')
       const { plaintext } = await import('./dist/src/insecure/index.js')
       const { default: Peers } = await import('./dist/test/fixtures/peers.js')
+      const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
+      const { identifyService } = await import('./dist/src/identify/index.js')
+      const { pingService } = await import('./dist/src/ping/index.js')
+      const { fetchService } = await import('./dist/src/fetch/index.js')
 
       // Use the last peer
       const peerId = await createFromJSON(Peers[Peers.length - 1])
@@ -28,6 +32,7 @@ export default {
         },
         peerId,
         transports: [
+          circuitRelayTransport(),
           webSockets()
         ],
         streamMuxers: [
@@ -37,15 +42,15 @@ export default {
           noise(),
           plaintext()
         ],
-        relay: {
-          enabled: true,
-          hop: {
-            enabled: true,
-            active: false
-          }
-        },
-        nat: {
-          enabled: false
+        services: {
+          identify: identifyService(),
+          ping: pingService(),
+          fetch: fetchService(),
+          relay: circuitRelayServer({
+            reservations: {
+              maxReservations: Infinity
+            }
+          })
         }
       })
       // Add the echo protocol
@@ -53,7 +58,6 @@ export default {
         pipe(stream, stream)
           .catch() // sometimes connections are closed before multistream-select finishes which causes an error
       })
-      await libp2p.start()
 
       return {
         libp2p

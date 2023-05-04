@@ -1,6 +1,30 @@
+/**
+ * @packageDocumentation
+ *
+ * Connection protection management for libp2p leveraging PSK encryption via XSalsa20.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { preSharedKey, generateKey } from 'libp2p/pnet'
+ *
+ * // Create a Uint8Array and write the swarm key to it
+ * const swarmKey = new Uint8Array(95)
+ * generateKey(swarmKey)
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   connectionProtector: preSharedKey({
+ *     psk: swarmKey
+ *   })
+ * })
+ * ```
+ */
+
 import { logger } from '@libp2p/logger'
 import { pipe } from 'it-pipe'
-import errCode from 'err-code'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { duplexPair } from 'it-pair/duplex'
 import { randomBytes } from '@libp2p/crypto'
 import * as Errors from './errors.js'
@@ -57,7 +81,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     }
 
     if (connection == null) {
-      throw errCode(new Error(Errors.NO_HANDSHAKE_CONNECTION), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError(Errors.NO_HANDSHAKE_CONNECTION, codes.ERR_INVALID_PARAMETERS)
     }
 
     // Exchange nonces
@@ -70,7 +94,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     const result = await shake.reader.next(NONCE_LENGTH)
 
     if (result.value == null) {
-      throw errCode(new Error(Errors.STREAM_ENDED), codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError(Errors.STREAM_ENDED, codes.ERR_INVALID_PARAMETERS)
     }
 
     const remoteNonce = result.value.slice()
