@@ -9,7 +9,7 @@ import isPrivate from 'private-ip'
  */
 export function connectionGater (gater: ConnectionGater = {}): ConnectionGater {
   return {
-    denyDialPeer: async () => await Promise.resolve(false),
+    denyDialPeer: async () => false,
     denyDialMultiaddr: async (multiaddr: Multiaddr) => {
       const tuples = multiaddr.stringTuples()
 
@@ -19,13 +19,13 @@ export function connectionGater (gater: ConnectionGater = {}): ConnectionGater {
 
       return false
     },
-    denyInboundConnection: async () => await Promise.resolve(false),
-    denyOutboundConnection: async () => await Promise.resolve(false),
-    denyInboundEncryptedConnection: async () => await Promise.resolve(false),
-    denyOutboundEncryptedConnection: async () => await Promise.resolve(false),
-    denyInboundUpgradedConnection: async () => await Promise.resolve(false),
-    denyOutboundUpgradedConnection: async () => await Promise.resolve(false),
-    filterMultiaddrForPeer: async () => await Promise.resolve(true),
+    denyInboundConnection: async () => false,
+    denyOutboundConnection: async () => false,
+    denyInboundEncryptedConnection: async () => false,
+    denyOutboundEncryptedConnection: async () => false,
+    denyInboundUpgradedConnection: async () => false,
+    denyOutboundUpgradedConnection: async () => false,
+    filterMultiaddrForPeer: async () => true,
     ...gater
   }
 }
