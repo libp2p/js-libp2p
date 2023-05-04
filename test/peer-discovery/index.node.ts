@@ -16,15 +16,15 @@ import { createLibp2p } from '../../src/index.js'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pOptions } from '../../src/index.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { DHT } from '@libp2p/interface-dht'
+import type { KadDHT } from '@libp2p/kad-dht'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import { symbol } from '@libp2p/interface-peer-discovery'
+import { peerDiscovery } from '@libp2p/interface-peer-discovery'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 class TestPeerDiscovery extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
-  get [symbol] (): true {
-    return true
+  get [peerDiscovery] (): PeerDiscovery {
+    return this
   }
 
   get [Symbol.toStringTag] (): '@libp2p/test-peer-discovery' {
@@ -174,7 +174,7 @@ describe('peer discovery scenarios', () => {
   it('kad-dht should discover other peers', async () => {
     const deferred = defer()
 
-    const getConfig = (peerId: PeerId): Libp2pOptions<{ dht: DHT }> => createBaseOptions({
+    const getConfig = (peerId: PeerId): Libp2pOptions<{ dht: KadDHT }> => createBaseOptions({
       peerId,
       addresses: {
         listen: [
