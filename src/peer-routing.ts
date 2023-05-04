@@ -9,49 +9,17 @@ import {
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
-import drain from 'it-drain'
 import filter from 'it-filter'
-import {
-  setDelayedInterval,
-  clearDelayedInterval
-// @ts-expect-error module with no types
-} from 'set-delayed-interval'
-import { setMaxListeners } from 'events'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:peer-routing')
 
-export interface RefreshManagerInit {
-  /**
-   * Whether to enable the Refresh manager
-   */
-  enabled?: boolean
-
-  /**
-   * Boot delay to start the Refresh Manager (in ms)
-   */
-  bootDelay?: number
-
-  /**
-   * Interval between each Refresh Manager run (in ms)
-   */
-  interval?: number
-
-  /**
-   * How long to let each refresh run (in ms)
-   */
-  timeout?: number
-}
-
 export interface PeerRoutingInit {
   routers?: PeerRouting[]
-  refreshManager?: RefreshManagerInit
 }
 
 export interface DefaultPeerRoutingComponents {
@@ -59,83 +27,13 @@ export interface DefaultPeerRoutingComponents {
   peerStore: PeerStore
 }
 
-export class DefaultPeerRouting implements PeerRouting, Startable {
+export class DefaultPeerRouting implements PeerRouting {
   private readonly components: DefaultPeerRoutingComponents
   private readonly routers: PeerRouting[]
-  private readonly refreshManagerInit: RefreshManagerInit
-  private timeoutId?: ReturnType<typeof setTimeout>
-  private started: boolean
-  private abortController?: AbortController
 
   constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit) {
     this.components = components
     this.routers = init.routers ?? []
-    this.refreshManagerInit = init.refreshManager ?? {}
-    this.started = false
-
-    this._findClosestPeersTask = this._findClosestPeersTask.bind(this)
-  }
-
-  isStarted (): boolean {
-    return this.started
-  }
-
-  /**
-   * Start peer routing service.
-   */
-  async start (): Promise<void> {
-    if (this.started || this.routers.length === 0 || this.timeoutId != null || this.refreshManagerInit.enabled === false) {
-      return
-    }
-
-    this.timeoutId = setDelayedInterval(
-      this._findClosestPeersTask, this.refreshManagerInit.interval, this.refreshManagerInit.bootDelay
-    )
-
-    this.started = true
-  }
-
-  /**
-   * Recurrent task to find closest peers and add their addresses to the Address Book.
-   */
-  async _findClosestPeersTask (): Promise<void> {
-    if (this.abortController != null) {
-      // we are already running the query
-      return
-    }
-
-    this.abortController = new AbortController()
-
-    const signal = anySignal([this.abortController.signal, AbortSignal.timeout(this.refreshManagerInit.timeout ?? 10e3)])
-
-    try {
-      // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
-      // appearing in the console
-      try {
-        setMaxListeners?.(Infinity, signal)
-      } catch {}
-
-      // nb getClosestPeers adds the addresses to the address book
-      await drain(this.getClosestPeers(this.components.peerId.toBytes(), { signal }))
-    } catch (err: any) {
-      log.error(err)
-    } finally {
-      this.abortController?.abort()
-      this.abortController = undefined
-      signal.clear()
-    }
-  }
-
-  /**
-   * Stop peer routing service.
-   */
-  async stop (): Promise<void> {
-    clearDelayedInterval(this.timeoutId)
-
-    // abort query if it is in-flight
-    this.abortController?.abort()
-
-    this.started = false
   }
 
   /**

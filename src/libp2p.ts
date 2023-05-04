@@ -147,7 +147,6 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
     // Peer routers
     const peerRouters: PeerRouting[] = (init.peerRouters ?? []).map((fn, index) => this.configureComponent(`peer-router-${index}`, fn(this.components)))
     this.peerRouting = this.components.peerRouting = this.configureComponent('peerRouting', new DefaultPeerRouting(this.components, {
-      ...init.peerRouting,
       routers: peerRouters
     }))
 
