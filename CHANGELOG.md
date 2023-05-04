@@ -1,3 +1,10 @@
+## [7.0.5](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.4...v7.0.5) (2023-05-04)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.5 ([#196](https://github.com/libp2p/js-libp2p-mdns/issues/196)) ([1db5304](https://github.com/libp2p/js-libp2p-mdns/commit/1db530413904d24cfb446513769f45454ad82428))
+
 ## [7.0.4](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.3...v7.0.4) (2023-04-24)
 
 
