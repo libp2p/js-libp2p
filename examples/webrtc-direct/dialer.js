@@ -15,7 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       bootstrap({
         list: [`/ip4/127.0.0.1/tcp/9090/http/p2p-webrtc-direct/p2p/${hardcodedPeerId}`]
       })
-    ]
+    ],
+    connectionGater: {
+      denyDialMultiaddr: () => false
+    }
   })
 
   const status = document.getElementById('status')
