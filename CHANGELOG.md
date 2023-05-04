@@ -1,3 +1,14 @@
+## [8.0.0](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.5...v8.0.0) (2023-05-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* update @libp2p/interface-peer-discovery to 2.0.0 (#197)
+
+### Dependencies
+
+* update @libp2p/interface-peer-discovery to 2.0.0 ([#197](https://github.com/libp2p/js-libp2p-mdns/issues/197)) ([e8172af](https://github.com/libp2p/js-libp2p-mdns/commit/e8172af8b9856a934327195238b00e5fbba436a4))
+
 ## [7.0.5](https://github.com/libp2p/js-libp2p-mdns/compare/v7.0.4...v7.0.5) (2023-05-04)
 
 
