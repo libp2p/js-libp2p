@@ -5,14 +5,14 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { AutonatService, AutonatServiceInit } from '../../src/autonat/index.js'
+import { autonatService, AutonatService, AutonatServiceInit } from '../../src/autonat/index.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
-import { PROTOCOL } from '../../src/autonat/constants.js'
+import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../../src/autonat/constants.js'
 import { Message } from '../../src/autonat/pb/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { pushable } from 'it-pushable'
@@ -65,7 +65,7 @@ describe('autonat', () => {
       peerStore
     })
 
-    service = new AutonatService(components, defaultInit)
+    service = autonatService(defaultInit)(components)
 
     await start(components)
     await start(service)
@@ -94,7 +94,7 @@ describe('autonat', () => {
 
       // stub autonat protocol stream
       const stream = stubInterface<Stream>()
-      connection.newStream.withArgs(PROTOCOL).resolves(stream)
+      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).resolves(stream)
 
       // stub autonat response
       const response = Message.encode({
@@ -133,6 +133,7 @@ describe('autonat', () => {
         yield * peers
       }())
 
+      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.confirmObservedAddr.calledWith(observedAddress))
@@ -163,6 +164,7 @@ describe('autonat', () => {
         yield * peers
       }())
 
+      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -202,6 +204,7 @@ describe('autonat', () => {
         yield * peers
       }())
 
+      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.confirmObservedAddr.calledWith(observedAddress))
@@ -247,6 +250,7 @@ describe('autonat', () => {
         yield * peers
       }())
 
+      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -294,6 +298,7 @@ describe('autonat', () => {
         yield * peers
       }())
 
+      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -346,6 +351,7 @@ describe('autonat', () => {
         yield * peers
       }())
 
+      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
@@ -396,6 +402,7 @@ describe('autonat', () => {
         ])
       })
 
+      // @ts-expect-error not part of interface
       await service.verifyExternalAddresses()
 
       expect(addressManager.addObservedAddr.called)
@@ -477,6 +484,7 @@ describe('autonat', () => {
 
       source.end()
 
+      // @ts-expect-error not part of interface
       await service.handleIncomingAutonatStream({
         stream,
         connection
