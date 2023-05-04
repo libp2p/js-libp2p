@@ -150,7 +150,7 @@
     "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.1",
     "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/peer-id-factory": "^2.0.0",
-    "aegir": "^38.1.2",
+    "aegir": "^39.0.5",
     "p-wait-for": "^5.0.0",
     "ts-sinon": "^2.0.2"
   }

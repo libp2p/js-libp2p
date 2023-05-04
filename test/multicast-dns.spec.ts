@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { multiaddr } from '@multiformats/multiaddr'
+import { start, stop } from '@libp2p/interfaces/startable'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
-import { mdns, MulticastDNSComponents } from './../src/index.js'
+import { stubInterface } from 'ts-sinon'
+import { mdns, type MulticastDNSComponents } from './../src/index.js'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { stubInterface } from 'ts-sinon'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import { start, stop } from '@libp2p/interfaces/startable'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSComponents {
   const addressManager = stubInterface<AddressManager>()

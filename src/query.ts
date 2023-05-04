@@ -1,7 +1,7 @@
-import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Answer, StringAnswer, TxtAnswer } from 'dns-packet'
 import type { MulticastDNS, QueryPacket, ResponsePacket } from 'multicast-dns'
 

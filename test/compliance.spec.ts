@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
 import tests from '@libp2p/interface-peer-discovery-compliance-tests'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CustomEvent } from '@libp2p/interfaces/events'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { stubInterface } from 'ts-sinon'
 import { mdns } from '../src/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
-import { CustomEvent } from '@libp2p/interfaces/events'
-import { stubInterface } from 'ts-sinon'
 import type { PeerDiscovery } from '@libp2p/interface-peer-discovery'
 
 let discovery: PeerDiscovery

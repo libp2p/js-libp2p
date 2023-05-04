@@ -1,12 +1,12 @@
-import multicastDNS from 'multicast-dns'
+import { symbol } from '@libp2p/interface-peer-discovery'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
+import multicastDNS from 'multicast-dns'
 import * as query from './query.js'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { symbol } from '@libp2p/interface-peer-discovery'
 import { stringGen } from './utils.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 const log = logger('libp2p:mdns')
 
@@ -55,13 +55,9 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     this._onMdnsResponse = this._onMdnsResponse.bind(this)
   }
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
-  get [Symbol.toStringTag] (): '@libp2p/mdns' {
-    return '@libp2p/mdns'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/mdns'
 
   isStarted (): boolean {
     return Boolean(this.mdns)
