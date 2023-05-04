@@ -1,3 +1,10 @@
+## [9.1.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.2...v9.1.3) (2023-05-04)
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-libp2p from 2.0.0 to 3.0.0 ([#466](https://github.com/libp2p/js-libp2p-kad-dht/issues/466)) ([d8f8e5a](https://github.com/libp2p/js-libp2p-kad-dht/commit/d8f8e5a3b2d5c57fc89129c2cf8ed2ed7c52d171))
+
 ## [9.1.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.1...v9.1.2) (2023-05-04)
 
 
