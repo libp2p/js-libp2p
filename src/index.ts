@@ -1,4 +1,4 @@
-import { symbol } from '@libp2p/interface-peer-discovery'
+import { peerDiscovery } from '@libp2p/interface-peer-discovery'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import multicastDNS from 'multicast-dns'
@@ -55,7 +55,7 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     this._onMdnsResponse = this._onMdnsResponse.bind(this)
   }
 
-  readonly [symbol] = true
+  readonly [peerDiscovery] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/mdns'
 
