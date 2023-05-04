@@ -84,7 +84,6 @@ class CircuitRelayTransport implements Transport {
   private readonly upgrader: Upgrader
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
-  private readonly events: EventEmitter<Libp2pEvents>
   private readonly reservationStore: ReservationStore
   private started: boolean
 
@@ -96,7 +95,6 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.events = components.events
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -256,8 +254,7 @@ class CircuitRelayTransport implements Transport {
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
       connectionManager: this.connectionManager,
-      relayStore: this.reservationStore,
-      events: this.events
+      relayStore: this.reservationStore
     })
   }
 

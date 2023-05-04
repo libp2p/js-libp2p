@@ -96,8 +96,8 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     // When a peer disconnects, if we had a reservation on that peer
     // remove the reservation and multiaddr and maybe trigger search
     // for new relays
-    this.events.addEventListener('connection:close', (evt) => {
-      this.#removeRelay(evt.detail.remotePeer)
+    this.events.addEventListener('peer:disconnect', (evt) => {
+      this.#removeRelay(evt.detail)
     })
   }
 
@@ -198,11 +198,8 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
           }
         })
 
-        await this.transportManager.listen(
-          reservation.addrs.map(ma => {
-            return multiaddr(ma).encapsulate('/p2p-circuit')
-          })
-        )
+        // listen on multiaddr that only the circuit transport is listening for
+        await this.transportManager.listen([multiaddr(`/p2p/${peerId.toString()}/p2p-circuit`)])
       } catch (err) {
         log.error('could not reserve slot on %p', peerId, err)
 
@@ -214,6 +211,10 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
 
   hasReservation (peerId: PeerId): boolean {
     return this.reservations.has(peerId)
+  }
+
+  getReservation (peerId: PeerId): Reservation | undefined {
+    return this.reservations.get(peerId)?.reservation
   }
 
   async #createReservation (connection: Connection): Promise<Reservation> {
