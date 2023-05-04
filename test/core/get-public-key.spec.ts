@@ -7,11 +7,11 @@ import { createPeerId } from '../utils/creators/peer.js'
 import { createLibp2pNode } from '../../src/libp2p.js'
 import sinon from 'sinon'
 import { kadDHT } from '@libp2p/kad-dht'
-import type { DHT } from '@libp2p/interface-dht'
+import type { KadDHT } from '@libp2p/kad-dht'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('getPublicKey', () => {
-  let libp2p: Libp2p<{ dht: DHT }>
+  let libp2p: Libp2p<{ dht: KadDHT }>
 
   beforeEach(async () => {
     const peerId = await createPeerId()

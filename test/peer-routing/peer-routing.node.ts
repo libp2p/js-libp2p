@@ -13,7 +13,7 @@ import { createBaseOptions } from '../utils/base-options.js'
 import { createRoutingOptions } from './utils.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { DHT, EventTypes, MessageType } from '@libp2p/interface-dht'
+import { KadDHT, EventTypes, MessageType } from '@libp2p/kad-dht'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
@@ -55,7 +55,7 @@ describe('peer-routing', () => {
   })
 
   describe('via dht router', () => {
-    let nodes: Array<Libp2p<{ dht: DHT }>>
+    let nodes: Array<Libp2p<{ dht: KadDHT }>>
 
     before(async () => {
       nodes = await Promise.all([
@@ -311,7 +311,7 @@ describe('peer-routing', () => {
   })
 
   describe('via dht and delegate routers', () => {
-    let node: Libp2p<{ dht: DHT }>
+    let node: Libp2p<{ dht: KadDHT }>
     let delegate: StubbedInstance<PeerRouting>
 
     beforeEach(async () => {
