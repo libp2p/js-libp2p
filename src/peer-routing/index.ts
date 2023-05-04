@@ -13,12 +13,11 @@ import {
   valueEvent
 } from '../query/events.js'
 import * as utils from '../utils.js'
-import type { KadDHTComponents } from '../index.js'
+import type { KadDHTComponents, DHTRecord, DialingPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { DHTRecord, DialingPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '@libp2p/interface-dht'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { AbortOptions } from '@libp2p/interfaces'

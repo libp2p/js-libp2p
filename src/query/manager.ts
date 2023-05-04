@@ -11,7 +11,7 @@ import {
 } from '../constants.js'
 import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
-import type { QueryEvent } from '@libp2p/interface-dht'
+import type { QueryEvent } from '../index.js'
 import type { Metric, Metrics } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'

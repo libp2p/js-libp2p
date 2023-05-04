@@ -1,4 +1,4 @@
-import type { QueryEvent } from '@libp2p/interface-dht'
+import type { QueryEvent } from '../index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 export interface QueryContext {

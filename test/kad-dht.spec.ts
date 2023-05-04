@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-import { EventTypes, type FinalPeerEvent, MessageType, type QueryEvent, type ValueEvent } from '@libp2p/interface-dht'
 import { CodeError } from '@libp2p/interfaces/errors'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
@@ -16,6 +15,7 @@ import sinon from 'sinon'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as c from '../src/constants.js'
+import { EventTypes, type FinalPeerEvent, MessageType, type QueryEvent, type ValueEvent } from '../src/index.js'
 import { MESSAGE_TYPE } from '../src/message/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import * as kadUtils from '../src/utils.js'
@@ -24,7 +24,7 @@ import { createValues } from './utils/create-values.js'
 import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { DualKadDHT } from '../src/dual-kad-dht.js'
+import type { DefaultDualKadDHT } from '../src/dual-kad-dht.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { CID } from 'multiformats/cid'
 
@@ -692,7 +692,7 @@ describe('KadDHT', () => {
         new Array(nDHTs).fill(0).map(async () => tdht.spawn())
       )
 
-      const dhtsById = new Map<PeerId, DualKadDHT>(dhts.map((d) => [d.components.peerId, d]))
+      const dhtsById = new Map<PeerId, DefaultDualKadDHT>(dhts.map((d) => [d.components.peerId, d]))
       const ids = [...dhtsById.keys()]
 
       // The origin node for the FIND_PEER query

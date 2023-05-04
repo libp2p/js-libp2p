@@ -5,13 +5,13 @@ import drain from 'it-drain'
 import last from 'it-last'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { TestDHT } from './utils/test-dht.js'
-import type { DualKadDHT } from '../src/dual-kad-dht.js'
+import type { DefaultDualKadDHT } from '../src/dual-kad-dht.js'
 
 describe('multiple nodes', function () {
   this.timeout(60 * 1000)
   const n = 8
   let tdht: TestDHT
-  let dhts: DualKadDHT[]
+  let dhts: DefaultDualKadDHT[]
 
   // spawn nodes
   beforeEach(async function () {

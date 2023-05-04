@@ -11,14 +11,14 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { DualKadDHT } from '../src/dual-kad-dht.js'
+import type { DefaultDualKadDHT } from '../src/dual-kad-dht.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Sink, Source } from 'it-stream-types'
 
 describe('Network', () => {
-  let dht: DualKadDHT
+  let dht: DefaultDualKadDHT
   let tdht: TestDHT
 
   before(async function () {

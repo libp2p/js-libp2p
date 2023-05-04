@@ -10,7 +10,7 @@ import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
-import type { Validators } from '@libp2p/interface-dht'
+import type { Validators } from '../../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Datastore } from 'interface-datastore'
 

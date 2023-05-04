@@ -13,9 +13,8 @@ import {
   peerResponseEvent,
   queryErrorEvent
 } from './query/events.js'
-import type { KadDHTComponents } from './index.js'
+import type { KadDHTComponents, QueryEvent } from './index.js'
 import type { Stream } from '@libp2p/interface-connection'
-import type { QueryEvent } from '@libp2p/interface-dht'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { AbortOptions } from '@libp2p/interfaces'

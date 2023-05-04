@@ -1,6 +1,6 @@
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-mocks'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { start } from '@libp2p/interfaces/startable'
+import { start, stop } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -8,10 +8,10 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import pRetry from 'p-retry'
 import { stubInterface } from 'ts-sinon'
-import { DualKadDHT } from '../../src/dual-kad-dht.js'
-import { KadDHT } from '../../src/kad-dht.js'
+import { DefaultDualKadDHT } from '../../src/dual-kad-dht.js'
 import { createPeerId } from './create-peer-id.js'
-import type { KadDHTComponents, KadDHTInit } from '../../src/index.js'
+import type { DualKadDHT, KadDHTComponents, KadDHTInit } from '../../src/index.js'
+import type { DefaultKadDHT } from '../../src/kad-dht.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
@@ -28,7 +28,7 @@ export class TestDHT {
     this.peers = new Map()
   }
 
-  async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<DualKadDHT> {
+  async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<DefaultDualKadDHT> {
     const events = new EventEmitter<Libp2pEvents>()
     const components: KadDHTComponents = {
       peerId: await createPeerId(),
@@ -82,20 +82,7 @@ export class TestDHT {
       ...options
     }
 
-    const dht: DualKadDHT = new DualKadDHT(
-      components,
-      new KadDHT(components, {
-        protocolPrefix: '/ipfs',
-        lan: false,
-        ...opts
-      }),
-      new KadDHT(components, {
-        protocolPrefix: '/ipfs',
-        lan: true,
-        ...opts,
-        clientMode: false
-      })
-    )
+    const dht = new DefaultDualKadDHT(components, opts)
 
     // simulate libp2p._onDiscoveryPeer
     dht.addEventListener('peer', (evt) => {
@@ -124,7 +111,7 @@ export class TestDHT {
     return dht
   }
 
-  async connect (dhtA: DualKadDHT, dhtB: DualKadDHT): Promise<void> {
+  async connect (dhtA: DefaultDualKadDHT, dhtB: DefaultDualKadDHT): Promise<void> {
     // need addresses in the address book otherwise we won't know whether to add
     // the peer to the public or private DHT and will do nothing
     await dhtA.components.peerStore.merge(dhtB.components.peerId, {
@@ -144,7 +131,7 @@ export class TestDHT {
       await checkConnected(dhtA.wan, dhtB.wan)
     }
 
-    async function checkConnected (a: KadDHT, b: KadDHT): Promise<PeerId[]> {
+    async function checkConnected (a: DefaultKadDHT, b: DefaultKadDHT): Promise<PeerId[]> {
       const routingTableChecks = []
 
       routingTableChecks.push(async () => {
@@ -181,7 +168,9 @@ export class TestDHT {
 
   async teardown (): Promise<void> {
     await Promise.all(
-      Array.from(this.peers.entries()).map(async ([_, { dht }]) => { await dht.stop() })
+      Array.from(this.peers.entries()).map(async ([_, { dht }]) => {
+        await stop(dht)
+      })
     )
     this.peers.clear()
   }

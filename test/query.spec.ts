@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
-import { EventTypes, type QueryEvent } from '@libp2p/interface-dht'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
 import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { EventTypes, type QueryEvent } from '../src/index.js'
 import { MESSAGE_TYPE } from '../src/message/index.js'
 import {
   peerResponseEvent,

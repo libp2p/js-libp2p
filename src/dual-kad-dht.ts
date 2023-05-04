@@ -1,34 +1,117 @@
-import { symbol } from '@libp2p/interface-peer-discovery'
+import { type ContentRouting, contentRouting } from '@libp2p/interface-content-routing'
+import { type PeerDiscovery, peerDiscovery, type PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import { type PeerRouting, peerRouting } from '@libp2p/interface-peer-routing'
 import { CodeError } from '@libp2p/interfaces/errors'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
+import drain from 'it-drain'
 import merge from 'it-merge'
+import { DefaultKadDHT } from './kad-dht.js'
 import { queryErrorEvent } from './query/events.js'
-import type { KadDHTComponents } from './index.js'
-import type { KadDHT } from './kad-dht.js'
-import type { DualDHT, QueryEvent, QueryOptions } from '@libp2p/interface-dht'
-import type { PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import type { DualKadDHT, KadDHT, KadDHTComponents, KadDHTInit, QueryEvent, QueryOptions } from './index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { CID } from 'multiformats'
+import type { CID } from 'multiformats/cid'
 
 const log = logger('libp2p:kad-dht')
+
+/**
+ * Wrapper class to convert events into returned values
+ */
+class DHTContentRouting implements ContentRouting {
+  private readonly dht: KadDHT
+
+  constructor (dht: KadDHT) {
+    this.dht = dht
+  }
+
+  async provide (cid: CID): Promise<void> {
+    await drain(this.dht.provide(cid))
+  }
+
+  async * findProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
+    for await (const event of this.dht.findProviders(cid, options)) {
+      if (event.name === 'PROVIDER') {
+        yield * event.providers
+      }
+    }
+  }
+
+  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
+    await drain(this.dht.put(key, value, options))
+  }
+
+  async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
+    for await (const event of this.dht.get(key, options)) {
+      if (event.name === 'VALUE') {
+        return event.value
+      }
+    }
+
+    throw new CodeError('Not found', 'ERR_NOT_FOUND')
+  }
+}
+
+/**
+ * Wrapper class to convert events into returned values
+ */
+class DHTPeerRouting implements PeerRouting {
+  private readonly dht: KadDHT
+
+  constructor (dht: KadDHT) {
+    this.dht = dht
+  }
+
+  async findPeer (peerId: PeerId, options: AbortOptions = {}): Promise<PeerInfo> {
+    for await (const event of this.dht.findPeer(peerId, options)) {
+      if (event.name === 'FINAL_PEER') {
+        return event.peer
+      }
+    }
+
+    throw new CodeError('Not found', 'ERR_NOT_FOUND')
+  }
+
+  async * getClosestPeers (key: Uint8Array, options: AbortOptions = {}): AsyncIterable<PeerInfo> {
+    for await (const event of this.dht.getClosestPeers(key, options)) {
+      if (event.name === 'FINAL_PEER') {
+        yield event.peer
+      }
+    }
+  }
+}
 
 /**
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualDHT {
-  public readonly wan: KadDHT
-  public readonly lan: KadDHT
+export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualKadDHT, PeerDiscovery {
+  public readonly wan: DefaultKadDHT
+  public readonly lan: DefaultKadDHT
   public readonly components: KadDHTComponents
+  private readonly contentRouting: ContentRouting
+  private readonly peerRouting: PeerRouting
 
-  constructor (components: KadDHTComponents, wan: KadDHT, lan: KadDHT) {
+  constructor (components: KadDHTComponents, init: KadDHTInit = {}) {
     super()
 
     this.components = components
-    this.wan = wan
-    this.lan = lan
+
+    this.wan = new DefaultKadDHT(components, {
+      protocolPrefix: '/ipfs',
+      ...init,
+      lan: false
+    })
+    this.lan = new DefaultKadDHT(components, {
+      protocolPrefix: '/ipfs',
+      ...init,
+      clientMode: false,
+      lan: true
+    })
+
+    this.contentRouting = new DHTContentRouting(this)
+    this.peerRouting = new DHTPeerRouting(this)
 
     // handle peers being discovered during processing of DHT messages
     this.wan.addEventListener('peer', (evt) => {
@@ -43,9 +126,19 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
     })
   }
 
-  readonly [symbol] = true
-
   readonly [Symbol.toStringTag] = '@libp2p/dual-kad-dht'
+
+  get [contentRouting] (): ContentRouting {
+    return this.contentRouting
+  }
+
+  get [peerRouting] (): PeerRouting {
+    return this.peerRouting
+  }
+
+  get [peerDiscovery] (): PeerDiscovery {
+    return this
+  }
 
   /**
    * Is this DHT running.

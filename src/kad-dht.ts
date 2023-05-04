@@ -1,4 +1,3 @@
-import { symbol } from '@libp2p/interface-peer-discovery'
 import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
 import { type Logger, logger } from '@libp2p/logger'
 import { selectors as recordSelectors } from '@libp2p/record/selectors'
@@ -20,8 +19,7 @@ import {
   removePrivateAddresses,
   removePublicAddresses
 } from './utils.js'
-import type { KadDHTComponents, KadDHTInit } from './index.js'
-import type { QueryOptions, Validators, Selectors, DHT, QueryEvent } from '@libp2p/interface-dht'
+import type { KadDHTComponents, KadDHTInit, QueryOptions, Validators, Selectors, KadDHT, QueryEvent } from './index.js'
 import type { PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -41,7 +39,7 @@ export interface SingleKadDHTInit extends KadDHTInit {
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
+export class DefaultKadDHT extends EventEmitter<PeerDiscoveryEvents> implements KadDHT {
   public protocol: string
   public routingTable: RoutingTable
   public providers: Providers
@@ -218,10 +216,6 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
       })
     })
   }
-
-  readonly [symbol] = true
-
-  readonly [Symbol.toStringTag] = '@libp2p/kad-dht'
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
     this.log('peer %p connected with protocols', peerData.id, peerData.protocols)
