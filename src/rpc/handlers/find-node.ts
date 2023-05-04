@@ -1,16 +1,16 @@
-import { Message } from '../../message/index.js'
 import { logger } from '@libp2p/logger'
+import { protocols } from '@multiformats/multiaddr'
+import { equals as uint8ArrayEquals } from 'uint8arrays'
+import { Message } from '../../message/index.js'
 import {
   removePrivateAddresses,
   removePublicAddresses
 } from '../../utils.js'
-import { equals as uint8ArrayEquals } from 'uint8arrays'
-import { protocols } from '@multiformats/multiaddr'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { DHTMessageHandler } from '../index.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { DHTMessageHandler } from '../index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:find-node')
 

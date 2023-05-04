@@ -1,6 +1,6 @@
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
 import { Libp2pRecord } from '@libp2p/record'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Message as PBMessage } from './dht.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Uint8ArrayList } from 'uint8arraylist'

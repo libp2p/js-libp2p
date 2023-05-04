@@ -1,15 +1,15 @@
 import { setMaxListeners } from 'events'
-import take from 'it-take'
-import length from 'it-length'
-import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K, QUERY_SELF_INITIAL_INTERVAL } from './constants.js'
+import { logger, type Logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
-import { logger, Logger } from '@libp2p/logger'
-import type { PeerRouting } from './peer-routing/index.js'
-import type { Startable } from '@libp2p/interfaces/startable'
+import length from 'it-length'
 import { pipe } from 'it-pipe'
+import take from 'it-take'
+import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K, QUERY_SELF_INITIAL_INTERVAL } from './constants.js'
 import type { KadDHTComponents } from './index.js'
-import type { DeferredPromise } from 'p-defer'
+import type { PeerRouting } from './peer-routing/index.js'
 import type { RoutingTable } from './routing-table/index.js'
+import type { Startable } from '@libp2p/interfaces/startable'
+import type { DeferredPromise } from 'p-defer'
 
 export interface QuerySelfInit {
   lan: boolean
@@ -146,7 +146,7 @@ export class QuerySelf implements Startable {
               isSelfQuery: true
             }),
             (source) => take(source, this.count),
-            async (source) => await length(source)
+            async (source) => length(source)
           )
 
           this.log('self-query ran successfully - found %d peers', found)

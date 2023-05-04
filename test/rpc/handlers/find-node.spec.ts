@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
-import { FindNodeHandler } from '../../../src/rpc/handlers/find-node.js'
 import { multiaddr } from '@multiformats/multiaddr'
-import { createPeerId } from '../../utils/create-peer-id.js'
+import { expect } from 'aegir/chai'
+import Sinon, { type SinonStubbedInstance } from 'sinon'
+import { stubInterface } from 'ts-sinon'
+import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
-import Sinon, { SinonStubbedInstance } from 'sinon'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import { FindNodeHandler } from '../../../src/rpc/handlers/find-node.js'
+import { createPeerId } from '../../utils/create-peer-id.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
-import { stubInterface } from 'ts-sinon'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { StubbedInstance } from 'ts-sinon'
 
 const T = MESSAGE_TYPE.FIND_NODE

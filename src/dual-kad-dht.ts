@@ -1,16 +1,16 @@
-import { logger } from '@libp2p/logger'
+import { symbol } from '@libp2p/interface-peer-discovery'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { logger } from '@libp2p/logger'
 import merge from 'it-merge'
 import { queryErrorEvent } from './query/events.js'
+import type { KadDHTComponents } from './index.js'
 import type { KadDHT } from './kad-dht.js'
 import type { DualDHT, QueryEvent, QueryOptions } from '@libp2p/interface-dht'
-import type { AbortOptions } from '@libp2p/interfaces'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
-import type { CID } from 'multiformats'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import { symbol } from '@libp2p/interface-peer-discovery'
-import type { KadDHTComponents } from './index.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { CID } from 'multiformats'
 
 const log = logger('libp2p:kad-dht')
 
@@ -43,13 +43,9 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
     })
   }
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
-  get [Symbol.toStringTag] (): '@libp2p/dual-kad-dht' {
-    return '@libp2p/dual-kad-dht'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/dual-kad-dht'
 
   /**
    * Is this DHT running.
@@ -62,7 +58,7 @@ export class DualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements Dua
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
   async getMode (): Promise<'client' | 'server'> {
-    return await this.wan.getMode()
+    return this.wan.getMode()
   }
 
   /**

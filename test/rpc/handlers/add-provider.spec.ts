@@ -1,17 +1,17 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
+import { Providers } from '../../../src/providers.js'
 import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
 import { createPeerIds } from '../../utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import { createValues } from '../../utils/create-values.js'
-import type { CID } from 'multiformats'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import { Providers } from '../../../src/providers.js'
-import { MemoryDatastore } from 'datastore-core'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { CID } from 'multiformats'
 
 describe('rpc - handlers - AddProvider', () => {
   let peerIds: PeerId[]

@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import range from 'lodash.range'
 import fs from 'fs'
 import path from 'path'
-import { Message } from '../src/message/index.js'
 import { isPeerId } from '@libp2p/interface-peer-id'
+import { expect } from 'aegir/chai'
+import range from 'lodash.range'
+import { Message } from '../src/message/index.js'
 
 describe('Message', () => {
   it('go-interop', () => {

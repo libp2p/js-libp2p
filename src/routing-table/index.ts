@@ -1,15 +1,15 @@
+import { logger } from '@libp2p/logger'
+import { PeerSet } from '@libp2p/peer-collections'
 // @ts-expect-error no types
 import KBuck from 'k-bucket'
-import * as utils from '../utils.js'
 import Queue from 'p-queue'
-import { logger } from '@libp2p/logger'
+import * as utils from '../utils.js'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { Metric, Metrics } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
-import { PeerSet } from '@libp2p/peer-collections'
-import type { Metric, Metrics } from '@libp2p/interface-metrics'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50

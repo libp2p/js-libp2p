@@ -2,13 +2,13 @@
 
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
+import delay from 'delay'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { Providers } from '../src/providers.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { Providers } from '../src/providers.js'
 import { createPeerIds } from './utils/create-peer-id.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import delay from 'delay'
 
 describe('Providers', () => {
   let peers: PeerId[]
@@ -69,13 +69,13 @@ describe('Providers', () => {
     })
 
     const hashes = await Promise.all([...new Array(100)].map(async (i: number) => {
-      return await sha256.digest(uint8ArrayFromString(`hello ${i}`))
+      return sha256.digest(uint8ArrayFromString(`hello ${i}`))
     }))
 
     const cids = hashes.map((h) => CID.createV0(h))
 
     await Promise.all(cids.map(async cid => { await providers.addProvider(cid, peers[0]) }))
-    const provs = await Promise.all(cids.map(async cid => await providers.getProviders(cid)))
+    const provs = await Promise.all(cids.map(async cid => providers.getProviders(cid)))
 
     expect(provs).to.have.length(100)
     for (const p of provs) {

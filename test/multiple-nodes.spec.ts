@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { TestDHT } from './utils/test-dht.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import drain from 'it-drain'
 import last from 'it-last'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { TestDHT } from './utils/test-dht.js'
 import type { DualKadDHT } from '../src/dual-kad-dht.js'
 
 describe('multiple nodes', function () {
@@ -17,7 +17,7 @@ describe('multiple nodes', function () {
   beforeEach(async function () {
     tdht = new TestDHT()
     dhts = await Promise.all(
-      new Array(n).fill(0).map(async () => await tdht.spawn({
+      new Array(n).fill(0).map(async () => tdht.spawn({
         clientMode: false
       }))
     )
@@ -26,7 +26,7 @@ describe('multiple nodes', function () {
     const range = Array.from(Array(n - 1).keys())
 
     // connect the last one with the others one by one
-    return await Promise.all(range.map(async (i) => { await tdht.connect(dhts[n - 1], dhts[i]) }))
+    return Promise.all(range.map(async (i) => { await tdht.connect(dhts[n - 1], dhts[i]) }))
   })
 
   afterEach(async function () {

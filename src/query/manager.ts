@@ -1,22 +1,22 @@
+import { setMaxListeners } from 'events'
+import { AbortError } from '@libp2p/interfaces/errors'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { logger } from '@libp2p/logger'
+import { PeerSet } from '@libp2p/peer-collections'
 import { anySignal } from 'any-signal'
+import merge from 'it-merge'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   ALPHA, K, DEFAULT_QUERY_TIMEOUT
 } from '../constants.js'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { queryPath } from './query-path.js'
-import merge from 'it-merge'
-import { setMaxListeners } from 'events'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
-import { logger } from '@libp2p/logger'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Startable } from '@libp2p/interfaces/startable'
 import type { QueryFunc } from './types.js'
 import type { QueryEvent } from '@libp2p/interface-dht'
-import { PeerSet } from '@libp2p/peer-collections'
 import type { Metric, Metrics } from '@libp2p/interface-metrics'
-import type { DeferredPromise } from 'p-defer'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
-import { AbortError } from '@libp2p/interfaces/errors'
+import type { Startable } from '@libp2p/interfaces/startable'
+import type { DeferredPromise } from 'p-defer'
 
 export interface CleanUpEvents {
   'cleanup': CustomEvent

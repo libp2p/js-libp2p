@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
-import type { PeerId } from '@libp2p/interface-peer-id'
 import { expect } from 'aegir/chai'
 import { PeerList } from '../src/peer-list/index.js'
 import { createPeerIds } from './utils/create-peer-id.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('PeerList', () => {
   let peers: PeerId[]

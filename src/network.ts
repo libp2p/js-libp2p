@@ -1,28 +1,28 @@
 import { CodeError } from '@libp2p/interfaces/errors'
-import { pipe } from 'it-pipe'
-import * as lp from 'it-length-prefixed'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { logger } from '@libp2p/logger'
+import { abortableDuplex } from 'abortable-iterator'
 import drain from 'it-drain'
 import first from 'it-first'
+import * as lp from 'it-length-prefixed'
+import { pipe } from 'it-pipe'
 import { Message } from './message/index.js'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import {
   dialingPeerEvent,
   sendingQueryEvent,
   peerResponseEvent,
   queryErrorEvent
 } from './query/events.js'
-import { logger } from '@libp2p/logger'
+import type { KadDHTComponents } from './index.js'
+import type { Stream } from '@libp2p/interface-connection'
+import type { QueryEvent } from '@libp2p/interface-dht'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Logger } from '@libp2p/logger'
 import type { Duplex, Source } from 'it-stream-types'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { Stream } from '@libp2p/interface-connection'
-import { abortableDuplex } from 'abortable-iterator'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import type { KadDHTComponents } from './index.js'
-import type { QueryEvent } from '@libp2p/interface-dht'
 
 export interface NetworkInit {
   protocol: string

@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { multiaddr } from '@multiformats/multiaddr'
-import random from 'lodash.random'
-import { Libp2pRecord } from '@libp2p/record'
-import { Message, MESSAGE_TYPE } from '../src/message/index.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { Libp2pRecord } from '@libp2p/record'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import random from 'lodash.random'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 
 describe('Message', () => {
   it('create', () => {
@@ -23,7 +23,7 @@ describe('Message', () => {
     this.timeout(10 * 1000)
 
     const peers = await Promise.all(
-      Array.from({ length: 5 }).map(async () => await createEd25519PeerId()))
+      Array.from({ length: 5 }).map(async () => createEd25519PeerId()))
 
     const closer = peers.slice(0, 5).map((p) => ({
       id: p,

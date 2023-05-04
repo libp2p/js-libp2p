@@ -1,34 +1,34 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import pDefer from 'p-defer'
-import { pipe } from 'it-pipe'
-import * as lp from 'it-length-prefixed'
-import all from 'it-all'
-import { Message, MESSAGE_TYPE } from '../../src/message/index.js'
-import { RPC, RPCComponents } from '../../src/rpc/index.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { createPeerId } from '../utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { MemoryDatastore } from 'datastore-core'
-import Sinon, { SinonStubbedInstance } from 'sinon'
-import { Providers } from '../../src/providers.js'
-import { PeerRouting } from '../../src/peer-routing/index.js'
-import type { Validators } from '@libp2p/interface-dht'
-import type { Datastore } from 'interface-datastore'
-import { RoutingTable } from '../../src/routing-table/index.js'
-import type { Duplex, Source } from 'it-stream-types'
 import { mockStream } from '@libp2p/interface-mocks'
-import { start } from '@libp2p/interfaces/startable'
-import { Uint8ArrayList } from 'uint8arraylist'
-import map from 'it-map'
-import { stubInterface } from 'ts-sinon'
-import type { Connection } from '@libp2p/interface-connection'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { PeerStore } from '@libp2p/interface-peer-store'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import { start } from '@libp2p/interfaces/startable'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
+import all from 'it-all'
+import * as lp from 'it-length-prefixed'
+import map from 'it-map'
+import { pipe } from 'it-pipe'
+import pDefer from 'p-defer'
+import Sinon, { type SinonStubbedInstance } from 'sinon'
+import { stubInterface } from 'ts-sinon'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { Message, MESSAGE_TYPE } from '../../src/message/index.js'
+import { PeerRouting } from '../../src/peer-routing/index.js'
+import { Providers } from '../../src/providers.js'
+import { RoutingTable } from '../../src/routing-table/index.js'
+import { RPC, type RPCComponents } from '../../src/rpc/index.js'
+import { createPeerId } from '../utils/create-peer-id.js'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Connection } from '@libp2p/interface-connection'
+import type { Validators } from '@libp2p/interface-dht'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Datastore } from 'interface-datastore'
+import type { Duplex, Source } from 'it-stream-types'
 
 describe('rpc', () => {
   let peerId: PeerId
@@ -98,7 +98,7 @@ describe('rpc', () => {
         const res = await pipe(
           source,
           (source) => lp.decode(source),
-          async (source) => await all(source)
+          async (source) => all(source)
         )
         validateMessage(res)
       }

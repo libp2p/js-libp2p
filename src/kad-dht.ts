@@ -1,31 +1,31 @@
-import { RoutingTable } from './routing-table/index.js'
-import { RoutingTableRefresh } from './routing-table/refresh.js'
-import { Network } from './network.js'
+import { symbol } from '@libp2p/interface-peer-discovery'
+import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { type Logger, logger } from '@libp2p/logger'
+import { selectors as recordSelectors } from '@libp2p/record/selectors'
+import { validators as recordValidators } from '@libp2p/record/validators'
+import pDefer from 'p-defer'
+import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
 import { ContentRouting } from './content-routing/index.js'
+import { Network } from './network.js'
 import { PeerRouting } from './peer-routing/index.js'
 import { Providers } from './providers.js'
 import { QueryManager } from './query/manager.js'
+import { QuerySelf } from './query-self.js'
+import { RoutingTable } from './routing-table/index.js'
+import { RoutingTableRefresh } from './routing-table/refresh.js'
 import { RPC } from './rpc/index.js'
 import { TopologyListener } from './topology-listener.js'
-import { QuerySelf } from './query-self.js'
 import {
   removePrivateAddresses,
   removePublicAddresses
 } from './utils.js'
-import { Logger, logger } from '@libp2p/logger'
-import type { QueryOptions, Validators, Selectors, DHT, QueryEvent } from '@libp2p/interface-dht'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { CID } from 'multiformats/cid'
-import type { PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { KadDHTComponents, KadDHTInit } from './index.js'
-import { validators as recordValidators } from '@libp2p/record/validators'
-import { selectors as recordSelectors } from '@libp2p/record/selectors'
-import { symbol } from '@libp2p/interface-peer-discovery'
-import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
-import pDefer from 'p-defer'
+import type { QueryOptions, Validators, Selectors, DHT, QueryEvent } from '@libp2p/interface-dht'
+import type { PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { CID } from 'multiformats/cid'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
 export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
@@ -219,13 +219,9 @@ export class KadDHT extends EventEmitter<PeerDiscoveryEvents> implements DHT {
     })
   }
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
-  get [Symbol.toStringTag] (): '@libp2p/kad-dht' {
-    return '@libp2p/kad-dht'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/kad-dht'
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
     this.log('peer %p connected with protocols', peerData.id, peerData.protocols)

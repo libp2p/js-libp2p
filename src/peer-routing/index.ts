@@ -1,28 +1,28 @@
+import { keys } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { peerIdFromKeys } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 import { verifyRecord } from '@libp2p/record/validators'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
-import * as utils from '../utils.js'
+import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
 import {
   queryErrorEvent,
   finalPeerEvent,
   valueEvent
 } from '../query/events.js'
-import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
-import { Libp2pRecord } from '@libp2p/record'
-import { logger } from '@libp2p/logger'
-import { keys } from '@libp2p/crypto'
-import { peerIdFromKeys } from '@libp2p/peer-id'
-import type { DHTRecord, DialingPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '@libp2p/interface-dht'
-import type { RoutingTable } from '../routing-table/index.js'
-import type { QueryManager, QueryOptions } from '../query/manager.js'
-import type { Network } from '../network.js'
-import type { Logger } from '@libp2p/logger'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { QueryFunc } from '../query/types.js'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import * as utils from '../utils.js'
 import type { KadDHTComponents } from '../index.js'
+import type { Network } from '../network.js'
+import type { QueryManager, QueryOptions } from '../query/manager.js'
+import type { QueryFunc } from '../query/types.js'
+import type { RoutingTable } from '../routing-table/index.js'
+import type { DHTRecord, DialingPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '@libp2p/interface-dht'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Logger } from '@libp2p/logger'
 
 export interface PeerRoutingInit {
   routingTable: RoutingTable

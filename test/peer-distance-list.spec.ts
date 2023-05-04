@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
 import { peerIdFromString } from '@libp2p/peer-id'
-import * as kadUtils from '../src/utils.js'
+import { expect } from 'aegir/chai'
 import { PeerDistanceList } from '../src/peer-list/peer-distance-list.js'
+import * as kadUtils from '../src/utils.js'
 
 describe('PeerDistanceList', () => {
   const p1 = peerIdFromString('12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1')

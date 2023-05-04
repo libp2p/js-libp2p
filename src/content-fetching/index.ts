@@ -1,30 +1,30 @@
 import { CodeError } from '@libp2p/interfaces/errors'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { logger } from '@libp2p/logger'
 import { Libp2pRecord } from '@libp2p/record'
-import { verifyRecord } from '@libp2p/record/validators'
 import { bestRecord } from '@libp2p/record/selectors'
-import parallel from 'it-parallel'
+import { verifyRecord } from '@libp2p/record/validators'
 import map from 'it-map'
+import parallel from 'it-parallel'
+import { pipe } from 'it-pipe'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import {
+  ALPHA
+} from '../constants.js'
+import { Message, MESSAGE_TYPE } from '../message/index.js'
 import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
-import { Message, MESSAGE_TYPE } from '../message/index.js'
-import { pipe } from 'it-pipe'
-import {
-  ALPHA
-} from '../constants.js'
 import { createPutRecord, convertBuffer, bufferToRecordKey } from '../utils.js'
-import { logger } from '@libp2p/logger'
-import type { Validators, Selectors, ValueEvent, QueryOptions, QueryEvent } from '@libp2p/interface-dht'
+import type { KadDHTComponents } from '../index.js'
+import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
-import type { RoutingTable } from '../routing-table/index.js'
-import type { Network } from '../network.js'
-import type { Logger } from '@libp2p/logger'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { QueryFunc } from '../query/types.js'
-import type { KadDHTComponents } from '../index.js'
+import type { RoutingTable } from '../routing-table/index.js'
+import type { Validators, Selectors, ValueEvent, QueryOptions, QueryEvent } from '@libp2p/interface-dht'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Logger } from '@libp2p/logger'
 
 export interface ContentFetchingInit {
   validators: Validators

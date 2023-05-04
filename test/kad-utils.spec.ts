@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { multiaddr } from '@multiformats/multiaddr'
 import * as utils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 

@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
 import { PingHandler } from '../../../src/rpc/handlers/ping.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'

@@ -1,20 +1,20 @@
+import { logger } from '@libp2p/logger'
+import { peerIdFromString } from '@libp2p/peer-id'
 import cache from 'hashlru'
-import varint from 'varint'
 import { Key } from 'interface-datastore/key'
 import Queue from 'p-queue'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import varint from 'varint'
 import {
   PROVIDERS_CLEANUP_INTERVAL,
   PROVIDERS_VALIDITY,
   PROVIDERS_LRU_CACHE_SIZE,
   PROVIDER_KEY_PREFIX
 } from './constants.js'
-import { logger } from '@libp2p/logger'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { peerIdFromString } from '@libp2p/peer-id'
-import type { Datastore } from 'interface-datastore'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { CID } from 'multiformats'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Startable } from '@libp2p/interfaces/startable'
+import type { Datastore } from 'interface-datastore'
+import type { CID } from 'multiformats'
 
 const log = logger('libp2p:kad-dht:providers')
 
@@ -209,7 +209,7 @@ export class Providers implements Startable {
    * Get a list of providers for the given CID
    */
   async getProviders (cid: CID): Promise<PeerId[]> {
-    return await this.syncQueue.add(async () => {
+    return this.syncQueue.add(async () => {
       log('get providers for %s', cid)
       const provs = await this._getProvidersMap(cid)
 

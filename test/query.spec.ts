@@ -1,24 +1,24 @@
 /* eslint-env mocha */
 
+import { EventTypes, type QueryEvent } from '@libp2p/interface-dht'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { QueryManager, QueryManagerInit } from '../src/query/manager.js'
-import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import all from 'it-all'
 import drain from 'it-drain'
-import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import pDefer from 'p-defer'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { MESSAGE_TYPE } from '../src/message/index.js'
 import {
   peerResponseEvent,
   valueEvent,
   queryErrorEvent
 } from '../src/query/events.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { EventTypes, QueryEvent } from '@libp2p/interface-dht'
-import { MESSAGE_TYPE } from '../src/message/index.js'
-import type { QueryFunc } from '../src/query/types.js'
+import { QueryManager, type QueryManagerInit } from '../src/query/manager.js'
 import { convertBuffer } from '../src/utils.js'
-import pDefer from 'p-defer'
+import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
+import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import type { QueryFunc } from '../src/query/types.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 interface TopologyEntry {
   delay?: number

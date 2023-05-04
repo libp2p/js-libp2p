@@ -1,14 +1,14 @@
-import { CID } from 'multiformats/cid'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { CID } from 'multiformats/cid'
 import { Message } from '../../message/index.js'
 import {
   removePrivateAddresses,
   removePublicAddresses
 } from '../../utils.js'
-import { logger } from '@libp2p/logger'
-import type { DHTMessageHandler } from '../index.js'
-import type { Providers } from '../../providers.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
+import type { Providers } from '../../providers.js'
+import type { DHTMessageHandler } from '../index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerStore } from '@libp2p/interface-peer-store'

@@ -1,23 +1,23 @@
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import pRetry from 'p-retry'
-import { multiaddr } from '@multiformats/multiaddr'
-import { createPeerId } from './create-peer-id.js'
-import { MemoryDatastore } from 'datastore-core/memory'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-mocks'
-import type { Registrar } from '@libp2p/interface-registrar'
-import { KadDHT } from '../../src/kad-dht.js'
-import { DualKadDHT } from '../../src/dual-kad-dht.js'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { start } from '@libp2p/interfaces/startable'
 import { logger } from '@libp2p/logger'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { multiaddr } from '@multiformats/multiaddr'
+import { MemoryDatastore } from 'datastore-core/memory'
+import delay from 'delay'
+import pRetry from 'p-retry'
+import { stubInterface } from 'ts-sinon'
+import { DualKadDHT } from '../../src/dual-kad-dht.js'
+import { KadDHT } from '../../src/kad-dht.js'
+import { createPeerId } from './create-peer-id.js'
 import type { KadDHTComponents, KadDHTInit } from '../../src/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
-import { stubInterface } from 'ts-sinon'
-import { start } from '@libp2p/interfaces/startable'
-import delay from 'delay'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Registrar } from '@libp2p/interface-registrar'
 
 const log = logger('libp2p:kad-dht:test-dht')
 
@@ -170,10 +170,10 @@ export class TestDHT {
       })
 
       // Check routing tables
-      return await Promise.all(
+      return Promise.all(
         routingTableChecks
           .map(
-            async check => await pRetry(check, { retries: 50 })
+            async check => pRetry(check, { retries: 50 })
           )
       )
     }

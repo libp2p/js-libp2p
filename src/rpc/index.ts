@@ -1,19 +1,19 @@
-import { pipe } from 'it-pipe'
+import { type Logger, logger } from '@libp2p/logger'
 import * as lp from 'it-length-prefixed'
-import { Logger, logger } from '@libp2p/logger'
-import type { RoutingTable } from '../routing-table'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import { pipe } from 'it-pipe'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
-import { FindNodeHandler, FindNodeHandlerComponents } from './handlers/find-node.js'
-import { GetProvidersHandler, GetProvidersHandlerComponents } from './handlers/get-providers.js'
-import { GetValueHandler, GetValueHandlerComponents } from './handlers/get-value.js'
+import { FindNodeHandler, type FindNodeHandlerComponents } from './handlers/find-node.js'
+import { GetProvidersHandler, type GetProvidersHandlerComponents } from './handlers/get-providers.js'
+import { GetValueHandler, type GetValueHandlerComponents } from './handlers/get-value.js'
 import { PingHandler } from './handlers/ping.js'
-import { PutValueHandler, PutValueHandlerComponents } from './handlers/put-value.js'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
-import type { Providers } from '../providers'
+import { PutValueHandler, type PutValueHandlerComponents } from './handlers/put-value.js'
 import type { PeerRouting } from '../peer-routing'
+import type { Providers } from '../providers'
+import type { RoutingTable } from '../routing-table'
 import type { Validators } from '@libp2p/interface-dht'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
 
 export interface DHTMessageHandler {
   handle: (peerId: PeerId, msg: Message) => Promise<Message | undefined>
@@ -69,7 +69,7 @@ export class RPC {
       return
     }
 
-    return await handler.handle(peerId, msg)
+    return handler.handle(peerId, msg)
   }
 
   /**

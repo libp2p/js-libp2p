@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
-import { LevelDatastore } from 'datastore-level'
-import path from 'path'
 import os from 'os'
-import { Providers } from '../src/providers.js'
-import { createValues } from './utils/create-values.js'
-import { createPeerIds } from './utils/create-peer-id.js'
+import path from 'path'
 import { MemoryDatastore } from 'datastore-core/memory'
+import { LevelDatastore } from 'datastore-level'
+import { Providers } from '../src/providers.js'
+import { createPeerIds } from './utils/create-peer-id.js'
+import { createValues } from './utils/create-values.js'
 
 describe('Providers', () => {
   let providers: Providers

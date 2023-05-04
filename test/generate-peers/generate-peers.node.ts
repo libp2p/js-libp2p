@@ -1,17 +1,17 @@
 /* eslint-env mocha */
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { createRSAPeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
-import which from 'which'
 import { execa } from 'execa'
+import { stubInterface } from 'ts-sinon'
 import { toString as uintArrayToString } from 'uint8arrays/to-string'
+import which from 'which'
 import { RoutingTable } from '../../src/routing-table/index.js'
 import { RoutingTableRefresh } from '../../src/routing-table/refresh.js'
-import { createRSAPeerId } from '@libp2p/peer-id-factory'
 import {
   convertPeerId
 } from '../../src/utils.js'
-import { stubInterface } from 'ts-sinon'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 

@@ -1,21 +1,21 @@
 /* eslint-env mocha */
 
+import { mockStream } from '@libp2p/interface-mocks'
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
-import * as lp from 'it-length-prefixed'
-import pDefer from 'p-defer'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import all from 'it-all'
+import * as lp from 'it-length-prefixed'
+import map from 'it-map'
+import { pipe } from 'it-pipe'
+import pDefer from 'p-defer'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 import { TestDHT } from './utils/test-dht.js'
-import { mockStream } from '@libp2p/interface-mocks'
 import type { DualKadDHT } from '../src/dual-kad-dht.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Sink, Source } from 'it-stream-types'
-import { Uint8ArrayList } from 'uint8arraylist'
-import map from 'it-map'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Sink, Source } from 'it-stream-types'
 
 describe('Network', () => {
   let dht: DualKadDHT
@@ -78,7 +78,7 @@ describe('Network', () => {
               const res = await pipe(
                 source,
                 (source) => lp.decode(source),
-                async (source) => await all(source)
+                async (source) => all(source)
               )
               expect(Message.deserialize(res[0]).type).to.eql(MESSAGE_TYPE.PING)
               finish()
@@ -107,7 +107,7 @@ describe('Network', () => {
       expect(response).to.have.property('messageType', MESSAGE_TYPE.FIND_NODE)
       finish()
 
-      return await defer.promise
+      return defer.promise
     })
   })
 })

@@ -1,15 +1,15 @@
-import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import GENERATED_PREFIXES from './generated-prefix-list.js'
-import { sha256 } from 'multiformats/hashes/sha2'
 import { randomBytes } from '@libp2p/crypto'
-import { peerIdFromBytes } from '@libp2p/peer-id'
 import { logger } from '@libp2p/logger'
+import { peerIdFromBytes } from '@libp2p/peer-id'
 import length from 'it-length'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constants.js'
+import GENERATED_PREFIXES from './generated-prefix-list.js'
 import type { RoutingTable } from './index.js'
-import type { Logger } from '@libp2p/logger'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Logger } from '@libp2p/logger'
 
 /**
  * Cannot generate random KadIds longer than this + 1

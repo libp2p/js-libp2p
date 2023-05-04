@@ -1,28 +1,28 @@
 /* eslint-env mocha */
 
+import { mockConnectionManager } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { PeerSet } from '@libp2p/peer-collections'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
+import all from 'it-all'
+import { pipe } from 'it-pipe'
 import random from 'lodash.random'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
-import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, RoutingTableComponents } from '../src/routing-table/index.js'
+import { stubInterface } from 'ts-sinon'
+import { PROTOCOL_DHT } from '../src/constants.js'
+import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
-import { PROTOCOL_DHT } from '../src/constants.js'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { mockConnectionManager } from '@libp2p/interface-mocks'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import pWaitFor from 'p-wait-for'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
-import { PeerSet } from '@libp2p/peer-collections'
-import { stubInterface } from 'ts-sinon'
-import type { Registrar } from '@libp2p/interface-registrar'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import { MemoryDatastore } from 'datastore-core'
-import { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Registrar } from '@libp2p/interface-registrar'
 
 describe('Routing Table', () => {
   let table: RoutingTable
@@ -267,7 +267,7 @@ describe('Routing Table', () => {
             }
           }
         },
-        async (source) => await all(source)
+        async (source) => all(source)
       ))
     }
 
@@ -275,7 +275,7 @@ describe('Routing Table', () => {
     const localNodeId = await kadUtils.convertPeerId(components.peerId)
     const sortedPeerList = await sortClosestPeers(
       await Promise.all(
-        new Array(KBUCKET_SIZE + 1).fill(0).map(async () => await createEd25519PeerId())
+        new Array(KBUCKET_SIZE + 1).fill(0).map(async () => createEd25519PeerId())
       ),
       localNodeId
     )

@@ -1,32 +1,32 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { Libp2pRecord } from '@libp2p/record'
+import { EventTypes, type FinalPeerEvent, MessageType, type QueryEvent, type ValueEvent } from '@libp2p/interface-dht'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import drain from 'it-drain'
-import { EventTypes, FinalPeerEvent, MessageType, QueryEvent, ValueEvent } from '@libp2p/interface-dht'
-import all from 'it-all'
+import { Libp2pRecord } from '@libp2p/record'
+import { expect } from 'aegir/chai'
 import delay from 'delay'
+import all from 'it-all'
+import drain from 'it-drain'
 import filter from 'it-filter'
 import last from 'it-last'
-import * as kadUtils from '../src/utils.js'
+import map from 'it-map'
+import { pipe } from 'it-pipe'
+import sinon from 'sinon'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as c from '../src/constants.js'
 import { MESSAGE_TYPE } from '../src/message/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
+import * as kadUtils from '../src/utils.js'
 import { createPeerIds } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
-import { TestDHT } from './utils/test-dht.js'
 import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import { TestDHT } from './utils/test-dht.js'
+import type { DualKadDHT } from '../src/dual-kad-dht.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { CID } from 'multiformats/cid'
-import type { DualKadDHT } from '../src/dual-kad-dht.js'
-import { pipe } from 'it-pipe'
-import map from 'it-map'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'VALUE'): Promise<ValueEvent>
@@ -689,10 +689,10 @@ describe('KadDHT', () => {
       const nDHTs = 101
 
       const dhts = await Promise.all(
-        new Array(nDHTs).fill(0).map(async () => await tdht.spawn())
+        new Array(nDHTs).fill(0).map(async () => tdht.spawn())
       )
 
-      const dhtsById: Map<PeerId, DualKadDHT> = new Map(dhts.map((d) => [d.components.peerId, d]))
+      const dhtsById = new Map<PeerId, DualKadDHT>(dhts.map((d) => [d.components.peerId, d]))
       const ids = [...dhtsById.keys()]
 
       // The origin node for the FIND_PEER query
@@ -755,7 +755,7 @@ describe('KadDHT', () => {
         source => filter(source, (event) => event.type === EventTypes.FINAL_PEER),
         // @ts-expect-error tsc has problems with filtering
         source => map(source, (event) => event.peer.id),
-        async source => await all(source)
+        async source => all(source)
       )
 
       const actualClosest = await sortClosestPeers(otherIds, rtval)
@@ -779,7 +779,7 @@ describe('KadDHT', () => {
 
       const nDHTs = 30
       const dhts = await Promise.all(
-        new Array(nDHTs).fill(0).map(async () => await tdht.spawn())
+        new Array(nDHTs).fill(0).map(async () => tdht.spawn())
       )
 
       const connected: Array<Promise<void>> = []
