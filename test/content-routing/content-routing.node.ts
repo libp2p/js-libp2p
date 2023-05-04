@@ -15,7 +15,7 @@ import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { peerIdFromString } from '@libp2p/peer-id'
-import type { DHT } from '@libp2p/interface-dht'
+import type { KadDHT } from '@libp2p/kad-dht'
 
 describe('content-routing', () => {
   describe('no routers', () => {
@@ -50,7 +50,7 @@ describe('content-routing', () => {
 
   describe('via dht router', () => {
     const number = 5
-    let nodes: Array<Libp2p<{ dht: DHT }>>
+    let nodes: Array<Libp2p<{ dht: KadDHT }>>
 
     before(async () => {
       nodes = await Promise.all([
@@ -222,7 +222,7 @@ describe('content-routing', () => {
   })
 
   describe('via dht and delegate routers', () => {
-    let node: Libp2p<{ dht: DHT }>
+    let node: Libp2p<{ dht: KadDHT }>
     let delegate: StubbedInstance<ContentRouting>
 
     beforeEach(async () => {

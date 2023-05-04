@@ -38,6 +38,7 @@ import { validateConfig } from './config.js'
 import { ContentRouting, contentRouting } from '@libp2p/interface-content-routing'
 import { PeerRouting, peerRouting } from '@libp2p/interface-peer-routing'
 import { peerDiscovery } from '@libp2p/interface-peer-discovery'
+import { connectionGater } from './config/connection-gater.js'
 
 const log = logger('libp2p')
 
@@ -82,18 +83,7 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
       peerId: init.peerId,
       events,
       datastore: init.datastore ?? new MemoryDatastore(),
-      connectionGater: {
-        denyDialPeer: async () => await Promise.resolve(false),
-        denyDialMultiaddr: async () => await Promise.resolve(false),
-        denyInboundConnection: async () => await Promise.resolve(false),
-        denyOutboundConnection: async () => await Promise.resolve(false),
-        denyInboundEncryptedConnection: async () => await Promise.resolve(false),
-        denyOutboundEncryptedConnection: async () => await Promise.resolve(false),
-        denyInboundUpgradedConnection: async () => await Promise.resolve(false),
-        denyOutboundUpgradedConnection: async () => await Promise.resolve(false),
-        filterMultiaddrForPeer: async () => await Promise.resolve(true),
-        ...init.connectionGater
-      }
+      connectionGater: connectionGater(init.connectionGater)
     })
 
     this.peerStore = this.configureComponent('peerStore', new PersistentPeerStore(components, {

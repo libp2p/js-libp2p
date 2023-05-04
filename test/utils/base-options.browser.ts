@@ -7,6 +7,7 @@ import type { Libp2pOptions } from '../../src/index.js'
 import mergeOptions from 'merge-options'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import type { ServiceMap } from '@libp2p/interface-libp2p'
+import { mockConnectionGater } from '@libp2p/interface-mocks'
 
 export function createBaseOptions <T extends ServiceMap = {}> (overrides?: Libp2pOptions<T>): Libp2pOptions<T> {
   const options: Libp2pOptions = {
@@ -21,7 +22,8 @@ export function createBaseOptions <T extends ServiceMap = {}> (overrides?: Libp2
     ],
     connectionEncryption: [
       plaintext()
-    ]
+    ],
+    connectionGater: mockConnectionGater()
   }
 
   return mergeOptions(options, overrides)
