@@ -170,7 +170,7 @@ class CircuitRelayTransport implements Transport {
     const destinationId = destinationAddr.getPeerId()
 
     if (relayId == null || destinationId == null) {
-      const errMsg = 'Circuit relay dial failed as addresses did not have peer id'
+      const errMsg = `Circuit relay dial to ${ma.toString()} failed as address did not have peer ids`
       log.error(errMsg)
       throw new CodeError(errMsg, codes.ERR_RELAYED_DIAL)
     }
@@ -203,7 +203,7 @@ class CircuitRelayTransport implements Transport {
         disconnectOnFailure
       })
     } catch (err: any) {
-      log.error('Circuit relay dial failed', err)
+      log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${relayPeer.toString()} failed`, err)
       disconnectOnFailure && await relayConnection.close()
       throw err
     }
@@ -244,7 +244,7 @@ class CircuitRelayTransport implements Transport {
       log('new outbound connection %s', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn)
     } catch (err) {
-      log.error('Circuit relay dial failed', err)
+      log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
       disconnectOnFailure && await connection.close()
       throw err
     }
