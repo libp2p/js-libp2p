@@ -50,9 +50,10 @@ describe('auto-dial', () => {
       peerWithAddress, peerWithoutAddress
     ]))
 
-    const connectionManager = stubInterface<ConnectionManager>()
-    connectionManager.getConnectionsMap.returns(new PeerMap())
-    connectionManager.getDialQueue.returns([])
+    const connectionManager = stubInterface<ConnectionManager>({
+      getConnectionsMap: new PeerMap(),
+      getDialQueue: []
+    })
 
     autoDialler = new AutoDial({
       peerStore,
@@ -102,9 +103,11 @@ describe('auto-dial', () => {
 
     const connectionMap = new PeerMap<Connection[]>()
     connectionMap.set(connectedPeer.id, [stubInterface<Connection>()])
-    const connectionManager = stubInterface<ConnectionManager>()
-    connectionManager.getConnectionsMap.returns(connectionMap)
-    connectionManager.getDialQueue.returns([])
+
+    const connectionManager = stubInterface<ConnectionManager>({
+      getConnectionsMap: connectionMap,
+      getDialQueue: []
+    })
 
     autoDialler = new AutoDial({
       peerStore,
@@ -153,14 +156,15 @@ describe('auto-dial', () => {
       peerInDialQueue, peerNotInDialQueue
     ]))
 
-    const connectionManager = stubInterface<ConnectionManager>()
-    connectionManager.getConnectionsMap.returns(new PeerMap())
-    connectionManager.getDialQueue.returns([{
-      id: 'foo',
-      peerId: peerInDialQueue.id,
-      multiaddrs: [],
-      status: 'queued'
-    }])
+    const connectionManager = stubInterface<ConnectionManager>({
+      getConnectionsMap: new PeerMap(),
+      getDialQueue: [{
+        id: 'foo',
+        peerId: peerInDialQueue.id,
+        multiaddrs: [],
+        status: 'queued'
+      }]
+    })
 
     autoDialler = new AutoDial({
       peerStore,
