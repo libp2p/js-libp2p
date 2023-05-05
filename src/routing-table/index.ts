@@ -244,7 +244,7 @@ export class RoutingTable implements Startable {
                 // only evict peers if we are still running, otherwise we evict when dialing is
                 // cancelled due to shutdown in progress
                 this.log.error('could not ping peer %p', oldContact.peer, err)
-                this.log('evicting old contact after ping failed %p', oldContact)
+                this.log('evicting old contact after ping failed %p', oldContact.peer)
                 this.kb.remove(oldContact.id)
               }
             } finally {
