@@ -1,3 +1,10 @@
+## [1.0.17](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.16...v1.0.17) (2023-05-05)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.5 ([#320](https://github.com/libp2p/js-libp2p-crypto/issues/320)) ([f0b4c06](https://github.com/libp2p/js-libp2p-crypto/commit/f0b4c068a23d78b1376865c6adf6cce21ab91196))
+
 ## [1.0.16](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.15...v1.0.16) (2023-05-05)
 
 
