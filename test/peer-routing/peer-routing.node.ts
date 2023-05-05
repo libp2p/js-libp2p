@@ -372,8 +372,8 @@ describe('peer-routing', () => {
 
       sinon.stub(node.services.dht, 'findPeer').callsFake(async function * () {
         yield {
-          name: 'SENDING_QUERY',
-          type: EventTypes.SENDING_QUERY,
+          name: 'SEND_QUERY',
+          type: EventTypes.SEND_QUERY,
           to: remotePeerId,
           messageName: 'FIND_NODE',
           messageType: MessageType.FIND_NODE

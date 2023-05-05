@@ -198,7 +198,7 @@
     "@libp2p/interface-connection-encrypter-compliance-tests": "^5.0.0",
     "@libp2p/interface-mocks": "^12.0.0",
     "@libp2p/interop": "^8.0.0",
-    "@libp2p/kad-dht": "^9.1.4",
+    "@libp2p/kad-dht": "^9.2.0",
     "@libp2p/mdns": "^8.0.0",
     "@libp2p/mplex": "^8.0.1",
     "@libp2p/pubsub": "^7.0.1",
