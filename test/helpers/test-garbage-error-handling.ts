@@ -1,6 +1,6 @@
 /* eslint-env mocha */
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import util from 'util'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 const garbage = [uint8ArrayFromString('00010203040506070809', 'base16'), {}, null, false, undefined, true, 1, 0, uint8ArrayFromString(''), 'aGVsbG93b3JsZA==', 'helloworld', '']
 

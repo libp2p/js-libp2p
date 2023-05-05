@@ -1,9 +1,8 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-
-import { importer } from '../../src/keys/importer.js'
 import { exporter } from '../../src/keys/exporter.js'
+import { importer } from '../../src/keys/importer.js'
 
 describe('libp2p-crypto importer/exporter', function () {
   it('roundtrips', async () => {

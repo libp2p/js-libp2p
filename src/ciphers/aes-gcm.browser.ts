@@ -52,7 +52,7 @@ export function create (opts?: CreateOptions): AESCipher {
         cryptoKey = await crypto.subtle.importKey('jwk', derivedEmptyPasswordKey, { name: 'AES-GCM' }, true, ['encrypt'])
       }
     } else {
-    // Derive a key using PBKDF2.
+      // Derive a key using PBKDF2.
       const deriveParams = { name: 'PBKDF2', salt, iterations, hash: { name: digest } }
       const rawKey = await crypto.subtle.importKey('raw', password, { name: 'PBKDF2' }, false, ['deriveKey'])
       cryptoKey = await crypto.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ['encrypt'])

@@ -47,11 +47,11 @@ export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8Array
 export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array): Promise<Uint8Array> {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
 
-  return await ed.sign(msg, privateKeyRaw)
+  return ed.sign(msg, privateKeyRaw)
 }
 
 export async function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
-  return await ed.verify(sig, msg, publicKey)
+  return ed.verify(sig, msg, publicKey)
 }
 
 function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {

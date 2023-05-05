@@ -1,5 +1,5 @@
-import * as ciphers from './ciphers.js'
 import { cipherMode } from './cipher-mode.js'
+import * as ciphers from './ciphers.js'
 
 export interface AESCipher {
   encrypt: (data: Uint8Array) => Promise<Uint8Array>

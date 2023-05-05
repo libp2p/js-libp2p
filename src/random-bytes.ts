@@ -1,5 +1,5 @@
-import { utils } from '@noble/secp256k1'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { utils } from '@noble/secp256k1'
 
 export default function randomBytes (length: number): Uint8Array {
   if (isNaN(length) || length <= 0) {

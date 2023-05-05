@@ -1,7 +1,7 @@
 
 /* eslint-env mocha */
-import { derivedEmptyPasswordKey } from '../src/ciphers/aes-gcm.browser.js'
 import { expect } from 'aegir/chai'
+import { derivedEmptyPasswordKey } from '../src/ciphers/aes-gcm.browser.js'
 
 describe('Constant derived key is generated correctly', () => {
   it('Generates correctly', async () => {

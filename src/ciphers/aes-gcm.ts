@@ -90,7 +90,7 @@ export function create (opts?: CreateOptions): AESCipher {
     const key = crypto.pbkdf2Sync(password, salt, iterations, keyLength, digest)
 
     // Decrypt and return result.
-    return await decryptWithKey(ciphertextAndNonce, key)
+    return decryptWithKey(ciphertextAndNonce, key)
   }
 
   const cipher: AESCipher = {

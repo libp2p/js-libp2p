@@ -1,10 +1,10 @@
-import webcrypto from '../webcrypto.js'
-import randomBytes from '../random-bytes.js'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as utils from './rsa-utils.js'
-import { jwk2pub, jwk2priv } from './jwk2pem.js'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import randomBytes from '../random-bytes.js'
+import webcrypto from '../webcrypto.js'
+import { jwk2pub, jwk2priv } from './jwk2pem.js'
+import * as utils from './rsa-utils.js'
 import type { JWKKeyPair } from './interface.js'
 
 export { utils }
@@ -93,7 +93,7 @@ export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint
     ['verify']
   )
 
-  return await webcrypto.get().subtle.verify(
+  return webcrypto.get().subtle.verify(
     { name: 'RSASSA-PKCS1-v1_5' },
     publicKey,
     sig,
@@ -106,14 +106,14 @@ async function exportKey (pair: CryptoKeyPair): Promise<[JsonWebKey, JsonWebKey]
     throw new CodeError('Private and public key are required', 'ERR_INVALID_PARAMETERS')
   }
 
-  return await Promise.all([
+  return Promise.all([
     webcrypto.get().subtle.exportKey('jwk', pair.privateKey),
     webcrypto.get().subtle.exportKey('jwk', pair.publicKey)
   ])
 }
 
 async function derivePublicFromPrivate (jwKey: JsonWebKey): Promise<CryptoKey> {
-  return await webcrypto.get().subtle.importKey(
+  return webcrypto.get().subtle.importKey(
     'jwk',
     {
       kty: jwKey.kty,

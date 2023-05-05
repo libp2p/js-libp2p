@@ -1,6 +1,6 @@
-import type { Multibase } from 'multiformats'
 import { base64 } from 'multiformats/bases/base64'
 import * as ciphers from '../ciphers/aes-gcm.js'
+import type { Multibase } from 'multiformats'
 
 /**
  * Exports the given PrivateKey as a base64 encoded string.

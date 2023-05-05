@@ -1,8 +1,8 @@
+import { CodeError } from '@libp2p/interfaces/errors'
 // @ts-expect-error types are missing
 import forgePbkdf2 from 'node-forge/lib/pbkdf2.js'
 // @ts-expect-error types are missing
 import forgeUtil from 'node-forge/lib/util.js'
-import { CodeError } from '@libp2p/interfaces/errors'
 
 /**
  * Maps an IPFS hash name to its node-forge equivalent.

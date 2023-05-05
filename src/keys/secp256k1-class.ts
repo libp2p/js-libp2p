@@ -1,10 +1,10 @@
-import { sha256 } from 'multiformats/hashes/sha2'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import * as crypto from './secp256k1.js'
 import { exporter } from './exporter.js'
 import * as keysProtobuf from './keys.js'
+import * as crypto from './secp256k1.js'
 import type { Multibase } from 'multiformats'
 
 export class Secp256k1PublicKey {
@@ -16,7 +16,7 @@ export class Secp256k1PublicKey {
   }
 
   async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
-    return await crypto.hashAndVerify(this._key, sig, data)
+    return crypto.hashAndVerify(this._key, sig, data)
   }
 
   marshal (): Uint8Array {
@@ -53,7 +53,7 @@ export class Secp256k1PrivateKey {
   }
 
   async sign (message: Uint8Array): Promise<Uint8Array> {
-    return await crypto.hashAndSign(this._key, message)
+    return crypto.hashAndSign(this._key, message)
   }
 
   get public (): Secp256k1PublicKey {
@@ -98,7 +98,7 @@ export class Secp256k1PrivateKey {
    */
   async export (password: string, format = 'libp2p-key'): Promise<Multibase<'m'>> {
     if (format === 'libp2p-key') {
-      return await exporter(this.bytes, password)
+      return exporter(this.bytes, password)
     } else {
       throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
     }

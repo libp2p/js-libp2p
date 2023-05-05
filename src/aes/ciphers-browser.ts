@@ -2,8 +2,8 @@
 import 'node-forge/lib/aes.js'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 export interface Cipher {
   update: (data: Uint8Array) => Uint8Array

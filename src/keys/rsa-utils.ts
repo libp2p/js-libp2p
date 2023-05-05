@@ -1,11 +1,11 @@
 import 'node-forge/lib/asn1.js'
 import 'node-forge/lib/rsa.js'
+import { CodeError } from '@libp2p/interfaces/errors'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
-import { bigIntegerToUintBase64url, base64urlToBigInteger } from './../util.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { bigIntegerToUintBase64url, base64urlToBigInteger } from './../util.js'
 
 // Convert a PKCS#1 in ASN1 DER format to a JWK key
 export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {

@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as crypto from '../../src/index.js'
 import * as Secp256k1 from '../../src/keys/secp256k1-class.js'
 import * as secp256k1Crypto from '../../src/keys/secp256k1.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import fixtures from '../fixtures/go-key-secp256k1.js'
 
 const secp256k1 = crypto.keys.supportedKeys.secp256k1
@@ -152,7 +152,7 @@ describe('crypto functions', () => {
   })
 
   it('errors if given a null Uint8Array to sign', async () => {
-    // @ts-expect-error
+    // @ts-expect-error incorrect args
     await expect(secp256k1Crypto.hashAndSign(privKey, null)).to.eventually.be.rejected()
   })
 
@@ -163,7 +163,7 @@ describe('crypto functions', () => {
   it('errors if given a null Uint8Array to validate', async () => {
     const sig = await secp256k1Crypto.hashAndSign(privKey, uint8ArrayFromString('hello'))
 
-    // @ts-expect-error
+    // @ts-expect-error incorrect args
     await expect(secp256k1Crypto.hashAndVerify(privKey, sig, null)).to.eventually.be.rejected()
   })
 

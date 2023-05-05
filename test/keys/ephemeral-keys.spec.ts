@@ -1,8 +1,8 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import fixtures from '../fixtures/go-elliptic-key.js'
 import * as crypto from '../../src/index.js'
+import fixtures from '../fixtures/go-elliptic-key.js'
 
 const curves = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
 const lengths: Record<string, number> = {

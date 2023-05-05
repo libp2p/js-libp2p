@@ -1,14 +1,14 @@
 
-import { sha256 } from 'multiformats/hashes/sha2'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import 'node-forge/lib/sha512.js'
+import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
-import * as crypto from './rsa.js'
-import * as pbm from './keys.js'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import 'node-forge/lib/sha512.js'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { exporter } from './exporter.js'
+import * as pbm from './keys.js'
+import * as crypto from './rsa.js'
 import type { Multibase } from 'multiformats'
 
 export class RsaPublicKey {
@@ -19,7 +19,7 @@ export class RsaPublicKey {
   }
 
   async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> { // eslint-disable-line require-await
-    return await crypto.hashAndVerify(this._key, sig, data)
+    return crypto.hashAndVerify(this._key, sig, data)
   }
 
   marshal (): Uint8Array {
@@ -62,7 +62,7 @@ export class RsaPrivateKey {
   }
 
   async sign (message: Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
-    return await crypto.hashAndSign(this._key, message)
+    return crypto.hashAndSign(this._key, message)
   }
 
   get public (): RsaPublicKey {
@@ -127,7 +127,7 @@ export class RsaPrivateKey {
       }
       return forge.pki.encryptRsaPrivateKey(privateKey, password, options)
     } else if (format === 'libp2p-key') {
-      return await exporter(this.bytes, password)
+      return exporter(this.bytes, password)
     } else {
       throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
     }

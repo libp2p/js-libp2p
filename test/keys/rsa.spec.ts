@@ -2,10 +2,10 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import fixtures from '../fixtures/go-key-rsa.js'
 import * as crypto from '../../src/index.js'
-import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import { RsaPrivateKey } from '../../src/keys/rsa-class.js'
+import fixtures from '../fixtures/go-key-rsa.js'
+import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 
 const rsa = crypto.keys.supportedKeys.rsa
 

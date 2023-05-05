@@ -9,5 +9,5 @@ import * as ciphers from '../ciphers/aes-gcm.js'
 export async function importer (privateKey: string, password: string): Promise<Uint8Array> {
   const encryptedKey = base64.decode(privateKey)
   const cipher = ciphers.create()
-  return await cipher.decrypt(encryptedKey, password)
+  return cipher.decrypt(encryptedKey, password)
 }

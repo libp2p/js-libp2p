@@ -2,9 +2,9 @@
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as crypto from '../../src/index.js'
+import { Ed25519PrivateKey } from '../../src/keys/ed25519-class.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
-import { Ed25519PrivateKey } from '../../src/keys/ed25519-class.js'
 
 const ed25519 = crypto.keys.supportedKeys.ed25519
 
