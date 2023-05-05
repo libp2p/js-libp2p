@@ -65,7 +65,10 @@ describe('dialing (direct, TCP)', () => {
       events: remoteEvents,
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader({ events: remoteEvents }),
-      connectionGater: mockConnectionGater()
+      connectionGater: mockConnectionGater(),
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: []
+      })
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.addressManager = new DefaultAddressManager(remoteComponents, {
