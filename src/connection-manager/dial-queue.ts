@@ -23,6 +23,7 @@ import { combineSignals, resolveMultiaddrs } from './utils.js'
 import pDefer from 'p-defer'
 import { ClearableSignal, anySignal } from 'any-signal'
 import type { AddressSorter } from '@libp2p/interface-libp2p'
+import { setMaxListeners } from 'events'
 
 const log = logger('libp2p:connection-manager:dial-queue')
 
@@ -99,6 +100,11 @@ export class DialQueue {
     this.connectionGater = components.connectionGater
     this.transportManager = components.transportManager
     this.shutDownController = new AbortController()
+
+    try {
+      // This emitter gets listened to a lot
+      setMaxListeners?.(Infinity, this.shutDownController.signal)
+    } catch {}
 
     this.pendingDialCount = components.metrics?.registerMetric('libp2p_dialler_pending_dials')
     this.inProgressDialCount = components.metrics?.registerMetric('libp2p_dialler_in_progress_dials')
@@ -257,6 +263,11 @@ export class DialQueue {
         userSignal
       ]
     )
+
+    try {
+      // This emitter gets listened to a lot
+      setMaxListeners?.(Infinity, signal)
+    } catch {}
 
     return signal
   }
