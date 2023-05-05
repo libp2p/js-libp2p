@@ -84,7 +84,6 @@ class CircuitRelayTransport implements Transport {
   private readonly upgrader: Upgrader
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
-  private readonly events: EventEmitter<Libp2pEvents>
   private readonly reservationStore: ReservationStore
   private started: boolean
 
@@ -96,7 +95,6 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.events = components.events
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -170,7 +168,7 @@ class CircuitRelayTransport implements Transport {
     const destinationId = destinationAddr.getPeerId()
 
     if (relayId == null || destinationId == null) {
-      const errMsg = 'Circuit relay dial failed as addresses did not have peer id'
+      const errMsg = `Circuit relay dial to ${ma.toString()} failed as address did not have peer ids`
       log.error(errMsg)
       throw new CodeError(errMsg, codes.ERR_RELAYED_DIAL)
     }
@@ -203,7 +201,7 @@ class CircuitRelayTransport implements Transport {
         disconnectOnFailure
       })
     } catch (err: any) {
-      log.error('Circuit relay dial failed', err)
+      log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${relayPeer.toString()} failed`, err)
       disconnectOnFailure && await relayConnection.close()
       throw err
     }
@@ -244,7 +242,7 @@ class CircuitRelayTransport implements Transport {
       log('new outbound connection %s', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn)
     } catch (err) {
-      log.error('Circuit relay dial failed', err)
+      log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
       disconnectOnFailure && await connection.close()
       throw err
     }
@@ -256,8 +254,7 @@ class CircuitRelayTransport implements Transport {
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
       connectionManager: this.connectionManager,
-      relayStore: this.reservationStore,
-      events: this.events
+      relayStore: this.reservationStore
     })
   }
 

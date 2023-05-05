@@ -91,7 +91,7 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
     log('searching peer store for relays')
     const peers = (await this.peerStore.all())
       // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
-      .filter(({ id, protocols }) => protocols.includes(RELAY_V2_HOP_CODEC))
+      .filter(({ protocols }) => protocols.includes(RELAY_V2_HOP_CODEC))
       .sort(() => Math.random() - 0.5)
 
     for (const peer of peers) {
@@ -112,11 +112,11 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
           const peerId = provider.id
 
           found++
-          log('found relay peer %p in content routing', peerId)
           await this.peerStore.merge(peerId, {
             multiaddrs: provider.multiaddrs
           })
 
+          log('found relay peer %p in content routing', peerId)
           this.safeDispatchEvent('relay:discover', { detail: peerId })
         }
       }

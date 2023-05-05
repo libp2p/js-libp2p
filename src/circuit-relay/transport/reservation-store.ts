@@ -96,8 +96,8 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     // When a peer disconnects, if we had a reservation on that peer
     // remove the reservation and multiaddr and maybe trigger search
     // for new relays
-    this.events.addEventListener('connection:close', (evt) => {
-      this.removeRelay(evt.detail.remotePeer)
+    this.events.addEventListener('peer:disconnect', (evt) => {
+      this.#removeRelay(evt.detail)
     })
   }
 
@@ -125,15 +125,15 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
    * on the remote peer
    */
   async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
-    log('add relay', this.reserveQueue.size)
+    if (this.peerId.equals(peerId)) {
+      log('not trying to use self as relay')
+      return
+    }
+
+    log('add relay %p', peerId)
 
     await this.reserveQueue.add(async () => {
       try {
-        if (this.peerId.equals(peerId)) {
-          log('not trying to use self as relay')
-          return
-        }
-
         // allow refresh of an existing reservation if it is about to expire
         const existingReservation = this.reservations.get(peerId)
 
@@ -181,6 +181,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
           })
         }, timeoutDuration)
 
+        // we've managed to create a reservation successfully
         this.reservations.set(peerId, {
           timeout,
           reservation,
@@ -197,19 +198,23 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
           }
         })
 
-        await this.transportManager.listen(
-          reservation.addrs.map(ma => {
-            return multiaddr(ma).encapsulate('/p2p-circuit')
-          })
-        )
+        // listen on multiaddr that only the circuit transport is listening for
+        await this.transportManager.listen([multiaddr(`/p2p/${peerId.toString()}/p2p-circuit`)])
       } catch (err) {
         log.error('could not reserve slot on %p', peerId, err)
+
+        // if listening failed, remove the reservation
+        this.reservations.delete(peerId)
       }
     })
   }
 
   hasReservation (peerId: PeerId): boolean {
     return this.reservations.has(peerId)
+  }
+
+  getReservation (peerId: PeerId): Reservation | undefined {
+    return this.reservations.get(peerId)?.reservation
   }
 
   async #createReservation (connection: Connection): Promise<Reservation> {
@@ -243,14 +248,14 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   /**
    * Remove listen relay
    */
-  removeRelay (peerId: PeerId): void {
+  #removeRelay (peerId: PeerId): void {
     const existingReservation = this.reservations.get(peerId)
 
     if (existingReservation == null) {
       return
     }
 
-    log('removing relay %p', peerId)
+    log('connection to relay %p closed, removing reservation from local store', peerId)
 
     clearTimeout(existingReservation.timeout)
     this.reservations.delete(peerId)
@@ -258,6 +263,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.safeDispatchEvent('relay:removed', { detail: peerId })
 
     if (this.reservations.size < this.maxDiscoveredRelays) {
+      log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
       this.safeDispatchEvent('relay:not-enough-relays', {})
     }
   }
