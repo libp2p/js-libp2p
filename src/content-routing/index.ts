@@ -9,7 +9,6 @@ import {
   peerResponseEvent,
   providerEvent
 } from '../query/events.js'
-import { convertBuffer } from '../utils.js'
 import type { KadDHTComponents, PeerResponseEvent, ProviderEvent, QueryEvent, QueryOptions } from '../index.js'
 import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
@@ -126,7 +125,6 @@ export class ContentRouting {
   async * findProviders (key: CID, options: QueryOptions): AsyncGenerator<PeerResponseEvent | ProviderEvent | QueryEvent> {
     const toFind = this.routingTable.kBucketSize
     const target = key.multihash.bytes
-    const id = await convertBuffer(target)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     this.log('findProviders %c', key)
@@ -175,7 +173,7 @@ export class ContentRouting {
 
     const providers = new Set(provs.map(p => p.toString()))
 
-    for await (const event of this.queryManager.run(target, this.routingTable.closestPeers(id), findProvidersQuery, options)) {
+    for await (const event of this.queryManager.run(target, findProvidersQuery, options)) {
       yield event
 
       if (event.name === 'PEER_RESPONSE') {

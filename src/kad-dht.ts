@@ -131,7 +131,8 @@ export class DefaultKadDHT extends EventEmitter<PeerDiscoveryEvents> implements 
       // Number of disjoint query paths to use - This is set to `kBucketSize/2` per the S/Kademlia paper
       disjointPaths: Math.ceil(this.kBucketSize / 2),
       lan,
-      initialQuerySelfHasRun
+      initialQuerySelfHasRun,
+      routingTable: this.routingTable
     })
 
     // DHT components
@@ -147,7 +148,6 @@ export class DefaultKadDHT extends EventEmitter<PeerDiscoveryEvents> implements 
       selectors: this.selectors,
       peerRouting: this.peerRouting,
       queryManager: this.queryManager,
-      routingTable: this.routingTable,
       network: this.network,
       lan: this.lan
     })

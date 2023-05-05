@@ -9,9 +9,11 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   ALPHA, K, DEFAULT_QUERY_TIMEOUT
 } from '../constants.js'
+import { convertBuffer } from '../utils.js'
 import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
 import type { QueryEvent } from '../index.js'
+import type { RoutingTable } from '../routing-table/index.js'
 import type { Metric, Metrics } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
@@ -27,6 +29,7 @@ export interface QueryManagerInit {
   disjointPaths?: number
   alpha?: number
   initialQuerySelfHasRun: DeferredPromise<void>
+  routingTable: RoutingTable
 }
 
 export interface QueryManagerComponents {
@@ -55,6 +58,7 @@ export class QueryManager implements Startable {
     queryTime: Metric
   }
 
+  private readonly routingTable: RoutingTable
   private initialQuerySelfHasRun?: DeferredPromise<void>
 
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
@@ -67,6 +71,7 @@ export class QueryManager implements Startable {
     this.lan = lan
     this.queries = 0
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
+    this.routingTable = init.routingTable
 
     // allow us to stop queries on shut down
     this.shutDownController = new AbortController()
@@ -105,7 +110,7 @@ export class QueryManager implements Startable {
     this.shutDownController.abort()
   }
 
-  async * run (key: Uint8Array, peers: PeerId[], queryFunc: QueryFunc, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
+  async * run (key: Uint8Array, queryFunc: QueryFunc, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       throw new Error('QueryManager not started')
     }
@@ -138,7 +143,6 @@ export class QueryManager implements Startable {
     const log = logger(`libp2p:kad-dht:${this.lan ? 'lan' : 'wan'}:query:` + uint8ArrayToString(key, 'base58btc'))
 
     // query a subset of peers up to `kBucketSize / 2` in length
-    const peersToQuery = peers.slice(0, Math.min(this.disjointPaths, peers.length))
     const startTime = Date.now()
     const cleanUp = new EventEmitter<CleanUpEvents>()
 
@@ -161,6 +165,10 @@ export class QueryManager implements Startable {
       log('query:start')
       this.queries++
       this.metrics?.runningQueries.update(this.queries)
+
+      const id = await convertBuffer(key)
+      const peers = this.routingTable.closestPeers(id)
+      const peersToQuery = peers.slice(0, Math.min(this.disjointPaths, peers.length))
 
       if (peers.length === 0) {
         log.error('Running query with no peers')

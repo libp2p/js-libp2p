@@ -15,13 +15,12 @@ import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
-import { createPutRecord, convertBuffer, bufferToRecordKey } from '../utils.js'
+import { createPutRecord, bufferToRecordKey } from '../utils.js'
 import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryOptions, QueryEvent } from '../index.js'
 import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
-import type { RoutingTable } from '../routing-table/index.js'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Logger } from '@libp2p/logger'
 
@@ -30,7 +29,6 @@ export interface ContentFetchingInit {
   selectors: Selectors
   peerRouting: PeerRouting
   queryManager: QueryManager
-  routingTable: RoutingTable
   network: Network
   lan: boolean
 }
@@ -42,11 +40,10 @@ export class ContentFetching {
   private readonly selectors: Selectors
   private readonly peerRouting: PeerRouting
   private readonly queryManager: QueryManager
-  private readonly routingTable: RoutingTable
   private readonly network: Network
 
   constructor (components: KadDHTComponents, init: ContentFetchingInit) {
-    const { validators, selectors, peerRouting, queryManager, routingTable, network, lan } = init
+    const { validators, selectors, peerRouting, queryManager, network, lan } = init
 
     this.components = components
     this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
@@ -54,7 +51,6 @@ export class ContentFetching {
     this.selectors = selectors
     this.peerRouting = peerRouting
     this.queryManager = queryManager
-    this.routingTable = routingTable
     this.network = network
   }
 
@@ -249,11 +245,6 @@ export class ContentFetching {
       this.log('error getting local value for %b', key, err)
     }
 
-    const id = await convertBuffer(key)
-    const rtp = this.routingTable.closestPeers(id)
-
-    this.log('found %d peers in routing table', rtp.length)
-
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     const getValueQuery: QueryFunc = async function * ({ peer, signal }) {
@@ -267,6 +258,6 @@ export class ContentFetching {
     }
 
     // we have peers, lets send the actual query to them
-    yield * this.queryManager.run(key, rtp, getValueQuery, options)
+    yield * this.queryManager.run(key, getValueQuery, options)
   }
 }
