@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { multiaddr } from '@multiformats/multiaddr'
-import { identifyService, IdentifyServiceInit } from '../../src/identify/index.js'
+import type { IdentifyServiceInit } from '../../src/identify/index.js'
 import Peers from '../fixtures/peers.js'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
@@ -25,6 +25,7 @@ import { start, stop } from '@libp2p/interfaces/startable'
 import { defaultComponents, Components } from '../../src/components.js'
 import type { TransportManager } from '@libp2p/interface-transport'
 import { stubInterface } from 'sinon-ts'
+import { DefaultIdentifyService } from '../../src/identify/identify.js'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -97,8 +98,8 @@ describe('identify (push)', () => {
   })
 
   it('should be able to push identify updates to another peer', async () => {
-    const localIdentify = identifyService(defaultInit)(localComponents)
-    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -171,11 +172,11 @@ describe('identify (push)', () => {
 
   it('should time out during push identify', async () => {
     let streamEnded = false
-    const localIdentify = identifyService({
+    const localIdentify = new DefaultIdentifyService(localComponents, {
       ...defaultInit,
       timeout: 10
-    })(localComponents)
-    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
+    })
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
 
     await start(localIdentify)
     await start(remoteIdentify)

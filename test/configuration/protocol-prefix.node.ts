@@ -5,13 +5,13 @@ import { expect } from 'aegir/chai'
 import mergeOptions from 'merge-options'
 import { pEvent } from 'p-event'
 import { FetchService, fetchService } from '../../src/fetch/index.js'
-import { IdentifyService, identifyService } from '../../src/identify/index.js'
+import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { PingService, pingService } from '../../src/ping/index.js'
 import { baseOptions } from './utils.js'
 
 describe('Protocol prefix is configurable', () => {
-  let libp2p: Libp2p<{ identify: IdentifyService, ping: PingService, fetch: FetchService }>
+  let libp2p: Libp2p<{ identify: unknown, ping: PingService, fetch: FetchService }>
 
   afterEach(async () => {
     if (libp2p != null) {

@@ -33,7 +33,8 @@ import { stubInterface } from 'sinon-ts'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import { IdentifyService, identifyService } from '../../src/identify/index.js'
+import { identifyService } from '../../src/identify/index.js'
+import type { DefaultIdentifyService } from '../../src/identify/identify.js'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
@@ -342,8 +343,7 @@ describe('dialing (direct, WebSockets)', () => {
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
-  // const connectionGater = mockConnectionGater()
-  let libp2p: Libp2p<{ identify: IdentifyService }>
+  let libp2p: Libp2p<{ identify: unknown }>
   let peerId: PeerId
 
   beforeEach(async () => {
@@ -383,7 +383,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       throw new Error('Identify service missing')
     }
 
-    const identifySpy = sinon.spy(libp2p.services.identify, 'identify')
+    const identifySpy = sinon.spy(libp2p.services.identify as DefaultIdentifyService, 'identify')
     const peerStorePatchSpy = sinon.spy(libp2p.peerStore, 'patch')
     const connectionPromise = pEvent(libp2p, 'connection:open')
 
