@@ -50,7 +50,7 @@ export interface UPnPNATInit {
   /**
    * Whether to automatically refresh UPnP port mappings when their TTL is reached
    */
-  keepAlive: boolean
+  keepAlive?: boolean
 
   /**
    * Pass a value to use instead of auto-detection
@@ -205,7 +205,7 @@ class UPnPNAT implements Startable {
   }
 }
 
-export function uPnPNAT (init: UPnPNATInit): (components: UPnPNATComponents) => {} {
+export function uPnPNATService (init: UPnPNATInit = {}): (components: UPnPNATComponents) => {} {
   return (components: UPnPNATComponents) => {
     return new UPnPNAT(components, init)
   }
