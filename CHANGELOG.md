@@ -1,3 +1,10 @@
+## [9.2.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.5...v9.2.0) (2023-05-05)
+
+
+### Features
+
+* invoke onProgress callback if passed as an option ([#472](https://github.com/libp2p/js-libp2p-kad-dht/issues/472)) ([0bef25f](https://github.com/libp2p/js-libp2p-kad-dht/commit/0bef25ff823581cf3462be32b23e737abd2fca3a))
+
 ## [9.1.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.4...v9.1.5) (2023-05-05)
 
 
