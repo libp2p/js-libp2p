@@ -73,7 +73,6 @@ function findIncomingStreamLimit (protocol: string, registrar: Registrar): numbe
 function findOutgoingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
   try {
     const { options } = registrar.getHandler(protocol)
-
     return options.maxOutboundStreams
   } catch (err: any) {
     if (err.code !== codes.ERR_NO_HANDLER_FOR_PROTOCOL) {
@@ -392,9 +391,10 @@ export class DefaultUpgrader implements Upgrader {
               const streamCount = countStreams(protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
-                muxedStream.abort(new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS))
+                const err = new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS)
+                muxedStream.abort(err)
 
-                return
+                throw err
               }
 
               // after the handshake the returned stream can have early data so override

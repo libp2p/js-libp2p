@@ -87,6 +87,7 @@ And we also need to import the modules on our .js file:
 ```js
 import { pipe } from 'it-pipe'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import all from 'it-all'
 ```
 
@@ -101,7 +102,7 @@ const createNode = async () => {
     },
     transports: [tcp()],
     connectionEncryption: [noise()],
-    streamMuxers: [mplex()] // <--- Add this line
+    streamMuxers: [yamux(), mplex()] // <--- Add this line
   })
 
   return node
@@ -191,7 +192,7 @@ const createNode = async (transports, addresses = []) => {
     },
     transports: transports,
     connectionEncryption: [noise()],
-    streamMuxers: [mplex()]
+    streamMuxers: [yamux(), mplex()]
   })
 
   return node

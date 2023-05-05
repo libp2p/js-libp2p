@@ -128,11 +128,12 @@ export type Libp2pOptions<T extends ServiceMap = {}> = RecursivePartial<Libp2pIn
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'
  * import { noise } from '@chainsafe/libp2p-noise'
+ * import { yamux } from '@chainsafe/libp2p-yamux'
  *
  * // specify options
  * const options = {
  *   transports: [tcp()],
- *   streamMuxers: [mplex()],
+ *   streamMuxers: [yamux(), mplex()],
  *   connectionEncryption: [noise()]
  * }
  *

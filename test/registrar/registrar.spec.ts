@@ -20,6 +20,7 @@ import { Components, defaultComponents } from '../../src/components.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerStore } from '@libp2p/interface-peer-store'
@@ -263,6 +264,7 @@ describe('registrar', () => {
           webSockets()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionEncryption: [

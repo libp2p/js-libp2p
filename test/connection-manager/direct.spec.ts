@@ -30,6 +30,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { pEvent } from 'p-event'
 import { defaultComponents, Components } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import { IdentifyService, identifyService } from '../../src/identify/index.js'
@@ -366,6 +367,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        yamux(),
         mplex()
       ],
       connectionEncryption: [
@@ -410,6 +412,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        yamux(),
         mplex()
       ],
       connectionEncryption: [
@@ -439,6 +442,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        yamux(),
         mplex()
       ],
       connectionEncryption: [
@@ -459,6 +463,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         })
       ],
       streamMuxers: [
+        yamux(),
         mplex()
       ],
       connectionEncryption: [

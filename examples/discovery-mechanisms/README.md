@@ -17,6 +17,7 @@ import { createLibp2p } from 'libp2p'
 import { bootstrap } from '@libp2p/bootstrap'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
@@ -24,6 +25,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
+    yamux(),
     mplex()
   ],
   connectionEncryption: [
@@ -63,6 +65,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
+    yamux(),
     mplex()
   ],
   connectionEncryption: [
@@ -117,6 +120,7 @@ import { createLibp2p } from 'libp2p'
 import { mdns } from '@libp2p/mdns'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const createNode = () => {
@@ -128,7 +132,7 @@ const createNode = () => {
       tcp()
     ],
     streamMuxers: [
-      mplex()
+      yamux(),mplex()
     ],
     connectionEncryption: [
       noise()
@@ -188,7 +192,7 @@ const createNode = async (bootstrapers) => {
       tcp()
     ],
     streamMuxers: [
-      mplex()
+    yamux(),mplex()
     ],
     connectionEncryption: [
       noise()
@@ -219,7 +223,7 @@ const relay = await createLibp2p({
       ]
     },
     transports: [tcp()],
-    streamMuxers: [mplex()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     pubsub: gossipsub({ allowPublishToZeroPeers: true }),
     peerDiscovery: [
