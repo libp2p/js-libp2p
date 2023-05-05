@@ -1,3 +1,11 @@
+## [9.1.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.4...v9.1.5) (2023-05-05)
+
+
+### Bug Fixes
+
+* log peer id not whole object ([#470](https://github.com/libp2p/js-libp2p-kad-dht/issues/470)) ([e9efb7f](https://github.com/libp2p/js-libp2p-kad-dht/commit/e9efb7f7e5141bd40dc422cd45c964f8cc404764))
+* only choose query peers after initial self-query has run ([#471](https://github.com/libp2p/js-libp2p-kad-dht/issues/471)) ([4d05154](https://github.com/libp2p/js-libp2p-kad-dht/commit/4d0515497511e283c5d5b5a4d723c4ea783eb2a8))
+
 ## [9.1.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.3...v9.1.4) (2023-05-04)
 
 
