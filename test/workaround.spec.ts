@@ -1,11 +1,11 @@
 
 /* eslint-env mocha */
-import { isWebkitLinux, derivedEmptyPasswordKey } from '../src/ciphers/aes-gcm.browser.js'
+import { derivedEmptyPasswordKey } from '../src/ciphers/aes-gcm.browser.js'
 import { expect } from 'aegir/chai'
 
 describe('Constant derived key is generated correctly', () => {
   it('Generates correctly', async () => {
-    if (isWebkitLinux() || typeof crypto === 'undefined') {
+    if ((typeof navigator !== 'undefined' && navigator.userAgent.includes('Safari')) || typeof crypto === 'undefined') {
       // WebKit Linux can't generate this. Hence the workaround.
       return
     }
