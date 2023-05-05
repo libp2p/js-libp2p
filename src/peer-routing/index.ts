@@ -13,7 +13,7 @@ import {
   valueEvent
 } from '../query/events.js'
 import * as utils from '../utils.js'
-import type { KadDHTComponents, DHTRecord, DialingPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
+import type { KadDHTComponents, DHTRecord, DialPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
@@ -122,7 +122,7 @@ export class PeerRouting {
           throw new CodeError('public key missing', 'ERR_PUBLIC_KEY_MISSING')
         }
 
-        yield valueEvent({ from: peer, value: recPeer.publicKey })
+        yield valueEvent({ from: peer, value: recPeer.publicKey }, options)
       }
     }
 
@@ -144,7 +144,7 @@ export class PeerRouting {
       yield finalPeerEvent({
         from: this.components.peerId,
         peer: pi
-      })
+      }, options)
       return
     }
 
@@ -153,7 +153,10 @@ export class PeerRouting {
     const findPeerQuery: QueryFunc = async function * ({ peer, signal }) {
       const request = new Message(MESSAGE_TYPE.FIND_NODE, id.toBytes(), 0)
 
-      for await (const event of self.network.sendRequest(peer, request, { signal })) {
+      for await (const event of self.network.sendRequest(peer, request, {
+        ...options,
+        signal
+      })) {
         yield event
 
         if (event.name === 'PEER_RESPONSE') {
@@ -161,7 +164,7 @@ export class PeerRouting {
 
           // found the peer
           if (match != null) {
-            yield finalPeerEvent({ from: event.from, peer: match })
+            yield finalPeerEvent({ from: event.from, peer: match }, options)
           }
         }
       }
@@ -178,7 +181,7 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.components.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') })
+      yield queryErrorEvent({ from: this.components.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') }, options)
     }
   }
 
@@ -186,7 +189,7 @@ export class PeerRouting {
    * Kademlia 'node lookup' operation on a key, which could be a the
    * bytes from a multihash or a peer ID
    */
-  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<DialingPeerEvent | QueryEvent> {
+  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<DialPeerEvent | QueryEvent> {
     this.log('getClosestPeers to %b', key)
     const id = await utils.convertBuffer(key)
     const tablePeers = this.routingTable.closestPeers(id)
@@ -199,7 +202,10 @@ export class PeerRouting {
       self.log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
       const request = new Message(MESSAGE_TYPE.FIND_NODE, key, 0)
 
-      yield * self.network.sendRequest(peer, request, { signal })
+      yield * self.network.sendRequest(peer, request, {
+        ...options,
+        signal
+      })
     }
 
     for await (const event of this.queryManager.run(key, getCloserPeersQuery, options)) {
@@ -223,7 +229,7 @@ export class PeerRouting {
             multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
             protocols: peer.protocols
           }
-        })
+        }, options)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -238,7 +244,7 @@ export class PeerRouting {
    *
    * Note: The peerStore is updated with new addresses found for the given peer.
    */
-  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: AbortOptions = {}): AsyncGenerator<DialingPeerEvent | QueryEvent> {
+  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: AbortOptions = {}): AsyncGenerator<DialPeerEvent | QueryEvent> {
     for await (const event of this._getValueSingle(peer, key, options)) {
       if (event.name === 'PEER_RESPONSE') {
         if (event.record != null) {
@@ -249,7 +255,7 @@ export class PeerRouting {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
 
-            yield queryErrorEvent({ from: event.from, error: new CodeError(errMsg, 'ERR_INVALID_RECORD') })
+            yield queryErrorEvent({ from: event.from, error: new CodeError(errMsg, 'ERR_INVALID_RECORD') }, options)
             continue
           }
         }

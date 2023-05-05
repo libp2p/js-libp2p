@@ -183,6 +183,7 @@
     "p-defer": "^4.0.0",
     "p-queue": "^7.3.4",
     "private-ip": "^3.0.0",
+    "progress-events": "^1.0.0",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.0.0",
     "uint8arrays": "^4.0.2",

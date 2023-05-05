@@ -121,7 +121,7 @@ export class ContentFetching {
       }
 
       if (!sentCorrection) {
-        yield queryErrorEvent({ from, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') })
+        yield queryErrorEvent({ from, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }, options)
       }
 
       this.log.error('Failed error correcting entry')
@@ -165,7 +165,7 @@ export class ContentFetching {
             }
 
             if (!(putEvent.record != null && uint8ArrayEquals(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
-              events.push(queryErrorEvent({ from: event.peer.id, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }))
+              events.push(queryErrorEvent({ from: event.peer.id, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }, options))
             }
           }
 
@@ -240,7 +240,7 @@ export class ContentFetching {
       yield valueEvent({
         value: localRec.value,
         from: this.components.peerId
-      })
+      }, options)
     } catch (err: any) {
       this.log('error getting local value for %b', key, err)
     }
@@ -252,7 +252,7 @@ export class ContentFetching {
         yield event
 
         if (event.name === 'PEER_RESPONSE' && (event.record != null)) {
-          yield valueEvent({ from: peer, value: event.record.value })
+          yield valueEvent({ from: peer, value: event.record.value }, options)
         }
       }
     }

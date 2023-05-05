@@ -7,7 +7,7 @@ import { xor } from 'uint8arrays/xor'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
 import type { CleanUpEvents } from './manager.js'
-import type { QueryEvent } from '../index.js'
+import type { QueryEvent, QueryOptions } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { EventEmitter } from '@libp2p/interfaces/events'
@@ -16,7 +16,7 @@ import type { PeerSet } from '@libp2p/peer-collections'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 
-export interface QueryPathOptions {
+export interface QueryPathOptions extends QueryOptions {
   /**
    * What are we trying to find
    */
@@ -160,7 +160,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           return queryErrorEvent({
             from: peer,
             error: err
-          })
+          }, options)
         }
       } finally {
         compoundSignal.clear()

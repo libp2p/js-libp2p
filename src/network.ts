@@ -8,12 +8,12 @@ import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { Message } from './message/index.js'
 import {
-  dialingPeerEvent,
-  sendingQueryEvent,
+  dialPeerEvent,
+  sendQueryEvent,
   peerResponseEvent,
   queryErrorEvent
 } from './query/events.js'
-import type { KadDHTComponents, QueryEvent } from './index.js'
+import type { KadDHTComponents, QueryEvent, QueryOptions } from './index.js'
 import type { Stream } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -82,14 +82,14 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Send a request and record RTT for latency measurements
    */
-  async * sendRequest (to: PeerId, msg: Message, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
+  async * sendRequest (to: PeerId, msg: Message, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       return
     }
 
     this.log('sending %s to %p', msg.type, to)
-    yield dialingPeerEvent({ peer: to })
-    yield sendingQueryEvent({ to, type: msg.type })
+    yield dialPeerEvent({ peer: to }, options)
+    yield sendQueryEvent({ to, type: msg.type }, options)
 
     let stream: Stream | undefined
 
@@ -105,9 +105,9 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
         closer: response.closerPeers,
         providers: response.providerPeers,
         record: response.record
-      })
+      }, options)
     } catch (err: any) {
-      yield queryErrorEvent({ from: to, error: err })
+      yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
       if (stream != null) {
         stream.close()
@@ -118,14 +118,14 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Sends a message without expecting an answer
    */
-  async * sendMessage (to: PeerId, msg: Message, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
+  async * sendMessage (to: PeerId, msg: Message, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       return
     }
 
     this.log('sending %s to %p', msg.type, to)
-    yield dialingPeerEvent({ peer: to })
-    yield sendingQueryEvent({ to, type: msg.type })
+    yield dialPeerEvent({ peer: to }, options)
+    yield sendQueryEvent({ to, type: msg.type }, options)
 
     let stream: Stream | undefined
 
@@ -135,9 +135,9 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
 
       await this._writeMessage(stream, msg.serialize(), options)
 
-      yield peerResponseEvent({ from: to, messageType: msg.type })
+      yield peerResponseEvent({ from: to, messageType: msg.type }, options)
     } catch (err: any) {
-      yield queryErrorEvent({ from: to, error: err })
+      yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
       if (stream != null) {
         stream.close()

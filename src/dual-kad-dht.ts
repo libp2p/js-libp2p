@@ -11,7 +11,6 @@ import { queryErrorEvent } from './query/events.js'
 import type { DualKadDHT, KadDHT, KadDHTComponents, KadDHTInit, QueryEvent, QueryOptions } from './index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { CID } from 'multiformats/cid'
 
 const log = logger('libp2p:kad-dht')
@@ -26,11 +25,11 @@ class DHTContentRouting implements ContentRouting {
     this.dht = dht
   }
 
-  async provide (cid: CID): Promise<void> {
-    await drain(this.dht.provide(cid))
+  async provide (cid: CID, options: QueryOptions = {}): Promise<void> {
+    await drain(this.dht.provide(cid, options))
   }
 
-  async * findProviders (cid: CID, options: AbortOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
+  async * findProviders (cid: CID, options: QueryOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
     for await (const event of this.dht.findProviders(cid, options)) {
       if (event.name === 'PROVIDER') {
         yield * event.providers
@@ -38,11 +37,11 @@ class DHTContentRouting implements ContentRouting {
     }
   }
 
-  async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
+  async put (key: Uint8Array, value: Uint8Array, options?: QueryOptions): Promise<void> {
     await drain(this.dht.put(key, value, options))
   }
 
-  async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
+  async get (key: Uint8Array, options?: QueryOptions): Promise<Uint8Array> {
     for await (const event of this.dht.get(key, options)) {
       if (event.name === 'VALUE') {
         return event.value
@@ -63,7 +62,7 @@ class DHTPeerRouting implements PeerRouting {
     this.dht = dht
   }
 
-  async findPeer (peerId: PeerId, options: AbortOptions = {}): Promise<PeerInfo> {
+  async findPeer (peerId: PeerId, options: QueryOptions = {}): Promise<PeerInfo> {
     for await (const event of this.dht.findPeer(peerId, options)) {
       if (event.name === 'FINAL_PEER') {
         return event.peer
@@ -73,7 +72,7 @@ class DHTPeerRouting implements PeerRouting {
     throw new CodeError('Not found', 'ERR_NOT_FOUND')
   }
 
-  async * getClosestPeers (key: Uint8Array, options: AbortOptions = {}): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncIterable<PeerInfo> {
     for await (const event of this.dht.getClosestPeers(key, options)) {
       if (event.name === 'FINAL_PEER') {
         yield event.peer
@@ -207,7 +206,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
     )) {
       yield event
 
-      if (event.name === 'DIALING_PEER') {
+      if (event.name === 'DIAL_PEER') {
         queriedPeers = true
       }
 
@@ -219,7 +218,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
         }
       }
 
-      if (event.name === 'SENDING_QUERY') {
+      if (event.name === 'SEND_QUERY') {
         queriedPeers = true
       }
     }
@@ -232,7 +231,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
       yield queryErrorEvent({
         from: this.components.peerId,
         error: new CodeError('Not found', 'ERR_NOT_FOUND')
-      })
+      }, options)
     }
   }
 
@@ -241,7 +240,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
   /**
    * Announce to the network that we can provide given key's value
    */
-  async * provide (key: CID, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
+  async * provide (key: CID, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     let sent = 0
     let success = 0
     const errors = []
@@ -256,7 +255,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
     for await (const event of merge(...dhts.map(dht => dht.provide(key, options)))) {
       yield event
 
-      if (event.name === 'SENDING_QUERY') {
+      if (event.name === 'SEND_QUERY') {
         sent++
       }
 
@@ -304,7 +303,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
     )) {
       yield event
 
-      if (event.name === 'SENDING_QUERY' || event.name === 'FINAL_PEER') {
+      if (event.name === 'SEND_QUERY' || event.name === 'FINAL_PEER') {
         queriedPeers = true
       }
     }

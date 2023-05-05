@@ -209,6 +209,38 @@ describe('KadDHT', () => {
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
+    it('put - get calls progress handler', async function () {
+      this.timeout(10 * 1000)
+
+      const key = uint8ArrayFromString('/v/hello')
+      const value = uint8ArrayFromString('world')
+
+      const [dhtA, dhtB] = await Promise.all([
+        tdht.spawn(),
+        tdht.spawn()
+      ])
+
+      // Connect nodes
+      await tdht.connect(dhtA, dhtB)
+
+      const putProgress = sinon.stub()
+
+      // Exchange data through the dht
+      await drain(dhtA.put(key, value, {
+        onProgress: putProgress
+      }))
+
+      expect(putProgress).to.have.property('called', true)
+
+      const getProgress = sinon.stub()
+
+      await drain(dhtB.get(key, {
+        onProgress: getProgress
+      }))
+
+      expect(getProgress).to.have.property('called', true)
+    })
+
     it('put - should require a minimum number of peers to have successful puts', async function () {
       this.timeout(10 * 1000)
 

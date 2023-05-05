@@ -10,19 +10,20 @@ import type { Registrar } from '@libp2p/interface-registrar'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
+import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
  * The types of events emitted during DHT queries
  */
 export enum EventTypes {
-  SENDING_QUERY = 0,
+  SEND_QUERY = 0,
   PEER_RESPONSE,
   FINAL_PEER,
   QUERY_ERROR,
   PROVIDER,
   VALUE,
-  ADDING_PEER,
-  DIALING_PEER
+  ADD_PEER,
+  DIAL_PEER
 }
 
 /**
@@ -45,17 +46,27 @@ export interface DHTRecord {
   timeReceived?: Date
 }
 
-export interface QueryOptions extends AbortOptions {
+export type DHTProgressEvents =
+  ProgressEvent<'kad-dht:query:send-query', SendQueryEvent> |
+  ProgressEvent<'kad-dht:query:peer-response', PeerResponseEvent> |
+  ProgressEvent<'kad-dht:query:final-peer', FinalPeerEvent> |
+  ProgressEvent<'kad-dht:query:query-error', QueryErrorEvent> |
+  ProgressEvent<'kad-dht:query:provider', ProviderEvent> |
+  ProgressEvent<'kad-dht:query:value', ValueEvent> |
+  ProgressEvent<'kad-dht:query:add-peer', AddPeerEvent> |
+  ProgressEvent<'kad-dht:query:dial-peer', DialPeerEvent>
+
+export interface QueryOptions extends AbortOptions, ProgressOptions {
   queryFuncTimeout?: number
 }
 
 /**
  * Emitted when sending queries to remote peers
  */
-export interface SendingQueryEvent {
+export interface SendQueryEvent {
   to: PeerId
-  type: EventTypes.SENDING_QUERY
-  name: 'SENDING_QUERY'
+  type: EventTypes.SEND_QUERY
+  name: 'SEND_QUERY'
   messageName: keyof typeof MessageType
   messageType: MessageType
 }
@@ -118,22 +129,22 @@ export interface ValueEvent {
 /**
  * Emitted when peers are added to a query
  */
-export interface AddingPeerEvent {
-  type: EventTypes.ADDING_PEER
-  name: 'ADDING_PEER'
+export interface AddPeerEvent {
+  type: EventTypes.ADD_PEER
+  name: 'ADD_PEER'
   peer: PeerId
 }
 
 /**
  * Emitted when peers are dialled as part of a query
  */
-export interface DialingPeerEvent {
+export interface DialPeerEvent {
   peer: PeerId
-  type: EventTypes.DIALING_PEER
-  name: 'DIALING_PEER'
+  type: EventTypes.DIAL_PEER
+  name: 'DIAL_PEER'
 }
 
-export type QueryEvent = SendingQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddingPeerEvent | DialingPeerEvent
+export type QueryEvent = SendQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddPeerEvent | DialPeerEvent
 
 export interface RoutingTable {
   size: number

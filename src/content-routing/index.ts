@@ -17,7 +17,6 @@ import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { Logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
@@ -56,7 +55,7 @@ export class ContentRouting {
    * Announce to the network that we can provide the value for a given key and
    * are contactable on the given multiaddrs
    */
-  async * provide (key: CID, multiaddrs: Multiaddr[], options: AbortOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
+  async * provide (key: CID, multiaddrs: Multiaddr[], options: QueryOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     this.log('provide %s', key)
 
     // Add peer as provider
@@ -94,7 +93,7 @@ export class ContentRouting {
           }
         } catch (err: any) {
           this.log.error('error sending provide record to peer %p', event.peer.id, err)
-          events.push(queryErrorEvent({ from: event.peer.id, error: err }))
+          events.push(queryErrorEvent({ from: event.peer.id, error: err }, options))
         }
 
         return events
@@ -153,8 +152,8 @@ export class ContentRouting {
         }
       }
 
-      yield peerResponseEvent({ from: this.components.peerId, messageType: MESSAGE_TYPE.GET_PROVIDERS, providers })
-      yield providerEvent({ from: this.components.peerId, providers })
+      yield peerResponseEvent({ from: this.components.peerId, messageType: MESSAGE_TYPE.GET_PROVIDERS, providers }, options)
+      yield providerEvent({ from: this.components.peerId, providers }, options)
     }
 
     // All done
@@ -168,7 +167,10 @@ export class ContentRouting {
     const findProvidersQuery: QueryFunc = async function * ({ peer, signal }) {
       const request = new Message(MESSAGE_TYPE.GET_PROVIDERS, target, 0)
 
-      yield * self.network.sendRequest(peer, request, { signal })
+      yield * self.network.sendRequest(peer, request, {
+        ...options,
+        signal
+      })
     }
 
     const providers = new Set(provs.map(p => p.toString()))
@@ -191,7 +193,7 @@ export class ContentRouting {
         }
 
         if (newProviders.length > 0) {
-          yield providerEvent({ from: event.from, providers: newProviders })
+          yield providerEvent({ from: event.from, providers: newProviders }, options)
         }
 
         if (providers.size === toFind) {

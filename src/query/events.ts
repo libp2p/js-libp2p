@@ -1,5 +1,6 @@
+import { CustomEvent } from '@libp2p/interfaces/events'
 import { MESSAGE_TYPE_LOOKUP } from '../message/index.js'
-import type { SendingQueryEvent, PeerResponseEvent, DialingPeerEvent, AddingPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
+import type { SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent, QueryOptions } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
@@ -10,14 +11,18 @@ export interface QueryEventFields {
   type: Message.MessageType
 }
 
-export function sendingQueryEvent (fields: QueryEventFields): SendingQueryEvent {
-  return {
+export function sendQueryEvent (fields: QueryEventFields, options: QueryOptions = {}): SendQueryEvent {
+  const event: SendQueryEvent = {
     ...fields,
-    name: 'SENDING_QUERY',
+    name: 'SEND_QUERY',
     type: 0,
     messageName: fields.type,
     messageType: MESSAGE_TYPE_LOOKUP.indexOf(fields.type.toString())
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:send-query', { detail: event }))
+
+  return event
 }
 
 export interface PeerResponseEventField {
@@ -28,8 +33,8 @@ export interface PeerResponseEventField {
   record?: Libp2pRecord
 }
 
-export function peerResponseEvent (fields: PeerResponseEventField): PeerResponseEvent {
-  return {
+export function peerResponseEvent (fields: PeerResponseEventField, options: QueryOptions = {}): PeerResponseEvent {
+  const event: PeerResponseEvent = {
     ...fields,
     name: 'PEER_RESPONSE',
     type: 1,
@@ -37,6 +42,10 @@ export function peerResponseEvent (fields: PeerResponseEventField): PeerResponse
     closer: (fields.closer != null) ? fields.closer : [],
     providers: (fields.providers != null) ? fields.providers : []
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:peer-response', { detail: event }))
+
+  return event
 }
 
 export interface FinalPeerEventFields {
@@ -44,12 +53,16 @@ export interface FinalPeerEventFields {
   peer: PeerInfo
 }
 
-export function finalPeerEvent (fields: FinalPeerEventFields): FinalPeerEvent {
-  return {
+export function finalPeerEvent (fields: FinalPeerEventFields, options: QueryOptions = {}): FinalPeerEvent {
+  const event: FinalPeerEvent = {
     ...fields,
     name: 'FINAL_PEER',
     type: 2
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:final-peer', { detail: event }))
+
+  return event
 }
 
 export interface ErrorEventFields {
@@ -57,12 +70,16 @@ export interface ErrorEventFields {
   error: Error
 }
 
-export function queryErrorEvent (fields: ErrorEventFields): QueryErrorEvent {
-  return {
+export function queryErrorEvent (fields: ErrorEventFields, options: QueryOptions = {}): QueryErrorEvent {
+  const event: QueryErrorEvent = {
     ...fields,
     name: 'QUERY_ERROR',
     type: 3
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:query-error', { detail: event }))
+
+  return event
 }
 
 export interface ProviderEventFields {
@@ -70,12 +87,16 @@ export interface ProviderEventFields {
   providers: PeerInfo[]
 }
 
-export function providerEvent (fields: ProviderEventFields): ProviderEvent {
-  return {
+export function providerEvent (fields: ProviderEventFields, options: QueryOptions = {}): ProviderEvent {
+  const event: ProviderEvent = {
     ...fields,
     name: 'PROVIDER',
     type: 4
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:provider', { detail: event }))
+
+  return event
 }
 
 export interface ValueEventFields {
@@ -83,34 +104,46 @@ export interface ValueEventFields {
   value: Uint8Array
 }
 
-export function valueEvent (fields: ValueEventFields): ValueEvent {
-  return {
+export function valueEvent (fields: ValueEventFields, options: QueryOptions = {}): ValueEvent {
+  const event: ValueEvent = {
     ...fields,
     name: 'VALUE',
     type: 5
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:value', { detail: event }))
+
+  return event
 }
 
 export interface PeerEventFields {
   peer: PeerId
 }
 
-export function addingPeerEvent (fields: PeerEventFields): AddingPeerEvent {
-  return {
+export function addPeerEvent (fields: PeerEventFields, options: QueryOptions = {}): AddPeerEvent {
+  const event: AddPeerEvent = {
     ...fields,
-    name: 'ADDING_PEER',
+    name: 'ADD_PEER',
     type: 6
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:add-peer', { detail: event }))
+
+  return event
 }
 
-export interface DialingPeerEventFields {
+export interface DialPeerEventFields {
   peer: PeerId
 }
 
-export function dialingPeerEvent (fields: DialingPeerEventFields): DialingPeerEvent {
-  return {
+export function dialPeerEvent (fields: DialPeerEventFields, options: QueryOptions = {}): DialPeerEvent {
+  const event: DialPeerEvent = {
     ...fields,
-    name: 'DIALING_PEER',
+    name: 'DIAL_PEER',
     type: 7
   }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:dial-peer', { detail: event }))
+
+  return event
 }
