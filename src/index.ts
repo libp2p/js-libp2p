@@ -32,7 +32,6 @@ import type { Components } from './components.js'
 import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
 import type { KeyChainInit } from '@libp2p/keychain'
 import type { AddressManagerInit } from './address-manager/index.js'
-import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 
@@ -80,11 +79,6 @@ export interface Libp2pInit<T extends ServiceMap = {}> {
    * libp2p PeerStore configuration
    */
   peerStore: PersistentPeerStoreInit
-
-  /**
-   * libp2p Peer routing service configuration
-   */
-  peerRouting: PeerRoutingInit
 
   /**
    * keychain configuration
