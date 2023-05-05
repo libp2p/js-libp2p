@@ -9,7 +9,7 @@ import { subsystemMulticodecs } from './utils.js'
 import { createPeerId } from '../../utils/creators/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { DualDHT } from '@libp2p/interface-dht'
+import type { DualKadDHT } from '@libp2p/kad-dht'
 import { createLibp2p } from '../../../src/index.js'
 import { kadDHT } from '@libp2p/kad-dht'
 import { tcp } from '@libp2p/tcp'
@@ -35,8 +35,8 @@ async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2p): Promise<Mul
 describe('DHT subsystem operates correctly', () => {
   let peerId: PeerId
   let remotePeerId: PeerId
-  let libp2p: Libp2p<{ dht: DualDHT }>
-  let remoteLibp2p: Libp2p<{ dht: DualDHT }>
+  let libp2p: Libp2p<{ dht: DualKadDHT }>
+  let remoteLibp2p: Libp2p<{ dht: DualKadDHT }>
   let remAddr: Multiaddr
 
   beforeEach(async () => {
@@ -64,7 +64,9 @@ describe('DHT subsystem operates correctly', () => {
           mplex()
         ],
         services: {
-          dht: kadDHT()
+          dht: kadDHT({
+            allowQueryWithZeroPeers: true
+          })
         }
       })
 
@@ -84,7 +86,9 @@ describe('DHT subsystem operates correctly', () => {
           mplex()
         ],
         services: {
-          dht: kadDHT()
+          dht: kadDHT({
+            allowQueryWithZeroPeers: true
+          })
         }
       })
 

@@ -8,7 +8,7 @@ import { codes as ErrorCodes } from '../../src/errors.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import pDefer from 'p-defer'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
@@ -68,7 +68,8 @@ describe('dialing (resolvable addresses)', () => {
         },
         connectionEncryption: [
           plaintext()
-        ]
+        ],
+        connectionGater: mockConnectionGater()
       }),
       createLibp2pNode({
         addresses: {
@@ -94,7 +95,8 @@ describe('dialing (resolvable addresses)', () => {
         ],
         services: {
           relay: circuitRelayServer()
-        }
+        },
+        connectionGater: mockConnectionGater()
       })
     ])
 

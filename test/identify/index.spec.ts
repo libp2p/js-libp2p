@@ -24,7 +24,6 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import delay from 'delay'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { TimeoutController } from 'timeout-abort-controller'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 import { defaultComponents, Components } from '../../src/components.js'
@@ -217,11 +216,11 @@ describe('identify', () => {
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
 
     // 10 ms timeout
-    const timeoutController = new TimeoutController(10)
+    const signal = AbortSignal.timeout(10)
 
     // Run identify
     await expect(localIdentify.identify(localToRemote, {
-      signal: timeoutController.signal
+      signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
 

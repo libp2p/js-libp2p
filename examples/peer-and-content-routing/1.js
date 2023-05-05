@@ -18,7 +18,11 @@ const createNode = async () => {
     streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     services: {
-      dht: kadDHT(),
+      dht: kadDHT({
+        // this is necessary because this node is not connected to the public network
+        // it can be removed if, for example bootstrappers are configured
+        allowQueryWithZeroPeers: true
+      }),
       identify: identifyService()
     }
   })

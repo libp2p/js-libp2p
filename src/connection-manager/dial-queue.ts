@@ -1,7 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { AbortError, CodeError } from '@libp2p/interfaces/errors'
 import { Multiaddr, Resolver, resolvers } from '@multiformats/multiaddr'
-import { TimeoutController } from 'timeout-abort-controller'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { codes } from '../errors.js'
 import {
@@ -22,7 +21,7 @@ import PQueue from 'p-queue'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
 import pDefer from 'p-defer'
-import type { ClearableSignal } from 'any-signal'
+import { ClearableSignal, anySignal } from 'any-signal'
 import type { AddressSorter } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:connection-manager:dial-queue')
@@ -176,7 +175,7 @@ export class DialQueue {
 
     // create abort conditions - need to do this before `calculateMultiaddrs` as we may be about to
     // resolve a dns addr which can time out
-    const { timeoutController, signal } = this.createDialAbortControllers(options.signal)
+    const signal = this.createDialAbortControllers(options.signal)
     let addrsToDial: Address[]
 
     try {
@@ -187,7 +186,6 @@ export class DialQueue {
       })
     } catch (err) {
       signal.clear()
-      timeoutController.clear()
       throw err
     }
 
@@ -210,7 +208,6 @@ export class DialQueue {
     if (existingDial != null) {
       log('joining existing dial target for %p', peerId)
       signal.clear()
-      timeoutController.clear()
       return await existingDial.promise
     }
 
@@ -233,13 +230,12 @@ export class DialQueue {
 
         // clean up abort signals/controllers
         signal.clear()
-        timeoutController.clear()
       })
       .catch(err => {
         log.error('dial failed to %s', addrsToDial.map(({ multiaddr }) => multiaddr.toString()).join(', '), err)
 
         // Error is a timeout
-        if (timeoutController.signal.aborted) {
+        if (signal.aborted) {
           const error = new CodeError(err.message, codes.ERR_TIMEOUT)
           throw error
         }
@@ -253,18 +249,16 @@ export class DialQueue {
     return await pendingDial.promise
   }
 
-  private createDialAbortControllers (userSignal?: AbortSignal): { timeoutController: TimeoutController, signal: ClearableSignal } {
-    // ensure we throw if the dial takes longer than the dial timeout
-    const timeoutController = new TimeoutController(this.dialTimeout)
-
+  private createDialAbortControllers (userSignal?: AbortSignal): ClearableSignal {
     // let any signal abort the dial
-    const signal = combineSignals(
-      timeoutController.signal,
-      this.shutDownController.signal,
-      userSignal
+    const signal = anySignal(
+      [AbortSignal.timeout(this.dialTimeout),
+        this.shutDownController.signal,
+        userSignal
+      ]
     )
 
-    return { timeoutController, signal }
+    return signal
   }
 
   private async calculateMultiaddrs (peerId?: PeerId, addrs: Address[] = [], options: DialOptions = {}): Promise<Address[]> {

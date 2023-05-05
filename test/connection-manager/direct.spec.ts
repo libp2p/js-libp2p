@@ -375,7 +375,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       ],
       services: {
         identify: identifyService()
-      }
+      },
+      connectionGater: mockConnectionGater()
     })
 
     if (libp2p.services.identify == null) {
@@ -416,7 +417,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       ],
       connectionEncryption: [
         plaintext()
-      ]
+      ],
+      connectionGater: mockConnectionGater()
     })
 
     await libp2p.start()
@@ -445,7 +447,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       ],
       connectionEncryption: [
         plaintext()
-      ]
+      ],
+      connectionGater: mockConnectionGater()
     })
 
     await libp2p.hangUp(MULTIADDRS_WEBSOCKETS[0])
@@ -465,7 +468,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       ],
       connectionEncryption: [
         plaintext()
-      ]
+      ],
+      connectionGater: mockConnectionGater()
     })
 
     await libp2p.start()

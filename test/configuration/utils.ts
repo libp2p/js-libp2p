@@ -10,6 +10,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import * as cborg from 'cborg'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { mockConnectionGater } from '@libp2p/interface-mocks'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -88,5 +89,6 @@ export const pubsubSubsystemOptions: Libp2pOptions<{ pubsub: PubSub }> = mergeOp
   ],
   services: {
     pubsub: (components: PubSubComponents) => new MockPubSub(components)
-  }
+  },
+  connectionGater: mockConnectionGater()
 })

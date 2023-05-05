@@ -219,7 +219,7 @@ describe('dial queue', () => {
     await expect(dialer.dial(Object.keys(actions).map(str => multiaddr(str)), {
       signal: controller.signal
     })).to.eventually.be.rejected
-      .with.property('name', 'AggregateError')
+      .with.property('name', 'CodeError')
 
     expect(signals['/ip4/127.0.0.1/tcp/1231']).to.have.property('aborted', true)
     expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', true)
