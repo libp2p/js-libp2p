@@ -286,8 +286,7 @@ const node = await createLibp2p({
         "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
-      ],
-      interval: 2000
+      ]
     )
   ]
 })
@@ -339,7 +338,8 @@ const node = await createLibp2p({
       tcp()
     ],
     streamMuxers: [
-    yamux(),mplex()
+      yamux(),
+      mplex()
     ],
     connectionEncryption: [
       noise()
@@ -411,23 +411,23 @@ const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClie
 }))
 
 const node = await createLibp2p({
-  transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  transports: [
+    tcp()
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
   contentRouting: [
     delegatedContentRouting
   ],
   peerRouting: [
     delegatedPeerRouting
   ],
-  peerId,
-  peerRouting: { // Peer routing configuration
-    refreshManager: { // Refresh known and connected closest peers
-      enabled: true, // Should find the closest peers.
-      interval: 6e5, // Interval for getting the new for closest peers of 10min
-      bootDelay: 10e3 // Delay for the initial query for closest peers
-    }
-  }
+  peerId
 })
 ```
 
@@ -449,8 +449,13 @@ const node = await createLibp2p({
       reservationConcurrency: 1 // how many relays to attempt to reserve slots on at once
     })
   ],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
   connectionGater: {
     // used by the server - return true to deny a reservation to the remote peer
     denyInboundRelayReservation: (source: PeerId) => Promise<boolean>
@@ -500,8 +505,13 @@ const node = await createLibp2p({
       discoverRelays: 1
     })
   ],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()]
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ]
 })
 ```
 
@@ -530,7 +540,9 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [noise()]
+  connectionEncryption: [
+    noise()
+  ]
 })
 ```
 
@@ -555,9 +567,16 @@ const datastore = new LevelDatastore('path/to/store')
 await datastore.open()
 
 const node = await createLibp2p({
-  transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  transports: [
+    tcp()
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
   keychain: {
     pass: 'notsafepassword123456789',
     datastore: dsInstant,
@@ -580,9 +599,16 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
-  transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  transports: [
+    tcp()
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
   connectionManager: {
     maxConnections: Infinity,
     minConnections: 0
@@ -724,9 +750,16 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { FaultTolerance } from '@libp2p/interface-transport'
 
 const node = await createLibp2p({
-  transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  transports: [
+    tcp()
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
   transportManager: {
     faultTolerance: FaultTolerance.NO_FATAL
   }
@@ -755,9 +788,16 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
-  transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()]
+  transports: [
+    tcp()
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
   metrics: {
     enabled: true,
     computeThrottleMaxQueueSize: 1000,
@@ -798,9 +838,16 @@ await datastore.open() // level database must be ready before node boot
 
 const node = await createLibp2p({
   datastore, // pass the opened datastore
-  transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  transports: [
+    tcp()
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
   peerStore: {
     persistence: true,
     threshold: 5
@@ -832,8 +879,8 @@ const node = await createLibp2p({
     webRTC.discovery
   ],
   streamMuxers: [
-  yamux(), mplex()
-
+    yamux(),
+    mplex()
   ],
   connectionEncryption: [
     noise()
@@ -862,8 +909,8 @@ const node = await createLibp2p({
     webRTC.discovery
   ],
   streamMuxers: [
-  yamux(), mplex()
-
+    yamux(),
+    mplex()
   ],
   connectionEncryption: [
     noise()
@@ -884,11 +931,11 @@ If your router supports this, libp2p can be configured to use it as follows:
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { uPnPNAT } from 'libp2p/upnp-nat'
+import { uPnPNATService } from 'libp2p/upnp-nat'
 
 const node = await createLibp2p({
   services: {
-    nat: uPnPNAT({
+    nat: uPnPNATService({
       description: 'my-node', // set as the port mapping description on the router, defaults the current libp2p version and your peer id
       gateway: '192.168.1.1', // leave unset to auto-discover
       externalIp: '80.1.1.1', // leave unset to auto-discover
