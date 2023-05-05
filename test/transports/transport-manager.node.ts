@@ -14,6 +14,8 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import { defaultComponents, Components } from '../../src/components.js'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -88,5 +90,40 @@ describe('Transport Manager (TCP)', () => {
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
     await connection.close()
+  })
+
+  it('should remove listeners when they stop listening', async () => {
+    const transport = tcp()()
+    tm.add(transport)
+
+    expect(tm.getListeners()).to.have.lengthOf(0)
+
+    const spyListener = sinon.spy(transport, 'createListener')
+
+    await tm.listen(addrs)
+
+    expect(spyListener.callCount).to.equal(addrs.length)
+
+    // wait for listeners to start listening
+    await pWaitFor(async () => {
+      return tm.getListeners().length === addrs.length
+    })
+
+    // wait for listeners to stop listening
+    const closePromise = Promise.all(
+      spyListener.getCalls().map(async call => {
+        return await pEvent(call.returnValue, 'close')
+      })
+    )
+
+    await Promise.all(
+      tm.getListeners().map(async l => { await l.close() })
+    )
+
+    await closePromise
+
+    expect(tm.getListeners()).to.have.lengthOf(0)
+
+    await tm.stop()
   })
 })

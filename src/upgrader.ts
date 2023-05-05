@@ -14,7 +14,6 @@ import type { Duplex, Source } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Registrar } from '@libp2p/interface-registrar'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import { TimeoutController } from 'timeout-abort-controller'
 import { abortableDuplex } from 'abortable-iterator'
 import { setMaxListeners } from 'events'
 import type { Metrics } from '@libp2p/interface-metrics'
@@ -22,6 +21,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
+import { anySignal } from 'any-signal'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 
 const log = logger('libp2p:upgrader')
@@ -73,7 +73,6 @@ function findIncomingStreamLimit (protocol: string, registrar: Registrar): numbe
 function findOutgoingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
   try {
     const { options } = registrar.getHandler(protocol)
-
     return options.maxOutboundStreams
   } catch (err: any) {
     if (err.code !== codes.ERR_NO_HANDLER_FOR_PROTOCOL) {
@@ -162,15 +161,15 @@ export class DefaultUpgrader implements Upgrader {
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
-    const timeoutController = new TimeoutController(this.inboundUpgradeTimeout)
+    const signal = anySignal([AbortSignal.timeout(this.inboundUpgradeTimeout)])
 
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, timeoutController.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch { }
 
     try {
-      const abortableStream = abortableDuplex(maConn, timeoutController.signal)
+      const abortableStream = abortableDuplex(maConn, signal)
       maConn.source = abortableStream.source
       maConn.sink = abortableStream.sink
 
@@ -254,7 +253,7 @@ export class DefaultUpgrader implements Upgrader {
       })
     } finally {
       this.components.connectionManager.afterUpgradeInbound()
-      timeoutController.clear()
+      signal.clear()
     }
   }
 
@@ -392,9 +391,10 @@ export class DefaultUpgrader implements Upgrader {
               const streamCount = countStreams(protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
-                muxedStream.abort(new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS))
+                const err = new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS)
+                muxedStream.abort(err)
 
-                return
+                throw err
               }
 
               // after the handshake the returned stream can have early data so override
@@ -435,18 +435,16 @@ export class DefaultUpgrader implements Upgrader {
 
         log('%s: starting new stream on %s', direction, protocols)
         const muxedStream = await muxer.newStream()
-        let controller: TimeoutController | undefined
 
         try {
           if (options.signal == null) {
             log('No abort signal was passed while trying to negotiate protocols %s falling back to default timeout', protocols)
 
-            controller = new TimeoutController(30000)
-            options.signal = controller.signal
+            options.signal = AbortSignal.timeout(30000)
 
             try {
               // fails on node < 15.4
-              setMaxListeners?.(Infinity, controller.signal)
+              setMaxListeners?.(Infinity, options.signal)
             } catch { }
           }
 
@@ -489,10 +487,6 @@ export class DefaultUpgrader implements Upgrader {
           }
 
           throw new CodeError(String(err), codes.ERR_UNSUPPORTED_PROTOCOL)
-        } finally {
-          if (controller != null) {
-            controller.clear()
-          }
         }
       }
 

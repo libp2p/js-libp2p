@@ -12,7 +12,6 @@ import type { AbortOptions } from '@libp2p/interfaces'
 import { abortableDuplex } from 'abortable-iterator'
 import { pipe } from 'it-pipe'
 import first from 'it-first'
-import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
@@ -139,19 +138,17 @@ class DefaultFetchService implements Startable, FetchService {
     log('dialing %s to %p', this.protocol, peer)
 
     const connection = await this.components.connectionManager.openConnection(peer, options)
-    let timeoutController
     let signal = options.signal
     let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
       log('using default timeout of %d ms', this.init.timeout)
-      timeoutController = new TimeoutController(this.init.timeout ?? DEFAULT_TIMEOUT)
-      signal = timeoutController.signal
+      signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
 
       try {
         // fails on node < 15.4
-        setMaxListeners?.(Infinity, timeoutController.signal)
+        setMaxListeners?.(Infinity, signal)
       } catch {}
     }
 
@@ -203,10 +200,6 @@ class DefaultFetchService implements Startable, FetchService {
 
       return result ?? null
     } finally {
-      if (timeoutController != null) {
-        timeoutController.clear()
-      }
-
       if (stream != null) {
         stream.close()
       }

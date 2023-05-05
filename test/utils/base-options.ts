@@ -3,6 +3,7 @@ import { mplex } from '@libp2p/mplex'
 import { plaintext } from '../../src/insecure/index.js'
 import type { Libp2pOptions } from '../../src'
 import mergeOptions from 'merge-options'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import type { ServiceMap } from '@libp2p/interface-libp2p'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -22,6 +23,7 @@ export function createBaseOptions <T extends ServiceMap = {}> (...overrides: Arr
       circuitRelayTransport()
     ],
     streamMuxers: [
+      yamux(),
       mplex()
     ],
     connectionEncryption: [

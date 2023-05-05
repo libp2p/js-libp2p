@@ -158,6 +158,13 @@ export class DefaultTransportManager implements TransportManager, Startable {
   }
 
   /**
+   * Returns all the listener instances
+   */
+  getListeners (): Listener[] {
+    return Array.of(...this.listeners.values()).flat()
+  }
+
+  /**
    * Finds a transport that matches the given Multiaddr
    */
   transportForMultiaddr (ma: Multiaddr): Transport | undefined {
@@ -192,7 +199,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
           upgrader: this.components.upgrader
         })
 
-        let listeners = this.listeners.get(key)
+        let listeners: Listener[] = this.listeners.get(key) ?? []
 
         if (listeners == null) {
           listeners = []
@@ -216,6 +223,11 @@ export class DefaultTransportManager implements TransportManager, Startable {
             })
         })
         listener.addEventListener('close', () => {
+          const index = listeners.findIndex(l => l === listener)
+
+          // remove the listener
+          listeners.splice(index, 1)
+
           this.components.peerStore.patch(this.components.peerId, {
             multiaddrs: this.getAddrs()
           })

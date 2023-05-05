@@ -32,7 +32,6 @@ import type { Components } from './components.js'
 import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
 import type { KeyChainInit } from '@libp2p/keychain'
 import type { AddressManagerInit } from './address-manager/index.js'
-import type { PeerRoutingInit } from './peer-routing.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 
@@ -82,11 +81,6 @@ export interface Libp2pInit<T extends ServiceMap = {}> {
   peerStore: PersistentPeerStoreInit
 
   /**
-   * libp2p Peer routing service configuration
-   */
-  peerRouting: PeerRoutingInit
-
-  /**
    * keychain configuration
    */
   keychain: KeyChainInit
@@ -134,11 +128,12 @@ export type Libp2pOptions<T extends ServiceMap = {}> = RecursivePartial<Libp2pIn
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'
  * import { noise } from '@chainsafe/libp2p-noise'
+ * import { yamux } from '@chainsafe/libp2p-yamux'
  *
  * // specify options
  * const options = {
  *   transports: [tcp()],
- *   streamMuxers: [mplex()],
+ *   streamMuxers: [yamux(), mplex()],
  *   connectionEncryption: [noise()]
  * }
  *

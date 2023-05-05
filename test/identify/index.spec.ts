@@ -24,12 +24,12 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import delay from 'delay'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { TimeoutController } from 'timeout-abort-controller'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import pDefer from 'p-defer'
 import { defaultComponents, Components } from '../../src/components.js'
 import { stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
+import { DefaultIdentifyService } from '../../src/identify/identify.js'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -102,8 +102,8 @@ describe('identify', () => {
   })
 
   it('should be able to identify another peer', async () => {
-    const localIdentify = identifyService(defaultInit)(localComponents)
-    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -125,8 +125,8 @@ describe('identify', () => {
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
-    const localIdentify = identifyService(defaultInit)(localComponents)
-    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -188,8 +188,8 @@ describe('identify', () => {
   })
 
   it('should time out during identify', async () => {
-    const localIdentify = identifyService(defaultInit)(localComponents)
-    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -217,11 +217,11 @@ describe('identify', () => {
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
 
     // 10 ms timeout
-    const timeoutController = new TimeoutController(10)
+    const signal = AbortSignal.timeout(10)
 
     // Run identify
     await expect(localIdentify.identify(localToRemote, {
-      signal: timeoutController.signal
+      signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
 
@@ -234,10 +234,10 @@ describe('identify', () => {
   it('should limit incoming identify message sizes', async () => {
     const deferred = pDefer()
 
-    const remoteIdentify = identifyService({
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, {
       ...defaultInit,
       maxIdentifyMessageSize: 100
-    })(remoteComponents)
+    })
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')
@@ -280,10 +280,10 @@ describe('identify', () => {
   it('should time out incoming identify messages', async () => {
     const deferred = pDefer()
 
-    const remoteIdentify = identifyService({
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, {
       ...defaultInit,
       timeout: 100
-    })(remoteComponents)
+    })
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')

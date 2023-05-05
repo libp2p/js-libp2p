@@ -4,6 +4,7 @@ import { createLibp2p } from 'libp2p'
 import { identifyService } from 'libp2p/identify'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { floodsub } from '@libp2p/floodsub'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -15,7 +16,7 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    streamMuxers: [mplex()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     services: {
       pubsub: floodsub(),
@@ -32,7 +33,7 @@ const createNode = async () => {
   const [node1, node2, node3] = await Promise.all([
     createNode(),
     createNode(),
-    createNode(),
+    createNode()
   ])
 
   // node1 conect to node2 and node2 conect to node3
@@ -46,7 +47,7 @@ const createNode = async () => {
   })
   await node2.dial(node3.peerId)
 
-  //subscribe
+  // subscribe
   node1.services.pubsub.addEventListener('message', (evt) => {
     if (evt.detail.topic !== topic) {
       return
@@ -89,7 +90,7 @@ const createNode = async () => {
     }
   }
 
-  //validate fruit
+  // validate fruit
   node1.services.pubsub.topicValidators.set(topic, validateFruit)
   node2.services.pubsub.topicValidators.set(topic, validateFruit)
   node3.services.pubsub.topicValidators.set(topic, validateFruit)
@@ -111,6 +112,10 @@ async function delay (ms) {
 
 /**
  * Wait for node1 to see that node2 has subscribed to the topic
+ *
+ * @param node1
+ * @param node2
+ * @param topic
  */
 async function hasSubscription (node1, node2, topic) {
   while (true) {

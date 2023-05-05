@@ -6,7 +6,7 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { FaultTolerance } from '@libp2p/interface-transport'
 import { tcp } from '@libp2p/tcp'
 import { mockUpgrader } from '@libp2p/interface-mocks'
-import { uPnPNAT } from '../../src/upnp-nat/index.js'
+import { uPnPNATService } from '../../src/upnp-nat/index.js'
 import Peers from '../fixtures/peers.js'
 import { codes } from '../../src/errors.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
@@ -51,7 +51,7 @@ describe('UPnP NAT (TCP)', () => {
       faultTolerance: FaultTolerance.NO_FATAL
     })
 
-    const natManager: any = uPnPNAT({
+    const natManager: any = uPnPNATService({
       keepAlive: true,
       ...natManagerOptions
     })(components)
@@ -229,7 +229,7 @@ describe('UPnP NAT (TCP)', () => {
     const peerId = await createFromJSON(Peers[0])
 
     expect(() => {
-      uPnPNAT({ ttl: 5, keepAlive: true })(defaultComponents({ peerId }))
+      uPnPNATService({ ttl: 5, keepAlive: true })(defaultComponents({ peerId }))
     }).to.throw().with.property('code', codes.ERR_INVALID_PARAMETERS)
   })
 })
