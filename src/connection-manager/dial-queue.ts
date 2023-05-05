@@ -375,8 +375,8 @@ export class DialQueue {
 
     const sortedGatedAddrs = gatedAdrs.sort(this.addressSorter)
 
-     // make sure we actually have some addresses to dial
-     if (sortedGatedAddrs.length === 0) {
+    // make sure we actually have some addresses to dial
+    if (sortedGatedAddrs.length === 0) {
       throw new CodeError('The connection gater denied all addresses in the dial request', codes.ERR_NO_VALID_ADDRESSES)
     }
 
