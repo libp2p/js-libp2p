@@ -1,3 +1,10 @@
+## [1.0.16](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.15...v1.0.16) (2023-05-05)
+
+
+### Bug Fixes
+
+* Remove unreliable webkit-linux useragent check ([#319](https://github.com/libp2p/js-libp2p-crypto/issues/319)) ([8f8df5c](https://github.com/libp2p/js-libp2p-crypto/commit/8f8df5ccb99cf49f8d7f85a4834c505738c3bf63)), closes [#318](https://github.com/libp2p/js-libp2p-crypto/issues/318)
+
 ## [1.0.15](https://github.com/libp2p/js-libp2p-crypto/compare/v1.0.14...v1.0.15) (2023-04-04)
 
 
