@@ -1,7 +1,7 @@
-import * as underTest from '../src/stream'
 import { expect, assert } from 'aegir/chai'
 import { bytes } from 'multiformats'
 import * as pb from '../proto_ts/message.js'
+import * as underTest from '../src/stream'
 const TEST_MESSAGE = 'test_messgae'
 
 function setup (): { peerConnection: RTCPeerConnection, datachannel: RTCDataChannel, webrtcStream: underTest.WebRTCStream } {

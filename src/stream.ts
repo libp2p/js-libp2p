@@ -1,14 +1,13 @@
-import type { Stream, StreamStat, Direction } from '@libp2p/interface-connection'
 import { logger } from '@libp2p/logger'
 import * as lengthPrefixed from 'it-length-prefixed'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
-import defer, { DeferredPromise } from 'p-defer'
-import type { Source } from 'it-stream-types'
+import defer, { type DeferredPromise } from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
-
 import * as pb from '../proto_ts/message.js'
+import type { Stream, StreamStat, Direction } from '@libp2p/interface-connection'
+import type { Source } from 'it-stream-types'
 
 const log = logger('libp2p:webrtc:stream')
 
@@ -182,7 +181,7 @@ export class WebRTCStream implements Stream {
    * Read unwrapped protobuf data from the underlying datachannel.
    * _src is exposed to the user via the `source` getter to .
    */
-  private readonly _src: Source<Uint8ArrayList>
+  private readonly _src: AsyncGenerator<Uint8ArrayList, any, unknown>
 
   /**
    * push data from the underlying datachannel to the length prefix decoder
@@ -282,9 +281,9 @@ export class WebRTCStream implements Stream {
   }
 
   // If user attempts to set a new source this should be a noop
-  set source (_src: Source<Uint8ArrayList>) { }
+  set source (_src: AsyncGenerator<Uint8ArrayList, any, unknown>) { }
 
-  get source (): Source<Uint8ArrayList> {
+  get source (): AsyncGenerator<Uint8ArrayList, any, unknown> {
     return this._src
   }
 

@@ -1,6 +1,4 @@
-export const nopSource = {
-  async * [Symbol.asyncIterator] () {}
-}
+export const nopSource = async function * nop (): AsyncGenerator<Uint8Array, any, unknown> {}
 
 export const nopSink = async (_: any): Promise<void> => {}
 

@@ -1,9 +1,9 @@
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { ListenerEvents, TransportManager, Upgrader, Listener } from '@libp2p/interface-transport'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { multiaddr, Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { inappropriateMultiaddr } from '../error.js'
 import { TRANSPORT } from './transport.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { ListenerEvents, TransportManager, Upgrader, Listener } from '@libp2p/interface-transport'
 
 export interface ListenerOptions {
   peerId: PeerId

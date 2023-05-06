@@ -1,13 +1,13 @@
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import { logger } from '@libp2p/logger'
+import { abortableDuplex } from 'abortable-iterator'
 import { pbStream } from 'it-pb-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
-import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
-import * as pb from './pb/index.js'
-import { abortableDuplex } from 'abortable-iterator'
-import { logger } from '@libp2p/logger'
-import type { Stream } from '@libp2p/interface-connection'
-import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 import { DataChannelMuxerFactory } from '../muxer.js'
+import * as pb from './pb/index.js'
+import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
+import type { Stream } from '@libp2p/interface-connection'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 
 const DEFAULT_TIMEOUT = 30 * 1000
 

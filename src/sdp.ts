@@ -1,11 +1,10 @@
 import { logger } from '@libp2p/logger'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import { bases } from 'multiformats/basics'
 import * as multihashes from 'multihashes'
-import type { HashCode, HashName } from 'multihashes'
-
 import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error.js'
 import { CERTHASH_CODE } from './transport.js'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { HashCode, HashName } from 'multihashes'
 
 const log = logger('libp2p:webrtc:sdp')
 

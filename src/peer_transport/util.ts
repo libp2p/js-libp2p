@@ -1,7 +1,7 @@
 import { logger } from '@libp2p/logger'
-import type { DeferredPromise } from 'p-defer'
-import * as pb from './pb/index.js'
 import { detect } from 'detect-browser'
+import * as pb from './pb/index.js'
+import type { DeferredPromise } from 'p-defer'
 
 const browser = detect()
 export const isFirefox = ((browser != null) && browser.name === 'firefox')

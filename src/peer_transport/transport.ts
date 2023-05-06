@@ -1,18 +1,17 @@
-import type { Connection } from '@libp2p/interface-connection'
-import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from '@libp2p/interface-transport'
-import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
-import { multiaddr, Multiaddr, protocols } from '@multiformats/multiaddr'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { WebRTCMultiaddrConnection } from '../maconn.js'
-import type { Startable } from '@libp2p/interfaces/startable'
-import { WebRTCPeerListener } from './listener.js'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import { logger } from '@libp2p/logger'
-import { initiateConnection, handleIncomingStream } from './handler.js'
+import { type CreateListenerOptions, type DialOptions, type Listener, symbol, type Transport, type TransportManager, type Upgrader } from '@libp2p/interface-transport'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
 import { codes } from '../error.js'
+import { WebRTCMultiaddrConnection } from '../maconn.js'
+import { initiateConnection, handleIncomingStream } from './handler.js'
+import { WebRTCPeerListener } from './listener.js'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:webrtc:peer')
 
@@ -46,7 +45,7 @@ export class WebRTCTransport implements Transport, Startable {
   }
 
   async start (): Promise<void> {
-    await this.components.registrar.handle(SIGNALING_PROTO_ID, (data) => {
+    await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
       this._onProtocol(data).catch(err => { log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
     })
     this._started = true
@@ -61,13 +60,9 @@ export class WebRTCTransport implements Transport, Startable {
     return new WebRTCPeerListener(this.components)
   }
 
-  get [Symbol.toStringTag] (): string {
-    return '@libp2p/webrtc'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/webrtc'
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter((ma) => {

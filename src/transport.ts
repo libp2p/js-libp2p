@@ -1,22 +1,22 @@
 import { noise as Noise } from '@chainsafe/libp2p-noise'
-import type { Connection } from '@libp2p/interface-connection'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { CreateListenerOptions, Listener, symbol, Transport } from '@libp2p/interface-transport'
+import { type CreateListenerOptions, type Listener, symbol, type Transport } from '@libp2p/interface-transport'
 import { logger } from '@libp2p/logger'
 import * as p from '@libp2p/peer-id'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { protocols } from '@multiformats/multiaddr'
 import * as multihashes from 'multihashes'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { concat } from 'uint8arrays/concat'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from './error.js'
 import { WebRTCMultiaddrConnection } from './maconn.js'
 import { DataChannelMuxerFactory } from './muxer.js'
-import type { WebRTCDialOptions } from './options.js'
+import { isFirefox } from './peer_transport/util.js'
 import * as sdp from './sdp.js'
 import { WebRTCStream } from './stream.js'
 import { genUfrag } from './util.js'
-import { protocols } from '@multiformats/multiaddr'
-import { isFirefox } from './peer_transport/util.js'
+import type { WebRTCDialOptions } from './options.js'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:webrtc:transport')
 
@@ -83,16 +83,12 @@ export class WebRTCDirectTransport implements Transport {
   /**
    * Implement toString() for WebRTCTransport
    */
-  get [Symbol.toStringTag] (): string {
-    return '@libp2p/webrtc-direct'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
 
   /**
    * Symbol.for('@libp2p/transport')
    */
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
   /**
    * Connect to a peer using a multiaddr
@@ -225,7 +221,7 @@ export class WebRTCDirectTransport implements Transport {
     // Therefore, we need to secure an inbound noise connection from the remote.
     await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
 
-    return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
+    return options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
   }
 
   /**

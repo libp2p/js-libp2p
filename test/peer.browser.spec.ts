@@ -2,6 +2,7 @@ import { mockConnection, mockMultiaddrConnection, mockRegistrar, mockStream, moc
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { detect } from 'detect-browser'
 import { pair } from 'it-pair'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-pb-stream'
@@ -9,7 +10,6 @@ import sinon from 'sinon'
 import { initiateConnection, handleIncomingStream } from '../src/peer_transport/handler'
 import { Message } from '../src/peer_transport/pb/index.js'
 import { WebRTCTransport } from '../src/peer_transport/transport'
-import { detect } from 'detect-browser'
 
 const browser = detect()
 
@@ -98,7 +98,7 @@ describe('webrtc filter', () => {
       transportManager: sinon.stub() as any,
       peerId: sinon.stub() as any,
       registrar: mockRegistrar(),
-      upgrader: mockUpgrader(),
+      upgrader: mockUpgrader({}),
       peerStore: sinon.stub() as any
     }, {})
 
