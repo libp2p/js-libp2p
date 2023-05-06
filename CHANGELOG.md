@@ -1,3 +1,10 @@
+## [1.1.11](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.10...v1.1.11) (2023-05-06)
+
+
+### Dependencies
+
+* upgrade transport interface to 4.0.1 ([#150](https://github.com/libp2p/js-libp2p-webrtc/issues/150)) ([dc61fa2](https://github.com/libp2p/js-libp2p-webrtc/commit/dc61fa27a2f53568b1f3b320971de166b5b243f9))
+
 ## [1.1.10](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.9...v1.1.10) (2023-05-03)
 
 
