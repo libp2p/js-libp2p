@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { AutoDial } from '../../src/connection-manager/auto-dial.js'
-import pWaitFor from 'p-wait-for'
-import delay from 'delay'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { stubInterface } from 'sinon-ts'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
-import { multiaddr } from '@multiformats/multiaddr'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { PeerMap } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import delay from 'delay'
+import pWaitFor from 'p-wait-for'
+import { stubInterface } from 'sinon-ts'
+import { AutoDial } from '../../src/connection-manager/auto-dial.js'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
 
 describe('auto-dial', () => {
   let autoDialler: AutoDial

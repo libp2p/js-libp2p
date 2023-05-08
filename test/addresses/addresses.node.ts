@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
+import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
+import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
-import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
-import { AddressesOptions } from './utils.js'
 import { createNode } from '../utils/creators/peer.js'
+import { AddressesOptions } from './utils.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']

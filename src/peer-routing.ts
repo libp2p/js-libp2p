@@ -1,20 +1,20 @@
-import { logger } from '@libp2p/logger'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes, messages } from './errors.js'
+import { logger } from '@libp2p/logger'
+import filter from 'it-filter'
+import first from 'it-first'
+import merge from 'it-merge'
+import { pipe } from 'it-pipe'
 import {
   storeAddresses,
   uniquePeers,
   requirePeers
 } from './content-routing/utils.js'
-import merge from 'it-merge'
-import { pipe } from 'it-pipe'
-import first from 'it-first'
-import filter from 'it-filter'
+import { codes, messages } from './errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import type { AbortOptions } from '@libp2p/interfaces'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:peer-routing')
 
@@ -60,7 +60,7 @@ export class DefaultPeerRouting implements PeerRouting {
       ),
       (source) => filter(source, Boolean),
       (source) => storeAddresses(source, this.components.peerStore),
-      async (source) => await first(source)
+      async (source) => first(source)
     )
 
     if (output != null) {

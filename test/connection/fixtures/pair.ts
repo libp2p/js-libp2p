@@ -1,7 +1,7 @@
-import defer from 'p-defer'
 import map from 'it-map'
-import type { Source, Duplex } from 'it-stream-types'
+import defer from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
+import type { Source, Duplex } from 'it-stream-types'
 
 /**
  * A pair of streams where one drains from the other

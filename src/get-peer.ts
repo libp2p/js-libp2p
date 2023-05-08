@@ -1,11 +1,11 @@
-import { peerIdFromString } from '@libp2p/peer-id'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { isMultiaddr } from '@multiformats/multiaddr'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from './errors.js'
 import { isPeerId } from '@libp2p/interface-peer-id'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { logger } from '@libp2p/logger'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { isMultiaddr } from '@multiformats/multiaddr'
+import { codes } from './errors.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:get-peer')
 

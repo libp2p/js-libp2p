@@ -1,6 +1,6 @@
+import type { Limit } from './pb/index.js'
 import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { PeerMap } from '@libp2p/peer-collections'
-import type { Limit } from './pb/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface RelayReservation {

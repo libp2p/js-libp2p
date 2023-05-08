@@ -1,23 +1,23 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { FaultTolerance } from '@libp2p/interface-transport'
-import { tcp } from '@libp2p/tcp'
 import { mockUpgrader } from '@libp2p/interface-mocks'
+import { FaultTolerance } from '@libp2p/interface-transport'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { start, stop } from '@libp2p/interfaces/startable'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { tcp } from '@libp2p/tcp'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { codes } from '../../src/errors.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { uPnPNATService } from '../../src/upnp-nat/index.js'
 import Peers from '../fixtures/peers.js'
-import { codes } from '../../src/errors.js'
-import { createFromJSON } from '@libp2p/peer-id-factory'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import { start, stop } from '@libp2p/interfaces/startable'
-import { multiaddr } from '@multiformats/multiaddr'
-import { defaultComponents, Components } from '../../src/components.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -76,7 +76,7 @@ describe('UPnP NAT (TCP)', () => {
     }
   }
 
-  afterEach(async () => await Promise.all(teardown.map(async t => { await t() })))
+  afterEach(async () => Promise.all(teardown.map(async t => { await t() })))
 
   it('should map TCP connections to external ports', async () => {
     const {

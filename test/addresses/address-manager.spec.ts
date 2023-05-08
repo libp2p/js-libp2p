@@ -1,18 +1,18 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
-import { createLibp2p } from '../../src/index.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import Peers from '../fixtures/peers.js'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Libp2p } from '../../src/index.js'
-import type { PeerStore } from '@libp2p/interface-peer-store'
 import { webSockets } from '@libp2p/websockets'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { type AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
+import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
+import Peers from '../fixtures/peers.js'
+import type { Libp2p } from '../../src/index.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']

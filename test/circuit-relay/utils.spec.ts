@@ -2,14 +2,14 @@
 
 import { mockStream } from '@libp2p/interface-mocks'
 import { expect } from 'aegir/chai'
-import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../../src/circuit-relay/utils.js'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import delay from 'delay'
 import drain from 'it-drain'
-import type { Duplex, Source } from 'it-stream-types'
 import { pushable } from 'it-pushable'
-import Sinon from 'sinon'
 import toBuffer from 'it-to-buffer'
+import Sinon from 'sinon'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../../src/circuit-relay/utils.js'
+import type { Duplex, Source } from 'it-stream-types'
 
 describe('circuit-relay utils', () => {
   it('should create relay', async () => {
