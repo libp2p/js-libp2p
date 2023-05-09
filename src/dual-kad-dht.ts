@@ -164,29 +164,33 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
       }))
     })
 
-    components.events.addEventListener('self:peer:update', (evt) => {
-      log('received update of self-peer info')
-      const hasPublicAddress = evt.detail.peer.addresses
-        .some(({ multiaddr }) => {
-          const isPublic = multiaddrIsPublic(multiaddr)
+    // if client mode has not been explicitly specified, auto-switch to server
+    // mode when the node's peer data is updated with publicly dialable addresses
+    if (init.clientMode == null) {
+      components.events.addEventListener('self:peer:update', (evt) => {
+        log('received update of self-peer info')
+        const hasPublicAddress = evt.detail.peer.addresses
+          .some(({ multiaddr }) => {
+            const isPublic = multiaddrIsPublic(multiaddr)
 
-          log('%m is public %s', multiaddr, isPublic)
+            log('%m is public %s', multiaddr, isPublic)
 
-          return isPublic
-        })
+            return isPublic
+          })
 
-      this.getMode()
-        .then(async mode => {
-          if (hasPublicAddress && mode === 'client') {
-            await this.setMode('server')
-          } else if (mode === 'server' && !hasPublicAddress) {
-            await this.setMode('client')
-          }
-        })
-        .catch(err => {
-          log.error('error setting dht server mode', err)
-        })
-    })
+        this.getMode()
+          .then(async mode => {
+            if (hasPublicAddress && mode === 'client') {
+              await this.setMode('server')
+            } else if (mode === 'server' && !hasPublicAddress) {
+              await this.setMode('client')
+            }
+          })
+          .catch(err => {
+            log.error('error setting dht server mode', err)
+          })
+      })
+    }
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/dual-kad-dht'
