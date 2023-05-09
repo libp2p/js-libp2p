@@ -1,3 +1,10 @@
+## [9.3.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.1...v9.3.2) (2023-05-09)
+
+
+### Bug Fixes
+
+* only start self-query if node is not stopped ([843fe61](https://github.com/libp2p/js-libp2p-kad-dht/commit/843fe6171b7bc8a61e0b5de18a7ccced5398307a))
+
 ## [9.3.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.0...v9.3.1) (2023-05-09)
 
 
