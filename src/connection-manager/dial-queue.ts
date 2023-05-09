@@ -238,7 +238,7 @@ export class DialQueue {
         signal.clear()
       })
       .catch(err => {
-        log.error('dial failed to %s', addrsToDial.map(({ multiaddr }) => multiaddr.toString()).join(', '), err)
+        log.error('dial failed to %s', pendingDial.multiaddrs.map(ma => ma.toString()).join(', '), err)
 
         // Error is a timeout
         if (signal.aborted) {
@@ -384,7 +384,14 @@ export class DialQueue {
       gatedAdrs.push(addr)
     }
 
-    return gatedAdrs.sort(this.addressSorter)
+    const sortedGatedAddrs = gatedAdrs.sort(this.addressSorter)
+
+    // make sure we actually have some addresses to dial
+    if (sortedGatedAddrs.length === 0) {
+      throw new CodeError('The connection gater denied all addresses in the dial request', codes.ERR_NO_VALID_ADDRESSES)
+    }
+
+    return sortedGatedAddrs
   }
 
   private async performDial (pendingDial: PendingDial, options: DialOptions = {}): Promise<Connection> {
