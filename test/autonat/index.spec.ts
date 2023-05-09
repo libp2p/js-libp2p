@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { autonatService, AutonatServiceInit } from '../../src/autonat/index.js'
+import { autoNATService, AutoNATServiceInit } from '../../src/autonat/index.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
@@ -26,7 +26,7 @@ import { Components, defaultComponents } from '../../src/components.js'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 
-const defaultInit: AutonatServiceInit = {
+const defaultInit: AutoNATServiceInit = {
   protocolPrefix: 'libp2p',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
@@ -65,7 +65,7 @@ describe('autonat', () => {
       peerStore
     })
 
-    service = autonatService(defaultInit)(components)
+    service = autoNATService(defaultInit)(components)
 
     await start(components)
     await start(service)
