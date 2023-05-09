@@ -1,6 +1,7 @@
 import { logger } from '@libp2p/logger'
 import { nopSink, nopSource } from './util.js'
 import type { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/interface-connection'
+import type { CounterGroup } from '@libp2p/interface-metrics'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 
@@ -21,6 +22,11 @@ interface WebRTCMultiaddrConnectionInit {
    * Holds the relevant events timestamps of the connection
    */
   timeline: MultiaddrConnectionTimeline
+
+  /**
+   * Optional metrics counter group for this connection
+   */
+  metrics?: CounterGroup
 }
 
 export class WebRTCMultiaddrConnection implements MultiaddrConnection {
@@ -38,6 +44,11 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
    * Holds the lifecycle times of the connection
    */
   timeline: MultiaddrConnectionTimeline
+
+  /**
+   * Optional metrics counter group for this connection
+   */
+  metrics?: CounterGroup
 
   /**
    * The stream source, a no-op as the transport natively supports multiplexing
@@ -59,10 +70,10 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
     if (err !== undefined) {
       log.error('error closing connection', err)
     }
-
     log.trace('closing connection')
 
     this.timeline.close = Date.now()
     this.peerConnection.close()
+    this.metrics?.increment({ close: true })
   }
 }

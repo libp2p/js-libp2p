@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import { mockUpgrader } from '@libp2p/interface-mocks'
+import { mockMetrics, mockUpgrader } from '@libp2p/interface-mocks'
 import { type CreateListenerOptions, symbol } from '@libp2p/interface-transport'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
@@ -8,6 +8,7 @@ import { expect, assert } from 'aegir/chai'
 import { UnimplementedError } from './../src/error.js'
 import * as underTest from './../src/transport.js'
 import { expectError } from './util.js'
+import type { Metrics } from '@libp2p/interface-metrics'
 
 function ignoredDialOption (): CreateListenerOptions {
   const upgrader = mockUpgrader({})
@@ -15,11 +16,14 @@ function ignoredDialOption (): CreateListenerOptions {
 }
 
 describe('WebRTC Transport', () => {
+  let metrics: Metrics
   let components: underTest.WebRTCDirectTransportComponents
 
   before(async () => {
+    metrics = mockMetrics()()
     components = {
-      peerId: await createEd25519PeerId()
+      peerId: await createEd25519PeerId(),
+      metrics
     }
   })
 

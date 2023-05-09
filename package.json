@@ -133,12 +133,13 @@
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i protons",
     "release": "aegir release"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^11.0.4",
     "@libp2p/interface-connection": "^5.0.2",
+    "@libp2p/interface-metrics": "^4.0.8",
     "@libp2p/interface-peer-id": "^2.0.2",
     "@libp2p/interface-peer-store": "^2.0.2",
     "@libp2p/interface-registrar": "^2.0.12",
@@ -169,10 +170,11 @@
     "@libp2p/peer-id-factory": "^2.0.3",
     "@protobuf-ts/protoc": "^2.9.0",
     "@types/sinon": "^10.0.14",
-    "aegir": "^39.0.5",
+    "aegir": "^39.0.6",
     "eslint-plugin-etc": "^2.0.2",
     "it-pair": "^2.0.6",
     "protons": "^7.0.2",
-    "sinon": "^15.0.4"
+    "sinon": "^15.0.4",
+    "sinon-ts": "^1.0.0"
   }
 }
