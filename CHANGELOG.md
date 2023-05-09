@@ -1,3 +1,10 @@
+## [1.2.0](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.11...v1.2.0) (2023-05-09)
+
+
+### Features
+
+* export metrics ([#71](https://github.com/libp2p/js-libp2p-webrtc/issues/71)) ([b3cb445](https://github.com/libp2p/js-libp2p-webrtc/commit/b3cb445e226d6d4ddba092cf961d6178d9a19ac1))
+
 ## [1.1.11](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.10...v1.1.11) (2023-05-06)
 
 
