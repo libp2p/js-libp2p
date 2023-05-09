@@ -1,3 +1,10 @@
+## [9.3.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.2...v9.3.3) (2023-05-09)
+
+
+### Bug Fixes
+
+* work in browsers without extra deps ([#474](https://github.com/libp2p/js-libp2p-kad-dht/issues/474)) ([0c8d464](https://github.com/libp2p/js-libp2p-kad-dht/commit/0c8d464e91f63a799debd29c54dd358b38e11ea9))
+
 ## [9.3.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.1...v9.3.2) (2023-05-09)
 
 
