@@ -1,3 +1,10 @@
+## [9.3.1](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.0...v9.3.1) (2023-05-09)
+
+
+### Bug Fixes
+
+* if client mode is specifed, do not auto-switch to server mode ([#475](https://github.com/libp2p/js-libp2p-kad-dht/issues/475)) ([abe6a25](https://github.com/libp2p/js-libp2p-kad-dht/commit/abe6a25c09b8e619661c427e5c7b7a4c45fa3d92))
+
 ## [9.3.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.2.0...v9.3.0) (2023-05-09)
 
 
