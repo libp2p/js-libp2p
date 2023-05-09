@@ -127,6 +127,11 @@ export class QuerySelf implements Startable {
 
     Promise.resolve()
       .then(async () => {
+        if (!this.started) {
+          this.log('not running self-query - node stopped before query started')
+          return
+        }
+
         this.controller = new AbortController()
         const signal = anySignal([this.controller.signal, AbortSignal.timeout(this.queryTimeout)])
 
@@ -165,9 +170,12 @@ export class QuerySelf implements Startable {
       }).finally(() => {
         this.running = false
 
-        this.log('running self-query again in %dms', this.interval)
         clearTimeout(this.timeoutId)
-        this.timeoutId = setTimeout(this.querySelf.bind(this), this.interval)
+
+        if (this.started) {
+          this.log('running self-query again in %dms', this.interval)
+          this.timeoutId = setTimeout(this.querySelf.bind(this), this.interval)
+        }
       })
   }
 }
