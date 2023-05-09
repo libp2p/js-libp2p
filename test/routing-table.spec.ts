@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { mockConnectionManager } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -141,7 +141,7 @@ describe('Routing Table', () => {
       peer: peerIds[1]
     }
 
-    table._onPing([oldPeer], newPeer)
+    table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
 
     if (table.kb == null) {
       throw new Error('kbucket not defined')
@@ -171,10 +171,10 @@ describe('Routing Table', () => {
     expect(newStreamStub.calledWith(PROTOCOL_DHT)).to.be.true()
 
     // did not add the new peer
-    expect(table.kb.get(newPeer.id)).to.be.null()
+    expect(table.kb.get(newPeer.id)).to.be.undefined()
 
     // kept the old peer
-    expect(table.kb.get(oldPeer.id)).to.not.be.null()
+    expect(table.kb.get(oldPeer.id)).to.not.be.undefined()
   })
 
   it('evicts oldest peer that does not respond to ping', async () => {
@@ -203,7 +203,7 @@ describe('Routing Table', () => {
       peer: peerIds[1]
     }
 
-    table._onPing([oldPeer], newPeer)
+    table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
 
     if (table.kb == null) {
       throw new Error('kbucket not defined')
@@ -227,10 +227,10 @@ describe('Routing Table', () => {
     expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()
 
     // added the new peer
-    expect(table.kb.get(newPeer.id)).to.not.be.null()
+    expect(table.kb.get(newPeer.id)).to.not.be.undefined()
 
     // evicted the old peer
-    expect(table.kb.get(oldPeer.id)).to.be.null()
+    expect(table.kb.get(oldPeer.id)).to.be.undefined()
   })
 
   it('tags newly found kad-close peers', async () => {

@@ -1,9 +1,8 @@
 import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
-// @ts-expect-error no types
-import KBuck from 'k-bucket'
 import Queue from 'p-queue'
 import * as utils from '../utils.js'
+import { KBucket, type PingEventDetails } from './k-bucket.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Metric, Metrics } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -16,42 +15,6 @@ export const KAD_CLOSE_TAG_VALUE = 50
 export const KBUCKET_SIZE = 20
 export const PING_TIMEOUT = 10000
 export const PING_CONCURRENCY = 10
-
-export interface KBucketPeer {
-  id: Uint8Array
-  peer: PeerId
-}
-
-export interface KBucket {
-  id: Uint8Array
-  contacts: KBucketPeer[]
-  dontSplit: boolean
-  left: KBucket
-  right: KBucket
-}
-
-interface KBucketTreeEvents {
-  'ping': (oldContacts: KBucketPeer[], newContact: KBucketPeer) => void
-  'added': (contact: KBucketPeer) => void
-  'removed': (contact: KBucketPeer) => void
-}
-
-export interface KBucketTree {
-  root: KBucket
-  localNodeId: Uint8Array
-
-  on: <U extends keyof KBucketTreeEvents>(
-    event: U, listener: KBucketTreeEvents[U]
-  ) => this
-
-  closest: (key: Uint8Array, count: number) => KBucketPeer[]
-  closestPeer: (key: Uint8Array) => KBucketPeer
-  remove: (key: Uint8Array) => void
-  add: (peer: KBucketPeer) => void
-  get: (key: Uint8Array) => Uint8Array
-  count: () => number
-  toIterable: () => Iterable<KBucketPeer>
-}
 
 export interface RoutingTableInit {
   lan: boolean
@@ -76,7 +39,7 @@ export interface RoutingTableComponents {
  */
 export class RoutingTable implements Startable {
   public kBucketSize: number
-  public kb?: KBucketTree
+  public kb?: KBucket
   public pingQueue: Queue
 
   private readonly log: Logger
@@ -135,7 +98,7 @@ export class RoutingTable implements Startable {
       }
     }
 
-    const kBuck: KBucketTree = new KBuck({
+    const kBuck = new KBucket({
       localNodeId: await utils.convertPeerId(this.components.peerId),
       numberOfNodesPerKBucket: this.kBucketSize,
       numberOfNodesToPing: 1
@@ -143,7 +106,7 @@ export class RoutingTable implements Startable {
     this.kb = kBuck
 
     // test whether to evict peers
-    kBuck.on('ping', this._onPing)
+    kBuck.addEventListener('ping', this._onPing)
 
     // tag kad-close peers
     this._tagPeers(kBuck)
@@ -160,7 +123,7 @@ export class RoutingTable implements Startable {
    * - this will lower the chances that connections to them get closed when
    * we reach connection limits
    */
-  _tagPeers (kBuck: KBucketTree): void {
+  _tagPeers (kBuck: KBucket): void {
     let kClosest = new PeerSet()
 
     const updatePeerTags = utils.debounce(() => {
@@ -197,10 +160,10 @@ export class RoutingTable implements Startable {
       kClosest = newClosest
     })
 
-    kBuck.on('added', () => {
+    kBuck.addEventListener('added', () => {
       updatePeerTags()
     })
-    kBuck.on('removed', () => {
+    kBuck.addEventListener('removed', () => {
       updatePeerTags()
     })
   }
@@ -215,7 +178,12 @@ export class RoutingTable implements Startable {
    * `oldContacts` will not be empty and is the list of contacts that
    * have not been contacted for the longest.
    */
-  _onPing (oldContacts: KBucketPeer[], newContact: KBucketPeer): void {
+  _onPing (evt: CustomEvent<PingEventDetails>): void {
+    const {
+      oldContacts,
+      newContact
+    } = evt.detail
+
     // add to a queue so multiple ping requests do not overlap and we don't
     // flood the network with ping requests if lots of newContact requests
     // are received
