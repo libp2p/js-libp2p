@@ -1,3 +1,10 @@
+## [9.3.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.2.0...v9.3.0) (2023-05-09)
+
+
+### Features
+
+* switch to server mode automatically when addresses change ([#473](https://github.com/libp2p/js-libp2p-kad-dht/issues/473)) ([de51cbe](https://github.com/libp2p/js-libp2p-kad-dht/commit/de51cbe0c3f5e6b17c45d1297c359cdafd83b0a2))
+
 ## [9.2.0](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.5...v9.2.0) (2023-05-05)
 
 
