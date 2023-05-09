@@ -1,3 +1,100 @@
+/**
+ * @packageDocumentation
+ *
+ * Collect libp2p metrics for scraping by Prometheus or Graphana.
+ * @module libp2p-prometheus-metrics
+ *
+ * A tracked metric can be created by calling either `registerMetric` on the metrics object
+ *
+ * @example
+ *
+ * ```typescript
+ * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+ *
+ * const metrics = prometheusMetrics()()
+ * const myMetric = metrics.registerMetric({
+ *  name: 'my_metric',
+ *  label: 'my_label',
+ *  help: 'my help text'
+ * })
+ *
+ * myMetric.update(1)
+ * ```
+ * A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
+ *
+ * @example
+ *
+ * ```typescript
+ * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+ *
+ * const metrics = prometheusMetrics()()
+ * const myMetric = metrics.registerMetric({
+ *  name: 'my_metric',
+ *  label: 'my_label',
+ *  help: 'my help text',
+ *  calculate: async () => {
+ *   // do something expensive
+ *    return 1
+ *  }
+ * })
+ * ```
+ *
+ * If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
+ *
+ * @example
+ *
+ * ```typescript
+ * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+ *
+ * const metrics = prometheusMetrics()()
+ * const myMetricGroup = metrics.registerMetricGroup({
+ *  name: 'my_metric_group',
+ *  label: 'my_label',
+ *  help: 'my help text'
+ * })
+ *
+ * myMetricGroup.increment({ my_label: 'my_value' })
+ * ```
+ *
+ * There are specific metric groups for tracking libp2p connections and streams:
+ *
+ * Track a newly opened multiaddr connection:
+ * @example
+ *
+ * ```typescript
+ * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+ * import { createLibp2p } from 'libp2p'
+ *
+ *
+ * const metrics = prometheusMetrics()()
+ *
+ * const libp2p = await createLibp2p({
+ *    metrics: metrics,
+ *   })
+ * // set up a multiaddr connection
+ * const connection = await libp2p.dial('multiaddr')
+ * const connections = metrics.trackMultiaddrConnection(connection)
+ * ```
+ *
+ * Track a newly opened stream:
+ * @example
+ *
+ * ```typescript
+ * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+ * import { createLibp2p } from 'libp2p'
+ *
+ * const metrics = prometheusMetrics()()
+ *
+ * const libp2p = await createLibp2p({
+ *   metrics: metrics,
+ * })
+ *
+ * const stream = await connection.newStream('/my/protocol')
+ * const streams = metrics.trackProtocolStream(stream)
+ * ```
+ *
+ */
+
 import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface-metrics'
 import { collectDefaultMetrics, DefaultMetricsCollectorConfiguration, register, Registry } from 'prom-client'
 import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface-connection'
