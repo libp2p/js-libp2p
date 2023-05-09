@@ -37,7 +37,8 @@ export class TestDHT {
       // connectionGater: mockConnectionGater(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>(),
-      connectionManager: stubInterface<ConnectionManager>()
+      connectionManager: stubInterface<ConnectionManager>(),
+      events
     }
     components.connectionManager = mockConnectionManager({
       ...components,
