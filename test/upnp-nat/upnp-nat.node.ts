@@ -18,6 +18,8 @@ import { defaultComponents, Components } from '../../src/components.js'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import { pEvent } from 'p-event'
+import type { PeerUpdate } from '@libp2p/interface-libp2p'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -84,12 +86,6 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    let addressChangedEventFired = false
-
-    components.events.addEventListener('self:peer:update', () => {
-      addressChangedEventFired = true
-    })
-
     client.externalIp.resolves('82.3.1.5')
 
     let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
@@ -115,10 +111,13 @@ describe('UPnP NAT (TCP)', () => {
       })
     })
 
-    // simulate autonat having run
-    components.addressManager.confirmObservedAddr(multiaddr('/ip4/82.3.1.5/tcp/4002'))
+    const externalAddress = '/ip4/82.3.1.5/tcp/4002'
+    const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(components.events, 'self:peer:update')
 
-    expect(addressChangedEventFired).to.be.true()
+    // simulate autonat having run
+    components.addressManager.confirmObservedAddr(multiaddr(externalAddress))
+
+    await eventPromise
   })
 
   it('should not map TCP connections when double-natted', async () => {

@@ -458,9 +458,9 @@ describe('libp2p.connections', () => {
         multiaddrs: [fullMultiaddr]
       })
 
-      expect(filterMultiaddrForPeer.callCount).to.equal(2)
+      expect(filterMultiaddrForPeer.callCount).to.equal(1)
 
-      const args = filterMultiaddrForPeer.getCall(1).args
+      const args = filterMultiaddrForPeer.getCall(0).args
       expect(args[0].toString()).to.equal(remoteLibp2p.peerId.toString())
       expect(args[1].toString()).to.equal(fullMultiaddr.toString())
     })

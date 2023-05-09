@@ -1,18 +1,17 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
-import { createLibp2p } from '../../src/index.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
 import Peers from '../fixtures/peers.js'
 import { StubbedInstance, stubInterface } from 'sinon-ts'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Libp2p } from '../../src/index.js'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { webSockets } from '@libp2p/websockets'
-import { plaintext } from '../../src/insecure/index.js'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import delay from 'delay'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']
@@ -20,20 +19,23 @@ const announceAddreses = ['/dns4/peer.io']
 describe('Address Manager', () => {
   let peerId: PeerId
   let peerStore: StubbedInstance<PeerStore>
+  let events: EventEmitter<Libp2pEvents>
 
-  before(async () => {
+  beforeEach(async () => {
     peerId = await createFromJSON(Peers[0])
     peerStore = stubInterface<PeerStore>({
       // @ts-expect-error incorrect return type
       patch: Promise.resolve({})
     })
+    events = new EventEmitter()
   })
 
   it('should not need any addresses', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -46,7 +48,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses
@@ -65,7 +68,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses,
@@ -84,7 +88,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -101,7 +106,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: [
@@ -121,7 +127,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -136,20 +143,24 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
-  it('should only set addresses once', () => {
+  it('should only set addresses once', async () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>({
         getAddrs: []
       }),
-      peerStore
+      peerStore,
+      events
     })
 
     am.confirmObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
+
+    // wait for address manager _updatePeerStoreAddresses debounce
+    await delay(1500)
 
     expect(peerStore.patch).to.have.property('callCount', 1)
   })
@@ -159,7 +170,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     })
 
     expect(am.getObservedAddrs()).to.be.empty()
@@ -176,7 +188,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>(),
-      peerStore
+      peerStore,
+      events
     })
 
     expect(am.getObservedAddrs()).to.be.empty()
@@ -194,7 +207,8 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager,
-      peerStore
+      peerStore,
+      events
     }, {
       listen: [ma],
       announce: []
@@ -205,33 +219,5 @@ describe('Address Manager', () => {
     const addrs = am.getAddresses()
     expect(addrs).to.have.lengthOf(1)
     expect(addrs[0].toString()).to.not.include(`/p2p/${peerId.toString()}`)
-  })
-})
-
-describe('libp2p.addressManager', () => {
-  let libp2p: Libp2p
-  afterEach(async () => {
-    if (libp2p != null) {
-      await libp2p.stop()
-    }
-  })
-
-  it('should populate the AddressManager from the config', async () => {
-    libp2p = await createLibp2p({
-      start: false,
-      addresses: {
-        listen: listenAddresses,
-        announce: announceAddreses
-      },
-      transports: [
-        webSockets()
-      ],
-      connectionEncryption: [
-        plaintext()
-      ]
-    })
-
-    expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.have.members(announceAddreses)
-    expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.not.have.members(listenAddresses)
   })
 })

@@ -5,6 +5,9 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import { logger } from '@libp2p/logger'
+import type { EventEmitter } from '@libp2p/interfaces/dist/src/events'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import { debounce } from './utils.js'
 
 const log = logger('libp2p:address-manager')
 
@@ -35,6 +38,7 @@ export interface DefaultAddressManagerComponents {
   peerId: PeerId
   transportManager: TransportManager
   peerStore: PeerStore
+  events: EventEmitter<Libp2pEvents>
 }
 
 /**
@@ -92,6 +96,43 @@ export class DefaultAddressManager {
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.observed = new Map()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
+
+    // this method gets called repeatedly on startup when transports start listening so
+    // debounce it so we don't cause multiple self:peer:update events to be emitted
+    this._updatePeerStoreAddresses = debounce(this._updatePeerStoreAddresses.bind(this), 1000)
+
+    // update our stored addresses when new transports listen
+    components.events.addEventListener('transport:listening', () => {
+      this._updatePeerStoreAddresses()
+    })
+    // update our stored addresses when existing transports stop listening
+    components.events.addEventListener('transport:close', () => {
+      this._updatePeerStoreAddresses()
+    })
+  }
+
+  _updatePeerStoreAddresses (): void {
+    // if announce addresses have been configured, ensure they make it into our peer
+    // record for things like identify
+    const addrs = this.getAnnounceAddrs()
+      .concat(this.components.transportManager.getAddrs())
+      .concat(
+        [...this.observed.entries()]
+          .filter(([_, metadata]) => metadata.confident)
+          .map(([str]) => multiaddr(str))
+      ).map(ma => {
+        // strip our peer id if it is present
+        if (ma.getPeerId() === this.components.peerId.toString()) {
+          return ma.decapsulate(`/p2p/${this.components.peerId.toString()}`)
+        }
+
+        return ma
+      })
+
+    this.components.peerStore.patch(this.components.peerId, {
+      multiaddrs: addrs
+    })
+      .catch(err => { log.error('error updating addresses', err) })
   }
 
   /**
@@ -148,10 +189,7 @@ export class DefaultAddressManager {
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
     if (!startingConfidence) {
-      this.components.peerStore.patch(this.components.peerId, {
-        multiaddrs: this.getAddresses()
-      })
-        .catch(err => { log.error('error updating addresses', err) })
+      this._updatePeerStoreAddresses()
     }
   }
 
