@@ -6,6 +6,7 @@ import type { Datastore } from 'interface-datastore'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import { logger } from '@libp2p/logger'
+import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 
 const log = logger('libp2p:peer-store')
 
@@ -162,6 +163,47 @@ export class PersistentPeerStore implements PeerStore {
       log.trace('merge release write lock')
       release()
     }
+  }
+
+  async consumePeerRecord (buf: Uint8Array, expectedPeer?: PeerId): Promise<boolean> {
+    const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN)
+
+    if (expectedPeer?.equals(envelope.peerId) === false) {
+      log('envelope peer id was not the expected peer id - expected: %p received: %p', expectedPeer, envelope.peerId)
+      return false
+    }
+
+    const peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+    let peer: Peer | undefined
+
+    try {
+      peer = await this.get(envelope.peerId)
+    } catch (err: any) {
+      if (err.code !== 'ERR_NOT_FOUND') {
+        throw err
+      }
+    }
+
+    // ensure seq is greater than, or equal to, the last received
+    if (peer?.peerRecordEnvelope != null) {
+      const storedEnvelope = await RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
+      const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
+
+      if (storedRecord.seqNumber >= peerRecord.seqNumber) {
+        log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+        return false
+      }
+    }
+
+    await this.patch(peerRecord.peerId, {
+      peerRecordEnvelope: buf,
+      addresses: peerRecord.multiaddrs.map(multiaddr => ({
+        isCertified: true,
+        multiaddr
+      }))
+    })
+
+    return true
   }
 
   #emitIfUpdated (id: PeerId, result: PeerUpdate): void {
