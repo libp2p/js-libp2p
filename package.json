@@ -145,7 +145,7 @@
   },
   "dependencies": {
     "@libp2p/crypto": "^1.0.15",
-    "@libp2p/interface-libp2p": "^2.0.0",
+    "@libp2p/interface-libp2p": "^3.1.0",
     "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/interface-peer-store": "^2.0.1",
     "@libp2p/interfaces": "^3.2.0",
