@@ -1,6 +1,6 @@
+import isPrivate from 'private-ip'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import isPrivate from 'private-ip'
 
 /**
  * Returns a connection gater that disallows dialling private addresses by

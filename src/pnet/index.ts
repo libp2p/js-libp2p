@@ -22,22 +22,22 @@
  * ```
  */
 
-import { logger } from '@libp2p/logger'
-import { pipe } from 'it-pipe'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { duplexPair } from 'it-pair/duplex'
 import { randomBytes } from '@libp2p/crypto'
-import * as Errors from './errors.js'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { handshake } from 'it-handshake'
+import map from 'it-map'
+import { duplexPair } from 'it-pair/duplex'
+import { pipe } from 'it-pipe'
 import { codes } from '../errors.js'
 import {
   createBoxStream,
   createUnboxStream,
   decodeV1PSK
 } from './crypto.js'
-import { handshake } from 'it-handshake'
+import * as Errors from './errors.js'
 import { NONCE_LENGTH } from './key-generator.js'
 import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface-connection'
-import map from 'it-map'
 
 const log = logger('libp2p:pnet')
 

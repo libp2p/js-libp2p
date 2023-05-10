@@ -1,15 +1,14 @@
-import { logger } from '@libp2p/logger'
+import { isTopology, type StreamHandlerOptions, type StreamHandlerRecord, type Registrar, type StreamHandler, type Topology } from '@libp2p/interface-registrar'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from './errors.js'
-import { isTopology, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-registrar'
+import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
-import type { Registrar, StreamHandler, Topology } from '@libp2p/interface-registrar'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import { codes } from './errors.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 
 const log = logger('libp2p:registrar')
 

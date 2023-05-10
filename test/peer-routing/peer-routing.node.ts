@@ -1,23 +1,23 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import delay from 'delay'
-import pDefer from 'p-defer'
-import drain from 'it-drain'
-import all from 'it-all'
-import { multiaddr } from '@multiformats/multiaddr'
-import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
-import { createBaseOptions } from '../utils/base-options.js'
-import { createRoutingOptions } from './utils.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import { type KadDHT, EventTypes, MessageType } from '@libp2p/kad-dht'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { KadDHT, EventTypes, MessageType } from '@libp2p/kad-dht'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import delay from 'delay'
+import all from 'it-all'
+import drain from 'it-drain'
+import pDefer from 'p-defer'
+import sinon from 'sinon'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { createBaseOptions } from '../utils/base-options.js'
+import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
+import { createRoutingOptions } from './utils.js'
+import type { Libp2pNode } from '../../src/libp2p.js'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('peer-routing', () => {
   let peerId: PeerId
@@ -69,7 +69,7 @@ describe('peer-routing', () => {
 
       // Ring dial
       await Promise.all(
-        nodes.map(async (peer, i) => await peer.dial(nodes[(i + 1) % nodes.length].peerId))
+        nodes.map(async (peer, i) => peer.dial(nodes[(i + 1) % nodes.length].peerId))
       )
     })
 
@@ -77,7 +77,7 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    after(async () => await Promise.all(nodes.map(async (n) => { await n.stop() })))
+    after(async () => Promise.all(nodes.map(async (n) => { await n.stop() })))
 
     it('should use the nodes dht', async () => {
       if (nodes[0].services.dht == null) {
@@ -191,7 +191,7 @@ describe('peer-routing', () => {
         }
       }, {
         async findPeer () {
-          return await Promise.resolve({
+          return Promise.resolve({
             id: peer,
             multiaddrs: []
           })
@@ -215,7 +215,7 @@ describe('peer-routing', () => {
         }
       }, {
         async findPeer () {
-          return await Promise.resolve({
+          return Promise.resolve({
             id: peer,
             multiaddrs: []
           })
@@ -415,7 +415,7 @@ describe('peer-routing', () => {
       })
       delegate.findPeer.reset()
       delegate.findPeer.callsFake(async () => {
-        return await defer.promise
+        return defer.promise
       })
 
       const peer = await node.peerRouting.findPeer(remotePeerId)
@@ -452,7 +452,7 @@ describe('peer-routing', () => {
       delegate.findPeer.callsFake(async () => {
         const deferred = pDefer<PeerInfo>()
 
-        return await deferred.promise
+        return deferred.promise
       })
 
       await node.peerRouting.findPeer(remotePeerId)

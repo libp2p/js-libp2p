@@ -1,18 +1,10 @@
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { Startable } from '@libp2p/interfaces/startable'
+import { setMaxListeners } from 'events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { abortableDuplex } from 'abortable-iterator'
-import { setMaxListeners } from 'events'
+import { anySignal } from 'any-signal'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
@@ -25,7 +17,15 @@ import {
   PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, REFRESH_INTERVAL, STARTUP_DELAY, TIMEOUT
 } from './constants.js'
 import { Message } from './pb/index.js'
-import { anySignal } from 'any-signal'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Connection } from '@libp2p/interface-connection'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:autonat')
 
@@ -452,7 +452,7 @@ class DefaultAutoNATService implements Startable {
             (source) => lp.encode(source),
             source,
             (source) => lp.decode(source),
-            async (stream) => await first(stream)
+            async (stream) => first(stream)
           )
           if (buf == null) {
             log('No response received from %s', connection.remotePeer)
@@ -497,7 +497,7 @@ class DefaultAutoNATService implements Startable {
 
       for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
         signal
-      }), (peer) => async () => await verifyAddress(peer)), {
+      }), (peer) => async () => verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
       })) {
         try {
@@ -565,7 +565,7 @@ class DefaultAutoNATService implements Startable {
   }
 }
 
-export function autoNATService (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => {} {
+export function autoNATService (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => unknown {
   return (components) => {
     return new DefaultAutoNATService(components, init)
   }

@@ -1,13 +1,13 @@
-import { CID } from 'multiformats/cid'
-import { sha256 } from 'multiformats/hashes/sha2'
-import type { Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
-import type { Limit } from './pb/index.js'
 import { logger } from '@libp2p/logger'
-import type { Stream } from '@libp2p/interface-connection'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 import { abortableSource } from 'abortable-iterator'
 import { anySignal } from 'any-signal'
+import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
+import type { Limit } from './pb/index.js'
+import type { Stream } from '@libp2p/interface-connection'
+import type { Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit-relay:utils')
 

@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
-import { AddressesOptions } from './utils.js'
-import { createNode } from '../utils/creators/peer.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
 import { webSockets } from '@libp2p/websockets'
-import { plaintext } from '../../src/insecure/index.js'
+import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
+import sinon from 'sinon'
+import { plaintext } from '../../src/insecure/index.js'
+import { createNode } from '../utils/creators/peer.js'
+import { AddressesOptions } from './utils.js'
+import type { Libp2pNode } from '../../src/libp2p.js'
 import type { PeerUpdate } from '@libp2p/interface-libp2p'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']

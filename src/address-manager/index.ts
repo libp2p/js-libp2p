@@ -1,13 +1,13 @@
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { multiaddr } from '@multiformats/multiaddr'
-import { peerIdFromString } from '@libp2p/peer-id'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { PeerStore } from '@libp2p/interface-peer-store'
 import { logger } from '@libp2p/logger'
-import type { EventEmitter } from '@libp2p/interfaces/dist/src/events'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 import { debounce } from './utils.js'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { EventEmitter } from '@libp2p/interfaces/dist/src/events'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:address-manager')
 

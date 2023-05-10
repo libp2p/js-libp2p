@@ -1,18 +1,18 @@
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
-import { namespaceToCid } from '../utils.js'
+import { createTopology } from '@libp2p/topology'
 import {
   RELAY_RENDEZVOUS_NS,
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
+import { namespaceToCid } from '../utils.js'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { Registrar } from '@libp2p/interface-registrar'
-import { createTopology } from '@libp2p/topology'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:circuit-relay:discover-relays')
 

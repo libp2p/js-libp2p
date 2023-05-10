@@ -1,8 +1,8 @@
+import { CodeError } from '@libp2p/interfaces/errors'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import { messages, codes } from '../errors.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PublishResult, PubSub, PubSubEvents, StrictNoSign, StrictSign, TopicValidatorFn } from '@libp2p/interface-pubsub'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { messages, codes } from '../errors.js'
 
 export class DummyPubSub extends EventEmitter<PubSubEvents> implements PubSub {
   public topicValidators = new Map<string, TopicValidatorFn>()

@@ -1,20 +1,20 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import pDefer from 'p-defer'
-import { CID } from 'multiformats/cid'
-import { multiaddr } from '@multiformats/multiaddr'
-import drain from 'it-drain'
-import all from 'it-all'
-import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
-import { createBaseOptions } from '../utils/base-options.js'
-import { createRoutingOptions } from './utils.js'
-import { createLibp2p, Libp2p } from '../../src/index.js'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import all from 'it-all'
+import drain from 'it-drain'
+import { CID } from 'multiformats/cid'
+import pDefer from 'p-defer'
+import sinon from 'sinon'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { createLibp2p, type Libp2p } from '../../src/index.js'
+import { createBaseOptions } from '../utils/base-options.js'
+import { createNode, createPeerId, populateAddressBooks } from '../utils/creators/peer.js'
+import { createRoutingOptions } from './utils.js'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { KadDHT } from '@libp2p/kad-dht'
 
 describe('content-routing', () => {
@@ -64,7 +64,7 @@ describe('content-routing', () => {
 
       // Ring dial
       await Promise.all(
-        nodes.map(async (peer, i) => await peer.dial(nodes[(i + 1) % number].peerId))
+        nodes.map(async (peer, i) => peer.dial(nodes[(i + 1) % number].peerId))
       )
     })
 
@@ -72,7 +72,7 @@ describe('content-routing', () => {
       sinon.restore()
     })
 
-    after(async () => await Promise.all(nodes.map(async (n) => { await n.stop() })))
+    after(async () => Promise.all(nodes.map(async (n) => { await n.stop() })))
 
     it('should use the nodes dht to provide', async () => {
       const deferred = pDefer()
@@ -87,7 +87,7 @@ describe('content-routing', () => {
 
       void nodes[0].contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
 
-      return await deferred.promise
+      return deferred.promise
     })
 
     it('should use the nodes dht to find providers', async () => {
@@ -113,7 +113,7 @@ describe('content-routing', () => {
 
       await drain(nodes[0].contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
-      return await deferred.promise
+      return deferred.promise
     })
   })
 
@@ -152,7 +152,7 @@ describe('content-routing', () => {
 
       void node.contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
 
-      return await deferred.promise
+      return deferred.promise
     })
 
     it('should use the delegate router to find providers', async () => {
@@ -169,7 +169,7 @@ describe('content-routing', () => {
 
       await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
-      return await deferred.promise
+      return deferred.promise
     })
 
     it('should be able to register as a provider', async () => {

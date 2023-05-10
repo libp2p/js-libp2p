@@ -1,40 +1,40 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import pDefer from 'p-defer'
-import delay from 'delay'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
+import { AbortError } from '@libp2p/interfaces/errors'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { mplex } from '@libp2p/mplex'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
-import { mplex } from '@libp2p/mplex'
-import { plaintext } from '../../src/insecure/index.js'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
-import { AbortError } from '@libp2p/interfaces/errors'
+import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
-import { codes as ErrorCodes } from '../../src/errors.js'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
-import { createPeerId } from '../utils/creators/peer.js'
-import type { TransportManager } from '@libp2p/interface-transport'
-import { peerIdFromString } from '@libp2p/peer-id'
-import type { Connection } from '@libp2p/interface-connection'
-import { createLibp2p } from '../../src/index.js'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import Peers from '../fixtures/peers.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import delay from 'delay'
+import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
-import { defaultComponents, Components } from '../../src/components.js'
+import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { codes as ErrorCodes } from '../../src/errors.js'
 import { identifyService } from '../../src/identify/index.js'
+import { createLibp2p } from '../../src/index.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
+import Peers from '../fixtures/peers.js'
+import { createPeerId } from '../utils/creators/peer.js'
 import type { DefaultIdentifyService } from '../../src/identify/identify.js'
+import type { Connection } from '@libp2p/interface-connection'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 
@@ -231,7 +231,7 @@ describe('dialing (direct, WebSockets)', () => {
         deferredDial.reject(new AbortError())
       }
       options.signal.addEventListener('abort', onAbort)
-      return await deferredDial.promise
+      return deferredDial.promise
     })
 
     // Perform 3 multiaddr dials
