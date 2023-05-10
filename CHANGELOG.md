@@ -1,3 +1,10 @@
+## [8.1.2](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.1...v8.1.2) (2023-05-10)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.5 ([#81](https://github.com/libp2p/js-libp2p-peer-store/issues/81)) ([9c8c655](https://github.com/libp2p/js-libp2p-peer-store/commit/9c8c65591c5dafd46afd54646904abc12f50658d))
+
 ## [8.1.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.0...v8.1.1) (2023-05-10)
 
 
