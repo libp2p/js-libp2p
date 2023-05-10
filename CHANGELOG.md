@@ -1,3 +1,10 @@
+## [8.1.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.0.0...v8.1.0) (2023-05-10)
+
+
+### Features
+
+* add consume peer record method ([#84](https://github.com/libp2p/js-libp2p-peer-store/issues/84)) ([dcfc803](https://github.com/libp2p/js-libp2p-peer-store/commit/dcfc8030f94d85fe13d93d12188050c5d5cd35a2))
+
 ## [8.0.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v7.0.2...v8.0.0) (2023-04-24)
 
 
