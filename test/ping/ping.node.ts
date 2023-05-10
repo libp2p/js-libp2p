@@ -47,7 +47,7 @@ describe('ping', () => {
     })
   })
 
-  afterEach(async () => await Promise.all(nodes.map(async n => { await n.stop() })))
+  afterEach(async () => Promise.all(nodes.map(async n => { await n.stop() })))
 
   it('ping once from peer0 to peer1 using a multiaddr', async () => {
     const ma = multiaddr(nodes[2].getMultiaddrs()[0])

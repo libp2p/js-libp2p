@@ -277,7 +277,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   }
 
   async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
-    return await this.components.connectionManager.openConnection(peer, options)
+    return this.components.connectionManager.openConnection(peer, options)
   }
 
   async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: AbortOptions = {}): Promise<Stream> {
@@ -293,7 +293,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     const connection = await this.dial(peer, options)
 
-    return await connection.newStream(protocols, options)
+    return connection.newStream(protocols, options)
   }
 
   getMultiaddrs (): Multiaddr[] {
@@ -370,7 +370,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   }
 
   async register (protocol: string, topology: Topology): Promise<string> {
-    return await this.components.registrar.register(protocol, topology)
+    return this.components.registrar.register(protocol, topology)
   }
 
   unregister (id: string): void {

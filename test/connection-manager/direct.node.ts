@@ -233,7 +233,7 @@ describe('dialing (direct, TCP)', () => {
 
     const deferredDial = pDefer<Connection>()
     const transportManagerDialStub = sinon.stub(localTM, 'dial')
-    transportManagerDialStub.callsFake(async () => await deferredDial.promise)
+    transportManagerDialStub.callsFake(async () => deferredDial.promise)
 
     // Perform 3 multiaddr dials
     void dialer.dial(addrs)
@@ -553,8 +553,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
       multiaddrs: remoteLibp2p.getMultiaddrs()
     })
     const dialResults = await Promise.all([...new Array(dials)].map(async (_, index) => {
-      if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
-      return await libp2p.dial(remoteAddr)
+      if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
+      return libp2p.dial(remoteAddr)
     }))
 
     // All should succeed and we should have ten results
@@ -587,14 +587,14 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const dials = 10
     const error = new Error('Boom')
-    sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => await Promise.reject(error))
+    sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => Promise.reject(error))
 
     await libp2p.peerStore.patch(remotePeerId, {
       multiaddrs: remoteLibp2p.getMultiaddrs()
     })
     const dialResults = await Promise.allSettled([...new Array(dials)].map(async (_, index) => {
-      if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
-      return await libp2p.dial(remoteAddr)
+      if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
+      return libp2p.dial(remoteAddr)
     }))
 
     // All should succeed and we should have ten results

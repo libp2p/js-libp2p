@@ -381,7 +381,7 @@ describe('autonat', () => {
 
       connectionManager.openConnection.reset()
       connectionManager.openConnection.callsFake(async (peer, options = {}) => {
-        return await Promise.race<Connection>([
+        return Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))
@@ -485,7 +485,7 @@ describe('autonat', () => {
       const slice = await pipe(
         sink,
         (source) => lp.decode(source),
-        async source => await all(source)
+        async source => all(source)
       )
 
       if (slice.length !== 1) {
@@ -636,7 +636,7 @@ describe('autonat', () => {
 
     it('should time out when dialing a requested address', async () => {
       connectionManager.openConnection.callsFake(async function (ma, options = {}) {
-        return await Promise.race<Connection>([
+        return Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))

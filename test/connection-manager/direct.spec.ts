@@ -231,7 +231,7 @@ describe('dialing (direct, WebSockets)', () => {
         deferredDial.reject(new AbortError())
       }
       options.signal.addEventListener('abort', onAbort)
-      return await deferredDial.promise
+      return deferredDial.promise
     })
 
     // Perform 3 multiaddr dials

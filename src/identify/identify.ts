@@ -277,7 +277,7 @@ export class DefaultIdentifyService implements Startable {
         (source) => lp.decode(source, {
           maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
         }),
-        async (source) => await first(source)
+        async (source) => first(source)
       )
 
       if (data == null) {

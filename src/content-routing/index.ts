@@ -97,8 +97,8 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
 
-    return await Promise.any(this.routers.map(async (router) => {
-      return await router.get(key, options)
+    return Promise.any(this.routers.map(async (router) => {
+      return router.get(key, options)
     }))
   }
 }

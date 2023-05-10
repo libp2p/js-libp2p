@@ -27,9 +27,7 @@ class TestPeerDiscovery extends EventEmitter<PeerDiscoveryEvents> implements Pee
     return this
   }
 
-  get [Symbol.toStringTag] (): '@libp2p/test-peer-discovery' {
-    return '@libp2p/test-peer-discovery'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/test-peer-discovery'
 }
 
 describe('peer discovery scenarios', () => {
@@ -115,7 +113,7 @@ describe('peer discovery scenarios', () => {
 
     await libp2p.start()
 
-    return await deferred.promise
+    return deferred.promise
   })
 
   it('MulticastDNS should discover all peers on the local network', async () => {
@@ -224,7 +222,7 @@ describe('peer discovery scenarios', () => {
     ])
 
     await deferred.promise
-    return await Promise.all([
+    return Promise.all([
       remoteLibp2p1.stop(),
       remoteLibp2p2.stop()
     ])

@@ -8,6 +8,7 @@ import { createFromJSON } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { defaultComponents, type Components } from '../../src/components.js'
@@ -16,10 +17,9 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { uPnPNATService } from '../../src/upnp-nat/index.js'
 import Peers from '../fixtures/peers.js'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
+import type { PeerUpdate } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
-import { pEvent } from 'p-event'
-import type { PeerUpdate } from '@libp2p/interface-libp2p'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -78,7 +78,7 @@ describe('UPnP NAT (TCP)', () => {
     }
   }
 
-  afterEach(async () => await Promise.all(teardown.map(async t => { await t() })))
+  afterEach(async () => Promise.all(teardown.map(async t => { await t() })))
 
   it('should map TCP connections to external ports', async () => {
     const {

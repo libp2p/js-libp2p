@@ -215,10 +215,10 @@ async function main (): Promise<void> {
   const factory: DaemonFactory = {
     async spawn (options: SpawnOptions) {
       if (options.type === 'go') {
-        return await createGoPeer(options)
+        return createGoPeer(options)
       }
 
-      return await createJsPeer(options)
+      return createJsPeer(options)
     }
   }
 

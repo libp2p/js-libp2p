@@ -69,7 +69,7 @@ describe('peer-routing', () => {
 
       // Ring dial
       await Promise.all(
-        nodes.map(async (peer, i) => await peer.dial(nodes[(i + 1) % nodes.length].peerId))
+        nodes.map(async (peer, i) => peer.dial(nodes[(i + 1) % nodes.length].peerId))
       )
     })
 
@@ -77,7 +77,7 @@ describe('peer-routing', () => {
       sinon.restore()
     })
 
-    after(async () => await Promise.all(nodes.map(async (n) => { await n.stop() })))
+    after(async () => Promise.all(nodes.map(async (n) => { await n.stop() })))
 
     it('should use the nodes dht', async () => {
       if (nodes[0].services.dht == null) {
@@ -191,7 +191,7 @@ describe('peer-routing', () => {
         }
       }, {
         async findPeer () {
-          return await Promise.resolve({
+          return Promise.resolve({
             id: peer,
             multiaddrs: []
           })
@@ -215,7 +215,7 @@ describe('peer-routing', () => {
         }
       }, {
         async findPeer () {
-          return await Promise.resolve({
+          return Promise.resolve({
             id: peer,
             multiaddrs: []
           })
@@ -415,7 +415,7 @@ describe('peer-routing', () => {
       })
       delegate.findPeer.reset()
       delegate.findPeer.callsFake(async () => {
-        return await defer.promise
+        return defer.promise
       })
 
       const peer = await node.peerRouting.findPeer(remotePeerId)
@@ -452,7 +452,7 @@ describe('peer-routing', () => {
       delegate.findPeer.callsFake(async () => {
         const deferred = pDefer<PeerInfo>()
 
-        return await deferred.promise
+        return deferred.promise
       })
 
       await node.peerRouting.findPeer(remotePeerId)

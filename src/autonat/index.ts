@@ -452,7 +452,7 @@ class DefaultAutoNATService implements Startable {
             (source) => lp.encode(source),
             source,
             (source) => lp.decode(source),
-            async (stream) => await first(stream)
+            async (stream) => first(stream)
           )
           if (buf == null) {
             log('No response received from %s', connection.remotePeer)
@@ -497,7 +497,7 @@ class DefaultAutoNATService implements Startable {
 
       for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
         signal
-      }), (peer) => async () => await verifyAddress(peer)), {
+      }), (peer) => async () => verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
       })) {
         try {
@@ -565,7 +565,7 @@ class DefaultAutoNATService implements Startable {
   }
 }
 
-export function autoNATService (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => {} {
+export function autoNATService (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => unknown {
   return (components) => {
     return new DefaultAutoNATService(components, init)
   }

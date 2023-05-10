@@ -9,9 +9,9 @@ import delay from 'delay'
 import pWaitFor from 'p-wait-for'
 import { stubInterface } from 'sinon-ts'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
+import type { Connection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
-import type { Connection } from '@libp2p/interface-connection'
 
 describe('auto-dial', () => {
   let autoDialler: AutoDial

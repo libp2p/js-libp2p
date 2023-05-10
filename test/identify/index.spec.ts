@@ -5,6 +5,7 @@ import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { start, stop } from '@libp2p/interfaces/startable'
 import { createFromJSON } from '@libp2p/peer-id-factory'
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -30,7 +31,6 @@ import { identifyService, type IdentifyServiceInit, Message } from '../../src/id
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import Peers from '../fixtures/peers.js'
 import type { TransportManager } from '@libp2p/interface-transport'
-import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 

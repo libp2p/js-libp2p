@@ -264,7 +264,7 @@ describe('circuit-relay', () => {
       // @ts-expect-error private field
       sinon.stub(relay1.components.connectionManager, 'openConnection').callsFake(async () => {
         deferred.resolve()
-        return await Promise.reject(new Error('failed to dial'))
+        return Promise.reject(new Error('failed to dial'))
       })
 
       // Remove peer used as relay from peerStore and disconnect it
@@ -458,7 +458,7 @@ describe('circuit-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([local, remote, relay1, relay2, relay3].map(async libp2p => {
+      return Promise.all([local, remote, relay1, relay2, relay3].map(async libp2p => {
         if (libp2p != null) {
           await libp2p.stop()
         }
@@ -696,7 +696,7 @@ describe('circuit-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([local, remote, relay].map(async libp2p => {
+      return Promise.all([local, remote, relay].map(async libp2p => {
         if (libp2p != null) {
           await libp2p.stop()
         }
@@ -827,7 +827,7 @@ describe('circuit-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([local, remote, relay].map(async libp2p => {
+      return Promise.all([local, remote, relay].map(async libp2p => {
         if (libp2p != null) {
           await libp2p.stop()
         }

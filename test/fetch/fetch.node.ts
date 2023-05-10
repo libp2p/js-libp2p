@@ -13,7 +13,7 @@ import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 async function createNode (peerId: PeerId): Promise<Libp2p<{ fetch: FetchService }>> {
-  return await createLibp2p({
+  return createLibp2p({
     peerId,
     addresses: {
       listen: [

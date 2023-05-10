@@ -214,7 +214,7 @@ export class DialQueue {
     if (existingDial != null) {
       log('joining existing dial target for %p', peerId)
       signal.clear()
-      return await existingDial.promise
+      return existingDial.promise
     }
 
     log('creating dial target for', addrsToDial.map(({ multiaddr }) => multiaddr.toString()))
@@ -252,7 +252,7 @@ export class DialQueue {
     // let other dials join this one
     this.pendingDials.push(pendingDial)
 
-    return await pendingDial.promise
+    return pendingDial.promise
   }
 
   private createDialAbortControllers (userSignal?: AbortSignal): ClearableSignal {
@@ -492,7 +492,7 @@ export class DialQueue {
           signal.clear()
         })
 
-        return await deferred.promise
+        return deferred.promise
       }))
 
       // dial succeeded or failed
