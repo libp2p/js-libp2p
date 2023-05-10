@@ -30,6 +30,7 @@ import { identifyService, type IdentifyServiceInit, Message } from '../../src/id
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import Peers from '../fixtures/peers.js'
 import type { TransportManager } from '@libp2p/interface-transport'
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -330,5 +331,70 @@ describe('identify', () => {
 
     await expect(identifySpy.getCall(0).returnValue)
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
+  })
+
+  it('should retain existing peer metadata', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+
+    await start(localIdentify)
+    await start(remoteIdentify)
+
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      metadata: {
+        foo: Uint8Array.from([0, 1, 2, 3])
+      }
+    })
+
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
+
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
+
+    // Run identify
+    await localIdentify.identify(localToRemote)
+
+    expect(localPeerStorePatchSpy.callCount).to.equal(1)
+
+    // Validate the remote peer gets updated in the peer store
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peer.metadata.get('foo')).to.equalBytes(Uint8Array.from([0, 1, 2, 3]))
+  })
+
+  it('should ignore older signed peer record', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+
+    await start(localIdentify)
+    await start(remoteIdentify)
+
+    const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: remoteComponents.peerId,
+      multiaddrs: [
+        multiaddr('/ip4/127.0.0.1/tcp/1234')
+      ],
+      seqNumber: BigInt(Date.now() * 2)
+    }), remoteComponents.peerId)
+    const peerRecordEnvelope = signedPeerRecord.marshal()
+
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      peerRecordEnvelope
+    })
+
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
+
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
+
+    // Run identify
+    await localIdentify.identify(localToRemote)
+
+    expect(localPeerStorePatchSpy.callCount).to.equal(1)
+
+    // Should not have added addresses from received peer record as the sequence
+    // number will be less than the one above
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peer.addresses.map(({ multiaddr }) => multiaddr.toString())).to.deep.equal([
+      '/ip4/127.0.0.1/tcp/1234'
+    ])
+    expect(peer).to.have.property('peerRecordEnvelope').that.equalBytes(peerRecordEnvelope)
   })
 })

@@ -143,10 +143,10 @@ export class MockContentRouting implements ContentRouting {
     const value = MockContentRouting.data.get(uint8ArrayToString(key, 'base58btc'))
 
     if (value != null) {
-      return Promise.resolve(value)
+      return await Promise.resolve(value)
     }
 
-    return Promise.reject(new Error('Not found'))
+    return await Promise.reject(new Error('Not found'))
   }
 }
 

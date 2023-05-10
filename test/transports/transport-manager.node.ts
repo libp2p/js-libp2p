@@ -112,7 +112,7 @@ describe('Transport Manager (TCP)', () => {
     // wait for listeners to stop listening
     const closePromise = Promise.all(
       spyListener.getCalls().map(async call => {
-        return pEvent(call.returnValue, 'close')
+        return await pEvent(call.returnValue, 'close')
       })
     )
 

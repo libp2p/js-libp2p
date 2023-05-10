@@ -118,7 +118,7 @@ describe('DHT subsystem operates correctly', () => {
 
       expect(stream).to.exist()
 
-      return Promise.all([
+      return await Promise.all([
         pWaitFor(() => libp2p.services.dht.lan.routingTable.size === 1),
         pWaitFor(() => remoteLibp2p.services.dht.lan.routingTable.size === 1)
       ])

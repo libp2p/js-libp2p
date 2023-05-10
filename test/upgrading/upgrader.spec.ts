@@ -162,7 +162,7 @@ describe('Upgrader', () => {
           for await (const val of source) yield val.slice()
         })()
       },
-      async (source) => all(source)
+      async (source) => await all(source)
     )
 
     expect(result).to.eql([hello])
@@ -234,7 +234,7 @@ describe('Upgrader', () => {
           for await (const val of source) yield val.slice()
         })()
       },
-      async (source) => all(source)
+      async (source) => await all(source)
     )
 
     expect(result).to.eql([hello])
@@ -531,7 +531,7 @@ describe('Upgrader', () => {
           for await (const val of source) yield val.slice()
         })()
       },
-      async (source) => all(source)
+      async (source) => await all(source)
     )
 
     expect(result).to.eql([hello])

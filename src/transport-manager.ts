@@ -7,8 +7,6 @@ import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { Metrics } from '@libp2p/interface-metrics'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Listener, Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { EventEmitter } from '@libp2p/interfaces/events'
@@ -26,8 +24,6 @@ export interface DefaultTransportManagerComponents {
   addressManager: AddressManager
   upgrader: Upgrader
   events: EventEmitter<Libp2pEvents>
-  peerId: PeerId
-  peerStore: PeerStore
 }
 
 export class DefaultTransportManager implements TransportManager, Startable {
@@ -210,17 +206,9 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
         // Track listen/close events
         listener.addEventListener('listening', () => {
-          this.components.peerStore.patch(this.components.peerId, {
-            multiaddrs: this.getAddrs()
+          this.components.events.safeDispatchEvent('transport:listening', {
+            detail: listener
           })
-            .then(() => {
-              this.components.events.safeDispatchEvent('transport:listening', {
-                detail: listener
-              })
-            })
-            .catch(err => {
-              log.error('error while updating peer record after listener began listening', err)
-            })
         })
         listener.addEventListener('close', () => {
           const index = listeners.findIndex(l => l === listener)
@@ -228,17 +216,9 @@ export class DefaultTransportManager implements TransportManager, Startable {
           // remove the listener
           listeners.splice(index, 1)
 
-          this.components.peerStore.patch(this.components.peerId, {
-            multiaddrs: this.getAddrs()
+          this.components.events.safeDispatchEvent('transport:close', {
+            detail: listener
           })
-            .then(() => {
-              this.components.events.safeDispatchEvent('transport:close', {
-                detail: listener
-              })
-            })
-            .catch(err => {
-              log.error('error while updating peer record after listener stopped listening', err)
-            })
         })
 
         // We need to attempt to listen on everything

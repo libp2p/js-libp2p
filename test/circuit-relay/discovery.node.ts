@@ -94,7 +94,7 @@ describe('circuit-relay discovery', () => {
     MockContentRouting.reset()
 
     // Stop each node
-    return Promise.all([local, remote, relay].map(async libp2p => {
+    return await Promise.all([local, remote, relay].map(async libp2p => {
       if (libp2p != null) {
         await libp2p.stop()
       }

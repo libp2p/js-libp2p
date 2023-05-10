@@ -125,11 +125,11 @@ class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
 
   async secureInbound (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
-    return encrypt(localId, conn, remoteId)
+    return await encrypt(localId, conn, remoteId)
   }
 
   async secureOutbound (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
-    return encrypt(localId, conn, remoteId)
+    return await encrypt(localId, conn, remoteId)
   }
 }
 

@@ -54,7 +54,7 @@ describe('private network', () => {
           yield chunk.slice()
         }
       },
-      async (source) => all(source)
+      async (source) => await all(source)
     )
 
     expect(output).to.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
@@ -88,7 +88,7 @@ describe('private network', () => {
 
     const output = await pipe(
       bToA,
-      async (source) => all(source)
+      async (source) => await all(source)
     )
 
     expect(output).to.not.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])

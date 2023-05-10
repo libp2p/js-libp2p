@@ -99,10 +99,10 @@ export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<
   const opts = options.opts ?? {}
 
   if (options.fixture == null) {
-    return opts.type === 'rsa' ? createRSAPeerId({ bits: opts.bits ?? 512 }) : createEd25519PeerId()
+    return opts.type === 'rsa' ? await createRSAPeerId({ bits: opts.bits ?? 512 }) : await createEd25519PeerId()
   }
 
-  return createFromJSON(Peers[options.fixture])
+  return await createFromJSON(Peers[options.fixture])
 }
 
 /**
@@ -111,7 +111,7 @@ export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<
 export async function createPeerIds (count: number, options: Omit<CreatePeerIdOptions, 'fixture'> = {}): Promise<PeerId[]> {
   const opts = options.opts ?? {}
 
-  return pTimes(count, async (i) => createPeerId({
+  return await pTimes(count, async (i) => await createPeerId({
     ...opts,
     fixture: i
   }))

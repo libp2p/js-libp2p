@@ -20,7 +20,7 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
 
   const resolvedMultiaddrs = await resolveRecord(ma, options)
   const recursiveMultiaddrs = await Promise.all(resolvedMultiaddrs.map(async (nm) => {
-    return resolveMultiaddrs(nm, options)
+    return await resolveMultiaddrs(nm, options)
   }))
 
   const addrs = recursiveMultiaddrs.flat()

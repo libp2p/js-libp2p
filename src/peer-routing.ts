@@ -60,7 +60,7 @@ export class DefaultPeerRouting implements PeerRouting {
       ),
       (source) => filter(source, Boolean),
       (source) => storeAddresses(source, this.components.peerStore),
-      async (source) => first(source)
+      async (source) => await first(source)
     )
 
     if (output != null) {

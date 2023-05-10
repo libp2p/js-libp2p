@@ -169,9 +169,9 @@ describe('dialing (resolvable addresses)', () => {
       if (!firstCall) {
         firstCall = true
         // Return an array of dnsaddr
-        return Promise.resolve(getDnsaddrStub(remoteId))
+        return await Promise.resolve(getDnsaddrStub(remoteId))
       }
-      return Promise.resolve(getDnsRelayedAddrStub(remoteId))
+      return await Promise.resolve(getDnsRelayedAddrStub(remoteId))
     })
 
     // Dial with address resolve
@@ -232,9 +232,9 @@ describe('dialing (resolvable addresses)', () => {
     const transportDialSpy = sinon.spy(transport, 'dial')
 
     // Resolver stub
-    resolver.onCall(0).callsFake(async () => Promise.resolve(getDnsaddrStub(remoteId)))
-    resolver.onCall(1).callsFake(async () => Promise.reject(new Error()))
-    resolver.callsFake(async () => Promise.resolve(getDnsRelayedAddrStub(remoteId)))
+    resolver.onCall(0).callsFake(async () => await Promise.resolve(getDnsaddrStub(remoteId)))
+    resolver.onCall(1).callsFake(async () => await Promise.reject(new Error()))
+    resolver.callsFake(async () => await Promise.resolve(getDnsRelayedAddrStub(remoteId)))
 
     // Dial with address resolve
     const connection = await libp2p.dial(dialAddr)

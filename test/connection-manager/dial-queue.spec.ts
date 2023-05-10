@@ -45,9 +45,9 @@ describe('dial queue', () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
     const deferredConn = pDefer<Connection>()
     const actions: Record<string, () => Promise<Connection>> = {
-      '/ip4/127.0.0.1/tcp/1231': async () => Promise.reject(new Error('dial failure')),
-      '/ip4/127.0.0.1/tcp/1232': async () => Promise.resolve(connection),
-      '/ip4/127.0.0.1/tcp/1233': async () => deferredConn.promise
+      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(new Error('dial failure')),
+      '/ip4/127.0.0.1/tcp/1232': async () => await Promise.resolve(connection),
+      '/ip4/127.0.0.1/tcp/1233': async () => await deferredConn.promise
     }
 
     components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
@@ -56,7 +56,7 @@ describe('dial queue', () => {
       const action = actions[maStr]
 
       if (action != null) {
-        return action()
+        return await action()
       }
 
       throw new Error(`No action found for multiaddr ${maStr}`)
@@ -81,9 +81,9 @@ describe('dial queue', () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
     const deferredConn = pDefer<Connection>()
     const actions: Record<string, () => Promise<Connection>> = {
-      '/ip4/127.0.0.1/tcp/1231': async () => Promise.reject(new Error('dial failure')),
-      '/ip4/127.0.0.1/tcp/1232': async () => Promise.resolve(connection),
-      '/ip4/127.0.0.1/tcp/1233': async () => deferredConn.promise
+      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(new Error('dial failure')),
+      '/ip4/127.0.0.1/tcp/1232': async () => await Promise.resolve(connection),
+      '/ip4/127.0.0.1/tcp/1233': async () => await deferredConn.promise
     }
 
     components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
@@ -92,7 +92,7 @@ describe('dial queue', () => {
       const action = actions[maStr]
 
       if (action != null) {
-        return action()
+        return await action()
       }
 
       throw new Error(`No action found for multiaddr ${maStr}`)
@@ -115,9 +115,9 @@ describe('dial queue', () => {
 
   it('should throw an AggregateError if all dials fail', async () => {
     const actions: Record<string, () => Promise<Connection>> = {
-      '/ip4/127.0.0.1/tcp/1231': async () => Promise.reject(new Error('dial failure')),
-      '/ip4/127.0.0.1/tcp/1232': async () => Promise.reject(new Error('dial failure')),
-      '/ip4/127.0.0.1/tcp/1233': async () => Promise.reject(new Error('dial failure'))
+      '/ip4/127.0.0.1/tcp/1231': async () => await Promise.reject(new Error('dial failure')),
+      '/ip4/127.0.0.1/tcp/1232': async () => await Promise.reject(new Error('dial failure')),
+      '/ip4/127.0.0.1/tcp/1233': async () => await Promise.reject(new Error('dial failure'))
     }
     dialer = new DialQueue(components, {
       maxParallelDials: 2
@@ -129,7 +129,7 @@ describe('dial queue', () => {
       const action = actions[maStr]
 
       if (action != null) {
-        return action()
+        return await action()
       }
 
       throw new Error(`No action found for multiaddr ${maStr}`)
@@ -152,7 +152,7 @@ describe('dial queue', () => {
   })
 
   it('should handle a large number of addrs', async () => {
-    const reject = sinon.stub().callsFake(async () => Promise.reject(new Error('dial failure')))
+    const reject = sinon.stub().callsFake(async () => await Promise.reject(new Error('dial failure')))
     const actions: Record<string, () => Promise<Connection>> = {}
     const addrs = [...new Array(25)].map((_, index) => `/ip4/127.0.0.1/tcp/12${index + 1}`)
     addrs.forEach(addr => {
@@ -169,7 +169,7 @@ describe('dial queue', () => {
       const action = actions[maStr]
 
       if (action != null) {
-        return action()
+        return await action()
       }
 
       throw new Error(`No action found for multiaddr ${maStr}`)

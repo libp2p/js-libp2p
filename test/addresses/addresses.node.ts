@@ -7,11 +7,15 @@ import sinon from 'sinon'
 import { createNode } from '../utils/creators/peer.js'
 import { AddressesOptions } from './utils.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
+import { webSockets } from '@libp2p/websockets'
+import { plaintext } from '../../src/insecure/index.js'
+import { pEvent } from 'p-event'
+import type { PeerUpdate } from '@libp2p/interface-libp2p'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']
 const announceAddreses = ['/dns4/peer.io/tcp/433/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p']
 
-describe('libp2p.multiaddrs', () => {
+describe('libp2p.addressManager', () => {
   let libp2p: Libp2pNode
 
   afterEach(async () => {
@@ -169,5 +173,89 @@ describe('libp2p.multiaddrs', () => {
 
     expect(libp2p.components.addressManager.getAddresses()).to.have.lengthOf(listenAddresses.length + 1)
     expect(libp2p.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.include(ma)
+  })
+
+  it('should populate the AddressManager from the config', async () => {
+    libp2p = await createNode({
+      started: false,
+      config: {
+        addresses: {
+          listen: listenAddresses,
+          announce: announceAddreses
+        },
+        transports: [
+          webSockets()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ]
+      }
+    })
+
+    expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.have.members(announceAddreses)
+    expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.not.have.members(listenAddresses)
+  })
+
+  it('should update our peer record with announce addresses on startup', async () => {
+    libp2p = await createNode({
+      started: false,
+      config: {
+        addresses: {
+          listen: listenAddresses,
+          announce: announceAddreses
+        },
+        transports: [
+          webSockets()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ]
+      }
+    })
+
+    const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(libp2p, 'self:peer:update')
+
+    await libp2p.start()
+
+    const event = await eventPromise
+
+    expect(event.detail.peer.addresses.map(({ multiaddr }) => multiaddr.toString()))
+      .to.include.members(announceAddreses, 'peer info did not include announce addresses')
+  })
+
+  it('should only include confirmed observed addresses in peer record', async () => {
+    libp2p = await createNode({
+      started: false,
+      config: {
+        addresses: {
+          listen: listenAddresses,
+          announce: announceAddreses
+        },
+        transports: [
+          webSockets()
+        ],
+        connectionEncryption: [
+          plaintext()
+        ]
+      }
+    })
+
+    await libp2p.start()
+
+    const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(libp2p, 'self:peer:update')
+
+    const unconfirmedAddress = multiaddr('/ip4/127.0.0.1/tcp/4010/ws')
+    libp2p.components.addressManager.addObservedAddr(unconfirmedAddress)
+
+    const confirmedAddress = multiaddr('/ip4/127.0.0.1/tcp/4011/ws')
+    libp2p.components.addressManager.confirmObservedAddr(confirmedAddress)
+
+    const event = await eventPromise
+
+    expect(event.detail.peer.addresses.map(({ multiaddr }) => multiaddr.toString()))
+      .to.not.include(unconfirmedAddress.toString(), 'peer info included unconfirmed observed address')
+
+    expect(event.detail.peer.addresses.map(({ multiaddr }) => multiaddr.toString()))
+      .to.include(confirmedAddress.toString(), 'peer info did not include confirmed observed address')
   })
 })

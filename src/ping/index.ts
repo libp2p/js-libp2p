@@ -117,7 +117,7 @@ class DefaultPingService implements Startable, PingService {
       const result = await pipe(
         [data],
         source,
-        async (source) => first(source)
+        async (source) => await first(source)
       )
       const end = Date.now()
 

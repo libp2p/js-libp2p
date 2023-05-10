@@ -64,7 +64,7 @@ describe('content-routing', () => {
 
       // Ring dial
       await Promise.all(
-        nodes.map(async (peer, i) => peer.dial(nodes[(i + 1) % number].peerId))
+        nodes.map(async (peer, i) => await peer.dial(nodes[(i + 1) % number].peerId))
       )
     })
 
@@ -72,7 +72,7 @@ describe('content-routing', () => {
       sinon.restore()
     })
 
-    after(async () => Promise.all(nodes.map(async (n) => { await n.stop() })))
+    after(async () => await Promise.all(nodes.map(async (n) => { await n.stop() })))
 
     it('should use the nodes dht to provide', async () => {
       const deferred = pDefer()
@@ -87,7 +87,7 @@ describe('content-routing', () => {
 
       void nodes[0].contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
 
-      return deferred.promise
+      return await deferred.promise
     })
 
     it('should use the nodes dht to find providers', async () => {
@@ -113,7 +113,7 @@ describe('content-routing', () => {
 
       await drain(nodes[0].contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
-      return deferred.promise
+      return await deferred.promise
     })
   })
 
@@ -152,7 +152,7 @@ describe('content-routing', () => {
 
       void node.contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
 
-      return deferred.promise
+      return await deferred.promise
     })
 
     it('should use the delegate router to find providers', async () => {
@@ -169,7 +169,7 @@ describe('content-routing', () => {
 
       await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
-      return deferred.promise
+      return await deferred.promise
     })
 
     it('should be able to register as a provider', async () => {

@@ -13,7 +13,7 @@ import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../../src/autonat/constants.js'
-import { autonatService, type AutonatServiceInit } from '../../src/autonat/index.js'
+import { autoNATService, type AutoNATServiceInit } from '../../src/autonat/index.js'
 import { Message } from '../../src/autonat/pb/index.js'
 import { type Components, defaultComponents } from '../../src/components.js'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
@@ -26,7 +26,7 @@ import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { Transport, TransportManager } from '@libp2p/interface-transport'
 
-const defaultInit: AutonatServiceInit = {
+const defaultInit: AutoNATServiceInit = {
   protocolPrefix: 'libp2p',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
@@ -65,7 +65,7 @@ describe('autonat', () => {
       peerStore
     })
 
-    service = autonatService(defaultInit)(components)
+    service = autoNATService(defaultInit)(components)
 
     await start(components)
     await start(service)
@@ -381,7 +381,7 @@ describe('autonat', () => {
 
       connectionManager.openConnection.reset()
       connectionManager.openConnection.callsFake(async (peer, options = {}) => {
-        return Promise.race<Connection>([
+        return await Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))
@@ -485,7 +485,7 @@ describe('autonat', () => {
       const slice = await pipe(
         sink,
         (source) => lp.decode(source),
-        async source => all(source)
+        async source => await all(source)
       )
 
       if (slice.length !== 1) {
@@ -636,7 +636,7 @@ describe('autonat', () => {
 
     it('should time out when dialing a requested address', async () => {
       connectionManager.openConnection.callsFake(async function (ma, options = {}) {
-        return Promise.race<Connection>([
+        return await Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))
