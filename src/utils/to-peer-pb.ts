@@ -1,11 +1,11 @@
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Address, Peer, PeerData, TagOptions } from '@libp2p/interface-peer-store'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from '../errors.js'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
+import { codes } from '../errors.js'
+import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
 import type { AddressFilter } from '../index.js'
 import type { Tag, Peer as PeerPB } from '../pb/peer.js'
-import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Address, Peer, PeerData, TagOptions } from '@libp2p/interface-peer-store'
 
 export interface ToPBPeerOptions {
   addressFilter?: AddressFilter
@@ -28,7 +28,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
   }
 
   let addresses: Address[] = existingPeer?.addresses ?? []
-  let protocols: Set<string> = new Set(existingPeer?.protocols ?? [])
+  let protocols = new Set<string>(existingPeer?.protocols ?? [])
   let metadata: Map<string, Uint8Array> = existingPeer?.metadata ?? new Map()
   let tags: Map<string, Tag> = existingPeer?.tags ?? new Map()
   let peerRecordEnvelope: Uint8Array | undefined = existingPeer?.peerRecordEnvelope
@@ -111,7 +111,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
 
     if (data.tags != null) {
       const tagsEntries = data.tags instanceof Map ? [...data.tags.entries()] : Object.entries(data.tags)
-      const mergedTags: Map<string, Tag | TagOptions> = new Map(tags)
+      const mergedTags = new Map<string, Tag | TagOptions>(tags)
 
       for (const [key, value] of tagsEntries) {
         if (value == null) {

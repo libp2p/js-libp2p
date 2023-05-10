@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { expect } from 'aegir/chai'
-import { multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { PersistentPeerStore } from '../src/index.js'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import delay from 'delay'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core/memory'
+import delay from 'delay'
+import { PersistentPeerStore } from '../src/index.js'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 

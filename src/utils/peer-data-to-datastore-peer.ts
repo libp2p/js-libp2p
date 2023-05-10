@@ -1,11 +1,11 @@
 
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from '../errors.js'
 import { isMultiaddr } from '@multiformats/multiaddr'
-import type { Peer as PeerPB } from '../pb/peer.js'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
-import type { PeerData } from '@libp2p/interface-peer-store'
+import { codes } from '../errors.js'
+import type { Peer as PeerPB } from '../pb/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerData } from '@libp2p/interface-peer-store'
 
 export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
   if (data == null) {

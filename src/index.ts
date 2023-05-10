@@ -1,12 +1,12 @@
-import type { EventEmitter } from '@libp2p/interfaces/events'
-import { PersistentStore, PeerUpdate } from './store.js'
-import type { PeerStore, Peer, PeerData } from '@libp2p/interface-peer-store'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Datastore } from 'interface-datastore'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import { logger } from '@libp2p/logger'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { PersistentStore, type PeerUpdate } from './store.js'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore, Peer, PeerData } from '@libp2p/interface-peer-store'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:peer-store')
 

@@ -1,19 +1,19 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { expect } from 'aegir/chai'
-import { multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import pDefer from 'p-defer'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { PersistentPeerStore } from '../src/index.js'
-import { codes } from '../src/errors.js'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core/memory'
+import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
-import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface-libp2p'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { codes } from '../src/errors.js'
+import { PersistentPeerStore } from '../src/index.js'
 import { Peer as PeerPB } from '../src/pb/peer.js'
+import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerData } from '@libp2p/interface-peer-store'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')

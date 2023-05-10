@@ -1,18 +1,18 @@
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { base32 } from 'multiformats/bases/base32'
-import { Peer as PeerPB } from './pb/peer.js'
-import type { Peer, PeerData } from '@libp2p/interface-peer-store'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datastore-key.js'
-import { bytesToPeer } from './utils/bytes-to-peer.js'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import mortice, { type Mortice } from 'mortice'
+import { base32 } from 'multiformats/bases/base32'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { codes } from './errors.js'
-import type { Datastore } from 'interface-datastore'
-import type { PeerUpdate as PeerUpdateExternal } from '@libp2p/interface-libp2p'
-import mortice, { Mortice } from 'mortice'
+import { Peer as PeerPB } from './pb/peer.js'
+import { bytesToPeer } from './utils/bytes-to-peer.js'
+import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datastore-key.js'
 import { toPeerPB } from './utils/to-peer-pb.js'
+import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
+import type { PeerUpdate as PeerUpdateExternal } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Peer, PeerData } from '@libp2p/interface-peer-store'
+import type { Datastore } from 'interface-datastore'
 
 /**
  * Event detail emitted when peer data changes
@@ -38,7 +38,7 @@ export class PersistentStore {
   }
 
   async has (peerId: PeerId): Promise<boolean> {
-    return await this.datastore.has(peerIdToDatastoreKey(peerId))
+    return this.datastore.has(peerIdToDatastoreKey(peerId))
   }
 
   async delete (peerId: PeerId): Promise<void> {
@@ -52,7 +52,7 @@ export class PersistentStore {
   async load (peerId: PeerId): Promise<Peer> {
     const buf = await this.datastore.get(peerIdToDatastoreKey(peerId))
 
-    return await bytesToPeer(peerId, buf)
+    return bytesToPeer(peerId, buf)
   }
 
   async save (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
@@ -65,7 +65,7 @@ export class PersistentStore {
       addressFilter: this.addressFilter
     })
 
-    return await this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
+    return this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
   }
 
   async patch (peerId: PeerId, data: Partial<PeerData>): Promise<PeerUpdate> {
@@ -79,7 +79,7 @@ export class PersistentStore {
       existingPeer
     })
 
-    return await this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
+    return this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
   }
 
   async merge (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
@@ -93,7 +93,7 @@ export class PersistentStore {
       existingPeer
     })
 
-    return await this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
+    return this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
   }
 
   async * all (): AsyncGenerator<Peer, void, unknown> {

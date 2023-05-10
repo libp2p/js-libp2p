@@ -1,7 +1,7 @@
+import { isPeerId, type PeerId } from '@libp2p/interface-peer-id'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from '../errors.js'
 import { Key } from 'interface-datastore/key'
-import { isPeerId, PeerId } from '@libp2p/interface-peer-id'
+import { codes } from '../errors.js'
 
 export const NAMESPACE_COMMON = '/peers/'
 
