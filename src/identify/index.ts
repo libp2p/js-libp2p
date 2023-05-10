@@ -1,16 +1,16 @@
-import { Identify } from './pb/message.js'
 import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH
 } from './consts.js'
-import type { Registrar } from '@libp2p/interface-registrar'
+import { DefaultIdentifyService } from './identify.js'
+import { Identify } from './pb/message.js'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Registrar } from '@libp2p/interface-registrar'
 import type { EventEmitter } from '@libp2p/interfaces/events'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
-import { DefaultIdentifyService } from './identify.js'
 
 export interface IdentifyServiceInit {
   /**
@@ -60,6 +60,6 @@ export const multicodecs = {
 
 export const Message = { Identify }
 
-export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => {} {
+export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
   return (components) => new DefaultIdentifyService(components, init)
 }

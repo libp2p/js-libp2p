@@ -1,22 +1,22 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { fetchService, FetchServiceInit } from '../../src/fetch/index.js'
-import Peers from '../fixtures/peers.js'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { start, stop } from '@libp2p/interfaces/startable'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import { start, stop } from '@libp2p/interfaces/startable'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { MemoryDatastore } from 'datastore-core'
-import { defaultComponents, Components } from '../../src/components.js'
+import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import type { TransportManager } from '@libp2p/interface-transport'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { fetchService, type FetchServiceInit } from '../../src/fetch/index.js'
+import Peers from '../fixtures/peers.js'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 const defaultInit: FetchServiceInit = {
   protocolPrefix: 'ipfs',

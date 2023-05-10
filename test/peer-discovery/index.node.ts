@@ -1,24 +1,24 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import defer from 'p-defer'
 import { bootstrap } from '@libp2p/bootstrap'
 import { randomBytes } from '@libp2p/crypto'
+import { peerDiscovery } from '@libp2p/interface-peer-discovery'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import defer from 'p-defer'
+import sinon from 'sinon'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { createLibp2p } from '../../src/index.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createPeerId } from '../utils/creators/peer.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { createLibp2p } from '../../src/index.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pOptions } from '../../src/index.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { KadDHT } from '@libp2p/kad-dht'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import { peerDiscovery } from '@libp2p/interface-peer-discovery'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { KadDHT } from '@libp2p/kad-dht'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -27,9 +27,7 @@ class TestPeerDiscovery extends EventEmitter<PeerDiscoveryEvents> implements Pee
     return this
   }
 
-  get [Symbol.toStringTag] (): '@libp2p/test-peer-discovery' {
-    return '@libp2p/test-peer-discovery'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/test-peer-discovery'
 }
 
 describe('peer discovery scenarios', () => {
@@ -115,7 +113,7 @@ describe('peer discovery scenarios', () => {
 
     await libp2p.start()
 
-    return await deferred.promise
+    return deferred.promise
   })
 
   it('MulticastDNS should discover all peers on the local network', async () => {
@@ -224,7 +222,7 @@ describe('peer discovery scenarios', () => {
     ])
 
     await deferred.promise
-    return await Promise.all([
+    return Promise.all([
       remoteLibp2p1.stop(),
       remoteLibp2p2.stop()
     ])

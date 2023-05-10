@@ -1,6 +1,6 @@
 import { randomBytes } from '@libp2p/crypto'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 /**
  * Generates a PSK that can be used in a libp2p-pnet private network

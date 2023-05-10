@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
-import { createNode, populateAddressBooks } from '../utils/creators/peer.js'
-import { createBaseOptions } from '../utils/base-options.js'
-import { PROTOCOL } from '../../src/ping/constants.js'
-import { multiaddr } from '@multiformats/multiaddr'
 import pDefer from 'p-defer'
-import { pingService, PingService } from '../../src/ping/index.js'
+import { PROTOCOL } from '../../src/ping/constants.js'
+import { pingService, type PingService } from '../../src/ping/index.js'
+import { createBaseOptions } from '../utils/base-options.js'
+import { createNode, populateAddressBooks } from '../utils/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('ping', () => {
@@ -47,7 +47,7 @@ describe('ping', () => {
     })
   })
 
-  afterEach(async () => await Promise.all(nodes.map(async n => { await n.stop() })))
+  afterEach(async () => Promise.all(nodes.map(async n => { await n.stop() })))
 
   it('ping once from peer0 to peer1 using a multiaddr', async () => {
     const ma = multiaddr(nodes[2].getMultiaddrs()[0])

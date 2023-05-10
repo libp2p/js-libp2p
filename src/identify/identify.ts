@@ -1,12 +1,19 @@
-import { logger } from '@libp2p/logger'
+import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interfaces/errors'
-import * as lp from 'it-length-prefixed'
-import { pipe } from 'it-pipe'
-import first from 'it-first'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
-import { Identify } from './pb/message.js'
+import { logger } from '@libp2p/logger'
+import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
+import { abortableDuplex } from 'abortable-iterator'
+import { anySignal } from 'any-signal'
+import first from 'it-first'
+import * as lp from 'it-length-prefixed'
+import { pbStream } from 'it-pb-stream'
+import { pipe } from 'it-pipe'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
+import { codes } from '../errors.js'
 import {
   AGENT_VERSION,
   IDENTIFY_PROTOCOL_VERSION,
@@ -15,25 +22,18 @@ import {
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
 } from './consts.js'
-import { codes } from '../errors.js'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import { Identify } from './pb/message.js'
+import type { IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
-import type { Startable } from '@libp2p/interfaces/startable'
-import { peerIdFromKeys } from '@libp2p/peer-id'
-import type { AbortOptions } from '@libp2p/interfaces'
-import { abortableDuplex } from 'abortable-iterator'
-import { setMaxListeners } from 'events'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Peer, PeerStore } from '@libp2p/interface-peer-store'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import { anySignal } from 'any-signal'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { pbStream } from 'it-pb-stream'
-import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
-import type { IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord } from '@libp2p/interface-libp2p'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { AbortOptions } from '@libp2p/interfaces'
 import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:identify')
 
@@ -277,7 +277,7 @@ export class DefaultIdentifyService implements Startable {
         (source) => lp.decode(source, {
           maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
         }),
-        async (source) => await first(source)
+        async (source) => first(source)
       )
 
       if (data == null) {
@@ -439,8 +439,9 @@ export class DefaultIdentifyService implements Startable {
       return
     }
 
-    const envelope = await RecordEnvelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
-    const peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+    let peerRecordEnvelope = message.signedPeerRecord
+    const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
+    let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
 
     // Verify peerId
     if (!peerRecord.peerId.equals(envelope.peerId)) {
@@ -463,7 +464,7 @@ export class DefaultIdentifyService implements Startable {
     }
 
     log('received signedPeerRecord in push from %p', remotePeer)
-    let metadata = new Map()
+    const metadata = peer?.metadata ?? new Map()
 
     if (peer?.peerRecordEnvelope != null) {
       const storedEnvelope = await RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
@@ -472,9 +473,9 @@ export class DefaultIdentifyService implements Startable {
       // ensure seq is greater than, or equal to, the last received
       if (storedRecord.seqNumber >= peerRecord.seqNumber) {
         log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+        peerRecord = storedRecord
+        peerRecordEnvelope = peer.peerRecordEnvelope
       }
-
-      metadata = peer.metadata
     }
 
     if (message.agentVersion != null) {
@@ -486,7 +487,7 @@ export class DefaultIdentifyService implements Startable {
     }
 
     await this.peerStore.patch(peerRecord.peerId, {
-      peerRecordEnvelope: message.signedPeerRecord,
+      peerRecordEnvelope,
       protocols: message.protocols,
       addresses: peerRecord.multiaddrs.map(multiaddr => ({
         isCertified: true,

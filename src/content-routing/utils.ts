@@ -1,9 +1,9 @@
 import { CodeError } from '@libp2p/interfaces/errors'
 import filter from 'it-filter'
 import map from 'it-map'
-import type { Source } from 'it-stream-types'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Source } from 'it-stream-types'
 
 /**
  * Store the multiaddrs from every peer in the passed peer store

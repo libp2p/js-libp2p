@@ -1,21 +1,21 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { mockUpgrader } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { createFromJSON } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
-import { mockUpgrader } from '@libp2p/interface-mocks'
-import sinon from 'sinon'
-import Peers from '../fixtures/peers.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import { defaultComponents, Components } from '../../src/components.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core/memory'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
+import sinon from 'sinon'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import Peers from '../fixtures/peers.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -112,7 +112,7 @@ describe('Transport Manager (TCP)', () => {
     // wait for listeners to stop listening
     const closePromise = Promise.all(
       spyListener.getCalls().map(async call => {
-        return await pEvent(call.returnValue, 'close')
+        return pEvent(call.returnValue, 'close')
       })
     )
 

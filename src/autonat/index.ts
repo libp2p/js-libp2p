@@ -1,18 +1,10 @@
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { Startable } from '@libp2p/interfaces/startable'
+import { setMaxListeners } from 'events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { abortableDuplex } from 'abortable-iterator'
-import { setMaxListeners } from 'events'
+import { anySignal } from 'any-signal'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
@@ -25,7 +17,15 @@ import {
   PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, REFRESH_INTERVAL, STARTUP_DELAY, TIMEOUT
 } from './constants.js'
 import { Message } from './pb/index.js'
-import { anySignal } from 'any-signal'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Connection } from '@libp2p/interface-connection'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:autonat')
 
@@ -34,7 +34,7 @@ const log = logger('libp2p:autonat')
 // https://github.com/libp2p/specs/blob/master/autonat/README.md#autonat-protocol
 const REQUIRED_SUCCESSFUL_DIALS = 4
 
-export interface AutonatServiceInit {
+export interface AutoNATServiceInit {
   /**
    * Allows overriding the protocol prefix used
    */
@@ -56,17 +56,17 @@ export interface AutonatServiceInit {
   refreshInterval?: number
 
   /**
-   * How many parallel inbound autonat streams we allow per-connection
+   * How many parallel inbound autoNAT streams we allow per-connection
    */
   maxInboundStreams?: number
 
   /**
-   * How many parallel outbound autonat streams we allow per-connection
+   * How many parallel outbound autoNAT streams we allow per-connection
    */
   maxOutboundStreams?: number
 }
 
-export interface AutonatComponents {
+export interface AutoNATComponents {
   registrar: Registrar
   addressManager: AddressManager
   transportManager: TransportManager
@@ -75,8 +75,8 @@ export interface AutonatComponents {
   peerRouting: PeerRouting
 }
 
-class DefaultAutonatService implements Startable {
-  private readonly components: AutonatComponents
+class DefaultAutoNATService implements Startable {
+  private readonly components: AutoNATComponents
   private readonly startupDelay: number
   private readonly refreshInterval: number
   private readonly protocol: string
@@ -86,7 +86,7 @@ class DefaultAutonatService implements Startable {
   private verifyAddressTimeout?: ReturnType<typeof setTimeout>
   private started: boolean
 
-  constructor (components: AutonatComponents, init: AutonatServiceInit) {
+  constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
     this.components = components
     this.started = false
     this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
@@ -130,7 +130,7 @@ class DefaultAutonatService implements Startable {
   }
 
   /**
-   * Handle an incoming autonat request
+   * Handle an incoming AutoNAT request
    */
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
     const signal = anySignal([AbortSignal.timeout(this.timeout)])
@@ -452,7 +452,7 @@ class DefaultAutonatService implements Startable {
             (source) => lp.encode(source),
             source,
             (source) => lp.decode(source),
-            async (stream) => await first(stream)
+            async (stream) => first(stream)
           )
           if (buf == null) {
             log('No response received from %s', connection.remotePeer)
@@ -497,7 +497,7 @@ class DefaultAutonatService implements Startable {
 
       for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
         signal
-      }), (peer) => async () => await verifyAddress(peer)), {
+      }), (peer) => async () => verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
       })) {
         try {
@@ -565,8 +565,8 @@ class DefaultAutonatService implements Startable {
   }
 }
 
-export function autonatService (init: AutonatServiceInit = {}): (components: AutonatComponents) => {} {
+export function autoNATService (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => unknown {
   return (components) => {
-    return new DefaultAutonatService(components, init)
+    return new DefaultAutoNATService(components, init)
   }
 }

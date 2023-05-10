@@ -1,44 +1,43 @@
 /* eslint-env mocha */
 
-import { mplex } from '@libp2p/mplex'
-import { tcp } from '@libp2p/tcp'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { multiaddr } from '@multiformats/multiaddr'
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { plaintext } from '../../src/insecure/index.js'
-
-import { Connection, ConnectionProtector, isConnection } from '@libp2p/interface-connection'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { type Connection, type ConnectionProtector, isConnection } from '@libp2p/interface-connection'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-mocks'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import { AbortError } from '@libp2p/interfaces/errors'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { mplex } from '@libp2p/mplex'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId, createFromJSON } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { tcp } from '@libp2p/tcp'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
+import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { defaultComponents, Components } from '../../src/components.js'
+import { defaultComponents, type Components } from '../../src/components.js'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { preSharedKey } from '../../src/pnet/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import Peers from '../fixtures/peers.js'
 import swarmKey from '../fixtures/swarm.key.js'
-import os from 'node:os'
-import path from 'node:path'
-import fs from 'node:fs'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { stubInterface } from 'sinon-ts'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { TransportManager } from '@libp2p/interface-transport'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -65,7 +64,10 @@ describe('dialing (direct, TCP)', () => {
       events: remoteEvents,
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader({ events: remoteEvents }),
-      connectionGater: mockConnectionGater()
+      connectionGater: mockConnectionGater(),
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: []
+      })
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.addressManager = new DefaultAddressManager(remoteComponents, {
@@ -231,7 +233,7 @@ describe('dialing (direct, TCP)', () => {
 
     const deferredDial = pDefer<Connection>()
     const transportManagerDialStub = sinon.stub(localTM, 'dial')
-    transportManagerDialStub.callsFake(async () => await deferredDial.promise)
+    transportManagerDialStub.callsFake(async () => deferredDial.promise)
 
     // Perform 3 multiaddr dials
     void dialer.dial(addrs)
@@ -551,8 +553,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
       multiaddrs: remoteLibp2p.getMultiaddrs()
     })
     const dialResults = await Promise.all([...new Array(dials)].map(async (_, index) => {
-      if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
-      return await libp2p.dial(remoteAddr)
+      if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
+      return libp2p.dial(remoteAddr)
     }))
 
     // All should succeed and we should have ten results
@@ -585,14 +587,14 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const dials = 10
     const error = new Error('Boom')
-    sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => await Promise.reject(error))
+    sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => Promise.reject(error))
 
     await libp2p.peerStore.patch(remotePeerId, {
       multiaddrs: remoteLibp2p.getMultiaddrs()
     })
     const dialResults = await Promise.allSettled([...new Array(dials)].map(async (_, index) => {
-      if (index % 2 === 0) return await libp2p.dial(remoteLibp2p.peerId)
-      return await libp2p.dial(remoteAddr)
+      if (index % 2 === 0) return libp2p.dial(remoteLibp2p.peerId)
+      return libp2p.dial(remoteAddr)
     }))
 
     // All should succeed and we should have ten results

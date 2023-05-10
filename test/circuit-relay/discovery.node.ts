@@ -1,14 +1,14 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { getRelayAddress, hasRelay, MockContentRouting, mockContentRouting } from './utils.js'
-import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { tcp } from '@libp2p/tcp'
+import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { getRelayAddress, hasRelay, MockContentRouting, mockContentRouting } from './utils.js'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('circuit-relay discovery', () => {
   let local: Libp2p
@@ -94,7 +94,7 @@ describe('circuit-relay discovery', () => {
     MockContentRouting.reset()
 
     // Stop each node
-    return await Promise.all([local, remote, relay].map(async libp2p => {
+    return Promise.all([local, remote, relay].map(async libp2p => {
       if (libp2p != null) {
         await libp2p.stop()
       }

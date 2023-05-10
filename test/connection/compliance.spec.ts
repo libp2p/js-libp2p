@@ -1,8 +1,8 @@
-import tests from '@libp2p/interface-connection-compliance-tests'
-import { createConnection } from '../../src/connection/index.js'
 import peers from '@libp2p/interface-compliance-tests/peers'
+import tests from '@libp2p/interface-connection-compliance-tests'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
+import { createConnection } from '../../src/connection/index.js'
 import { pair } from './fixtures/pair.js'
 import type { Stream } from '@libp2p/interface-connection'
 
