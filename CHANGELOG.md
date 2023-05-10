@@ -1,3 +1,10 @@
+## [8.1.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.0...v8.1.1) (2023-05-10)
+
+
+### Dependencies
+
+* bump @libp2p/interface-libp2p from 2.0.0 to 3.1.0 ([#83](https://github.com/libp2p/js-libp2p-peer-store/issues/83)) ([9a8d6c6](https://github.com/libp2p/js-libp2p-peer-store/commit/9a8d6c61d3d64dca463c74df2984a4e294424f51))
+
 ## [8.1.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.0.0...v8.1.0) (2023-05-10)
 
 
