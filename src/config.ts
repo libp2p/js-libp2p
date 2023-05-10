@@ -34,10 +34,6 @@ export function validateConfig <T extends ServiceMap = Record<string, unknown>> 
     throw new CodeError(messages.ERR_TRANSPORTS_REQUIRED, codes.ERR_TRANSPORTS_REQUIRED)
   }
 
-  if (resultingOptions.connectionEncryption == null || resultingOptions.connectionEncryption.length === 0) {
-    throw new CodeError(messages.CONN_ENCRYPTION_REQUIRED, codes.CONN_ENCRYPTION_REQUIRED)
-  }
-
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes.ERR_PROTECTOR_REQUIRED)
   }
