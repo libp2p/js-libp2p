@@ -439,8 +439,9 @@ export class DefaultIdentifyService implements Startable {
       return
     }
 
-    const envelope = await RecordEnvelope.openAndCertify(message.signedPeerRecord, PeerRecord.DOMAIN)
-    const peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+    let peerRecordEnvelope = message.signedPeerRecord
+    const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
+    let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
 
     // Verify peerId
     if (!peerRecord.peerId.equals(envelope.peerId)) {
@@ -463,7 +464,7 @@ export class DefaultIdentifyService implements Startable {
     }
 
     log('received signedPeerRecord in push from %p', remotePeer)
-    let metadata = new Map()
+    const metadata = peer?.metadata ?? new Map()
 
     if (peer?.peerRecordEnvelope != null) {
       const storedEnvelope = await RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
@@ -472,9 +473,9 @@ export class DefaultIdentifyService implements Startable {
       // ensure seq is greater than, or equal to, the last received
       if (storedRecord.seqNumber >= peerRecord.seqNumber) {
         log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+        peerRecord = storedRecord
+        peerRecordEnvelope = peer.peerRecordEnvelope
       }
-
-      metadata = peer.metadata
     }
 
     if (message.agentVersion != null) {
@@ -486,7 +487,7 @@ export class DefaultIdentifyService implements Startable {
     }
 
     await this.peerStore.patch(peerRecord.peerId, {
-      peerRecordEnvelope: message.signedPeerRecord,
+      peerRecordEnvelope,
       protocols: message.protocols,
       addresses: peerRecord.multiaddrs.map(multiaddr => ({
         isCertified: true,
