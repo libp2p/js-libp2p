@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.2.0...v2.0.0) (2023-05-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* must be used with libp2p@0.45.x
+
+### Dependencies
+
+* update all libp2p deps for compat with libp2p@0.45.x ([#160](https://github.com/libp2p/js-libp2p-webrtc/issues/160)) ([b20875d](https://github.com/libp2p/js-libp2p-webrtc/commit/b20875d9f73e5cad05376db2d1228363dd1bce7d))
+
 ## [1.2.0](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.1.11...v1.2.0) (2023-05-09)
 
 
