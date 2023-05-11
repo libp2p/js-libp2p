@@ -1,30 +1,31 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { multiaddr } from '@multiformats/multiaddr'
-import { identifyService, IdentifyServiceInit } from '../../src/identify/index.js'
-import Peers from '../fixtures/peers.js'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { start, stop } from '@libp2p/interfaces/startable'
+import { createFromJSON } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
+import delay from 'delay'
 import drain from 'it-drain'
 import { pipe } from 'it-pipe'
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { pEvent } from 'p-event'
+import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH
 } from '../../src/identify/consts.js'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { DefaultIdentifyService } from '../../src/identify/identify.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import delay from 'delay'
-import { pEvent } from 'p-event'
-import { start, stop } from '@libp2p/interfaces/startable'
-import { defaultComponents, Components } from '../../src/components.js'
+import Peers from '../fixtures/peers.js'
+import type { IdentifyServiceInit } from '../../src/identify/index.js'
 import type { TransportManager } from '@libp2p/interface-transport'
-import { stubInterface } from 'sinon-ts'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -97,8 +98,8 @@ describe('identify (push)', () => {
   })
 
   it('should be able to push identify updates to another peer', async () => {
-    const localIdentify = identifyService(defaultInit)(localComponents)
-    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -171,11 +172,11 @@ describe('identify (push)', () => {
 
   it('should time out during push identify', async () => {
     let streamEnded = false
-    const localIdentify = identifyService({
+    const localIdentify = new DefaultIdentifyService(localComponents, {
       ...defaultInit,
       timeout: 10
-    })(localComponents)
-    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
+    })
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
 
     await start(localIdentify)
     await start(remoteIdentify)

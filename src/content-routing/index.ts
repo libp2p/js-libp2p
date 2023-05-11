@@ -1,18 +1,18 @@
 import { CodeError } from '@libp2p/interfaces/errors'
+import merge from 'it-merge'
+import { pipe } from 'it-pipe'
 import { messages, codes } from '../errors.js'
 import {
   storeAddresses,
   uniquePeers,
   requirePeers
 } from './utils.js'
-import merge from 'it-merge'
-import { pipe } from 'it-pipe'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { CID } from 'multiformats/cid'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 export interface CompoundContentRoutingInit {
   routers: ContentRouting[]
@@ -97,8 +97,8 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
     }
 
-    return await Promise.any(this.routers.map(async (router) => {
-      return await router.get(key, options)
+    return Promise.any(this.routers.map(async (router) => {
+      return router.get(key, options)
     }))
   }
 }

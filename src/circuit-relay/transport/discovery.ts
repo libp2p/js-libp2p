@@ -1,18 +1,18 @@
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
-import { namespaceToCid } from '../utils.js'
+import { createTopology } from '@libp2p/topology'
 import {
   RELAY_RENDEZVOUS_NS,
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
+import { namespaceToCid } from '../utils.js'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { Registrar } from '@libp2p/interface-registrar'
-import { createTopology } from '@libp2p/topology'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:circuit-relay:discover-relays')
 
@@ -91,7 +91,7 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
     log('searching peer store for relays')
     const peers = (await this.peerStore.all())
       // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
-      .filter(({ id, protocols }) => protocols.includes(RELAY_V2_HOP_CODEC))
+      .filter(({ protocols }) => protocols.includes(RELAY_V2_HOP_CODEC))
       .sort(() => Math.random() - 0.5)
 
     for (const peer of peers) {
@@ -112,11 +112,11 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
           const peerId = provider.id
 
           found++
-          log('found relay peer %p in content routing', peerId)
           await this.peerStore.merge(peerId, {
             multiaddrs: provider.multiaddrs
           })
 
+          log('found relay peer %p in content routing', peerId)
           this.safeDispatchEvent('relay:discover', { detail: peerId })
         }
       }

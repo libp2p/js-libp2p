@@ -1,3 +1,22 @@
+import { setMaxListeners } from 'events'
+import { logger } from '@libp2p/logger'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { abortableDuplex } from 'abortable-iterator'
+import { anySignal } from 'any-signal'
+import first from 'it-first'
+import * as lp from 'it-length-prefixed'
+import map from 'it-map'
+import parallel from 'it-parallel'
+import { pipe } from 'it-pipe'
+import isPrivateIp from 'private-ip'
+import {
+  MAX_INBOUND_STREAMS,
+  MAX_OUTBOUND_STREAMS,
+  PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, REFRESH_INTERVAL, STARTUP_DELAY, TIMEOUT
+} from './constants.js'
+import { Message } from './pb/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
@@ -7,23 +26,6 @@ import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/startable'
-import { logger } from '@libp2p/logger'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { abortableDuplex } from 'abortable-iterator'
-import { setMaxListeners } from 'events'
-import first from 'it-first'
-import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import parallel from 'it-parallel'
-import { pipe } from 'it-pipe'
-import isPrivateIp from 'private-ip'
-import { TimeoutController } from 'timeout-abort-controller'
-import {
-  PROTOCOL
-} from './constants.js'
-import { Message } from './pb/index.js'
 
 const log = logger('libp2p:autonat')
 
@@ -32,45 +34,39 @@ const log = logger('libp2p:autonat')
 // https://github.com/libp2p/specs/blob/master/autonat/README.md#autonat-protocol
 const REQUIRED_SUCCESSFUL_DIALS = 4
 
-// Wait this long before we start to query autonat nodes
-const AUTONAT_STARTUP_DELAY = 5000
-
-// Only try to verify our external address this often
-const AUTONAT_REFRESH_INTERVAL = 60000
-
-export interface AutonatServiceInit {
+export interface AutoNATServiceInit {
   /**
    * Allows overriding the protocol prefix used
    */
-  protocolPrefix: string
+  protocolPrefix?: string
 
   /**
    * How long we should wait for a remote peer to verify our external address
    */
-  timeout: number
+  timeout?: number
 
   /**
    * How long to wait after startup before trying to verify our external address
    */
-  startupDelay: number
+  startupDelay?: number
 
   /**
    * Verify our external addresses this often
    */
-  refreshInterval: number
+  refreshInterval?: number
 
   /**
-   * How many parallel inbound autonat streams we allow per-connection
+   * How many parallel inbound autoNAT streams we allow per-connection
    */
-  maxInboundStreams: number
+  maxInboundStreams?: number
 
   /**
-   * How many parallel outbound autonat streams we allow per-connection
+   * How many parallel outbound autoNAT streams we allow per-connection
    */
-  maxOutboundStreams: number
+  maxOutboundStreams?: number
 }
 
-export interface DefaultAutonatComponents {
+export interface AutoNATComponents {
   registrar: Registrar
   addressManager: AddressManager
   transportManager: TransportManager
@@ -79,21 +75,26 @@ export interface DefaultAutonatComponents {
   peerRouting: PeerRouting
 }
 
-export class AutonatService implements Startable {
-  private readonly components: DefaultAutonatComponents
-  private readonly _init: AutonatServiceInit
+class DefaultAutoNATService implements Startable {
+  private readonly components: AutoNATComponents
   private readonly startupDelay: number
   private readonly refreshInterval: number
+  private readonly protocol: string
+  private readonly timeout: number
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
   private verifyAddressTimeout?: ReturnType<typeof setTimeout>
   private started: boolean
 
-  constructor (components: DefaultAutonatComponents, init: AutonatServiceInit) {
+  constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
     this.components = components
     this.started = false
-    this._init = init
-    this.startupDelay = init.startupDelay ?? AUTONAT_STARTUP_DELAY
-    this.refreshInterval = init.refreshInterval ?? AUTONAT_REFRESH_INTERVAL
-
+    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = init.timeout ?? TIMEOUT
+    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
+    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
+    this.startupDelay = init.startupDelay ?? STARTUP_DELAY
+    this.refreshInterval = init.refreshInterval ?? REFRESH_INTERVAL
     this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
   }
 
@@ -106,14 +107,14 @@ export class AutonatService implements Startable {
       return
     }
 
-    await this.components.registrar.handle(PROTOCOL, (data) => {
+    await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleIncomingAutonatStream(data)
         .catch(err => {
           log.error(err)
         })
     }, {
-      maxInboundStreams: this._init.maxInboundStreams,
-      maxOutboundStreams: this._init.maxOutboundStreams
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
     })
 
     this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.startupDelay)
@@ -122,30 +123,30 @@ export class AutonatService implements Startable {
   }
 
   async stop (): Promise<void> {
-    await this.components.registrar.unhandle(PROTOCOL)
+    await this.components.registrar.unhandle(this.protocol)
     clearTimeout(this.verifyAddressTimeout)
 
     this.started = false
   }
 
   /**
-   * Handle an incoming autonat request
+   * Handle an incoming AutoNAT request
    */
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
-    const controller = new TimeoutController(this._init.timeout)
+    const signal = anySignal([AbortSignal.timeout(this.timeout)])
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, controller.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch {}
 
     const ourHosts = this.components.addressManager.getAddresses()
       .map(ma => ma.toOptions().host)
 
     try {
-      const source = abortableDuplex(data.stream, controller.signal)
+      const source = abortableDuplex(data.stream, signal)
       const self = this
 
       await pipe(
@@ -319,7 +320,7 @@ export class AutonatService implements Startable {
 
             try {
               connection = await self.components.connectionManager.openConnection(multiaddr, {
-                signal: controller.signal
+                signal
               })
 
               if (!connection.remoteAddr.equals(multiaddr)) {
@@ -362,8 +363,10 @@ export class AutonatService implements Startable {
         // can't tell the remote when a dial timed out..
         data.stream
       )
+    } catch (err) {
+      log.error(err)
     } finally {
-      controller.clear()
+      signal.clear()
     }
   }
 
@@ -401,13 +404,13 @@ export class AutonatService implements Startable {
       return
     }
 
-    const controller = new TimeoutController(this._init.timeout)
+    const signal = AbortSignal.timeout(this.timeout)
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
     try {
       // fails on node < 15.4
-      setMaxListeners?.(Infinity, controller.signal)
+      setMaxListeners?.(Infinity, signal)
     } catch {}
 
     const self = this
@@ -431,25 +434,25 @@ export class AutonatService implements Startable {
       const results: Record<string, { success: number, failure: number }> = {}
       const networkSegments: string[] = []
 
-      async function verifyAddress (peer: PeerInfo): Promise<Message.DialResponse | undefined> {
+      const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
         try {
           log('Asking %p to verify multiaddr', peer.id)
 
           const connection = await self.components.connectionManager.openConnection(peer.id, {
-            signal: controller.signal
+            signal
           })
 
-          const stream = await connection.newStream(PROTOCOL, {
-            signal: controller.signal
+          const stream = await connection.newStream(this.protocol, {
+            signal
           })
-          const source = abortableDuplex(stream, controller.signal)
+          const source = abortableDuplex(stream, signal)
 
           const buf = await pipe(
             [request],
             (source) => lp.encode(source),
             source,
             (source) => lp.decode(source),
-            async (stream) => await first(stream)
+            async (stream) => first(stream)
           )
           if (buf == null) {
             log('No response received from %s', connection.remotePeer)
@@ -493,8 +496,8 @@ export class AutonatService implements Startable {
       }
 
       for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
-        signal: controller.signal
-      }), (peer) => async () => await verifyAddress(peer)), {
+        signal
+      }), (peer) => async () => verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
       })) {
         try {
@@ -557,8 +560,13 @@ export class AutonatService implements Startable {
         }
       }
     } finally {
-      controller.clear()
       this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
     }
+  }
+}
+
+export function autoNATService (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => unknown {
+  return (components) => {
+    return new DefaultAutoNATService(components, init)
   }
 }

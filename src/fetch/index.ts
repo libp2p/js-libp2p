@@ -1,22 +1,21 @@
-import { logger } from '@libp2p/logger'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from '../errors.js'
-import * as lp from 'it-length-prefixed'
-import { FetchRequest, FetchResponse } from './pb/proto.js'
-import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { Stream } from '@libp2p/interface-connection'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { AbortOptions } from '@libp2p/interfaces'
-import { abortableDuplex } from 'abortable-iterator'
-import { pipe } from 'it-pipe'
-import first from 'it-first'
-import { TimeoutController } from 'timeout-abort-controller'
 import { setMaxListeners } from 'events'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { abortableDuplex } from 'abortable-iterator'
+import first from 'it-first'
+import * as lp from 'it-length-prefixed'
+import { pipe } from 'it-pipe'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import { codes } from '../errors.js'
+import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
+import { FetchRequest, FetchResponse } from './pb/proto.js'
+import type { Stream } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:fetch')
 
@@ -139,19 +138,17 @@ class DefaultFetchService implements Startable, FetchService {
     log('dialing %s to %p', this.protocol, peer)
 
     const connection = await this.components.connectionManager.openConnection(peer, options)
-    let timeoutController
     let signal = options.signal
     let stream: Stream | undefined
 
     // create a timeout if no abort signal passed
     if (signal == null) {
       log('using default timeout of %d ms', this.init.timeout)
-      timeoutController = new TimeoutController(this.init.timeout ?? DEFAULT_TIMEOUT)
-      signal = timeoutController.signal
+      signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
 
       try {
         // fails on node < 15.4
-        setMaxListeners?.(Infinity, timeoutController.signal)
+        setMaxListeners?.(Infinity, signal)
       } catch {}
     }
 
@@ -203,10 +200,6 @@ class DefaultFetchService implements Startable, FetchService {
 
       return result ?? null
     } finally {
-      if (timeoutController != null) {
-        timeoutController.clear()
-      }
-
       if (stream != null) {
         stream.close()
       }

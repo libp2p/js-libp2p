@@ -1,30 +1,30 @@
-import { interopTests } from '@libp2p/interop'
-import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
-import { createServer } from '@libp2p/daemon-server'
-import { createClient } from '@libp2p/daemon-client'
-import { createLibp2p, Libp2pOptions, ServiceFactoryMap } from '../src/index.js'
+import fs from 'fs'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { noise } from '@chainsafe/libp2p-noise'
-import { tcp } from '@libp2p/tcp'
-import { multiaddr } from '@multiformats/multiaddr'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { createClient } from '@libp2p/daemon-client'
+import { createServer } from '@libp2p/daemon-server'
+import { floodsub } from '@libp2p/floodsub'
+import { contentRouting } from '@libp2p/interface-content-routing'
+import { peerDiscovery } from '@libp2p/interface-peer-discovery'
+import { peerRouting } from '@libp2p/interface-peer-routing'
+import { interopTests } from '@libp2p/interop'
 import { kadDHT } from '@libp2p/kad-dht'
-import { path as p2pd } from 'go-libp2p'
-import { execa } from 'execa'
-import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import fs from 'fs'
-import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import { floodsub } from '@libp2p/floodsub'
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { tcp } from '@libp2p/tcp'
+import { multiaddr } from '@multiformats/multiaddr'
+import { execa } from 'execa'
+import { path as p2pd } from 'go-libp2p'
+import pDefer from 'p-defer'
 import { circuitRelayServer, circuitRelayTransport } from '../src/circuit-relay/index.js'
-import type { ServiceMap } from '@libp2p/interface-libp2p'
 import { identifyService } from '../src/identify/index.js'
-import { contentRouting } from '@libp2p/interface-content-routing'
-import { peerRouting } from '@libp2p/interface-peer-routing'
-import { peerDiscovery } from '@libp2p/interface-peer-discovery'
+import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from '../src/index.js'
+import type { ServiceMap } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 
 /**
  * @packageDocumentation
@@ -129,7 +129,6 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
-    // @ts-expect-error remove after https://github.com/ChainSafe/js-libp2p-noise/pull/306
     connectionEncryption: [noise()]
   }
 
@@ -215,10 +214,10 @@ async function main (): Promise<void> {
   const factory: DaemonFactory = {
     async spawn (options: SpawnOptions) {
       if (options.type === 'go') {
-        return await createGoPeer(options)
+        return createGoPeer(options)
       }
 
-      return await createJsPeer(options)
+      return createJsPeer(options)
     }
   }
 

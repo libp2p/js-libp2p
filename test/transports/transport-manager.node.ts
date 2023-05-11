@@ -1,19 +1,21 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { mockUpgrader } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { createFromJSON } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
-import { mockUpgrader } from '@libp2p/interface-mocks'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core/memory'
+import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
 import Peers from '../fixtures/peers.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import { defaultComponents, Components } from '../../src/components.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -88,5 +90,40 @@ describe('Transport Manager (TCP)', () => {
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
     await connection.close()
+  })
+
+  it('should remove listeners when they stop listening', async () => {
+    const transport = tcp()()
+    tm.add(transport)
+
+    expect(tm.getListeners()).to.have.lengthOf(0)
+
+    const spyListener = sinon.spy(transport, 'createListener')
+
+    await tm.listen(addrs)
+
+    expect(spyListener.callCount).to.equal(addrs.length)
+
+    // wait for listeners to start listening
+    await pWaitFor(async () => {
+      return tm.getListeners().length === addrs.length
+    })
+
+    // wait for listeners to stop listening
+    const closePromise = Promise.all(
+      spyListener.getCalls().map(async call => {
+        return pEvent(call.returnValue, 'close')
+      })
+    )
+
+    await Promise.all(
+      tm.getListeners().map(async l => { await l.close() })
+    )
+
+    await closePromise
+
+    expect(tm.getListeners()).to.have.lengthOf(0)
+
+    await tm.stop()
   })
 })

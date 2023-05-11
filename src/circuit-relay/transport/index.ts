@@ -1,30 +1,29 @@
-import { StopMessage, HopMessage, Status } from '../pb/index.js'
+import { symbol, type Upgrader, type Listener, type Transport, type CreateListenerOptions } from '@libp2p/interface-transport'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { logger } from '@libp2p/logger'
+import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
+import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import { pbStream } from 'it-pb-stream'
 import { codes } from '../../errors.js'
-import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
+import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { StopMessage, HopMessage, Status } from '../pb/index.js'
+import { RelayDiscovery, type RelayDiscoveryComponents } from './discovery.js'
 import { createListener } from './listener.js'
-import { symbol, Upgrader } from '@libp2p/interface-transport'
-import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { Listener, Transport, CreateListenerOptions } from '@libp2p/interface-transport'
+import { type RelayStoreInit, ReservationStore } from './reservation-store.js'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import { pbStream } from 'it-pb-stream'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
-import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
-import { RelayStoreInit, ReservationStore } from './reservation-store.js'
-import { RelayDiscovery, RelayDiscoveryComponents } from './discovery.js'
-import { CodeError } from '@libp2p/interfaces/errors'
-import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:circuit-relay:transport')
 
@@ -84,7 +83,6 @@ class CircuitRelayTransport implements Transport {
   private readonly upgrader: Upgrader
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
-  private readonly events: EventEmitter<Libp2pEvents>
   private readonly reservationStore: ReservationStore
   private started: boolean
 
@@ -96,7 +94,6 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.events = components.events
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -144,13 +141,9 @@ class CircuitRelayTransport implements Transport {
     this.started = false
   }
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
-  get [Symbol.toStringTag] (): 'libp2p/circuit-relay-v2' {
-    return 'libp2p/circuit-relay-v2'
-  }
+  readonly [Symbol.toStringTag] = 'libp2p/circuit-relay-v2'
 
   /**
    * Dial a peer over a relay
@@ -170,7 +163,7 @@ class CircuitRelayTransport implements Transport {
     const destinationId = destinationAddr.getPeerId()
 
     if (relayId == null || destinationId == null) {
-      const errMsg = 'Circuit relay dial failed as addresses did not have peer id'
+      const errMsg = `Circuit relay dial to ${ma.toString()} failed as address did not have peer ids`
       log.error(errMsg)
       throw new CodeError(errMsg, codes.ERR_RELAYED_DIAL)
     }
@@ -203,7 +196,7 @@ class CircuitRelayTransport implements Transport {
         disconnectOnFailure
       })
     } catch (err: any) {
-      log.error('Circuit relay dial failed', err)
+      log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${relayPeer.toString()} failed`, err)
       disconnectOnFailure && await relayConnection.close()
       throw err
     }
@@ -244,7 +237,7 @@ class CircuitRelayTransport implements Transport {
       log('new outbound connection %s', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn)
     } catch (err) {
-      log.error('Circuit relay dial failed', err)
+      log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
       disconnectOnFailure && await connection.close()
       throw err
     }
@@ -256,8 +249,7 @@ class CircuitRelayTransport implements Transport {
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
       connectionManager: this.connectionManager,
-      relayStore: this.reservationStore,
-      events: this.events
+      relayStore: this.reservationStore
     })
   }
 

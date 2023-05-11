@@ -1,17 +1,17 @@
 /* eslint-env mocha */
 
-import type { Libp2p } from '@libp2p/interface-libp2p'
 import { expect } from 'aegir/chai'
 import mergeOptions from 'merge-options'
 import { pEvent } from 'p-event'
-import { FetchService, fetchService } from '../../src/fetch/index.js'
-import { IdentifyService, identifyService } from '../../src/identify/index.js'
+import { type FetchService, fetchService } from '../../src/fetch/index.js'
+import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
-import { PingService, pingService } from '../../src/ping/index.js'
+import { type PingService, pingService } from '../../src/ping/index.js'
 import { baseOptions } from './utils.js'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('Protocol prefix is configurable', () => {
-  let libp2p: Libp2p<{ identify: IdentifyService, ping: PingService, fetch: FetchService }>
+  let libp2p: Libp2p<{ identify: unknown, ping: PingService, fetch: FetchService }>
 
   afterEach(async () => {
     if (libp2p != null) {

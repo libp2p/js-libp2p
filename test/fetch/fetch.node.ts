@@ -1,18 +1,19 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { createLibp2p } from '../../src/index.js'
-import { tcp } from '@libp2p/tcp'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { expect } from 'aegir/chai'
+import { codes } from '../../src/errors.js'
+import { type FetchService, fetchService } from '../../src/fetch/index.js'
+import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
-import { codes } from '../../src/errors.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { FetchService, fetchService } from '../../src/fetch/index.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 async function createNode (peerId: PeerId): Promise<Libp2p<{ fetch: FetchService }>> {
-  return await createLibp2p({
+  return createLibp2p({
     peerId,
     addresses: {
       listen: [
@@ -23,6 +24,7 @@ async function createNode (peerId: PeerId): Promise<Libp2p<{ fetch: FetchService
       tcp()
     ],
     streamMuxers: [
+      yamux(),
       mplex()
     ],
     connectionEncryption: [

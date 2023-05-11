@@ -1,31 +1,31 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 5] */
 
-import type { Connection, Stream } from '@libp2p/interface-connection'
 import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-mocks'
-import { expect } from 'aegir/chai'
-import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
-import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
-import { MessageStream, pbStream } from 'it-pb-stream'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { Registrar } from '@libp2p/interface-registrar'
-import type { Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { isStartable } from '@libp2p/interfaces/startable'
-import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import { PeerMap } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { type MessageStream, pbStream } from 'it-pb-stream'
+import Sinon from 'sinon'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
+import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
 import type { CircuitRelayServerInit } from '../../src/circuit-relay/server/index.js'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import Sinon from 'sinon'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
 
 interface Node {
   peerId: PeerId
@@ -296,8 +296,7 @@ describe('circuit-relay hop protocol', function () {
         tags: {
           [RELAY_SOURCE_TAG]: {
             value: 1,
-            // @ts-expect-error ttl is a number not a matcher
-            ttl: Sinon.match.number
+            ttl: Sinon.match.number as unknown as number
           }
         }
       })).to.be.true()

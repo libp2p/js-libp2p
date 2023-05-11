@@ -1,15 +1,16 @@
-import { PubSubBaseProtocol, PubSubComponents } from '@libp2p/pubsub'
-import { plaintext } from '../../src/insecure/index.js'
-import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mockConnectionGater } from '@libp2p/interface-mocks'
+import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
+import * as cborg from 'cborg'
 import mergeOptions from 'merge-options'
-import type { Message, PublishResult, PubSub, PubSubInit, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import * as cborg from 'cborg'
-import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import type { Message, PublishResult, PubSub, PubSubInit, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -25,7 +26,7 @@ export const baseOptions: Partial<Libp2pInit<{ pubsub: PubSub }>> = {
     }),
     circuitRelayTransport()
   ],
-  streamMuxers: [mplex()],
+  streamMuxers: [yamux()],
   connectionEncryption: [plaintext()]
 }
 
@@ -88,5 +89,6 @@ export const pubsubSubsystemOptions: Libp2pOptions<{ pubsub: PubSub }> = mergeOp
   ],
   services: {
     pubsub: (components: PubSubComponents) => new MockPubSub(components)
-  }
+  },
+  connectionGater: mockConnectionGater()
 })

@@ -1,32 +1,32 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { AutonatService, AutonatServiceInit } from '../../src/autonat/index.js'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import type { Registrar } from '@libp2p/interface-registrar'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import all from 'it-all'
+import * as lp from 'it-length-prefixed'
+import { pipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
+import sinon from 'sinon'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../../src/autonat/constants.js'
+import { autoNATService, type AutoNATServiceInit } from '../../src/autonat/index.js'
+import { Message } from '../../src/autonat/pb/index.js'
+import { type Components, defaultComponents } from '../../src/components.js'
+import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
-import { PROTOCOL } from '../../src/autonat/constants.js'
-import { Message } from '../../src/autonat/pb/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { pushable } from 'it-pushable'
-import type { Transport, TransportManager } from '@libp2p/interface-transport'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import * as lp from 'it-length-prefixed'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
-import { Components, defaultComponents } from '../../src/components.js'
-import { Uint8ArrayList } from 'uint8arraylist'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerRouting } from '@libp2p/interface-peer-routing'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { Transport, TransportManager } from '@libp2p/interface-transport'
 
-const defaultInit: AutonatServiceInit = {
+const defaultInit: AutoNATServiceInit = {
   protocolPrefix: 'libp2p',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
@@ -36,7 +36,7 @@ const defaultInit: AutonatServiceInit = {
 }
 
 describe('autonat', () => {
-  let service: AutonatService
+  let service: any
   let components: Components
   let peerRouting: StubbedInstance<PeerRouting>
   let registrar: StubbedInstance<Registrar>
@@ -65,7 +65,7 @@ describe('autonat', () => {
       peerStore
     })
 
-    service = new AutonatService(components, defaultInit)
+    service = autoNATService(defaultInit)(components)
 
     await start(components)
     await start(service)
@@ -94,7 +94,7 @@ describe('autonat', () => {
 
       // stub autonat protocol stream
       const stream = stubInterface<Stream>()
-      connection.newStream.withArgs(PROTOCOL).resolves(stream)
+      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).resolves(stream)
 
       // stub autonat response
       const response = Message.encode({
@@ -381,7 +381,7 @@ describe('autonat', () => {
 
       connectionManager.openConnection.reset()
       connectionManager.openConnection.callsFake(async (peer, options = {}) => {
-        return await Promise.race<Connection>([
+        return Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))
@@ -485,7 +485,7 @@ describe('autonat', () => {
       const slice = await pipe(
         sink,
         (source) => lp.decode(source),
-        async source => await all(source)
+        async source => all(source)
       )
 
       if (slice.length !== 1) {
@@ -636,7 +636,7 @@ describe('autonat', () => {
 
     it('should time out when dialing a requested address', async () => {
       connectionManager.openConnection.callsFake(async function (ma, options = {}) {
-        return await Promise.race<Connection>([
+        return Promise.race<Connection>([
           new Promise<Connection>((resolve, reject) => {
             options.signal?.addEventListener('abort', () => {
               reject(new Error('Dial aborted!'))
