@@ -15,7 +15,7 @@ const log = logger('libp2p:webrtc:peer')
 
 export type IncomingStreamOpts = { rtcConfiguration?: RTCConfiguration } & IncomingStreamData
 
-export async function handleIncomingStream ({ rtcConfiguration, stream: rawStream }: IncomingStreamOpts): Promise<[RTCPeerConnection, StreamMuxerFactory]> {
+export async function handleIncomingStream ({ rtcConfiguration, stream: rawStream }: IncomingStreamOpts): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
   const signal = AbortSignal.timeout(DEFAULT_TIMEOUT)
   const stream = pbStream(abortableDuplex(rawStream, signal)).pb(pb.Message)
   const pc = new RTCPeerConnection(rtcConfiguration)
@@ -76,7 +76,10 @@ export async function handleIncomingStream ({ rtcConfiguration, stream: rawStrea
 
   // wait until candidates are connected
   await readCandidatesUntilConnected(connectedPromise, pc, stream)
-  return [pc, muxerFactory]
+
+  const remoteAddress = parseRemoteAddress(pc.currentRemoteDescription?.sdp ?? '')
+
+  return { pc, muxerFactory, remoteAddress }
 }
 
 export interface ConnectOptions {
@@ -85,9 +88,8 @@ export interface ConnectOptions {
   rtcConfiguration?: RTCConfiguration
 }
 
-export async function initiateConnection ({ rtcConfiguration, signal, stream: rawStream }: ConnectOptions): Promise<[RTCPeerConnection, StreamMuxerFactory]> {
+export async function initiateConnection ({ rtcConfiguration, signal, stream: rawStream }: ConnectOptions): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
   const stream = pbStream(abortableDuplex(rawStream, signal)).pb(pb.Message)
-
   // setup peer connection
   const pc = new RTCPeerConnection(rtcConfiguration)
   const muxerFactory = new DataChannelMuxerFactory(pc)
@@ -133,5 +135,21 @@ export async function initiateConnection ({ rtcConfiguration, signal, stream: ra
 
   await readCandidatesUntilConnected(connectedPromise, pc, stream)
   channel.close()
-  return [pc, muxerFactory]
+
+  const remoteAddress = parseRemoteAddress(pc.currentRemoteDescription?.sdp ?? '')
+
+  return { pc, muxerFactory, remoteAddress }
+}
+
+function parseRemoteAddress (sdp: string): string {
+  // 'a=candidate:1746876089 1 udp 2113937151 0614fbad-b...ocal 54882 typ host generation 0 network-cost 999'
+  const candidateLine = sdp.split('\r\n').filter(line => line.startsWith('a=candidate')).pop()
+  const candidateParts = candidateLine?.split(' ')
+
+  if (candidateLine == null || candidateParts == null || candidateParts.length < 5) {
+    log('could not parse remote address from', candidateLine)
+    return '/webrtc'
+  }
+
+  return `/dnsaddr/${candidateParts[4]}/${candidateParts[2]}/${candidateParts[3]}/webrtc`
 }

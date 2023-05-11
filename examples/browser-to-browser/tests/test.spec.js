@@ -1,33 +1,30 @@
 /* eslint-disable no-console */
-import { test, expect } from '@playwright/test'
-import { playwright } from 'test-util-ipfs-example'
+import { setup, expect } from 'test-ipfs-example/browser'
 import { createLibp2p } from 'libp2p'
 import { circuitRelayServer } from 'libp2p/circuit-relay'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
+import { identifyService } from 'libp2p/identify'
 
 // Setup
-const play = test.extend({
-  ...playwright.servers()
-})
-
+const test = setup()
 
 // DOM
 const connectBtn = '#connect'
 const connectAddr = '#peer'
-const connectPeerAddr = '#connected_peer'
 const messageInput = '#message'
 const sendBtn = '#send'
 const output = '#output'
+const listeningAddresses = '#multiaddrs'
 
 const message = 'hello'
 let url
 
 // we spawn a js libp2p relay
 async function spawnRelay() {
-  const server = await createLibp2p({
+  const relayNode = await createLibp2p({
     addresses: {
       listen: ['/ip4/127.0.0.1/tcp/0/ws']
     },
@@ -38,86 +35,86 @@ async function spawnRelay() {
     ],
     connectionEncryption: [noise()],
     streamMuxers: [mplex()],
-    relay: circuitRelayServer({}),
+    services: {
+      identify: identifyService(),
+      relay: circuitRelayServer()
+    }
   })
 
-  const serverAddr = server.getMultiaddrs()[0].toString()
+  const relayNodeAddr = relayNode.getMultiaddrs()[0].toString()
 
-  return { server, serverAddr }
+  return { relayNode, relayNodeAddr }
 }
 
-play.describe('browser to browser example:', () => {
-  let server
-  let serverAddr
+test.describe('browser to browser example:', () => {
+  let relayNode
+  let relayNodeAddr
 
   // eslint-disable-next-line no-empty-pattern
-  play.beforeAll(async ({ servers }, testInfo) => {
+  test.beforeAll(async ({ servers }, testInfo) => {
     testInfo.setTimeout(5 * 60_000)
-    const s = await spawnRelay()
-    server = s.server
-    serverAddr = s.serverAddr
-    console.log('Server addr:', serverAddr)
-    url = `http://localhost:${servers[0].port}/`
+    const r = await spawnRelay()
+    relayNode = r.relayNode
+    relayNodeAddr = r.relayNodeAddr
+    console.log('Server addr:', relayNodeAddr)
+    url = servers[0].url
   }, {})
 
-  play.afterAll(() => {
-    server.stop()
+  test.afterAll(() => {
+    relayNode.stop()
   })
 
-  play.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto(url)
   })
 
-  play('should connect to a relay node', async ({ page, context }) => {
-    let peer = await per_page(page, serverAddr)
+  test('should connect to a relay node', async ({ page, context }) => {
+    // first page dials the relay
+    const relayedAddress = await dialRelay(page, relayNodeAddr)
 
     // load second page and use `peer` as the connectAddr
     const pageTwo = await context.newPage();
     await pageTwo.goto(url)
-    let newPeer = await per_page(pageTwo, peer)
+    await dialPeerOverRelay(pageTwo, relayedAddress)
 
-    await page.fill(connectAddr, newPeer)
-    await page.click(connectBtn)
+    // stop the relay
+    await relayNode.stop()
 
-    // send the relay message to the peer over the relay
-    await page.fill(messageInput, message)
-    await page.click(sendBtn)
+    // send the message to the peer over webRTC
+    await pageTwo.fill(messageInput, message)
+    await pageTwo.click(sendBtn)
 
-    await page.waitForSelector('#output:has(div)')
-    const connections = await page.textContent(output)
-
-    // Expected output:
-    //
-    // Sending message '${message}'
-    // Received message '${message}'
-    expect(connections).toContain(`Sending message '${message}'`)
-    expect(connections).toContain(`Received message '${message}'`)
-
-    const connListFromPage = await page.textContent('#connections')
-    const connListFromPageTwo = await pageTwo.textContent('#connections')
-    // Expect to see the webrtc multiaddr in the connections list
-    expect(connListFromPage).toContain('/webrtc/')
-    expect(connListFromPageTwo).toContain('/webrtc/')
+    // check the message was echoed back
+    const outputLocator = pageTwo.locator(output)
+    await expect(outputLocator).toHaveText(/Sending message/)
+    await expect(outputLocator).toHaveText(/Received message/, { timeout: 60000 })
   })
 })
 
-async function per_page(page, address) {
+async function dialRelay (page, address) {
   // add the go libp2p multiaddress to the input field and submit
   await page.fill(connectAddr, address)
   await page.click(connectBtn)
-  await page.fill(messageInput, message)
 
-  await page.waitForSelector('#output:has(div)')
+  const outputLocator = page.locator(output)
+  await expect(outputLocator).toHaveText(/Dialing/)
+  await expect(outputLocator).toHaveText(/Connected/)
 
-  // Expected output:
-  //
-  // Dialing '${serverAddr}'
-  // Listening on '${peer}'
-  const connections = await page.textContent(output)
-  const peer = await page.textContent(connectPeerAddr)
+  const multiaddrsLocator = page.locator(listeningAddresses)
+  await expect(multiaddrsLocator).toHaveText(/webrtc/)
 
-  expect(connections).toContain(`Dialing '${address}'`)
-  expect(connections).toContain(`Listening on '${peer}'`)
-  
-  return peer
+  const multiaddrs = await page.textContent(listeningAddresses)
+  const addr = multiaddrs.split(address).filter(str => str.includes('webrtc')).pop()
+
+  return address + addr
+}
+
+async function dialPeerOverRelay (page, address) {
+  // add the go libp2p multiaddr to the input field and submit
+  await page.fill(connectAddr, address)
+  await page.click(connectBtn)
+
+  const outputLocator = page.locator(output)
+  await expect(outputLocator).toHaveText(/Dialing/)
+  await expect(outputLocator).toHaveText(/Connected/)
 }

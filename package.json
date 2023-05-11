@@ -13,8 +13,8 @@
     "url": "https://github.com/libp2p/js-libp2p-webrtc/issues"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.6.0"
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -127,9 +127,8 @@
     "generate:webrtc-direct": "protons src/peer_transport/pb/index.proto",
     "build": "aegir build",
     "test": "aegir test -t browser",
-    "test:chrome": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" --cov",
-    "test:firefox": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
-    "test:peer": "aegir test -t browser -f \"./dist/test/peer.browser.spec.js\"",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:firefox": "aegir test -t browser --browser firefox",
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
@@ -137,11 +136,11 @@
     "release": "aegir release"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^11.0.4",
+    "@chainsafe/libp2p-noise": "^12.0.0",
     "@libp2p/interface-connection": "^5.0.2",
+    "@libp2p/interface-libp2p": "^3.1.0",
     "@libp2p/interface-metrics": "^4.0.8",
     "@libp2p/interface-peer-id": "^2.0.2",
-    "@libp2p/interface-peer-store": "^2.0.2",
     "@libp2p/interface-registrar": "^2.0.12",
     "@libp2p/interface-stream-muxer": "^4.0.1",
     "@libp2p/interface-transport": "^4.0.2",
@@ -150,9 +149,9 @@
     "@libp2p/peer-id": "^2.0.3",
     "@multiformats/multiaddr": "^12.1.2",
     "@protobuf-ts/runtime": "^2.9.0",
-    "abortable-iterator": "^4.0.2",
+    "abortable-iterator": "^5.0.1",
     "detect-browser": "^5.3.0",
-    "it-length-prefixed": "^8.0.3",
+    "it-length-prefixed": "^9.0.1",
     "it-merge": "^3.0.0",
     "it-pb-stream": "^4.0.1",
     "it-pipe": "^3.0.1",
@@ -166,12 +165,11 @@
     "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^11.0.2",
+    "@libp2p/interface-mocks": "^12.0.1",
     "@libp2p/peer-id-factory": "^2.0.3",
     "@protobuf-ts/protoc": "^2.9.0",
     "@types/sinon": "^10.0.14",
     "aegir": "^39.0.6",
-    "eslint-plugin-etc": "^2.0.2",
     "it-pair": "^2.0.6",
     "protons": "^7.0.2",
     "sinon": "^15.0.4",

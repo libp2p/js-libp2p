@@ -1,44 +1,55 @@
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
-import { inappropriateMultiaddr } from '../error.js'
-import { TRANSPORT } from './transport.js'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { ListenerEvents, TransportManager, Upgrader, Listener } from '@libp2p/interface-transport'
+import type { ListenerEvents, Listener } from '@libp2p/interface-transport'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ListenerOptions {
   peerId: PeerId
-  upgrader: Upgrader
-  transportManager: TransportManager
+  events: EventEmitter<Libp2pEvents>
 }
 
 export class WebRTCPeerListener extends EventEmitter<ListenerEvents> implements Listener {
-  constructor (
-    private readonly opts: ListenerOptions
-  ) {
+  private readonly peerId: PeerId
+  private listeners: Listener[] = []
+
+  constructor (opts: ListenerOptions) {
     super()
-  }
 
-  private getBaseAddress (ma: Multiaddr): Multiaddr {
-    const addrs = ma.toString().split(TRANSPORT)
-    if (addrs.length < 2) {
-      throw inappropriateMultiaddr('base address not found')
-    }
-    return multiaddr(addrs[0])
-  }
+    this.peerId = opts.peerId
 
-  private listeningAddrs: Multiaddr[] = []
-  async listen (ma: Multiaddr): Promise<void> {
-    const baseAddr = this.getBaseAddress(ma)
-    const tpt = this.opts.transportManager.transportForMultiaddr(baseAddr)
-    const listener = tpt?.createListener({ ...this.opts })
-    await listener?.listen(baseAddr)
-    const listeningAddr = ma.encapsulate(`/p2p/${this.opts.peerId.toString()}`)
-    this.listeningAddrs.push(listeningAddr)
-    listener?.addEventListener('close', () => {
-      this.listeningAddrs = this.listeningAddrs.filter(a => a !== listeningAddr)
+    opts.events.addEventListener('transport:listening', (event) => {
+      const listener = event.detail
+
+      if (listener === this || this.listeners.includes(listener)) {
+        return
+      }
+
+      this.listeners.push(listener)
+    })
+
+    opts.events.addEventListener('transport:close', (event) => {
+      const listener = event.detail
+
+      this.listeners = this.listeners.filter(l => l !== listener)
     })
   }
 
-  getAddrs (): Multiaddr[] { return this.listeningAddrs }
-  async close (): Promise<void> { }
+  async listen (ma: Multiaddr): Promise<void> {
+    this.safeDispatchEvent('listening', {})
+  }
+
+  getAddrs (): Multiaddr[] {
+    return this.listeners
+      .map(l => l.getAddrs()
+        .map(ma => {
+          return ma.encapsulate(`/webrtc/p2p/${this.peerId}`)
+        })
+      )
+      .flat()
+  }
+
+  async close (): Promise<void> {
+    this.safeDispatchEvent('close', {})
+  }
 }

@@ -20,24 +20,30 @@ const sender = pushable()
 const node = await createLibp2p({
   transports: [webRTCDirect()],
   connectionEncryption: [noise()],
+  connectionGater: {
+    denyDialMultiaddr: () => {
+      // by default we refuse to dial local addresses from the browser since they
+      // are usually sent by remote peers broadcasting undialable multiaddrs but
+      // here we are explicitly connecting to a local node so do not deny dialing
+      // any discovered address
+      return false
+    }
+  }
 });
 
 await node.start()
 
-node.connectionManager.addEventListener('peer:connect', (connection) => {
+node.addEventListener('peer:connect', (connection) => {
   appendOutput(`Peer connected '${node.getConnections().map(c => c.remoteAddr.toString())}'`)
   sendSection.style.display = 'block'
 })
 
 window.connect.onclick = async () => {
-
-
   // TODO!!(ckousik): hack until webrtc is renamed in Go. Remove once
   // complete
   let candidateMa = window.peer.value
   candidateMa = candidateMa.replace(/\/webrtc\/certhash/, "/webrtc-direct/certhash")
   const ma = multiaddr(candidateMa)
-
 
   appendOutput(`Dialing '${ma}'`)
   stream = await node.dialProtocol(ma, ['/echo/1.0.0'])

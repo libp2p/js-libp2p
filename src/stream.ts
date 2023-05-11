@@ -268,7 +268,7 @@ export class WebRTCStream implements Stream {
     // surface data from the `Message.message` field through a source.
     this._src = pipe(
       this._innersrc,
-      lengthPrefixed.decode(),
+      (source) => lengthPrefixed.decode(source),
       (source) => (async function * () {
         for await (const buf of source) {
           const message = self.processIncomingProtobuf(buf.subarray())

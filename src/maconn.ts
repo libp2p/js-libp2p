@@ -64,6 +64,12 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
     this.remoteAddr = init.remoteAddr
     this.timeline = init.timeline
     this.peerConnection = init.peerConnection
+
+    this.peerConnection.onconnectionstatechange = () => {
+      if (this.peerConnection.connectionState === 'closed' || this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed') {
+        this.timeline.close = Date.now()
+      }
+    }
   }
 
   async close (err?: Error | undefined): Promise<void> {

@@ -35,13 +35,11 @@ jobs:
       - name: Install dependencies
         run: npm install
         working-directory: .
-      - name: Build example
+      - name: Build root
         run: npm run build
         working-directory: .
       - name: Install dependencies
         run: npm install
-      - name: Install Playwright
-        run: npx -y playwright install --with-deps
       - name: Run tests
         run: npm run test
         env:
