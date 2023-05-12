@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.0...v2.0.1) (2023-05-12)
+
+
+### Bug Fixes
+
+* remove protobuf-ts and split code into two folders ([#162](https://github.com/libp2p/js-libp2p-webrtc/issues/162)) ([64723a7](https://github.com/libp2p/js-libp2p-webrtc/commit/64723a726302edcdc7ec958a759c3c587a184d69))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-webrtc/compare/v1.2.0...v2.0.0) (2023-05-11)
 
 
