@@ -1,3 +1,17 @@
+## [1.1.4](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.3...v1.1.4) (2023-05-12)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([7756331](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/77563319cdb0edcc75be7cd4ad7758054595991b))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([1a3861f](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/1a3861fd7c76a8fa296ff3aad39de633aecf3570))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([b66c4a0](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/b66c4a08983c1bbb2d1285aa2ea749ae00088643))
+
+
+### Documentation
+
+* added examples for package documentation for methods ([#31](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/31)) ([7dbd895](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/7dbd895dbf75f98b5730ad750b3e1aa9bc676c77)), closes [#30](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/30)
+
 ## [1.1.3](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.2...v1.1.3) (2022-12-16)
 
 
