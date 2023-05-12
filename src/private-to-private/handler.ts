@@ -3,7 +3,7 @@ import { abortableDuplex } from 'abortable-iterator'
 import { pbStream } from 'it-pb-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import { DataChannelMuxerFactory } from '../muxer.js'
-import * as pb from './pb/index.js'
+import { Message } from './pb/message.js'
 import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
 import type { Stream } from '@libp2p/interface-connection'
 import type { IncomingStreamData } from '@libp2p/interface-registrar'
@@ -17,7 +17,7 @@ export type IncomingStreamOpts = { rtcConfiguration?: RTCConfiguration } & Incom
 
 export async function handleIncomingStream ({ rtcConfiguration, stream: rawStream }: IncomingStreamOpts): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
   const signal = AbortSignal.timeout(DEFAULT_TIMEOUT)
-  const stream = pbStream(abortableDuplex(rawStream, signal)).pb(pb.Message)
+  const stream = pbStream(abortableDuplex(rawStream, signal)).pb(Message)
   const pc = new RTCPeerConnection(rtcConfiguration)
   const muxerFactory = new DataChannelMuxerFactory(pc)
 
@@ -30,7 +30,7 @@ export async function handleIncomingStream ({ rtcConfiguration, stream: rawStrea
     answerSentPromise.promise.then(
       () => {
         stream.write({
-          type: pb.Message.Type.ICE_CANDIDATE,
+          type: Message.Type.ICE_CANDIDATE,
           data: (candidate != null) ? JSON.stringify(candidate.toJSON()) : ''
         })
       },
@@ -44,7 +44,7 @@ export async function handleIncomingStream ({ rtcConfiguration, stream: rawStrea
 
   // read an SDP offer
   const pbOffer = await stream.read()
-  if (pbOffer.type !== pb.Message.Type.SDP_OFFER) {
+  if (pbOffer.type !== Message.Type.SDP_OFFER) {
     throw new Error(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `)
   }
   const offer = new RTCSessionDescription({
@@ -64,7 +64,7 @@ export async function handleIncomingStream ({ rtcConfiguration, stream: rawStrea
     throw new Error('Failed to create answer')
   })
   // write the answer to the remote
-  stream.write({ type: pb.Message.Type.SDP_ANSWER, data: answer.sdp })
+  stream.write({ type: Message.Type.SDP_ANSWER, data: answer.sdp })
 
   await pc.setLocalDescription(answer).catch(err => {
     log.error('could not execute setLocalDescription', err)
@@ -89,7 +89,7 @@ export interface ConnectOptions {
 }
 
 export async function initiateConnection ({ rtcConfiguration, signal, stream: rawStream }: ConnectOptions): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
-  const stream = pbStream(abortableDuplex(rawStream, signal)).pb(pb.Message)
+  const stream = pbStream(abortableDuplex(rawStream, signal)).pb(Message)
   // setup peer connection
   const pc = new RTCPeerConnection(rtcConfiguration)
   const muxerFactory = new DataChannelMuxerFactory(pc)
@@ -107,14 +107,14 @@ export async function initiateConnection ({ rtcConfiguration, signal, stream: ra
   // peer
   pc.onicecandidate = ({ candidate }) => {
     stream.write({
-      type: pb.Message.Type.ICE_CANDIDATE,
+      type: Message.Type.ICE_CANDIDATE,
       data: (candidate != null) ? JSON.stringify(candidate.toJSON()) : ''
     })
   }
   // create an offer
   const offerSdp = await pc.createOffer()
   // write the offer to the stream
-  stream.write({ type: pb.Message.Type.SDP_OFFER, data: offerSdp.sdp })
+  stream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp })
   // set offer as local description
   await pc.setLocalDescription(offerSdp).catch(err => {
     log.error('could not execute setLocalDescription', err)
@@ -123,7 +123,7 @@ export async function initiateConnection ({ rtcConfiguration, signal, stream: ra
 
   // read answer
   const answerMessage = await stream.read()
-  if (answerMessage.type !== pb.Message.Type.SDP_ANSWER) {
+  if (answerMessage.type !== Message.Type.SDP_ANSWER) {
     throw new Error('remote should send an SDP answer')
   }
 

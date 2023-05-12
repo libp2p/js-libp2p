@@ -6,7 +6,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect, assert } from 'aegir/chai'
 import { UnimplementedError } from './../src/error.js'
-import * as underTest from './../src/transport.js'
+import * as underTest from './../src/private-to-public/transport.js'
 import { expectError } from './util.js'
 import type { Metrics } from '@libp2p/interface-metrics'
 

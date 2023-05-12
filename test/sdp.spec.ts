@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import * as underTest from '../src/sdp.js'
+import * as underTest from '../src/private-to-public/sdp.js'
 
 const sampleMultiAddr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
 const sampleCerthash = 'uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ'

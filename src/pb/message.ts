@@ -9,26 +9,26 @@ import type { Codec } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Message {
-  type?: Message.Type
-  data?: string
+  flag?: Message.Flag
+  message?: Uint8Array
 }
 
 export namespace Message {
-  export enum Type {
-    SDP_OFFER = 'SDP_OFFER',
-    SDP_ANSWER = 'SDP_ANSWER',
-    ICE_CANDIDATE = 'ICE_CANDIDATE'
+  export enum Flag {
+    FIN = 'FIN',
+    STOP_SENDING = 'STOP_SENDING',
+    RESET = 'RESET'
   }
 
-  enum __TypeValues {
-    SDP_OFFER = 0,
-    SDP_ANSWER = 1,
-    ICE_CANDIDATE = 2
+  enum __FlagValues {
+    FIN = 0,
+    STOP_SENDING = 1,
+    RESET = 2
   }
 
-  export namespace Type {
-    export const codec = (): Codec<Type> => {
-      return enumeration<Type>(__TypeValues)
+  export namespace Flag {
+    export const codec = (): Codec<Flag> => {
+      return enumeration<Flag>(__FlagValues)
     }
   }
 
@@ -41,14 +41,14 @@ export namespace Message {
           w.fork()
         }
 
-        if (obj.type != null) {
+        if (obj.flag != null) {
           w.uint32(8)
-          Message.Type.codec().encode(obj.type, w)
+          Message.Flag.codec().encode(obj.flag, w)
         }
 
-        if (obj.data != null) {
+        if (obj.message != null) {
           w.uint32(18)
-          w.string(obj.data)
+          w.bytes(obj.message)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -64,10 +64,10 @@ export namespace Message {
 
           switch (tag >>> 3) {
             case 1:
-              obj.type = Message.Type.codec().decode(reader)
+              obj.flag = Message.Flag.codec().decode(reader)
               break
             case 2:
-              obj.data = reader.string()
+              obj.message = reader.bytes()
               break
             default:
               reader.skipType(tag & 7)
@@ -82,7 +82,7 @@ export namespace Message {
     return _codec
   }
 
-  export const encode = (obj: Message): Uint8Array => {
+  export const encode = (obj: Partial<Message>): Uint8Array => {
     return encodeMessage(obj, Message.codec())
   }
 

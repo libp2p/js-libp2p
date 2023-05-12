@@ -1,7 +1,7 @@
 import { logger } from '@libp2p/logger'
 import { bases } from 'multiformats/basics'
 import * as multihashes from 'multihashes'
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from './error.js'
+import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../error.js'
 import { CERTHASH_CODE } from './transport.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { HashCode, HashName } from 'multihashes'

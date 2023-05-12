@@ -5,7 +5,7 @@ import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import defer, { type DeferredPromise } from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
-import * as pb from '../proto_ts/message.js'
+import { Message } from './pb/message.js'
 import type { Stream, StreamStat, Direction } from '@libp2p/interface-connection'
 import type { Source } from 'it-stream-types'
 
@@ -66,7 +66,7 @@ interface StreamStateInput {
    * 1 = STOP_SENDING
    * 2 = RESET
    */
-  flag: pb.Message_Flag
+  flag: Message.Flag
 }
 
 export enum StreamStates {
@@ -99,7 +99,7 @@ class StreamState {
 
     if (direction === 'inbound') {
       switch (flag) {
-        case pb.Message_Flag.FIN:
+        case Message.Flag.FIN:
           if (this.state === StreamStates.OPEN) {
             this.state = StreamStates.READ_CLOSED
           } else if (this.state === StreamStates.WRITE_CLOSED) {
@@ -107,7 +107,7 @@ class StreamState {
           }
           break
 
-        case pb.Message_Flag.STOP_SENDING:
+        case Message.Flag.STOP_SENDING:
           if (this.state === StreamStates.OPEN) {
             this.state = StreamStates.WRITE_CLOSED
           } else if (this.state === StreamStates.READ_CLOSED) {
@@ -115,7 +115,7 @@ class StreamState {
           }
           break
 
-        case pb.Message_Flag.RESET:
+        case Message.Flag.RESET:
           this.state = StreamStates.CLOSED
           break
         default:
@@ -123,7 +123,7 @@ class StreamState {
       }
     } else {
       switch (flag) {
-        case pb.Message_Flag.FIN:
+        case Message.Flag.FIN:
           if (this.state === StreamStates.OPEN) {
             this.state = StreamStates.WRITE_CLOSED
           } else if (this.state === StreamStates.READ_CLOSED) {
@@ -131,7 +131,7 @@ class StreamState {
           }
           break
 
-        case pb.Message_Flag.STOP_SENDING:
+        case Message.Flag.STOP_SENDING:
           if (this.state === StreamStates.OPEN) {
             this.state = StreamStates.READ_CLOSED
           } else if (this.state === StreamStates.WRITE_CLOSED) {
@@ -139,7 +139,7 @@ class StreamState {
           }
           break
 
-        case pb.Message_Flag.RESET:
+        case Message.Flag.RESET:
           this.state = StreamStates.CLOSED
           break
 
@@ -313,7 +313,7 @@ export class WebRTCStream implements Stream {
       if (this.streamState.isWriteClosed()) {
         return
       }
-      const msgbuf = pb.Message.toBinary({ message: buf.subarray() })
+      const msgbuf = Message.encode({ message: buf.subarray() })
       const sendbuf = lengthPrefixed.encode.single(msgbuf)
 
       this.channel.send(sendbuf.subarray())
@@ -324,7 +324,7 @@ export class WebRTCStream implements Stream {
    * Handle incoming
    */
   processIncomingProtobuf (buffer: Uint8Array): Uint8Array | undefined {
-    const message = pb.Message.fromBinary(buffer)
+    const message = Message.decode(buffer)
 
     if (message.flag !== undefined) {
       const [currentState, nextState] = this.streamState.transition({ direction: 'inbound', flag: message.flag })
@@ -371,14 +371,14 @@ export class WebRTCStream implements Stream {
    * Close a stream for reading only
    */
   closeRead (): void {
-    const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: pb.Message_Flag.STOP_SENDING })
+    const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: Message.Flag.STOP_SENDING })
     if (currentState === nextState) {
       // No change, no op
       return
     }
 
     if (currentState === StreamStates.OPEN || currentState === StreamStates.WRITE_CLOSED) {
-      this._sendFlag(pb.Message_Flag.STOP_SENDING)
+      this._sendFlag(Message.Flag.STOP_SENDING)
       this._innersrc.end()
     }
 
@@ -391,14 +391,14 @@ export class WebRTCStream implements Stream {
    * Close a stream for writing only
    */
   closeWrite (): void {
-    const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: pb.Message_Flag.FIN })
+    const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: Message.Flag.FIN })
     if (currentState === nextState) {
       // No change, no op
       return
     }
 
     if (currentState === StreamStates.OPEN || currentState === StreamStates.READ_CLOSED) {
-      this._sendFlag(pb.Message_Flag.FIN)
+      this._sendFlag(Message.Flag.FIN)
       this.closeWritePromise.resolve()
     }
 
@@ -421,20 +421,20 @@ export class WebRTCStream implements Stream {
    * @see this.closeWrite
    */
   reset (): void {
-    const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: pb.Message_Flag.RESET })
+    const [currentState, nextState] = this.streamState.transition({ direction: 'outbound', flag: Message.Flag.RESET })
     if (currentState === nextState) {
       // No change, no op
       return
     }
 
-    this._sendFlag(pb.Message_Flag.RESET)
+    this._sendFlag(Message.Flag.RESET)
     this.close()
   }
 
-  private _sendFlag (flag: pb.Message_Flag): void {
+  private _sendFlag (flag: Message.Flag): void {
     try {
       log.trace('Sending flag: %s', flag.toString())
-      const msgbuf = pb.Message.toBinary({ flag })
+      const msgbuf = Message.encode({ flag })
       this.channel.send(lengthPrefixed.encode.single(msgbuf).subarray())
     } catch (err) {
       if (err instanceof Error) {

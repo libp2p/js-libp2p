@@ -8,9 +8,9 @@ import { pair } from 'it-pair'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-pb-stream'
 import Sinon from 'sinon'
-import { initiateConnection, handleIncomingStream } from '../src/peer_transport/handler'
-import { Message } from '../src/peer_transport/pb/index.js'
-import { WebRTCTransport } from '../src/peer_transport/transport'
+import { initiateConnection, handleIncomingStream } from '../src/private-to-private/handler'
+import { Message } from '../src/private-to-private/pb/message.js'
+import { WebRTCTransport } from '../src/private-to-private/transport'
 
 const browser = detect()
 

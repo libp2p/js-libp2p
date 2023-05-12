@@ -1,14 +1,11 @@
 import { logger } from '@libp2p/logger'
-import { detect } from 'detect-browser'
-import * as pb from './pb/index.js'
+import { isFirefox } from '../util.js'
+import { Message } from './pb/message.js'
 import type { DeferredPromise } from 'p-defer'
 
-const browser = detect()
-export const isFirefox = ((browser != null) && browser.name === 'firefox')
-
 interface MessageStream {
-  read: () => Promise<pb.Message>
-  write: (d: pb.Message) => void | Promise<void>
+  read: () => Promise<Message>
+  write: (d: Message) => void | Promise<void>
 }
 
 const log = logger('libp2p:webrtc:peer:util')
@@ -19,7 +16,7 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
     // check if readResult is a message
     if (readResult instanceof Object) {
       const message = readResult
-      if (message.type !== pb.Message.Type.ICE_CANDIDATE) {
+      if (message.type !== Message.Type.ICE_CANDIDATE) {
         throw new Error('expected only ice candidates')
       }
       // end of candidates has been signalled
