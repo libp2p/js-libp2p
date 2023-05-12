@@ -1,7 +1,7 @@
-import type { CounterGroup, CalculateMetric } from '@libp2p/interface-metrics'
-import { Counter as PromCounter, CollectFunction } from 'prom-client'
-import { normaliseString, CalculatedMetric } from './utils.js'
+import { Counter as PromCounter, type CollectFunction } from 'prom-client'
+import { normaliseString, type CalculatedMetric } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
+import type { CounterGroup, CalculateMetric } from '@libp2p/interface-metrics'
 
 export class PrometheusCounterGroup implements CounterGroup, CalculatedMetric<Record<string, number>> {
   private readonly counter: PromCounter
@@ -40,7 +40,7 @@ export class PrometheusCounterGroup implements CounterGroup, CalculatedMetric<Re
     })
   }
 
-  addCalculator (calculator: CalculateMetric<Record<string, number>>) {
+  addCalculator (calculator: CalculateMetric<Record<string, number>>): void {
     this.calculators.push(calculator)
   }
 

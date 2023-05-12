@@ -1,7 +1,7 @@
-import type { Metric, StopTimer, CalculateMetric } from '@libp2p/interface-metrics'
-import { CollectFunction, Gauge } from 'prom-client'
-import type { PrometheusCalculatedMetricOptions } from './index.js'
+import { type CollectFunction, Gauge } from 'prom-client'
 import { normaliseString } from './utils.js'
+import type { PrometheusCalculatedMetricOptions } from './index.js'
+import type { Metric, StopTimer, CalculateMetric } from '@libp2p/interface-metrics'
 
 export class PrometheusMetric implements Metric {
   private readonly gauge: Gauge
@@ -20,7 +20,7 @@ export class PrometheusMetric implements Metric {
       const self = this
 
       collect = async function () {
-        const values = await Promise.all(self.calculators.map(async calculate => await calculate()))
+        const values = await Promise.all(self.calculators.map(async calculate => calculate()))
         const sum = values.reduce((acc, curr) => acc + curr, 0)
 
         this.set(sum)
@@ -36,7 +36,7 @@ export class PrometheusMetric implements Metric {
     })
   }
 
-  addCalculator (calculator: CalculateMetric) {
+  addCalculator (calculator: CalculateMetric): void {
     this.calculators.push(calculator)
   }
 

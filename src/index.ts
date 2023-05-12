@@ -92,19 +92,18 @@
  * const stream = await connection.newStream('/my/protocol')
  * const streams = metrics.trackProtocolStream(stream)
  * ```
- *
  */
 
-import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface-metrics'
-import { collectDefaultMetrics, DefaultMetricsCollectorConfiguration, register, Registry } from 'prom-client'
-import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface-connection'
-import type { Duplex } from 'it-stream-types'
-import each from 'it-foreach'
-import { PrometheusMetric } from './metric.js'
-import { PrometheusMetricGroup } from './metric-group.js'
-import { PrometheusCounter } from './counter.js'
-import { PrometheusCounterGroup } from './counter-group.js'
 import { logger } from '@libp2p/logger'
+import each from 'it-foreach'
+import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry } from 'prom-client'
+import { PrometheusCounterGroup } from './counter-group.js'
+import { PrometheusCounter } from './counter.js'
+import { PrometheusMetricGroup } from './metric-group.js'
+import { PrometheusMetric } from './metric.js'
+import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface-connection'
+import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface-metrics'
+import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:prometheus-metrics')
 
@@ -194,7 +193,7 @@ class PrometheusMetrics implements Metrics {
    * Increment the transfer stat for the passed key, making sure
    * it exists first
    */
-  _incrementValue (key: string, value: number) {
+  _incrementValue (key: string, value: number): void {
     const existing = this.transferStats.get(key) ?? 0
 
     this.transferStats.set(key, existing + value)
@@ -204,7 +203,7 @@ class PrometheusMetrics implements Metrics {
    * Override the sink/source of the stream to count the bytes
    * in and out
    */
-  _track (stream: Duplex<any>, name: string) {
+  _track (stream: Duplex<Source<any>>, name: string): void {
     const self = this
 
     const sink = stream.sink

@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
-import { prometheusMetrics } from '../src/index.js'
 import client from 'prom-client'
+import { prometheusMetrics } from '../src/index.js'
 import { randomMetricName } from './fixtures/random-metric-name.js'
 
 describe('metrics', () => {

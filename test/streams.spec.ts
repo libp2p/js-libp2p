@@ -1,13 +1,13 @@
-import { expect } from 'aegir/chai'
-import { prometheusMetrics } from '../src/index.js'
-import client from 'prom-client'
-import type { Connection } from '@libp2p/interface-connection'
 import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { pipe } from 'it-pipe'
-import drain from 'it-drain'
-import defer from 'p-defer'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import drain from 'it-drain'
+import { pipe } from 'it-pipe'
+import defer from 'p-defer'
+import client from 'prom-client'
+import { prometheusMetrics } from '../src/index.js'
+import type { Connection } from '@libp2p/interface-connection'
 
 describe('streams', () => {
   let connectionA: Connection
