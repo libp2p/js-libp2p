@@ -8,10 +8,8 @@ import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { initiateConnection, handleIncomingStream } from './handler.js'
 import { WebRTCPeerListener } from './listener.js'
 import type { Connection } from '@libp2p/interface-connection'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:webrtc:peer')
@@ -30,7 +28,6 @@ export interface WebRTCTransportComponents {
   registrar: Registrar
   upgrader: Upgrader
   transportManager: TransportManager
-  events: EventEmitter<Libp2pEvents>
 }
 
 export class WebRTCTransport implements Transport, Startable {

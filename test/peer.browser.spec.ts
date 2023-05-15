@@ -1,5 +1,4 @@
 import { mockConnection, mockMultiaddrConnection, mockRegistrar, mockStream, mockUpgrader } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -99,8 +98,7 @@ describe('webrtc filter', () => {
       transportManager: Sinon.stub() as any,
       peerId: Sinon.stub() as any,
       registrar: mockRegistrar(),
-      upgrader: mockUpgrader({}),
-      events: new EventEmitter()
+      upgrader: mockUpgrader({})
     }, {})
 
     const valid = [
