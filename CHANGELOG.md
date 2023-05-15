@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.1...v2.0.2) (2023-05-15)
+
+
+### Bug Fixes
+
+* use transport manager getListeners to get listen addresses ([#166](https://github.com/libp2p/js-libp2p-webrtc/issues/166)) ([2e144f9](https://github.com/libp2p/js-libp2p-webrtc/commit/2e144f977a2025aa3adce1816d5f7d0dc3aaa477))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.0...v2.0.1) (2023-05-12)
 
 
