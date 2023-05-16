@@ -183,9 +183,8 @@ class CircuitRelayTransport implements Transport {
       disconnectOnFailure = true
     }
 
+    const stream = await relayConnection.newStream([RELAY_V2_HOP_CODEC])
     try {
-      const stream = await relayConnection.newStream([RELAY_V2_HOP_CODEC])
-
       return await this.connectV2({
         stream,
         connection: relayConnection,
@@ -197,6 +196,7 @@ class CircuitRelayTransport implements Transport {
       })
     } catch (err: any) {
       log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${relayPeer.toString()} failed`, err)
+      stream.close()
       disconnectOnFailure && await relayConnection.close()
       throw err
     }
