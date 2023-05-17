@@ -1,122 +1,150 @@
-import { expect, assert } from 'aegir/chai'
+import { expect } from 'aegir/chai'
+import delay from 'delay'
+import * as lengthPrefixed from 'it-length-prefixed'
 import { bytes } from 'multiformats'
 import { Message } from '../src/pb/message.js'
-import * as underTest from '../src/stream'
-const TEST_MESSAGE = 'test_messgae'
+import { createStream } from '../src/stream'
+import type { Stream } from '@libp2p/interface-connection'
+const TEST_MESSAGE = 'test_message'
 
-function setup (): { peerConnection: RTCPeerConnection, datachannel: RTCDataChannel, webrtcStream: underTest.WebRTCStream } {
+function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: Stream } {
   const peerConnection = new RTCPeerConnection()
-  const datachannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const webrtcStream = new underTest.WebRTCStream({ channel: datachannel, stat: underTest.defaultStat('outbound') })
+  const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
+  const stream = createStream({ channel: dataChannel, direction: 'outbound' })
 
-  return { peerConnection, datachannel, webrtcStream }
+  return { peerConnection, dataChannel, stream }
 }
 
 function generatePbByFlag (flag?: Message.Flag): Uint8Array {
-  const testPb: Message = {
+  const buf = Message.encode({
     flag,
     message: bytes.fromString(TEST_MESSAGE)
-  }
-  return Message.encode(testPb)
+  })
+
+  return lengthPrefixed.encode.single(buf).subarray()
 }
 
 describe('Stream Stats', () => {
+  let stream: Stream
+
+  beforeEach(async () => {
+    ({ stream } = setup())
+  })
+
   it('can construct', () => {
-    const { webrtcStream } = setup()
-    assert.notExists(webrtcStream.stat.timeline.close)
+    expect(stream.stat.timeline.close).to.not.exist()
   })
 
   it('close marks it closed', () => {
-    const { webrtcStream } = setup()
-
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    webrtcStream.close()
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
+    expect(stream.stat.timeline.close).to.not.exist()
+    stream.close()
+    expect(stream.stat.timeline.close).to.be.a('number')
   })
 
   it('closeRead marks it read-closed only', () => {
-    const { webrtcStream } = setup()
-
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    webrtcStream.closeRead()
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.READ_CLOSED)
+    expect(stream.stat.timeline.close).to.not.exist()
+    stream.closeRead()
+    expect(stream.stat.timeline.close).to.not.exist()
+    expect(stream.stat.timeline.closeRead).to.be.greaterThanOrEqual(stream.stat.timeline.open)
   })
 
   it('closeWrite marks it write-closed only', () => {
-    const { webrtcStream } = setup()
-
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    webrtcStream.closeWrite()
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.WRITE_CLOSED)
+    expect(stream.stat.timeline.close).to.not.exist()
+    stream.closeWrite()
+    expect(stream.stat.timeline.close).to.not.exist()
+    expect(stream.stat.timeline.closeWrite).to.be.greaterThanOrEqual(stream.stat.timeline.open)
   })
 
-  it('closeWrite AND closeRead = close', () => {
-    const { webrtcStream } = setup()
-
-    webrtcStream.closeWrite()
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.WRITE_CLOSED)
-    webrtcStream.closeRead()
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
+  it('closeWrite AND closeRead = close', async () => {
+    expect(stream.stat.timeline.close).to.not.exist()
+    stream.closeWrite()
+    stream.closeRead()
+    expect(stream.stat.timeline.close).to.be.a('number')
+    expect(stream.stat.timeline.closeWrite).to.be.greaterThanOrEqual(stream.stat.timeline.open)
+    expect(stream.stat.timeline.closeRead).to.be.greaterThanOrEqual(stream.stat.timeline.open)
   })
 
   it('abort = close', () => {
-    const { webrtcStream } = setup()
-
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    webrtcStream.abort({ name: 'irrelevant', message: 'this parameter is actually ignored' })
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
-    expect(webrtcStream.stat.timeline.close).to.be.greaterThan(webrtcStream.stat.timeline.open)
+    expect(stream.stat.timeline.close).to.not.exist()
+    stream.abort(new Error('Oh no!'))
+    expect(stream.stat.timeline.close).to.be.a('number')
+    expect(stream.stat.timeline.close).to.be.greaterThanOrEqual(stream.stat.timeline.open)
+    expect(stream.stat.timeline.closeWrite).to.be.greaterThanOrEqual(stream.stat.timeline.open)
+    expect(stream.stat.timeline.closeRead).to.be.greaterThanOrEqual(stream.stat.timeline.open)
   })
 
   it('reset = close', () => {
-    const { datachannel, webrtcStream } = setup()
-
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    webrtcStream.reset() // only resets the write side
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
-    expect(datachannel.readyState).to.be.oneOf(['closing', 'closed'])
+    expect(stream.stat.timeline.close).to.not.exist()
+    stream.reset() // only resets the write side
+    expect(stream.stat.timeline.close).to.be.a('number')
+    expect(stream.stat.timeline.close).to.be.greaterThanOrEqual(stream.stat.timeline.open)
+    expect(stream.stat.timeline.closeWrite).to.be.greaterThanOrEqual(stream.stat.timeline.open)
+    expect(stream.stat.timeline.closeRead).to.be.greaterThanOrEqual(stream.stat.timeline.open)
   })
 })
 
 describe('Stream Read Stats Transition By Incoming Flag', () => {
-  const webrtcStream = setup().webrtcStream
+  let dataChannel: RTCDataChannel
+  let stream: Stream
+
+  beforeEach(async () => {
+    ({ dataChannel, stream } = setup())
+  })
+
   it('no flag, no transition', () => {
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    const IncomingBuffer = generatePbByFlag()
-    const message = webrtcStream.processIncomingProtobuf(IncomingBuffer)
-    expect(message).not.equal(undefined)
-    if (message != null) {
-      expect(bytes.toString(message)).to.equal(TEST_MESSAGE)
-    }
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
+    expect(stream.stat.timeline.close).to.not.exist()
+    const data = generatePbByFlag()
+    dataChannel.onmessage?.(new MessageEvent('message', { data }))
+
+    expect(stream.stat.timeline.close).to.not.exist()
   })
 
-  it('open to read-close by flag:FIN', () => {
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    const IncomingBuffer = generatePbByFlag(Message.Flag.FIN)
-    webrtcStream.processIncomingProtobuf(IncomingBuffer)
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.READ_CLOSED)
+  it('open to read-close by flag:FIN', async () => {
+    const data = generatePbByFlag(Message.Flag.FIN)
+    dataChannel.dispatchEvent(new MessageEvent('message', { data }))
+
+    await delay(100)
+
+    expect(stream.stat.timeline.closeWrite).to.not.exist()
+    expect(stream.stat.timeline.closeRead).to.be.greaterThanOrEqual(stream.stat.timeline.open)
   })
 
-  it('read-close to close by flag:STOP_SENDING', () => {
-    const IncomingBuffer = generatePbByFlag(Message.Flag.STOP_SENDING)
-    webrtcStream.processIncomingProtobuf(IncomingBuffer)
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
+  it('read-close to close by flag:STOP_SENDING', async () => {
+    const data = generatePbByFlag(Message.Flag.STOP_SENDING)
+    dataChannel.dispatchEvent(new MessageEvent('message', { data }))
+
+    await delay(100)
+
+    expect(stream.stat.timeline.closeWrite).to.be.greaterThanOrEqual(stream.stat.timeline.open)
+    expect(stream.stat.timeline.closeRead).to.not.exist()
   })
 })
 
 describe('Stream Write Stats Transition By Incoming Flag', () => {
-  const webrtcStream = setup().webrtcStream
-  it('open to write-close by flag:STOP_SENDING', () => {
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.OPEN)
-    const IncomingBuffer = generatePbByFlag(Message.Flag.STOP_SENDING)
-    webrtcStream.processIncomingProtobuf(IncomingBuffer)
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.WRITE_CLOSED)
+  let dataChannel: RTCDataChannel
+  let stream: Stream
+
+  beforeEach(async () => {
+    ({ dataChannel, stream } = setup())
   })
 
-  it('write-close to close by flag:FIN', () => {
-    const IncomingBuffer = generatePbByFlag(Message.Flag.FIN)
-    webrtcStream.processIncomingProtobuf(IncomingBuffer)
-    expect(webrtcStream.streamState.state).to.equal(underTest.StreamStates.CLOSED)
+  it('open to write-close by flag:STOP_SENDING', async () => {
+    const data = generatePbByFlag(Message.Flag.STOP_SENDING)
+    dataChannel.dispatchEvent(new MessageEvent('message', { data }))
+
+    await delay(100)
+
+    expect(stream.stat.timeline.closeWrite).to.be.greaterThanOrEqual(stream.stat.timeline.open)
+    expect(stream.stat.timeline.closeRead).to.not.exist()
+  })
+
+  it('write-close to close by flag:FIN', async () => {
+    const data = generatePbByFlag(Message.Flag.FIN)
+    dataChannel.dispatchEvent(new MessageEvent('message', { data }))
+
+    await delay(100)
+
+    expect(stream.stat.timeline.closeWrite).to.not.exist()
+    expect(stream.stat.timeline.closeRead).to.be.greaterThanOrEqual(stream.stat.timeline.open)
   })
 })

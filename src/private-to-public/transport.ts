@@ -9,11 +9,12 @@ import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
-import { type DataChannelOpts, WebRTCStream } from '../stream.js'
+import { createStream } from '../stream.js'
 import { isFirefox } from '../util.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
+import type { DataChannelOpts } from '../stream.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { CounterGroup, Metrics } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -190,7 +191,7 @@ export class WebRTCDirectTransport implements Transport {
     // we pass in undefined for these parameters.
     const noise = Noise({ prologueBytes: fingerprintsPrologue })()
 
-    const wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'inbound', timeline: { open: 1 } }, dataChannelOptions: this.init.dataChannel })
+    const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
     const wrappedDuplex = {
       ...wrappedChannel,
       sink: wrappedChannel.sink.bind(wrappedChannel),
