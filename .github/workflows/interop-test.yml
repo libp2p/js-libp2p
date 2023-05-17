@@ -19,13 +19,13 @@ jobs:
         run: (cd interop && npm i && npm run build)
       - name: Build images
         run: (cd interop && make)
-      # - name: Save package-lock.json as artifact
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: package locks
-      #     path: |
-      #       package-lock.json
-      #       interop/package-lock.json
+      - name: Save package-lock.json as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: package locks
+          path: |
+            package-lock.json
+            interop/package-lock.json
       - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@master
         with:
           test-filter: js-libp2p-head
