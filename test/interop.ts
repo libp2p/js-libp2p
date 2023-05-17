@@ -21,7 +21,7 @@ import { path as p2pd } from 'go-libp2p'
 import pDefer from 'p-defer'
 import { circuitRelayServer, circuitRelayTransport } from '../src/circuit-relay/index.js'
 import { identifyService } from '../src/identify/index.js'
-import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from '../src/index.js'
+import { createLibp2p, type Libp2pOptions } from '../src/index.js'
 import type { ServiceMap } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
@@ -132,7 +132,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     connectionEncryption: [noise()]
   }
 
-  const services: ServiceFactoryMap = {
+  const services: Record<string, any> = {
     identify: identifyService()
   }
 
@@ -146,7 +146,6 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     if (options.pubsubRouter === 'floodsub') {
       services.pubsub = floodsub()
     } else {
-      // @ts-expect-error remove after gossipsub is upgraded to @libp2p/interface-peer-store@2.x.x
       services.pubsub = gossipsub()
     }
   }

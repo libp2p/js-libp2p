@@ -8,6 +8,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { identifyService } from '../../../src/identify/index.js'
 import { createLibp2p } from '../../../src/index.js'
 import { plaintext } from '../../../src/insecure/index.js'
 import { createPeerId } from '../../utils/creators/peer.js'
@@ -66,7 +67,8 @@ describe('DHT subsystem operates correctly', () => {
         services: {
           dht: kadDHT({
             allowQueryWithZeroPeers: true
-          })
+          }),
+          identify: identifyService()
         }
       })
 
@@ -88,7 +90,8 @@ describe('DHT subsystem operates correctly', () => {
         services: {
           dht: kadDHT({
             allowQueryWithZeroPeers: true
-          })
+          }),
+          identify: identifyService()
         }
       })
 

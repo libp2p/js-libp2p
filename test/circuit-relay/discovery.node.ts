@@ -5,6 +5,7 @@ import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { getRelayAddress, hasRelay, MockContentRouting, mockContentRouting } from './utils.js'
@@ -17,6 +18,7 @@ describe('circuit-relay discovery', () => {
 
   beforeEach(async () => {
     // create relay first so it has time to advertise itself via content routing
+    // @ts-expect-error TODO: typescript cannot infer the service map type
     relay = await createLibp2p({
       addresses: {
         listen: ['/ip4/127.0.0.1/tcp/0']
@@ -34,10 +36,10 @@ describe('circuit-relay discovery', () => {
         mockContentRouting()
       ],
       services: {
+        identify: identifyService(),
+        // @ts-expect-error TODO: typescript cannot infer the service map type
         relay: circuitRelayServer({
-          advertise: {
-            bootDelay: 10
-          }
+          advertise: true
         })
       }
     })

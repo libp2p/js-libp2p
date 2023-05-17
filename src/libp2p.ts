@@ -42,7 +42,7 @@ import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p')
 
-export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends EventEmitter<Libp2pEvents> implements Libp2p<T> {
+export class Libp2pNode<T extends ServiceMap = ServiceMap> extends EventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -50,8 +50,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   public keychain: KeyChain
   public metrics?: Metrics
   public services: T
+  public components: Components<T>
 
-  public components: Components
   #started: boolean
 
   constructor (init: Libp2pInit<T>) {
@@ -76,6 +76,11 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     } catch {}
 
     this.#started = false
+
+    if (init.peerId == null) {
+      throw new CodeError('init.peerId is required', codes.ERR_INVALID_PARAMETERS)
+    }
+
     this.peerId = init.peerId
     // @ts-expect-error {} may not be of type T
     this.services = {}
@@ -112,7 +117,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.components.upgrader = new DefaultUpgrader(this.components, {
       connectionEncryption: (init.connectionEncryption ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       muxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
-      inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
+      inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout
     })
 
     // Setup the transport manager
@@ -199,6 +204,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       log.error('component %s was null or undefined', name)
     }
 
+    // @ts-expect-error cannot use string to index Components<T>
     this.components[name] = component
 
     return component
@@ -401,7 +407,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * Returns a new Libp2pNode instance - this exposes more of the internals than the
  * libp2p interface and is useful for testing and debugging.
  */
-export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
+export async function createLibp2pNode <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
   if (options.peerId == null) {
     const datastore = options.datastore as Datastore | undefined
 

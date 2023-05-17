@@ -9,7 +9,7 @@ import type { ServiceMap } from '@libp2p/interface-libp2p'
 import type { RecursivePartial } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-const DefaultConfig: Partial<Libp2pInit> = {
+const DefaultConfig: Partial<Libp2pInit<any>> = {
   addresses: {
     listen: [],
     announce: [],

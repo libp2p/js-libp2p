@@ -35,14 +35,14 @@ import type { KeyChainInit } from '@libp2p/keychain'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { Datastore } from 'interface-datastore'
 
-export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string, unknown>> = {
-  [Property in keyof T]: (components: Components) => T[Property]
+export type ServiceFactoryMap<T extends ServiceMap = ServiceMap> = {
+  [Property in keyof T]: (components: Components<T>) => T[Property]
 }
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
  */
-export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> }> {
+export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
   /**
    * peerId instance (it will be created if not provided)
    */
@@ -88,22 +88,22 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
   /**
    * An array that must include at least 1 compliant transport
    */
-  transports: Array<(components: Components) => Transport>
-  streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
-  connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
-  peerDiscovery?: Array<(components: Components) => PeerDiscovery>
-  peerRouters?: Array<(components: Components) => PeerRouting>
-  contentRouters?: Array<(components: Components) => ContentRouting>
+  transports: Array<(components: Components<T>) => Transport>
+  streamMuxers?: Array<(components: Components<T>) => StreamMuxerFactory>
+  connectionEncryption?: Array<(components: Components<T>) => ConnectionEncrypter>
+  peerDiscovery?: Array<(components: Components<T>) => PeerDiscovery>
+  peerRouters?: Array<(components: Components<T>) => PeerRouting>
+  contentRouters?: Array<(components: Components<T>) => ContentRouting>
 
   /**
    * A Metrics implementation can be supplied to collect metrics on this node
    */
-  metrics?: (components: Components) => Metrics
+  metrics?: (components: Components<T>) => Metrics
 
   /**
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
-  connectionProtector?: (components: Components) => ConnectionProtector
+  connectionProtector?: (components: Components<T>) => ConnectionProtector
 
   /**
    * Arbitrary libp2p modules
@@ -113,7 +113,7 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
 
 export type { Libp2p }
 
-export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = RecursivePartial<Libp2pInit<T>> & { start?: boolean }
+export type Libp2pOptions<T extends ServiceMap = ServiceMap> = RecursivePartial<Libp2pInit<T>> & { start?: boolean }
 
 /**
  * Returns a new instance of the Libp2p interface, generating a new PeerId
@@ -141,7 +141,7 @@ export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = Recu
  * const libp2p = await createLibp2p(options)
  * ```
  */
-export async function createLibp2p <T extends ServiceMap = { x: Record<string, unknown> }> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
+export async function createLibp2p <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
   const node = await createLibp2pNode(options)
 
   if (options.start !== false) {

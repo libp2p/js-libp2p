@@ -60,6 +60,8 @@ export const multicodecs = {
 
 export const Message = { Identify }
 
-export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
+export type IdentifyService = unknown
+
+export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => IdentifyService {
   return (components) => new DefaultIdentifyService(components, init)
 }

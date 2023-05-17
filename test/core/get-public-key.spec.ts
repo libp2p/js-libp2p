@@ -4,6 +4,7 @@ import { kadDHT } from '@libp2p/kad-dht'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
+import { identifyService } from '../../src/identify/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode } from '../../src/libp2p.js'
 import { createPeerId } from '../utils/creators/peer.js'
@@ -24,7 +25,8 @@ describe('getPublicKey', () => {
         plaintext()
       ],
       services: {
-        dht: kadDHT()
+        dht: kadDHT(),
+        identify: identifyService()
       }
     })
 

@@ -17,6 +17,7 @@ import { createLimitedRelay } from '../utils.js'
 import { AdvertService, type AdvertServiceComponents, type AdvertServiceInit } from './advert-service.js'
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
+import type { IdentifyService } from '../../identify/index.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
@@ -422,7 +423,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   }
 }
 
-export function circuitRelayServer (init: CircuitRelayServerInit = {}): (components: CircuitRelayServerComponents) => CircuitRelayService {
+export function circuitRelayServer (init: CircuitRelayServerInit = {}): (components: CircuitRelayServerComponents & { identify: IdentifyService }) => CircuitRelayService {
   return (components) => {
     return new CircuitRelayServer(components, init)
   }

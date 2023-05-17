@@ -5,7 +5,7 @@ import type { ConnectionProtector } from '@libp2p/interface-connection'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { Libp2pEvents, ServiceMap } from '@libp2p/interface-libp2p'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerRouting } from '@libp2p/interface-peer-routing'
@@ -15,7 +15,7 @@ import type { TransportManager, Upgrader } from '@libp2p/interface-transport'
 import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Datastore } from 'interface-datastore'
 
-export interface Components extends Record<string, any>, Startable {
+export interface BuiltInComponents extends Startable {
   peerId: PeerId
   events: EventEmitter<Libp2pEvents>
   addressManager: AddressManager
@@ -31,6 +31,8 @@ export interface Components extends Record<string, any>, Startable {
   connectionProtector?: ConnectionProtector
   metrics?: Metrics
 }
+
+export type Components<T extends ServiceMap = ServiceMap> = T & BuiltInComponents
 
 export interface ComponentsInit {
   peerId?: PeerId
@@ -120,7 +122,7 @@ const NON_SERVICE_PROPERTIES = [
   '_invokeStartableMethod'
 ]
 
-export function defaultComponents (init: ComponentsInit = {}): Components {
+export function defaultComponents <T extends Record<string, unknown>> (init: ComponentsInit = {}): Components<T> {
   const components = new DefaultComponents(init)
 
   const proxy = new Proxy(components, {

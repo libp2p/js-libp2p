@@ -95,7 +95,8 @@ describe('circuit-relay hop protocol', function () {
       peerId,
       peerStore,
       registrar,
-      connectionGater
+      connectionGater,
+      identify: {}
     })
 
     if (isStartable(service)) {

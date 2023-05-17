@@ -4,13 +4,14 @@ import { bootstrap } from '@libp2p/bootstrap'
 import { randomBytes } from '@libp2p/crypto'
 import { peerDiscovery } from '@libp2p/interface-peer-discovery'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { kadDHT } from '@libp2p/kad-dht'
+import { type DualKadDHT, kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import defer from 'p-defer'
 import sinon from 'sinon'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { type IdentifyService, identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createPeerId } from '../utils/creators/peer.js'
@@ -18,7 +19,6 @@ import type { Libp2pOptions } from '../../src/index.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { KadDHT } from '@libp2p/kad-dht'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -172,7 +172,7 @@ describe('peer discovery scenarios', () => {
   it('kad-dht should discover other peers', async () => {
     const deferred = defer()
 
-    const getConfig = (peerId: PeerId): Libp2pOptions<{ dht: KadDHT }> => createBaseOptions({
+    const getConfig = (peerId: PeerId): Libp2pOptions<{ dht: DualKadDHT, identify: IdentifyService }> => createBaseOptions({
       peerId,
       addresses: {
         listen: [
@@ -180,7 +180,8 @@ describe('peer discovery scenarios', () => {
         ]
       },
       services: {
-        dht: kadDHT()
+        dht: kadDHT(),
+        identify: identifyService()
       }
     })
 
