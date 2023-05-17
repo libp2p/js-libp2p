@@ -69,12 +69,11 @@ Bear in mind that a **transport** and **connection encryption** module are **req
 Some available transports are:
 
 - [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) (not available in browsers)
-- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
-- [@libp2p/webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct)
+- [@libp2p/webrtc](https://github.com/libp2p/js-libp2p-webrtc)
 - [@libp2p/websockets](https://github.com/libp2p/js-libp2p-websockets)
 - [@libp2p/webtransport](https://github.com/libp2p/js-libp2p-webtransport) (Work in Progress)
 
-If none of the available transports fulfills your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
+If none of the available transports fulfils your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
 
 If you want to know more about libp2p transports, you should read the following content:
 
