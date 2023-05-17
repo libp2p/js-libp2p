@@ -168,7 +168,6 @@
     "aegir": "^39.0.7",
     "cborg": "^1.8.1",
     "delay": "^5.0.0",
-    "eslint-plugin-etc": "^2.0.2",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.1",
