@@ -113,7 +113,7 @@ async function streamPair (n: number, onInitiatorMessage?: onMessage, onReceiver
       }
     }),
     receiver
-  )
+  ).catch(() => {})
 
   try {
     await pipe(
@@ -296,7 +296,8 @@ describe('stream', () => {
       }
     }
 
-    await pipe(input, stream)
+    await expect(pipe(input, stream)).to.eventually.be
+      .rejected.with.property('message', error.message)
 
     const resetMsg = msgs[msgs.length - 1]
 
@@ -321,7 +322,8 @@ describe('stream', () => {
       }
     }
 
-    await pipe(input, stream)
+    await expect(pipe(input, stream)).to.eventually.be.rejected
+      .with.property('message', error.message)
 
     const resetMsg = msgs[msgs.length - 1]
 
