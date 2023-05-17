@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.2...v2.0.3) (2023-05-17)
+
+
+### Bug Fixes
+
+* restrict message sizes to 16kb ([#147](https://github.com/libp2p/js-libp2p-webrtc/issues/147)) ([aca4422](https://github.com/libp2p/js-libp2p-webrtc/commit/aca4422f5d4b81576d8c3cc5531cef7b7491abd2)), closes [#144](https://github.com/libp2p/js-libp2p-webrtc/issues/144) [#158](https://github.com/libp2p/js-libp2p-webrtc/issues/158)
+
 ## [2.0.2](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.1...v2.0.2) (2023-05-15)
 
 
