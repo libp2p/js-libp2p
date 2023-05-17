@@ -1,3 +1,10 @@
+## [8.0.3](https://github.com/libp2p/js-libp2p-mplex/compare/v8.0.2...v8.0.3) (2023-05-17)
+
+
+### Bug Fixes
+
+* use abstract stream class from muxer interface ([#279](https://github.com/libp2p/js-libp2p-mplex/issues/279)) ([73df4cf](https://github.com/libp2p/js-libp2p-mplex/commit/73df4cfe933e15ba7c52f1a01649deabf7acf502))
+
 ## [8.0.2](https://github.com/libp2p/js-libp2p-mplex/compare/v8.0.1...v8.0.2) (2023-05-17)
 
 
