@@ -1,34 +1,39 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { createLibp2pNode } from '../../src/libp2p.js'
-import { createNode } from '../utils/creators/peer.js'
-import { createBaseOptions } from '../utils/base-options.js'
-import pWaitFor from 'p-wait-for'
-import type { Libp2pNode } from '../../src/libp2p.js'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { Connection } from '@libp2p/interface-connection'
-import delay from 'delay'
+import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
+import sinon from 'sinon'
+import { identifyService } from '../../src/identify/index.js'
+import { createLibp2pNode } from '../../src/libp2p.js'
+import { createBaseOptions } from '../utils/base-options.js'
+import { createNode } from '../utils/creators/peer.js'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 
 const LOCAL_PORT = 47321
 const REMOTE_PORT = 47322
 
 describe('identify', () => {
-  let libp2p: Libp2pNode
-  let remoteLibp2p: Libp2pNode
+  let libp2p: Libp2p<{ identify: unknown }>
+  let remoteLibp2p: Libp2p<{ identify: unknown }>
 
   beforeEach(async () => {
     libp2p = await createLibp2pNode(createBaseOptions({
       addresses: {
         announce: [`/dns4/localhost/tcp/${LOCAL_PORT}`],
         listen: [`/ip4/0.0.0.0/tcp/${LOCAL_PORT}`]
+      },
+      services: {
+        identify: identifyService()
       }
     }))
     remoteLibp2p = await createLibp2pNode(createBaseOptions({
       addresses: {
         announce: [`/dns4/localhost/tcp/${REMOTE_PORT}`],
         listen: [`/ip4/0.0.0.0/tcp/${REMOTE_PORT}`]
+      },
+      services: {
+        identify: identifyService()
       }
     }))
   })
@@ -49,18 +54,18 @@ describe('identify', () => {
     await libp2p.start()
     await remoteLibp2p.start()
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
 
-    const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
+    const eventPromise = pEvent(libp2p, 'peer:identify')
 
     // dial local -> remote via loopback in order to assert we receive the announce address via identify
     const connection = await libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/${REMOTE_PORT}/p2p/${remoteLibp2p.peerId.toString()}`))
     expect(connection).to.exist()
 
     // wait for identify to run on the new connection
-    await waitForIdentify(identityServiceIdentifySpy, connection, remoteLibp2p)
+    await eventPromise
 
     // assert we have received certified announce addresses
     const peer = await libp2p.peerStore.get(remoteLibp2p.peerId)
@@ -73,18 +78,18 @@ describe('identify', () => {
     await libp2p.start()
     await remoteLibp2p.start()
 
-    if (libp2p.identifyService == null) {
+    if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
 
-    const identityServiceIdentifySpy = sinon.spy(libp2p.identifyService, 'identify')
+    const eventPromise = pEvent(remoteLibp2p, 'peer:identify')
 
     // dial remote -> local via loopback in order to assert we receive the announce address via identify
     const connection = await remoteLibp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/${LOCAL_PORT}/p2p/${libp2p.peerId.toString()}`))
     expect(connection).to.exist()
 
     // wait for identify to run on the new connection
-    await waitForIdentify(identityServiceIdentifySpy, connection, remoteLibp2p)
+    await eventPromise
 
     // assert we have received certified announce addresses
     const peer = await libp2p.peerStore.get(remoteLibp2p.peerId)
@@ -106,6 +111,9 @@ describe('identify', () => {
         addresses: {
           announce: announceAddrs,
           listen: [`/ip4/127.0.0.1/tcp/${port}/ws`]
+        },
+        services: {
+          identify: identifyService()
         }
       }
     })
@@ -115,13 +123,18 @@ describe('identify', () => {
       config: {
         addresses: {
           listen: ['/ip4/127.0.0.1/tcp/0/ws']
+        },
+        services: {
+          identify: identifyService()
         }
       }
     })
 
+    const eventPromise = pEvent(sender, 'peer:identify')
+
     const connection = await sender.dial(multiaddr(`/ip4/127.0.0.1/tcp/${port}/ws/p2p/${receiver.peerId.toString()}`))
 
-    await delay(1000)
+    await eventPromise
 
     const stream = await connection.newStream(protocol)
     const clientPeer = await sender.peerStore.get(receiver.peerId)
@@ -130,34 +143,9 @@ describe('identify', () => {
     expect(clientPeer.addresses[0].multiaddr.toString()).to.equal(announceAddrs[0].toString())
     expect(clientPeer.addresses[1].multiaddr.toString()).to.equal(announceAddrs[1].toString())
 
-    await stream.close()
+    stream.close()
     await connection.close()
     await receiver.stop()
     await sender.stop()
   })
 })
-
-async function waitForIdentify (identityServiceIdentifySpy: sinon.SinonSpy, connection: Connection, remoteLibp2p: Libp2pNode) {
-  // Wait for identify to run on the new connection
-  await pWaitFor(async () => {
-    const matcher = sinon.match(conn => {
-      return conn.remotePeer.toString() === remoteLibp2p.peerId.toString()
-    })
-
-    if (!identityServiceIdentifySpy.calledWith(matcher)) {
-      return false
-    }
-
-    expect(identityServiceIdentifySpy.callCount).to.equal(1)
-    const call = identityServiceIdentifySpy.getCall(0)
-
-    // wait for identify to complete
-    await call.returnValue
-
-    return true
-  })
-
-  // The connection should have no open streams, this means identify has finished
-  await pWaitFor(() => connection.streams.length === 0)
-  await connection.close()
-}
