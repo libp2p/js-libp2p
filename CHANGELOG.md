@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.3...v2.0.4) (2023-05-17)
+
+
+### Bug Fixes
+
+* use abstract stream class from muxer interface module ([#165](https://github.com/libp2p/js-libp2p-webrtc/issues/165)) ([32f68de](https://github.com/libp2p/js-libp2p-webrtc/commit/32f68de455d2f0b136553aa41caf06adaf1f09d1)), closes [#164](https://github.com/libp2p/js-libp2p-webrtc/issues/164)
+
 ## [2.0.3](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.2...v2.0.3) (2023-05-17)
 
 
