@@ -9,7 +9,7 @@ import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
-import { WebRTCStream } from '../stream.js'
+import { type DataChannelOpts, WebRTCStream } from '../stream.js'
 import { isFirefox } from '../util.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
@@ -52,12 +52,17 @@ export interface WebRTCMetrics {
   dialerEvents: CounterGroup
 }
 
+export interface WebRTCTransportDirectInit {
+  dataChannel?: Partial<DataChannelOpts>
+}
+
 export class WebRTCDirectTransport implements Transport {
   private readonly metrics?: WebRTCMetrics
   private readonly components: WebRTCDirectTransportComponents
-
-  constructor (components: WebRTCDirectTransportComponents) {
+  private readonly init: WebRTCTransportDirectInit
+  constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
     this.components = components
+    this.init = init
     if (components.metrics != null) {
       this.metrics = {
         dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_dialer_events_total', {
@@ -185,7 +190,7 @@ export class WebRTCDirectTransport implements Transport {
     // we pass in undefined for these parameters.
     const noise = Noise({ prologueBytes: fingerprintsPrologue })()
 
-    const wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'inbound', timeline: { open: 1 } } })
+    const wrappedChannel = new WebRTCStream({ channel: handshakeDataChannel, stat: { direction: 'inbound', timeline: { open: 1 } }, dataChannelOptions: this.init.dataChannel })
     const wrappedDuplex = {
       ...wrappedChannel,
       sink: wrappedChannel.sink.bind(wrappedChannel),
@@ -231,7 +236,7 @@ export class WebRTCDirectTransport implements Transport {
     // Track opened peer connection
     this.metrics?.dialerEvents.increment({ peer_connection: true })
 
-    const muxerFactory = new DataChannelMuxerFactory(peerConnection, this.metrics?.dialerEvents)
+    const muxerFactory = new DataChannelMuxerFactory({ peerConnection, metrics: this.metrics?.dialerEvents, dataChannelOptions: this.init.dataChannel })
 
     // For outbound connections, the remote is expected to start the noise handshake.
     // Therefore, we need to secure an inbound noise connection from the remote.

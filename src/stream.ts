@@ -4,6 +4,7 @@ import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import defer, { type DeferredPromise } from 'p-defer'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { Stream, StreamStat, Direction } from '@libp2p/interface-connection'
@@ -22,6 +23,12 @@ export function defaultStat (dir: Direction): StreamStat {
       close: undefined
     }
   }
+}
+
+export interface DataChannelOpts {
+  maxMessageSize: number
+  maxBufferedAmount: number
+  bufferedAmountLowEventTimeout: number
 }
 
 interface StreamInitOpts {
@@ -47,6 +54,11 @@ interface StreamInitOpts {
    * Callback to invoke when the stream is closed.
    */
   closeCb?: (stream: WebRTCStream) => void
+
+  /**
+   * Data channel options
+   */
+  dataChannelOptions?: Partial<DataChannelOpts>
 }
 
 /*
@@ -151,6 +163,15 @@ class StreamState {
   }
 }
 
+// Max message size that can be sent to the DataChannel
+const MAX_MESSAGE_SIZE = 16 * 1024
+
+// How much can be buffered to the DataChannel at once
+const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
+
+// How long time we wait for the 'bufferedamountlow' event to be emitted
+const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
+
 export class WebRTCStream implements Stream {
   /**
    * Unique identifier for a stream
@@ -176,6 +197,11 @@ export class WebRTCStream implements Stream {
    * The current state of the stream
    */
   streamState = new StreamState()
+
+  /**
+   * Data channel options
+   */
+  dataChannelOptions: DataChannelOpts
 
   /**
    * Read unwrapped protobuf data from the underlying datachannel.
@@ -214,8 +240,14 @@ export class WebRTCStream implements Stream {
     this.channel = opts.channel
     this.channel.binaryType = 'arraybuffer'
     this.id = this.channel.label
-
     this.stat = opts.stat
+    this.dataChannelOptions = {
+      bufferedAmountLowEventTimeout: opts.dataChannelOptions?.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT,
+      maxBufferedAmount: opts.dataChannelOptions?.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT,
+      maxMessageSize: opts.dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE
+    }
+    this.closeCb = opts.closeCb
+
     switch (this.channel.readyState) {
       case 'open':
         this.opened.resolve()
@@ -313,10 +345,25 @@ export class WebRTCStream implements Stream {
       if (this.streamState.isWriteClosed()) {
         return
       }
+
+      if (this.channel.bufferedAmount > this.dataChannelOptions.maxBufferedAmount) {
+        await pEvent(this.channel, 'bufferedamountlow', { timeout: this.dataChannelOptions.bufferedAmountLowEventTimeout }).catch((e) => {
+          this.close()
+          throw new Error('Timed out waiting for DataChannel buffer to clear')
+        })
+      }
+
       const msgbuf = Message.encode({ message: buf.subarray() })
       const sendbuf = lengthPrefixed.encode.single(msgbuf)
 
-      this.channel.send(sendbuf.subarray())
+      while (sendbuf.length > 0) {
+        if (sendbuf.length <= this.dataChannelOptions.maxMessageSize) {
+          this.channel.send(sendbuf.subarray())
+          break
+        }
+        this.channel.send(sendbuf.subarray(0, this.dataChannelOptions.maxMessageSize))
+        sendbuf.consume(this.dataChannelOptions.maxMessageSize)
+      }
     }
   }
 

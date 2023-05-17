@@ -5,6 +5,7 @@ import pDefer, { type DeferredPromise } from 'p-defer'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { Message } from './pb/message.js'
 import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
+import type { DataChannelOpts } from '../stream.js'
 import type { Stream } from '@libp2p/interface-connection'
 import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
@@ -13,14 +14,13 @@ const DEFAULT_TIMEOUT = 30 * 1000
 
 const log = logger('libp2p:webrtc:peer')
 
-export type IncomingStreamOpts = { rtcConfiguration?: RTCConfiguration } & IncomingStreamData
+export type IncomingStreamOpts = { rtcConfiguration?: RTCConfiguration, dataChannelOptions?: Partial<DataChannelOpts> } & IncomingStreamData
 
-export async function handleIncomingStream ({ rtcConfiguration, stream: rawStream }: IncomingStreamOpts): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
+export async function handleIncomingStream ({ rtcConfiguration, dataChannelOptions, stream: rawStream }: IncomingStreamOpts): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
   const signal = AbortSignal.timeout(DEFAULT_TIMEOUT)
   const stream = pbStream(abortableDuplex(rawStream, signal)).pb(Message)
   const pc = new RTCPeerConnection(rtcConfiguration)
-  const muxerFactory = new DataChannelMuxerFactory(pc)
-
+  const muxerFactory = new DataChannelMuxerFactory({ peerConnection: pc, dataChannelOptions })
   const connectedPromise: DeferredPromise<void> = pDefer()
   const answerSentPromise: DeferredPromise<void> = pDefer()
 
@@ -86,13 +86,14 @@ export interface ConnectOptions {
   stream: Stream
   signal: AbortSignal
   rtcConfiguration?: RTCConfiguration
+  dataChannelOptions?: Partial<DataChannelOpts>
 }
 
-export async function initiateConnection ({ rtcConfiguration, signal, stream: rawStream }: ConnectOptions): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
+export async function initiateConnection ({ rtcConfiguration, dataChannelOptions, signal, stream: rawStream }: ConnectOptions): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
   const stream = pbStream(abortableDuplex(rawStream, signal)).pb(Message)
   // setup peer connection
   const pc = new RTCPeerConnection(rtcConfiguration)
-  const muxerFactory = new DataChannelMuxerFactory(pc)
+  const muxerFactory = new DataChannelMuxerFactory({ peerConnection: pc, dataChannelOptions })
 
   const connectedPromise: DeferredPromise<void> = pDefer()
   resolveOnConnected(pc, connectedPromise)
