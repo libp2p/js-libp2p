@@ -33,6 +33,9 @@ describe('ping test', () => {
 
     const options: Libp2pOptions<{ ping: PingService }> = {
       start: true,
+      connectionGater: {
+        denyDialMultiaddr: async () => false
+      },
       services: {
         ping: pingService()
       }
