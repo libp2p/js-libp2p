@@ -1,3 +1,15 @@
+## [8.0.2](https://github.com/libp2p/js-libp2p-mplex/compare/v8.0.1...v8.0.2) (2023-05-17)
+
+
+### Bug Fixes
+
+* remove unused eslint-plugin-etc dep ([#280](https://github.com/libp2p/js-libp2p-mplex/issues/280)) ([41b9f06](https://github.com/libp2p/js-libp2p-mplex/commit/41b9f06bd352c23fd619ddbf07c72f9c40f40df2))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.6 ([#278](https://github.com/libp2p/js-libp2p-mplex/issues/278)) ([3c7229b](https://github.com/libp2p/js-libp2p-mplex/commit/3c7229bf198cfaf45fc29bc2ac07cb7ff1c83149))
+
 ## [8.0.1](https://github.com/libp2p/js-libp2p-mplex/compare/v8.0.0...v8.0.1) (2023-04-19)
 
 
