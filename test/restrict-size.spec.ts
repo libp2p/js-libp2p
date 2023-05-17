@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
 import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
 import drain from 'it-drain'
 import each from 'it-foreach'
-import { Message, MessageTypes } from '../src/message-types.js'
-import { encode } from '../src/encode.js'
-import { decode } from './fixtures/decode.js'
-import { Uint8ArrayList } from 'uint8arraylist'
+import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { encode } from '../src/encode.js'
+import { type Message, MessageTypes } from '../src/message-types.js'
+import { decode } from './fixtures/decode.js'
 
 describe('restrict size', () => {
   it('should throw when size is too big', async () => {
@@ -57,7 +57,7 @@ describe('restrict size', () => {
       input,
       encode,
       decode(32),
-      async (source) => await all(source)
+      async (source) => all(source)
     )
     expect(output).to.deep.equal(input[0])
   })

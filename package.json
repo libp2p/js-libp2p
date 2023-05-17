@@ -165,7 +165,7 @@
   "devDependencies": {
     "@libp2p/interface-stream-muxer-compliance-tests": "^7.0.0",
     "@types/varint": "^6.0.0",
-    "aegir": "^38.1.7",
+    "aegir": "^39.0.7",
     "cborg": "^1.8.1",
     "delay": "^5.0.0",
     "eslint-plugin-etc": "^2.0.2",

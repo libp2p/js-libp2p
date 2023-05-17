@@ -2,18 +2,18 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { expect } from 'aegir/chai'
-import { mplex } from '../src/index.js'
-import { CloseInitiatorMessage, Message, MessageInitiatorMessage, MessageTypes, NewStreamMessage } from '../src/message-types.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
-import { encode } from '../src/encode.js'
-import all from 'it-all'
-import type { Source } from 'it-stream-types'
 import delay from 'delay'
-import pDefer from 'p-defer'
-import { decode } from './fixtures/decode.js'
+import all from 'it-all'
 import { pushable } from 'it-pushable'
+import pDefer from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { encode } from '../src/encode.js'
+import { mplex } from '../src/index.js'
+import { type CloseInitiatorMessage, type Message, type MessageInitiatorMessage, MessageTypes, type NewStreamMessage } from '../src/message-types.js'
+import { decode } from './fixtures/decode.js'
+import type { Source } from 'it-stream-types'
 
 describe('mplex', () => {
   it('should restrict number of initiator streams per connection', async () => {

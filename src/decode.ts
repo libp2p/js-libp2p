@@ -1,5 +1,5 @@
-import { MessageTypeNames, MessageTypes } from './message-types.js'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { MessageTypeNames, MessageTypes } from './message-types.js'
 import type { Message } from './message-types.js'
 
 export const MAX_MSG_SIZE = 1 << 20 // 1MB

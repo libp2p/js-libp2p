@@ -2,14 +2,14 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { expect } from 'aegir/chai'
+import all from 'it-all'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encode } from '../src/encode.js'
 import { decode } from './fixtures/decode.js'
-import all from 'it-all'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { messageWithBytes } from './fixtures/utils.js'
 import type { Message, NewStreamMessage } from '../src/message-types.js'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('coder', () => {
   it('should encode header', async () => {

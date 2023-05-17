@@ -1,9 +1,9 @@
-import type { Source } from 'it-stream-types'
-import varint from 'varint'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { allocUnsafe } from './alloc-unsafe.js'
-import { Message, MessageTypes } from './message-types.js'
 import batchedBytes from 'it-batched-bytes'
+import { Uint8ArrayList } from 'uint8arraylist'
+import varint from 'varint'
+import { allocUnsafe } from './alloc-unsafe.js'
+import { type Message, MessageTypes } from './message-types.js'
+import type { Source } from 'it-stream-types'
 
 const POOL_SIZE = 10 * 1024
 

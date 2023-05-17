@@ -1,5 +1,5 @@
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import { MplexStreamMuxer } from './mplex.js'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 
 export interface MplexInit {
   /**

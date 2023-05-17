@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
-import type { Message } from '../../src/message-types.js'
 import { Decoder, MAX_MSG_QUEUE_SIZE, MAX_MSG_SIZE } from '../../src/decode.js'
+import type { Message } from '../../src/message-types.js'
 import type { Source } from 'it-stream-types'
 
 export function decode (maxMessageSize: number = MAX_MSG_SIZE, maxUnprocessedMessageQueueSize: number = MAX_MSG_QUEUE_SIZE) {

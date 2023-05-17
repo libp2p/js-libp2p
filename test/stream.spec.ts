@@ -1,21 +1,21 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
-import randomBytes from 'iso-random-stream/src/random.js'
-import randomInt from 'random-int'
-import each from 'it-foreach'
-import drain from 'it-drain'
-import map from 'it-map'
-import defer from 'p-defer'
 import * as cborg from 'cborg'
-import { createStream } from '../src/stream.js'
-import { MessageTypes, MessageTypeNames } from '../src/message-types.js'
+import randomBytes from 'iso-random-stream/src/random.js'
+import drain from 'it-drain'
+import each from 'it-foreach'
+import map from 'it-map'
+import { pipe } from 'it-pipe'
+import defer from 'p-defer'
+import randomInt from 'random-int'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
+import { MessageTypes, MessageTypeNames } from '../src/message-types.js'
+import { createStream } from '../src/stream.js'
 import { messageWithBytes } from './fixtures/utils.js'
 import type { Message } from '../src/message-types.js'
 import type { MplexStream } from '../src/mplex.js'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 function randomInput (min = 1, max = 100): Uint8ArrayList[] {
   return Array.from(Array(randomInt(min, max)), () => new Uint8ArrayList(randomBytes(randomInt(1, 128))))
