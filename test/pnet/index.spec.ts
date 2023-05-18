@@ -1,13 +1,13 @@
 /* eslint-env mocha */
-import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { preSharedKey, generateKey } from '../../src/pnet/index.js'
-import { INVALID_PSK } from '../../src/pnet/errors.js'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
-import { multiaddr } from '@multiformats/multiaddr'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import all from 'it-all'
+import { pipe } from 'it-pipe'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { INVALID_PSK } from '../../src/pnet/errors.js'
+import { preSharedKey, generateKey } from '../../src/pnet/index.js'
 
 const swarmKeyBuffer = new Uint8Array(95)
 const wrongSwarmKeyBuffer = new Uint8Array(95)
@@ -54,7 +54,7 @@ describe('private network', () => {
           yield chunk.slice()
         }
       },
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(output).to.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
@@ -88,7 +88,7 @@ describe('private network', () => {
 
     const output = await pipe(
       bToA,
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(output).to.not.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])

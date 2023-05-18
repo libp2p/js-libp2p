@@ -1,13 +1,13 @@
+import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
+import pTimes from 'p-times'
+import { createLibp2pNode, type Libp2pNode } from '../../../src/libp2p.js'
 import Peers from '../../fixtures/peers.js'
 import { createBaseOptions } from '../base-options.browser.js'
-import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
-import { createLibp2pNode, Libp2pNode } from '../../../src/libp2p.js'
-import pTimes from 'p-times'
-import type { Libp2pOptions } from '../../../src/index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AddressManagerInit } from '../../../src/address-manager/index.js'
+import type { Libp2pOptions } from '../../../src/index.js'
 import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -99,10 +99,10 @@ export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<
   const opts = options.opts ?? {}
 
   if (options.fixture == null) {
-    return opts.type === 'rsa' ? await createRSAPeerId({ bits: opts.bits ?? 512 }) : await createEd25519PeerId()
+    return opts.type === 'rsa' ? createRSAPeerId({ bits: opts.bits ?? 512 }) : createEd25519PeerId()
   }
 
-  return await createFromJSON(Peers[options.fixture])
+  return createFromJSON(Peers[options.fixture])
 }
 
 /**
@@ -111,7 +111,7 @@ export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<
 export async function createPeerIds (count: number, options: Omit<CreatePeerIdOptions, 'fixture'> = {}): Promise<PeerId[]> {
   const opts = options.opts ?? {}
 
-  return await pTimes(count, async (i) => await createPeerId({
+  return pTimes(count, async (i) => createPeerId({
     ...opts,
     fixture: i
   }))

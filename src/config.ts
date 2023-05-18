@@ -1,13 +1,13 @@
-import mergeOptions from 'merge-options'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { FaultTolerance } from '@libp2p/interface-transport'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Libp2pInit } from './index.js'
-import { codes, messages } from './errors.js'
 import { CodeError } from '@libp2p/interfaces/errors'
-import type { RecursivePartial } from '@libp2p/interfaces'
+import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import mergeOptions from 'merge-options'
+import { codes, messages } from './errors.js'
+import type { Libp2pInit } from './index.js'
 import type { ServiceMap } from '@libp2p/interface-libp2p'
+import type { RecursivePartial } from '@libp2p/interfaces'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
@@ -27,15 +27,11 @@ const DefaultConfig: Partial<Libp2pInit> = {
   }
 }
 
-export function validateConfig <T extends ServiceMap = {}> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
+export function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
   const resultingOptions: Libp2pInit<T> = mergeOptions(DefaultConfig, opts)
 
   if (resultingOptions.transports == null || resultingOptions.transports.length < 1) {
     throw new CodeError(messages.ERR_TRANSPORTS_REQUIRED, codes.ERR_TRANSPORTS_REQUIRED)
-  }
-
-  if (resultingOptions.connectionEncryption == null || resultingOptions.connectionEncryption.length === 0) {
-    throw new CodeError(messages.CONN_ENCRYPTION_REQUIRED, codes.CONN_ENCRYPTION_REQUIRED)
   }
 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef

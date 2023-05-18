@@ -1,14 +1,14 @@
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
+import pRetry from 'p-retry'
 import { codes } from '../../errors.js'
-import { namespaceToCid } from '../utils.js'
 import {
   DEFAULT_ADVERT_BOOT_DELAY,
   RELAY_RENDEZVOUS_NS
 } from '../constants.js'
-import type { Startable } from '@libp2p/interfaces/startable'
+import { namespaceToCid } from '../utils.js'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import pRetry from 'p-retry'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:circuit-relay:advert-service')
 

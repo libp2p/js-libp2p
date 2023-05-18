@@ -1,16 +1,16 @@
-import { upnpNat, NatAPI } from '@achingbrain/nat-port-mapper'
-import { logger } from '@libp2p/logger'
-import { fromNodeAddress } from '@multiformats/multiaddr'
-import { isBrowser } from 'wherearewe'
-import isPrivateIp from 'private-ip'
-import * as pkg from '../version.js'
+import { upnpNat, type NatAPI } from '@achingbrain/nat-port-mapper'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from '../errors.js'
+import { logger } from '@libp2p/logger'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import { fromNodeAddress } from '@multiformats/multiaddr'
+import isPrivateIp from 'private-ip'
+import { isBrowser } from 'wherearewe'
+import { codes } from '../errors.js'
+import * as pkg from '../version.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:upnp-nat')
 const DEFAULT_TTL = 7200
@@ -205,7 +205,7 @@ class UPnPNAT implements Startable {
   }
 }
 
-export function uPnPNATService (init: UPnPNATInit = {}): (components: UPnPNATComponents) => {} {
+export function uPnPNATService (init: UPnPNATInit = {}): (components: UPnPNATComponents) => UPnPNAT {
   return (components: UPnPNATComponents) => {
     return new UPnPNAT(components, init)
   }

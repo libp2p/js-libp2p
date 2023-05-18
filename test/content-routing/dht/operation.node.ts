@@ -1,21 +1,21 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { kadDHT } from '@libp2p/kad-dht'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { subsystemMulticodecs } from './utils.js'
-import { createPeerId } from '../../utils/creators/peer.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { DualKadDHT } from '@libp2p/kad-dht'
 import { createLibp2p } from '../../../src/index.js'
-import { kadDHT } from '@libp2p/kad-dht'
-import { tcp } from '@libp2p/tcp'
 import { plaintext } from '../../../src/insecure/index.js'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { createPeerId } from '../../utils/creators/peer.js'
+import { subsystemMulticodecs } from './utils.js'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { DualKadDHT } from '@libp2p/kad-dht'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
@@ -118,7 +118,7 @@ describe('DHT subsystem operates correctly', () => {
 
       expect(stream).to.exist()
 
-      return await Promise.all([
+      return Promise.all([
         pWaitFor(() => libp2p.services.dht.lan.routingTable.size === 1),
         pWaitFor(() => remoteLibp2p.services.dht.lan.routingTable.size === 1)
       ])

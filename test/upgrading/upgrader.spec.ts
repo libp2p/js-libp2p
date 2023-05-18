@@ -1,42 +1,42 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { mplex } from '@libp2p/mplex'
-import { multiaddr } from '@multiformats/multiaddr'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
-import { preSharedKey } from '../../src/pnet/index.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import swarmKey from '../fixtures/swarm.key.js'
-import { DefaultUpgrader } from '../../src/upgrader.js'
-import { codes } from '../../src/errors.js'
-import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-mocks'
-import Peers from '../fixtures/peers.js'
-import type { Upgrader } from '@libp2p/interface-transport'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import { plaintext } from '../../src/insecure/index.js'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
-import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface-connection'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
+import delay from 'delay'
+import all from 'it-all'
+import drain from 'it-drain'
+import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
-import delay from 'delay'
-import drain from 'it-drain'
+import sinon from 'sinon'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { MemoryDatastore } from 'datastore-core'
-import { Components, defaultComponents } from '../../src/components.js'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { createLibp2p } from '../../src/index.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { type Components, defaultComponents } from '../../src/components.js'
+import { codes } from '../../src/errors.js'
+import { createLibp2p } from '../../src/index.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { preSharedKey } from '../../src/pnet/index.js'
+import { DefaultUpgrader } from '../../src/upgrader.js'
 import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
+import Peers from '../fixtures/peers.js'
+import swarmKey from '../fixtures/swarm.key.js'
+import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface-connection'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
+import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
+import type { Upgrader } from '@libp2p/interface-transport'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -162,7 +162,7 @@ describe('Upgrader', () => {
           for await (const val of source) yield val.slice()
         })()
       },
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(result).to.eql([hello])
@@ -234,7 +234,7 @@ describe('Upgrader', () => {
           for await (const val of source) yield val.slice()
         })()
       },
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(result).to.eql([hello])
@@ -531,7 +531,7 @@ describe('Upgrader', () => {
           for await (const val of source) yield val.slice()
         })()
       },
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(result).to.eql([hello])

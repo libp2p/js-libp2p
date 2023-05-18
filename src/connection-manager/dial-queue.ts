@@ -1,29 +1,29 @@
-import { logger } from '@libp2p/logger'
+import { setMaxListeners } from 'events'
 import { AbortError, CodeError } from '@libp2p/interfaces/errors'
-import { Multiaddr, Resolver, resolvers } from '@multiformats/multiaddr'
+import { logger } from '@libp2p/logger'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { type Multiaddr, type Resolver, resolvers } from '@multiformats/multiaddr'
+import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { type ClearableSignal, anySignal } from 'any-signal'
+import pDefer from 'p-defer'
+import PQueue from 'p-queue'
 import { codes } from '../errors.js'
+import { getPeerAddress } from '../get-peer.js'
 import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS_PER_PEER,
   MAX_PARALLEL_DIALS,
   MAX_PEER_ADDRS_TO_DIAL
 } from './constants.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { getPeerAddress } from '../get-peer.js'
-import type { Address, PeerStore } from '@libp2p/interface-peer-store'
-import type { Metric, Metrics } from '@libp2p/interface-metrics'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import PQueue from 'p-queue'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
-import pDefer from 'p-defer'
-import { ClearableSignal, anySignal } from 'any-signal'
+import type { Connection } from '@libp2p/interface-connection'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { AddressSorter } from '@libp2p/interface-libp2p'
-import { setMaxListeners } from 'events'
+import type { Metric, Metrics } from '@libp2p/interface-metrics'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Address, PeerStore } from '@libp2p/interface-peer-store'
+import type { TransportManager } from '@libp2p/interface-transport'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:connection-manager:dial-queue')
 
@@ -214,7 +214,7 @@ export class DialQueue {
     if (existingDial != null) {
       log('joining existing dial target for %p', peerId)
       signal.clear()
-      return await existingDial.promise
+      return existingDial.promise
     }
 
     log('creating dial target for', addrsToDial.map(({ multiaddr }) => multiaddr.toString()))
@@ -238,7 +238,7 @@ export class DialQueue {
         signal.clear()
       })
       .catch(err => {
-        log.error('dial failed to %s', addrsToDial.map(({ multiaddr }) => multiaddr.toString()).join(', '), err)
+        log.error('dial failed to %s', pendingDial.multiaddrs.map(ma => ma.toString()).join(', '), err)
 
         // Error is a timeout
         if (signal.aborted) {
@@ -252,7 +252,7 @@ export class DialQueue {
     // let other dials join this one
     this.pendingDials.push(pendingDial)
 
-    return await pendingDial.promise
+    return pendingDial.promise
   }
 
   private createDialAbortControllers (userSignal?: AbortSignal): ClearableSignal {
@@ -272,6 +272,7 @@ export class DialQueue {
     return signal
   }
 
+  // eslint-disable-next-line complexity
   private async calculateMultiaddrs (peerId?: PeerId, addrs: Address[] = [], options: DialOptions = {}): Promise<Address[]> {
     // if a peer id or multiaddr(s) with a peer id, make sure it isn't our peer id and that we are allowed to dial it
     if (peerId != null) {
@@ -319,7 +320,7 @@ export class DialQueue {
     const filteredAddrs = resolvedAddresses.filter(addr => Boolean(this.transportManager.transportForMultiaddr(addr.multiaddr)))
 
     // deduplicate addresses
-    const dedupedAddrs: Map<string, Address> = new Map()
+    const dedupedAddrs = new Map<string, Address>()
 
     for (const addr of filteredAddrs) {
       const maStr = addr.multiaddr.toString()
@@ -384,7 +385,14 @@ export class DialQueue {
       gatedAdrs.push(addr)
     }
 
-    return gatedAdrs.sort(this.addressSorter)
+    const sortedGatedAddrs = gatedAdrs.sort(this.addressSorter)
+
+    // make sure we actually have some addresses to dial
+    if (sortedGatedAddrs.length === 0) {
+      throw new CodeError('The connection gater denied all addresses in the dial request', codes.ERR_NO_VALID_ADDRESSES)
+    }
+
+    return sortedGatedAddrs
   }
 
   private async performDial (pendingDial: PendingDial, options: DialOptions = {}): Promise<Connection> {
@@ -484,7 +492,7 @@ export class DialQueue {
           signal.clear()
         })
 
-        return await deferred.promise
+        return deferred.promise
       }))
 
       // dial succeeded or failed

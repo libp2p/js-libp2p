@@ -1,35 +1,36 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { multiaddr } from '@multiformats/multiaddr'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { codes } from '../../src/errors.js'
-import { identifyService, IdentifyServiceInit, Message } from '../../src/identify/index.js'
-import Peers from '../fixtures/peers.js'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { MemoryDatastore } from 'datastore-core/memory'
-import * as lp from 'it-length-prefixed'
-import drain from 'it-drain'
-import { pipe } from 'it-pipe'
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { start, stop } from '@libp2p/interfaces/startable'
 import { createFromJSON } from '@libp2p/peer-id-factory'
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core/memory'
+import delay from 'delay'
+import drain from 'it-drain'
+import * as lp from 'it-length-prefixed'
+import { pipe } from 'it-pipe'
+import pDefer from 'p-defer'
+import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { codes } from '../../src/errors.js'
 import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH
 } from '../../src/identify/consts.js'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { DefaultTransportManager } from '../../src/transport-manager.js'
-import delay from 'delay'
-import { start, stop } from '@libp2p/interfaces/startable'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import pDefer from 'p-defer'
-import { defaultComponents, Components } from '../../src/components.js'
-import { stubInterface } from 'sinon-ts'
-import type { TransportManager } from '@libp2p/interface-transport'
 import { DefaultIdentifyService } from '../../src/identify/identify.js'
+import { identifyService, type IdentifyServiceInit, Message } from '../../src/identify/index.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import Peers from '../fixtures/peers.js'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -330,5 +331,70 @@ describe('identify', () => {
 
     await expect(identifySpy.getCall(0).returnValue)
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
+  })
+
+  it('should retain existing peer metadata', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+
+    await start(localIdentify)
+    await start(remoteIdentify)
+
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      metadata: {
+        foo: Uint8Array.from([0, 1, 2, 3])
+      }
+    })
+
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
+
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
+
+    // Run identify
+    await localIdentify.identify(localToRemote)
+
+    expect(localPeerStorePatchSpy.callCount).to.equal(1)
+
+    // Validate the remote peer gets updated in the peer store
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peer.metadata.get('foo')).to.equalBytes(Uint8Array.from([0, 1, 2, 3]))
+  })
+
+  it('should ignore older signed peer record', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+
+    await start(localIdentify)
+    await start(remoteIdentify)
+
+    const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: remoteComponents.peerId,
+      multiaddrs: [
+        multiaddr('/ip4/127.0.0.1/tcp/1234')
+      ],
+      seqNumber: BigInt(Date.now() * 2)
+    }), remoteComponents.peerId)
+    const peerRecordEnvelope = signedPeerRecord.marshal()
+
+    await localComponents.peerStore.merge(remoteComponents.peerId, {
+      peerRecordEnvelope
+    })
+
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
+
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
+
+    // Run identify
+    await localIdentify.identify(localToRemote)
+
+    expect(localPeerStorePatchSpy.callCount).to.equal(1)
+
+    // Should not have added addresses from received peer record as the sequence
+    // number will be less than the one above
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peer.addresses.map(({ multiaddr }) => multiaddr.toString())).to.deep.equal([
+      '/ip4/127.0.0.1/tcp/1234'
+    ])
+    expect(peer).to.have.property('peerRecordEnvelope').that.equalBytes(peerRecordEnvelope)
   })
 })

@@ -1,15 +1,15 @@
+import { CodeError } from '@libp2p/interfaces/errors'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { Listener, ListenerEvents } from '@libp2p/interface-transport'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { logger } from '@libp2p/logger'
+import { PeerMap } from '@libp2p/peer-collections'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { ReservationStore } from './reservation-store.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { PeerMap } from '@libp2p/peer-collections'
-import { logger } from '@libp2p/logger'
-import { peerIdFromString } from '@libp2p/peer-id'
 import type { Connection } from '@libp2p/interface-connection'
-import { CodeError } from '@libp2p/interfaces/errors'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Listener, ListenerEvents } from '@libp2p/interface-transport'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:circuit-relay:transport:listener')
 

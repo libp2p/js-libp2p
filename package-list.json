@@ -4,57 +4,52 @@
     "Version",
     "Deps",
     "CI",
-    "Coverage",
-    "Lead Maintainer"
+    "Coverage"
   ],
   "rows": [
     "libp2p",
-    ["libp2p/js-libp2p", "libp2p"],
-    ["libp2p/js-libp2p-daemon", "libp2p-daemon"],
-    ["libp2p/js-libp2p-daemon-client", "libp2p-daemon-client"],
-    ["libp2p/js-interfaces", "libp2p-interfaces"],
-    ["libp2p/interop", "interop-libp2p"],
+    ["libp2p/js-libp2p", "libp2p", "master", "main.yml"],
+    ["libp2p/js-libp2p-interfaces", "@libp2p/interface-libp2p", "master", "js-test-and-release.yml"],
 
     "transports",
-    ["libp2p/js-libp2p-tcp", "libp2p-tcp"],
-    ["libp2p/js-libp2p-webrtc-direct", "libp2p-webrtc-direct"],
-    ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
-    ["libp2p/js-libp2p-websockets", "libp2p-websockets"],
+    ["libp2p/js-libp2p-tcp", "@libp2p/tcp", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-webrtc", "@libp2p/webrtc", "main", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-websockets", "@libp2p/websockets", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-webtransport", "@libp2p/webtransport", "main", "js-test-and-release.yml"],
 
     "secure channels",
-    ["NodeFactoryIo/js-libp2p-noise", "libp2p-noise"],
+    ["ChainSafe/js-libp2p-noise", "@chainsafe/libp2p-noise", "master", "js-test-and-release.yml"],
 
     "stream multiplexers",
-    ["libp2p/js-libp2p-mplex", "libp2p-mplex"],
+    ["libp2p/js-libp2p-mplex", "@libp2p/mplex", "master", "js-test-and-release.yml"],
+    ["ChainSafe/js-libp2p-yamux", "@chainsafe/libp2p-yamux", "master", "js-test-and-release.yml"],
 
     "peer discovery",
-    ["libp2p/js-libp2p-bootstrap", "libp2p-bootstrap"],
-    ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
-    ["libp2p/js-libp2p-mdns", "libp2p-mdns"],
-    ["libp2p/js-libp2p-webrtc-star", "libp2p-webrtc-star"],
-    ["ChainSafe/discv5", "@chainsafe/discv5"],
+    ["libp2p/js-libp2p-bootstrap", "@libp2p/bootstrap", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-kad-dht", "@libp2p/kad-dht", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-mdns", "@libp2p/mdns", "master", "js-test-and-release.yml"],
+    ["ChainSafe/discv5", "@chainsafe/discv5", "master", "test_and_release.yml"],
 
     "content routing",
-    ["libp2p/js-libp2p-delegated-content-routing", "libp2p-delegated-content-routing"],
-    ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
+    ["libp2p/js-reframe-content-routing", "@libp2p/reframe-content-routing", "main", "js-test-and-release.yml"],
+    ["libp2p/js-ipni-content-routing", "@libp2p/ipni-content-routing", "main", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-delegated-content-routing", "@libp2p/delegated-content-routing", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-kad-dht", "@libp2p/kad-dht", "master", "js-test-and-release.yml"],
 
     "peer routing",
-    ["libp2p/js-libp2p-delegated-peer-routing", "libp2p-delegated-peer-routing"],
-    ["libp2p/js-libp2p-kad-dht", "libp2p-kad-dht"],
+    ["libp2p/js-libp2p-delegated-peer-routing", "@libp2p/delegated-peer-routing", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-kad-dht", "@libp2p/kad-dht", "master", "js-test-and-release.yml"],
 
     "utilities",
-    ["libp2p/js-libp2p-crypto", "libp2p-crypto"],
+    ["libp2p/js-libp2p-crypto", "@libp2p/crypto", "master", "js-test-and-release.yml"],
 
     "data types",
-    ["libp2p/js-peer-id", "peer-id"],
-    ["libp2p/js-libp2p-record", "libp2p-record"],
+    ["libp2p/js-libp2p-peer-id", "@libp2p/peer-id", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-record", "@libp2p/record", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-peer-record", "@libp2p/peer-record", "master", "js-test-and-release.yml"],
 
     "pubsub",
-    ["libp2p/js-libp2p-floodsub", "libp2p-floodsub"],
-    ["ChainSafe/js-libp2p-gossipsub", "libp2p-gossipsub"],
-
-    "extensions",
-    ["libp2p/js-libp2p-nat-mgnr", "libp2p-nat-mgnr"],
-    ["libp2p/js-libp2p-utils", "libp2p-utils"]
+    ["ChainSafe/js-libp2p-gossipsub", "@ChainSafe/libp2p-gossipsub", "master", "main.yml"],
+    ["libp2p/js-libp2p-floodsub", "@libp2p/floodsub", "master", "js-test-and-release.yml"]
   ]
 }

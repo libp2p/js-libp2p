@@ -1,14 +1,14 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { webSockets } from '@libp2p/websockets'
-import { plaintext } from '../../src/insecure/index.js'
-import { createPeerId } from '../utils/creators/peer.js'
-import { createLibp2pNode } from '../../src/libp2p.js'
-import sinon from 'sinon'
 import { kadDHT } from '@libp2p/kad-dht'
-import type { KadDHT } from '@libp2p/kad-dht'
+import { webSockets } from '@libp2p/websockets'
+import { expect } from 'aegir/chai'
+import sinon from 'sinon'
+import { plaintext } from '../../src/insecure/index.js'
+import { createLibp2pNode } from '../../src/libp2p.js'
+import { createPeerId } from '../utils/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { KadDHT } from '@libp2p/kad-dht'
 
 describe('getPublicKey', () => {
   let libp2p: Libp2p<{ dht: KadDHT }>

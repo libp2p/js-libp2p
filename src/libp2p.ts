@@ -1,48 +1,48 @@
-import { logger } from '@libp2p/logger'
-import type { AbortOptions } from '@libp2p/interfaces'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
-import { isMultiaddr, Multiaddr } from '@multiformats/multiaddr'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { DefaultPeerRouting } from './peer-routing.js'
-import { CompoundContentRouting } from './content-routing/index.js'
-import { codes } from './errors.js'
-import { DefaultAddressManager } from './address-manager/index.js'
-import { DefaultConnectionManager } from './connection-manager/index.js'
-import { DefaultKeyChain } from '@libp2p/keychain'
-import { DefaultTransportManager } from './transport-manager.js'
-import { DefaultUpgrader } from './upgrader.js'
-import { DefaultRegistrar } from './registrar.js'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { defaultComponents } from './components.js'
-import type { Components } from './components.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Connection, Stream } from '@libp2p/interface-connection'
-import type { StreamHandler, StreamHandlerOptions, Topology } from '@libp2p/interface-registrar'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { CodeError } from '@libp2p/interfaces/errors'
-import type { Metrics } from '@libp2p/interface-metrics'
-import { PeerSet } from '@libp2p/peer-collections'
-import type { KeyChain } from '@libp2p/interface-keychain'
-import type { Libp2pEvents, PendingDial, ServiceMap } from '@libp2p/interface-libp2p'
 import { setMaxListeners } from 'events'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { peerIdFromString } from '@libp2p/peer-id'
-import type { Datastore } from 'interface-datastore'
-import mergeOptions from 'merge-options'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { validateConfig } from './config.js'
-import { ContentRouting, contentRouting } from '@libp2p/interface-content-routing'
-import { PeerRouting, peerRouting } from '@libp2p/interface-peer-routing'
+import { type ContentRouting, contentRouting } from '@libp2p/interface-content-routing'
 import { peerDiscovery } from '@libp2p/interface-peer-discovery'
+import { type PeerRouting, peerRouting } from '@libp2p/interface-peer-routing'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { DefaultKeyChain } from '@libp2p/keychain'
+import { logger } from '@libp2p/logger'
+import { PeerSet } from '@libp2p/peer-collections'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { MemoryDatastore } from 'datastore-core/memory'
+import mergeOptions from 'merge-options'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { DefaultAddressManager } from './address-manager/index.js'
+import { defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
+import { validateConfig } from './config.js'
+import { DefaultConnectionManager } from './connection-manager/index.js'
+import { CompoundContentRouting } from './content-routing/index.js'
+import { codes } from './errors.js'
+import { DefaultPeerRouting } from './peer-routing.js'
+import { DefaultRegistrar } from './registrar.js'
+import { DefaultTransportManager } from './transport-manager.js'
+import { DefaultUpgrader } from './upgrader.js'
+import type { Components } from './components.js'
+import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
+import type { Connection, Stream } from '@libp2p/interface-connection'
+import type { KeyChain } from '@libp2p/interface-keychain'
+import type { Libp2pEvents, PendingDial, ServiceMap } from '@libp2p/interface-libp2p'
+import type { Metrics } from '@libp2p/interface-metrics'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { StreamHandler, StreamHandlerOptions, Topology } from '@libp2p/interface-registrar'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p')
 
-export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEvents> implements Libp2p<T> {
+export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends EventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -277,7 +277,7 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
   }
 
   async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
-    return await this.components.connectionManager.openConnection(peer, options)
+    return this.components.connectionManager.openConnection(peer, options)
   }
 
   async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: AbortOptions = {}): Promise<Stream> {
@@ -293,7 +293,7 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
 
     const connection = await this.dial(peer, options)
 
-    return await connection.newStream(protocols, options)
+    return connection.newStream(protocols, options)
   }
 
   getMultiaddrs (): Multiaddr[] {
@@ -370,7 +370,7 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
   }
 
   async register (protocol: string, topology: Topology): Promise<string> {
-    return await this.components.registrar.register(protocol, topology)
+    return this.components.registrar.register(protocol, topology)
   }
 
   unregister (id: string): void {
@@ -401,7 +401,7 @@ export class Libp2pNode<T extends ServiceMap = {}> extends EventEmitter<Libp2pEv
  * Returns a new Libp2pNode instance - this exposes more of the internals than the
  * libp2p interface and is useful for testing and debugging.
  */
-export async function createLibp2pNode <T extends ServiceMap = {}> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
+export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
   if (options.peerId == null) {
     const datastore = options.datastore as Datastore | undefined
 

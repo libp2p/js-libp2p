@@ -1,12 +1,12 @@
 import { logger } from '@libp2p/logger'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import { PeerMap } from '@libp2p/peer-collections'
+import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import PQueue from 'p-queue'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:connection-manager:auto-dial')
 
@@ -103,10 +103,16 @@ export class AutoDial implements Startable {
 
     const connections = this.connectionManager.getConnectionsMap()
     const numConnections = connections.size
+    const dialQueue = new PeerSet(
+      // @ts-expect-error boolean filter removes falsy peer IDs
+      this.connectionManager.getDialQueue()
+        .map(queue => queue.peerId)
+        .filter(Boolean)
+    )
 
     // Already has enough connections
     if (numConnections >= this.minConnections) {
-      log('have enough connections %d/%d', numConnections, this.minConnections)
+      log.trace('have enough connections %d/%d', numConnections, this.minConnections)
       return
     }
 
@@ -124,6 +130,11 @@ export class AutoDial implements Startable {
 
       // remove peers we are already connected to
       if (connections.has(peer.id)) {
+        return false
+      }
+
+      // remove peers we are already dialling
+      if (dialQueue.has(peer.id)) {
         return false
       }
 
