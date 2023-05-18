@@ -146,7 +146,6 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     if (options.pubsubRouter === 'floodsub') {
       services.pubsub = floodsub()
     } else {
-      // @ts-expect-error remove after gossipsub is upgraded to @libp2p/interface-peer-store@2.x.x
       services.pubsub = gossipsub()
     }
   }
