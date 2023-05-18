@@ -2,23 +2,23 @@
 /* eslint-env mocha */
 
 import { } from 'aegir/chai'
-import { createLibp2p, Libp2p, Libp2pOptions } from 'libp2p'
-import { webTransport } from '@libp2p/webtransport'
-import { tcp } from '@libp2p/tcp'
-import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { multiaddr } from '@multiformats/multiaddr'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
 import { webRTC } from '@libp2p/webrtc'
-import { pingService, PingService } from 'libp2p/ping'
+import { webSockets } from '@libp2p/websockets'
+import { webTransport } from '@libp2p/webtransport'
+import { multiaddr } from '@multiformats/multiaddr'
+import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
+import { pingService, type PingService } from 'libp2p/ping'
 
 async function redisProxy (commands: any[]): Promise<any> {
   const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, { body: JSON.stringify(commands), method: 'POST' })
   if (!res.ok) {
     throw new Error('Redis command failed')
   }
-  return await res.json()
+  return res.json()
 }
 
 let node: Libp2p<{ ping: PingService }>
@@ -26,6 +26,7 @@ let isDialer: boolean
 let timeoutSecs: string
 
 describe('ping test', () => {
+  // eslint-disable-next-line complexity
   beforeEach(async () => {
     // Setup libp2p node
     const TRANSPORT = process.env.transport
@@ -122,15 +123,14 @@ describe('ping test', () => {
     }
 
     node = await createLibp2p(options)
-
   })
 
   afterEach(async () => {
     // Shutdown libp2p node
-      try {
-        // We don't care if this fails
-        await node.stop()
-      } catch { }
+    try {
+      // We don't care if this fails
+      await node.stop()
+    } catch { }
   })
 
   // eslint-disable-next-line complexity
@@ -167,7 +167,6 @@ describe('ping test', () => {
         console.error('unexpected exception in ping test:', err)
       }
       throw err
-    } finally {
     }
   })
 })
