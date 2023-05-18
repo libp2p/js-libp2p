@@ -552,6 +552,30 @@ describe('circuit-relay', () => {
       expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
     })
 
+    it('dialer should close hop stream on hop failure', async () => {
+      await local.dial(relay1.getMultiaddrs()[0])
+
+      // dial the remote through the relay
+      const relayedMultiaddr = relay1.getMultiaddrs()[0].encapsulate(`/p2p-circuit/p2p/${remote.peerId.toString()}`)
+
+      await expect(local.dial(relayedMultiaddr))
+        .to.eventually.be.rejected()
+        .and.to.have.property('message').that.matches(/NO_RESERVATION/)
+
+      // we should still be connected to the relay
+      const conns = local.getConnections(relay1.peerId)
+      expect(conns).to.have.lengthOf(1)
+      expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
+
+      // we should not have any streams with the hop codec
+      const streams = local.getConnections(relay1.peerId)
+        .map(conn => conn.streams)
+        .flat()
+        .filter(stream => stream.stat.protocol === RELAY_V2_HOP_CODEC)
+
+      expect(streams).to.be.empty()
+    })
+
     it('destination peer should stay connected to an already connected relay on hop failure', async () => {
       await local.dial(relay1.getMultiaddrs()[0])
       await usingAsRelay(local, relay1)
