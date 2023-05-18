@@ -2,7 +2,7 @@
 /* eslint-env mocha */
 
 import { } from 'aegir/chai'
-import { createLibp2p, Libp2pOptions } from 'libp2p'
+import { createLibp2p, Libp2p, Libp2pOptions } from 'libp2p'
 import { webTransport } from '@libp2p/webtransport'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
@@ -21,15 +21,19 @@ async function redisProxy (commands: any[]): Promise<any> {
   return await res.json()
 }
 
+let node: Libp2p<{ ping: PingService }>
+let isDialer: boolean
+let timeoutSecs: string
+
 describe('ping test', () => {
-  // eslint-disable-next-line complexity
-  it('should ping', async () => {
+  beforeEach(async () => {
+    // Setup libp2p node
     const TRANSPORT = process.env.transport
     const SECURE_CHANNEL = process.env.security
     const MUXER = process.env.muxer
-    const isDialer = process.env.is_dialer === 'true'
     const IP = process.env.ip ?? '0.0.0.0'
-    const timeoutSecs: string = process.env.test_timeout_secs ?? '180'
+    isDialer = process.env.is_dialer === 'true'
+    timeoutSecs = process.env.test_timeout_secs ?? '180'
 
     const options: Libp2pOptions<{ ping: PingService }> = {
       start: true,
@@ -100,9 +104,6 @@ describe('ping test', () => {
         default:
           throw new Error(`Unknown secure channel: ${SECURE_CHANNEL ?? ''}`)
       }
-    } else {
-      // Libp2p requires at least one encryption module. Even if unused.
-      options.connectionEncryption = [noise()]
     }
 
     if (!skipMuxer) {
@@ -120,8 +121,20 @@ describe('ping test', () => {
       }
     }
 
-    const node = await createLibp2p(options)
+    node = await createLibp2p(options)
 
+  })
+
+  afterEach(async () => {
+    // Shutdown libp2p node
+      try {
+        // We don't care if this fails
+        await node.stop()
+      } catch { }
+  })
+
+  // eslint-disable-next-line complexity
+  it('should ping', async () => {
     try {
       if (isDialer) {
         let otherMa: string = (await redisProxy(['BLPOP', 'listenerAddr', timeoutSecs]).catch(err => { throw new Error(`Failed to wait for listener: ${err}`) }))[1]
@@ -155,10 +168,6 @@ describe('ping test', () => {
       }
       throw err
     } finally {
-      try {
-        // We don't care if this fails
-        await node.stop()
-      } catch { }
     }
   })
 })

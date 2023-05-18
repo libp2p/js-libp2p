@@ -75,8 +75,5 @@ export default {
         await redisClient.disconnect()
       } catch { }
     }
-  },
-  build: {
-    bundlesizeMax: '18kB'
   }
 }
