@@ -10,6 +10,16 @@
 
 
 
+### [0.45.1](https://www.github.com/libp2p/js-libp2p/compare/v0.45.0...v0.45.1) (2023-05-18)
+
+
+### Bug Fixes
+
+* close circuit-relay streams on connection failure ([#1758](https://www.github.com/libp2p/js-libp2p/issues/1758)) ([1af7808](https://www.github.com/libp2p/js-libp2p/commit/1af7808e3fd548a9ea4bf05b97189e40f3ac5b8f))
+* do not require connection encrypters ([#1752](https://www.github.com/libp2p/js-libp2p/issues/1752)) ([2417cda](https://www.github.com/libp2p/js-libp2p/commit/2417cda57b2d2a2888a7c79066c597243c598032))
+* retain peer metadata after identify ([#1749](https://www.github.com/libp2p/js-libp2p/issues/1749)) ([752db6d](https://www.github.com/libp2p/js-libp2p/commit/752db6d6d4196de89d6efeba52404ad308926aec))
+* trace happy path connection count message ([#1754](https://www.github.com/libp2p/js-libp2p/issues/1754)) ([710da91](https://www.github.com/libp2p/js-libp2p/commit/710da918a89b6f6ee5d03c0d14a311efd40a1b8f))
+
 ## [0.45.0](https://www.github.com/libp2p/js-libp2p/compare/v0.44.0...v0.45.0) (2023-05-09)
 
 
