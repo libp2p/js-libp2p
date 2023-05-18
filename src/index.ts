@@ -35,14 +35,14 @@ import type { KeyChainInit } from '@libp2p/keychain'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { Datastore } from 'interface-datastore'
 
-export type ServiceFactoryMap<T extends ServiceMap = ServiceMap> = {
+export type ServiceFactoryMap<T extends ServiceMap> = {
   [Property in keyof T]: (components: Components<T>) => T[Property]
 }
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
  */
-export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
+export interface Libp2pInit<T extends ServiceMap> {
   /**
    * peerId instance (it will be created if not provided)
    */
@@ -113,7 +113,7 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
 
 export type { Libp2p }
 
-export type Libp2pOptions<T extends ServiceMap = ServiceMap> = RecursivePartial<Libp2pInit<T>> & { start?: boolean }
+export type Libp2pOptions<T extends ServiceMap> = RecursivePartial<Libp2pInit<T>> & { start?: boolean }
 
 /**
  * Returns a new instance of the Libp2p interface, generating a new PeerId
@@ -141,7 +141,7 @@ export type Libp2pOptions<T extends ServiceMap = ServiceMap> = RecursivePartial<
  * const libp2p = await createLibp2p(options)
  * ```
  */
-export async function createLibp2p <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
+export async function createLibp2p <T extends ServiceMap> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
   const node = await createLibp2pNode(options)
 
   if (options.start !== false) {

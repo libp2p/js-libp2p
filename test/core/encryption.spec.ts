@@ -4,6 +4,7 @@ import { webSockets } from '@libp2p/websockets'
 import { createLibp2p, type Libp2pOptions } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../utils/creators/peer.js'
+import type { ServiceMap } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('Connection encryption configuration', () => {
@@ -14,7 +15,7 @@ describe('Connection encryption configuration', () => {
   })
 
   it('can be created', async () => {
-    const config: Libp2pOptions = {
+    const config: Libp2pOptions<ServiceMap> = {
       peerId,
       start: false,
       transports: [

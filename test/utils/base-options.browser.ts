@@ -10,8 +10,8 @@ import { plaintext } from '../../src/insecure/index.js'
 import type { Libp2pOptions } from '../../src/index.js'
 import type { ServiceMap } from '@libp2p/interface-libp2p'
 
-export function createBaseOptions <T extends ServiceMap = Record<string, unknown>> (overrides?: Libp2pOptions<T>): Libp2pOptions<T> {
-  const options: Libp2pOptions = {
+export function createBaseOptions <T extends ServiceMap> (overrides?: Libp2pOptions<T>): Libp2pOptions<T> {
+  const options: Libp2pOptions<T> = {
     transports: [
       webSockets({
         filter: filters.all

@@ -12,6 +12,7 @@ import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery, type RelayDiscoveryComponents } from './discovery.js'
 import { createListener } from './listener.js'
 import { type RelayStoreInit, ReservationStore } from './reservation-store.js'
+import type { IdentifyService } from '../../identify/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
@@ -68,10 +69,10 @@ interface ConnectOptions {
  */
 export interface CircuitRelayTransportInit extends RelayStoreInit {
   /**
-   * The number of peers running diable relays to search for and
-   * connect to. (default: 0)
+   * The number of peers running relays to search for and connect to.
+   * (default: 0)
    */
-  discoverRelays?: number
+  discoverRelays: number
 }
 
 class CircuitRelayTransport implements Transport {
@@ -318,7 +319,9 @@ class CircuitRelayTransport implements Transport {
   }
 }
 
-export function circuitRelayTransport (init: CircuitRelayTransportInit = {}): (components: CircuitRelayTransportComponents) => Transport {
+export function circuitRelayTransport (init: CircuitRelayTransportInit): (components: CircuitRelayTransportComponents & { identify: IdentifyService }) => Transport
+export function circuitRelayTransport (init?: RelayStoreInit): (components: CircuitRelayTransportComponents) => Transport
+export function circuitRelayTransport (init: any = {}): (components: any) => Transport {
   return (components) => {
     return new CircuitRelayTransport(components, init)
   }

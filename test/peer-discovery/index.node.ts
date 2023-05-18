@@ -16,7 +16,7 @@ import { createLibp2p } from '../../src/index.js'
 import { createBaseOptions } from '../utils/base-options.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import type { Libp2pOptions } from '../../src/index.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
@@ -122,7 +122,7 @@ describe('peer discovery scenarios', () => {
     // use a random tag to prevent CI collision
     const serviceTag = `libp2p-test-${uint8ArrayToString(randomBytes(4), 'base16')}.local`
 
-    const getConfig = (peerId: PeerId): Libp2pOptions => createBaseOptions({
+    const getConfig = (peerId: PeerId): Libp2pOptions<ServiceMap> => createBaseOptions({
       peerId,
       addresses: {
         listen: [

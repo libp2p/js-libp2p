@@ -10,8 +10,8 @@ import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { Libp2pOptions } from '../../src'
 import type { ServiceMap } from '@libp2p/interface-libp2p'
 
-export function createBaseOptions <T extends ServiceMap = Record<string, unknown>> (...overrides: Array<Libp2pOptions<T>>): Libp2pOptions<T> {
-  const options: Libp2pOptions = {
+export function createBaseOptions <T extends ServiceMap> (...overrides: Array<Libp2pOptions<T>>): Libp2pOptions<T> {
+  const options: Libp2pOptions<T> = {
     addresses: {
       listen: [`${MULTIADDRS_WEBSOCKETS}/p2p-circuit`]
     },
