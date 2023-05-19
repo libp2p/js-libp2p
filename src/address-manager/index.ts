@@ -6,7 +6,7 @@ import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
-import type { EventEmitter } from '@libp2p/interfaces/dist/src/events'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:address-manager')
