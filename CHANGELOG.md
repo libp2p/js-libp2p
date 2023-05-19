@@ -10,6 +10,14 @@
 
 
 
+### [0.45.2](https://www.github.com/libp2p/js-libp2p/compare/v0.45.1...v0.45.2) (2023-05-19)
+
+
+### Bug Fixes
+
+* add start/stop events ([#1766](https://www.github.com/libp2p/js-libp2p/issues/1766)) ([98fb4bc](https://www.github.com/libp2p/js-libp2p/commit/98fb4bc1dd865f984565eddbeb479c9013e7098c))
+* update autonat logging ([#1765](https://www.github.com/libp2p/js-libp2p/issues/1765)) ([3c925ff](https://www.github.com/libp2p/js-libp2p/commit/3c925ffac6390eff90762639f0f28608f6eab9b8))
+
 ### [0.45.1](https://www.github.com/libp2p/js-libp2p/compare/v0.45.0...v0.45.1) (2023-05-18)
 
 
