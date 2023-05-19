@@ -110,7 +110,7 @@ class DefaultAutoNATService implements Startable {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleIncomingAutonatStream(data)
         .catch(err => {
-          log.error(err)
+          log.error('error handling incoming autonat stream', err)
         })
     }, {
       maxInboundStreams: this.maxInboundStreams,
@@ -156,7 +156,7 @@ class DefaultAutoNATService implements Startable {
           const buf = await first(stream)
 
           if (buf == null) {
-            log('No message received')
+            log('no message received')
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
               dialResponse: {
@@ -173,7 +173,7 @@ class DefaultAutoNATService implements Startable {
           try {
             request = Message.decode(buf)
           } catch (err) {
-            log.error('Could not decode message', err)
+            log.error('could not decode message', err)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -189,7 +189,7 @@ class DefaultAutoNATService implements Startable {
           const dialRequest = request.dial
 
           if (dialRequest == null) {
-            log.error('Dial was missing from message')
+            log.error('dial was missing from message')
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -222,7 +222,7 @@ class DefaultAutoNATService implements Startable {
           try {
             peerId = peerIdFromBytes(peer.id)
           } catch (err) {
-            log.error('Invalid PeerId', err)
+            log.error('invalid PeerId', err)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -235,11 +235,11 @@ class DefaultAutoNATService implements Startable {
             return
           }
 
-          log('Incoming request from %p', peerId)
+          log('incoming request from %p', peerId)
 
           // reject any dial requests that arrive via relays
           if (!data.connection.remotePeer.equals(peerId)) {
-            log('Target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
+            log('target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -258,7 +258,7 @@ class DefaultAutoNATService implements Startable {
             .filter(ma => {
               const isFromSameHost = ma.toOptions().host === data.connection.remoteAddr.toOptions().host
 
-              log.trace('Request to dial %s was sent from %s is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
+              log.trace('request to dial %s was sent from %s is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
               // skip any Multiaddrs where the target node's IP does not match the sending node's IP
               return isFromSameHost
             })
@@ -266,7 +266,7 @@ class DefaultAutoNATService implements Startable {
               const host = ma.toOptions().host
               const isPublicIp = !(isPrivateIp(host) ?? false)
 
-              log.trace('Host %s was public %s', host, isPublicIp)
+              log.trace('host %s was public %s', host, isPublicIp)
               // don't try to dial private addresses
               return isPublicIp
             })
@@ -274,14 +274,14 @@ class DefaultAutoNATService implements Startable {
               const host = ma.toOptions().host
               const isNotOurHost = !ourHosts.includes(host)
 
-              log.trace('Host %s was not our host %s', host, isNotOurHost)
+              log.trace('host %s was not our host %s', host, isNotOurHost)
               // don't try to dial nodes on the same host as us
               return isNotOurHost
             })
             .filter(ma => {
               const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
 
-              log.trace('Transport for %s is supported %s', ma, isSupportedTransport)
+              log.trace('transport for %s is supported %s', ma, isSupportedTransport)
               // skip any Multiaddrs that have transports we do not support
               return isSupportedTransport
             })
@@ -296,7 +296,7 @@ class DefaultAutoNATService implements Startable {
 
           // make sure we have something to dial
           if (multiaddrs.length === 0) {
-            log('No valid multiaddrs for %p in message', peerId)
+            log('no valid multiaddrs for %p in message', peerId)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -309,7 +309,7 @@ class DefaultAutoNATService implements Startable {
             return
           }
 
-          log('Dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
+          log('dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
 
           let errorMessage = ''
           let lastMultiaddr = multiaddrs[0]
@@ -324,7 +324,7 @@ class DefaultAutoNATService implements Startable {
               })
 
               if (!connection.remoteAddr.equals(multiaddr)) {
-                log.error('Tried to dial %s but dialed %s', multiaddr, connection.remoteAddr)
+                log.error('tried to dial %s but dialed %s', multiaddr, connection.remoteAddr)
                 throw new Error('Unexpected remote address')
               }
 
@@ -340,7 +340,7 @@ class DefaultAutoNATService implements Startable {
 
               return
             } catch (err: any) {
-              log('Could not dial %p', peerId, err)
+              log('could not dial %p', peerId, err)
               errorMessage = err.message
             } finally {
               if (connection != null) {
@@ -364,7 +364,7 @@ class DefaultAutoNATService implements Startable {
         data.stream
       )
     } catch (err) {
-      log.error(err)
+      log.error('error handling incoming autonat stream', err)
     } finally {
       signal.clear()
     }
@@ -373,7 +373,7 @@ class DefaultAutoNATService implements Startable {
   _verifyExternalAddresses (): void {
     void this.verifyExternalAddresses()
       .catch(err => {
-        log.error(err)
+        log.error('error verifying external address', err)
       })
   }
 
@@ -398,7 +398,7 @@ class DefaultAutoNATService implements Startable {
       })
 
     if (multiaddrs.length === 0) {
-      log('No public addresses found, not requesting verification')
+      log('no public addresses found, not requesting verification')
       this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
 
       return
@@ -436,7 +436,7 @@ class DefaultAutoNATService implements Startable {
 
       const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
         try {
-          log('Asking %p to verify multiaddr', peer.id)
+          log('asking %p to verify multiaddr', peer.id)
 
           const connection = await self.components.connectionManager.openConnection(peer.id, {
             signal
@@ -455,13 +455,13 @@ class DefaultAutoNATService implements Startable {
             async (stream) => first(stream)
           )
           if (buf == null) {
-            log('No response received from %s', connection.remotePeer)
+            log('no response received from %p', connection.remotePeer)
             return undefined
           }
           const response = Message.decode(buf)
 
           if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
-            log('Invalid autonat response from %s', connection.remotePeer)
+            log('invalid autonat response from %p', connection.remotePeer)
             return undefined
           }
 
@@ -477,12 +477,12 @@ class DefaultAutoNATService implements Startable {
               const octets = options.host.split(':')
               segment = octets[0]
             } else {
-              log('Remote address "%s" was not IP4 or IP6?', options.host)
+              log('remote address "%s" was not IP4 or IP6?', options.host)
               return undefined
             }
 
             if (networkSegments.includes(segment)) {
-              log('Already have response from network segment %d - %s', segment, options.host)
+              log('already have response from network segment %d - %s', segment, options.host)
               return undefined
             }
 
@@ -491,7 +491,7 @@ class DefaultAutoNATService implements Startable {
 
           return response.dialResponse
         } catch (err) {
-          log.error(err)
+          log.error('error asking remote to verify multiaddr', err)
         }
       }
 
@@ -508,7 +508,7 @@ class DefaultAutoNATService implements Startable {
           // they either told us which address worked/didn't work, or we only sent them one address
           const addr = dialResponse.addr == null ? multiaddrs[0] : multiaddr(dialResponse.addr)
 
-          log('Autonat response for %s is %s', addr, dialResponse.status)
+          log('autonat response for %s is %s', addr, dialResponse.status)
 
           if (dialResponse.status === Message.ResponseStatus.E_BAD_REQUEST) {
             // the remote could not parse our request
@@ -526,7 +526,7 @@ class DefaultAutoNATService implements Startable {
           }
 
           if (!multiaddrs.some(ma => ma.equals(addr))) {
-            log('Peer reported %s as %s but it was not in our observed address list', addr, dialResponse.status)
+            log('peer reported %s as %s but it was not in our observed address list', addr, dialResponse.status)
             continue
           }
 
@@ -556,7 +556,7 @@ class DefaultAutoNATService implements Startable {
             return
           }
         } catch (err) {
-          log.error('Could not verify external address', err)
+          log.error('could not verify external address', err)
         }
       }
     } finally {
