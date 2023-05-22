@@ -137,7 +137,7 @@
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
-    "dep-check": "aegir dep-check -i protons",
+    "dep-check": "aegir dep-check -i protons -i events",
     "release": "aegir release",
     "docs": "aegir docs"
   },
@@ -165,6 +165,7 @@
     "abortable-iterator": "^5.0.1",
     "any-signal": "^4.1.1",
     "datastore-core": "^9.0.1",
+    "events": "^3.3.0",
     "hashlru": "^2.3.0",
     "interface-datastore": "^8.0.0",
     "it-all": "^3.0.1",
