@@ -10,6 +10,13 @@
 
 
 
+### [0.45.3](https://www.github.com/libp2p/js-libp2p/compare/v0.45.2...v0.45.3) (2023-05-22)
+
+
+### Bug Fixes
+
+* import path for interfaces module ([#1768](https://www.github.com/libp2p/js-libp2p/issues/1768)) ([8060182](https://www.github.com/libp2p/js-libp2p/commit/8060182ecd75f376c0c85d21dc50658044fae56d))
+
 ### [0.45.2](https://www.github.com/libp2p/js-libp2p/compare/v0.45.1...v0.45.2) (2023-05-19)
 
 
