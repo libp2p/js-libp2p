@@ -1,3 +1,10 @@
+## [9.3.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.3...v9.3.4) (2023-05-22)
+
+
+### Bug Fixes
+
+* add events dep ([#477](https://github.com/libp2p/js-libp2p-kad-dht/issues/477)) ([3744a20](https://github.com/libp2p/js-libp2p-kad-dht/commit/3744a209e6bf8eaa75365056286f2f734c9ad1bf))
+
 ## [9.3.3](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.2...v9.3.3) (2023-05-09)
 
 
