@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.4...v1.1.5) (2023-05-23)
+
+
+### Bug Fixes
+
+* move prom-client to deps ([#32](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/32)) ([73acad0](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/73acad0a20a9a0ad024cd47a53f154668dbae77b))
+
 ## [1.1.4](https://github.com/libp2p/js-libp2p-prometheus-metrics/compare/v1.1.3...v1.1.4) (2023-05-12)
 
 
