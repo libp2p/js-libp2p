@@ -131,15 +131,10 @@ describe('ping test', () => {
       // We don't care if this fails
       await node.stop()
     } catch { }
-  })
+  });
 
   // eslint-disable-next-line complexity
-  it('should listen for ping', async () => {
-    if (isDialer) {
-      console.warn("Skipping listener test because I'm a dialer")
-      return
-    }
-
+  (isDialer ? it.skip : it)('should listen for ping', async () => {
     try {
       const multiaddrs = node.getMultiaddrs().map(ma => ma.toString()).filter(maString => !maString.includes('127.0.0.1'))
       console.error('My multiaddrs are', multiaddrs)
@@ -156,14 +151,10 @@ describe('ping test', () => {
       }
       throw err
     }
-  })
+  });
 
   // eslint-disable-next-line complexity
-  it('should dial and ping', async () => {
-    if (!isDialer) {
-      console.warn("Skipping dialer test because I'm a listener")
-      return
-    }
+  (isDialer ? it : it.skip)('should dial and ping', async () => {
     try {
       let otherMa: string = (await redisProxy(['BLPOP', 'listenerAddr', timeoutSecs]).catch(err => { throw new Error(`Failed to wait for listener: ${err}`) }))[1]
       // Hack until these are merged:
@@ -188,5 +179,5 @@ describe('ping test', () => {
       }
       throw err
     }
-  })
+  });
 })
