@@ -134,31 +134,51 @@ describe('ping test', () => {
   })
 
   // eslint-disable-next-line complexity
-  it('should ping', async () => {
-    try {
-      if (isDialer) {
-        let otherMa: string = (await redisProxy(['BLPOP', 'listenerAddr', timeoutSecs]).catch(err => { throw new Error(`Failed to wait for listener: ${err}`) }))[1]
-        // Hack until these are merged:
-        // - https://github.com/multiformats/js-multiaddr-to-uri/pull/120
-        otherMa = otherMa.replace('/tls/ws', '/wss')
+  it('should listen for ping', async () => {
+    if (isDialer) {
+      console.warn("Skipping listener test because I'm a dialer")
+      return
+    }
 
-        console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
-        const handshakeStartInstant = Date.now()
-        await node.dial(multiaddr(otherMa))
-        const pingRTT = await node.services.ping.ping(multiaddr(otherMa))
-        const handshakePlusOneRTT = Date.now() - handshakeStartInstant
-        console.log(JSON.stringify({
-          handshakePlusOneRTTMillis: handshakePlusOneRTT,
-          pingRTTMilllis: pingRTT
-        }))
+    try {
+      const multiaddrs = node.getMultiaddrs().map(ma => ma.toString()).filter(maString => !maString.includes('127.0.0.1'))
+      console.error('My multiaddrs are', multiaddrs)
+      // Send the listener addr over the proxy server so this works on both the Browser and Node
+      await redisProxy(['RPUSH', 'listenerAddr', multiaddrs[0]])
+      // Wait
+      await new Promise(resolve => setTimeout(resolve, 1000 * parseInt(timeoutSecs, 10)))
+    } catch (err) {
+      // Show all errors in an aggregated error
+      if (err instanceof AggregateError) {
+        console.error('unexpected exception in ping test Errors:', err.errors)
       } else {
-        const multiaddrs = node.getMultiaddrs().map(ma => ma.toString()).filter(maString => !maString.includes('127.0.0.1'))
-        console.error('My multiaddrs are', multiaddrs)
-        // Send the listener addr over the proxy server so this works on both the Browser and Node
-        await redisProxy(['RPUSH', 'listenerAddr', multiaddrs[0]])
-        // Wait
-        await new Promise(resolve => setTimeout(resolve, 1000 * parseInt(timeoutSecs, 10)))
+        console.error('unexpected exception in ping test:', err)
       }
+      throw err
+    }
+  })
+
+  // eslint-disable-next-line complexity
+  it('should dial and ping', async () => {
+    if (!isDialer) {
+      console.warn("Skipping dialer test because I'm a listener")
+      return
+    }
+    try {
+      let otherMa: string = (await redisProxy(['BLPOP', 'listenerAddr', timeoutSecs]).catch(err => { throw new Error(`Failed to wait for listener: ${err}`) }))[1]
+      // Hack until these are merged:
+      // - https://github.com/multiformats/js-multiaddr-to-uri/pull/120
+      otherMa = otherMa.replace('/tls/ws', '/wss')
+
+      console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
+      const handshakeStartInstant = Date.now()
+      await node.dial(multiaddr(otherMa))
+      const pingRTT = await node.services.ping.ping(multiaddr(otherMa))
+      const handshakePlusOneRTT = Date.now() - handshakeStartInstant
+      console.log(JSON.stringify({
+        handshakePlusOneRTTMillis: handshakePlusOneRTT,
+        pingRTTMilllis: pingRTT
+      }))
     } catch (err) {
       // Show all errors in an aggregated error
       if (err instanceof AggregateError) {
