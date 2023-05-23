@@ -137,7 +137,8 @@
     "@libp2p/interface-metrics": "^4.0.2",
     "@libp2p/logger": "^2.0.2",
     "it-foreach": "^2.0.3",
-    "it-stream-types": "^2.0.1"
+    "it-stream-types": "^2.0.1",
+    "prom-client": "^14.1.0"
   },
   "devDependencies": {
     "@libp2p/interface-mocks": "^12.0.1",
@@ -146,10 +147,6 @@
     "aegir": "^39.0.6",
     "it-drain": "^3.0.2",
     "it-pipe": "^3.0.1",
-    "p-defer": "^4.0.0",
-    "prom-client": "^14.1.0"
-  },
-  "peerDependencies": {
-    "prom-client": "^14.1.0"
+    "p-defer": "^4.0.0"
   }
 }
