@@ -2,6 +2,8 @@ import { setMaxListeners } from 'events'
 import { logger } from '@libp2p/logger'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { type ClearableSignal, anySignal } from 'any-signal'
+import { define, integer, max, min, number, object, type Struct } from 'superstruct'
+import { type ConnectionManagerInit } from '.'
 
 const log = logger('libp2p:connection-manager:utils')
 
@@ -72,4 +74,49 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Cle
   } catch {}
 
   return signal
+}
+
+export const validateConnectionManagerConfig = (opts: ConnectionManagerInit): Struct<any, any> => {
+  const minConnections = define('minConnections', (value: number) => {
+    if (value < 0) {
+      return false
+    }
+
+    if (value > opts.maxConnections) {
+      return false
+    }
+    if (!Number.isInteger(value)) {
+      return false
+    }
+
+    return true
+  })
+
+  const validateMultiaddr = define('allow', (value) => {
+    value.forEach((addr) => {
+      try {
+        multiaddr(addr)
+      } catch (err) {
+        throw new Error(`invalid multiaddr: ${addr}`)
+      }
+    })
+    return true
+  })
+
+  return object({
+    maxConnections: min(integer(), opts.minConnections),
+    minConnections,
+    autoDialInterval: min(number(), 0),
+    autoDialConcurrency: min(integer(), 0),
+    autoDialPriority: min(integer(), 0),
+    maxParallelDials: min(integer(), opts.autoDialConcurrency),
+    maxParallelDialsPerPeer: min(integer(), opts.autoDialConcurrency),
+    maxPeerAddrsToDialed: min(integer(), 0),
+    dialTimeout: min(integer(), 0),
+    inboundUpgradeTimeout: min(integer(), 0),
+    allow: validateMultiaddr,
+    deny: validateMultiaddr,
+    inboundConnectionThreshold: max(integer(), opts.maxConnections),
+    maxIncomingPendingConnections: max(integer(), opts.maxConnections)
+  })
 }

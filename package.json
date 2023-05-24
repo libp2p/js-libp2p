@@ -179,6 +179,7 @@
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
     "rate-limiter-flexible": "^2.3.11",
+    "superstruct": "^1.0.3",
     "uint8arraylist": "^2.3.2",
     "uint8arrays": "^4.0.2",
     "wherearewe": "^2.0.0",
