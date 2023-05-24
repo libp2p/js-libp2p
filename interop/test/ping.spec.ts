@@ -22,8 +22,8 @@ async function redisProxy (commands: any[]): Promise<any> {
 }
 
 let node: Libp2p<{ ping: PingService }>
-let isDialer: boolean
-let timeoutSecs: string
+let isDialer: boolean = process.env.is_dialer === 'true'
+let timeoutSecs: string = process.env.test_timeout_secs ?? '180'
 
 describe('ping test', () => {
   // eslint-disable-next-line complexity
@@ -33,8 +33,6 @@ describe('ping test', () => {
     const SECURE_CHANNEL = process.env.security
     const MUXER = process.env.muxer
     const IP = process.env.ip ?? '0.0.0.0'
-    isDialer = process.env.is_dialer === 'true'
-    timeoutSecs = process.env.test_timeout_secs ?? '180'
 
     const options: Libp2pOptions<{ ping: PingService }> = {
       start: true,
