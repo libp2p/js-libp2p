@@ -30,6 +30,7 @@
     - [Configuring Metrics](#configuring-metrics)
     - [Configuring PeerStore](#configuring-peerstore)
     - [Customizing Transports](#customizing-transports)
+  - [Configuring AutoNAT](#configuring-autonat)
     - [Configuring UPnP NAT Traversal](#configuring-upnp-nat-traversal)
       - [Browser support](#browser-support)
       - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
@@ -174,7 +175,7 @@ If this DHT implementation does not fulfill your needs and you want to create or
 
 If you want to know more about libp2p DHT, you should read the following content:
 
-- https://docs.libp2p.io/concepts/protocols/#kad-dht
+- https://docs.libp2p.io/concepts/fundamentals/protocols/#kad-dht
 - https://github.com/libp2p/specs/pull/108
 
 ### Pubsub
@@ -195,7 +196,7 @@ If you want to know more about libp2p pubsub, you should read the following cont
 
 ## Customizing libp2p
 
-When [creating a libp2p node](./API.md#create), the modules needed should be specified as follows:
+When [creating a libp2p node](./API.md#create), there are a number of services which are optional but will probably be needed for your use case such as the [kademlia](#dht), [peer discovery](#peer-discovery) and [pubsub](#pubsub) services for example. These are passed into the `services` object upon creating a node. You can also pass in custom services that will be used to create the node. This is done by providing your custom implementation to the `services` object, which should have the following structure:
 
 ```js
 const modules = {
@@ -206,7 +207,7 @@ const modules = {
   peerRouting: [],
   peerDiscovery: [],
   services: {
-    serviceKey: serviceImplementation
+    myService: myServiceImplementation
   }
 }
 ```
@@ -222,6 +223,8 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
   - `listen` addresses will be provided to the libp2p underlying transports for listening on them.
   - `announce` addresses will be used to compute the advertises that the node should advertise to the network.
   - `announceFilter`: filter function used to filter announced addresses programmatically: `(ma: Array<multiaddr>) => Array<multiaddr>`. Default: returns all addresses. [`libp2p-utils`](https://github.com/libp2p/js-libp2p-utils) provides useful [multiaddr utilities](https://github.com/libp2p/js-libp2p-utils/blob/master/API.md#multiaddr-isloopbackma) to create your filters.
+
+It's important to note that some services depend on others in order to function optimally, this is further explained in the examples below.
 
 ### Examples
 
@@ -323,6 +326,15 @@ const node = await createLibp2p({
 
 #### Customizing Pubsub
 
+Before a peer can subscribe to a topic it must find other peers and establish network connections with them. The pub/sub system doesn’t have any way to discover peers by itself. Instead, it relies upon the application to find new peers on its behalf, a process called ambient peer discovery.
+
+Potential methods for discovering peers include:
+
+- [Distributed hash tables](#dht)
+- [Local network broadcasts](https://docs.libp2p.io/concepts/discovery-routing/mdns/)
+- [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
+- [Lists of bootstrap peers](https://github.com/libp2p/js-libp2p-bootstrap)
+
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
@@ -349,11 +361,14 @@ const node = await createLibp2p({
         globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
       })
     }
-  }
-})
+  })
 ```
 
 #### Customizing DHT
+
+As explained in [previous sections](#dht) the kad-dht is a Distributed Hash Table based on the Kademlia routing algorithm, with some modifications.
+
+libp2p uses the DHT as the foundation of its peer routing and content routing functionality. The kadDHT service relies on the Identify service for peer identification, address discovery and protocol support discovery. Upon creating or learning of a new address, the peer can push the new address to all peers it’s currently aware of. This keeps everyone’s routing tables up to date and makes it more likely that other peers will discover the new address.
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -361,6 +376,7 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { kadDHT } from '@libp2p/kad-dht'
+import { identifyService } from 'libp2p-identify'
 
 const node = await createLibp2p({
   transports: [
@@ -374,6 +390,7 @@ const node = await createLibp2p({
     noise()
   ],
   services: {
+    identify: identifyService(),
     dht: kadDHT({
       kBucketSize: 20,
       clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
@@ -432,6 +449,8 @@ const node = await createLibp2p({
 
 #### Setup with Relay
 
+As described in the [Circuit Relay article](https://docs.libp2p.io/concepts/nat/circuit-relay/), libp2p provides a protocol for tunneling traffic through relay peers when two peers are unable to connect to each other directly. When a peer wants to establish a connection with another peer via a relay, it first needs to identify a peer that supports the Circuit Relay protocol. This is where the Identify service comes in. The Identify service allows peers to advertise the protocols they support. Thus, it is recommended to use the Identify service to find a relay peer that supports the Circuit Relay protocol.
+
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
@@ -439,6 +458,8 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport, circuitRelayServer } from 'libp2p/circuit-relay'
+import { identifyService } from 'libp2p-identify'
+
 
 const node = await createLibp2p({
   transports: [
@@ -466,11 +487,10 @@ const node = await createLibp2p({
     denyInboundRelayedConnection: (relay: PeerId, remotePeer: PeerId) => Promise<boolean>
   },
   services: {
+    identify: identifyService(),
     relay: circuitRelayServer({ // makes the node function as a relay server
       hopTimeout: 30 * 1000, // incoming relay requests must be resolved within this time limit
-      advertise: { // if set, use content routing to broadcast availability of this relay
-        bootDelay: 30 * 1000 // how long to wait after startup before broadcast
-      },
+      advertise: true,
       reservations: {
         maxReservations: 15 // how many peers are allowed to reserve relay slots on this server
         reservationClearInterval: 300 * 1000 // how often to reclaim stale reservations
@@ -919,6 +939,32 @@ const node = await createLibp2p({
   }
 })
 ```
+
+### Configuring AutoNAT
+While the identify protocol allows peers to inform each other about their observed network addresses, sometimes these addresses are inaccessible as the peer may be located in a private network (i.e., behind a NAT or a firewall).
+
+Advertising addresses that are not reachable is detrimental for the health of a P2P network, as other nodes will unsuccessfully try to dial those addresses wasting compute and network resources.
+To prevent this problem of advertising and dialing unreachable addresses, libp2p has implemented a protocol called AutoNAT, which allows nodes to determine whether or not they are behind a NAT.
+
+AutoNAT allows a node to request other peers to dial its presumed public addresses. For more see https://docs.libp2p.io/concepts/nat/autonat/#what-is-autonat
+
+
+```ts
+import { createLibp2p } from 'libp2p'
+import { autoNATService } from 'libp2p/autonat'
+
+const node = await createLibp2p({
+  services: {
+    nat: autoNATService({
+      protocolPrefix: 'my-node', // allows overriding the default protocol prefix,The AutoNAT protocol uses the protocol ID /libp2p/autonat/1.0.0 and involves the exchange of Dial and DialResponse messages.
+      timeout: 30000,
+      maxInboundStreams: 1000,
+      maxOutboundStreams: 1000
+    })
+  }
+})
+```
+
 
 #### Configuring UPnP NAT Traversal
 
