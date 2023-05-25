@@ -326,7 +326,7 @@ const node = await createLibp2p({
 
 #### Customizing Pubsub
 
-Before a peer can subscribe to a topic it must find other peers and establish network connections with them. The pub/sub system doesn’t have any way to discover peers by itself. Instead, it relies upon the application to find new peers on its behalf, a process called ambient peer discovery.
+Before a peer can subscribe to a topic it must find other peers and establish network connections with them. The pub/sub system doesn’t have any way to discover peers by itself. Instead, it relies upon the application to find new peers on its behalf, a process called ambient peer discovery. This means that pubsub relies on the identify service to exchange peer information with other peers.
 
 Potential methods for discovering peers include:
 
@@ -334,6 +334,7 @@ Potential methods for discovering peers include:
 - [Local network broadcasts](https://docs.libp2p.io/concepts/discovery-routing/mdns/)
 - [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
 - [Lists of bootstrap peers](https://github.com/libp2p/js-libp2p-bootstrap)
+
 
 ```js
 import { createLibp2p } from 'libp2p'
