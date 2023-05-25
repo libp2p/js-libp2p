@@ -197,7 +197,7 @@ export class DefaultRegistrar implements Registrar {
         const connection = this.components.connectionManager.getConnections(peer.id)[0]
 
         if (connection == null) {
-          log('peer %p connected but the connection manager did not have a connection')
+          log('peer %p connected but the connection manager did not have a connection', peer)
           // peer disconnected while we were loading their details from the peer store
           return
         }
