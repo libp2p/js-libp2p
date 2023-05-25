@@ -343,6 +343,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
 import { SignaturePolicy } from '@libp2p/interface-pubsub'
+import { identifyService } from 'libp2p/identify'
 
 const node = await createLibp2p({
     transports: [
@@ -356,10 +357,11 @@ const node = await createLibp2p({
       noise()
     ],
     services: {
+      identify: identifyService(),
       pubsub: gossipsub({
         emitSelf: false,                                  // whether the node should emit to self on publish
         globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
-      })
+      }),
     }
   })
 ```
