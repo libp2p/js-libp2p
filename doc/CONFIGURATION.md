@@ -77,7 +77,7 @@ If none of the available transports fulfils your needs, you can create a libp2p 
 
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://docs.libp2p.io/concepts/transport
+- https://docs.libp2p.io/concepts/transports/overview
 - https://github.com/libp2p/specs/tree/master/connections
 
 ### Stream Multiplexing
