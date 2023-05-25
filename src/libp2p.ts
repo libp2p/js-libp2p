@@ -227,6 +227,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       await this.components.beforeStart?.()
       await this.components.start()
       await this.components.afterStart?.()
+
+      this.safeDispatchEvent('start', { detail: this })
       log('libp2p has started')
     } catch (err: any) {
       log.error('An error occurred starting libp2p', err)
@@ -251,6 +253,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     await this.components.stop()
     await this.components.afterStop?.()
 
+    this.safeDispatchEvent('stop', { detail: this })
     log('libp2p has stopped')
   }
 

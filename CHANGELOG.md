@@ -10,6 +10,38 @@
 
 
 
+### [0.45.4](https://www.github.com/libp2p/js-libp2p/compare/v0.45.3...v0.45.4) (2023-05-25)
+
+
+### Bug Fixes
+
+* use peer events in registrar ([#1773](https://www.github.com/libp2p/js-libp2p/issues/1773)) ([efffa70](https://www.github.com/libp2p/js-libp2p/commit/efffa7037d01350d97b3092a66fab3c7101ee71f))
+
+### [0.45.3](https://www.github.com/libp2p/js-libp2p/compare/v0.45.2...v0.45.3) (2023-05-22)
+
+
+### Bug Fixes
+
+* import path for interfaces module ([#1768](https://www.github.com/libp2p/js-libp2p/issues/1768)) ([8060182](https://www.github.com/libp2p/js-libp2p/commit/8060182ecd75f376c0c85d21dc50658044fae56d))
+
+### [0.45.2](https://www.github.com/libp2p/js-libp2p/compare/v0.45.1...v0.45.2) (2023-05-19)
+
+
+### Bug Fixes
+
+* add start/stop events ([#1766](https://www.github.com/libp2p/js-libp2p/issues/1766)) ([98fb4bc](https://www.github.com/libp2p/js-libp2p/commit/98fb4bc1dd865f984565eddbeb479c9013e7098c))
+* update autonat logging ([#1765](https://www.github.com/libp2p/js-libp2p/issues/1765)) ([3c925ff](https://www.github.com/libp2p/js-libp2p/commit/3c925ffac6390eff90762639f0f28608f6eab9b8))
+
+### [0.45.1](https://www.github.com/libp2p/js-libp2p/compare/v0.45.0...v0.45.1) (2023-05-18)
+
+
+### Bug Fixes
+
+* close circuit-relay streams on connection failure ([#1758](https://www.github.com/libp2p/js-libp2p/issues/1758)) ([1af7808](https://www.github.com/libp2p/js-libp2p/commit/1af7808e3fd548a9ea4bf05b97189e40f3ac5b8f))
+* do not require connection encrypters ([#1752](https://www.github.com/libp2p/js-libp2p/issues/1752)) ([2417cda](https://www.github.com/libp2p/js-libp2p/commit/2417cda57b2d2a2888a7c79066c597243c598032))
+* retain peer metadata after identify ([#1749](https://www.github.com/libp2p/js-libp2p/issues/1749)) ([752db6d](https://www.github.com/libp2p/js-libp2p/commit/752db6d6d4196de89d6efeba52404ad308926aec))
+* trace happy path connection count message ([#1754](https://www.github.com/libp2p/js-libp2p/issues/1754)) ([710da91](https://www.github.com/libp2p/js-libp2p/commit/710da918a89b6f6ee5d03c0d14a311efd40a1b8f))
+
 ## [0.45.0](https://www.github.com/libp2p/js-libp2p/compare/v0.44.0...v0.45.0) (2023-05-09)
 
 
