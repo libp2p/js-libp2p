@@ -140,6 +140,9 @@ describe('registrar', () => {
       const remotePeerId = await createEd25519PeerId()
       const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+
       const topology = createTopology({
         onConnect: (peerId, connection) => {
           expect(peerId.equals(remotePeerId)).to.be.true()
@@ -167,15 +170,15 @@ describe('registrar', () => {
       })
 
       // remote peer connects
-      events.safeDispatchEvent('connection:open', {
-        detail: conn
+      events.safeDispatchEvent('peer:connect', {
+        detail: remotePeerId
       })
       await onConnectDefer.promise
 
       // remote peer disconnects
       await conn.close()
-      events.safeDispatchEvent('connection:close', {
-        detail: conn
+      events.safeDispatchEvent('peer:disconnect', {
+        detail: remotePeerId
       })
       await onDisconnectDefer.promise
     })
@@ -187,6 +190,9 @@ describe('registrar', () => {
       // Setup connections before registrar
       const remotePeerId = await createEd25519PeerId()
       const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
 
       const topology = createTopology({
         onConnect: () => {
@@ -201,15 +207,15 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // No details before identify
-      peerStore.get.withArgs(conn.remotePeer).rejects(new CodeError('Not found', codes.ERR_NOT_FOUND))
+      peerStore.get.withArgs(matchPeerId(conn.remotePeer)).rejects(new CodeError('Not found', codes.ERR_NOT_FOUND))
 
       // remote peer connects
-      events.safeDispatchEvent('connection:open', {
-        detail: conn
+      events.safeDispatchEvent('peer:connect', {
+        detail: remotePeerId
       })
 
       // Can get details after identify
-      peerStore.get.withArgs(conn.remotePeer).resolves({
+      peerStore.get.withArgs(matchPeerId(conn.remotePeer)).resolves({
         id: conn.remotePeer,
         addresses: [],
         protocols: [protocol],
@@ -218,7 +224,7 @@ describe('registrar', () => {
       })
 
       // we have a connection to this peer
-      connectionManager.getConnections.withArgs(conn.remotePeer).returns([conn])
+      connectionManager.getConnections.withArgs(matchPeerId(conn.remotePeer)).returns([conn])
 
       // identify completes
       events.safeDispatchEvent('peer:update', {
