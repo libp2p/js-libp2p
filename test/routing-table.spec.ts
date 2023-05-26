@@ -11,6 +11,7 @@ import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import random from 'lodash.random'
+import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'ts-sinon'
@@ -21,6 +22,7 @@ import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Registrar } from '@libp2p/interface-registrar'
 
@@ -80,6 +82,16 @@ describe('Routing Table', () => {
     )
   })
 
+  it('emits peer:add event', async () => {
+    const id = await createEd25519PeerId()
+    const eventPromise = pEvent<'peer:add', CustomEvent<PeerId>>(table, 'peer:add')
+
+    await table.add(id)
+
+    const event = await eventPromise
+    expect(event.detail.toString()).to.equal(id.toString())
+  })
+
   it('remove', async function () {
     this.timeout(20 * 1000)
 
@@ -92,6 +104,17 @@ describe('Routing Table', () => {
     await table.remove(peers[5])
     expect(table.closestPeers(key, 10)).to.have.length(9)
     expect(table.size).to.be.eql(9)
+  })
+
+  it('emits peer:remove event', async () => {
+    const id = await createEd25519PeerId()
+    const eventPromise = pEvent<'peer:remove', CustomEvent<PeerId>>(table, 'peer:remove')
+
+    await table.add(id)
+    await table.remove(id)
+
+    const event = await eventPromise
+    expect(event.detail.toString()).to.equal(id.toString())
   })
 
   it('closestPeer', async function () {

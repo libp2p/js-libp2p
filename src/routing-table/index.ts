@@ -1,3 +1,4 @@
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import Queue from 'p-queue'
@@ -33,11 +34,16 @@ export interface RoutingTableComponents {
   metrics?: Metrics
 }
 
+export interface RoutingTableEvents {
+  'peer:add': CustomEvent<PeerId>
+  'peer:remove': CustomEvent<PeerId>
+}
+
 /**
  * A wrapper around `k-bucket`, to provide easy store and
  * retrieval for peers.
  */
-export class RoutingTable implements Startable {
+export class RoutingTable extends EventEmitter<RoutingTableEvents> implements Startable {
   public kBucketSize: number
   public kb?: KBucket
   public pingQueue: Queue
@@ -58,6 +64,8 @@ export class RoutingTable implements Startable {
   }
 
   constructor (components: RoutingTableComponents, init: RoutingTableInit) {
+    super()
+
     const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol, tagName, tagValue } = init
 
     this.components = components
@@ -160,11 +168,15 @@ export class RoutingTable implements Startable {
       kClosest = newClosest
     })
 
-    kBuck.addEventListener('added', () => {
+    kBuck.addEventListener('added', (evt) => {
       updatePeerTags()
+
+      this.safeDispatchEvent('peer:add', { detail: evt.detail.peer })
     })
-    kBuck.addEventListener('removed', () => {
+    kBuck.addEventListener('removed', (evt) => {
       updatePeerTags()
+
+      this.safeDispatchEvent('peer:remove', { detail: evt.detail.peer })
     })
   }
 

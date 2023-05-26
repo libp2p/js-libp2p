@@ -181,6 +181,7 @@
     "it-take": "^3.0.1",
     "multiformats": "^11.0.0",
     "p-defer": "^4.0.0",
+    "p-event": "^5.0.1",
     "p-queue": "^7.3.4",
     "private-ip": "^3.0.0",
     "progress-events": "^1.0.0",

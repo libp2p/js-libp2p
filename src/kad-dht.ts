@@ -285,9 +285,10 @@ export class DefaultKadDHT extends EventEmitter<PeerDiscoveryEvents> implements 
       this.queryManager.start(),
       this.network.start(),
       this.routingTable.start(),
-      this.topologyListener.start(),
-      this.querySelf.start()
+      this.topologyListener.start()
     ])
+
+    this.querySelf.start()
 
     await this.routingTableRefresh.start()
   }
@@ -299,14 +300,15 @@ export class DefaultKadDHT extends EventEmitter<PeerDiscoveryEvents> implements 
   async stop (): Promise<void> {
     this.running = false
 
+    this.querySelf.stop()
+
     await Promise.all([
       this.providers.stop(),
       this.queryManager.stop(),
       this.network.stop(),
       this.routingTable.stop(),
       this.routingTableRefresh.stop(),
-      this.topologyListener.stop(),
-      this.querySelf.stop()
+      this.topologyListener.stop()
     ])
   }
 
