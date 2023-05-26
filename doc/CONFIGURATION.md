@@ -30,7 +30,7 @@
     - [Configuring Metrics](#configuring-metrics)
     - [Configuring PeerStore](#configuring-peerstore)
     - [Customizing Transports](#customizing-transports)
-  - [Configuring AutoNAT](#configuring-autonat)
+    - [Configuring AutoNAT](#configuring-autonat)
     - [Configuring UPnP NAT Traversal](#configuring-upnp-nat-traversal)
       - [Browser support](#browser-support)
       - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
