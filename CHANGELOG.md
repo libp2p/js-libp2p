@@ -10,6 +10,13 @@
 
 
 
+### [0.45.4](https://www.github.com/libp2p/js-libp2p/compare/v0.45.3...v0.45.4) (2023-05-25)
+
+
+### Bug Fixes
+
+* use peer events in registrar ([#1773](https://www.github.com/libp2p/js-libp2p/issues/1773)) ([efffa70](https://www.github.com/libp2p/js-libp2p/commit/efffa7037d01350d97b3092a66fab3c7101ee71f))
+
 ### [0.45.3](https://www.github.com/libp2p/js-libp2p/compare/v0.45.2...v0.45.3) (2023-05-22)
 
 
