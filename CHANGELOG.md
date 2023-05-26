@@ -1,3 +1,15 @@
+## [9.3.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.4...v9.3.5) (2023-05-26)
+
+
+### Bug Fixes
+
+* use events to delay before self-query ([#478](https://github.com/libp2p/js-libp2p-kad-dht/issues/478)) ([46313a8](https://github.com/libp2p/js-libp2p-kad-dht/commit/46313a876783da7c036f79daa69a558bd8f1a245))
+
+
+### Dependencies
+
+* **dev:** bump delay from 5.0.0 to 6.0.0 ([#476](https://github.com/libp2p/js-libp2p-kad-dht/issues/476)) ([50524f9](https://github.com/libp2p/js-libp2p-kad-dht/commit/50524f9d74a819fc1fbc2d6faff28a59e7d9b4aa))
+
 ## [9.3.4](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.3...v9.3.4) (2023-05-22)
 
 
