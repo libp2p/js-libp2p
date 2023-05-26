@@ -62,7 +62,10 @@ export default {
       })
 
       return {
-        libp2p
+        libp2p,
+        env: {
+          RELAY_MULTIADDR: MULTIADDRS_WEBSOCKETS[0]
+        }
       }
     },
     after: async (_, before) => {
