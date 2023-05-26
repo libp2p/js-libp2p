@@ -943,7 +943,8 @@ const node = await createLibp2p({
 })
 ```
 
-### Configuring AutoNAT
+#### Configuring AutoNAT
+
 While the identify protocol allows peers to inform each other about their observed network addresses, sometimes these addresses are inaccessible as the peer may be located in a private network (i.e., behind a NAT or a firewall).
 
 Advertising addresses that are not reachable is detrimental for the health of a P2P network, as other nodes will unsuccessfully try to dial those addresses wasting compute and network resources.
