@@ -201,7 +201,7 @@
     "@types/which": "^3.0.0",
     "aegir": "^39.0.5",
     "datastore-level": "^10.0.0",
-    "delay": "^5.0.0",
+    "delay": "^6.0.0",
     "execa": "^7.0.0",
     "it-filter": "^3.0.1",
     "it-last": "^3.0.1",
