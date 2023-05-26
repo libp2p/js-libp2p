@@ -20,6 +20,7 @@ import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
+import type { Connection } from '@libp2p/interface-connection'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('circuit-relay', () => {
@@ -637,6 +638,37 @@ describe('circuit-relay', () => {
       const response = await hopStream.read()
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.PERMISSION_DENIED)
+    })
+
+    it('should emit connection:close when relay stops', async () => {
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      await local.dial(ma)
+
+      const deferred = defer()
+      const events: Array<CustomEvent<Connection>> = []
+
+      local.addEventListener('connection:close', (evt) => {
+        events.push(evt)
+
+        if (events.length === 2) {
+          deferred.resolve()
+        }
+      })
+
+      // shut down relay
+      await relay1.stop()
+
+      // wait for events
+      await deferred.promise
+
+      // should have closed connections to remote and to relay
+      expect(events[0].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
+      expect(events[1].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
     })
   })
 
