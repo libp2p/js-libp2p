@@ -2,7 +2,9 @@ import { setMaxListeners } from 'events'
 import { logger } from '@libp2p/logger'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { type ClearableSignal, anySignal } from 'any-signal'
-import { array, number, object, string } from 'yup'
+import { type ObjectSchema, array, number, object, string } from 'yup'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, INBOUND_UPGRADE_TIMEOUT, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PARALLEL_DIALS_PER_PEER, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import type { ConnectionManagerInit } from '.'
 
 const log = logger('libp2p:connection-manager:utils')
 
@@ -75,7 +77,7 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Cle
   return signal
 }
 
-export const validateConnectionManagerConfig = (opts: any): any => {
+export const validateConnectionManagerConfig = (opts: ConnectionManagerInit): ObjectSchema<Record<string, unknown>> => {
   const validateMultiaddr = (value: Array<string | undefined> | undefined): boolean => {
     value?.forEach((addr) => {
       try {
@@ -88,19 +90,19 @@ export const validateConnectionManagerConfig = (opts: any): any => {
   }
 
   return object({
-    maxConnections: number().min(opts.minConnections).integer().default(300).optional(),
-    minConnections: number().min(0).integer().default(50).optional().max(opts.maxConnections),
-    autoDialInterval: number().min(0).integer().optional(),
-    autoDialConcurrency: number().min(0).integer().optional(),
-    autoDialPriority: number().min(0).integer().optional(),
-    maxParallelDials: number().min(0).integer().optional(),
-    maxParallelDialsPerPeer: number().min(opts.autoDialConcurrency).optional(),
-    maxPeerAddrsToDialed: number().min(0).integer().optional(),
-    dialTimeout: number().min(0).integer().optional(),
-    inboundUpgradeTimeout: number().integer().optional(),
+    maxConnections: number().min(opts?.minConnections ?? MIN_CONNECTIONS, `maxConnections must be greater than the min connections limit: ${opts?.minConnections}`).integer().default(MAX_CONNECTIONS),
+    minConnections: number().min(0).integer().max(opts?.maxConnections ?? MAX_CONNECTIONS, `minConnections must be less than the max connections limit: ${opts?.maxConnections}`).default(MIN_CONNECTIONS),
+    autoDialInterval: number().min(0).integer().default(AUTO_DIAL_INTERVAL),
+    autoDialConcurrency: number().min(0).integer().default(AUTO_DIAL_CONCURRENCY),
+    autoDialPriority: number().min(0).integer().default(AUTO_DIAL_PRIORITY),
+    maxParallelDials: number().min(0).integer().default(MAX_PARALLEL_DIALS),
+    maxParallelDialsPerPeer: number().max(opts?.autoDialConcurrency ?? AUTO_DIAL_CONCURRENCY, `maxParallelDialsPerPeer must be less than the min auto dial conccurency limit: ${opts?.autoDialConcurrency}`).default(MAX_PARALLEL_DIALS_PER_PEER),
+    maxPeerAddrsToDialed: number().min(0).integer().default(MAX_PEER_ADDRS_TO_DIAL),
+    dialTimeout: number().min(0).integer().default(DIAL_TIMEOUT),
+    inboundUpgradeTimeout: number().integer().default(INBOUND_UPGRADE_TIMEOUT),
     allow: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
     deny: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
-    inboundConnectionThreshold: number().default(5).max(opts.maxConnections).integer().optional(),
-    maxIncomingPendingConnections: number().integer().max(opts.maxConnections).optional()
+    inboundConnectionThreshold: number().max(opts?.maxConnections ?? MAX_CONNECTIONS, `inboundConnectionThreshold must be less than the max connections limit: ${opts?.maxConnections}`).integer().default(INBOUND_CONNECTION_THRESHOLD),
+    maxIncomingPendingConnections: number().integer().max(opts?.maxConnections ?? MAX_CONNECTIONS, `maxIncomingPendingConnections must be less than the max connections limit: ${opts?.maxConnections}`).default(MAX_INCOMING_PENDING_CONNECTIONS)
   })
 }

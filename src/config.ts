@@ -28,12 +28,12 @@ const DefaultConfig: Partial<Libp2pInit> = {
   }
 }
 
-export async function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Promise<Libp2pInit<T>> {
+export function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
   const libp2pConfig = object({
-    connectionManager: validateConnectionManagerConfig(opts.connectionManager as ConnectionManagerInit)
+    connectionManager: validateConnectionManagerConfig(opts?.connectionManager as ConnectionManagerInit)
   })
 
-  const parsedOpts = await libp2pConfig.validate(opts)
+  const parsedOpts = libp2pConfig.validateSync(opts)
 
   const resultingOptions: Libp2pInit<T> = mergeOptions(DefaultConfig, parsedOpts)
 

@@ -1,9 +1,9 @@
-import { webSockets } from '@libp2p/websockets'
-import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
-import { pipe } from 'it-pipe'
-import { createFromJSON } from '@libp2p/peer-id-factory'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { webSockets } from '@libp2p/websockets'
+import { pipe } from 'it-pipe'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
@@ -26,7 +26,9 @@ export default {
       const peerId = await createFromJSON(Peers[Peers.length - 1])
       const libp2p = await createLibp2p({
         connectionManager: {
-          inboundConnectionThreshold: Infinity
+          inboundConnectionThreshold: 1000,
+          maxIncomingPendingConnections: 1000,
+          maxConnections: 1000
         },
         addresses: {
           listen: [MULTIADDRS_WEBSOCKETS[0]]

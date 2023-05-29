@@ -76,7 +76,9 @@ describe('Connection Manager', () => {
       config: createBaseOptions({
         connectionManager: {
           maxConnections: max,
-          minConnections: 2
+          minConnections: 2,
+          inboundConnectionThreshold: max,
+          maxIncomingPendingConnections: max
         }
       }),
       started: false
@@ -135,7 +137,9 @@ describe('Connection Manager', () => {
       config: createBaseOptions({
         connectionManager: {
           maxConnections: max,
-          minConnections: 2
+          minConnections: 2,
+          maxIncomingPendingConnections: max,
+          inboundConnectionThreshold: max
         }
       }),
       started: false
@@ -201,6 +205,8 @@ describe('Connection Manager', () => {
         connectionManager: {
           maxConnections: max,
           minConnections: 0,
+          maxIncomingPendingConnections: max,
+          inboundConnectionThreshold: max,
           allow: [
             '/ip4/83.13.55.32'
           ]
@@ -285,7 +291,9 @@ describe('Connection Manager', () => {
       config: createBaseOptions({
         connectionManager: {
           maxConnections: max,
-          minConnections: 0
+          minConnections: 0,
+          maxIncomingPendingConnections: max,
+          inboundConnectionThreshold: max
         }
       }),
       started: false
@@ -318,11 +326,13 @@ describe('Connection Manager', () => {
       config: createBaseOptions({
         connectionManager: {
           maxConnections: 5,
-          minConnections: 6
+          minConnections: 6,
+          maxIncomingPendingConnections: 5,
+          inboundConnectionThreshold: 5
         }
       }),
       started: false
-    })).to.eventually.rejected('maxConnections must be greater')
+    })).to.eventually.rejectedWith('minConnections must be less than the max connections limit: 5')
   })
 
   it('should reconnect to important peers on startup', async () => {
