@@ -179,11 +179,11 @@
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
     "rate-limiter-flexible": "^2.3.11",
-    "superstruct": "^1.0.3",
     "uint8arraylist": "^2.3.2",
     "uint8arrays": "^4.0.2",
     "wherearewe": "^2.0.0",
-    "xsalsa20": "^1.1.0"
+    "xsalsa20": "^1.1.0",
+    "yup": "^1.1.1"
   },
   "devDependencies": {
     "@chainsafe/libp2p-gossipsub": "^8.0.0",

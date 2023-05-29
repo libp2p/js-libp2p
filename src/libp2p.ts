@@ -429,5 +429,5 @@ export async function createLibp2pNode <T extends ServiceMap = Record<string, un
     options.peerId = await createEd25519PeerId()
   }
 
-  return new Libp2pNode(validateConfig(options))
+  return new Libp2pNode(await validateConfig(options))
 }
