@@ -207,7 +207,7 @@
     "@libp2p/websockets": "^6.0.1",
     "@types/varint": "^6.0.0",
     "@types/xsalsa20": "^1.1.0",
-    "aegir": "^39.0.5",
+    "aegir": "^39.0.9",
     "cborg": "^1.8.1",
     "delay": "^6.0.0",
     "execa": "^7.0.0",
