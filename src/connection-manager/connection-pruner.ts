@@ -1,11 +1,11 @@
 import { logger } from '@libp2p/logger'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerStore } from '@libp2p/interface-peer-store'
 import { PeerMap } from '@libp2p/peer-collections'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import { MAX_CONNECTIONS } from './constants.js'
-import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:connection-manager:connection-pruner')
 

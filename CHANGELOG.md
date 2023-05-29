@@ -10,6 +10,75 @@
 
 
 
+### [0.45.4](https://www.github.com/libp2p/js-libp2p/compare/v0.45.3...v0.45.4) (2023-05-25)
+
+
+### Bug Fixes
+
+* use peer events in registrar ([#1773](https://www.github.com/libp2p/js-libp2p/issues/1773)) ([efffa70](https://www.github.com/libp2p/js-libp2p/commit/efffa7037d01350d97b3092a66fab3c7101ee71f))
+
+### [0.45.3](https://www.github.com/libp2p/js-libp2p/compare/v0.45.2...v0.45.3) (2023-05-22)
+
+
+### Bug Fixes
+
+* import path for interfaces module ([#1768](https://www.github.com/libp2p/js-libp2p/issues/1768)) ([8060182](https://www.github.com/libp2p/js-libp2p/commit/8060182ecd75f376c0c85d21dc50658044fae56d))
+
+### [0.45.2](https://www.github.com/libp2p/js-libp2p/compare/v0.45.1...v0.45.2) (2023-05-19)
+
+
+### Bug Fixes
+
+* add start/stop events ([#1766](https://www.github.com/libp2p/js-libp2p/issues/1766)) ([98fb4bc](https://www.github.com/libp2p/js-libp2p/commit/98fb4bc1dd865f984565eddbeb479c9013e7098c))
+* update autonat logging ([#1765](https://www.github.com/libp2p/js-libp2p/issues/1765)) ([3c925ff](https://www.github.com/libp2p/js-libp2p/commit/3c925ffac6390eff90762639f0f28608f6eab9b8))
+
+### [0.45.1](https://www.github.com/libp2p/js-libp2p/compare/v0.45.0...v0.45.1) (2023-05-18)
+
+
+### Bug Fixes
+
+* close circuit-relay streams on connection failure ([#1758](https://www.github.com/libp2p/js-libp2p/issues/1758)) ([1af7808](https://www.github.com/libp2p/js-libp2p/commit/1af7808e3fd548a9ea4bf05b97189e40f3ac5b8f))
+* do not require connection encrypters ([#1752](https://www.github.com/libp2p/js-libp2p/issues/1752)) ([2417cda](https://www.github.com/libp2p/js-libp2p/commit/2417cda57b2d2a2888a7c79066c597243c598032))
+* retain peer metadata after identify ([#1749](https://www.github.com/libp2p/js-libp2p/issues/1749)) ([752db6d](https://www.github.com/libp2p/js-libp2p/commit/752db6d6d4196de89d6efeba52404ad308926aec))
+* trace happy path connection count message ([#1754](https://www.github.com/libp2p/js-libp2p/issues/1754)) ([710da91](https://www.github.com/libp2p/js-libp2p/commit/710da918a89b6f6ee5d03c0d14a311efd40a1b8f))
+
+## [0.45.0](https://www.github.com/libp2p/js-libp2p/compare/v0.44.0...v0.45.0) (2023-05-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove peer refresh (#1731)
+* browsers will no longer try to dial private addresses by default
+* bump it-stream-types from 1.0.5 to 2.0.1 (#1674)
+
+### Features
+
+* add event bus ([#1693](https://www.github.com/libp2p/js-libp2p/issues/1693)) ([17eb162](https://www.github.com/libp2p/js-libp2p/commit/17eb162a833a752bcf18b12244d9f68e95bc2e5d))
+* add support for arbitrary service modules ([#1563](https://www.github.com/libp2p/js-libp2p/issues/1563)) ([53b1645](https://www.github.com/libp2p/js-libp2p/commit/53b1645cf505986ccdfe33d83354d1e95f1978de))
+* emit peer:identify event after identify completes ([#1741](https://www.github.com/libp2p/js-libp2p/issues/1741)) ([cd67b7d](https://www.github.com/libp2p/js-libp2p/commit/cd67b7d884721b18458f86eabba4498f4f9e0c1f))
+
+
+### Bug Fixes
+
+* build after updating version.ts ([#1742](https://www.github.com/libp2p/js-libp2p/issues/1742)) ([1180eb0](https://www.github.com/libp2p/js-libp2p/commit/1180eb0a84fb60daa3d903aedf9585093ebc3b16))
+* clear signal to avoid memory leaks ([#1728](https://www.github.com/libp2p/js-libp2p/issues/1728)) ([5c643c3](https://www.github.com/libp2p/js-libp2p/commit/5c643c3d8dfe346c64e3e966f4b16f7b226f7c2a))
+* do not auto-dial connected peers ([#1730](https://www.github.com/libp2p/js-libp2p/issues/1730)) ([94df577](https://www.github.com/libp2p/js-libp2p/commit/94df5778a977e9bb7d6cb7c1fdaf6b25690c254f))
+* do not auto-dial peers in the dial queue ([#1740](https://www.github.com/libp2p/js-libp2p/issues/1740)) ([124ca8a](https://www.github.com/libp2p/js-libp2p/commit/124ca8a9c25d3d462edd183cbcc0a89cb8248dd6))
+* do not dial private addresses in browsers ([#1735](https://www.github.com/libp2p/js-libp2p/issues/1735)) ([e3deaa4](https://www.github.com/libp2p/js-libp2p/commit/e3deaa40584b2d0cd084f95f953bd19db2493f19))
+* increase dial queue shutdown controller signal max listeners ([#1739](https://www.github.com/libp2p/js-libp2p/issues/1739)) ([ed2fa79](https://www.github.com/libp2p/js-libp2p/commit/ed2fa794ca442b601fead50a787af53c2e8719ef))
+* listen on circuit relay addresses that contain unsupported segments ([#1732](https://www.github.com/libp2p/js-libp2p/issues/1732)) ([947639f](https://www.github.com/libp2p/js-libp2p/commit/947639f58e581fb1939b5525cf704d5ee610cc76))
+* make address manager responsible for addresses ([#1743](https://www.github.com/libp2p/js-libp2p/issues/1743)) ([ef7a5f6](https://www.github.com/libp2p/js-libp2p/commit/ef7a5f676b6428129887cfabc1ba0f3c5afd000d))
+* Refactor `Upgrader` connection gating ([#1622](https://www.github.com/libp2p/js-libp2p/issues/1622)) ([ba47c95](https://www.github.com/libp2p/js-libp2p/commit/ba47c957956e52a35d342527561e3117dd46bdd3))
+* remove autodial log line ([#1692](https://www.github.com/libp2p/js-libp2p/issues/1692)) ([102d4c2](https://www.github.com/libp2p/js-libp2p/commit/102d4c209bd7a33641e352dbd250da7ba74b6f36))
+* remove closed listeners from transport manager ([#1733](https://www.github.com/libp2p/js-libp2p/issues/1733)) ([c6367e0](https://www.github.com/libp2p/js-libp2p/commit/c6367e0bbb076c9c4470d15301754c80176c24b0))
+* remove peer refresh ([#1731](https://www.github.com/libp2p/js-libp2p/issues/1731)) ([0d46c78](https://www.github.com/libp2p/js-libp2p/commit/0d46c78fe7ca9851aada8d5e1c7af549bca7fbdb))
+* update autonat and upnp-nat services to match fetch etc ([#1729](https://www.github.com/libp2p/js-libp2p/issues/1729)) ([2c3b64a](https://www.github.com/libp2p/js-libp2p/commit/2c3b64ad3833ea1097ea2b0008aa7292aa9e4998))
+
+
+### deps
+
+* bump it-stream-types from 1.0.5 to 2.0.1 ([#1674](https://www.github.com/libp2p/js-libp2p/issues/1674)) ([6f01811](https://www.github.com/libp2p/js-libp2p/commit/6f0181189bc0508fcf51c4b382ff4cd24f5bb7b0))
+
 ## [0.44.0](https://www.github.com/libp2p/js-libp2p/compare/v0.43.4...v0.44.0) (2023-04-14)
 
 

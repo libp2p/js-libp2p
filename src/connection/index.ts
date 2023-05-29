@@ -1,11 +1,11 @@
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { OPEN, CLOSING, CLOSED } from '@libp2p/interface-connection/status'
 import { symbol } from '@libp2p/interface-connection'
+import { OPEN, CLOSING, CLOSED } from '@libp2p/interface-connection/status'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
 import type { Connection, ConnectionStat, Stream } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:connection')
 
@@ -87,13 +87,9 @@ export class ConnectionImpl implements Connection {
     this._closing = false
   }
 
-  get [Symbol.toStringTag] (): 'Connection' {
-    return 'Connection'
-  }
+  readonly [Symbol.toStringTag] = 'Connection'
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
   /**
    * Get all the streams of the muxer

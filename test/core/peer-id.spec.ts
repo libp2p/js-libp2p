@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
 import { webSockets } from '@libp2p/websockets'
-import { plaintext } from '../../src/insecure/index.js'
-import { createLibp2p, Libp2p } from '../../src/index.js'
+import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import { createLibp2p, type Libp2p } from '../../src/index.js'
+import { plaintext } from '../../src/insecure/index.js'
 
 describe('peer-id', () => {
   let libp2p: Libp2p

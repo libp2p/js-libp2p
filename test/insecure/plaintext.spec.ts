@@ -1,19 +1,19 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import Peers from '../fixtures/peers.js'
-import { plaintext } from '../../src/insecure/index.js'
 import {
   InvalidCryptoExchangeError,
   UnexpectedPeerError
 } from '@libp2p/interface-connection-encrypter/errors'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
-import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
-import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import sinon from 'sinon'
+import { plaintext } from '../../src/insecure/index.js'
+import Peers from '../fixtures/peers.js'
+import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('plaintext', () => {
   let localPeer: PeerId

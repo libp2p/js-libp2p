@@ -1,8 +1,7 @@
-import { AbortOptions, multiaddr } from '@multiformats/multiaddr'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { logger } from '@libp2p/logger'
-import { ClearableSignal, anySignal } from 'any-signal'
 import { setMaxListeners } from 'events'
+import { logger } from '@libp2p/logger'
+import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { type ClearableSignal, anySignal } from 'any-signal'
 
 const log = logger('libp2p:connection-manager:utils')
 
@@ -21,7 +20,7 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
 
   const resolvedMultiaddrs = await resolveRecord(ma, options)
   const recursiveMultiaddrs = await Promise.all(resolvedMultiaddrs.map(async (nm) => {
-    return await resolveMultiaddrs(nm, options)
+    return resolveMultiaddrs(nm, options)
   }))
 
   const addrs = recursiveMultiaddrs.flat()

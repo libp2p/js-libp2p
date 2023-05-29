@@ -1,19 +1,20 @@
-import { logger } from '@libp2p/logger'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from '../errors.js'
-import { randomBytes } from '@libp2p/crypto'
-import { pipe } from 'it-pipe'
-import first from 'it-first'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Startable } from '@libp2p/interfaces/startable'
-import type { AbortOptions } from '@libp2p/interfaces'
-import { abortableDuplex } from 'abortable-iterator'
-import type { Stream } from '@libp2p/interface-connection'
 import { setMaxListeners } from 'events'
+import { randomBytes } from '@libp2p/crypto'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { abortableDuplex } from 'abortable-iterator'
+import { anySignal } from 'any-signal'
+import first from 'it-first'
+import { pipe } from 'it-pipe'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { codes } from '../errors.js'
+import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
+import type { Stream } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:ping')
@@ -96,18 +97,14 @@ class DefaultPingService implements Startable, PingService {
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
-    let signal = options.signal
     let stream: Stream | undefined
 
-    // create a timeout if no abort signal passed
-    if (signal == null) {
-      signal = AbortSignal.timeout(this.timeout)
+    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
 
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, signal)
-      } catch {}
-    }
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, signal)
+    } catch {}
 
     try {
       stream = await connection.newStream([this.protocol], {
@@ -120,7 +117,7 @@ class DefaultPingService implements Startable, PingService {
       const result = await pipe(
         [data],
         source,
-        async (source) => await first(source)
+        async (source) => first(source)
       )
       const end = Date.now()
 
@@ -133,6 +130,7 @@ class DefaultPingService implements Startable, PingService {
       if (stream != null) {
         stream.close()
       }
+      signal.clear()
     }
   }
 }

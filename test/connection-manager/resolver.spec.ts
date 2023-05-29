@@ -1,24 +1,25 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { multiaddr } from '@multiformats/multiaddr'
-import { codes as ErrorCodes } from '../../src/errors.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import pDefer from 'p-defer'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createFromJSON } from '@libp2p/peer-id-factory'
-import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
-import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
-import type { Transport } from '@libp2p/interface-transport'
-import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
-import { mplex } from '@libp2p/mplex'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import pDefer from 'p-defer'
+import sinon from 'sinon'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
+import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
+import { codes as ErrorCodes } from '../../src/errors.js'
 import { plaintext } from '../../src/insecure/index.js'
+import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
+import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Transport } from '@libp2p/interface-transport'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const relayAddr = MULTIADDRS_WEBSOCKETS[0]
 
@@ -57,6 +58,7 @@ describe('dialing (resolvable addresses)', () => {
           })
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionManager: {
@@ -66,7 +68,8 @@ describe('dialing (resolvable addresses)', () => {
         },
         connectionEncryption: [
           plaintext()
-        ]
+        ],
+        connectionGater: mockConnectionGater()
       }),
       createLibp2pNode({
         addresses: {
@@ -79,6 +82,7 @@ describe('dialing (resolvable addresses)', () => {
           })
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionManager: {
@@ -91,7 +95,8 @@ describe('dialing (resolvable addresses)', () => {
         ],
         services: {
           relay: circuitRelayServer()
-        }
+        },
+        connectionGater: mockConnectionGater()
       })
     ])
 
@@ -164,9 +169,9 @@ describe('dialing (resolvable addresses)', () => {
       if (!firstCall) {
         firstCall = true
         // Return an array of dnsaddr
-        return await Promise.resolve(getDnsaddrStub(remoteId))
+        return Promise.resolve(getDnsaddrStub(remoteId))
       }
-      return await Promise.resolve(getDnsRelayedAddrStub(remoteId))
+      return Promise.resolve(getDnsRelayedAddrStub(remoteId))
     })
 
     // Dial with address resolve
@@ -227,9 +232,9 @@ describe('dialing (resolvable addresses)', () => {
     const transportDialSpy = sinon.spy(transport, 'dial')
 
     // Resolver stub
-    resolver.onCall(0).callsFake(async () => await Promise.resolve(getDnsaddrStub(remoteId)))
-    resolver.onCall(1).callsFake(async () => await Promise.reject(new Error()))
-    resolver.callsFake(async () => await Promise.resolve(getDnsRelayedAddrStub(remoteId)))
+    resolver.onCall(0).callsFake(async () => Promise.resolve(getDnsaddrStub(remoteId)))
+    resolver.onCall(1).callsFake(async () => Promise.reject(new Error()))
+    resolver.callsFake(async () => Promise.resolve(getDnsRelayedAddrStub(remoteId)))
 
     // Dial with address resolve
     const connection = await libp2p.dial(dialAddr)

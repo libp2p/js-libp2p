@@ -42,8 +42,7 @@ jobs:
           pnet,
           protocol-and-stream-muxing,
           pubsub,
-          transports,
-          webrtc-direct
+          transports
         ]
       fail-fast: true
     steps:

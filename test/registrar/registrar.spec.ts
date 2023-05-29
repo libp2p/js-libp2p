@@ -1,32 +1,33 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import pDefer from 'p-defer'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { createTopology } from '@libp2p/topology'
-import { PersistentPeerStore } from '@libp2p/peer-store'
-import { DefaultRegistrar } from '../../src/registrar.js'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
-import { createPeerId } from '../utils/creators/peer.js'
-import type { Registrar } from '@libp2p/interface-registrar'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { plaintext } from '../../src/insecure/index.js'
-import { webSockets } from '@libp2p/websockets'
 import { mplex } from '@libp2p/mplex'
-import { Components, defaultComponents } from '../../src/components.js'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import type { TransportManager } from '@libp2p/interface-transport'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { createTopology } from '@libp2p/topology'
+import { webSockets } from '@libp2p/websockets'
+import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core/memory'
+import pDefer from 'p-defer'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { type Components, defaultComponents } from '../../src/components.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { codes } from '../../src/errors.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
+import { DefaultRegistrar } from '../../src/registrar.js'
+import { matchPeerId } from '../fixtures/match-peer-id.js'
+import { createPeerId } from '../utils/creators/peer.js'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
-import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from '../../src/errors.js'
-import { matchPeerId } from '../fixtures/match-peer-id.js'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 const protocol = '/test/1.0.0'
 
@@ -139,6 +140,9 @@ describe('registrar', () => {
       const remotePeerId = await createEd25519PeerId()
       const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+
       const topology = createTopology({
         onConnect: (peerId, connection) => {
           expect(peerId.equals(remotePeerId)).to.be.true()
@@ -166,15 +170,15 @@ describe('registrar', () => {
       })
 
       // remote peer connects
-      events.safeDispatchEvent('connection:open', {
-        detail: conn
+      events.safeDispatchEvent('peer:connect', {
+        detail: remotePeerId
       })
       await onConnectDefer.promise
 
       // remote peer disconnects
       await conn.close()
-      events.safeDispatchEvent('connection:close', {
-        detail: conn
+      events.safeDispatchEvent('peer:disconnect', {
+        detail: remotePeerId
       })
       await onDisconnectDefer.promise
     })
@@ -186,6 +190,9 @@ describe('registrar', () => {
       // Setup connections before registrar
       const remotePeerId = await createEd25519PeerId()
       const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
 
       const topology = createTopology({
         onConnect: () => {
@@ -200,15 +207,15 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // No details before identify
-      peerStore.get.withArgs(conn.remotePeer).rejects(new CodeError('Not found', codes.ERR_NOT_FOUND))
+      peerStore.get.withArgs(matchPeerId(conn.remotePeer)).rejects(new CodeError('Not found', codes.ERR_NOT_FOUND))
 
       // remote peer connects
-      events.safeDispatchEvent('connection:open', {
-        detail: conn
+      events.safeDispatchEvent('peer:connect', {
+        detail: remotePeerId
       })
 
       // Can get details after identify
-      peerStore.get.withArgs(conn.remotePeer).resolves({
+      peerStore.get.withArgs(matchPeerId(conn.remotePeer)).resolves({
         id: conn.remotePeer,
         addresses: [],
         protocols: [protocol],
@@ -217,7 +224,7 @@ describe('registrar', () => {
       })
 
       // we have a connection to this peer
-      connectionManager.getConnections.withArgs(conn.remotePeer).returns([conn])
+      connectionManager.getConnections.withArgs(matchPeerId(conn.remotePeer)).returns([conn])
 
       // identify completes
       events.safeDispatchEvent('peer:update', {
@@ -263,6 +270,7 @@ describe('registrar', () => {
           webSockets()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionEncryption: [
