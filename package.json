@@ -100,7 +100,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "doc-check": "aegir doc-check --inputFiles doc/*.md",
-    "dep-check": "aegir dep-check -i protons",
+    "dep-check": "aegir dep-check -i protons @libp2p/prometheus-metrics",
     "prepublishOnly": "node scripts/update-version.js && npm run build",
     "build": "aegir build",
     "docs": "aegir docs",
