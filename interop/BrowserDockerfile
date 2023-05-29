@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+
+FROM mcr.microsoft.com/playwright
+
+COPY --from=node-js-libp2p-head /app/ /app/
+WORKDIR /app/interop
+RUN ./node_modules/.bin/playwright install
+ARG BROWSER=chromium # Options: chromium, firefox, webkit
+ENV BROWSER=$BROWSER
+
+ENTRYPOINT npm test -- --build false --types false -t browser -- --browser $BROWSER
