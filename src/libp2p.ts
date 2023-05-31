@@ -18,8 +18,8 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from './address-manager/index.js'
 import { defaultComponents } from './components.js'
+import { validateConfig } from './config/config.js'
 import { connectionGater } from './config/connection-gater.js'
-import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
 import { CompoundContentRouting } from './content-routing/index.js'
 import { codes } from './errors.js'
@@ -161,6 +161,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     })
 
     // User defined modules
+    console.log('services', init.services)
     if (init.services != null) {
       for (const name of Object.keys(init.services)) {
         const createService = init.services[name]

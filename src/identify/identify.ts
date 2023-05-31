@@ -20,7 +20,10 @@ import {
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION,
-  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
+  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
+  MAX_INBOUND_STREAMS,
+  MAX_OUTBOUND_STREAMS,
+  MAX_PUSH_INCOMING_STREAMS
 } from './consts.js'
 import { Identify } from './pb/message.js'
 import type { IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
@@ -38,16 +41,15 @@ import type { Startable } from '@libp2p/interfaces/startable'
 const log = logger('libp2p:identify')
 
 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
-const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
 
 const defaultValues = {
   protocolPrefix: 'ipfs',
   agentVersion: AGENT_VERSION,
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
   timeout: 60000,
-  maxInboundStreams: 1,
-  maxOutboundStreams: 1,
-  maxPushIncomingStreams: 1,
+  maxInboundStreams: MAX_INBOUND_STREAMS,
+  maxOutboundStreams: MAX_OUTBOUND_STREAMS,
+  maxPushIncomingStreams: MAX_PUSH_INCOMING_STREAMS,
   maxPushOutgoingStreams: 1,
   maxObservedAddresses: 10,
   maxIdentifyMessageSize: 8192

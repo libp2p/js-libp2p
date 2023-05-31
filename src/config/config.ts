@@ -3,11 +3,12 @@ import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
 import { object } from 'yup'
-import { validateAddressManagerConfig } from './address-manager/utils.js'
-import { validateConnectionManagerConfig } from './connection-manager/utils.js'
-import type { AddressManagerInit } from './address-manager/index.js'
-import type { ConnectionManagerInit } from './connection-manager/index.js'
-import type { Libp2pInit } from './index.js'
+import { validateAddressManagerConfig } from '../address-manager/utils.js'
+import { validateConnectionManagerConfig } from '../connection-manager/utils.js'
+import { validateServicesConfig } from './helpers.js'
+import type { AddressManagerInit } from '../address-manager/index.js'
+import type { ConnectionManagerInit } from '../connection-manager/index.js'
+import type { Libp2pInit, ServiceFactoryMap } from '../index.js'
 import type { ServiceMap } from '@libp2p/interface-libp2p'
 import type { RecursivePartial } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -35,6 +36,9 @@ export function validateConfig <T extends ServiceMap = Record<string, unknown>> 
     addresses: validateAddressManagerConfig(opts?.addresses as AddressManagerInit),
     connectionManager: validateConnectionManagerConfig(opts?.connectionManager as ConnectionManagerInit)
   })
+
+  // @ts-expect-error
+  opts.services = validateServicesConfig(opts?.services as ServiceFactoryMap<T>) as ServiceFactoryMap<T>
 
   const parsedOpts = libp2pConfig.validateSync(opts)
 

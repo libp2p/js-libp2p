@@ -1,5 +1,5 @@
 import { type ObjectSchema, object, array, string } from 'yup'
-import { validateMultiaddr } from '../utils.js'
+import { validateMultiaddr } from '../config/helpers.js'
 import type { AddressManagerInit } from '.'
 
 export function debounce (func: () => void, wait: number): () => void {
