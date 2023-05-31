@@ -5,6 +5,7 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
 - [Getting Started](#getting-started)
   - [Install](#install)
   - [Configuring libp2p](#configuring-libp2p)
+  - [ESM](#esm)
     - [Basic setup](#basic-setup)
       - [Transports](#transports)
       - [Connection Encryption](#connection-encryption)
@@ -28,6 +29,14 @@ npm install libp2p
 ## Configuring libp2p
 
 If you're new to libp2p, we recommend configuring your node in stages, as this can make troubleshooting configuration issues much easier. In this guide, we'll do just that. If you're more experienced with libp2p, you may wish to jump to the [Configuration readme](./CONFIGURATION.md).
+
+## ESM
+
+Since `libp2p@0.37.0` is that the module is now [ESM-only](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c).
+
+ESM is the module system for JavaScript, it allows us to structure our code in separate files without polluting a global namespace.
+
+Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and others, but ESM is [the official standard format](https://tc39.es/ecma262/#sec-modules) to package JavaScript code for reuse.
 
 ### Basic setup
 
