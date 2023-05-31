@@ -8,13 +8,14 @@ This guide aims to guide you from using the public infrastructure into setting u
 
 ## Table of Contents
 
-* [Joining the Network](#joining-the-network)
-* [Connecting to Nodes with connectivity limitations](#connecting-to-nodes-with-connectivity-limitations)
-  * [`webrtc-star` servers](#webrtc-star-servers)
-  * [Circuit Relay](#circuit-relay)
-* [Querying the network from the browser](#querying-the-network-from-the-browser)
-* [Others](#others)
-  * [SSL](#ssl)
+- [Production](#production)
+  - [Table of Contents](#table-of-contents)
+  - [Joining the Network](#joining-the-network)
+  - [Connecting to Nodes with connectivity limitations](#connecting-to-nodes-with-connectivity-limitations)
+    - [Circuit Relay](#circuit-relay)
+  - [Querying the network from the browser](#querying-the-network-from-the-browser)
+  - [Others](#others)
+    - [SSL](#ssl)
 
 ## Joining the Network
 
@@ -22,23 +23,13 @@ Once a libp2p node stars, it will need to connect to a set of peers in order to 
 
 Currently `js-libp2p` is not the best choice for being a bootstrap node. Its DHT needs to be improved, in order to become an effective server to enable other nodes to properly bootstrap their network.
 
-Setting up a fleet of [`go-libp2p`](https://github.com/libp2p/go-libp2p) nodes is the recommended way to proceed here. 
+Setting up a fleet of [`go-libp2p`](https://github.com/libp2p/go-libp2p) nodes is the recommended way to proceed here.
 
 ## Connecting to Nodes with connectivity limitations
 
 While the libp2p core codebase aims to work in multiple environments, there are some limitations that are not possible to overcome at the time of writing. These limitations include browser nodes, nodes behind NAT, reverse proxies, firewalls, or lack of compatible transports.
 
-In the browser, libp2p supports two transports: `websockets` and `webrtc-star`. Nowadays, browsers do not support listening for connections, but only to dial known addresses. `webrtc-star` servers can be used to enable libp2p nodes to discover other nodes running on the browser and to help them establish a connection.
-
-For nodes that cannot be dialed (including browser), circuit relay nodes should be used.
-
-### `webrtc-star` servers
-
-Regarding `webRTC` connections, a set of star servers are needed to act as a rendezvous point, where peers can learn about other peers (`peer-discovery`), as well as exchange their SDP offers (signaling data).
-
-You can read on how to setup your own star servers in [libp2p/js-libp2p-webrtc-star/DEPLOYMENT.md](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/DEPLOYMENT.md).
-
-It is worth pointing out that with new discovery protocols on the way, as well as support for distributed signaling, the star servers should be deprecated on the long run.
+In the browser, libp2p supports three transports: `websockets`, `webtransport`, and `webrtc`.
 
 ### Circuit Relay
 
