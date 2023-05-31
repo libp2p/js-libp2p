@@ -1,25 +1,27 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 6] */
 
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { Circuit } from '@multiformats/mafmt'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
+import { pbStream } from 'it-pb-stream'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
-import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
-import { discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
-import { circuitRelayServer, CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
-import { tcp } from '@libp2p/tcp'
 import { Uint8ArrayList } from 'uint8arraylist'
-import delay from 'delay'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import { pbStream } from 'it-pb-stream'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
+import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
-import { Circuit } from '@multiformats/mafmt'
-import { multiaddr } from '@multiformats/multiaddr'
+import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { mplex } from '@libp2p/mplex'
-import { identifyService } from '../../src/identify/index.js'
+import { discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
+import type { Connection } from '@libp2p/interface-connection'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 
 describe('circuit-relay', () => {
   describe('flows with 1 listener', () => {
@@ -42,6 +44,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -62,27 +65,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
-            mplex()
-          ],
-          connectionEncryption: [
-            plaintext()
-          ],
-          services: {
-            relay: circuitRelayServer(),
-            identify: identifyService()
-          }
-        }),
-        createLibp2p({
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0']
-          },
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -104,6 +87,29 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
+        }),
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -259,7 +265,7 @@ describe('circuit-relay', () => {
       // @ts-expect-error private field
       sinon.stub(relay1.components.connectionManager, 'openConnection').callsFake(async () => {
         deferred.resolve()
-        return await Promise.reject(new Error('failed to dial'))
+        return Promise.reject(new Error('failed to dial'))
       })
 
       // Remove peer used as relay from peerStore and disconnect it
@@ -351,6 +357,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -371,6 +378,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -391,27 +399,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
-            mplex()
-          ],
-          connectionEncryption: [
-            plaintext()
-          ],
-          services: {
-            relay: circuitRelayServer(),
-            identify: identifyService()
-          }
-        }),
-        createLibp2p({
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0']
-          },
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -433,6 +421,29 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
+            mplex()
+          ],
+          connectionEncryption: [
+            plaintext()
+          ],
+          services: {
+            relay: circuitRelayServer(),
+            identify: identifyService()
+          }
+        }),
+        createLibp2p({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          transports: [
+            tcp(),
+            circuitRelayTransport({
+              discoverRelays: 1
+            })
+          ],
+          streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -448,7 +459,7 @@ describe('circuit-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([local, remote, relay1, relay2, relay3].map(async libp2p => {
+      return Promise.all([local, remote, relay1, relay2, relay3].map(async libp2p => {
         if (libp2p != null) {
           await libp2p.stop()
         }
@@ -542,6 +553,30 @@ describe('circuit-relay', () => {
       expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
     })
 
+    it('dialer should close hop stream on hop failure', async () => {
+      await local.dial(relay1.getMultiaddrs()[0])
+
+      // dial the remote through the relay
+      const relayedMultiaddr = relay1.getMultiaddrs()[0].encapsulate(`/p2p-circuit/p2p/${remote.peerId.toString()}`)
+
+      await expect(local.dial(relayedMultiaddr))
+        .to.eventually.be.rejected()
+        .and.to.have.property('message').that.matches(/NO_RESERVATION/)
+
+      // we should still be connected to the relay
+      const conns = local.getConnections(relay1.peerId)
+      expect(conns).to.have.lengthOf(1)
+      expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
+
+      // we should not have any streams with the hop codec
+      const streams = local.getConnections(relay1.peerId)
+        .map(conn => conn.streams)
+        .flat()
+        .filter(stream => stream.stat.protocol === RELAY_V2_HOP_CODEC)
+
+      expect(streams).to.be.empty()
+    })
+
     it('destination peer should stay connected to an already connected relay on hop failure', async () => {
       await local.dial(relay1.getMultiaddrs()[0])
       await usingAsRelay(local, relay1)
@@ -604,6 +639,37 @@ describe('circuit-relay', () => {
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.PERMISSION_DENIED)
     })
+
+    it('should emit connection:close when relay stops', async () => {
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      await local.dial(ma)
+
+      const deferred = defer()
+      const events: Array<CustomEvent<Connection>> = []
+
+      local.addEventListener('connection:close', (evt) => {
+        events.push(evt)
+
+        if (events.length === 2) {
+          deferred.resolve()
+        }
+      })
+
+      // shut down relay
+      await relay1.stop()
+
+      // wait for events
+      await deferred.promise
+
+      // should have closed connections to remote and to relay
+      expect(events[0].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
+      expect(events[1].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
+    })
   })
 
   describe('flows with data limit', () => {
@@ -624,6 +690,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -644,6 +711,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -664,6 +732,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -683,7 +752,7 @@ describe('circuit-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([local, remote, relay].map(async libp2p => {
+      return Promise.all([local, remote, relay].map(async libp2p => {
         if (libp2p != null) {
           await libp2p.stop()
         }
@@ -752,6 +821,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -772,6 +842,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -792,6 +863,7 @@ describe('circuit-relay', () => {
             })
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -811,7 +883,7 @@ describe('circuit-relay', () => {
 
     afterEach(async () => {
       // Stop each node
-      return await Promise.all([local, remote, relay].map(async libp2p => {
+      return Promise.all([local, remote, relay].map(async libp2p => {
         if (libp2p != null) {
           await libp2p.stop()
         }
@@ -876,6 +948,7 @@ describe('circuit-relay', () => {
           circuitRelayTransport()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionEncryption: [
@@ -897,6 +970,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -917,6 +991,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -960,6 +1035,7 @@ describe('circuit-relay', () => {
           circuitRelayTransport()
         ],
         streamMuxers: [
+          yamux(),
           mplex()
         ],
         connectionEncryption: [
@@ -981,6 +1057,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [
@@ -1001,6 +1078,7 @@ describe('circuit-relay', () => {
             circuitRelayTransport()
           ],
           streamMuxers: [
+            yamux(),
             mplex()
           ],
           connectionEncryption: [

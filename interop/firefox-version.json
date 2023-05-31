@@ -1,0 +1,21 @@
+{
+    "id": "firefox-js-libp2p-head",
+    "containerImageID": "firefox-js-libp2p-head",
+    "transports": [
+        {
+            "name": "webrtc",
+            "onlyDial": true
+        },
+        {
+            "name": "wss",
+            "onlyDial": true
+        }
+    ],
+    "secureChannels": [
+        "noise"
+    ],
+    "muxers": [
+        "mplex",
+        "yamux"
+    ]
+}

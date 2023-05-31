@@ -1,3 +1,22 @@
+import { setMaxListeners } from 'events'
+import { logger } from '@libp2p/logger'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { abortableDuplex } from 'abortable-iterator'
+import { anySignal } from 'any-signal'
+import first from 'it-first'
+import * as lp from 'it-length-prefixed'
+import map from 'it-map'
+import parallel from 'it-parallel'
+import { pipe } from 'it-pipe'
+import isPrivateIp from 'private-ip'
+import {
+  MAX_INBOUND_STREAMS,
+  MAX_OUTBOUND_STREAMS,
+  PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, REFRESH_INTERVAL, STARTUP_DELAY, TIMEOUT
+} from './constants.js'
+import { Message } from './pb/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
@@ -7,23 +26,6 @@ import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/startable'
-import { logger } from '@libp2p/logger'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { abortableDuplex } from 'abortable-iterator'
-import { setMaxListeners } from 'events'
-import first from 'it-first'
-import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import parallel from 'it-parallel'
-import { pipe } from 'it-pipe'
-import isPrivateIp from 'private-ip'
-import {
-  PROTOCOL
-} from './constants.js'
-import { Message } from './pb/index.js'
-import { anySignal } from 'any-signal'
 
 const log = logger('libp2p:autonat')
 
@@ -32,45 +34,39 @@ const log = logger('libp2p:autonat')
 // https://github.com/libp2p/specs/blob/master/autonat/README.md#autonat-protocol
 const REQUIRED_SUCCESSFUL_DIALS = 4
 
-// Wait this long before we start to query autonat nodes
-const AUTONAT_STARTUP_DELAY = 5000
-
-// Only try to verify our external address this often
-const AUTONAT_REFRESH_INTERVAL = 60000
-
-export interface AutonatServiceInit {
+export interface AutoNATServiceInit {
   /**
    * Allows overriding the protocol prefix used
    */
-  protocolPrefix: string
+  protocolPrefix?: string
 
   /**
    * How long we should wait for a remote peer to verify our external address
    */
-  timeout: number
+  timeout?: number
 
   /**
    * How long to wait after startup before trying to verify our external address
    */
-  startupDelay: number
+  startupDelay?: number
 
   /**
    * Verify our external addresses this often
    */
-  refreshInterval: number
+  refreshInterval?: number
 
   /**
-   * How many parallel inbound autonat streams we allow per-connection
+   * How many parallel inbound autoNAT streams we allow per-connection
    */
-  maxInboundStreams: number
+  maxInboundStreams?: number
 
   /**
-   * How many parallel outbound autonat streams we allow per-connection
+   * How many parallel outbound autoNAT streams we allow per-connection
    */
-  maxOutboundStreams: number
+  maxOutboundStreams?: number
 }
 
-export interface DefaultAutonatComponents {
+export interface AutoNATComponents {
   registrar: Registrar
   addressManager: AddressManager
   transportManager: TransportManager
@@ -79,21 +75,26 @@ export interface DefaultAutonatComponents {
   peerRouting: PeerRouting
 }
 
-export class AutonatService implements Startable {
-  private readonly components: DefaultAutonatComponents
-  private readonly _init: AutonatServiceInit
+class DefaultAutoNATService implements Startable {
+  private readonly components: AutoNATComponents
   private readonly startupDelay: number
   private readonly refreshInterval: number
+  private readonly protocol: string
+  private readonly timeout: number
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
   private verifyAddressTimeout?: ReturnType<typeof setTimeout>
   private started: boolean
 
-  constructor (components: DefaultAutonatComponents, init: AutonatServiceInit) {
+  constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
     this.components = components
     this.started = false
-    this._init = init
-    this.startupDelay = init.startupDelay ?? AUTONAT_STARTUP_DELAY
-    this.refreshInterval = init.refreshInterval ?? AUTONAT_REFRESH_INTERVAL
-
+    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = init.timeout ?? TIMEOUT
+    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
+    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
+    this.startupDelay = init.startupDelay ?? STARTUP_DELAY
+    this.refreshInterval = init.refreshInterval ?? REFRESH_INTERVAL
     this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
   }
 
@@ -106,14 +107,14 @@ export class AutonatService implements Startable {
       return
     }
 
-    await this.components.registrar.handle(PROTOCOL, (data) => {
+    await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleIncomingAutonatStream(data)
         .catch(err => {
-          log.error(err)
+          log.error('error handling incoming autonat stream', err)
         })
     }, {
-      maxInboundStreams: this._init.maxInboundStreams,
-      maxOutboundStreams: this._init.maxOutboundStreams
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
     })
 
     this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.startupDelay)
@@ -122,17 +123,17 @@ export class AutonatService implements Startable {
   }
 
   async stop (): Promise<void> {
-    await this.components.registrar.unhandle(PROTOCOL)
+    await this.components.registrar.unhandle(this.protocol)
     clearTimeout(this.verifyAddressTimeout)
 
     this.started = false
   }
 
   /**
-   * Handle an incoming autonat request
+   * Handle an incoming AutoNAT request
    */
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
-    const signal = anySignal([AbortSignal.timeout(this._init.timeout)])
+    const signal = anySignal([AbortSignal.timeout(this.timeout)])
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
@@ -155,7 +156,7 @@ export class AutonatService implements Startable {
           const buf = await first(stream)
 
           if (buf == null) {
-            log('No message received')
+            log('no message received')
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
               dialResponse: {
@@ -172,7 +173,7 @@ export class AutonatService implements Startable {
           try {
             request = Message.decode(buf)
           } catch (err) {
-            log.error('Could not decode message', err)
+            log.error('could not decode message', err)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -188,7 +189,7 @@ export class AutonatService implements Startable {
           const dialRequest = request.dial
 
           if (dialRequest == null) {
-            log.error('Dial was missing from message')
+            log.error('dial was missing from message')
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -221,7 +222,7 @@ export class AutonatService implements Startable {
           try {
             peerId = peerIdFromBytes(peer.id)
           } catch (err) {
-            log.error('Invalid PeerId', err)
+            log.error('invalid PeerId', err)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -234,11 +235,11 @@ export class AutonatService implements Startable {
             return
           }
 
-          log('Incoming request from %p', peerId)
+          log('incoming request from %p', peerId)
 
           // reject any dial requests that arrive via relays
           if (!data.connection.remotePeer.equals(peerId)) {
-            log('Target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
+            log('target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -257,7 +258,7 @@ export class AutonatService implements Startable {
             .filter(ma => {
               const isFromSameHost = ma.toOptions().host === data.connection.remoteAddr.toOptions().host
 
-              log.trace('Request to dial %s was sent from %s is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
+              log.trace('request to dial %s was sent from %s is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
               // skip any Multiaddrs where the target node's IP does not match the sending node's IP
               return isFromSameHost
             })
@@ -265,7 +266,7 @@ export class AutonatService implements Startable {
               const host = ma.toOptions().host
               const isPublicIp = !(isPrivateIp(host) ?? false)
 
-              log.trace('Host %s was public %s', host, isPublicIp)
+              log.trace('host %s was public %s', host, isPublicIp)
               // don't try to dial private addresses
               return isPublicIp
             })
@@ -273,14 +274,14 @@ export class AutonatService implements Startable {
               const host = ma.toOptions().host
               const isNotOurHost = !ourHosts.includes(host)
 
-              log.trace('Host %s was not our host %s', host, isNotOurHost)
+              log.trace('host %s was not our host %s', host, isNotOurHost)
               // don't try to dial nodes on the same host as us
               return isNotOurHost
             })
             .filter(ma => {
               const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
 
-              log.trace('Transport for %s is supported %s', ma, isSupportedTransport)
+              log.trace('transport for %s is supported %s', ma, isSupportedTransport)
               // skip any Multiaddrs that have transports we do not support
               return isSupportedTransport
             })
@@ -295,7 +296,7 @@ export class AutonatService implements Startable {
 
           // make sure we have something to dial
           if (multiaddrs.length === 0) {
-            log('No valid multiaddrs for %p in message', peerId)
+            log('no valid multiaddrs for %p in message', peerId)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -308,7 +309,7 @@ export class AutonatService implements Startable {
             return
           }
 
-          log('Dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
+          log('dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
 
           let errorMessage = ''
           let lastMultiaddr = multiaddrs[0]
@@ -323,7 +324,7 @@ export class AutonatService implements Startable {
               })
 
               if (!connection.remoteAddr.equals(multiaddr)) {
-                log.error('Tried to dial %s but dialed %s', multiaddr, connection.remoteAddr)
+                log.error('tried to dial %s but dialed %s', multiaddr, connection.remoteAddr)
                 throw new Error('Unexpected remote address')
               }
 
@@ -339,7 +340,7 @@ export class AutonatService implements Startable {
 
               return
             } catch (err: any) {
-              log('Could not dial %p', peerId, err)
+              log('could not dial %p', peerId, err)
               errorMessage = err.message
             } finally {
               if (connection != null) {
@@ -363,7 +364,7 @@ export class AutonatService implements Startable {
         data.stream
       )
     } catch (err) {
-      log.error(err)
+      log.error('error handling incoming autonat stream', err)
     } finally {
       signal.clear()
     }
@@ -372,7 +373,7 @@ export class AutonatService implements Startable {
   _verifyExternalAddresses (): void {
     void this.verifyExternalAddresses()
       .catch(err => {
-        log.error(err)
+        log.error('error verifying external address', err)
       })
   }
 
@@ -397,13 +398,13 @@ export class AutonatService implements Startable {
       })
 
     if (multiaddrs.length === 0) {
-      log('No public addresses found, not requesting verification')
+      log('no public addresses found, not requesting verification')
       this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
 
       return
     }
 
-    const signal = AbortSignal.timeout(this._init.timeout)
+    const signal = AbortSignal.timeout(this.timeout)
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
@@ -433,15 +434,15 @@ export class AutonatService implements Startable {
       const results: Record<string, { success: number, failure: number }> = {}
       const networkSegments: string[] = []
 
-      async function verifyAddress (peer: PeerInfo): Promise<Message.DialResponse | undefined> {
+      const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
         try {
-          log('Asking %p to verify multiaddr', peer.id)
+          log('asking %p to verify multiaddr', peer.id)
 
           const connection = await self.components.connectionManager.openConnection(peer.id, {
             signal
           })
 
-          const stream = await connection.newStream(PROTOCOL, {
+          const stream = await connection.newStream(this.protocol, {
             signal
           })
           const source = abortableDuplex(stream, signal)
@@ -451,16 +452,16 @@ export class AutonatService implements Startable {
             (source) => lp.encode(source),
             source,
             (source) => lp.decode(source),
-            async (stream) => await first(stream)
+            async (stream) => first(stream)
           )
           if (buf == null) {
-            log('No response received from %s', connection.remotePeer)
+            log('no response received from %p', connection.remotePeer)
             return undefined
           }
           const response = Message.decode(buf)
 
           if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
-            log('Invalid autonat response from %s', connection.remotePeer)
+            log('invalid autonat response from %p', connection.remotePeer)
             return undefined
           }
 
@@ -476,12 +477,12 @@ export class AutonatService implements Startable {
               const octets = options.host.split(':')
               segment = octets[0]
             } else {
-              log('Remote address "%s" was not IP4 or IP6?', options.host)
+              log('remote address "%s" was not IP4 or IP6?', options.host)
               return undefined
             }
 
             if (networkSegments.includes(segment)) {
-              log('Already have response from network segment %d - %s', segment, options.host)
+              log('already have response from network segment %d - %s', segment, options.host)
               return undefined
             }
 
@@ -490,13 +491,13 @@ export class AutonatService implements Startable {
 
           return response.dialResponse
         } catch (err) {
-          log.error(err)
+          log.error('error asking remote to verify multiaddr', err)
         }
       }
 
       for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
         signal
-      }), (peer) => async () => await verifyAddress(peer)), {
+      }), (peer) => async () => verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
       })) {
         try {
@@ -507,7 +508,7 @@ export class AutonatService implements Startable {
           // they either told us which address worked/didn't work, or we only sent them one address
           const addr = dialResponse.addr == null ? multiaddrs[0] : multiaddr(dialResponse.addr)
 
-          log('Autonat response for %s is %s', addr, dialResponse.status)
+          log('autonat response for %s is %s', addr, dialResponse.status)
 
           if (dialResponse.status === Message.ResponseStatus.E_BAD_REQUEST) {
             // the remote could not parse our request
@@ -525,7 +526,7 @@ export class AutonatService implements Startable {
           }
 
           if (!multiaddrs.some(ma => ma.equals(addr))) {
-            log('Peer reported %s as %s but it was not in our observed address list', addr, dialResponse.status)
+            log('peer reported %s as %s but it was not in our observed address list', addr, dialResponse.status)
             continue
           }
 
@@ -555,11 +556,17 @@ export class AutonatService implements Startable {
             return
           }
         } catch (err) {
-          log.error('Could not verify external address', err)
+          log.error('could not verify external address', err)
         }
       }
     } finally {
       this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
     }
+  }
+}
+
+export function autoNATService (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => unknown {
+  return (components) => {
+    return new DefaultAutoNATService(components, init)
   }
 }

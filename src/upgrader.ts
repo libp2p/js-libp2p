@@ -1,28 +1,28 @@
-import { logger } from '@libp2p/logger'
+import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
-import { codes } from './errors.js'
-import { createConnection } from './connection/index.js'
-import type { EventEmitter } from '@libp2p/interfaces/events'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { abortableDuplex } from 'abortable-iterator'
+import { anySignal } from 'any-signal'
+import { createConnection } from './connection/index.js'
+import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
+import { codes } from './errors.js'
+import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
 import type { MultiaddrConnection, Connection, Stream, ConnectionProtector } from '@libp2p/interface-connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
-import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Upgrader, UpgraderOptions } from '@libp2p/interface-transport'
-import type { Duplex, Source } from 'it-stream-types'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { Registrar } from '@libp2p/interface-registrar'
-import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import { abortableDuplex } from 'abortable-iterator'
-import { setMaxListeners } from 'events'
-import type { Metrics } from '@libp2p/interface-metrics'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
-import { anySignal } from 'any-signal'
+import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { Metrics } from '@libp2p/interface-metrics'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Registrar } from '@libp2p/interface-registrar'
+import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
+import type { Upgrader, UpgraderOptions } from '@libp2p/interface-transport'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:upgrader')
 
@@ -73,7 +73,6 @@ function findIncomingStreamLimit (protocol: string, registrar: Registrar): numbe
 function findOutgoingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
   try {
     const { options } = registrar.getHandler(protocol)
-
     return options.maxOutboundStreams
   } catch (err: any) {
     if (err.code !== codes.ERR_NO_HANDLER_FOR_PROTOCOL) {
@@ -392,9 +391,10 @@ export class DefaultUpgrader implements Upgrader {
               const streamCount = countStreams(protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
-                muxedStream.abort(new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS))
+                const err = new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS)
+                muxedStream.abort(err)
 
-                return
+                throw err
               }
 
               // after the handshake the returned stream can have early data so override

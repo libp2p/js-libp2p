@@ -1,15 +1,13 @@
-import { logger } from '@libp2p/logger'
+import { isTopology, type StreamHandlerOptions, type StreamHandlerRecord, type Registrar, type StreamHandler, type Topology } from '@libp2p/interface-registrar'
 import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from './errors.js'
-import { isTopology, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-registrar'
+import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
-import type { Registrar, StreamHandler, Topology } from '@libp2p/interface-registrar'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Connection } from '@libp2p/interface-connection'
+import { codes } from './errors.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { EventEmitter } from '@libp2p/interfaces/events'
 
 const log = logger('libp2p:registrar')
 
@@ -40,8 +38,8 @@ export class DefaultRegistrar implements Registrar {
     this._onPeerUpdate = this._onPeerUpdate.bind(this)
     this._onConnect = this._onConnect.bind(this)
 
-    this.components.events.addEventListener('connection:close', this._onDisconnect)
-    this.components.events.addEventListener('connection:open', this._onConnect)
+    this.components.events.addEventListener('peer:disconnect', this._onDisconnect)
+    this.components.events.addEventListener('peer:connect', this._onConnect)
     this.components.events.addEventListener('peer:update', this._onPeerUpdate)
   }
 
@@ -159,10 +157,10 @@ export class DefaultRegistrar implements Registrar {
   /**
    * Remove a disconnected peer from the record
    */
-  _onDisconnect (evt: CustomEvent<Connection>): void {
-    const connection = evt.detail
+  _onDisconnect (evt: CustomEvent<PeerId>): void {
+    const remotePeer = evt.detail
 
-    void this.components.peerStore.get(connection.remotePeer)
+    void this.components.peerStore.get(remotePeer)
       .then(peer => {
         for (const protocol of peer.protocols) {
           const topologies = this.topologies.get(protocol)
@@ -173,12 +171,17 @@ export class DefaultRegistrar implements Registrar {
           }
 
           for (const topology of topologies.values()) {
-            topology.onDisconnect(connection.remotePeer)
+            topology.onDisconnect(remotePeer)
           }
         }
       })
       .catch(err => {
-        log.error('could not inform topologies of disconnecting peer %p', connection.remotePeer, err)
+        if (err.code === codes.ERR_NOT_FOUND) {
+          // peer has not completed identify so they are not in the peer store
+          return
+        }
+
+        log.error('could not inform topologies of disconnecting peer %p', remotePeer, err)
       })
   }
 
@@ -186,11 +189,19 @@ export class DefaultRegistrar implements Registrar {
    * On peer connected if we already have their protocols. Usually used for reconnects
    * as change:protocols event won't be emitted due to identical protocols.
    */
-  _onConnect (evt: CustomEvent<Connection>): void {
-    const connection = evt.detail
+  _onConnect (evt: CustomEvent<PeerId>): void {
+    const remotePeer = evt.detail
 
-    void this.components.peerStore.get(connection.remotePeer)
+    void this.components.peerStore.get(remotePeer)
       .then(peer => {
+        const connection = this.components.connectionManager.getConnections(peer.id)[0]
+
+        if (connection == null) {
+          log('peer %p connected but the connection manager did not have a connection', peer)
+          // peer disconnected while we were loading their details from the peer store
+          return
+        }
+
         for (const protocol of peer.protocols) {
           const topologies = this.topologies.get(protocol)
 
@@ -200,12 +211,17 @@ export class DefaultRegistrar implements Registrar {
           }
 
           for (const topology of topologies.values()) {
-            topology.onConnect(connection.remotePeer, connection)
+            topology.onConnect(remotePeer, connection)
           }
         }
       })
       .catch(err => {
-        log.error('could not inform topologies of connecting peer %p', connection.remotePeer, err)
+        if (err.code === codes.ERR_NOT_FOUND) {
+          // peer has not completed identify so they are not in the peer store
+          return
+        }
+
+        log.error('could not inform topologies of connecting peer %p', remotePeer, err)
       })
   }
 

@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
 import { webSockets } from '@libp2p/websockets'
-import { plaintext } from '../../src/insecure/index.js'
-import { createPeerId } from '../utils/creators/peer.js'
 import { multiaddr } from '@multiformats/multiaddr'
-import { createLibp2pNode, Libp2pNode } from '../../src/libp2p.js'
+import { plaintext } from '../../src/insecure/index.js'
+import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
+import { createPeerId } from '../utils/creators/peer.js'
 
 describe('Consume peer record', () => {
   let libp2p: Libp2pNode

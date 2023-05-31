@@ -1,9 +1,9 @@
 import { logger } from '@libp2p/logger'
-import * as Errors from './errors.js'
-import xsalsa20 from 'xsalsa20'
-import { KEY_LENGTH } from './key-generator.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import xsalsa20 from 'xsalsa20'
+import * as Errors from './errors.js'
+import { KEY_LENGTH } from './key-generator.js'
 import type { Source } from 'it-stream-types'
 
 const log = logger('libp2p:pnet')

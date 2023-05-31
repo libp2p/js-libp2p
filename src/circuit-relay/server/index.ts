@@ -1,31 +1,31 @@
+import { setMaxListeners } from 'events'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
-import { createLimitedRelay } from '../utils.js'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { RecordEnvelope } from '@libp2p/peer-record'
+import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { pbStream, type ProtobufStream } from 'it-pb-stream'
+import pDefer from 'p-defer'
 import {
   CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
   RELAY_SOURCE_TAG
   , RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC
 } from '../constants.js'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Startable } from '@libp2p/interfaces/startable'
-import { ReservationStore, ReservationStoreInit } from './reservation-store.js'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import { AdvertService, AdvertServiceComponents, AdvertServiceInit } from './advert-service.js'
-import pDefer from 'p-defer'
-import { pbStream, ProtobufStream } from 'it-pb-stream'
-import { HopMessage, Reservation, Status, StopMessage } from '../pb/index.js'
-import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
+import { createLimitedRelay } from '../utils.js'
+import { AdvertService, type AdvertServiceComponents, type AdvertServiceInit } from './advert-service.js'
+import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
+import { ReservationVoucherRecord } from './reservation-voucher.js'
+import type { CircuitRelayService, RelayReservation } from '../index.js'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { RecordEnvelope } from '@libp2p/peer-record'
-import { ReservationVoucherRecord } from './reservation-voucher.js'
-import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { CircuitRelayService, RelayReservation } from '../index.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { setMaxListeners } from 'events'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { Startable } from '@libp2p/interfaces/startable'
 import type { PeerMap } from '@libp2p/peer-collections'
 
 const log = logger('libp2p:circuit-relay:server')
@@ -287,6 +287,10 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     const addrs = []
 
     for (const relayAddr of this.addressManager.getAddresses()) {
+      if (relayAddr.toString().includes('/p2p-circuit')) {
+        continue
+      }
+
       addrs.push(relayAddr.bytes)
     }
 

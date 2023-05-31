@@ -1,32 +1,33 @@
 import { createLibp2p } from 'libp2p'
+import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { identifyService } from 'libp2p/identify'
+import { kadDHT } from '@libp2p/kad-dht'
 import { webSockets } from '@libp2p/websockets'
-import { webRTCStar } from '@libp2p/webrtc-star'
+import { webTransport } from '@libp2p/webtransport'
+import { webRTCDirect, webRTC } from '@libp2p/webrtc'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { bootstrap } from '@libp2p/bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const wrtcStar = webRTCStar()
-
   // Create our libp2p node
   const libp2p = await createLibp2p({
-    addresses: {
-      // Add the signaling server address, along with our PeerId to our multiaddrs list
-      // libp2p will automatically attempt to dial to the signaling server so that it can
-      // receive inbound connections from other peers
-      listen: [
-        '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
-        '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star'
-      ]
-    },
+    // transports allow us to dial peers that support certain types of addresses
     transports: [
       webSockets(),
-      wrtcStar.transport
+      webTransport(),
+      webRTC(),
+      webRTCDirect(),
+      circuitRelayTransport({
+        // use content routing to find a circuit relay server we can reserve a
+        // slot on
+        discoverRelays: 1
+      })
     ],
     connectionEncryption: [noise()],
-    streamMuxers: [mplex()],
+    streamMuxers: [yamux(), mplex()],
     peerDiscovery: [
-      wrtcStar.discovery,
       bootstrap({
         list: [
           '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
@@ -36,7 +37,18 @@ document.addEventListener('DOMContentLoaded', async () => {
           '/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt'
         ]
       })
-    ]
+    ],
+    services: {
+      // the identify service is used by the DHT and the circuit relay transport
+      // to find peers that support the relevant protocols
+      identify: identifyService(),
+
+      // the DHT is used to find circuit relay servers we can reserve a slot on
+      dht: kadDHT({
+        // browser node ordinarily shouldn't be DHT servers
+        clientMode: true
+      })
+    }
   })
 
   // UI elements

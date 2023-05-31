@@ -1,0 +1,5 @@
+dist
+node-image.json
+chromium-image.json
+firefox-image.json
+webkit-image.json

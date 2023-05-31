@@ -1,14 +1,14 @@
 /* eslint-env mocha */
 
+import { floodsub } from '@libp2p/floodsub'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import mergeOptions from 'merge-options'
 import pDefer from 'p-defer'
-import delay from 'delay'
-import { createLibp2p, Libp2p } from '../../src/index.js'
-import { pubsubSubsystemOptions } from './utils.js'
-import { createPeerId } from '../utils/creators/peer.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { floodsub } from '@libp2p/floodsub'
+import { createLibp2p, type Libp2p } from '../../src/index.js'
+import { createPeerId } from '../utils/creators/peer.js'
+import { pubsubSubsystemOptions } from './utils.js'
 import type { PubSub } from '@libp2p/interface-pubsub'
 
 describe('Pubsub subsystem is configurable', () => {

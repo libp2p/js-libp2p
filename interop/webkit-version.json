@@ -1,0 +1,12 @@
+{
+    "id": "webkit-js-libp2p-head",
+    "containerImageID": "webkit-js-libp2p-head",
+    "transports": [],
+    "secureChannels": [
+        "noise"
+    ],
+    "muxers": [
+        "mplex",
+        "yamux"
+    ]
+}

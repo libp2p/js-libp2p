@@ -1,25 +1,25 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { createNode, createPeerId } from '../utils/creators/peer.js'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
-import { createBaseOptions } from '../utils/base-options.browser.js'
-import type { Libp2p } from '../../src/index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
 import * as STATUS from '@libp2p/interface-connection/status'
-import { stubInterface } from 'sinon-ts'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import sinon from 'sinon'
-import pWaitFor from 'p-wait-for'
-import delay from 'delay'
-import type { Libp2pNode } from '../../src/libp2p.js'
-import { codes } from '../../src/errors.js'
+import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { start } from '@libp2p/interfaces/startable'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import { expect } from 'aegir/chai'
+import delay from 'delay'
+import pWaitFor from 'p-wait-for'
+import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { defaultComponents } from '../../src/components.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { codes } from '../../src/errors.js'
+import { createBaseOptions } from '../utils/base-options.browser.js'
+import { createNode, createPeerId } from '../utils/creators/peer.js'
+import type { Libp2p } from '../../src/index.js'
+import type { Libp2pNode } from '../../src/libp2p.js'
+import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { TransportManager } from '@libp2p/interface-transport'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p
@@ -458,9 +458,9 @@ describe('libp2p.connections', () => {
         multiaddrs: [fullMultiaddr]
       })
 
-      expect(filterMultiaddrForPeer.callCount).to.equal(2)
+      expect(filterMultiaddrForPeer.callCount).to.equal(1)
 
-      const args = filterMultiaddrForPeer.getCall(1).args
+      const args = filterMultiaddrForPeer.getCall(0).args
       expect(args[0].toString()).to.equal(remoteLibp2p.peerId.toString())
       expect(args[1].toString()).to.equal(fullMultiaddr.toString())
     })

@@ -1,16 +1,16 @@
+import { peerIdFromString } from '@libp2p/peer-id'
+import pWaitFor from 'p-wait-for'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
+import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { CID, Version } from 'multiformats'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { Options as PWaitForOptions } from 'p-wait-for'
-import pWaitFor from 'p-wait-for'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { CID, Version } from 'multiformats'
+import type { Options as PWaitForOptions } from 'p-wait-for'
 
 export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay
@@ -102,8 +102,8 @@ export interface MockContentRoutingComponents {
 }
 
 export class MockContentRouting implements ContentRouting {
-  static providers: Map<string, PeerInfo[]> = new Map()
-  static data: Map<string, Uint8Array> = new Map()
+  static providers = new Map<string, PeerInfo[]>()
+  static data = new Map<string, Uint8Array>()
 
   static reset (): void {
     MockContentRouting.providers.clear()
@@ -143,10 +143,10 @@ export class MockContentRouting implements ContentRouting {
     const value = MockContentRouting.data.get(uint8ArrayToString(key, 'base58btc'))
 
     if (value != null) {
-      return await Promise.resolve(value)
+      return Promise.resolve(value)
     }
 
-    return await Promise.reject(new Error('Not found'))
+    return Promise.reject(new Error('Not found'))
   }
 }
 

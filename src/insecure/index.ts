@@ -22,16 +22,16 @@
  * ```
  */
 
+import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface-connection-encrypter/errors'
 import { logger } from '@libp2p/logger'
+import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { handshake } from 'it-handshake'
 import * as lp from 'it-length-prefixed'
-import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface-connection-encrypter/errors'
-import { Exchange, KeyType } from './pb/proto.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
-import type { Duplex, Source } from 'it-stream-types'
 import map from 'it-map'
+import { Exchange, KeyType } from './pb/proto.js'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:plaintext')
@@ -125,11 +125,11 @@ class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
 
   async secureInbound (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
-    return await encrypt(localId, conn, remoteId)
+    return encrypt(localId, conn, remoteId)
   }
 
   async secureOutbound (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
-    return await encrypt(localId, conn, remoteId)
+    return encrypt(localId, conn, remoteId)
   }
 }
 

@@ -1,23 +1,25 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { FaultTolerance } from '@libp2p/interface-transport'
-import { tcp } from '@libp2p/tcp'
 import { mockUpgrader } from '@libp2p/interface-mocks'
-import { uPnPNAT } from '../../src/upnp-nat/index.js'
-import Peers from '../fixtures/peers.js'
-import { codes } from '../../src/errors.js'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import type { NatAPI } from '@achingbrain/nat-port-mapper'
-import { StubbedInstance, stubInterface } from 'sinon-ts'
-import { start, stop } from '@libp2p/interfaces/startable'
-import { multiaddr } from '@multiformats/multiaddr'
-import { defaultComponents, Components } from '../../src/components.js'
+import { FaultTolerance } from '@libp2p/interface-transport'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
+import { start, stop } from '@libp2p/interfaces/startable'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { tcp } from '@libp2p/tcp'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { defaultComponents, type Components } from '../../src/components.js'
+import { codes } from '../../src/errors.js'
+import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { uPnPNATService } from '../../src/upnp-nat/index.js'
+import Peers from '../fixtures/peers.js'
+import type { NatAPI } from '@achingbrain/nat-port-mapper'
+import type { PeerUpdate } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -51,7 +53,7 @@ describe('UPnP NAT (TCP)', () => {
       faultTolerance: FaultTolerance.NO_FATAL
     })
 
-    const natManager: any = uPnPNAT({
+    const natManager: any = uPnPNATService({
       keepAlive: true,
       ...natManagerOptions
     })(components)
@@ -76,19 +78,13 @@ describe('UPnP NAT (TCP)', () => {
     }
   }
 
-  afterEach(async () => await Promise.all(teardown.map(async t => { await t() })))
+  afterEach(async () => Promise.all(teardown.map(async t => { await t() })))
 
   it('should map TCP connections to external ports', async () => {
     const {
       natManager,
       components
     } = await createNatManager()
-
-    let addressChangedEventFired = false
-
-    components.events.addEventListener('self:peer:update', () => {
-      addressChangedEventFired = true
-    })
 
     client.externalIp.resolves('82.3.1.5')
 
@@ -115,10 +111,13 @@ describe('UPnP NAT (TCP)', () => {
       })
     })
 
-    // simulate autonat having run
-    components.addressManager.confirmObservedAddr(multiaddr('/ip4/82.3.1.5/tcp/4002'))
+    const externalAddress = '/ip4/82.3.1.5/tcp/4002'
+    const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(components.events, 'self:peer:update')
 
-    expect(addressChangedEventFired).to.be.true()
+    // simulate autonat having run
+    components.addressManager.confirmObservedAddr(multiaddr(externalAddress))
+
+    await eventPromise
   })
 
   it('should not map TCP connections when double-natted', async () => {
@@ -229,7 +228,7 @@ describe('UPnP NAT (TCP)', () => {
     const peerId = await createFromJSON(Peers[0])
 
     expect(() => {
-      uPnPNAT({ ttl: 5, keepAlive: true })(defaultComponents({ peerId }))
+      uPnPNATService({ ttl: 5, keepAlive: true })(defaultComponents({ peerId }))
     }).to.throw().with.property('code', codes.ERR_INVALID_PARAMETERS)
   })
 })

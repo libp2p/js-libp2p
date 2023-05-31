@@ -4,6 +4,7 @@ import { createLibp2p } from 'libp2p'
 import { identifyService } from 'libp2p/identify'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { kadDHT } from '@libp2p/kad-dht'
 import delay from 'delay'
@@ -14,10 +15,14 @@ const createNode = async () => {
       listen: ['/ip4/0.0.0.0/tcp/0']
     },
     transports: [tcp()],
-    streamMuxers: [mplex()],
+    streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
     services: {
-      dht: kadDHT(),
+      dht: kadDHT({
+        // this is necessary because this node is not connected to the public network
+        // it can be removed if, for example bootstrappers are configured
+        allowQueryWithZeroPeers: true
+      }),
       identify: identifyService()
     }
   })
@@ -51,4 +56,4 @@ const createNode = async () => {
 
   console.log('Found it, multiaddrs are:')
   peer.multiaddrs.forEach((ma) => console.log(ma.toString()))
-})();
+})()
