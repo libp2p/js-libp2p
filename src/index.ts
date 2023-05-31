@@ -4,6 +4,7 @@ import { base32 } from 'multiformats/bases/base32'
 import { base64 } from 'multiformats/bases/base64'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { CID } from 'multiformats/cid'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Key } from 'interface-datastore'
 
 // Add a formatter for converting to a base58 string
@@ -33,6 +34,11 @@ debug.formatters.c = (v?: CID): string => {
 
 // Add a formatter for stringifying Datastore keys
 debug.formatters.k = (v: Key): string => {
+  return v == null ? 'undefined' : v.toString()
+}
+
+// Add a formatter for stringifying Multiaddrs
+debug.formatters.ma = (v?: Multiaddr): string => {
   return v == null ? 'undefined' : v.toString()
 }
 

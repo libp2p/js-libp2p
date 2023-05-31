@@ -1,6 +1,14 @@
 import { expect } from 'aegir/chai'
 import { logger } from '../src/index.js'
 import debug from 'debug'
+import { multiaddr } from '@multiformats/multiaddr'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as unint8ArrayToString } from 'uint8arrays/to-string'
+import { base58btc } from 'multiformats/bases/base58'
+import { base32 } from 'multiformats/bases/base32'
+import { base64 } from 'multiformats/bases/base64'
+import { Key } from 'interface-datastore'
 
 describe('logger', () => {
   it('creates a logger', () => {
@@ -51,5 +59,62 @@ describe('logger', () => {
     expect(log).to.have.nested.property('error.enabled').that.is.true()
     expect(log).to.have.property('trace').that.is.a('function')
     expect(log).to.have.nested.property('trace.enabled').that.is.true()
+  })
+
+  it('has all formatters', () => {
+    debug.enable('enabled-with-formatters')
+
+    expect(debug.formatters).to.have.property('b').that.is.a('function')
+    expect(debug.formatters).to.have.property('t').that.is.a('function')
+    expect(debug.formatters).to.have.property('m').that.is.a('function')
+    expect(debug.formatters).to.have.property('p').that.is.a('function')
+    expect(debug.formatters).to.have.property('c').that.is.a('function')
+    expect(debug.formatters).to.have.property('k').that.is.a('function')
+    expect(debug.formatters).to.have.property('ma').that.is.a('function')
+  })
+
+  it('test ma formatter', () => {
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
+
+    expect(debug.formatters.ma(ma)).to.equal(ma.toString())
+  })
+
+  it('test peerId formatter', () => {
+    const peerId = peerIdFromString('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
+
+    expect(debug.formatters.p(peerId)).to.equal(peerId.toString())
+  })
+
+  it('test cid formatter', () => {
+    const peerId = peerIdFromString('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
+    const cid = peerId.toCID()
+
+    expect(debug.formatters.c(cid)).to.equal(cid.toString())
+  })
+
+  it('test base58 formatter', () => {
+    const buf = uint8ArrayFromString('12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa', 'base58btc')
+
+    expect(debug.formatters.b(buf)).to.equal(base58btc.baseEncode(buf))
+  })
+
+  it('test base32 formatter', () => {
+    const buf = uint8ArrayFromString('jbswy3dpfqqho33snrscc===', 'base32')
+
+    expect(debug.formatters.t(buf)).to.equal(base32.baseEncode(buf))
+  })
+
+  it('test base64 formatter', () => {
+    const buf = uint8ArrayFromString('12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa', 'base64')
+
+    expect(debug.formatters.m(buf)).to.equal(base64.baseEncode(buf))
+  })
+
+  it('test datastore key formatter', () => {
+    const buf = uint8ArrayFromString('jbswy3dpfqqho33snrscc===', 'base32')
+
+    const key = new Key('/' + unint8ArrayToString(buf, 'base32'), false)
+
+    expect(debug.formatters.k(key)).to.equal(key.toString())
   })
 })
