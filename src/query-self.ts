@@ -149,6 +149,10 @@ export class QuerySelf implements Startable {
     this.querySelfPromise.resolve()
     this.querySelfPromise = undefined
 
+    if (!this.started) {
+      return
+    }
+
     this.timeoutId = setTimeout(() => {
       this.querySelf()
         .catch(err => {
