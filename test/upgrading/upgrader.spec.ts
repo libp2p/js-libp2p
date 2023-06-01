@@ -668,8 +668,7 @@ describe('libp2p.upgrader', () => {
     expect(arg0.stream).to.include.keys(['id', 'recvWindowCapacity', 'sendWindowCapacity', 'sourceInput'])
   })
 
-  // #TODO Investigate why this is failing https://github.com/libp2p/js-libp2p/issues/1781, skipping for now based https://github.com/libp2p/js-libp2p/pull/1627#issuecomment-1570561645
-  it.skip('should emit connect and disconnect events', async () => {
+  it('should emit connect and disconnect events', async () => {
     const remotePeer = peers[1]
     libp2p = await createLibp2p({
       peerId: peers[0],
