@@ -69,7 +69,7 @@ describe('identify', () => {
     await pWaitFor(() => connection.streams.length === 0)
 
     await connection.close()
-    
+
     await libp2p.stop()
   })
 
@@ -82,11 +82,11 @@ describe('identify', () => {
     }))
 
     await libp2p.start()
-  
+
     if (libp2p.services.identify == null) {
       throw new Error('Identity service was not configured')
     }
-    
+
     const eventPromise = pEvent<'peer:identify', CustomEvent<IdentifyResult>>(libp2p, 'peer:identify')
 
     const connection = await libp2p.dial(remoteAddr)
@@ -100,7 +100,7 @@ describe('identify', () => {
     expect(event.detail.peerId.equals(remotePeer)).to.be.true()
 
     await connection.close()
-    
+
     await libp2p.stop()
   })
 
