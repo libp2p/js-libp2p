@@ -1,3 +1,10 @@
+## [9.3.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.5...v9.3.6) (2023-06-01)
+
+
+### Bug Fixes
+
+* skip self-query if not running ([#479](https://github.com/libp2p/js-libp2p-kad-dht/issues/479)) ([7095290](https://github.com/libp2p/js-libp2p-kad-dht/commit/70952907a27fd8778773172059879656b4f08855))
+
 ## [9.3.5](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.4...v9.3.5) (2023-05-26)
 
 
