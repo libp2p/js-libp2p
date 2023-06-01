@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.4...v2.0.5) (2023-06-01)
+
+
+### Bug Fixes
+
+* Update splitAddr function to correctly parse multiaddrs ([#174](https://github.com/libp2p/js-libp2p-webrtc/issues/174)) ([22a7029](https://github.com/libp2p/js-libp2p-webrtc/commit/22a7029caab7601cfc1f1d1051bc218ebe4dfce0))
+
 ## [2.0.4](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.3...v2.0.4) (2023-05-17)
 
 
