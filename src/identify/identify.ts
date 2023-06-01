@@ -50,7 +50,8 @@ const defaultValues = {
   maxPushIncomingStreams: 1,
   maxPushOutgoingStreams: 1,
   maxObservedAddresses: 10,
-  maxIdentifyMessageSize: 8192
+  maxIdentifyMessageSize: 8192,
+  autodialOnConnectionOpen: true
 }
 
 export class DefaultIdentifyService implements Startable {
@@ -101,11 +102,13 @@ export class DefaultIdentifyService implements Startable {
       agentVersion: init.agentVersion ?? defaultValues.agentVersion
     }
 
-    // When a new connection happens, trigger identify
-    components.events.addEventListener('connection:open', (evt) => {
-      const connection = evt.detail
-      this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
-    })
+    if (init.autodialOnConnectionOpen ?? defaultValues.autodialOnConnectionOpen) {
+      // When a new connection happens, trigger identify
+      components.events.addEventListener('connection:open', (evt) => {
+        const connection = evt.detail
+        this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
+      })
+    }
 
     // When self peer record changes, trigger identify-push
     components.events.addEventListener('self:peer:update', (evt) => {
@@ -297,7 +300,7 @@ export class DefaultIdentifyService implements Startable {
     }
   }
 
-  async identify (connection: Connection, options: AbortOptions = {}): Promise<void> {
+  async identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyResult> {
     const message = await this._identify(connection, options)
     const {
       publicKey,
@@ -345,6 +348,8 @@ export class DefaultIdentifyService implements Startable {
     }
 
     this.events.safeDispatchEvent('peer:identify', { detail: result })
+
+    return result
   }
 
   /**

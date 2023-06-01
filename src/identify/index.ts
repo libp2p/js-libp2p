@@ -39,6 +39,11 @@ export interface IdentifyServiceInit {
   maxPushIncomingStreams?: number
   maxPushOutgoingStreams?: number
   maxObservedAddresses?: number
+
+  /**
+   * Whether to automatically dial identify on newly opened connections (default: true)
+   */
+  autodialOnConnectionOpen?: boolean
 }
 
 export interface IdentifyServiceComponents {
