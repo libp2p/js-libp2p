@@ -72,36 +72,6 @@ export class WebRTCTransport implements Transport, Startable {
     })
   }
 
-  private splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId } {
-    const addrs = ma.toString().split(WEBRTC_TRANSPORT)
-    if (addrs.length !== 2) {
-      throw new CodeError('webrtc protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
-    }
-
-    if (!addrs[0].includes(CIRCUIT_RELAY_TRANSPORT)) {
-      throw new CodeError('p2p-circuit protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
-    }
-
-    // look for remote peerId
-    let remoteAddr = multiaddr(addrs[0])
-    const destination = multiaddr(addrs[1])
-
-    const destinationIdString = destination.getPeerId()
-    if (destinationIdString == null) {
-      throw new CodeError('destination peer id was missing', codes.ERR_INVALID_MULTIADDR)
-    }
-
-    const lastProtoInRemote = remoteAddr.protos().pop()
-    if (lastProtoInRemote === undefined) {
-      throw new CodeError('invalid multiaddr', codes.ERR_INVALID_MULTIADDR)
-    }
-    if (lastProtoInRemote.name !== 'p2p') {
-      remoteAddr = remoteAddr.encapsulate(`/p2p/${destinationIdString}`)
-    }
-
-    return { baseAddr: remoteAddr, peerId: peerIdFromString(destinationIdString) }
-  }
-
   /*
    * dial connects to a remote via the circuit relay or any other protocol
    * and proceeds to upgrade to a webrtc connection.
@@ -111,7 +81,7 @@ export class WebRTCTransport implements Transport, Startable {
   */
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log.trace('dialing address: ', ma)
-    const { baseAddr, peerId } = this.splitAddr(ma)
+    const { baseAddr, peerId } = splitAddr(ma)
 
     if (options.signal == null) {
       const controller = new AbortController()
@@ -175,4 +145,34 @@ export class WebRTCTransport implements Transport, Startable {
       throw err
     }
   }
+}
+
+export function splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId } {
+  const addrs = ma.toString().split(WEBRTC_TRANSPORT + '/')
+  if (addrs.length !== 2) {
+    throw new CodeError('webrtc protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
+  }
+
+  if (!addrs[0].includes(CIRCUIT_RELAY_TRANSPORT)) {
+    throw new CodeError('p2p-circuit protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
+  }
+
+  // look for remote peerId
+  let remoteAddr = multiaddr(addrs[0])
+  const destination = multiaddr('/' + addrs[1])
+
+  const destinationIdString = destination.getPeerId()
+  if (destinationIdString == null) {
+    throw new CodeError('destination peer id was missing', codes.ERR_INVALID_MULTIADDR)
+  }
+
+  const lastProtoInRemote = remoteAddr.protos().pop()
+  if (lastProtoInRemote === undefined) {
+    throw new CodeError('invalid multiaddr', codes.ERR_INVALID_MULTIADDR)
+  }
+  if (lastProtoInRemote.name !== 'p2p') {
+    remoteAddr = remoteAddr.encapsulate(`/p2p/${destinationIdString}`)
+  }
+
+  return { baseAddr: remoteAddr, peerId: peerIdFromString(destinationIdString) }
 }

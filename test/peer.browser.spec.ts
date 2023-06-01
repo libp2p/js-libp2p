@@ -9,7 +9,7 @@ import { pbStream } from 'it-pb-stream'
 import Sinon from 'sinon'
 import { initiateConnection, handleIncomingStream } from '../src/private-to-private/handler'
 import { Message } from '../src/private-to-private/pb/message.js'
-import { WebRTCTransport } from '../src/private-to-private/transport'
+import { WebRTCTransport, splitAddr } from '../src/private-to-private/transport'
 
 const browser = detect()
 
@@ -106,6 +106,26 @@ describe('webrtc filter', () => {
     ]
 
     expect(transport.filter(valid)).length(1)
+  })
+})
+
+describe('webrtc splitAddr', () => {
+  it('can split a ws relay addr', async () => {
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/49173/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/webrtc/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
+
+    const { baseAddr, peerId } = splitAddr(ma)
+
+    expect(baseAddr.toString()).to.eq('/ip4/127.0.0.1/tcp/49173/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
+    expect(peerId.toString()).to.eq('12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
+  })
+
+  it('can split a webrtc-direct relay addr', async () => {
+    const ma = multiaddr('/ip4/127.0.0.1/udp/9090/webrtc-direct/certhash/uEiBUr89tH2P9paTCPn-AcfVZcgvIvkwns96t4h55IpxFtA/p2p/12D3KooWB64sJqc3T3VCaubQCrfCvvfummrAA9z1vEXHJT77ZNJh/p2p-circuit/webrtc/p2p/12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
+
+    const { baseAddr, peerId } = splitAddr(ma)
+
+    expect(baseAddr.toString()).to.eq('/ip4/127.0.0.1/udp/9090/webrtc-direct/certhash/uEiBUr89tH2P9paTCPn-AcfVZcgvIvkwns96t4h55IpxFtA/p2p/12D3KooWB64sJqc3T3VCaubQCrfCvvfummrAA9z1vEXHJT77ZNJh/p2p-circuit/p2p/12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
+    expect(peerId.toString()).to.eq('12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
   })
 })
 
