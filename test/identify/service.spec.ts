@@ -67,10 +67,7 @@ describe('identify', () => {
 
     // The connection should have no open streams
     await pWaitFor(() => connection.streams.length === 0)
-
     await connection.close()
-
-    await libp2p.stop()
   })
 
   it('should emit peer:identify event after connecting', async () => {
@@ -98,10 +95,7 @@ describe('identify', () => {
     const remotePeer = peerIdFromString(remoteAddr.getPeerId() ?? '')
 
     expect(event.detail.peerId.equals(remotePeer)).to.be.true()
-
     await connection.close()
-
-    await libp2p.stop()
   })
 
   it('should store remote agent and protocol versions in metadataBook after connecting', async () => {
@@ -135,8 +129,6 @@ describe('identify', () => {
     const remotePeer = await libp2p.peerStore.get(remotePeerId)
     expect(remotePeer.metadata.get('AgentVersion')).to.exist()
     expect(remotePeer.metadata.get('ProtocolVersion')).to.exist()
-
-    await libp2p.stop()
   })
 
   it('should push protocol updates to an already connected peer', async () => {

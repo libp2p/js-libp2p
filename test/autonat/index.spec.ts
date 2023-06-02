@@ -10,7 +10,7 @@ import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import sinon from 'sinon'
-import { stubInterface, stubObject } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../../src/autonat/constants.js'
 import { autoNATService } from '../../src/autonat/index.js'
@@ -96,28 +96,22 @@ describe('autonat', () => {
       connection.remoteAddr = multiaddr(`/ip4/${host}/tcp/28319/p2p/${peer.id.toString()}`)
       connectionManager.openConnection.withArgs(peer.id).resolves(connection)
 
-      const response = Message.encode({
-        type: Message.MessageType.DIAL_RESPONSE,
-        dialResponse
-      })
+      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).callsFake(async () => {
+        // stub autonat protocol stream
+        const stream = stubInterface<Stream>()
 
-      // stub autonat protocol stream
-      const stream = stubObject<Stream>({
-        close: sinon.stub(),
-        closeRead: sinon.stub(),
-        closeWrite: sinon.stub(),
-        abort: sinon.stub(),
-        reset: sinon.stub(),
-        id: '',
-        stat: { direction: 'outbound', timeline: { open: Date.now() } },
-        metadata: {},
-        source: (async function * () {
-          // stub autonat response
+        // stub autonat response
+        const response = Message.encode({
+          type: Message.MessageType.DIAL_RESPONSE,
+          dialResponse
+        })
+        stream.source = (async function * () {
           yield lp.encode.single(response)
-        }()),
-        sink: sinon.stub().returns(Promise.resolve())
+        }())
+        stream.sink.returns(Promise.resolve())
+
+        return stream
       })
-      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).resolves(stream)
 
       return peer
     }
