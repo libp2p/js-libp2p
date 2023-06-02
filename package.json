@@ -149,6 +149,7 @@
     "@libp2p/peer-id": "^2.0.3",
     "@types/debug": "^4.1.7",
     "aegir": "^38.1.7",
+    "sinon": "^15.1.0",
     "uint8arrays": "^4.0.3"
   }
 }

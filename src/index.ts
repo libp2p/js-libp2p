@@ -38,7 +38,7 @@ debug.formatters.k = (v: Key): string => {
 }
 
 // Add a formatter for stringifying Multiaddrs
-debug.formatters.ma = (v?: Multiaddr): string => {
+debug.formatters.a = (v?: Multiaddr): string => {
   return v == null ? 'undefined' : v.toString()
 }
 

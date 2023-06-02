@@ -9,6 +9,7 @@ import { base58btc } from 'multiformats/bases/base58'
 import { base32 } from 'multiformats/bases/base32'
 import { base64 } from 'multiformats/bases/base64'
 import { Key } from 'interface-datastore'
+import sinon from 'sinon'
 
 describe('logger', () => {
   it('creates a logger', () => {
@@ -70,13 +71,26 @@ describe('logger', () => {
     expect(debug.formatters).to.have.property('p').that.is.a('function')
     expect(debug.formatters).to.have.property('c').that.is.a('function')
     expect(debug.formatters).to.have.property('k').that.is.a('function')
-    expect(debug.formatters).to.have.property('ma').that.is.a('function')
+    expect(debug.formatters).to.have.property('a').that.is.a('function')
+  })
+
+  it('test printf style formatting', () => {
+    const log = logger('printf-style')
+    debug.enable('printf-style')
+
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
+
+    const debugSpy = sinon.spy(debug, 'log')
+
+    log('multiaddr %a', ma)
+
+    expect(debugSpy.firstCall.args[0], 'Multiaddr formatting not included').to.include(`multiaddr ${ma.toString()}`)
   })
 
   it('test ma formatter', () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
 
-    expect(debug.formatters.ma(ma)).to.equal(ma.toString())
+    expect(debug.formatters.a(ma)).to.equal(ma.toString())
   })
 
   it('test peerId formatter', () => {
