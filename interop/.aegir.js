@@ -1,7 +1,10 @@
 import http from 'http'
 import { createClient } from 'redis'
+import { createRelay } from './relay.js'
 
 const redisAddr = process.env.redis_addr || 'redis:6379'
+const transport = process.env.transport
+const isDialer = process.env.is_dialer === 'true'
 
 /** @type {import('aegir/types').PartialOptions} */
 export default {
@@ -13,6 +16,12 @@ export default {
       }
     },
     async before () {
+      let relayNode = { stop: () => {} }
+      let relayAddr = ''
+      if (transport === 'webrtc' && !isDialer) {
+        relayNode = await createRelay()
+        relayAddr = relayNode.getMultiaddrs()[0].toString()
+      }
       const redisClient = createClient({
         url: `redis://${redisAddr}`
       })
@@ -57,14 +66,16 @@ export default {
 
       return {
         redisClient,
+        relayNode,
         proxyServer,
         env: {
           ...process.env,
+          relayAddr,
           proxyPort: proxyServer.address().port
         }
       }
     },
-    async after (_, { proxyServer, redisClient }) {
+    async after (_, { proxyServer, redisClient, relayNode }) {
       await new Promise(resolve => {
         proxyServer.close(() => resolve())
       })
@@ -72,6 +83,7 @@ export default {
       try {
         // We don't care if this fails
         await redisClient.disconnect()
+        await relayNode.stop()
       } catch { }
     }
   }
