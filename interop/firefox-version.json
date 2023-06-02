@@ -6,9 +6,7 @@
             "name": "webrtc-direct",
             "onlyDial": true
         },
-        {
-            "name": "webrtc"
-        },
+        "webrtc",
         {
             "name": "wss",
             "onlyDial": true
