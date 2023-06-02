@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/libp2p/js-libp2p-logger/compare/v2.1.0...v2.1.1) (2023-06-02)
+
+
+### Bug Fixes
+
+* specify updated formatter for multiaddrs ([#36](https://github.com/libp2p/js-libp2p-logger/issues/36)) ([abaefb4](https://github.com/libp2p/js-libp2p-logger/commit/abaefb490a0d9464a23b422d9fc5b80051532d10))
+
 ## [2.1.0](https://github.com/libp2p/js-libp2p-logger/compare/v2.0.7...v2.1.0) (2023-05-31)
 
 
