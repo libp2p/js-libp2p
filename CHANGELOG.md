@@ -1,3 +1,10 @@
+## [8.1.4](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.3...v8.1.4) (2023-06-03)
+
+
+### Tests
+
+* add tests for patching and merging protocols ([#87](https://github.com/libp2p/js-libp2p-peer-store/issues/87)) ([3e51962](https://github.com/libp2p/js-libp2p-peer-store/commit/3e5196237d3416ca730696bae6ec0797958d90c7))
+
 ## [8.1.3](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.2...v8.1.3) (2023-06-03)
 
 
