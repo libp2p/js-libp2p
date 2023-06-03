@@ -165,7 +165,7 @@
     "@types/sinon": "^10.0.14",
     "aegir": "^39.0.5",
     "datastore-core": "^9.0.1",
-    "delay": "^5.0.0",
+    "delay": "^6.0.0",
     "p-defer": "^4.0.0",
     "p-event": "^5.0.1",
     "protons": "^7.0.2",
