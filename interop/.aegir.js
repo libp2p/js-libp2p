@@ -20,7 +20,13 @@ export default {
       let relayAddr = ''
       if (transport === 'webrtc' && !isDialer) {
         relayNode = await createRelay()
-        relayAddr = relayNode.getMultiaddrs()[0].toString()
+        const sortByNonLocalIp = (a, b) => {
+          if (a.toString().includes('127.0.0.1')) {
+            return 1
+          }
+          return -1
+        }
+        relayAddr = relayNode.getMultiaddrs().sort(sortByNonLocalIp)[0].toString()
       }
       const redisClient = createClient({
         url: `redis://${redisAddr}`
