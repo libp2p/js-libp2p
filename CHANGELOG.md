@@ -1,3 +1,11 @@
+## [8.1.3](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.2...v8.1.3) (2023-06-03)
+
+
+### Dependencies
+
+* **dev:** bump delay from 5.0.0 to 6.0.0 ([#85](https://github.com/libp2p/js-libp2p-peer-store/issues/85)) ([95fb9a0](https://github.com/libp2p/js-libp2p-peer-store/commit/95fb9a0c2c547483489dc071d34bd0c56dedb330))
+* move @libp2p/peer-id-factory to dependencies ([#86](https://github.com/libp2p/js-libp2p-peer-store/issues/86)) ([7152014](https://github.com/libp2p/js-libp2p-peer-store/commit/71520143e5844a2dc39a03fbcc23938c2d39687d)), closes [/github.com/libp2p/js-libp2p-peer-store/blob/master/src/utils/bytes-to-peer.ts#L2](https://github.com/libp2p//github.com/libp2p/js-libp2p-peer-store/blob/master/src/utils/bytes-to-peer.ts/issues/L2)
+
 ## [8.1.2](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.1...v8.1.2) (2023-05-10)
 
 
