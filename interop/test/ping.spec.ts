@@ -114,6 +114,8 @@ describe('ping test', () => {
         skipMuxer = true
         break
       case 'webrtc':
+        skipSecureChannel = true
+        skipMuxer = true
         // Setup yamux and noise to connect to the relay node
         options.streamMuxers = [yamux()]
         options.connectionEncryption = [noise()]
