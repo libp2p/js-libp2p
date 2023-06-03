@@ -174,6 +174,43 @@ describe('merge', () => {
     expect(updated).to.have.property('peerRecordEnvelope').that.deep.equals(original.peerRecordEnvelope)
   })
 
+  it('merges protocols', async () => {
+    const peer: PeerData = {
+      multiaddrs: [
+        addr1,
+        addr2
+      ],
+      metadata: {
+        foo: Uint8Array.from([0, 1, 2])
+      },
+      tags: {
+        tag1: { value: 10 }
+      },
+      protocols: [
+        '/foo/bar'
+      ],
+      peerRecordEnvelope: Uint8Array.from([3, 4, 5])
+    }
+
+    const original = await peerStore.save(otherPeerId, peer)
+    const updated = await peerStore.merge(otherPeerId, {
+      protocols: [
+        '/bar/foo'
+      ]
+    })
+
+    expect(updated).to.have.property('protocols').that.deep.equals([
+      '/bar/foo',
+      '/foo/bar'
+    ])
+
+    // other fields should be untouched
+    expect(updated).to.have.property('addresses').that.deep.equals(original.addresses)
+    expect(updated).to.have.property('metadata').that.deep.equals(original.metadata)
+    expect(updated).to.have.property('tags').that.deep.equals(original.tags)
+    expect(updated).to.have.property('peerRecordEnvelope').that.deep.equals(original.peerRecordEnvelope)
+  })
+
   it('merges peer record envelope', async () => {
     const peer: PeerData = {
       multiaddrs: [
