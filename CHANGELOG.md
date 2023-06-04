@@ -1,3 +1,10 @@
+## [2.0.6](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.5...v2.0.6) (2023-06-04)
+
+
+### Documentation
+
+* update README.md example ([#178](https://github.com/libp2p/js-libp2p-webrtc/issues/178)) ([1264875](https://github.com/libp2p/js-libp2p-webrtc/commit/1264875ebd40b057e70aa47bebde45bfbe80facb))
+
 ## [2.0.5](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.4...v2.0.5) (2023-06-01)
 
 
