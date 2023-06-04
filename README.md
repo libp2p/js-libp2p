@@ -44,16 +44,16 @@ Loading this module through a script tag will make it's exports available as `Li
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { Noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@chainsafe/libp2p-noise'
 import { multiaddr } from '@multiformats/multiaddr'
-import first from "it-first";
-import { pipe } from "it-pipe";
-import { fromString, toString } from "uint8arrays";
+import first from 'it-first'
+import { pipe } from 'it-pipe'
+import { fromString, toString } from 'uint8arrays'
 import { webRTC } from '@libp2p/webrtc'
 
 const node = await createLibp2p({
   transports: [webRTC()],
-  connectionEncryption: [() => new Noise()],
+  connectionEncryption: [noise()],
 });
 
 await node.start()
