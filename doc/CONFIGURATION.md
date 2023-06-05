@@ -326,7 +326,9 @@ const node = await createLibp2p({
 
 #### Customizing Pubsub
 
-Before a peer can subscribe to a topic it must find other peers and establish network connections with them. The pub/sub system doesn’t have any way to discover peers by itself. Instead, it relies upon the application to find new peers on its behalf, a process called ambient peer discovery. This means that pubsub relies on the identify service to exchange peer information with other peers.
+Before a peer can subscribe to a topic it must find other peers and establish network connections with them. The pub/sub system doesn’t have any way to discover peers by itself. Instead, it relies upon the application to find new peers on its behalf, a process called ambient peer discovery.
+
+This means that pubsub requires the identify service to be configured in order to exchange peer information with other peers, including lists of supported protocols.
 
 Potential methods for discovering peers include:
 
@@ -334,8 +336,6 @@ Potential methods for discovering peers include:
 - [Local network broadcasts](https://docs.libp2p.io/concepts/discovery-routing/mdns/)
 - [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
 - [Lists of bootstrap peers](https://github.com/libp2p/js-libp2p-bootstrap)
-
-
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
@@ -362,7 +362,7 @@ const node = await createLibp2p({
       pubsub: gossipsub({
         emitSelf: false,                                  // whether the node should emit to self on publish
         globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
-      }),
+      })
     }
   })
 ```
@@ -371,7 +371,9 @@ const node = await createLibp2p({
 
 As explained in [previous sections](#dht) the kad-dht is a Distributed Hash Table based on the Kademlia routing algorithm, with some modifications.
 
-libp2p uses the DHT as the foundation of its peer routing and content routing functionality. The kadDHT service relies on the Identify service for peer identification, address discovery and protocol support discovery. Upon creating or learning of a new address, the peer can push the new address to all peers it’s currently aware of. This keeps everyone’s routing tables up to date and makes it more likely that other peers will discover the new address.
+libp2p uses the DHT as an implementation of its peer routing and content routing functionality.
+
+The kadDHT service requires the Identify service to discover other peers that support the protocol and which allows it to use them to make network queries.
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -452,7 +454,13 @@ const node = await createLibp2p({
 
 #### Setup with Relay
 
-As described in the [Circuit Relay article](https://docs.libp2p.io/concepts/nat/circuit-relay/), libp2p provides a protocol for tunneling traffic through relay peers when two peers are unable to connect to each other directly. When a peer wants to establish a connection with another peer via a relay, it first needs to identify a peer that supports the Circuit Relay protocol. This is where the Identify service comes in. The Identify service allows peers to advertise the protocols they support. Thus, it is recommended to use the Identify service to find a relay peer that supports the Circuit Relay protocol.
+[Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/), is a protocol for tunneling traffic through relay peers when two peers are unable to connect to each other directly.
+
+When a peer to be available to be connected to via a relay, it first needs to find a peer that supports the Circuit Relay protocol.
+
+It can search the network for providers of the service and/or it can rely on ambient discovery via the identify protocol, during which peers exchange lists of protocols they support.
+
+Thus, it is recommended to include the Identify service in your services configuration when you hope to find a relay peer that supports the Circuit Relay protocol.
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -945,13 +953,11 @@ const node = await createLibp2p({
 
 #### Configuring AutoNAT
 
-While the identify protocol allows peers to inform each other about their observed network addresses, sometimes these addresses are inaccessible as the peer may be located in a private network (i.e., behind a NAT or a firewall).
+In order for a node to have confidence that it is publicly dialable, the AutoNAT protocol can be used to instruct remote peers to dial the node on the addresses that it believes to be public.
 
-Advertising addresses that are not reachable is detrimental for the health of a P2P network, as other nodes will unsuccessfully try to dial those addresses wasting compute and network resources.
-To prevent this problem of advertising and dialing unreachable addresses, libp2p has implemented a protocol called AutoNAT, which allows nodes to determine whether or not they are behind a NAT.
+If enough peers report that this address is dialable, the node is free to change it's relationship to the rest of the network; for example, it could become a DHT server or fulfil some other public role.
 
-AutoNAT allows a node to request other peers to dial its presumed public addresses. For more see https://docs.libp2p.io/concepts/nat/autonat/#what-is-autonat
-
+For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-autonat
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -960,14 +966,13 @@ import { autoNATService } from 'libp2p/autonat'
 const node = await createLibp2p({
   services: {
     nat: autoNATService({
-      protocolPrefix: 'my-node', // allows overriding the default protocol prefix,The AutoNAT protocol uses the protocol ID /libp2p/autonat/1.0.0 and involves the exchange of Dial and DialResponse messages.
-      timeout: 30000,
-      maxInboundStreams: 1000,
-      maxOutboundStreams: 1000
+      protocolPrefix: 'my-node', // this should be left as the default value to ensure maximum compatibility
+      timeout: 30000, // the remote must complete the AutoNAT protocol within this timeout
+      maxInboundStreams: 1, // how many concurrent inbound AutoNAT protocols streams to allow on each connection
+      maxOutboundStreams: 1 // how many concurrent outbound AutoNAT protocols streams to allow on each connection
     })
   }
 })
-```
 
 
 #### Configuring UPnP NAT Traversal
