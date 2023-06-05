@@ -4,6 +4,7 @@
 - [Modules](#modules)
   - [Transport](#transport)
   - [Stream Multiplexing](#stream-multiplexing)
+    - [Muxer Selection](#muxer-selection)
   - [Connection Encryption](#connection-encryption)
   - [Peer Discovery](#peer-discovery)
   - [Content Routing](#content-routing)
@@ -89,6 +90,10 @@ Some available stream multiplexers are:
 
 - [@libp2p/mplex](https://github.com/libp2p/js-libp2p-mplex)
 - [@chainsafe/libp2p-yamux](https://github.com/chainsafe/js-libp2p-yamux)
+
+Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
+
+If you configure multiple muxers for use in your application, js-libp2p will choose the first muxer in the list. Therefore, ordering matters.
 
 If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [Stream Muxer Interface](https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer).
 
