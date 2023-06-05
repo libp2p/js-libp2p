@@ -429,79 +429,98 @@ export class DefaultIdentifyService implements Startable {
   }
 
   async #consumeIdentifyMessage (remotePeer: PeerId, message: Identify): Promise<SignedPeerRecord | undefined> {
+    log('received identify from %p', remotePeer)
+
     if (message == null) {
       throw new Error('Message was null or undefined')
     }
 
-    log('received identify from %p', remotePeer)
-
-    if (message.signedPeerRecord == null) {
-      return
+    const peer = {
+      addresses: message.listenAddrs.map(buf => ({
+        isCertified: false,
+        multiaddr: multiaddr(buf)
+      })),
+      protocols: message.protocols,
+      metadata: new Map(),
+      peerRecordEnvelope: message.signedPeerRecord
     }
 
-    let peerRecordEnvelope = message.signedPeerRecord
-    const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
-    let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+    let output: SignedPeerRecord | undefined
 
-    // Verify peerId
-    if (!peerRecord.peerId.equals(envelope.peerId)) {
-      throw new Error('signing key does not match PeerId in the PeerRecord')
-    }
+    // if the peer record has been sent, prefer the addresses in the record as they are signed by the remote peer
+    if (message.signedPeerRecord != null) {
+      log('received signedPeerRecord in push from %p', remotePeer)
 
-    // Make sure remote peer is the one sending the record
-    if (!remotePeer.equals(peerRecord.peerId)) {
-      throw new Error('signing key does not match remote PeerId')
-    }
+      let peerRecordEnvelope = message.signedPeerRecord
+      const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
+      let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
 
-    let peer: Peer | undefined
-
-    try {
-      peer = await this.peerStore.get(peerRecord.peerId)
-    } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
-        throw err
+      // Verify peerId
+      if (!peerRecord.peerId.equals(envelope.peerId)) {
+        throw new Error('signing key does not match PeerId in the PeerRecord')
       }
-    }
 
-    log('received signedPeerRecord in push from %p', remotePeer)
-    const metadata = peer?.metadata ?? new Map()
-
-    if (peer?.peerRecordEnvelope != null) {
-      const storedEnvelope = await RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
-      const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
-
-      // ensure seq is greater than, or equal to, the last received
-      if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-        log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
-        peerRecord = storedRecord
-        peerRecordEnvelope = peer.peerRecordEnvelope
+      // Make sure remote peer is the one sending the record
+      if (!remotePeer.equals(peerRecord.peerId)) {
+        throw new Error('signing key does not match remote PeerId')
       }
+
+      let existingPeer: Peer | undefined
+
+      try {
+        existingPeer = await this.peerStore.get(peerRecord.peerId)
+      } catch (err: any) {
+        if (err.code !== 'ERR_NOT_FOUND') {
+          throw err
+        }
+      }
+
+      if (existingPeer != null) {
+        // don't lose any existing metadata
+        peer.metadata = existingPeer.metadata
+
+        // if we have previously received a signed record for this peer, compare it to the incoming one
+        if (existingPeer.peerRecordEnvelope != null) {
+          const storedEnvelope = await RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope)
+          const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
+
+          // ensure seq is greater than, or equal to, the last received
+          if (storedRecord.seqNumber >= peerRecord.seqNumber) {
+            log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+            peerRecord = storedRecord
+            peerRecordEnvelope = existingPeer.peerRecordEnvelope
+          }
+        }
+      }
+
+      // store the signed record for next time
+      peer.peerRecordEnvelope = peerRecordEnvelope
+
+      // override the stored addresses with the signed multiaddrs
+      peer.addresses = peerRecord.multiaddrs.map(multiaddr => ({
+        isCertified: true,
+        multiaddr
+      }))
+
+      output = {
+        seq: peerRecord.seqNumber,
+        addresses: peerRecord.multiaddrs
+      }
+    } else {
+      log('%p did not send a signed peer record', remotePeer)
     }
 
     if (message.agentVersion != null) {
-      metadata.set('AgentVersion', uint8ArrayFromString(message.agentVersion))
+      peer.metadata.set('AgentVersion', uint8ArrayFromString(message.agentVersion))
     }
 
     if (message.protocolVersion != null) {
-      metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
+      peer.metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
     }
 
-    await this.peerStore.patch(peerRecord.peerId, {
-      peerRecordEnvelope,
-      protocols: message.protocols,
-      addresses: peerRecord.multiaddrs.map(multiaddr => ({
-        isCertified: true,
-        multiaddr
-      })),
-      metadata
-    })
+    await this.peerStore.patch(remotePeer, peer)
 
-    log('consumed signedPeerRecord sent in push from %p', remotePeer)
-
-    return {
-      seq: peerRecord.seqNumber,
-      addresses: peerRecord.multiaddrs
-    }
+    return output
   }
 }
 
