@@ -8,10 +8,9 @@ const t = setTimeout(() => {
   if (typeof log === 'function') {
     log()
   }
-
 }, (60 * 1000) * 10)
 
-if (typeof t.unref == 'function') {
+if (typeof t.unref === 'function') {
   t.unref()
 }
 
