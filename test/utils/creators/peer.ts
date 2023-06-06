@@ -1,8 +1,7 @@
-import { createEd25519PeerId, createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import pTimes from 'p-times'
 import { createLibp2pNode, type Libp2pNode } from '../../../src/libp2p.js'
-import Peers from '../../fixtures/peers.js'
 import { createBaseOptions } from '../base-options.browser.js'
 import type { AddressManagerInit } from '../../../src/address-manager/index.js'
 import type { Libp2pOptions } from '../../../src/index.js'
@@ -18,11 +17,6 @@ export interface CreatePeerOptions <T extends ServiceMap> {
   number?: number
 
   /**
-   * fixture index for peer-id generation
-   */
-  fixture?: number
-
-  /**
    * nodes should start (default: true)
    */
   started?: boolean
@@ -36,7 +30,7 @@ export interface CreatePeerOptions <T extends ServiceMap> {
 export async function createNode <T extends ServiceMap> (options: CreatePeerOptions<T> = {}): Promise<Libp2pNode<T>> {
   const started = options.started ?? true
   const config = options.config ?? {}
-  const peerId = await createPeerId({ fixture: options.fixture })
+  const peerId = await createPeerId()
   const addresses: AddressManagerInit = started
     ? {
         listen: [listenAddr.toString()],
@@ -77,12 +71,6 @@ export async function populateAddressBooks (peers: Libp2p[]): Promise<void> {
 }
 
 export interface CreatePeerIdOptions {
-
-  /**
-   * fixture index for peer-id generation (default: 0)
-   */
-  fixture?: number
-
   /**
    * Options to pass to the PeerId constructor
    */
@@ -98,11 +86,7 @@ export interface CreatePeerIdOptions {
 export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<PeerId> {
   const opts = options.opts ?? {}
 
-  if (options.fixture == null) {
-    return opts.type === 'rsa' ? createRSAPeerId({ bits: opts.bits ?? 512 }) : createEd25519PeerId()
-  }
-
-  return createFromJSON(Peers[options.fixture])
+  return opts.type === 'rsa' ? createRSAPeerId({ bits: opts.bits ?? 512 }) : createEd25519PeerId()
 }
 
 /**
@@ -111,8 +95,5 @@ export async function createPeerId (options: CreatePeerIdOptions = {}): Promise<
 export async function createPeerIds (count: number, options: Omit<CreatePeerIdOptions, 'fixture'> = {}): Promise<PeerId[]> {
   const opts = options.opts ?? {}
 
-  return pTimes(count, async (i) => createPeerId({
-    ...opts,
-    fixture: i
-  }))
+  return pTimes(count, async (i) => createPeerId({ opts }))
 }

@@ -6,7 +6,7 @@ import { AbortError } from '@libp2p/interfaces/errors'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { webSockets } from '@libp2p/websockets'
@@ -26,8 +26,6 @@ import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
-import Peers from '../fixtures/peers.js'
 import { createPeerId } from '../utils/creators/peer.js'
 import type { DefaultIdentifyService } from '../../src/identify/identify.js'
 import type { Connection } from '@libp2p/interface-connection'
@@ -37,6 +35,7 @@ import type { TransportManager } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
+const relayMultiaddr = multiaddr(process.env.RELAY_MULTIADDR)
 
 describe('dialing (direct, WebSockets)', () => {
   let localTM: TransportManager
@@ -48,7 +47,7 @@ describe('dialing (direct, WebSockets)', () => {
   beforeEach(async () => {
     const localEvents = new EventEmitter()
     localComponents = defaultComponents({
-      peerId: await createFromJSON(Peers[0]),
+      peerId: await createEd25519PeerId(),
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader({ events: localEvents }),
       connectionGater: mockConnectionGater(),
@@ -69,7 +68,7 @@ describe('dialing (direct, WebSockets)', () => {
     localComponents.transportManager = localTM
 
     // this peer is spun up in .aegir.cjs
-    remoteAddr = MULTIADDRS_WEBSOCKETS[0]
+    remoteAddr = relayMultiaddr
     remoteComponents = defaultComponents({
       peerId: peerIdFromString(remoteAddr.getPeerId() ?? '')
     })
@@ -389,7 +388,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await libp2p.start()
 
-    const connection = await libp2p.dial(MULTIADDRS_WEBSOCKETS[0])
+    const connection = await libp2p.dial(relayMultiaddr)
     expect(connection).to.exist()
 
     // Wait for connection event to be emitted
@@ -423,7 +422,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await libp2p.start()
 
-    const connection = await libp2p.dial(MULTIADDRS_WEBSOCKETS[0])
+    const connection = await libp2p.dial(relayMultiaddr)
     expect(connection).to.exist()
     expect(connection.stat.timeline.close).to.not.exist()
 
@@ -451,7 +450,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       connectionGater: mockConnectionGater()
     })
 
-    await libp2p.hangUp(MULTIADDRS_WEBSOCKETS[0])
+    await libp2p.hangUp(relayMultiaddr)
   })
 
   it('should fail to dial self', async () => {

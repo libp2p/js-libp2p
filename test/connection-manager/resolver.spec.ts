@@ -4,7 +4,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -16,12 +16,11 @@ import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } f
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Transport } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-const relayAddr = MULTIADDRS_WEBSOCKETS[0]
+const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)
 
 const getDnsaddrStub = (peerId: PeerId): string[] => [
   `/dnsaddr/ams-1.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
@@ -117,10 +116,7 @@ describe('dialing (resolvable addresses)', () => {
   })
 
   it('resolves dnsaddr to ws local address', async () => {
-    const { default: Peers } = await import('../fixtures/peers.js')
-
-    // Use the last peer
-    const peerId = await createFromJSON(Peers[Peers.length - 1])
+    const peerId = await createEd25519PeerId()
     // ensure remote libp2p creates reservation on relay
     await remoteLibp2p.peerStore.merge(peerId, {
       protocols: [RELAY_V2_HOP_CODEC]
@@ -150,10 +146,7 @@ describe('dialing (resolvable addresses)', () => {
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
 
-    const { default: Peers } = await import('../fixtures/peers.js')
-
-    // Use the last peer
-    const relayId = await createFromJSON(Peers[Peers.length - 1])
+    const relayId = await createEd25519PeerId()
     // ensure remote libp2p creates reservation on relay
     await remoteLibp2p.peerStore.merge(relayId, {
       protocols: [RELAY_V2_HOP_CODEC]
@@ -218,10 +211,7 @@ describe('dialing (resolvable addresses)', () => {
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
 
-    const { default: Peers } = await import('../fixtures/peers.js')
-
-    // Use the last peer
-    const relayId = await createFromJSON(Peers[Peers.length - 1])
+    const relayId = await createEd25519PeerId()
     // ensure remote libp2p creates reservation on relay
     await remoteLibp2p.peerStore.merge(relayId, {
       protocols: [RELAY_V2_HOP_CODEC]

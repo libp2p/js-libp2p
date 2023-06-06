@@ -2,8 +2,9 @@ import { webSockets } from '@libp2p/websockets'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { WebSockets } from '@multiformats/mafmt'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
@@ -14,22 +15,21 @@ export default {
     before: async () => {
       // use dynamic import because we only want to reference these files during the test run, e.g. after building
       const { createLibp2p } = await import('./dist/src/index.js')
-      const { MULTIADDRS_WEBSOCKETS } = await import('./dist/test/fixtures/browser.js')
       const { plaintext } = await import('./dist/src/insecure/index.js')
-      const { default: Peers } = await import('./dist/test/fixtures/peers.js')
       const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
       const { identifyService } = await import('./dist/src/identify/index.js')
       const { pingService } = await import('./dist/src/ping/index.js')
       const { fetchService } = await import('./dist/src/fetch/index.js')
 
-      // Use the last peer
-      const peerId = await createFromJSON(Peers[Peers.length - 1])
+      const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
         connectionManager: {
           inboundConnectionThreshold: Infinity
         },
         addresses: {
-          listen: [MULTIADDRS_WEBSOCKETS[0]]
+          listen: [
+            '/ip4/127.0.0.1/tcp/0/ws'
+          ]
         },
         peerId,
         transports: [
@@ -64,7 +64,7 @@ export default {
       return {
         libp2p,
         env: {
-          RELAY_MULTIADDR: MULTIADDRS_WEBSOCKETS[0]
+          RELAY_MULTIADDR: libp2p.getMultiaddrs().filter(ma => WebSockets.matches(ma)).pop()
         }
       }
     },
