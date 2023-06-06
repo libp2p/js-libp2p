@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
@@ -12,8 +12,6 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { AGENT_VERSION } from '../../src/identify/consts.js'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
-import Peers from '../fixtures/peers.js'
 import { createBaseOptions } from '../utils/base-options.browser.js'
 import type { DefaultIdentifyService } from '../../src/identify/identify.js'
 import type { Libp2p, IdentifyResult } from '@libp2p/interface-libp2p'
@@ -23,10 +21,10 @@ describe('identify', () => {
   let peerId: PeerId
   let libp2p: Libp2p<{ identify: unknown }>
   let remoteLibp2p: Libp2p<{ identify: unknown }>
-  const remoteAddr = MULTIADDRS_WEBSOCKETS[0]
+  const remoteAddr = multiaddr(process.env.RELAY_MULTIADDR)
 
   before(async () => {
-    peerId = await createFromJSON(Peers[0])
+    peerId = await createEd25519PeerId()
   })
 
   afterEach(async () => {

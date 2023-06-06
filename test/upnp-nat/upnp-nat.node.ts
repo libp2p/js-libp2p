@@ -4,7 +4,7 @@ import { mockUpgrader } from '@libp2p/interface-mocks'
 import { FaultTolerance } from '@libp2p/interface-transport'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -15,7 +15,6 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { codes } from '../../src/errors.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { uPnPNATService } from '../../src/upnp-nat/index.js'
-import Peers from '../fixtures/peers.js'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import type { PeerUpdate } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -33,7 +32,7 @@ describe('UPnP NAT (TCP)', () => {
   async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: any, components: Components }> {
     const events = new EventEmitter()
     const components: any = {
-      peerId: await createFromJSON(Peers[0]),
+      peerId: await createEd25519PeerId(),
       upgrader: mockUpgrader({ events }),
       events,
       peerStore: stubInterface<PeerStore>()
@@ -225,7 +224,7 @@ describe('UPnP NAT (TCP)', () => {
   })
 
   it('should specify large enough TTL', async () => {
-    const peerId = await createFromJSON(Peers[0])
+    const peerId = await createEd25519PeerId()
 
     expect(() => {
       uPnPNATService({ ttl: 5, keepAlive: true })(defaultComponents({ peerId }))

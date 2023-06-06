@@ -3,16 +3,16 @@ import { mockConnectionGater } from '@libp2p/interface-mocks'
 import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
+import { multiaddr } from '@multiformats/multiaddr'
 import * as cborg from 'cborg'
 import mergeOptions from 'merge-options'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
 import type { Libp2pInit, Libp2pOptions } from '../../src/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Message, PublishResult, PubSub, PubSubInit, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 
-const relayAddr = MULTIADDRS_WEBSOCKETS[0]
+const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)
 
 export const baseOptions: Partial<Libp2pInit<{ pubsub: PubSub }>> = {
   addresses: {

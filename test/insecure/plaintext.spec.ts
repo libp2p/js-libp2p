@@ -6,12 +6,11 @@ import {
 } from '@libp2p/interface-connection-encrypter/errors'
 import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createFromJSON, createRSAPeerId } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { plaintext } from '../../src/insecure/index.js'
-import Peers from '../fixtures/peers.js'
 import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
@@ -23,9 +22,9 @@ describe('plaintext', () => {
 
   beforeEach(async () => {
     [localPeer, remotePeer, wrongPeer] = await Promise.all([
-      createFromJSON(Peers[0]),
-      createFromJSON(Peers[1]),
-      createFromJSON(Peers[2])
+      createEd25519PeerId(),
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
 
     encrypter = plaintext()()

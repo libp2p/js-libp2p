@@ -4,7 +4,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-mocks'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { mplex } from '@libp2p/mplex'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -28,8 +28,6 @@ import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { preSharedKey } from '../../src/pnet/index.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
-import Peers from '../fixtures/peers.js'
 import swarmKey from '../fixtures/swarm.key.js'
 import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface-connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
@@ -64,8 +62,8 @@ describe('Upgrader', () => {
       localPeer,
       remotePeer
     ] = await Promise.all([
-      createFromJSON(Peers[0]),
-      createFromJSON(Peers[1])
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ]))
 
     localConnectionProtector = stubInterface<ConnectionProtector>()
@@ -557,8 +555,8 @@ describe('libp2p.upgrader', () => {
 
   before(async () => {
     peers = await Promise.all([
-      createFromJSON(Peers[0]),
-      createFromJSON(Peers[1])
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 
@@ -674,7 +672,7 @@ describe('libp2p.upgrader', () => {
       peerId: peers[0],
       addresses: {
         listen: [
-          `${MULTIADDRS_WEBSOCKETS}/p2p-circuit`
+          `${process.env.RELAY_MULTIADDR}/p2p-circuit`
         ]
       },
       transports: [

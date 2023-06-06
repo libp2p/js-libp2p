@@ -1,13 +1,12 @@
 /* eslint-env mocha */
 
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { type AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
-import Peers from '../fixtures/peers.js'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
@@ -22,7 +21,7 @@ describe('Address Manager', () => {
   let events: EventEmitter<Libp2pEvents>
 
   beforeEach(async () => {
-    peerId = await createFromJSON(Peers[0])
+    peerId = await createEd25519PeerId()
     peerStore = stubInterface<PeerStore>({
       // @ts-expect-error incorrect return type
       patch: Promise.resolve({})
