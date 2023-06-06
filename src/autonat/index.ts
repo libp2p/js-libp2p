@@ -526,7 +526,7 @@ class DefaultAutoNATService implements Startable {
           }
 
           if (!multiaddrs.some(ma => ma.equals(addr))) {
-            log('Peer reported %a as %s but it was not in our observed address list', addr, dialResponse.status)
+            log('peer reported %a as %s but it was not in our observed address list', addr, dialResponse.status)
             continue
           }
 

@@ -296,6 +296,7 @@ describe('autonat', () => {
           status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
+
       peerRouting.getClosestPeers.returns(async function * () {
         yield * peers
       }())
