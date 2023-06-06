@@ -3,7 +3,7 @@
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { FaultTolerance } from '@libp2p/interface-transport'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { createEd25519PeerId, createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -14,8 +14,6 @@ import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { MULTIADDRS_WEBSOCKETS } from '../fixtures/browser.js'
-import Peers from '../fixtures/peers.js'
 import type { Components } from '../../src/components.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
@@ -68,7 +66,7 @@ describe('Transport Manager (WebSockets)', () => {
 
   it('should be able to dial', async () => {
     tm.add(webSockets({ filter: filters.all })())
-    const addr = MULTIADDRS_WEBSOCKETS[0]
+    const addr = multiaddr(process.env.RELAY_MULTIADDR)
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
     await connection.close()
@@ -96,7 +94,7 @@ describe('libp2p.transportManager (dial only)', () => {
   let libp2p: Libp2p
 
   before(async () => {
-    peerId = await createFromJSON(Peers[0])
+    peerId = await createEd25519PeerId()
   })
 
   afterEach(async () => {

@@ -3,7 +3,7 @@
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -14,7 +14,6 @@ import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { fetchService, type FetchServiceInit } from '../../src/fetch/index.js'
-import Peers from '../fixtures/peers.js'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { TransportManager } from '@libp2p/interface-transport'
 
@@ -26,7 +25,7 @@ const defaultInit: FetchServiceInit = {
 }
 
 async function createComponents (index: number): Promise<Components> {
-  const peerId = await createFromJSON(Peers[index])
+  const peerId = await createEd25519PeerId()
 
   const events = new EventEmitter()
   const components = defaultComponents({
