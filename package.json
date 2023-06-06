@@ -224,6 +224,7 @@
   },
   "browser": {
     "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js",
-    "nat-api": false
+    "nat-api": false,
+    "why-is-node-running": false
   }
 }

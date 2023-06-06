@@ -5,10 +5,13 @@
 import log from 'why-is-node-running'
 
 const t = setTimeout(() => {
-  log()
+  if (typeof log === 'function') {
+    log()
+  }
+
 }, (60 * 1000) * 10)
 
-if (t.unref != null) {
+if (typeof t.unref == 'function') {
   t.unref()
 }
 
