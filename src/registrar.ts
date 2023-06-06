@@ -79,6 +79,8 @@ export class DefaultRegistrar implements Registrar {
       throw new CodeError(`Handler already registered for protocol ${protocol}`, codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
     }
 
+    log('registering handler for protocol %s', protocol)
+
     const options = merge.bind({ ignoreUndefined: true })({
       maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
       maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
@@ -101,6 +103,8 @@ export class DefaultRegistrar implements Registrar {
    */
   async unhandle (protocols: string | string[]): Promise<void> {
     const protocolList = Array.isArray(protocols) ? protocols : [protocols]
+
+    log('unregistering handler for protocol(s) %s', protocols)
 
     protocolList.forEach(protocol => {
       this.handlers.delete(protocol)
