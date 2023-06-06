@@ -1,19 +1,19 @@
-import { connect, WebSocketOptions } from 'it-ws/client'
-import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
+import { type Transport, type MultiaddrFilter, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface-transport'
 import { AbortError } from '@libp2p/interfaces/errors'
-import pDefer from 'p-defer'
 import { logger } from '@libp2p/logger'
+import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
+import { connect, type WebSocketOptions } from 'it-ws/client'
+import pDefer from 'p-defer'
 import { isBrowser, isWebWorker } from 'wherearewe'
+import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import * as filters from './filters.js'
-import { Transport, MultiaddrFilter, symbol, CreateListenerOptions, DialOptions, Listener } from '@libp2p/interface-transport'
 import type { Connection } from '@libp2p/interface-connection'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 import type { ClientOptions } from 'ws'
-import type { Server } from 'http'
 
 const log = logger('libp2p:websockets')
 
@@ -30,13 +30,9 @@ class WebSockets implements Transport {
     this.init = init
   }
 
-  get [Symbol.toStringTag] (): string {
-    return '@libp2p/websockets'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/websockets'
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     log('dialing %s', ma)

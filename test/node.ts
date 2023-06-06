@@ -1,27 +1,27 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import https from 'https'
-import http from 'http'
 import fs from 'fs'
-import { expect } from 'aegir/chai'
+import http from 'http'
+import https from 'https'
+import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { multiaddr } from '@multiformats/multiaddr'
-import { goodbye } from 'it-goodbye'
+import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
 import all from 'it-all'
+import drain from 'it-drain'
+import { goodbye } from 'it-goodbye'
 import { pipe } from 'it-pipe'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
 import defer from 'p-defer'
 import waitFor from 'p-wait-for'
-import { webSockets } from '../src/index.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as filters from '../src/filters.js'
-import drain from 'it-drain'
+import { webSockets } from '../src/index.js'
 import type { Listener, Transport } from '@libp2p/interface-transport'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 import './compliance.node.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
 
 async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
   for await (const list of source) {

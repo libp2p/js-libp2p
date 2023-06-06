@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
-import { multiaddr } from '@multiformats/multiaddr'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { webSockets } from '../src/index.js'
 import { mockUpgrader } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import all from 'it-all'
+import { pipe } from 'it-pipe'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { isBrowser, isWebWorker } from 'wherearewe'
+import { webSockets } from '../src/index.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { Transport } from '@libp2p/interface-transport'
-import { EventEmitter } from '@libp2p/interfaces/events'
 
 const protocol = '/echo/1.0.0'
 
@@ -39,7 +39,7 @@ describe('libp2p-websockets', () => {
     const res = await pipe(
       [data],
       stream,
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(res[0].subarray()).to.equalBytes(data)
@@ -69,7 +69,7 @@ describe('libp2p-websockets', () => {
       const res = await pipe(
         [data],
         stream,
-        async (source) => await all(source)
+        async (source) => all(source)
       )
 
       expect(res[0].subarray()).to.deep.equal(data)
@@ -85,7 +85,7 @@ describe('libp2p-websockets', () => {
       const res = await pipe(
         data,
         stream,
-        async (source) => await all(source)
+        async (source) => all(source)
       )
 
       expect(res.map(list => list.subarray())).to.deep.equal(data)

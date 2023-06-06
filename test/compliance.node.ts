@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
+import http from 'http'
 import tests from '@libp2p/interface-transport-compliance-tests'
 import { multiaddr } from '@multiformats/multiaddr'
-import http from 'http'
-import { webSockets } from '../src/index.js'
 import * as filters from '../src/filters.js'
+import { webSockets } from '../src/index.js'
 import type { WebSocketListenerInit } from '../src/listener.js'
 import type { Listener } from '@libp2p/interface-transport'
 

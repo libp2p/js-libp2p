@@ -1,5 +1,4 @@
 import * as mafmt from '@multiformats/mafmt'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import {
   CODE_CIRCUIT,
   CODE_P2P,
@@ -7,6 +6,7 @@ import {
   CODE_WS,
   CODE_WSS
 } from './constants.js'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export function all (multiaddrs: Multiaddr[]): Multiaddr[] {
   return multiaddrs.filter((ma) => {

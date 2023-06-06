@@ -178,7 +178,7 @@
   "devDependencies": {
     "@libp2p/interface-mocks": "^11.0.0",
     "@libp2p/interface-transport-compliance-tests": "^4.0.0",
-    "aegir": "^38.1.7",
+    "aegir": "^39.0.9",
     "is-loopback-addr": "^2.0.1",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.1",

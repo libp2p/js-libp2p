@@ -1,9 +1,9 @@
-import { abortableSource } from 'abortable-iterator'
-import { CLOSE_TIMEOUT } from './constants.js'
-import pTimeout from 'p-timeout'
 import { logger } from '@libp2p/logger'
-import type { AbortOptions } from '@libp2p/interfaces'
+import { abortableSource } from 'abortable-iterator'
+import pTimeout from 'p-timeout'
+import { CLOSE_TIMEOUT } from './constants.js'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
+import type { AbortOptions } from '@libp2p/interfaces'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 
