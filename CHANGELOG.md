@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/libp2p/js-libp2p-websockets/compare/v6.0.1...v6.0.2) (2023-06-06)
+
+
+### Dependencies
+
+* add ws types to main dependencies ([#246](https://github.com/libp2p/js-libp2p-websockets/issues/246)) ([628e260](https://github.com/libp2p/js-libp2p-websockets/commit/628e26049c2ee3695d0393a9a69f3a80ced820e7)), closes [/github.com/alanshaw/it-ws/blob/master/package.json#L50](https://github.com/libp2p//github.com/alanshaw/it-ws/blob/master/package.json/issues/L50)
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p-websockets/compare/v6.0.0...v6.0.1) (2023-04-24)
 
 
