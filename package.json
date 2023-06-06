@@ -167,6 +167,7 @@
     "@multiformats/mafmt": "^12.0.0",
     "@multiformats/multiaddr": "^12.0.0",
     "@multiformats/multiaddr-to-uri": "^9.0.2",
+    "@types/ws": "^8.5.4",
     "abortable-iterator": "^5.0.0",
     "it-ws": "^6.0.0",
     "p-defer": "^4.0.0",
@@ -177,7 +178,6 @@
   "devDependencies": {
     "@libp2p/interface-mocks": "^11.0.0",
     "@libp2p/interface-transport-compliance-tests": "^4.0.0",
-    "@types/ws": "^8.2.2",
     "aegir": "^38.1.7",
     "is-loopback-addr": "^2.0.1",
     "it-all": "^3.0.1",
