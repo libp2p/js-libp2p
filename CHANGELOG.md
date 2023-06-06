@@ -10,6 +10,13 @@
 
 
 
+### [0.45.5](https://www.github.com/libp2p/js-libp2p/compare/v0.45.4...v0.45.5) (2023-06-05)
+
+
+### Bug Fixes
+
+* store unsigned identify data when signed peer record is missing ([#1790](https://www.github.com/libp2p/js-libp2p/issues/1790)) ([142ba4f](https://www.github.com/libp2p/js-libp2p/commit/142ba4fcf72fd109331eb253a4e5359eaebfed7a))
+
 ### [0.45.4](https://www.github.com/libp2p/js-libp2p/compare/v0.45.3...v0.45.4) (2023-05-25)
 
 
