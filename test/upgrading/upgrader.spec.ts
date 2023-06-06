@@ -669,6 +669,8 @@ describe('libp2p.upgrader', () => {
   })
 
   it('should emit connect and disconnect events', async () => {
+    console.info('-- test start --') // eslint-disable-line no-console
+
     const remotePeer = peers[1]
     libp2p = await createLibp2p({
       peerId: peers[0],
