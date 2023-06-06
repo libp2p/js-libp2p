@@ -3,19 +3,21 @@
 
 import { start, stop } from '@libp2p/interfaces/startable'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../../src/autonat/constants.js'
-import { autoNATService, type AutoNATServiceInit } from '../../src/autonat/index.js'
+import { autoNATService } from '../../src/autonat/index.js'
 import { Message } from '../../src/autonat/pb/index.js'
-import { type Components, defaultComponents } from '../../src/components.js'
+import { defaultComponents } from '../../src/components.js'
+import type { AutoNATServiceInit } from '../../src/autonat/index.js'
+import type { Components } from '../../src/components.js'
 import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import type { AddressManager } from '@libp2p/interface-address-manager'
 import type { Connection, Stream } from '@libp2p/interface-connection'
@@ -25,6 +27,8 @@ import type { PeerRouting } from '@libp2p/interface-peer-routing'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { Registrar } from '@libp2p/interface-registrar'
 import type { Transport, TransportManager } from '@libp2p/interface-transport'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { StubbedInstance } from 'sinon-ts'
 
 const defaultInit: AutoNATServiceInit = {
   protocolPrefix: 'libp2p',
@@ -92,19 +96,22 @@ describe('autonat', () => {
       connection.remoteAddr = multiaddr(`/ip4/${host}/tcp/28319/p2p/${peer.id.toString()}`)
       connectionManager.openConnection.withArgs(peer.id).resolves(connection)
 
-      // stub autonat protocol stream
-      const stream = stubInterface<Stream>()
-      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).resolves(stream)
+      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).callsFake(async () => {
+        // stub autonat protocol stream
+        const stream = stubInterface<Stream>()
 
-      // stub autonat response
-      const response = Message.encode({
-        type: Message.MessageType.DIAL_RESPONSE,
-        dialResponse
+        // stub autonat response
+        const response = Message.encode({
+          type: Message.MessageType.DIAL_RESPONSE,
+          dialResponse
+        })
+        stream.source = (async function * () {
+          yield lp.encode.single(response)
+        }())
+        stream.sink.returns(Promise.resolve())
+
+        return stream
       })
-      stream.source = (async function * () {
-        yield lp.encode.single(response)
-      }())
-      stream.sink.returns(Promise.resolve())
 
       return peer
     }
