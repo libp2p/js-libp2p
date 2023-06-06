@@ -1,4 +1,16 @@
 /* eslint-env mocha */
+/* eslint-disable import/first,import/order */
+
+// @ts-expect-error no types
+import log from 'why-is-node-running'
+
+const t = setTimeout(() => {
+  log()
+}, (60 * 1000) * 10)
+
+if (t.unref != null) {
+  t.unref()
+}
 
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
