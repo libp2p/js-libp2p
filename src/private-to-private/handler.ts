@@ -152,5 +152,5 @@ function parseRemoteAddress (sdp: string): string {
     return '/webrtc'
   }
 
-  return `/dnsaddr/${candidateParts[4]}/${candidateParts[2]}/${candidateParts[3]}/webrtc`
+  return `/dnsaddr/${candidateParts[4]}/${candidateParts[2].toLowerCase()}/${candidateParts[3]}/webrtc`
 }
