@@ -1,3 +1,10 @@
+## [2.0.7](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.6...v2.0.7) (2023-06-07)
+
+
+### Tests
+
+* actually run firefox tests on firefox ([#176](https://github.com/libp2p/js-libp2p-webrtc/issues/176)) ([386a607](https://github.com/libp2p/js-libp2p-webrtc/commit/386a6071923e6cb1d89c51b73dada306b7cc243f))
+
 ## [2.0.6](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.5...v2.0.6) (2023-06-04)
 
 

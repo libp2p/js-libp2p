@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "A libp2p transport using WebRTC connections",
   "author": "",
   "license": "Apache-2.0 OR MIT",
