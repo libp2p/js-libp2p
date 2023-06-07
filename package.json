@@ -127,7 +127,7 @@
     "build": "aegir build",
     "test": "aegir test -t browser",
     "test:chrome": "aegir test -t browser --cov",
-    "test:firefox": "aegir test -t browser --browser firefox",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
