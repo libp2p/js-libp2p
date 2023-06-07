@@ -258,7 +258,7 @@ class DefaultAutoNATService implements Startable {
             .filter(ma => {
               const isFromSameHost = ma.toOptions().host === data.connection.remoteAddr.toOptions().host
 
-              log.trace('request to dial %s was sent from %s is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
+              log.trace('request to dial %a was sent from %a is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
               // skip any Multiaddrs where the target node's IP does not match the sending node's IP
               return isFromSameHost
             })
@@ -281,7 +281,7 @@ class DefaultAutoNATService implements Startable {
             .filter(ma => {
               const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
 
-              log.trace('transport for %s is supported %s', ma, isSupportedTransport)
+              log.trace('transport for %a is supported %s', ma, isSupportedTransport)
               // skip any Multiaddrs that have transports we do not support
               return isSupportedTransport
             })
@@ -324,7 +324,7 @@ class DefaultAutoNATService implements Startable {
               })
 
               if (!connection.remoteAddr.equals(multiaddr)) {
-                log.error('tried to dial %s but dialed %s', multiaddr, connection.remoteAddr)
+                log.error('tried to dial %a but dialed %a', multiaddr, connection.remoteAddr)
                 throw new Error('Unexpected remote address')
               }
 

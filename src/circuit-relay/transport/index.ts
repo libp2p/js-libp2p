@@ -241,7 +241,7 @@ class CircuitRelayTransport implements Transport {
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`)
       })
 
-      log('new outbound connection %s', maConn.remoteAddr)
+      log('new outbound connection %a', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn)
     } catch (err) {
       log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
@@ -287,17 +287,17 @@ class CircuitRelayTransport implements Transport {
     }
 
     const stopstr = pbstr.pb(StopMessage)
-    log('new circuit relay v2 stop stream from %s', connection.remotePeer)
+    log('new circuit relay v2 stop stream from %p', connection.remotePeer)
 
     // Validate the STOP request has the required input
     if (request.type !== StopMessage.Type.CONNECT) {
-      log.error('invalid stop connect request via peer %s', connection.remotePeer)
+      log.error('invalid stop connect request via peer %p', connection.remotePeer)
       stopstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
       return
     }
 
     if (!isValidStop(request)) {
-      log.error('invalid stop connect request via peer %s', connection.remotePeer)
+      log.error('invalid stop connect request via peer %p', connection.remotePeer)
       stopstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
       return
     }
@@ -321,7 +321,7 @@ class CircuitRelayTransport implements Transport {
 
     log('new inbound connection %s', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn)
-    log('%s connection %s upgraded', 'inbound', maConn.remoteAddr)
+    log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }
 }
 

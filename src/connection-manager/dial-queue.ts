@@ -419,13 +419,13 @@ export class DialQueue {
         // let any signal abort the dial
         const signal = combineSignals(controller.signal, options.signal)
         signal.addEventListener('abort', () => {
-          log('dial to %s aborted', addr)
+          log('dial to %a aborted', addr)
         })
         const deferred = pDefer<Connection>()
 
         await peerDialQueue.add(async () => {
           if (signal.aborted) {
-            log('dial to %s was aborted before reaching the head of the peer dial queue', addr)
+            log('dial to %a was aborted before reaching the head of the peer dial queue', addr)
             deferred.reject(new AbortError())
             return
           }
@@ -434,7 +434,7 @@ export class DialQueue {
           await this.queue.add(async () => {
             try {
               if (signal.aborted) {
-                log('dial to %s was aborted before reaching the head of the dial queue', addr)
+                log('dial to %a was aborted before reaching the head of the dial queue', addr)
                 deferred.reject(new AbortError())
                 return
               }
@@ -469,13 +469,13 @@ export class DialQueue {
                 }
               })
 
-              log('dial to %s succeeded', addr)
+              log('dial to %a succeeded', addr)
 
               // resolve the connection promise
               deferred.resolve(conn)
             } catch (err: any) {
               // something only went wrong if our signal was not aborted
-              log.error('error during dial of %s', addr, err)
+              log.error('error during dial of %a', addr, err)
               deferred.reject(err)
             }
           }, {
