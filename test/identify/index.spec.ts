@@ -4,7 +4,7 @@
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -13,6 +13,7 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
+import { pbStream } from 'it-pb-stream'
 import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
@@ -28,8 +29,9 @@ import {
 } from '../../src/identify/consts.js'
 import { DefaultIdentifyService } from '../../src/identify/identify.js'
 import { identifyService, type IdentifyServiceInit, Message } from '../../src/identify/index.js'
+import { Identify } from '../../src/identify/pb/message.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import Peers from '../fixtures/peers.js'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
 import type { TransportManager } from '@libp2p/interface-transport'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
@@ -47,7 +49,7 @@ const defaultInit: IdentifyServiceInit = {
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
 async function createComponents (index: number): Promise<Components> {
-  const peerId = await createFromJSON(Peers[index])
+  const peerId = await createEd25519PeerId()
 
   const events = new EventEmitter()
   const components = defaultComponents({
@@ -396,5 +398,105 @@ describe('identify', () => {
       '/ip4/127.0.0.1/tcp/1234'
     ])
     expect(peer).to.have.property('peerRecordEnvelope').that.equalBytes(peerRecordEnvelope)
+  })
+
+  it('should store data without signed peer record', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+
+    await start(localIdentify)
+    await start(remoteIdentify)
+
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
+
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
+
+    // should know know remote peer
+    await expect(localComponents.peerStore.has(remoteComponents.peerId)).to.eventually.be.false()
+
+    const message = {
+      protocolVersion: 'protocol version',
+      agentVersion: 'agent version',
+      listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
+      protocols: ['protocols'],
+      publicKey: remoteComponents.peerId.publicKey
+    }
+
+    remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
+      const { stream } = data
+      const pb = pbStream(stream)
+      pb.writePB(message, Identify)
+    }
+
+    // Run identify
+    await localIdentify.identify(localToRemote)
+
+    expect(localPeerStorePatchSpy.callCount).to.equal(1)
+
+    // should have stored all passed data
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peer.metadata.get('AgentVersion')).to.equalBytes(uint8ArrayFromString(message.agentVersion))
+    expect(peer.metadata.get('ProtocolVersion')).to.equalBytes(uint8ArrayFromString(message.protocolVersion))
+    expect(peer.protocols).to.deep.equal(message.protocols)
+    expect(peer.addresses).to.deep.equal([{
+      isCertified: false,
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
+    }])
+    expect(peer.id.publicKey).to.equalBytes(remoteComponents.peerId.publicKey)
+  })
+
+  it('should prefer addresses from signed peer record', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+
+    await start(localIdentify)
+    await start(remoteIdentify)
+
+    const [localToRemote] = connectionPair(localComponents, remoteComponents)
+
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
+
+    // should know know remote peer
+    await expect(localComponents.peerStore.has(remoteComponents.peerId)).to.eventually.be.false()
+
+    const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: remoteComponents.peerId,
+      multiaddrs: [
+        multiaddr('/ip4/127.0.0.1/tcp/5678')
+      ],
+      seqNumber: BigInt(Date.now() * 2)
+    }), remoteComponents.peerId)
+    const peerRecordEnvelope = signedPeerRecord.marshal()
+
+    const message = {
+      protocolVersion: 'protocol version',
+      agentVersion: 'agent version',
+      listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
+      protocols: ['protocols'],
+      publicKey: remoteComponents.peerId.publicKey,
+      signedPeerRecord: peerRecordEnvelope
+    }
+
+    remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
+      const { stream } = data
+      const pb = pbStream(stream)
+      pb.writePB(message, Identify)
+    }
+
+    // Run identify
+    await localIdentify.identify(localToRemote)
+
+    expect(localPeerStorePatchSpy.callCount).to.equal(1)
+
+    // should have stored all passed data
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peer.metadata.get('AgentVersion')).to.equalBytes(uint8ArrayFromString(message.agentVersion))
+    expect(peer.metadata.get('ProtocolVersion')).to.equalBytes(uint8ArrayFromString(message.protocolVersion))
+    expect(peer.protocols).to.deep.equal(message.protocols)
+    expect(peer.addresses).to.deep.equal([{
+      isCertified: true,
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
+    }])
+    expect(peer.id.publicKey).to.equalBytes(remoteComponents.peerId.publicKey)
   })
 })

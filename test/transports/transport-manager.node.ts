@@ -2,7 +2,7 @@
 
 import { mockUpgrader } from '@libp2p/interface-mocks'
 import { EventEmitter } from '@libp2p/interfaces/events'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -14,7 +14,6 @@ import sinon from 'sinon'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import Peers from '../fixtures/peers.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 const addrs = [
@@ -28,7 +27,7 @@ describe('Transport Manager (TCP)', () => {
   let components: Components
 
   before(async () => {
-    localPeer = await createFromJSON(Peers[0])
+    localPeer = await createEd25519PeerId()
   })
 
   beforeEach(() => {

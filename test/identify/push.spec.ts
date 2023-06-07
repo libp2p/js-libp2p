@@ -3,7 +3,7 @@
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { start, stop } from '@libp2p/interfaces/startable'
-import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -23,7 +23,6 @@ import {
 } from '../../src/identify/consts.js'
 import { DefaultIdentifyService } from '../../src/identify/identify.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import Peers from '../fixtures/peers.js'
 import type { IdentifyServiceInit } from '../../src/identify/index.js'
 import type { TransportManager } from '@libp2p/interface-transport'
 
@@ -42,7 +41,7 @@ const defaultInit: IdentifyServiceInit = {
 const protocols = [MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH]
 
 async function createComponents (index: number): Promise<Components> {
-  const peerId = await createFromJSON(Peers[index])
+  const peerId = await createEd25519PeerId()
 
   const events = new EventEmitter()
   const components = defaultComponents({

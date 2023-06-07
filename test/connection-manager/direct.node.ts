@@ -10,7 +10,7 @@ import { AbortError } from '@libp2p/interfaces/errors'
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId, createFromJSON } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -33,7 +33,6 @@ import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { preSharedKey } from '../../src/pnet/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import Peers from '../fixtures/peers.js'
 import swarmKey from '../fixtures/swarm.key.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { TransportManager } from '@libp2p/interface-transport'
@@ -54,8 +53,8 @@ describe('dialing (direct, TCP)', () => {
   beforeEach(async () => {
     resolver = sinon.stub<[Multiaddr], Promise<string[]>>()
     const [localPeerId, remotePeerId] = await Promise.all([
-      createFromJSON(Peers[0]),
-      createFromJSON(Peers[1])
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
 
     const remoteEvents = new EventEmitter()
@@ -151,7 +150,7 @@ describe('dialing (direct, TCP)', () => {
 
   it('should fail to connect if peer has no known addresses', async () => {
     const dialer = new DialQueue(localComponents)
-    const peerId = await createFromJSON(Peers[1])
+    const peerId = await createEd25519PeerId()
 
     await expect(dialer.dial(peerId))
       .to.eventually.be.rejectedWith(Error)
@@ -185,7 +184,7 @@ describe('dialing (direct, TCP)', () => {
   it('should only try to connect to addresses supported by the transports configured', async () => {
     const remoteAddrs = remoteTM.getAddrs()
 
-    const peerId = await createFromJSON(Peers[1])
+    const peerId = await createEd25519PeerId()
     await localComponents.peerStore.patch(peerId, {
       multiaddrs: [...remoteAddrs, unsupportedAddr]
     })
@@ -306,8 +305,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
   beforeEach(async () => {
     [peerId, remotePeerId] = await Promise.all([
-      createFromJSON(Peers[0]),
-      createFromJSON(Peers[1])
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
 
     remoteLibp2p = await createLibp2pNode({
