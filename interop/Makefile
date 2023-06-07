@@ -1,9 +1,7 @@
 image_name := js-libp2p-head
 TEST_SOURCES := $(wildcard test/*.ts)
 
-# Enable webkit once https://github.com/libp2p/js-libp2p/pull/1627 is in
-# all: node-image.json webkit-image.json firefox-image.json chromium-image.json
-all: node-image.json firefox-image.json chromium-image.json
+all: node-image.json webkit-image.json firefox-image.json chromium-image.json
 
 node-image.json: Dockerfile $(TEST_SOURCES) package.json .aegir.js
 	cd .. && docker build -f interop/Dockerfile -t node-${image_name} . 
