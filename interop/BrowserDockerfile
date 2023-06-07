@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/playwright
+FROM mcr.microsoft.com/playwright:v1.33.0-focal
 
 COPY --from=node-js-libp2p-head /app/ /app/
 WORKDIR /app/interop
