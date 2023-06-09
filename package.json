@@ -120,7 +120,7 @@
     "test:interop": "aegir test -t node -f dist/test/interop.js"
   },
   "dependencies": {
-    "@achingbrain/nat-port-mapper": "^1.0.3",
+    "@achingbrain/nat-port-mapper": "^1.0.9",
     "@libp2p/crypto": "^1.0.17",
     "@libp2p/interface-address-manager": "^3.0.0",
     "@libp2p/interface-connection": "^5.0.0",
