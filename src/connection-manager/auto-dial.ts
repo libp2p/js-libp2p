@@ -1,7 +1,7 @@
 import { logger } from '@libp2p/logger'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import PQueue from 'p-queue'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerStore } from '@libp2p/interface-peer-store'
@@ -12,6 +12,7 @@ const log = logger('libp2p:connection-manager:auto-dial')
 
 interface AutoDialInit {
   minConnections?: number
+  maxQueueLength?: number
   autoDialConcurrency?: number
   autoDialPriority?: number
   autoDialInterval?: number
@@ -25,6 +26,7 @@ interface AutoDialComponents {
 
 const defaultOptions = {
   minConnections: MIN_CONNECTIONS,
+  maxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH,
   autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
   autoDialPriority: AUTO_DIAL_PRIORITY,
   autoDialInterval: AUTO_DIAL_INTERVAL
@@ -37,8 +39,10 @@ export class AutoDial implements Startable {
   private readonly minConnections: number
   private readonly autoDialPriority: number
   private readonly autoDialIntervalMs: number
+  private readonly autoDialMaxQueueLength: number
   private autoDialInterval?: ReturnType<typeof setInterval>
   private started: boolean
+  private running: boolean
 
   /**
    * Proactively tries to connect to known peers stored in the PeerStore.
@@ -51,7 +55,9 @@ export class AutoDial implements Startable {
     this.minConnections = init.minConnections ?? defaultOptions.minConnections
     this.autoDialPriority = init.autoDialPriority ?? defaultOptions.autoDialPriority
     this.autoDialIntervalMs = init.autoDialInterval ?? defaultOptions.autoDialInterval
+    this.autoDialMaxQueueLength = init.maxQueueLength ?? defaultOptions.maxQueueLength
     this.started = false
+    this.running = false
     this.queue = new PQueue({
       concurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency
     })
@@ -73,7 +79,7 @@ export class AutoDial implements Startable {
   }
 
   start (): void {
-    this.autoDialInterval = setInterval(() => {
+    this.autoDialInterval = setTimeout(() => {
       this.autoDial()
         .catch(err => {
           log.error('error while autodialing', err)
@@ -92,8 +98,9 @@ export class AutoDial implements Startable {
   stop (): void {
     // clear the queue
     this.queue.clear()
-    clearInterval(this.autoDialInterval)
+    clearTimeout(this.autoDialInterval)
     this.started = false
+    this.running = false
   }
 
   async autoDial (): Promise<void> {
@@ -103,12 +110,6 @@ export class AutoDial implements Startable {
 
     const connections = this.connectionManager.getConnectionsMap()
     const numConnections = connections.size
-    const dialQueue = new PeerSet(
-      // @ts-expect-error boolean filter removes falsy peer IDs
-      this.connectionManager.getDialQueue()
-        .map(queue => queue.peerId)
-        .filter(Boolean)
-    )
 
     // Already has enough connections
     if (numConnections >= this.minConnections) {
@@ -116,34 +117,55 @@ export class AutoDial implements Startable {
       return
     }
 
+    if (this.queue.size > this.autoDialMaxQueueLength) {
+      log('not enough connections %d/%d but auto dial queue is full', numConnections, this.minConnections)
+      return
+    }
+
+    if (this.running) {
+      log('not enough connections %d/%d - but skipping autodial as it is already running', numConnections, this.minConnections)
+      return
+    }
+
+    this.running = true
+
     log('not enough connections %d/%d - will dial peers to increase the number of connections', numConnections, this.minConnections)
 
+    const dialQueue = new PeerSet(
+      // @ts-expect-error boolean filter removes falsy peer IDs
+      this.connectionManager.getDialQueue()
+        .map(queue => queue.peerId)
+        .filter(Boolean)
+    )
+
     // Sort peers on whether we know protocols or public keys for them
-    const peers = await this.peerStore.all()
+    const peers = await this.peerStore.all({
+      filters: [
+        // Remove some peers
+        (peer) => {
+          // Remove peers without addresses
+          if (peer.addresses.length === 0) {
+            return false
+          }
 
-    // Remove some peers
-    const filteredPeers = peers.filter((peer) => {
-      // Remove peers without addresses
-      if (peer.addresses.length === 0) {
-        return false
-      }
+          // remove peers we are already connected to
+          if (connections.has(peer.id)) {
+            return false
+          }
 
-      // remove peers we are already connected to
-      if (connections.has(peer.id)) {
-        return false
-      }
+          // remove peers we are already dialling
+          if (dialQueue.has(peer.id)) {
+            return false
+          }
 
-      // remove peers we are already dialling
-      if (dialQueue.has(peer.id)) {
-        return false
-      }
-
-      return true
+          return true
+        }
+      ]
     })
 
     // shuffle the peers - this is so peers with the same tag values will be
     // dialled in a different order each time
-    const shuffledPeers = filteredPeers.sort(() => Math.random() > 0.5 ? 1 : -1)
+    const shuffledPeers = peers.sort(() => Math.random() > 0.5 ? 1 : -1)
 
     // Sort shuffled peers by tag value
     const peerValues = new PeerMap<number>()
@@ -195,6 +217,17 @@ export class AutoDial implements Startable {
       }).catch(err => {
         log.error('could not connect to peerStore stored peer', err)
       })
+    }
+
+    this.running = false
+
+    if (this.started) {
+      this.autoDialInterval = setTimeout(() => {
+        this.autoDial()
+          .catch(err => {
+            log.error('error while autodialing', err)
+          })
+      }, this.autoDialIntervalMs)
     }
   }
 }

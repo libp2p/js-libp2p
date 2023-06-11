@@ -19,6 +19,7 @@ import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import type { PeerUpdate } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
+import delay from 'delay'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
@@ -59,7 +60,7 @@ describe('UPnP NAT (TCP)', () => {
 
     client = stubInterface<NatAPI>()
 
-    natManager._getClient = async () => {
+    natManager._getClient = () => {
       return client
     }
 
@@ -91,6 +92,8 @@ describe('UPnP NAT (TCP)', () => {
     expect(observed).to.be.empty()
 
     await start(natManager)
+
+    await delay(100)
 
     observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.not.be.empty()

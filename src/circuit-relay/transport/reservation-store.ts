@@ -50,6 +50,11 @@ export interface RelayStoreInit {
    * How many discovered relays to allow in the reservation store
    */
   discoverRelays?: number
+
+  /**
+   * Limit the number of potential relays we will dial (default: 100)
+   */
+  maxReservationQueueLength?: number
 }
 
 export type RelayType = 'discovered' | 'configured'
@@ -74,6 +79,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   private readonly reserveQueue: PQueue
   private readonly reservations: PeerMap<RelayEntry>
   private readonly maxDiscoveredRelays: number
+  private readonly maxReservationQueueLength: number
   private started: boolean
 
   constructor (components: RelayStoreComponents, init?: RelayStoreInit) {
@@ -86,6 +92,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.events = components.events
     this.reservations = new PeerMap()
     this.maxDiscoveredRelays = init?.discoverRelays ?? 0
+    this.maxReservationQueueLength = init?.maxReservationQueueLength ?? 100
     this.started = false
 
     // ensure we don't listen on multiple relays simultaneously
@@ -127,6 +134,11 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
     if (this.peerId.equals(peerId)) {
       log('not trying to use self as relay')
+      return
+    }
+
+    if (this.reserveQueue.size > this.maxReservationQueueLength) {
+      log('not adding relay as the queue is full')
       return
     }
 

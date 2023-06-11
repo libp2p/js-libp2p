@@ -89,10 +89,17 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
    */
   async discover (): Promise<void> {
     log('searching peer store for relays')
-    const peers = (await this.peerStore.all())
-      // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
-      .filter(({ protocols }) => protocols.includes(RELAY_V2_HOP_CODEC))
-      .sort(() => Math.random() - 0.5)
+    const peers = (await this.peerStore.all({
+      filters: [
+        // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
+        (peer) => {
+          return peer.protocols.includes(RELAY_V2_HOP_CODEC)
+        }
+      ],
+      orders: [
+        () => Math.random() < 0.5 ? 1 : -1
+      ]
+    }))
 
     for (const peer of peers) {
       log('found relay peer %p in content peer store', peer.id)
