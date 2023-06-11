@@ -1,15 +1,17 @@
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { createFromPubKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Peer as PeerPB } from '../pb/peer.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Peer, Tag } from '@libp2p/interface-peer-store'
 
-export async function bytesToPeer (peerId: PeerId, buf: Uint8Array): Promise<Peer> {
+export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
   const peer = PeerPB.decode(buf)
 
   if (peer.publicKey != null && peerId.publicKey == null) {
-    peerId = await createFromPubKey(unmarshalPublicKey(peer.publicKey))
+    peerId = peerIdFromPeerId({
+      ...peerId,
+      publicKey: peerId.publicKey
+    })
   }
 
   const tags = new Map<string, Tag>()

@@ -1,9 +1,10 @@
 import { logger } from '@libp2p/logger'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import all from 'it-all'
 import { PersistentStore, type PeerUpdate } from './store.js'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore, Peer, PeerData } from '@libp2p/interface-peer-store'
+import type { PeerStore, Peer, PeerData, PeerQuery } from '@libp2p/interface-peer-store'
 import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
@@ -41,13 +42,13 @@ export class PersistentPeerStore implements PeerStore {
     this.store = new PersistentStore(components, init)
   }
 
-  async forEach (fn: (peer: Peer) => void): Promise<void> {
+  async forEach (fn: (peer: Peer,) => void, query?: PeerQuery): Promise<void> {
     log.trace('forEach await read lock')
     const release = await this.store.lock.readLock()
     log.trace('forEach got read lock')
 
     try {
-      for await (const peer of this.store.all()) {
+      for await (const peer of this.store.all(query)) {
         fn(peer)
       }
     } finally {
@@ -56,19 +57,13 @@ export class PersistentPeerStore implements PeerStore {
     }
   }
 
-  async all (): Promise<Peer[]> {
+  async all (query?: PeerQuery): Promise<Peer[]> {
     log.trace('all await read lock')
     const release = await this.store.lock.readLock()
     log.trace('all got read lock')
 
     try {
-      const output: Peer[] = []
-
-      for await (const peer of this.store.all()) {
-        output.push(peer)
-      }
-
-      return output
+      return await all(this.store.all(query))
     } finally {
       log.trace('all release read lock')
       release()

@@ -1,4 +1,5 @@
 import { CodeError } from '@libp2p/interfaces/errors'
+import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import mortice, { type Mortice } from 'mortice'
 import { base32 } from 'multiformats/bases/base32'
@@ -11,14 +12,49 @@ import { toPeerPB } from './utils/to-peer-pb.js'
 import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
 import type { PeerUpdate as PeerUpdateExternal } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Peer, PeerData } from '@libp2p/interface-peer-store'
-import type { Datastore } from 'interface-datastore'
+import type { Peer, PeerData, PeerQuery } from '@libp2p/interface-peer-store'
+import type { Datastore, Key, Query } from 'interface-datastore'
 
 /**
  * Event detail emitted when peer data changes
  */
 export interface PeerUpdate extends PeerUpdateExternal {
   updated: boolean
+}
+
+function decodePeer (key: Key, value: Uint8Array, cache: PeerMap<Peer>): Peer {
+  // /peers/${peer-id-as-libp2p-key-cid-string-in-base-32}
+  const base32Str = key.toString().split('/')[2]
+  const buf = base32.decode(base32Str)
+  const peerId = peerIdFromBytes(buf)
+
+  const cached = cache.get(peerId)
+
+  if (cached != null) {
+    return cached
+  }
+
+  const peer = bytesToPeer(peerId, value)
+
+  cache.set(peerId, peer)
+
+  return peer
+}
+
+function mapQuery (query: PeerQuery, cache: PeerMap<Peer>): Query {
+  if (query == null) {
+    return {}
+  }
+
+  return {
+    prefix: NAMESPACE_COMMON,
+    filters: (query.filters ?? []).map(fn => ({ key, value }) => {
+      return fn(decodePeer(key, value, cache))
+    }),
+    orders: (query.orders ?? []).map(fn => (a, b) => {
+      return fn(decodePeer(a.key, a.value, cache), decodePeer(b.key, b.value, cache))
+    })
+  }
 }
 
 export class PersistentStore {
@@ -96,28 +132,25 @@ export class PersistentStore {
     return this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer)
   }
 
-  async * all (): AsyncGenerator<Peer, void, unknown> {
-    for await (const { key, value } of this.datastore.query({
-      prefix: NAMESPACE_COMMON
-    })) {
-      // /peers/${peer-id-as-libp2p-key-cid-string-in-base-32}
-      const base32Str = key.toString().split('/')[2]
-      const buf = base32.decode(base32Str)
-      const peerId = peerIdFromBytes(buf)
+  async * all (query?: PeerQuery): AsyncGenerator<Peer, void, unknown> {
+    const peerCache = new PeerMap<Peer>()
 
-      if (peerId.equals(this.peerId)) {
+    for await (const { key, value } of this.datastore.query(mapQuery(query ?? {}, peerCache))) {
+      const peer = decodePeer(key, value, peerCache)
+
+      if (peer.id.equals(this.peerId)) {
         // Skip self peer if present
         continue
       }
 
-      yield bytesToPeer(peerId, value)
+      yield peer
     }
   }
 
   async #findExistingPeer (peerId: PeerId): Promise<{ existingBuf?: Uint8Array, existingPeer?: Peer }> {
     try {
       const existingBuf = await this.datastore.get(peerIdToDatastoreKey(peerId))
-      const existingPeer = await bytesToPeer(peerId, existingBuf)
+      const existingPeer = bytesToPeer(peerId, existingBuf)
 
       return {
         existingBuf,
@@ -137,7 +170,7 @@ export class PersistentStore {
 
     if (existingBuf != null && uint8ArrayEquals(buf, existingBuf)) {
       return {
-        peer: await bytesToPeer(peerId, buf),
+        peer: bytesToPeer(peerId, buf),
         previous: existingPeer,
         updated: false
       }
@@ -146,7 +179,7 @@ export class PersistentStore {
     await this.datastore.put(peerIdToDatastoreKey(peerId), buf)
 
     return {
-      peer: await bytesToPeer(peerId, buf),
+      peer: bytesToPeer(peerId, buf),
       previous: existingPeer,
       updated: true
     }

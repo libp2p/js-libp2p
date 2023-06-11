@@ -259,5 +259,29 @@ describe('PersistentPeerStore', () => {
       await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal(), otherPeerId)).to.eventually.equal(false)
       await expect(peerStore.has(peerId)).to.eventually.be.false()
     })
+
+    it('allows queries', async () => {
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          addr1
+        ]
+      })
+
+      const allPeers = await peerStore.all({
+        filters: [
+          () => true
+        ]
+      })
+
+      expect(allPeers).to.not.be.empty()
+
+      const noPeers = await peerStore.all({
+        filters: [
+          () => false
+        ]
+      })
+
+      expect(noPeers).to.be.empty()
+    })
   })
 })
