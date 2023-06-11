@@ -8,6 +8,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { pEvent } from 'p-event'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
@@ -19,7 +20,6 @@ import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import type { PeerUpdate } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
-import delay from 'delay'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',
