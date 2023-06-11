@@ -1,3 +1,10 @@
+## [8.2.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.4...v8.2.0) (2023-06-11)
+
+
+### Features
+
+* support peer queries ([#88](https://github.com/libp2p/js-libp2p-peer-store/issues/88)) ([6b780fe](https://github.com/libp2p/js-libp2p-peer-store/commit/6b780fe49e81ce82ea83326e76b23390ac966f02))
+
 ## [8.1.4](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.3...v8.1.4) (2023-06-03)
 
 
