@@ -1,3 +1,10 @@
+## [2.0.10](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.9...v2.0.10) (2023-06-12)
+
+
+### Bug Fixes
+
+* add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
+
 ## [2.0.9](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.8...v2.0.9) (2023-06-12)
 
 
