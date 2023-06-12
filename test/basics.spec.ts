@@ -7,13 +7,14 @@ import * as filter from '@libp2p/websockets/filters'
 import { WebRTC } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
+import toBuffer from 'it-to-buffer'
 import { createLibp2p } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
 import { webRTC } from '../src/index.js'
+import type { Connection } from '@libp2p/interface-connection'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 
 async function createNode (): Promise<Libp2p> {
@@ -50,8 +51,34 @@ async function createNode (): Promise<Libp2p> {
 }
 
 describe('basics', () => {
+  const echo = '/echo/1.0.0'
+
   let localNode: Libp2p
   let remoteNode: Libp2p
+
+  async function connectNodes (): Promise<Connection> {
+    const remoteAddr = remoteNode.getMultiaddrs()
+      .filter(ma => WebRTC.matches(ma)).pop()
+
+    if (remoteAddr == null) {
+      throw new Error('Remote peer could not listen on relay')
+    }
+
+    await remoteNode.handle(echo, ({ stream }) => {
+      void pipe(
+        stream,
+        stream
+      )
+    })
+
+    const connection = await localNode.dial(remoteAddr)
+
+    // disconnect both from relay
+    await localNode.hangUp(multiaddr(process.env.RELAY_MULTIADDR))
+    await remoteNode.hangUp(multiaddr(process.env.RELAY_MULTIADDR))
+
+    return connection
+  }
 
   beforeEach(async () => {
     localNode = await createNode()
@@ -69,27 +96,7 @@ describe('basics', () => {
   })
 
   it('can dial through a relay', async () => {
-    const remoteAddr = remoteNode.getMultiaddrs()
-      .filter(ma => WebRTC.matches(ma)).pop()
-
-    if (remoteAddr == null) {
-      throw new Error('Remote peer could not listen on relay')
-    }
-
-    const echo = '/echo/1.0.0'
-
-    await remoteNode.handle(echo, ({ stream }) => {
-      void pipe(
-        stream,
-        stream
-      )
-    })
-
-    const connection = await localNode.dial(remoteAddr)
-
-    // disconnect both from relay
-    await localNode.hangUp(multiaddr(process.env.RELAY_MULTIADDR))
-    await remoteNode.hangUp(multiaddr(process.env.RELAY_MULTIADDR))
+    const connection = await connectNodes()
 
     // open a stream on the echo protocol
     const stream = await connection.newStream(echo)
@@ -100,10 +107,29 @@ describe('basics', () => {
       input,
       stream,
       (source) => map(source, list => list.subarray()),
-      async (source) => all(source)
+      async (source) => toBuffer(source)
     )
 
     // asset that we got the right data
-    expect(output).to.deep.equal(input)
+    expect(output).to.equalBytes(toBuffer(input))
+  })
+
+  it('can send a large file', async () => {
+    const connection = await connectNodes()
+
+    // open a stream on the echo protocol
+    const stream = await connection.newStream(echo)
+
+    // send and receive some data
+    const input = new Array(5).fill(0).map(() => new Uint8Array(1024 * 1024))
+    const output = await pipe(
+      input,
+      stream,
+      (source) => map(source, list => list.subarray()),
+      async (source) => toBuffer(source)
+    )
+
+    // asset that we got the right data
+    expect(output).to.equalBytes(toBuffer(input))
   })
 })
