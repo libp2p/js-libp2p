@@ -1,3 +1,10 @@
+## [2.0.8](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.7...v2.0.8) (2023-06-12)
+
+
+### Tests
+
+* add a test for large transfers ([#175](https://github.com/libp2p/js-libp2p-webrtc/issues/175)) ([0f60060](https://github.com/libp2p/js-libp2p-webrtc/commit/0f60060c9ceaf2bf2142df25f32174112edf6ec9))
+
 ## [2.0.7](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.6...v2.0.7) (2023-06-07)
 
 
