@@ -1,3 +1,10 @@
+## [2.0.9](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.8...v2.0.9) (2023-06-12)
+
+
+### Dependencies
+
+* **dev:** bump delay from 5.0.0 to 6.0.0 ([#169](https://github.com/libp2p/js-libp2p-webrtc/issues/169)) ([104cbf0](https://github.com/libp2p/js-libp2p-webrtc/commit/104cbf0e2009961656cda530925089dc126b19a8))
+
 ## [2.0.8](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.7...v2.0.8) (2023-06-12)
 
 
