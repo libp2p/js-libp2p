@@ -3,6 +3,7 @@ import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-pb-stream'
+import { PeerJobQueue } from '../../utils/peer-job-queue.js'
 import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
@@ -14,7 +15,6 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/startable'
-import { PeerJobQueue } from '../../utils/peer-job-queue.js'
 
 const log = logger('libp2p:circuit-relay:transport:reservation-store')
 
