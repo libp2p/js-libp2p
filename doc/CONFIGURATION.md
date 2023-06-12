@@ -588,7 +588,9 @@ Libp2p allows you to setup a secure keychain to manage your keys. The keychain c
 | Name      | Type     | Description                                                                            |
 | --------- | -------- | -------------------------------------------------------------------------------------- |
 | pass      | `string` | Passphrase to use in the keychain (minimum of 20 characters).                          |
-| datastore | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) |
+| dek      | `DEKConfig` | the default options for generating the derived encryption key, which, along with the passphrase are input to the PBKDF2 function. For more info see: https://github.com/libp2p/js-libp2p-keychain |
+
+The keychain will store keys encrypted in the datastore which default is an in memory datastore. If you want to store the keys on disc you need to initialize libp2p with a suitable datastore implementation. 
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -596,9 +598,10 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { LevelDatastore } from 'datastore-level'
+import { FsDatastore } from 'datastore-fs';
 
-const datastore = new LevelDatastore('path/to/store')
+
+const datastore = new FsDatastore('path/to/store')
 await datastore.open()
 
 const node = await createLibp2p({
@@ -614,10 +617,11 @@ const node = await createLibp2p({
   ],
   keychain: {
     pass: 'notsafepassword123456789',
-    datastore: dsInstant,
-  }
+  },
+  datastore
 })
 ```
+
 
 #### Configuring Connection Manager
 
