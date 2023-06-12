@@ -119,6 +119,9 @@ export class WebRTCTransport implements Transport, Startable {
       // reset the stream in case of any error
       signalingStream.reset()
       throw err
+    } finally {
+      // Close the signaling connection
+      await connection.close()
     }
   }
 
@@ -143,6 +146,9 @@ export class WebRTCTransport implements Transport, Startable {
     } catch (err) {
       stream.reset()
       throw err
+    } finally {
+      // Close the signaling connection
+      await connection.close()
     }
   }
 }

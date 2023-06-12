@@ -19,7 +19,6 @@ const sendBtn = '#send'
 const output = '#output'
 const listeningAddresses = '#multiaddrs'
 
-const message = 'hello'
 let url
 
 // we spawn a js libp2p relay
@@ -68,28 +67,38 @@ test.describe('browser to browser example:', () => {
     await page.goto(url)
   })
 
-  test('should connect to a relay node', async ({ page, context }) => {
-    // first page dials the relay
-    const relayedAddress = await dialRelay(page, relayNodeAddr)
+  test('should connect to a relay node', async ({ page: pageA, context }) => {
+    // load second page
+    const pageB = await context.newPage()
+    await pageB.goto(url)
 
-    // load second page and use `peer` as the connectAddr
-    const pageTwo = await context.newPage();
-    await pageTwo.goto(url)
-    await dialPeerOverRelay(pageTwo, relayedAddress)
+    // connect both pages to the relay
+    const relayedAddressA = await dialRelay(pageA, relayNodeAddr)
+    const relayedAddressB = await dialRelay(pageB, relayNodeAddr)
+
+    // dial first page from second page over relay
+    await dialPeerOverRelay(pageA, relayedAddressB)
+    await dialPeerOverRelay(pageB, relayedAddressA)
 
     // stop the relay
     await relayNode.stop()
 
-    // send the message to the peer over webRTC
-    await pageTwo.fill(messageInput, message)
-    await pageTwo.click(sendBtn)
+    await echoMessagePeer(pageB, 'hello B')
 
-    // check the message was echoed back
-    const outputLocator = pageTwo.locator(output)
-    await expect(outputLocator).toHaveText(/Sending message/)
-    await expect(outputLocator).toHaveText(/Received message/, { timeout: 60000 })
+    await echoMessagePeer(pageA, 'hello A')
   })
 })
+
+async function echoMessagePeer (page, message) {
+  // send the message to the peer over webRTC
+  await page.fill(messageInput, message)
+  await page.click(sendBtn)
+
+  // check the message was echoed back
+  const outputLocator = page.locator(output)
+  await expect(outputLocator).toContainText(`Sending message '${message}'`)
+  await expect(outputLocator).toContainText(`Received message '${message}'`)
+}
 
 async function dialRelay (page, address) {
   // add the go libp2p multiaddress to the input field and submit
@@ -97,8 +106,8 @@ async function dialRelay (page, address) {
   await page.click(connectBtn)
 
   const outputLocator = page.locator(output)
-  await expect(outputLocator).toHaveText(/Dialing/)
-  await expect(outputLocator).toHaveText(/Connected/)
+  await expect(outputLocator).toContainText(`Dialing '${address}'`)
+  await expect(outputLocator).toContainText(`Connected to '${address}'`)
 
   const multiaddrsLocator = page.locator(listeningAddresses)
   await expect(multiaddrsLocator).toHaveText(/webrtc/)
@@ -115,6 +124,6 @@ async function dialPeerOverRelay (page, address) {
   await page.click(connectBtn)
 
   const outputLocator = page.locator(output)
-  await expect(outputLocator).toHaveText(/Dialing/)
-  await expect(outputLocator).toHaveText(/Connected/)
+  await expect(outputLocator).toContainText(`Dialing '${address}'`)
+  await expect(outputLocator).toContainText(`Connected to '${address}'`)
 }
