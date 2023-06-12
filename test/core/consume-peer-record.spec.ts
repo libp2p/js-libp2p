@@ -4,7 +4,7 @@ import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import { createPeerId } from '../utils/creators/peer.js'
+import { createPeerId } from '../fixtures/creators/peer.js'
 
 describe('Consume peer record', () => {
   let libp2p: Libp2pNode

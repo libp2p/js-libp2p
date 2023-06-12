@@ -6,8 +6,8 @@ import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2pNode } from '../../src/libp2p.js'
-import { createBaseOptions } from '../utils/base-options.js'
-import { createNode } from '../utils/creators/peer.js'
+import { createBaseOptions } from '../fixtures/base-options.js'
+import { createNode } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 
 const LOCAL_PORT = 47321

@@ -3,7 +3,6 @@ import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-pb-stream'
-import PQueue from 'p-queue'
 import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
@@ -15,6 +14,7 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { Startable } from '@libp2p/interfaces/startable'
+import { PeerJobQueue } from '../../utils/peer-job-queue.js'
 
 const log = logger('libp2p:circuit-relay:transport:reservation-store')
 
@@ -76,7 +76,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   private readonly transportManager: TransportManager
   private readonly peerStore: PeerStore
   private readonly events: EventEmitter<Libp2pEvents>
-  private readonly reserveQueue: PQueue
+  private readonly reserveQueue: PeerJobQueue
   private readonly reservations: PeerMap<RelayEntry>
   private readonly maxDiscoveredRelays: number
   private readonly maxReservationQueueLength: number
@@ -96,7 +96,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.started = false
 
     // ensure we don't listen on multiple relays simultaneously
-    this.reserveQueue = new PQueue({
+    this.reserveQueue = new PeerJobQueue({
       concurrency: init?.reservationConcurrency ?? DEFAULT_RESERVATION_CONCURRENCY
     })
 
@@ -139,6 +139,11 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
 
     if (this.reserveQueue.size > this.maxReservationQueueLength) {
       log('not adding relay as the queue is full')
+      return
+    }
+
+    if (this.reserveQueue.hasJob(peerId)) {
+      log('relay peer is already in the reservation queue')
       return
     }
 
@@ -218,6 +223,8 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
         // if listening failed, remove the reservation
         this.reservations.delete(peerId)
       }
+    }, {
+      peerId
     })
   }
 

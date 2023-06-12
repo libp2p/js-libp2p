@@ -7,7 +7,7 @@ import mergeOptions from 'merge-options'
 import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createLibp2p, type Libp2p } from '../../src/index.js'
-import { createPeerId } from '../utils/creators/peer.js'
+import { createPeerId } from '../fixtures/creators/peer.js'
 import { pubsubSubsystemOptions } from './utils.js'
 import type { PubSub } from '@libp2p/interface-pubsub'
 

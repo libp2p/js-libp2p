@@ -1,12 +1,12 @@
 import { logger } from '@libp2p/logger'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
-import PQueue from 'p-queue'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { PeerStore } from '@libp2p/interface-peer-store'
 import type { EventEmitter } from '@libp2p/interfaces/events'
 import type { Startable } from '@libp2p/interfaces/startable'
+import { PeerJobQueue } from '../utils/peer-job-queue.js'
 
 const log = logger('libp2p:connection-manager:auto-dial')
 
@@ -35,7 +35,7 @@ const defaultOptions = {
 export class AutoDial implements Startable {
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
-  private readonly queue: PQueue
+  private readonly queue: PeerJobQueue
   private readonly minConnections: number
   private readonly autoDialPriority: number
   private readonly autoDialIntervalMs: number
@@ -58,7 +58,7 @@ export class AutoDial implements Startable {
     this.autoDialMaxQueueLength = init.maxQueueLength ?? defaultOptions.maxQueueLength
     this.started = false
     this.running = false
-    this.queue = new PQueue({
+    this.queue = new PeerJobQueue({
       concurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency
     })
     this.queue.addListener('error', (err) => {
@@ -145,16 +145,25 @@ export class AutoDial implements Startable {
         (peer) => {
           // Remove peers without addresses
           if (peer.addresses.length === 0) {
+            log.trace('not autodialing %p because they have no addresses')
             return false
           }
 
           // remove peers we are already connected to
           if (connections.has(peer.id)) {
+            log.trace('not autodialing %p because they are already connected')
             return false
           }
 
           // remove peers we are already dialling
           if (dialQueue.has(peer.id)) {
+            log.trace('not autodialing %p because they are already being dialed')
+            return false
+          }
+
+          // remove peers already in the autodial queue
+          if (this.queue.hasJob(peer.id)) {
+            log.trace('not autodialing %p because they are already being autodialed')
             return false
           }
 
@@ -214,6 +223,8 @@ export class AutoDial implements Startable {
           // @ts-expect-error needs adding to the ConnectionManager interface
           priority: this.autoDialPriority
         })
+      }, {
+        peerId: peer.id
       }).catch(err => {
         log.error('could not connect to peerStore stored peer', err)
       })
