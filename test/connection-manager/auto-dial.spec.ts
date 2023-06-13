@@ -3,18 +3,37 @@
 import { EventEmitter } from '@libp2p/interfaces/events'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import pWaitFor from 'p-wait-for'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
+import { matchPeerId } from '../fixtures/match-peer-id.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { Libp2pEvents } from '@libp2p/interface-libp2p'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
 
 describe('auto-dial', () => {
   let autoDialler: AutoDial
+  let events: EventEmitter<Libp2pEvents>
+  let peerStore: PeerStore
+  let peerId: PeerId
+
+  beforeEach(async () => {
+    peerId = await createEd25519PeerId()
+    events = new EventEmitter()
+    peerStore = new PersistentPeerStore({
+      datastore: new MemoryDatastore(),
+      events,
+      peerId
+    })
+  })
 
   afterEach(() => {
     if (autoDialler != null) {
@@ -44,11 +63,8 @@ describe('auto-dial', () => {
       tags: new Map()
     }
 
-    const peerStore = stubInterface<PeerStore>()
-
-    peerStore.all.returns(Promise.resolve([
-      peerWithAddress, peerWithoutAddress
-    ]))
+    await peerStore.save(peerWithAddress.id, peerWithAddress)
+    await peerStore.save(peerWithoutAddress.id, peerWithoutAddress)
 
     const connectionManager = stubInterface<ConnectionManager>({
       getConnectionsMap: new PeerMap(),
@@ -58,19 +74,22 @@ describe('auto-dial', () => {
     autoDialler = new AutoDial({
       peerStore,
       connectionManager,
-      events: new EventEmitter()
+      events
     }, {
-      minConnections: 10
+      minConnections: 10,
+      autoDialInterval: 10000
     })
     autoDialler.start()
-    await autoDialler.autoDial()
+    void autoDialler.autoDial()
 
-    await pWaitFor(() => connectionManager.openConnection.callCount === 1)
+    await pWaitFor(() => {
+      return connectionManager.openConnection.callCount === 1
+    })
     await delay(1000)
 
     expect(connectionManager.openConnection.callCount).to.equal(1)
-    expect(connectionManager.openConnection.calledWith(peerWithAddress.id)).to.be.true()
-    expect(connectionManager.openConnection.calledWith(peerWithoutAddress.id)).to.be.false()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(peerWithAddress.id))).to.be.true()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(peerWithoutAddress.id))).to.be.false()
   })
 
   it('should not dial connected peers', async () => {
@@ -95,11 +114,8 @@ describe('auto-dial', () => {
       tags: new Map()
     }
 
-    const peerStore = stubInterface<PeerStore>()
-
-    peerStore.all.returns(Promise.resolve([
-      connectedPeer, unConnectedPeer
-    ]))
+    await peerStore.save(connectedPeer.id, connectedPeer)
+    await peerStore.save(unConnectedPeer.id, unConnectedPeer)
 
     const connectionMap = new PeerMap<Connection[]>()
     connectionMap.set(connectedPeer.id, [stubInterface<Connection>()])
@@ -112,7 +128,7 @@ describe('auto-dial', () => {
     autoDialler = new AutoDial({
       peerStore,
       connectionManager,
-      events: new EventEmitter()
+      events
     }, {
       minConnections: 10
     })
@@ -123,8 +139,8 @@ describe('auto-dial', () => {
     await delay(1000)
 
     expect(connectionManager.openConnection.callCount).to.equal(1)
-    expect(connectionManager.openConnection.calledWith(unConnectedPeer.id)).to.be.true()
-    expect(connectionManager.openConnection.calledWith(connectedPeer.id)).to.be.false()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(unConnectedPeer.id))).to.be.true()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(connectedPeer.id))).to.be.false()
   })
 
   it('should not dial peers already in the dial queue', async () => {
@@ -150,11 +166,8 @@ describe('auto-dial', () => {
       tags: new Map()
     }
 
-    const peerStore = stubInterface<PeerStore>()
-
-    peerStore.all.returns(Promise.resolve([
-      peerInDialQueue, peerNotInDialQueue
-    ]))
+    await peerStore.save(peerInDialQueue.id, peerInDialQueue)
+    await peerStore.save(peerNotInDialQueue.id, peerNotInDialQueue)
 
     const connectionManager = stubInterface<ConnectionManager>({
       getConnectionsMap: new PeerMap(),
@@ -169,7 +182,7 @@ describe('auto-dial', () => {
     autoDialler = new AutoDial({
       peerStore,
       connectionManager,
-      events: new EventEmitter()
+      events
     }, {
       minConnections: 10
     })
@@ -180,7 +193,35 @@ describe('auto-dial', () => {
     await delay(1000)
 
     expect(connectionManager.openConnection.callCount).to.equal(1)
-    expect(connectionManager.openConnection.calledWith(peerNotInDialQueue.id)).to.be.true()
-    expect(connectionManager.openConnection.calledWith(peerInDialQueue.id)).to.be.false()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(peerNotInDialQueue.id))).to.be.true()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(peerInDialQueue.id))).to.be.false()
+  })
+
+  it('should not start parallel autodials', async () => {
+    const peerStoreAllSpy = Sinon.spy(peerStore, 'all')
+
+    const connectionManager = stubInterface<ConnectionManager>({
+      getConnectionsMap: new PeerMap(),
+      getDialQueue: []
+    })
+
+    autoDialler = new AutoDial({
+      peerStore,
+      connectionManager,
+      events
+    }, {
+      minConnections: 10,
+      autoDialInterval: 10000
+    })
+    autoDialler.start()
+
+    // call autodial twice
+    await Promise.all([
+      autoDialler.autoDial(),
+      autoDialler.autoDial()
+    ])
+
+    // should only have queried peer store once
+    expect(peerStoreAllSpy.callCount).to.equal(1)
   })
 })

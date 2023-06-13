@@ -8,7 +8,7 @@ import { codes } from '../../src/errors.js'
 import { type FetchService, fetchService } from '../../src/fetch/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { createPeerId } from '../utils/creators/peer.js'
+import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface-libp2p'
 import type { PeerId } from '@libp2p/interface-peer-id'
 

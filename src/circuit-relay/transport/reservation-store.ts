@@ -3,7 +3,7 @@ import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-pb-stream'
-import PQueue from 'p-queue'
+import { PeerJobQueue } from '../../utils/peer-job-queue.js'
 import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
@@ -50,6 +50,11 @@ export interface RelayStoreInit {
    * How many discovered relays to allow in the reservation store
    */
   discoverRelays?: number
+
+  /**
+   * Limit the number of potential relays we will dial (default: 100)
+   */
+  maxReservationQueueLength?: number
 }
 
 export type RelayType = 'discovered' | 'configured'
@@ -71,9 +76,10 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   private readonly transportManager: TransportManager
   private readonly peerStore: PeerStore
   private readonly events: EventEmitter<Libp2pEvents>
-  private readonly reserveQueue: PQueue
+  private readonly reserveQueue: PeerJobQueue
   private readonly reservations: PeerMap<RelayEntry>
   private readonly maxDiscoveredRelays: number
+  private readonly maxReservationQueueLength: number
   private started: boolean
 
   constructor (components: RelayStoreComponents, init?: RelayStoreInit) {
@@ -86,10 +92,11 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.events = components.events
     this.reservations = new PeerMap()
     this.maxDiscoveredRelays = init?.discoverRelays ?? 0
+    this.maxReservationQueueLength = init?.maxReservationQueueLength ?? 100
     this.started = false
 
     // ensure we don't listen on multiple relays simultaneously
-    this.reserveQueue = new PQueue({
+    this.reserveQueue = new PeerJobQueue({
       concurrency: init?.reservationConcurrency ?? DEFAULT_RESERVATION_CONCURRENCY
     })
 
@@ -127,6 +134,16 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
     if (this.peerId.equals(peerId)) {
       log('not trying to use self as relay')
+      return
+    }
+
+    if (this.reserveQueue.size > this.maxReservationQueueLength) {
+      log('not adding relay as the queue is full')
+      return
+    }
+
+    if (this.reserveQueue.hasJob(peerId)) {
+      log('relay peer is already in the reservation queue')
       return
     }
 
@@ -206,6 +223,8 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
         // if listening failed, remove the reservation
         this.reservations.delete(peerId)
       }
+    }, {
+      peerId
     })
   }
 
