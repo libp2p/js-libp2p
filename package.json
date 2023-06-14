@@ -30,7 +30,7 @@
     "clean": "aegir run clean",
     "lint": "aegir run lint",
     "dep-check": "aegir run dep-check",
-    "release": "run-s build npm:release docker:release",
+    "release": "run-s build npm:release",
     "npm:release": "aegir exec npm -- publish",
     "release:rc": "aegir release-rc"
   },
