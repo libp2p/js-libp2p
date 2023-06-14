@@ -6,6 +6,7 @@ import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-pb-stream'
 import pDefer from 'p-defer'
+import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import {
   CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
@@ -59,6 +60,12 @@ export interface CircuitRelayServerInit {
    * The maximum number of simultaneous HOP outbound streams that can be open at once
    */
   maxOutboundHopStreams?: number
+
+  /**
+   * The maximum number of simultaneous STOP outbound streams that can be open at
+   * once. (default: 300)
+   */
+  maxOutboundStopStreams?: number
 }
 
 export interface HopProtocolOptions {
@@ -87,6 +94,10 @@ export interface RelayServerEvents {
   'relay:advert:error': CustomEvent<Error>
 }
 
+const defaults = {
+  maxOutboundStopStreams: MAX_CONNECTIONS
+}
+
 class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
   private readonly registrar: Registrar
   private readonly peerStore: PeerStore
@@ -101,6 +112,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   private readonly shutdownController: AbortController
   private readonly maxInboundHopStreams?: number
   private readonly maxOutboundHopStreams?: number
+  private readonly maxOutboundStopStreams: number
 
   /**
    * Creates an instance of Relay
@@ -119,6 +131,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     this.shutdownController = new AbortController()
     this.maxInboundHopStreams = init.maxInboundHopStreams
     this.maxOutboundHopStreams = init.maxOutboundHopStreams
+    this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
 
     try {
       // fails on node < 15.4
@@ -390,7 +403,9 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     request
   }: StopOptions): Promise<Stream | undefined> {
     log('starting circuit relay v2 stop request to %s', connection.remotePeer)
-    const stream = await connection.newStream([RELAY_V2_STOP_CODEC])
+    const stream = await connection.newStream([RELAY_V2_STOP_CODEC], {
+      maxOutboundStreams: this.maxOutboundStopStreams
+    })
     const pbstr = pbStream(stream)
     const stopstr = pbstr.pb(StopMessage)
     stopstr.write(request)

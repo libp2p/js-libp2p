@@ -9,7 +9,7 @@ import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import type { MultiaddrConnection, Connection, Stream, ConnectionProtector } from '@libp2p/interface-connection'
+import type { MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions } from '@libp2p/interface-connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
 import type { ConnectionManager } from '@libp2p/interface-connection-manager'
@@ -70,17 +70,20 @@ function findIncomingStreamLimit (protocol: string, registrar: Registrar): numbe
   return DEFAULT_MAX_INBOUND_STREAMS
 }
 
-function findOutgoingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
+function findOutgoingStreamLimit (protocol: string, registrar: Registrar, options: NewStreamOptions = {}): number {
   try {
     const { options } = registrar.getHandler(protocol)
-    return options.maxOutboundStreams
+
+    if (options.maxOutboundStreams != null) {
+      return options.maxOutboundStreams
+    }
   } catch (err: any) {
     if (err.code !== codes.ERR_NO_HANDLER_FOR_PROTOCOL) {
       throw err
     }
   }
 
-  return DEFAULT_MAX_OUTBOUND_STREAMS
+  return options.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
 }
 
 function countStreams (protocol: string, direction: 'inbound' | 'outbound', connection: Connection): number {
@@ -428,7 +431,7 @@ export class DefaultUpgrader implements Upgrader {
         }
       })
 
-      newStream = async (protocols: string[], options: AbortOptions = {}): Promise<Stream> => {
+      newStream = async (protocols: string[], options: NewStreamOptions = {}): Promise<Stream> => {
         if (muxer == null) {
           throw new CodeError('Stream is not multiplexed', codes.ERR_MUXER_UNAVAILABLE)
         }
@@ -450,10 +453,10 @@ export class DefaultUpgrader implements Upgrader {
 
           const { stream, protocol } = await mss.select(muxedStream, protocols, options)
 
-          const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar)
+          const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar, options)
           const streamCount = countStreams(protocol, 'outbound', connection)
 
-          if (streamCount === outgoingLimit) {
+          if (streamCount >= outgoingLimit) {
             const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - limit ${outgoingLimit}`, codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
             muxedStream.abort(err)
 
