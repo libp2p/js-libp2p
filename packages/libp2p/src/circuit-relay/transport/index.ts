@@ -6,6 +6,7 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-pb-stream'
+import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import { codes } from '../../errors.js'
 import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
@@ -72,6 +73,23 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
    * connect to. (default: 0)
    */
   discoverRelays?: number
+
+  /**
+   * The maximum number of simultaneous STOP inbound streams that can be open at
+   * once - each inbound relayed connection uses a STOP stream (default: 300)
+   */
+  maxInboundStopStreams?: number
+
+  /**
+   * The maximum number of simultaneous STOP outbound streams that can be open at
+   * once. STOP streams are opened by the relay server so this setting is
+   * effectively ignored. (default: 32)
+   */
+  maxOutboundStopStreams?: number
+}
+
+const defaults = {
+  maxInboundStopStreams: MAX_CONNECTIONS
 }
 
 class CircuitRelayTransport implements Transport {
@@ -84,6 +102,8 @@ class CircuitRelayTransport implements Transport {
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
+  private readonly maxInboundStopStreams: number
+  private readonly maxOutboundStopStreams?: number
   private started: boolean
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
@@ -94,6 +114,8 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
+    this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
+    this.maxOutboundStopStreams = init.maxOutboundStopStreams
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -128,6 +150,9 @@ class CircuitRelayTransport implements Transport {
       void this.onStop(data).catch(err => {
         log.error(err)
       })
+    }, {
+      maxInboundStreams: this.maxInboundStopStreams,
+      maxOutboundStreams: this.maxOutboundStopStreams
     })
 
     this.started = true
