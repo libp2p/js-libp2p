@@ -217,7 +217,8 @@
     "p-wait-for": "^5.0.0",
     "protons": "^7.0.2",
     "sinon": "^15.0.1",
-    "sinon-ts": "^1.0.0"
+    "sinon-ts": "^1.0.0",
+    "why-is-node-running": "^2.2.2"
   },
   "browser": {
     "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js",
