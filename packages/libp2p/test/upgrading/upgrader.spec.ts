@@ -27,6 +27,7 @@ import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { preSharedKey } from '../../src/pnet/index.js'
+import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import swarmKey from '../fixtures/swarm.key.js'
 import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface-connection'
@@ -888,6 +889,90 @@ describe('libp2p.upgrader', () => {
     expect(streamCount).to.equal(1)
 
     await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
+      .with.property('code', codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+  })
+
+  it('should allow overriding the number of outgoing streams that can be opened using a protocol without a handler', async () => {
+    const localDeferred = pDefer<Components>()
+    const remoteDeferred = pDefer<Components>()
+    const protocol = '/a-test-protocol/1.0.0'
+    const remotePeer = peers[1]
+    libp2p = await createLibp2p({
+      peerId: peers[0],
+      transports: [
+        webSockets()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ],
+      services: {
+        test: (components: any) => {
+          localDeferred.resolve(components)
+        }
+      },
+      connectionGater: mockConnectionGater()
+    })
+
+    remoteLibp2p = await createLibp2p({
+      peerId: remotePeer,
+      transports: [
+        webSockets()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ],
+      services: {
+        test: (components: any) => {
+          remoteDeferred.resolve(components)
+        }
+      }
+    })
+
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    const localComponents = await localDeferred.promise
+    const remoteComponents = await remoteDeferred.promise
+
+    const [localToRemote] = await Promise.all([
+      localComponents.upgrader.upgradeOutbound(outbound),
+      remoteComponents.upgrader.upgradeInbound(inbound)
+    ])
+
+    let streamCount = 0
+
+    const limit = DEFAULT_MAX_OUTBOUND_STREAMS + 1
+
+    await remoteLibp2p.handle(protocol, (data) => {
+      streamCount++
+    }, {
+      maxInboundStreams: limit + 1,
+      maxOutboundStreams: 10
+    })
+
+    expect(streamCount).to.equal(0)
+
+    for (let i = 0; i < limit; i++) {
+      await localToRemote.newStream(protocol, {
+        maxOutboundStreams: limit
+      })
+    }
+
+    expect(streamCount).to.equal(limit)
+
+    // should reject without overriding limit
+    await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
+      .with.property('code', codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+
+    // should reject even with overriding limit
+    await expect(localToRemote.newStream(protocol, {
+      maxOutboundStreams: limit
+    })).to.eventually.be.rejected()
       .with.property('code', codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
   })
 })

@@ -82,14 +82,15 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
 
   /**
    * The maximum number of simultaneous STOP outbound streams that can be open at
-   * once. STOP streams are opened by the relay server so this setting is
-   * effectively ignored. (default: 32)
+   * once. If this transport is used along with the relay server these settings
+   * should be set to the same value (default: 300)
    */
   maxOutboundStopStreams?: number
 }
 
 const defaults = {
-  maxInboundStopStreams: MAX_CONNECTIONS
+  maxInboundStopStreams: MAX_CONNECTIONS,
+  maxOutboundStopStreams: MAX_CONNECTIONS
 }
 
 class CircuitRelayTransport implements Transport {
@@ -115,7 +116,7 @@ class CircuitRelayTransport implements Transport {
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
     this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
-    this.maxOutboundStopStreams = init.maxOutboundStopStreams
+    this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
