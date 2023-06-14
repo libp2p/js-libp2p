@@ -205,7 +205,7 @@
     "@types/varint": "^6.0.0",
     "@types/xsalsa20": "^1.1.0",
     "aegir": "^39.0.5",
-    "cborg": "^1.8.1",
+    "cborg": "^2.0.1",
     "delay": "^6.0.0",
     "execa": "^7.0.0",
     "go-libp2p": "^1.0.1",
