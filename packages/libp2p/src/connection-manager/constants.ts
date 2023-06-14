@@ -50,6 +50,11 @@ export const AUTO_DIAL_CONCURRENCY = 25
 export const AUTO_DIAL_PRIORITY = 0
 
 /**
+ * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#autoDialMaxQueueLength
+ */
+export const AUTO_DIAL_MAX_QUEUE_LENGTH = 100
+
+/**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#inboundConnectionThreshold
  */
 export const INBOUND_CONNECTION_THRESHOLD = 5

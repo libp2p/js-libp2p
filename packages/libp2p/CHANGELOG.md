@@ -10,6 +10,13 @@
 
 
 
+### [0.45.6](https://www.github.com/libp2p/js-libp2p/compare/v0.45.5...v0.45.6) (2023-06-13)
+
+
+### Bug Fixes
+
+* do not allow autodial to run in parallel ([#1804](https://www.github.com/libp2p/js-libp2p/issues/1804)) ([775f892](https://www.github.com/libp2p/js-libp2p/commit/775f89283a08683c1b46811af3c1974f53abd30d))
+
 ### [0.45.5](https://www.github.com/libp2p/js-libp2p/compare/v0.45.4...v0.45.5) (2023-06-05)
 
 

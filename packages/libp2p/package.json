@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.45.5",
+  "version": "0.45.6",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p#readme",
@@ -118,7 +118,7 @@
     "test:interop": "aegir test -t node -f dist/test/interop.js"
   },
   "dependencies": {
-    "@achingbrain/nat-port-mapper": "^1.0.3",
+    "@achingbrain/nat-port-mapper": "^1.0.9",
     "@libp2p/crypto": "^1.0.17",
     "@libp2p/interface-address-manager": "^3.0.0",
     "@libp2p/interface-connection": "^5.0.0",
@@ -133,7 +133,7 @@
     "@libp2p/interface-peer-id": "^2.0.1",
     "@libp2p/interface-peer-info": "^1.0.3",
     "@libp2p/interface-peer-routing": "^1.1.0",
-    "@libp2p/interface-peer-store": "^2.0.3",
+    "@libp2p/interface-peer-store": "^2.0.4",
     "@libp2p/interface-pubsub": "^4.0.0",
     "@libp2p/interface-record": "^2.0.6",
     "@libp2p/interface-registrar": "^2.0.3",
@@ -147,7 +147,7 @@
     "@libp2p/peer-id": "^2.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
     "@libp2p/peer-record": "^5.0.0",
-    "@libp2p/peer-store": "^8.1.0",
+    "@libp2p/peer-store": "^8.2.0",
     "@libp2p/topology": "^4.0.1",
     "@libp2p/tracked-map": "^3.0.0",
     "@libp2p/utils": "^3.0.10",

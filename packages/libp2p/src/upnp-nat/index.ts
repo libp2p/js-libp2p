@@ -142,7 +142,7 @@ class UPnPNAT implements Startable {
         continue
       }
 
-      const client = await this._getClient()
+      const client = this._getClient()
       const publicIp = this.externalAddress ?? await client.externalIp()
       const isPrivate = isPrivateIp(publicIp)
 
@@ -173,12 +173,12 @@ class UPnPNAT implements Startable {
     }
   }
 
-  async _getClient (): Promise<NatAPI> {
+  _getClient (): NatAPI {
     if (this.client != null) {
       return this.client
     }
 
-    this.client = await upnpNat({
+    this.client = upnpNat({
       description: this.description,
       ttl: this.ttl,
       keepAlive: this.keepAlive,

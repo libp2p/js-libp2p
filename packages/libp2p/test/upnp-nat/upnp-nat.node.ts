@@ -8,6 +8,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { pEvent } from 'p-event'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
@@ -59,7 +60,7 @@ describe('UPnP NAT (TCP)', () => {
 
     client = stubInterface<NatAPI>()
 
-    natManager._getClient = async () => {
+    natManager._getClient = () => {
       return client
     }
 
@@ -91,6 +92,8 @@ describe('UPnP NAT (TCP)', () => {
     expect(observed).to.be.empty()
 
     await start(natManager)
+
+    await delay(100)
 
     observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.not.be.empty()

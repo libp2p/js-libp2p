@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from '../../src/circuit-relay/constants.js'
 import { Status } from '../../src/circuit-relay/pb/index.js'
 import { ReservationStore } from '../../src/circuit-relay/server/reservation-store.js'
-import { createPeerId } from '../utils/creators/peer.js'
+import { createPeerId } from '../fixtures/creators/peer.js'
 
 describe('circuit-relay server reservation store', function () {
   it('should add reservation', async function () {

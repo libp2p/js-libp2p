@@ -10,7 +10,7 @@ import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface-connection'
 import type { ConnectionGater } from '@libp2p/interface-connection-gater'
@@ -18,7 +18,7 @@ import type { ConnectionManager } from '@libp2p/interface-connection-manager'
 import type { PendingDial, AddressSorter, Libp2pEvents } from '@libp2p/interface-libp2p'
 import type { Metrics } from '@libp2p/interface-metrics'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Peer, PeerStore } from '@libp2p/interface-peer-store'
 import type { TransportManager } from '@libp2p/interface-transport'
 import type { AbortOptions } from '@libp2p/interfaces'
 import type { EventEmitter } from '@libp2p/interfaces/events'
@@ -60,6 +60,12 @@ export interface ConnectionManagerInit {
    * dial priority. (default: 0)
    */
   autoDialPriority?: number
+
+  /**
+   * Limit the maximum number of peers to dial when trying to keep the number of
+   * open connections above `minConnections`. (default: 100)
+   */
+  autoDialMaxQueueLength?: number
 
   /**
    * Sort the known addresses of a peer before trying to dial, By default public
@@ -136,7 +142,8 @@ const defaultOptions = {
   inboundConnectionThreshold: INBOUND_CONNECTION_THRESHOLD,
   maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS,
   autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
-  autoDialPriority: AUTO_DIAL_PRIORITY
+  autoDialPriority: AUTO_DIAL_PRIORITY,
+  autoDialMaxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH
 }
 
 export interface DefaultConnectionManagerComponents {
@@ -217,7 +224,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     }, {
       minConnections,
       autoDialConcurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency,
-      autoDialPriority: init.autoDialPriority ?? defaultOptions.autoDialPriority
+      autoDialPriority: init.autoDialPriority ?? defaultOptions.autoDialPriority,
+      maxQueueLength: init.autoDialMaxQueueLength ?? defaultOptions.autoDialMaxQueueLength
     })
 
     // controls what happens when we have too many connections
@@ -344,17 +352,15 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     // re-connect to any peers with the KEEP_ALIVE tag
     void Promise.resolve()
       .then(async () => {
-        const keepAlivePeers: PeerId[] = []
-
-        for (const peer of await this.peerStore.all()) {
-          if (peer.tags.has(KEEP_ALIVE)) {
-            keepAlivePeers.push(peer.id)
-          }
-        }
+        const keepAlivePeers: Peer[] = await this.peerStore.all({
+          filters: [(peer) => {
+            return peer.tags.has(KEEP_ALIVE)
+          }]
+        })
 
         await Promise.all(
           keepAlivePeers.map(async peer => {
-            await this.openConnection(peer)
+            await this.openConnection(peer.id)
               .catch(err => {
                 log.error(err)
               })
