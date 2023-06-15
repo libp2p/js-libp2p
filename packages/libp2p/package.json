@@ -3,7 +3,7 @@
   "version": "0.45.9",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/libp2p#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -19,10 +19,6 @@
     "peer",
     "peer-to-peer"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
@@ -72,10 +68,6 @@
       "types": "./dist/src/insecure/index.d.ts",
       "import": "./dist/src/insecure/index.js"
     },
-    "./upnp-nat": {
-      "types": "./dist/src/upnp-nat/index.d.ts",
-      "import": "./dist/src/upnp-nat/index.js"
-    },
     "./ping": {
       "types": "./dist/src/ping/index.d.ts",
       "import": "./dist/src/ping/index.js"
@@ -83,6 +75,10 @@
     "./pnet": {
       "types": "./dist/src/pnet/index.d.ts",
       "import": "./dist/src/pnet/index.js"
+    },
+    "./upnp-nat": {
+      "types": "./dist/src/upnp-nat/index.d.ts",
+      "import": "./dist/src/upnp-nat/index.js"
     }
   },
   "eslintConfig": {
@@ -121,29 +117,29 @@
     "@achingbrain/nat-port-mapper": "^1.0.9",
     "@libp2p/crypto": "^1.0.17",
     "@libp2p/interface-address-manager": "^3.0.0",
-    "@libp2p/interface-connection": "^5.1.1",
+    "@libp2p/interface-connection": "^5.0.0",
     "@libp2p/interface-connection-encrypter": "^4.0.0",
     "@libp2p/interface-connection-gater": "^3.0.0",
     "@libp2p/interface-connection-manager": "^3.0.0",
-    "@libp2p/interface-content-routing": "^2.1.0",
-    "@libp2p/interface-keychain": "^2.0.4",
-    "@libp2p/interface-libp2p": "^3.2.0",
+    "@libp2p/interface-content-routing": "^2.0.0",
+    "@libp2p/interface-keychain": "^2.0.0",
+    "@libp2p/interface-libp2p": "^3.0.0",
     "@libp2p/interface-metrics": "^4.0.0",
     "@libp2p/interface-peer-discovery": "^2.0.0",
-    "@libp2p/interface-peer-id": "^2.0.1",
-    "@libp2p/interface-peer-info": "^1.0.3",
-    "@libp2p/interface-peer-routing": "^1.1.0",
-    "@libp2p/interface-peer-store": "^2.0.4",
+    "@libp2p/interface-peer-id": "^2.0.0",
+    "@libp2p/interface-peer-info": "^1.0.0",
+    "@libp2p/interface-peer-routing": "^1.0.0",
+    "@libp2p/interface-peer-store": "^2.0.0",
     "@libp2p/interface-pubsub": "^4.0.0",
-    "@libp2p/interface-record": "^2.0.6",
-    "@libp2p/interface-registrar": "^2.0.3",
+    "@libp2p/interface-record": "^2.0.0",
+    "@libp2p/interface-registrar": "^2.0.0",
     "@libp2p/interface-stream-muxer": "^4.0.0",
     "@libp2p/interface-transport": "^4.0.0",
-    "@libp2p/interfaces": "^3.2.0",
+    "@libp2p/interfaces": "^3.0.0",
     "@libp2p/keychain": "^2.0.0",
     "@libp2p/logger": "^2.1.1",
     "@libp2p/multistream-select": "^3.1.8",
-    "@libp2p/peer-collections": "^3.0.0",
+    "@libp2p/peer-collections": "^3.0.1",
     "@libp2p/peer-id": "^2.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
     "@libp2p/peer-record": "^5.0.0",
@@ -178,7 +174,7 @@
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
     "rate-limiter-flexible": "^2.3.11",
-    "uint8arraylist": "^2.3.2",
+    "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.2",
     "wherearewe": "^2.0.0",
     "xsalsa20": "^1.1.0"
@@ -191,8 +187,8 @@
     "@libp2p/daemon-client": "^6.0.2",
     "@libp2p/daemon-server": "^5.0.2",
     "@libp2p/floodsub": "^7.0.1",
-    "@libp2p/interface-compliance-tests": "^3.0.6",
-    "@libp2p/interface-connection-compliance-tests": "^2.0.8",
+    "@libp2p/interface-compliance-tests": "^3.0.0",
+    "@libp2p/interface-connection-compliance-tests": "^2.0.0",
     "@libp2p/interface-connection-encrypter-compliance-tests": "^5.0.0",
     "@libp2p/interface-mocks": "^12.0.0",
     "@libp2p/interop": "^8.0.0",

@@ -1,0 +1,23 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../interface-peer-discovery"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
+      "path": "../interface-peer-info"
+    },
+    {
+      "path": "../interfaces"
+    }
+  ]
+}
