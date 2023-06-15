@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-pubsub-compliance-tests",
-  "version": "5.0.8",
+  "version": "5.0.9",
   "description": "Compliance tests for implementations of the libp2p PubSub interface",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/interface-pubsub-compliance-tests#readme",
