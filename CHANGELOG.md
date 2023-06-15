@@ -1,3 +1,16 @@
+## [8.2.1](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.2.0...v8.2.1) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([d38eaf8](https://github.com/libp2p/js-libp2p-peer-store/commit/d38eaf85a359761d0d1f9ad127edbe06e6fc88ca))
+* Update .github/workflows/stale.yml [skip ci] ([9fe80a2](https://github.com/libp2p/js-libp2p-peer-store/commit/9fe80a209adbed9c6491fe7be8d80585779cc47f))
+
+
+### Dependencies
+
+* **dev:** bump p-event from 5.0.1 to 6.0.0 ([#89](https://github.com/libp2p/js-libp2p-peer-store/issues/89)) ([9d96700](https://github.com/libp2p/js-libp2p-peer-store/commit/9d9670048b5e8feeac656cba92cb2e513e4a77be))
+
 ## [8.2.0](https://github.com/libp2p/js-libp2p-peer-store/compare/v8.1.4...v8.2.0) (2023-06-11)
 
 
