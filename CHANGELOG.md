@@ -1,3 +1,10 @@
+## [9.3.8](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.7...v9.3.8) (2023-06-15)
+
+
+### Dependencies
+
+* bump multiformats from 11.0.2 to 12.0.1 ([#482](https://github.com/libp2p/js-libp2p-kad-dht/issues/482)) ([945bc36](https://github.com/libp2p/js-libp2p-kad-dht/commit/945bc36c887cf6fd82ab666a96c12f4a5dfc457e))
+
 ## [9.3.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.6...v9.3.7) (2023-06-15)
 
 
