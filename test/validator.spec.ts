@@ -1,11 +1,11 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
 import { generateKeyPair, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as validator from '../src/validators.js'
 import { Libp2pRecord } from '../src/index.js'
+import * as validator from '../src/validators.js'
 import * as fixture from './fixtures/go-key-records.js'
 import type { Validators } from '@libp2p/interface-dht'
 
@@ -105,13 +105,13 @@ describe('validator', () => {
       })
 
       it('does not error on valid record', async () => {
-        return await Promise.all(cases.valid.publicKey.map(async (k) => {
+        return Promise.all(cases.valid.publicKey.map(async (k) => {
           await validator.validators.pk(k, key.public.bytes)
         }))
       })
 
       it('throws on invalid records', async () => {
-        return await Promise.all(cases.invalid.publicKey.map(async ({ data, code }) => {
+        return Promise.all(cases.invalid.publicKey.map(async ({ data, code }) => {
           try {
             //
             await validator.validators.pk(data, key.public.bytes)

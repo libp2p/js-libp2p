@@ -1,8 +1,8 @@
-import type { Uint8ArrayList } from 'uint8arraylist'
 import {
   Record
 } from './record.js'
 import * as utils from './utils.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Libp2pRecord {
   public key: Uint8Array
