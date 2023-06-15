@@ -1,3 +1,10 @@
+## [4.0.3](https://github.com/libp2p/js-libp2p-topology/compare/v4.0.2...v4.0.3) (2023-06-15)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.8 ([#31](https://github.com/libp2p/js-libp2p-topology/issues/31)) ([628f1a8](https://github.com/libp2p/js-libp2p-topology/commit/628f1a8618411dff87c9283292da0e43f95d57d1))
+
 ## [4.0.2](https://github.com/libp2p/js-libp2p-topology/compare/v4.0.1...v4.0.2) (2023-06-15)
 
 
