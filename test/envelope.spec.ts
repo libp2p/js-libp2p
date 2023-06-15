@@ -1,11 +1,11 @@
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { codes as ErrorCodes } from '../src/errors.js'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { Record } from '@libp2p/interface-record'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Record } from '@libp2p/interface-record'
 
 const domain = 'libp2p-testing'
 const codec = uint8arrayFromString('/libp2p/testdata')

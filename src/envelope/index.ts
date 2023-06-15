@@ -1,14 +1,14 @@
-import { CodeError } from '@libp2p/interfaces/errors'
-import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { peerIdFromKeys } from '@libp2p/peer-id'
+import { unsigned } from 'uint8-varint'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
 import { Envelope as Protobuf } from './envelope.js'
-import { peerIdFromKeys } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Record, Envelope } from '@libp2p/interface-record'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { unsigned } from 'uint8-varint'
 
 export interface RecordEnvelopeInit {
   peerId: PeerId
@@ -130,7 +130,7 @@ export class RecordEnvelope implements Envelope {
 
     const key = unmarshalPublicKey(this.peerId.publicKey)
 
-    return await key.verify(signData.subarray(), this.signature)
+    return key.verify(signData.subarray(), this.signature)
   }
 }
 

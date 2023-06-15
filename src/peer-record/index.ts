@@ -1,13 +1,13 @@
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
-import { arrayEquals } from '@libp2p/utils/array-equals'
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import { PeerRecord as Protobuf } from './peer-record.js'
+import { arrayEquals } from '@libp2p/utils/array-equals'
+import { multiaddr } from '@multiformats/multiaddr'
 import {
   ENVELOPE_DOMAIN_PEER_RECORD,
   ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
 } from './consts.js'
+import { PeerRecord as Protobuf } from './peer-record.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerRecordInit {

@@ -162,7 +162,7 @@
     "@libp2p/interface-record-compliance-tests": "^2.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
     "@types/varint": "^6.0.0",
-    "aegir": "^38.1.2",
+    "aegir": "^39.0.10",
     "protons": "^7.0.2"
   }
 }

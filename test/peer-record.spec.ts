@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import tests from '@libp2p/interface-record-compliance-tests'
-import { multiaddr } from '@multiformats/multiaddr'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { PeerRecord } from '../src/peer-record/index.js'
-import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('interface-record compliance', () => {
