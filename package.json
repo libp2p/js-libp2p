@@ -166,7 +166,7 @@
     "@libp2p/interface-stream-muxer-compliance-tests": "^7.0.3",
     "@types/varint": "^6.0.0",
     "aegir": "^39.0.7",
-    "cborg": "^1.8.1",
+    "cborg": "^2.0.1",
     "delay": "^5.0.0",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
