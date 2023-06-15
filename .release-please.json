@@ -4,6 +4,8 @@
   "bump-patch-for-minor-pre-major": true,
   "group-pull-request-title-pattern": "chore: release ${component}",
   "packages": {
+    "packages/bootstrap": {},
+    "packages/crypto": {},
     "packages/interface-address-manager": {},
     "packages/interface-compliance-tests": {},
     "packages/interface-connection": {},
@@ -35,6 +37,26 @@
     "packages/interface-transport": {},
     "packages/interface-transport-compliance-tests": {},
     "packages/interfaces": {},
-    "packages/libp2p": {}
+    "packages/kad-dht": {},
+    "packages/keychain": {},
+    "packages/libp2p": {},
+    "packages/logger": {},
+    "packages/mdns": {},
+    "packages/mplex": {},
+    "packages/multistream-select": {},
+    "packages/peer-collections": {},
+    "packages/peer-id": {},
+    "packages/peer-id-factory": {},
+    "packages/peer-record": {},
+    "packages/peer-store": {},
+    "packages/prometheus-metrics": {},
+    "packages/record": {},
+    "packages/tcp": {},
+    "packages/topology": {},
+    "packages/tracked-map": {},
+    "packages/utils": {},
+    "packages/webrtc": {},
+    "packages/websockets": {},
+    "packages/webtransport": {}
   }
 }

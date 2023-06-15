@@ -1,0 +1,225 @@
+{
+  "name": "@libp2p/kad-dht",
+  "version": "9.3.6",
+  "description": "JavaScript implementation of the Kad-DHT for libp2p",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-kad-dht#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-kad-dht.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-kad-dht/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "src/message/dht.d.ts"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "build": "aegir build",
+    "generate": "protons ./src/message/dht.proto",
+    "test": "aegir test",
+    "test:node": "aegir test -t node --cov",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "dep-check": "aegir dep-check -i protons -i events",
+    "release": "aegir release",
+    "docs": "aegir docs"
+  },
+  "dependencies": {
+    "@libp2p/crypto": "^1.0.4",
+    "@libp2p/interface-address-manager": "^3.0.0",
+    "@libp2p/interface-connection": "^5.0.1",
+    "@libp2p/interface-connection-manager": "^3.0.0",
+    "@libp2p/interface-content-routing": "^2.1.0",
+    "@libp2p/interface-metrics": "^4.0.0",
+    "@libp2p/interface-peer-discovery": "^2.0.0",
+    "@libp2p/interface-peer-id": "^2.0.0",
+    "@libp2p/interface-peer-info": "^1.0.3",
+    "@libp2p/interface-peer-routing": "^1.1.0",
+    "@libp2p/interface-peer-store": "^2.0.0",
+    "@libp2p/interface-registrar": "^2.0.11",
+    "@libp2p/interfaces": "^3.2.0",
+    "@libp2p/logger": "^2.0.1",
+    "@libp2p/peer-collections": "^3.0.0",
+    "@libp2p/peer-id": "^2.0.0",
+    "@libp2p/record": "^3.0.0",
+    "@libp2p/topology": "^4.0.0",
+    "@multiformats/multiaddr": "^12.0.0",
+    "@types/sinon": "^10.0.14",
+    "abortable-iterator": "^5.0.1",
+    "any-signal": "^4.1.1",
+    "datastore-core": "^9.0.1",
+    "events": "^3.3.0",
+    "hashlru": "^2.3.0",
+    "interface-datastore": "^8.0.0",
+    "it-all": "^3.0.1",
+    "it-drain": "^3.0.1",
+    "it-first": "^3.0.1",
+    "it-length": "^3.0.1",
+    "it-length-prefixed": "^9.0.0",
+    "it-map": "^3.0.1",
+    "it-merge": "^3.0.0",
+    "it-parallel": "^3.0.0",
+    "it-pipe": "^3.0.0",
+    "it-stream-types": "^2.0.1",
+    "it-take": "^3.0.1",
+    "multiformats": "^11.0.0",
+    "p-defer": "^4.0.0",
+    "p-event": "^6.0.0",
+    "p-queue": "^7.3.4",
+    "private-ip": "^3.0.0",
+    "progress-events": "^1.0.0",
+    "protons-runtime": "^5.0.0",
+    "uint8arraylist": "^2.0.0",
+    "uint8arrays": "^4.0.2",
+    "varint": "^6.0.0"
+  },
+  "devDependencies": {
+    "@libp2p/interface-libp2p": "^3.0.0",
+    "@libp2p/interface-mocks": "^12.0.0",
+    "@libp2p/peer-id-factory": "^2.0.0",
+    "@libp2p/peer-store": "^8.0.0",
+    "@types/lodash.random": "^3.2.6",
+    "@types/lodash.range": "^3.2.6",
+    "@types/varint": "^6.0.0",
+    "@types/which": "^3.0.0",
+    "aegir": "^39.0.5",
+    "datastore-level": "^10.0.0",
+    "delay": "^6.0.0",
+    "execa": "^7.0.0",
+    "it-filter": "^3.0.1",
+    "it-last": "^3.0.1",
+    "lodash.random": "^3.2.0",
+    "lodash.range": "^3.2.0",
+    "p-retry": "^5.0.0",
+    "p-wait-for": "^5.0.0",
+    "protons": "^7.0.2",
+    "sinon": "^15.0.0",
+    "ts-sinon": "^2.0.2",
+    "which": "^3.0.0"
+  },
+  "browser": {
+    "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"
+  },
+  "typedocs": {
+    "KadDHTComponents": "https://libp2p.github.io/js-libp2p-kad-dht/interfaces/KadDHTComponents.html",
+    "KadDHTInit": "https://libp2p.github.io/js-libp2p-kad-dht/interfaces/KadDHTInit.html",
+    "kadDHT": "https://libp2p.github.io/js-libp2p-kad-dht/functions/kadDHT.html"
+  }
+}

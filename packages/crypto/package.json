@@ -1,0 +1,206 @@
+{
+  "name": "@libp2p/crypto",
+  "version": "1.0.17",
+  "description": "Crypto primitives for libp2p",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-crypto#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-crypto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-crypto/issues"
+  },
+  "keywords": [
+    "IPFS",
+    "crypto",
+    "libp2p",
+    "rsa",
+    "secp256k1"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./aes": {
+      "types": "./dist/src/aes/index.d.ts",
+      "import": "./dist/src/aes/index.js"
+    },
+    "./ciphers": {
+      "types": "./dist/src/ciphers/index.d.ts",
+      "import": "./dist/src/ciphers/index.js"
+    },
+    "./hmac": {
+      "types": "./dist/src/hmac/index.d.ts",
+      "import": "./dist/src/hmac/index.js"
+    },
+    "./keys": {
+      "types": "./dist/src/keys/index.d.ts",
+      "import": "./dist/src/keys/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "src/*.d.ts"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check -i protons",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:webkit": "bash -c '[ \"${CI}\" == \"true\" ] && playwright install-deps'; aegir test -t browser -- --browser webkit",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "docs": "aegir docs",
+    "generate": "protons ./src/keys/keys.proto"
+  },
+  "dependencies": {
+    "@libp2p/interface-keys": "^1.0.2",
+    "@libp2p/interfaces": "^3.2.0",
+    "@noble/ed25519": "^1.6.0",
+    "@noble/secp256k1": "^1.5.4",
+    "multiformats": "^11.0.0",
+    "node-forge": "^1.1.0",
+    "protons-runtime": "^5.0.0",
+    "uint8arraylist": "^2.4.3",
+    "uint8arrays": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.0",
+    "aegir": "^39.0.5",
+    "benchmark": "^2.1.4",
+    "protons": "^7.0.2"
+  },
+  "browser": {
+    "./dist/src/aes/ciphers.js": "./dist/src/aes/ciphers-browser.js",
+    "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",
+    "./dist/src/hmac/index.js": "./dist/src/hmac/index-browser.js",
+    "./dist/src/keys/ecdh.js": "./dist/src/keys/ecdh-browser.js",
+    "./dist/src/keys/ed25519.js": "./dist/src/keys/ed25519-browser.js",
+    "./dist/src/keys/rsa.js": "./dist/src/keys/rsa-browser.js"
+  }
+}

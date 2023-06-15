@@ -1,0 +1,184 @@
+{
+  "name": "@libp2p/mplex",
+  "version": "8.0.4",
+  "description": "JavaScript implementation of https://github.com/libp2p/mplex",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-mplex#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-mplex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-mplex/issues"
+  },
+  "keywords": [
+    "IPFS",
+    "connection",
+    "duplex",
+    "libp2p",
+    "mplex",
+    "multiplex",
+    "muxer",
+    "stream"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      "@semantic-release/git"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "benchmark": "node ./node_modules/.bin/benchmark benchmark/send-and-receive.js",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release",
+    "docs": "aegir docs"
+  },
+  "dependencies": {
+    "@libp2p/interface-connection": "^5.0.0",
+    "@libp2p/interface-stream-muxer": "^4.1.2",
+    "@libp2p/interfaces": "^3.2.0",
+    "@libp2p/logger": "^2.0.0",
+    "abortable-iterator": "^5.0.0",
+    "any-signal": "^4.0.1",
+    "benchmark": "^2.1.4",
+    "it-batched-bytes": "^2.0.2",
+    "it-pushable": "^3.1.0",
+    "it-stream-types": "^2.0.1",
+    "rate-limiter-flexible": "^2.3.9",
+    "uint8arraylist": "^2.1.1",
+    "uint8arrays": "^4.0.2",
+    "varint": "^6.0.0"
+  },
+  "devDependencies": {
+    "@libp2p/interface-stream-muxer-compliance-tests": "^7.0.3",
+    "@types/varint": "^6.0.0",
+    "aegir": "^39.0.7",
+    "cborg": "^2.0.1",
+    "delay": "^6.0.0",
+    "iso-random-stream": "^2.0.2",
+    "it-all": "^3.0.1",
+    "it-drain": "^3.0.1",
+    "it-foreach": "^2.0.2",
+    "it-map": "^3.0.1",
+    "it-pipe": "^3.0.1",
+    "it-to-buffer": "^4.0.1",
+    "p-defer": "^4.0.0",
+    "random-int": "^3.0.0"
+  },
+  "browser": {
+    "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js"
+  }
+}
