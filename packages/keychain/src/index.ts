@@ -375,7 +375,9 @@ export class DefaultKeyChain implements KeyChain {
 
       const dek = cached.dek
       const privateKey = await importKey(pem, dek)
-      return await privateKey.export(password)
+      const keyString = await privateKey.export(password)
+
+      return keyString
     } catch (err: any) {
       await randomDelay()
       throw err
