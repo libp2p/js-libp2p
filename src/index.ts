@@ -17,24 +17,24 @@ class TrackedMap<K, V> extends Map<K, V> {
     this.updateComponentMetric()
   }
 
-  set (key: K, value: V) {
+  set (key: K, value: V): this {
     super.set(key, value)
     this.updateComponentMetric()
     return this
   }
 
-  delete (key: K) {
+  delete (key: K): boolean {
     const deleted = super.delete(key)
     this.updateComponentMetric()
     return deleted
   }
 
-  clear () {
+  clear (): void {
     super.clear()
     this.updateComponentMetric()
   }
 
-  private updateComponentMetric () {
+  private updateComponentMetric (): void {
     this.metric.update(this.size)
   }
 }
