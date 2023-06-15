@@ -1,3 +1,16 @@
+## [7.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v7.0.1...v7.0.2) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([6dcfdb3](https://github.com/libp2p/js-libp2p-tcp/commit/6dcfdb304010f7002670549e51834e01559a9cfc))
+* Update .github/workflows/stale.yml [skip ci] ([862af6c](https://github.com/libp2p/js-libp2p-tcp/commit/862af6cc96f2c2bac9821db3af6035e601746913))
+
+
+### Dependencies
+
+* **dev:** bump @libp2p/interface-mocks from 11.0.3 to 12.0.1 ([#274](https://github.com/libp2p/js-libp2p-tcp/issues/274)) ([147610f](https://github.com/libp2p/js-libp2p-tcp/commit/147610f8053dc504eaccf899ae0099eca622a263))
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-tcp/compare/v7.0.0...v7.0.1) (2023-04-24)
 
 
