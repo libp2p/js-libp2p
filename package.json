@@ -158,7 +158,7 @@
     "multiformats": "^11.0.2",
     "multihashes": "^4.0.3",
     "p-defer": "^4.0.0",
-    "p-event": "^5.0.1",
+    "p-event": "^6.0.0",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.3"
