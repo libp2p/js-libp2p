@@ -7,9 +7,6 @@
   "main": "index.js",
   "author": "Glen De Cauwsemaecker <glen@littlebearlabs.io> / @marcopolo",
   "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
   "scripts": {
     "start": "node index.js",
     "build": "aegir build",

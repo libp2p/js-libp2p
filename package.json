@@ -32,7 +32,8 @@
     "dep-check": "aegir run dep-check",
     "release": "run-s build npm:release",
     "npm:release": "aegir exec npm -- publish",
-    "release:rc": "aegir release-rc"
+    "release:rc": "aegir release-rc",
+    "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs"
   },
   "devDependencies": {
     "aegir": "^39.0.5"

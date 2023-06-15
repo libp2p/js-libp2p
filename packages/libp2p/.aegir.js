@@ -1,10 +1,4 @@
-import { webSockets } from '@libp2p/websockets'
-import { mplex } from '@libp2p/mplex'
-import { noise } from '@chainsafe/libp2p-noise'
 import { pipe } from 'it-pipe'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { WebSockets } from '@multiformats/mafmt'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
@@ -14,6 +8,12 @@ export default {
   test: {
     before: async () => {
       // use dynamic import because we only want to reference these files during the test run, e.g. after building
+      const { webSockets } = await import('@libp2p/websockets')
+      const { mplex } = await import('@libp2p/mplex')
+      const { noise } = await import('@chainsafe/libp2p-noise')
+      const { createEd25519PeerId } = await import('@libp2p/peer-id-factory')
+      const { yamux } = await import('@chainsafe/libp2p-yamux')
+      const { WebSockets } = await import('@multiformats/mafmt')
       const { createLibp2p } = await import('./dist/src/index.js')
       const { plaintext } = await import('./dist/src/insecure/index.js')
       const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
