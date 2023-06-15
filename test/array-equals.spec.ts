@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { arrayEquals } from '../src/array-equals.js'
 
 describe('non primitive array equals', () => {

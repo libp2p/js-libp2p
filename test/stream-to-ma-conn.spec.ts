@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import all from 'it-all'
 import { pair } from 'it-pair'
 import { pipe } from 'it-pipe'
-import { multiaddr } from '@multiformats/multiaddr'
-import { streamToMaConnection } from '../src/stream-to-ma-conn.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import all from 'it-all'
+import { streamToMaConnection } from '../src/stream-to-ma-conn.js'
 import type { Stream } from '@libp2p/interface-connection'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -69,7 +69,7 @@ describe('Convert stream into a multiaddr connection', () => {
     const streamData = await pipe(
       [data],
       maConn,
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(streamData).to.eql([data])

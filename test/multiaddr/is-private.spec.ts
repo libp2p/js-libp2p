@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { isPrivate } from '../../src/multiaddr/is-private.js'
 
 describe('multiaddr isPrivate', () => {

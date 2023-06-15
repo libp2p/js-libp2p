@@ -1,7 +1,7 @@
-import { logger } from '@libp2p/logger'
-import { Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import { CodeError } from '@libp2p/interfaces/errors'
 import { Address4, Address6 } from '@achingbrain/ip-address'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:ip-port-to-multiaddr')
 

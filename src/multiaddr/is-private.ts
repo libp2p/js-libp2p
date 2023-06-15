@@ -1,5 +1,5 @@
-import type { Multiaddr } from '@multiformats/multiaddr'
 import isIpPrivate from 'private-ip'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * Check if a given multiaddr has a private address.

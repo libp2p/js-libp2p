@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { publicAddressesFirst } from '../src/address-sort.js'
 
 describe('address-sort', () => {

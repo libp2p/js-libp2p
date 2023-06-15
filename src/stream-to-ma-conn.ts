@@ -1,7 +1,7 @@
-import { abortableSource } from 'abortable-iterator'
 import { logger } from '@libp2p/logger'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { abortableSource } from 'abortable-iterator'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
