@@ -167,7 +167,7 @@
     "@types/varint": "^6.0.0",
     "aegir": "^39.0.7",
     "cborg": "^2.0.1",
-    "delay": "^5.0.0",
+    "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.1",
