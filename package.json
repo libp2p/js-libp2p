@@ -168,7 +168,7 @@
     "datastore-core": "^9.0.1",
     "delay": "^6.0.0",
     "p-defer": "^4.0.0",
-    "p-event": "^5.0.1",
+    "p-event": "^6.0.0",
     "protons": "^7.0.2",
     "sinon": "^15.0.1"
   }
