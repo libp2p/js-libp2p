@@ -1,7 +1,7 @@
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { PeerSet } from '../src/index.js'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { peerIdFromBytes } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interface-peer-id'
 
 describe('peer-set', () => {

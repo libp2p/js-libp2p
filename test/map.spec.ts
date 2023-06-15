@@ -1,7 +1,7 @@
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { PeerMap } from '../src/index.js'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { peerIdFromBytes } from '@libp2p/peer-id'
 
 describe('peer-map', () => {
   it('should return a map', async () => {
