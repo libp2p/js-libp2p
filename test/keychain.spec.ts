@@ -1,18 +1,18 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
+import { pbkdf2 } from '@libp2p/crypto'
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core/memory'
+import { Key } from 'interface-datastore/key'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { Key } from 'interface-datastore/key'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { DefaultKeyChain, KeyChainInit } from '../src/index.js'
-import { pbkdf2 } from '@libp2p/crypto'
-import type { Datastore } from 'interface-datastore'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
-import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { DefaultKeyChain, type KeyChainInit } from '../src/index.js'
 import type { KeyChain, KeyInfo } from '@libp2p/interface-keychain'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Datastore } from 'interface-datastore'
 
 describe('keychain', () => {
   const passPhrase = 'this is not a secure phrase'

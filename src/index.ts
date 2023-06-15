@@ -1,19 +1,19 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
-import { logger } from '@libp2p/logger'
-import sanitize from 'sanitize-filename'
-import mergeOptions from 'merge-options'
-import { Key } from 'interface-datastore/key'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { codes } from './errors.js'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
-import type { Datastore } from 'interface-datastore'
+import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
+import { Key } from 'interface-datastore/key'
+import mergeOptions from 'merge-options'
+import sanitize from 'sanitize-filename'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { codes } from './errors.js'
 import type { KeyChain, KeyInfo, KeyType } from '@libp2p/interface-keychain'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:keychain')
 
@@ -390,7 +390,7 @@ export class DefaultKeyChain implements KeyChain {
     const pem = await this.exportKey(name, password)
     const privateKey = await importKey(pem, password)
 
-    return await peerIdFromKeys(privateKey.public.bytes, privateKey.bytes)
+    return peerIdFromKeys(privateKey.public.bytes, privateKey.bytes)
   }
 
   /**

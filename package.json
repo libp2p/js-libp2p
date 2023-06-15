@@ -157,7 +157,7 @@
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^2.0.1",
-    "aegir": "^38.1.0",
+    "aegir": "^39.0.10",
     "datastore-core": "^9.0.1",
     "multiformats": "^11.0.1"
   }
