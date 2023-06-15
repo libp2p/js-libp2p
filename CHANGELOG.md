@@ -1,3 +1,19 @@
+## [3.0.3](https://github.com/libp2p/js-libp2p-tracked-map/compare/v3.0.2...v3.0.3) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([6447152](https://github.com/libp2p/js-libp2p-tracked-map/commit/6447152525c274482d6f8e78ef857e68b57d96bd))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([80163d7](https://github.com/libp2p/js-libp2p-tracked-map/commit/80163d7b950106a653441171f7fc455980935f12))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([5fc1905](https://github.com/libp2p/js-libp2p-tracked-map/commit/5fc1905f868da61cdc6f75d5ef108653eb20072e))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([cb4e22d](https://github.com/libp2p/js-libp2p-tracked-map/commit/cb4e22de6b601c52fbab09e384173590e2ecc0d8))
+* Update .github/workflows/stale.yml [skip ci] ([bda0a65](https://github.com/libp2p/js-libp2p-tracked-map/commit/bda0a656569ae5a6e47cf2d58fa83916d4b2af19))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 37.12.1 to 38.1.7 ([#30](https://github.com/libp2p/js-libp2p-tracked-map/issues/30)) ([42a4d8b](https://github.com/libp2p/js-libp2p-tracked-map/commit/42a4d8be71ea05c435895cf3f139d3fbfee95708))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p-tracked-map/compare/v3.0.1...v3.0.2) (2022-12-16)
 
 
