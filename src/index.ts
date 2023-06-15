@@ -1,6 +1,6 @@
 import { PROTOCOL_ID } from './constants.js'
-import type { Duplex, Source } from 'it-stream-types'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Duplex, Source } from 'it-stream-types'
 
 export { PROTOCOL_ID }
 

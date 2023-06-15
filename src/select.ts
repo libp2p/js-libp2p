@@ -1,15 +1,15 @@
-import { logger } from '@libp2p/logger'
 import { CodeError } from '@libp2p/interfaces/errors'
-import * as multistream from './multistream.js'
+import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { PROTOCOL_ID } from './index.js'
-import type { Duplex, Source } from 'it-stream-types'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { pushable } from 'it-pushable'
 import merge from 'it-merge'
+import { pushable } from 'it-pushable'
 import { reader } from 'it-reader'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import * as multistream from './multistream.js'
+import { PROTOCOL_ID } from './index.js'
 import type { ByteArrayInit, ByteListInit, MultistreamSelectInit, ProtocolStream } from './index.js'
+import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:mss:select')
 

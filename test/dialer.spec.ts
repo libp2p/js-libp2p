@@ -2,16 +2,16 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
+import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { pair } from 'it-pair'
+import { pipe } from 'it-pipe'
 import { reader } from 'it-reader'
 import pTimeout from 'p-timeout'
-import randomBytes from 'iso-random-stream/src/random.js'
-import * as Multistream from '../src/multistream.js'
-import * as mss from '../src/index.js'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import * as mss from '../src/index.js'
+import * as Multistream from '../src/multistream.js'
 
 describe('Dialer', () => {
   describe('dialer.select', () => {
@@ -26,7 +26,7 @@ describe('Dialer', () => {
 
       // Ensure stream is usable after selection
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
-      const output = await pipe(input, selection.stream, async (source) => await all(source))
+      const output = await pipe(input, selection.stream, async (source) => all(source))
       expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
     })
 
@@ -90,7 +90,7 @@ describe('Dialer', () => {
 
       // Ensure stream is usable after selection
       const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
-      const output = await pipe(input, selection.stream, async (source) => await all(source))
+      const output = await pipe(input, selection.stream, async (source) => all(source))
       expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
     })
 
@@ -132,7 +132,7 @@ describe('Dialer', () => {
 
       // Ensure stream is usable after selection
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
-      const output = await pipe(input, selection.stream, async (source) => await all(source))
+      const output = await pipe(input, selection.stream, async (source) => all(source))
       expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
     })
   })

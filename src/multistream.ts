@@ -1,19 +1,19 @@
 
-import { Uint8ArrayList } from 'uint8arraylist'
+import { CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import { abortableSource } from 'abortable-iterator'
+import first from 'it-first'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import first from 'it-first'
-import { abortableSource } from 'abortable-iterator'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Pushable } from 'it-pushable'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { Source } from 'it-stream-types'
-import type { Reader } from 'it-reader'
-import type { MultistreamSelectInit } from '.'
 import { MAX_PROTOCOL_LENGTH } from './constants.js'
-import { logger } from '@libp2p/logger'
+import type { MultistreamSelectInit } from '.'
+import type { AbortOptions } from '@libp2p/interfaces'
+import type { Pushable } from 'it-pushable'
+import type { Reader } from 'it-reader'
+import type { Source } from 'it-stream-types'
 
 const log = logger('libp2p:mss')
 
@@ -59,7 +59,7 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
   let byteLength = 1 // Read single byte chunks until the length is known
   const varByteSource = { // No return impl - we want the reader to remain readable
     [Symbol.asyncIterator]: () => varByteSource,
-    next: async () => await reader.next(byteLength)
+    next: async () => reader.next(byteLength)
   }
 
   let input: Source<Uint8ArrayList> = varByteSource
@@ -78,7 +78,7 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
   const buf = await pipe(
     input,
     (source) => lp.decode(source, { onLength, maxDataLength: MAX_PROTOCOL_LENGTH }),
-    async (source) => await first(source)
+    async (source) => first(source)
   )
 
   if (buf == null || buf.length === 0) {

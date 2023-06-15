@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
-import { Uint8ArrayList } from 'uint8arraylist'
 import randomBytes from 'iso-random-stream/src/random.js'
-import * as mss from '../src/index.js'
+import all from 'it-all'
 import { duplexPair } from 'it-pair/duplex'
+import { pipe } from 'it-pipe'
+import { Uint8ArrayList } from 'uint8arraylist'
+import * as mss from '../src/index.js'
 
 describe('Dialer and Listener integration', () => {
   it('should handle and select', async () => {
@@ -25,7 +25,7 @@ describe('Dialer and Listener integration', () => {
     // Ensure stream is usable after selection
     const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
     const output = await Promise.all([
-      pipe(input, dialerSelection.stream, async (source) => await all(source)),
+      pipe(input, dialerSelection.stream, async (source) => all(source)),
       pipe(listenerSelection.stream, listenerSelection.stream)
     ])
     expect(new Uint8ArrayList(...output[0]).slice()).to.eql(new Uint8ArrayList(...input).slice())
@@ -38,7 +38,7 @@ describe('Dialer and Listener integration', () => {
 
     const [listenerSelection, dialerSelection] = await Promise.all([
       mss.handle(pair[1], selectedProtocol),
-      (async () => await mss.select(pair[0], selectedProtocol))()
+      (async () => mss.select(pair[0], selectedProtocol))()
     ])
 
     expect(dialerSelection.protocol).to.equal(selectedProtocol)
@@ -47,7 +47,7 @@ describe('Dialer and Listener integration', () => {
     // Ensure stream is usable after selection
     const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
     const output = await Promise.all([
-      pipe(input, dialerSelection.stream, async (source) => await all(source)),
+      pipe(input, dialerSelection.stream, async (source) => all(source)),
       pipe(listenerSelection.stream, listenerSelection.stream)
     ])
     expect(new Uint8ArrayList(...output[0]).slice()).to.eql(new Uint8ArrayList(...input).slice())
@@ -69,7 +69,7 @@ describe('Dialer and Listener integration', () => {
     // Ensure stream is usable after selection
     const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
     const output = await Promise.all([
-      pipe(input, dialerSelection.stream, async (source) => await all(source)),
+      pipe(input, dialerSelection.stream, async (source) => all(source)),
       pipe(listenerSelection.stream, listenerSelection.stream)
     ])
     expect(new Uint8ArrayList(...output[0]).slice()).to.eql(new Uint8ArrayList(...input).slice())
@@ -85,7 +85,7 @@ describe('Dialer and Listener integration', () => {
     // Ensure stream is usable after selection
     const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
     // Since the stream is lazy, we need to write to it before handling
-    const dialerOutPromise = pipe(input, dialerSelection.stream, async source => await all(source))
+    const dialerOutPromise = pipe(input, dialerSelection.stream, async source => all(source))
 
     const listenerSelection = await mss.handle(pair[1], protocol)
     expect(listenerSelection.protocol).to.equal(protocol)
@@ -106,7 +106,7 @@ describe('Dialer and Listener integration', () => {
     // Ensure stream is usable after selection
     const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
     // Since the stream is lazy, we need to write to it before handling
-    const dialerResultPromise = pipe(input, dialerSelection.stream, async source => await all(source))
+    const dialerResultPromise = pipe(input, dialerSelection.stream, async source => all(source))
 
     // The error message from this varies depending on how much data got
     // written when the dialer receives the `na` response and closes the

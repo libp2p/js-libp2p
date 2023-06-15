@@ -2,14 +2,14 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 
 import { expect } from 'aegir/chai'
-import * as Varint from 'varint'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { reader } from 'it-reader'
-import * as Multistream from '../src/multistream.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
-import { pushable } from 'it-pushable'
 import all from 'it-all'
+import { pushable } from 'it-pushable'
+import { reader } from 'it-reader'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import * as Varint from 'varint'
+import * as Multistream from '../src/multistream.js'
 
 describe('Multistream', () => {
   describe('Multistream.encode', () => {

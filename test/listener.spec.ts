@@ -1,17 +1,17 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { reader } from 'it-reader'
+import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
 import * as Lp from 'it-length-prefixed'
-import * as Multistream from '../src/multistream.js'
-import randomBytes from 'iso-random-stream/src/random.js'
+import map from 'it-map'
+import { pipe } from 'it-pipe'
+import { reader } from 'it-reader'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as mss from '../src/index.js'
-import map from 'it-map'
+import * as Multistream from '../src/multistream.js'
 import type { Duplex, Source } from 'it-stream-types'
 
 describe('Listener', () => {
@@ -123,7 +123,7 @@ describe('Listener', () => {
             (source) => Lp.decode(source),
             // Stringify and remove the newline
             (source) => map(source, (buf) => uint8ArrayToString(buf.subarray()).trim()),
-            async (source) => await all(source)
+            async (source) => all(source)
           )
 
           expect(lsProtocols).to.deep.equal(handledProtocols)

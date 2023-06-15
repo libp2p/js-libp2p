@@ -1,11 +1,11 @@
 import { logger } from '@libp2p/logger'
-import * as multistream from './multistream.js'
 import { handshake } from 'it-handshake'
-import { PROTOCOL_ID } from './constants.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { Duplex, Source } from 'it-stream-types'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { PROTOCOL_ID } from './constants.js'
+import * as multistream from './multistream.js'
 import type { ByteArrayInit, ByteListInit, MultistreamSelectInit, ProtocolStream } from './index.js'
+import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:mss:handle')
 
