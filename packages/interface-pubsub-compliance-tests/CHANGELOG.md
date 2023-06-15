@@ -5,6 +5,13 @@
 
 * update sibling dependencies ([eae5fe0](https://github.com/libp2p/js-libp2p-interfaces/commit/eae5fe02ea11c2930242a8d91ee4bc22f9bebc5c))
 
+### [5.0.8](https://www.github.com/libp2p/js-libp2p/compare/interface-pubsub-compliance-tests-v5.0.7...interface-pubsub-compliance-tests-v5.0.8) (2023-06-15)
+
+
+### Bug Fixes
+
+* add events bus to pubsub compliance tests ([#1824](https://www.github.com/libp2p/js-libp2p/issues/1824)) ([883082c](https://www.github.com/libp2p/js-libp2p/commit/883082ca284b346cd5c232236356773d97b78d8b))
+
 ## [@libp2p/interface-pubsub-compliance-tests-v5.0.6](https://github.com/libp2p/js-libp2p-interfaces/compare/@libp2p/interface-pubsub-compliance-tests-v5.0.5...@libp2p/interface-pubsub-compliance-tests-v5.0.6) (2023-05-04)
 
 
