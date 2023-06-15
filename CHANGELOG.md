@@ -1,3 +1,17 @@
+## [8.0.4](https://github.com/libp2p/js-libp2p-mplex/compare/v8.0.3...v8.0.4) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([1ebb5e4](https://github.com/libp2p/js-libp2p-mplex/commit/1ebb5e4ba3f3151c3da071e3e1064a2e53791cb2))
+* Update .github/workflows/stale.yml [skip ci] ([74e37d7](https://github.com/libp2p/js-libp2p-mplex/commit/74e37d7ba2c4b83a6b9340d2c9d71d875563f994))
+
+
+### Dependencies
+
+* **dev:** bump cborg from 1.10.2 to 2.0.1 ([#282](https://github.com/libp2p/js-libp2p-mplex/issues/282)) ([4dbc590](https://github.com/libp2p/js-libp2p-mplex/commit/4dbc590d1ac92581fe2e937757567eef3854acf4))
+* **dev:** bump delay from 5.0.0 to 6.0.0 ([#281](https://github.com/libp2p/js-libp2p-mplex/issues/281)) ([1e03e75](https://github.com/libp2p/js-libp2p-mplex/commit/1e03e75369722be9872f747cd83f555bc08d49fe))
+
 ## [8.0.3](https://github.com/libp2p/js-libp2p-mplex/compare/v8.0.2...v8.0.3) (2023-05-17)
 
 
