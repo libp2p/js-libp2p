@@ -1,3 +1,10 @@
+## [7.0.3](https://github.com/libp2p/js-libp2p-tcp/compare/v7.0.2...v7.0.3) (2023-06-15)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.10 ([#279](https://github.com/libp2p/js-libp2p-tcp/issues/279)) ([3ed1235](https://github.com/libp2p/js-libp2p-tcp/commit/3ed12353aa48b5a933f80042846a8f1c2337fa47))
+
 ## [7.0.2](https://github.com/libp2p/js-libp2p-tcp/compare/v7.0.1...v7.0.2) (2023-06-15)
 
 
