@@ -1,3 +1,16 @@
+## [3.0.4](https://github.com/libp2p/js-libp2p-record/compare/v3.0.3...v3.0.4) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([afec2c9](https://github.com/libp2p/js-libp2p-record/commit/afec2c9d1685707c9cff82342099839abb6976da))
+* Update .github/workflows/stale.yml [skip ci] ([2d12a78](https://github.com/libp2p/js-libp2p-record/commit/2d12a789581d65181d463fa9b908280b14fc2070))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.10 ([#95](https://github.com/libp2p/js-libp2p-record/issues/95)) ([30e0fb5](https://github.com/libp2p/js-libp2p-record/commit/30e0fb5dfb193e3289f1aec6c29a8d194fd9aa92))
+
 ## [3.0.3](https://github.com/libp2p/js-libp2p-record/compare/v3.0.2...v3.0.3) (2023-04-04)
 
 
