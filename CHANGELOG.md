@@ -1,3 +1,16 @@
+## [2.0.1](https://github.com/libp2p/js-libp2p-keychain/compare/v2.0.0...v2.0.1) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([7fd8023](https://github.com/libp2p/js-libp2p-keychain/commit/7fd80233db0b8706eb0ffe5372c6bad584ec211f))
+* Update .github/workflows/stale.yml [skip ci] ([c185b0d](https://github.com/libp2p/js-libp2p-keychain/commit/c185b0de456611ca42ec49bc7d52f803e4a76930))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-keychain/issues/70)) ([4da4a08](https://github.com/libp2p/js-libp2p-keychain/commit/4da4a08b86f436c36e2fae48ecc48817e9b8066f))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-keychain/compare/v1.0.1...v2.0.0) (2023-03-13)
 
 
