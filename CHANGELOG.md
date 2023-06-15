@@ -1,3 +1,16 @@
+## [3.1.9](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.8...v3.1.9) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([c03b6cd](https://github.com/libp2p/js-libp2p-multistream-select/commit/c03b6cd8013a82605f414a5ddbde7c66c84e4db1))
+* Update .github/workflows/stale.yml [skip ci] ([e8d5014](https://github.com/libp2p/js-libp2p-multistream-select/commit/e8d5014b6da7bf4db1cc542c5d923760a6067903))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-multistream-select/issues/70)) ([f87b1c3](https://github.com/libp2p/js-libp2p-multistream-select/commit/f87b1c3505934ebeed6eff018af8d3042e7e6e06))
+
 ## [3.1.8](https://github.com/libp2p/js-libp2p-multistream-select/compare/v3.1.7...v3.1.8) (2023-04-19)
 
 
