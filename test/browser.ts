@@ -23,7 +23,10 @@ describe('libp2p-webtransport', () => {
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [noise()]
+      connectionEncryption: [noise()],
+      connectionGater: {
+        denyDialMultiaddr: async () => false
+      }
     })
 
     await node.start()
@@ -85,7 +88,10 @@ describe('libp2p-webtransport', () => {
 
     const node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [noise()]
+      connectionEncryption: [noise()],
+      connectionGater: {
+        denyDialMultiaddr: async () => false
+      }
     })
     await node.start()
 
@@ -103,7 +109,10 @@ describe('libp2p-webtransport', () => {
     const ma = multiaddr(process.env.serverAddr6)
     const node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [noise()]
+      connectionEncryption: [noise()],
+      connectionGater: {
+        denyDialMultiaddr: async () => false
+      }
     })
 
     await node.start()
@@ -125,7 +134,10 @@ describe('libp2p-webtransport', () => {
     const ma = multiaddr(maStr)
     const node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [noise()]
+      connectionEncryption: [noise()],
+      connectionGater: {
+        denyDialMultiaddr: async () => false
+      }
     })
 
     async function * gen (): AsyncGenerator<Uint8Array, void, unknown> {

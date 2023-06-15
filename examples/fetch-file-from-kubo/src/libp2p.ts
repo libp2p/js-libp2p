@@ -11,7 +11,11 @@ export async function setup (): Promise<{ libp2p: Libp2p, bitswap: Bitswap }> {
 
   const node = await createLibp2p({
     transports: [webTransport()],
-    connectionEncryption: [noise()]
+    connectionEncryption: [noise()],
+    // this is only necessary when dialing local addresses
+    connectionGater: {
+      denyDialMultiaddr: async () => false
+    }
   })
 
   await node.start()
