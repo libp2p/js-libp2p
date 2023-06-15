@@ -1,3 +1,16 @@
+## [9.3.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.6...v9.3.7) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([94e4240](https://github.com/libp2p/js-libp2p-kad-dht/commit/94e42400f589954269fefc95d3c16442cdbb824a))
+* Update .github/workflows/stale.yml [skip ci] ([b081831](https://github.com/libp2p/js-libp2p-kad-dht/commit/b081831a0b371b91fa47d9d0ee78694abe88ae5a))
+
+
+### Dependencies
+
+* bump p-event from 5.0.1 to 6.0.0 ([#480](https://github.com/libp2p/js-libp2p-kad-dht/issues/480)) ([ca1fdb7](https://github.com/libp2p/js-libp2p-kad-dht/commit/ca1fdb714e0dd3dce2ddb66d6268c96610b5a3c9))
+
 ## [9.3.6](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.3.5...v9.3.6) (2023-06-01)
 
 
