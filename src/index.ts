@@ -1,16 +1,16 @@
 import net from 'net'
-import * as mafmt from '@multiformats/mafmt'
-import { logger } from '@libp2p/logger'
-import { toMultiaddrConnection } from './socket-to-conn.js'
-import { CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
-import { multiaddrToNetConfig } from './utils.js'
+import { type CreateListenerOptions, type DialOptions, type Listener, symbol, type Transport } from '@libp2p/interface-transport'
 import { AbortError, CodeError } from '@libp2p/interfaces/errors'
+import { logger } from '@libp2p/logger'
+import * as mafmt from '@multiformats/mafmt'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
-import { CreateListenerOptions, DialOptions, Listener, symbol, Transport } from '@libp2p/interface-transport'
-import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
-import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
+import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
+import { toMultiaddrConnection } from './socket-to-conn.js'
+import { multiaddrToNetConfig } from './utils.js'
 import type { Connection } from '@libp2p/interface-connection'
 import type { CounterGroup, Metrics } from '@libp2p/interface-metrics'
+import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
+import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 
 const log = logger('libp2p:tcp')
 
@@ -94,13 +94,9 @@ class TCP implements Transport {
     }
   }
 
-  get [symbol] (): true {
-    return true
-  }
+  readonly [symbol] = true
 
-  get [Symbol.toStringTag] (): string {
-    return '@libp2p/tcp'
-  }
+  readonly [Symbol.toStringTag] = '@libp2p/tcp'
 
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true
@@ -149,7 +145,7 @@ class TCP implements Transport {
       throw new AbortError()
     }
 
-    return await new Promise<Socket>((resolve, reject) => {
+    return new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
       const cOpts = multiaddrToNetConfig(ma) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
       const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`

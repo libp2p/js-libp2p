@@ -1,18 +1,18 @@
 import net from 'net'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
 import { logger } from '@libp2p/logger'
-import { toMultiaddrConnection } from './socket-to-conn.js'
 import { CODE_P2P } from './constants.js'
+import { toMultiaddrConnection } from './socket-to-conn.js'
 import {
   getMultiaddrs,
   multiaddrToNetConfig,
-  NetConfig
+  type NetConfig
 } from './utils.js'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import type { TCPCreateListenerOptions } from './index.js'
 import type { MultiaddrConnection, Connection } from '@libp2p/interface-connection'
+import type { CounterGroup, MetricGroup, Metrics } from '@libp2p/interface-metrics'
 import type { Upgrader, Listener, ListenerEvents } from '@libp2p/interface-transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { TCPCreateListenerOptions } from './index.js'
-import type { CounterGroup, MetricGroup, Metrics } from '@libp2p/interface-metrics'
 
 const log = logger('libp2p:tcp:listener')
 

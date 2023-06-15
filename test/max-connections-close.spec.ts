@@ -1,11 +1,11 @@
 import net from 'node:net'
 import { promisify } from 'util'
-import { expect } from 'aegir/chai'
 import { mockUpgrader } from '@libp2p/interface-mocks'
+import { EventEmitter } from '@libp2p/interfaces/events'
 import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
 import type { TCPListener } from '../src/listener.js'
-import { EventEmitter } from '@libp2p/interfaces/events'
 
 describe('close server on maxConnections', () => {
   const afterEachCallbacks: Array<() => Promise<any> | any> = []

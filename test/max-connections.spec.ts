@@ -1,10 +1,10 @@
-import { expect } from 'aegir/chai'
 import net from 'node:net'
 import { promisify } from 'node:util'
 import { mockUpgrader } from '@libp2p/interface-mocks'
-import { multiaddr } from '@multiformats/multiaddr'
-import { tcp } from '../src/index.js'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import { tcp } from '../src/index.js'
 
 describe('maxConnections', () => {
   const afterEachCallbacks: Array<() => Promise<any> | any> = []

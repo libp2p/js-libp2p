@@ -1,8 +1,8 @@
+import os from 'os'
+import path from 'path'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ListenOptions, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
-import os from 'os'
-import path from 'path'
 
 const ProtoFamily = { ip4: 'IPv4', ip6: 'IPv6' }
 

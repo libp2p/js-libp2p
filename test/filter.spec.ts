@@ -1,6 +1,6 @@
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
-import { multiaddr } from '@multiformats/multiaddr'
 import type { Transport } from '@libp2p/interface-transport'
 
 describe('filter addrs', () => {

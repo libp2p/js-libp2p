@@ -149,12 +149,13 @@
     "@libp2p/utils": "^3.0.2",
     "@multiformats/mafmt": "^12.0.0",
     "@multiformats/multiaddr": "^12.0.0",
+    "@types/sinon": "^10.0.15",
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {
     "@libp2p/interface-mocks": "^12.0.1",
     "@libp2p/interface-transport-compliance-tests": "^4.0.0",
-    "aegir": "^38.1.0",
+    "aegir": "^39.0.10",
     "it-all": "^3.0.1",
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0",

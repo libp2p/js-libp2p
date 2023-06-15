@@ -1,16 +1,16 @@
-import { expect } from 'aegir/chai'
-import { tcp } from '../src/index.js'
 import os from 'os'
 import path from 'path'
-import { multiaddr } from '@multiformats/multiaddr'
-import { pipe } from 'it-pipe'
-import all from 'it-all'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { Transport, Upgrader } from '@libp2p/interface-transport'
-import pDefer from 'p-defer'
-import type { MultiaddrConnection } from '@libp2p/interface-connection'
 import { EventEmitter } from '@libp2p/interfaces/events'
+import { multiaddr } from '@multiformats/multiaddr'
+import { expect } from 'aegir/chai'
+import all from 'it-all'
+import { pipe } from 'it-pipe'
+import pDefer from 'p-defer'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { tcp } from '../src/index.js'
+import type { MultiaddrConnection } from '@libp2p/interface-connection'
+import type { Transport, Upgrader } from '@libp2p/interface-transport'
 
 const isCI = process.env.CI
 
@@ -196,7 +196,7 @@ describe('dial', () => {
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
@@ -222,7 +222,7 @@ describe('dial', () => {
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      async (source) => await all(source)
+      async (source) => all(source)
     )
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
@@ -244,7 +244,7 @@ describe('dial', () => {
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      async (source) => await all(source)
+      async (source) => all(source)
     )
 
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
@@ -326,7 +326,7 @@ describe('dial', () => {
     const values = await pipe(
       [uint8ArrayFromString('hey')],
       stream,
-      async (source) => await all(source)
+      async (source) => all(source)
     )
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
 

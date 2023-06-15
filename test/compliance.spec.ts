@@ -1,7 +1,7 @@
-import sinon from 'sinon'
+import net from 'net'
 import tests from '@libp2p/interface-transport-compliance-tests'
 import { multiaddr } from '@multiformats/multiaddr'
-import net from 'net'
+import sinon from 'sinon'
 import { tcp } from '../src/index.js'
 
 describe('interface-transport compliance', () => {

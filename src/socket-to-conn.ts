@@ -1,14 +1,14 @@
+import { CodeError } from '@libp2p/interfaces/errors'
 import { logger } from '@libp2p/logger'
+import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
-import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
-import { CodeError } from '@libp2p/interfaces/errors'
-import type { Socket } from 'net'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrConnection } from '@libp2p/interface-connection'
 import type { CounterGroup } from '@libp2p/interface-metrics'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Socket } from 'net'
 
 const log = logger('libp2p:tcp:socket')
 
