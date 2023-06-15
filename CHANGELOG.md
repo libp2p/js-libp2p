@@ -1,3 +1,19 @@
+## [4.0.2](https://github.com/libp2p/js-libp2p-topology/compare/v4.0.1...v4.0.2) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([944bcae](https://github.com/libp2p/js-libp2p-topology/commit/944bcae65d709ac70f986df403e367cb898f7700))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([8d3e9af](https://github.com/libp2p/js-libp2p-topology/commit/8d3e9afa5925856b5ad89e46d87aa944ff7678d3))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([aae4c14](https://github.com/libp2p/js-libp2p-topology/commit/aae4c146b0fa310920a229867ac188a89cb5b951))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([eed0e46](https://github.com/libp2p/js-libp2p-topology/commit/eed0e462b9c9d9dd51adffd9755f1bb7fa911432))
+* Update .github/workflows/stale.yml [skip ci] ([fdc316d](https://github.com/libp2p/js-libp2p-topology/commit/fdc316d09807aeb69df9c63810255a249c311bad))
+
+
+### Dependencies
+
+* bump it-all from 2.0.1 to 3.0.1 ([#32](https://github.com/libp2p/js-libp2p-topology/issues/32)) ([d2db182](https://github.com/libp2p/js-libp2p-topology/commit/d2db18262c918db5a61a946a3b42a406031d4861))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-topology/compare/v4.0.0...v4.0.1) (2023-01-13)
 
 
