@@ -182,8 +182,6 @@ export interface Connection {
   streams: Stream[]
 
   newStream: (multicodecs: string | string[], options?: NewStreamOptions) => Promise<Stream>
-  addStream: (stream: Stream) => void
-  removeStream: (id: string) => void
   close: () => Promise<void>
 }
 
