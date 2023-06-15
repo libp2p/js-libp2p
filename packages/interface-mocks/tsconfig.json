@@ -61,6 +61,21 @@
     },
     {
       "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../multistream-select"
+    },
+    {
+      "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
     }
   ]
 }

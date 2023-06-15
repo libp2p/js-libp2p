@@ -6,5 +6,10 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../interface-metrics"
+    }
   ]
 }

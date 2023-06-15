@@ -6,5 +6,28 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../interface-connection"
+    },
+    {
+      "path": "../interface-mocks"
+    },
+    {
+      "path": "../interface-transport"
+    },
+    {
+      "path": "../interface-transport-compliance-tests"
+    },
+    {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }

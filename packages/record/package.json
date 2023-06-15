@@ -4,21 +4,17 @@
   "description": "libp2p record implementation",
   "author": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p-record#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/record#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-record.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-record/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "keywords": [
     "IPFS"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
@@ -66,91 +62,6 @@
       "src/record.d.ts"
     ]
   },
-  "release": {
-    "branches": [
-      "master"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits",
-          "releaseRules": [
-            {
-              "breaking": true,
-              "release": "major"
-            },
-            {
-              "revert": true,
-              "release": "patch"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "docs",
-              "release": "patch"
-            },
-            {
-              "type": "test",
-              "release": "patch"
-            },
-            {
-              "type": "deps",
-              "release": "patch"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "conventionalcommits",
-          "presetConfig": {
-            "types": [
-              {
-                "type": "feat",
-                "section": "Features"
-              },
-              {
-                "type": "fix",
-                "section": "Bug Fixes"
-              },
-              {
-                "type": "chore",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "docs",
-                "section": "Documentation"
-              },
-              {
-                "type": "deps",
-                "section": "Dependencies"
-              },
-              {
-                "type": "test",
-                "section": "Tests"
-              }
-            ]
-          }
-        }
-      ],
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      "@semantic-release/git"
-    ]
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -162,21 +73,22 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "build": "aegir build",
-    "generate": "protons ./src/record.proto",
-    "release": "aegir release",
-    "docs": "aegir docs"
+    "generate": "protons ./src/record.proto"
   },
   "dependencies": {
     "@libp2p/interface-dht": "^2.0.0",
-    "@libp2p/interfaces": "^3.2.0",
-    "multiformats": "^11.0.0",
+    "@libp2p/interfaces": "^3.0.0",
+    "multiformats": "^11.0.2",
     "protons-runtime": "^5.0.0",
-    "uint8arraylist": "^2.1.1",
-    "uint8arrays": "^4.0.2"
+    "uint8arraylist": "^2.4.3",
+    "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^1.0.11",
+    "@libp2p/crypto": "^1.0.0",
     "aegir": "^39.0.10",
     "protons": "^7.0.2"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
   }
 }

@@ -9,6 +9,15 @@
   ],
   "references": [
     {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface-keys"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
       "path": "../peer-id"
     }
   ]

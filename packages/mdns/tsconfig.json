@@ -6,5 +6,34 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../interface-address-manager"
+    },
+    {
+      "path": "../interface-peer-discovery"
+    },
+    {
+      "path": "../interface-peer-discovery-compliance-tests"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
+      "path": "../interface-peer-info"
+    },
+    {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    }
   ]
 }
