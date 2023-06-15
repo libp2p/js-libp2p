@@ -1,3 +1,16 @@
+## [2.0.2](https://github.com/libp2p/js-libp2p-webtransport/compare/v2.0.1...v2.0.2) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([56ef477](https://github.com/libp2p/js-libp2p-webtransport/commit/56ef477cff1214bebb150414ad6db36174ee0fa1))
+* Update .github/workflows/stale.yml [skip ci] ([cdbdfd4](https://github.com/libp2p/js-libp2p-webtransport/commit/cdbdfd4dc50a5e2bd3729938786a427ae7802f75))
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 11.0.4 to 12.0.1 ([#80](https://github.com/libp2p/js-libp2p-webtransport/issues/80)) ([599dab1](https://github.com/libp2p/js-libp2p-webtransport/commit/599dab1b4f6ae816b0c0feefc926c1b38d24b676))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-webtransport/compare/v2.0.0...v2.0.1) (2023-04-28)
 
 
