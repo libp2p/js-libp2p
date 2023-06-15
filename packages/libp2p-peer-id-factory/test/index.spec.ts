@@ -1,21 +1,21 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
-import { expect } from 'aegir/chai'
+import util from 'util'
 import { keys } from '@libp2p/crypto'
-import { CID } from 'multiformats/cid'
-import * as Digest from 'multiformats/hashes/digest'
+import { peerIdFromString, peerIdFromBytes, peerIdFromCID, createPeerId } from '@libp2p/peer-id'
+import { expect } from 'aegir/chai'
 import { base16 } from 'multiformats/bases/base16'
 import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
+import { CID } from 'multiformats/cid'
+import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { peerIdFromString, peerIdFromBytes, peerIdFromCID, createPeerId } from '@libp2p/peer-id'
 import * as PeerIdFactory from '../src/index.js'
-import util from 'util'
-import testId from './fixtures/sample-id.js'
 import goId from './fixtures/go-private-key.js'
+import testId from './fixtures/sample-id.js'
 
 const LIBP2P_KEY_CODE = 0x72
 const RAW_CODE = 0x55

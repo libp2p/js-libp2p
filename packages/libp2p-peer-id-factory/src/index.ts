@@ -1,6 +1,6 @@
 import { generateKeyPair, marshalPrivateKey, unmarshalPrivateKey, marshalPublicKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PeerIdProto } from './proto.js'
 import type { PublicKey, PrivateKey } from '@libp2p/interface-keys'
 import type { RSAPeerId, Ed25519PeerId, Secp256k1PeerId, PeerId } from '@libp2p/interface-peer-id'
@@ -39,11 +39,11 @@ export const createRSAPeerId = async (opts?: { bits: number }): Promise<RSAPeerI
 }
 
 export async function createFromPubKey (publicKey: PublicKey): Promise<PeerId> {
-  return await peerIdFromKeys(marshalPublicKey(publicKey))
+  return peerIdFromKeys(marshalPublicKey(publicKey))
 }
 
 export async function createFromPrivKey (privateKey: PrivateKey): Promise<PeerId> {
-  return await peerIdFromKeys(marshalPublicKey(privateKey.public), marshalPrivateKey(privateKey))
+  return peerIdFromKeys(marshalPublicKey(privateKey.public), marshalPrivateKey(privateKey))
 }
 
 export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1PeerId, excludePrivateKey?: boolean): Uint8Array {
@@ -61,7 +61,7 @@ export async function createFromProtobuf (buf: Uint8Array): Promise<PeerId> {
     pubKey
   } = PeerIdProto.decode(buf)
 
-  return await createFromParts(
+  return createFromParts(
     id ?? new Uint8Array(0),
     privKey,
     pubKey
@@ -69,7 +69,7 @@ export async function createFromProtobuf (buf: Uint8Array): Promise<PeerId> {
 }
 
 export async function createFromJSON (obj: { id: string, privKey?: string, pubKey?: string }): Promise<PeerId> {
-  return await createFromParts(
+  return createFromParts(
     uint8ArrayFromString(obj.id, 'base58btc'),
     obj.privKey != null ? uint8ArrayFromString(obj.privKey, 'base64pad') : undefined,
     obj.pubKey != null ? uint8ArrayFromString(obj.pubKey, 'base64pad') : undefined
@@ -80,11 +80,11 @@ async function createFromParts (multihash: Uint8Array, privKey?: Uint8Array, pub
   if (privKey != null) {
     const key = await unmarshalPrivateKey(privKey)
 
-    return await createFromPrivKey(key)
+    return createFromPrivKey(key)
   } else if (pubKey != null) {
     const key = unmarshalPublicKey(pubKey)
 
-    return await createFromPubKey(key)
+    return createFromPubKey(key)
   }
 
   return peerIdFromBytes(multihash)
