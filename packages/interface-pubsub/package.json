@@ -124,8 +124,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
-    "build": "aegir build",
-    "release": "aegir release"
+    "build": "aegir build"
   },
   "dependencies": {
     "@libp2p/interface-connection": "^5.0.0",

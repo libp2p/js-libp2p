@@ -131,8 +131,7 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release"
+    "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
     "@libp2p/interface-connection": "^5.0.0",
