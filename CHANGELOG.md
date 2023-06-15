@@ -1,3 +1,16 @@
+## [5.0.4](https://github.com/libp2p/js-libp2p-peer-record/compare/v5.0.3...v5.0.4) (2023-06-15)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([10f3201](https://github.com/libp2p/js-libp2p-peer-record/commit/10f320136543cf4e41ae6bd2c1da8741ff840e47))
+* Update .github/workflows/stale.yml [skip ci] ([0bd8e9d](https://github.com/libp2p/js-libp2p-peer-record/commit/0bd8e9d32ae78dcba38904ed122bbeb0e1c6c2b6))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.10 ([#64](https://github.com/libp2p/js-libp2p-peer-record/issues/64)) ([ba3ac38](https://github.com/libp2p/js-libp2p-peer-record/commit/ba3ac38c79e9449a75c0a54fefe289ee9e2c78fb))
+
 ## [5.0.3](https://github.com/libp2p/js-libp2p-peer-record/compare/v5.0.2...v5.0.3) (2023-03-17)
 
 
