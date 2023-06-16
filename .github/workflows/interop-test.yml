@@ -21,7 +21,7 @@ jobs:
           path: |
             package-lock.json
             interop/package-lock.json
-      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@01213bf251235cc205f2a4709ea9711603e5bf96
+      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@9e556608d477292f414737faa6a43b5accfc27db
         with:
           test-filter: js-libp2p-head
           extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json
