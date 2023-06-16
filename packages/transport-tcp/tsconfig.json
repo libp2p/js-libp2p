@@ -1,0 +1,36 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../interface-connection"
+    },
+    {
+      "path": "../interface-metrics"
+    },
+    {
+      "path": "../interface-mocks"
+    },
+    {
+      "path": "../interface-transport"
+    },
+    {
+      "path": "../interface-transport-compliance-tests"
+    },
+    {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
+}

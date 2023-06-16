@@ -1,0 +1,78 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface-address-manager"
+    },
+    {
+      "path": "../interface-connection"
+    },
+    {
+      "path": "../interface-connection-manager"
+    },
+    {
+      "path": "../interface-content-routing"
+    },
+    {
+      "path": "../interface-libp2p"
+    },
+    {
+      "path": "../interface-metrics"
+    },
+    {
+      "path": "../interface-mocks"
+    },
+    {
+      "path": "../interface-peer-discovery"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
+      "path": "../interface-peer-info"
+    },
+    {
+      "path": "../interface-peer-routing"
+    },
+    {
+      "path": "../interface-peer-store"
+    },
+    {
+      "path": "../interface-registrar"
+    },
+    {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    },
+    {
+      "path": "../peer-store"
+    },
+    {
+      "path": "../record"
+    },
+    {
+      "path": "../topology"
+    }
+  ]
+}

@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../crypto"
+    },
+    {
       "path": "../interface-address-manager"
     },
     {
@@ -79,6 +82,57 @@
     },
     {
       "path": "../interfaces"
+    },
+    {
+      "path": "../kad-dht"
+    },
+    {
+      "path": "../keychain"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../multistream-select"
+    },
+    {
+      "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-discovery-bootstrap"
+    },
+    {
+      "path": "../peer-discovery-mdns"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    },
+    {
+      "path": "../peer-record"
+    },
+    {
+      "path": "../peer-store"
+    },
+    {
+      "path": "../stream-multiplexer-mplex"
+    },
+    {
+      "path": "../topology"
+    },
+    {
+      "path": "../tracked-map"
+    },
+    {
+      "path": "../transport-tcp"
+    },
+    {
+      "path": "../transport-websockets"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

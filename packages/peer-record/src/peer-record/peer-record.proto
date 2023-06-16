@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message PeerRecord {
+    // AddressInfo is a wrapper around a binary multiaddr. It is defined as a
+    // separate message to allow us to add per-address metadata in the future.
+    message AddressInfo {
+        bytes multiaddr = 1;
+    }
+
+    // peer_id contains a libp2p peer id in its binary representation.
+    bytes peer_id = 1;
+
+    // seq contains a monotonically-increasing sequence counter to order PeerRecords in time.
+    uint64 seq = 2;
+
+    // addresses is a list of public listen addresses for the peer.
+    repeated AddressInfo addresses = 3;
+}

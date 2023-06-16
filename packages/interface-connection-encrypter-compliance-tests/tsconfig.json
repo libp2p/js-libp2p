@@ -19,6 +19,9 @@
     },
     {
       "path": "../interface-peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
     }
   ]
 }
