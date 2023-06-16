@@ -3,7 +3,7 @@
   "version": "8.0.4",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/mplex#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/stream-multiplexer-mplex#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

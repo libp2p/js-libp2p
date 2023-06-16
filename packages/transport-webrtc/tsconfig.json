@@ -49,7 +49,7 @@
       "path": "../peer-id-factory"
     },
     {
-      "path": "../websockets"
+      "path": "../transport-websockets"
     }
   ]
 }

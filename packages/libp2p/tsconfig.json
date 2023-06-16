@@ -9,9 +9,6 @@
   ],
   "references": [
     {
-      "path": "../bootstrap"
-    },
-    {
       "path": "../crypto"
     },
     {
@@ -96,16 +93,16 @@
       "path": "../logger"
     },
     {
-      "path": "../mdns"
-    },
-    {
-      "path": "../mplex"
-    },
-    {
       "path": "../multistream-select"
     },
     {
       "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-discovery-bootstrap"
+    },
+    {
+      "path": "../peer-discovery-mdns"
     },
     {
       "path": "../peer-id"
@@ -120,7 +117,7 @@
       "path": "../peer-store"
     },
     {
-      "path": "../tcp"
+      "path": "../stream-multiplexer-mplex"
     },
     {
       "path": "../topology"
@@ -129,10 +126,13 @@
       "path": "../tracked-map"
     },
     {
-      "path": "../utils"
+      "path": "../transport-tcp"
     },
     {
-      "path": "../websockets"
+      "path": "../transport-websockets"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }
