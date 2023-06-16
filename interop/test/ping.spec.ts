@@ -46,6 +46,12 @@ describe('ping test', () => {
       services: {
         ping: pingService(),
         identify: identifyService()
+      },
+      connectionManager: {
+        // disable auto-dial
+        minConnections: 0,
+        // slow CI is slow
+        dialTimeout: 60 * 1000 * 5
       }
     }
 

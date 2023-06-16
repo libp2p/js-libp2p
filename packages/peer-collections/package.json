@@ -1,0 +1,61 @@
+{
+  "name": "@libp2p/peer-collections",
+  "version": "3.0.2",
+  "description": "Stores values against a peer id",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-collections#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@libp2p/interface-peer-id": "^2.0.0",
+    "@libp2p/peer-id": "^2.0.0"
+  },
+  "devDependencies": {
+    "@libp2p/peer-id-factory": "^2.0.0",
+    "aegir": "^39.0.10"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
+  }
+}

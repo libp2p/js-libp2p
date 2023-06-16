@@ -28,6 +28,9 @@
     },
     {
       "path": "../interfaces"
+    },
+    {
+      "path": "../peer-id-factory"
     }
   ]
 }
