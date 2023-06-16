@@ -3,7 +3,7 @@ FROM node:18
 WORKDIR /app
 COPY package.json .
 COPY ./node_modules ./node_modules
-COPY ./packages/libp2p ./packages/libp2p
+COPY ./packages ./packages
 
 WORKDIR /app/interop
 COPY ./interop/node_modules ./node_modules
