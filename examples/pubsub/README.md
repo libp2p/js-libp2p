@@ -36,8 +36,10 @@ const createNode = async () => {
     transports: [tcp()],
     streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
-	  // we add the Pubsub module we want
-	  pubsub: gossipsub({ allowPublishToZeroPeers: true })
+    services: {
+      // we add the Pubsub module we want
+      pubsub: gossipsub({ allowPublishToZeroPeers: true })
+    }
   })
 
   return node
