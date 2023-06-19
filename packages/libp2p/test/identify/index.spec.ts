@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { start, stop } from '@libp2p/interfaces/startable'
+import { EventEmitter } from '@libp2p/interface/events'
+import { start, stop } from '@libp2p/interface/startable'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -31,8 +31,8 @@ import { DefaultIdentifyService } from '../../src/identify/identify.js'
 import { identifyService, type IdentifyServiceInit, Message } from '../../src/identify/index.js'
 import { Identify } from '../../src/identify/pb/message.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import type { IncomingStreamData } from '@libp2p/interface-registrar'
-import type { TransportManager } from '@libp2p/interface-transport'
+import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 

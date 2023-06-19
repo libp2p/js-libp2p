@@ -4,13 +4,13 @@ import {
 } from './consts.js'
 import { DefaultIdentifyService } from './identify.js'
 import { Identify } from './pb/message.js'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Registrar } from '@libp2p/interface-registrar'
-import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents } from '@libp2p/interface'
+import type { EventEmitter } from '@libp2p/interface/events'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { Registrar } from '@libp2p/interface-internal/registrar'
 
 export interface IdentifyServiceInit {
   /**

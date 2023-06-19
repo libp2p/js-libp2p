@@ -14,13 +14,7 @@
       "path": "../crypto"
     },
     {
-      "path": "../interface-keychain"
-    },
-    {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface"
     },
     {
       "path": "../logger"

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -9,11 +9,12 @@ import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Transport, TransportManager } from '@libp2p/interface-transport'
+import type { Connection } from '@libp2p/interface/connection'
+import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Transport } from '@libp2p/interface/transport'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 describe('dial queue', () => {
   let components: {

@@ -12,16 +12,7 @@
       "path": "../crypto"
     },
     {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interface-record"
-    },
-    {
-      "path": "../interface-record-compliance-tests"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface"
     },
     {
       "path": "../peer-id"

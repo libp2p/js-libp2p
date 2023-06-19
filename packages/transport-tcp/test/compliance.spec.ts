@@ -1,5 +1,5 @@
 import net from 'net'
-import tests from '@libp2p/interface-transport-compliance-tests'
+import tests from '@libp2p/interface-compliance-tests/transport'
 import { multiaddr } from '@multiformats/multiaddr'
 import sinon from 'sinon'
 import { tcp } from '../src/index.js'

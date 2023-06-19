@@ -1,5 +1,4 @@
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import { Libp2pRecord } from '@libp2p/record'
 import { Key } from 'interface-datastore/key'
 import { sha256 } from 'multiformats/hashes/sha2'
 import isPrivateIp from 'private-ip'
@@ -7,8 +6,9 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { RECORD_KEY_PREFIX } from './constants.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
+import { Libp2pRecord } from './record/index.js'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
 
 // const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
 const PK_PREFIX = uint8ArrayFromString('/pk/')

@@ -17,15 +17,15 @@ import {
   PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, REFRESH_INTERVAL, STARTUP_DELAY, TIMEOUT
 } from './constants.js'
 import { Message } from './pb/index.js'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { Startable } from '@libp2p/interfaces/startable'
+import type { Connection } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerRouting } from '@libp2p/interface/peer-routing'
+import type { Startable } from '@libp2p/interface/startable'
+import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const log = logger('libp2p:autonat')
 

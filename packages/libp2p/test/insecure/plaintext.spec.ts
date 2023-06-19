@@ -3,16 +3,16 @@
 import {
   InvalidCryptoExchangeError,
   UnexpectedPeerError
-} from '@libp2p/interface-connection-encrypter/errors'
-import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
+} from '@libp2p/interface/errors'
+import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { plaintext } from '../../src/insecure/index.js'
-import type { ConnectionEncrypter } from '@libp2p/interface-connection-encrypter'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 describe('plaintext', () => {
   let localPeer: PeerId

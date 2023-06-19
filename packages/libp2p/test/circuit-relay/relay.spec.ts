@@ -13,9 +13,9 @@ import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { hasRelay } from './utils.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Libp2p } from '@libp2p/interface'
+import type { Connection } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 describe('circuit-relay', () => {
   let local: Libp2p

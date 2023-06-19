@@ -1,10 +1,10 @@
-import { mockUpgrader } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { Transport, Upgrader } from '@libp2p/interface-transport'
+import type { Connection } from '@libp2p/interface/connection'
+import type { Transport, Upgrader } from '@libp2p/interface/transport'
 
 describe('valid localAddr and remoteAddr', () => {
   let transport: Transport

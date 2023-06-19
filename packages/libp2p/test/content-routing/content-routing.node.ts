@@ -13,8 +13,8 @@ import { createLibp2p, type Libp2p } from '../../src/index.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import { createNode, createPeerId, populateAddressBooks } from '../fixtures/creators/peer.js'
 import { createRoutingOptions } from './utils.js'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { ContentRouting } from '@libp2p/interface/content-routing'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { KadDHT } from '@libp2p/kad-dht'
 
 describe('content-routing', () => {

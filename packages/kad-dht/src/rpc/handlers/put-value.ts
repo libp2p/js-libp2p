@@ -1,11 +1,11 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { type Logger, logger } from '@libp2p/logger'
-import { verifyRecord } from '@libp2p/record/validators'
+import { verifyRecord } from '../../record/validators.js'
 import { bufferToRecordKey } from '../../utils.js'
 import type { Validators } from '../../index.js'
 import type { Message } from '../../message/index.js'
 import type { DHTMessageHandler } from '../index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Datastore } from 'interface-datastore'
 
 export interface PutValueHandlerInit {

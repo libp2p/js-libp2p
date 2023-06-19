@@ -1,5 +1,5 @@
 import net from 'net'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
@@ -9,9 +9,9 @@ import {
   type NetConfig
 } from './utils.js'
 import type { TCPCreateListenerOptions } from './index.js'
-import type { MultiaddrConnection, Connection } from '@libp2p/interface-connection'
-import type { CounterGroup, MetricGroup, Metrics } from '@libp2p/interface-metrics'
-import type { Upgrader, Listener, ListenerEvents } from '@libp2p/interface-transport'
+import type { MultiaddrConnection, Connection } from '@libp2p/interface/connection'
+import type { CounterGroup, MetricGroup, Metrics } from '@libp2p/interface/metrics'
+import type { Listener, ListenerEvents, Upgrader } from '@libp2p/interface/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:tcp:listener')

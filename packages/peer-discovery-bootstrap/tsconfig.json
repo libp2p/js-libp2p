@@ -11,22 +11,10 @@
   ],
   "references": [
     {
-      "path": "../interface-peer-discovery"
+      "path": "../interface"
     },
     {
-      "path": "../interface-peer-discovery-compliance-tests"
-    },
-    {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interface-peer-info"
-    },
-    {
-      "path": "../interface-peer-store"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface-compliance-tests"
     },
     {
       "path": "../logger"

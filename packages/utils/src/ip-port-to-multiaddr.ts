@@ -1,5 +1,5 @@
 import { Address4, Address6 } from '@achingbrain/ip-address'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 

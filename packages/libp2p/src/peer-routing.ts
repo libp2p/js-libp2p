@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import filter from 'it-filter'
 import first from 'it-first'
@@ -10,11 +10,11 @@ import {
   requirePeers
 } from './content-routing/utils.js'
 import { codes, messages } from './errors.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerRouting } from '@libp2p/interface-peer-routing'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerRouting } from '@libp2p/interface/peer-routing'
+import type { PeerStore } from '@libp2p/interface/peer-store'
 
 const log = logger('libp2p:peer-routing')
 

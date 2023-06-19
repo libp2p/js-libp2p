@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { mockMultiaddrConnPair } from '@libp2p/interface-mocks'
+import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { mockStream } from '@libp2p/interface-mocks'
+import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import drain from 'it-drain'

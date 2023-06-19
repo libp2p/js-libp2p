@@ -1,5 +1,5 @@
 
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'

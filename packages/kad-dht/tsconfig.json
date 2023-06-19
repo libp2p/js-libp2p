@@ -12,46 +12,13 @@
       "path": "../crypto"
     },
     {
-      "path": "../interface-address-manager"
+      "path": "../interface"
     },
     {
-      "path": "../interface-connection"
+      "path": "../interface-compliance-tests"
     },
     {
-      "path": "../interface-connection-manager"
-    },
-    {
-      "path": "../interface-content-routing"
-    },
-    {
-      "path": "../interface-libp2p"
-    },
-    {
-      "path": "../interface-metrics"
-    },
-    {
-      "path": "../interface-mocks"
-    },
-    {
-      "path": "../interface-peer-discovery"
-    },
-    {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interface-peer-info"
-    },
-    {
-      "path": "../interface-peer-routing"
-    },
-    {
-      "path": "../interface-peer-store"
-    },
-    {
-      "path": "../interface-registrar"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface-internal"
     },
     {
       "path": "../logger"
@@ -67,12 +34,6 @@
     },
     {
       "path": "../peer-store"
-    },
-    {
-      "path": "../record"
-    },
-    {
-      "path": "../topology"
     }
   ]
 }

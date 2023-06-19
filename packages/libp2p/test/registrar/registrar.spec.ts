@@ -1,13 +1,12 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
-import { CodeError } from '@libp2p/interfaces/errors'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { CodeError } from '@libp2p/interface/errors'
+import { EventEmitter } from '@libp2p/interface/events'
+import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
-import { createTopology } from '@libp2p/topology'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -21,13 +20,14 @@ import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { DefaultRegistrar } from '../../src/registrar.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Registrar } from '@libp2p/interface-registrar'
-import type { TransportManager } from '@libp2p/interface-transport'
+import type { Libp2pEvents } from '@libp2p/interface'
+import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Topology } from '@libp2p/interface/topology'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const protocol = '/test/1.0.0'
 
@@ -98,10 +98,10 @@ describe('registrar', () => {
     })
 
     it('should be able to register a protocol', async () => {
-      const topology = createTopology({
+      const topology: Topology = {
         onConnect: () => { },
         onDisconnect: () => { }
-      })
+      }
 
       expect(registrar.getTopologies(protocol)).to.have.lengthOf(0)
 
@@ -112,10 +112,10 @@ describe('registrar', () => {
     })
 
     it('should be able to unregister a protocol', async () => {
-      const topology = createTopology({
+      const topology: Topology = {
         onConnect: () => { },
         onDisconnect: () => { }
-      })
+      }
 
       expect(registrar.getTopologies(protocol)).to.have.lengthOf(0)
 
@@ -143,7 +143,7 @@ describe('registrar', () => {
       // return connection from connection manager
       connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
 
-      const topology = createTopology({
+      const topology: Topology = {
         onConnect: (peerId, connection) => {
           expect(peerId.equals(remotePeerId)).to.be.true()
           expect(connection.id).to.eql(conn.id)
@@ -155,7 +155,7 @@ describe('registrar', () => {
 
           onDisconnectDefer.resolve()
         }
-      })
+      }
 
       // Register protocol
       await registrar.register(protocol, topology)
@@ -194,14 +194,14 @@ describe('registrar', () => {
       // return connection from connection manager
       connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
 
-      const topology = createTopology({
+      const topology: Topology = {
         onConnect: () => {
           onConnectDefer.resolve()
         },
         onDisconnect: () => {
           onDisconnectDefer.resolve()
         }
-      })
+      }
 
       // Register protocol
       await registrar.register(protocol, topology)

@@ -8,7 +8,7 @@ import { identifyService } from '../../src/identify/index.js'
 import { createLibp2pNode } from '../../src/libp2p.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import { createNode } from '../fixtures/creators/peer.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Libp2p } from '@libp2p/interface'
 
 const LOCAL_PORT = 47321
 const REMOTE_PORT = 47322

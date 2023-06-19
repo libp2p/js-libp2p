@@ -1,5 +1,5 @@
 import { setMaxListeners } from 'events'
-import { AbortError, CodeError } from '@libp2p/interfaces/errors'
+import { AbortError, CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { type Multiaddr, type Resolver, resolvers } from '@multiformats/multiaddr'
@@ -16,14 +16,13 @@ import {
   MAX_PEER_ADDRS_TO_DIAL
 } from './constants.js'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import type { AddressSorter } from '@libp2p/interface-libp2p'
-import type { Metric, Metrics } from '@libp2p/interface-metrics'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Address, PeerStore } from '@libp2p/interface-peer-store'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AddressSorter, AbortOptions } from '@libp2p/interface'
+import type { Connection } from '@libp2p/interface/connection'
+import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { Metric, Metrics } from '@libp2p/interface/metrics'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Address, PeerStore } from '@libp2p/interface/peer-store'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const log = logger('libp2p:connection-manager:dial-queue')
 

@@ -1,4 +1,4 @@
-import type { CalculateMetric } from '@libp2p/interface-metrics'
+import type { CalculateMetric } from '@libp2p/interface/metrics'
 
 export interface CalculatedMetric <T = number> {
   addCalculator: (calculator: CalculateMetric<T>) => void

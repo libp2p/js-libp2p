@@ -1,13 +1,14 @@
-import { isTopology, type StreamHandlerOptions, type StreamHandlerRecord, type Registrar, type StreamHandler, type Topology } from '@libp2p/interface-registrar'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
 import { codes } from './errors.js'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { EventEmitter } from '@libp2p/interfaces/events'
+import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
+import type { EventEmitter } from '@libp2p/interface/events'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Topology } from '@libp2p/interface/topology'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal/registrar'
 
 const log = logger('libp2p:registrar')
 
@@ -116,9 +117,8 @@ export class DefaultRegistrar implements Registrar {
    * Register handlers for a set of multicodecs given
    */
   async register (protocol: string, topology: Topology): Promise<string> {
-    if (!isTopology(topology)) {
-      log.error('topology must be an instance of interfaces/topology')
-      throw new CodeError('topology must be an instance of interfaces/topology', codes.ERR_INVALID_PARAMETERS)
+    if (topology == null) {
+      throw new CodeError('invalid topology', codes.ERR_INVALID_PARAMETERS)
     }
 
     // Create topology
@@ -132,9 +132,6 @@ export class DefaultRegistrar implements Registrar {
     }
 
     topologies.set(id, topology)
-
-    // Set registrar
-    await topology.setRegistrar(this)
 
     return id
   }
@@ -171,7 +168,7 @@ export class DefaultRegistrar implements Registrar {
           }
 
           for (const topology of topologies.values()) {
-            topology.onDisconnect(remotePeer)
+            topology.onDisconnect?.(remotePeer)
           }
         }
       })
@@ -211,7 +208,7 @@ export class DefaultRegistrar implements Registrar {
           }
 
           for (const topology of topologies.values()) {
-            topology.onConnect(remotePeer, connection)
+            topology.onConnect?.(remotePeer, connection)
           }
         }
       })
@@ -242,7 +239,7 @@ export class DefaultRegistrar implements Registrar {
       }
 
       for (const topology of topologies.values()) {
-        topology.onDisconnect(peer.id)
+        topology.onDisconnect?.(peer.id)
       }
     }
 
@@ -260,7 +257,7 @@ export class DefaultRegistrar implements Registrar {
         if (connection == null) {
           continue
         }
-        topology.onConnect(peer.id, connection)
+        topology.onConnect?.(peer.id, connection)
       }
     }
   }

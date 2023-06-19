@@ -12,10 +12,7 @@
       "path": "../crypto"
     },
     {
-      "path": "../interface-keys"
-    },
-    {
-      "path": "../interface-peer-id"
+      "path": "../interface"
     },
     {
       "path": "../peer-id"

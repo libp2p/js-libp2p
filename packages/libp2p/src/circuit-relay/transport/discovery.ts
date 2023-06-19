@@ -1,18 +1,17 @@
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
-import { createTopology } from '@libp2p/topology'
 import {
   RELAY_RENDEZVOUS_NS,
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
 import { namespaceToCid } from '../utils.js'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Registrar } from '@libp2p/interface-registrar'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { Startable } from '@libp2p/interfaces/startable'
+import type { ContentRouting } from '@libp2p/interface/content-routing'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Startable } from '@libp2p/interface/startable'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const log = logger('libp2p:circuit-relay:discover-relays')
 
@@ -57,11 +56,11 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
   async start (): Promise<void> {
     // register a topology listener for when new peers are encountered
     // that support the hop protocol
-    this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, createTopology({
+    this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, {
       onConnect: (peerId) => {
         this.safeDispatchEvent('relay:discover', { detail: peerId })
       }
-    }))
+    })
 
     void this.discover()
       .catch(err => {

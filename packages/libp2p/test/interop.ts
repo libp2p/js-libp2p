@@ -6,9 +6,9 @@ import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
-import { contentRouting } from '@libp2p/interface-content-routing'
-import { peerDiscovery } from '@libp2p/interface-peer-discovery'
-import { peerRouting } from '@libp2p/interface-peer-routing'
+import { contentRouting } from '@libp2p/interface/content-routing'
+import { peerDiscovery } from '@libp2p/interface/peer-discovery'
+import { peerRouting } from '@libp2p/interface/peer-routing'
 import { interopTests } from '@libp2p/interop'
 import { kadDHT } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
@@ -22,8 +22,8 @@ import pDefer from 'p-defer'
 import { circuitRelayServer, circuitRelayTransport } from '../src/circuit-relay/index.js'
 import { identifyService } from '../src/identify/index.js'
 import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from '../src/index.js'
-import type { ServiceMap } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { ServiceMap } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 
 /**
@@ -144,8 +144,10 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.pubsub === true) {
     if (options.pubsubRouter === 'floodsub') {
+      // @ts-expect-error floodsub needs upgrading
       services.pubsub = floodsub()
     } else {
+      // @ts-expect-error gossipsub needs upgrading
       services.pubsub = gossipsub()
     }
   }

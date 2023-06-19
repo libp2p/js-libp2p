@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { Libp2pRecord } from '@libp2p/record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import random from 'lodash.random'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
+import { Libp2pRecord } from '../src/record/index.js'
 
 describe('Message', () => {
   it('create', () => {

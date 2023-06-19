@@ -1,8 +1,8 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import filter from 'it-filter'
 import map from 'it-map'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Source } from 'it-stream-types'
 
 /**

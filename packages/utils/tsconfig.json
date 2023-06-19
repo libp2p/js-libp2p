@@ -9,13 +9,7 @@
   ],
   "references": [
     {
-      "path": "../interface-connection"
-    },
-    {
-      "path": "../interface-peer-store"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface"
     },
     {
       "path": "../logger"

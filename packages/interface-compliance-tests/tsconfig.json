@@ -4,6 +4,30 @@
     "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../interface-internal"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../multistream-select"
+    },
+    {
+      "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    }
   ]
 }

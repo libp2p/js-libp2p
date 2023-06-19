@@ -54,21 +54,19 @@
   },
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",
-    "@libp2p/interface-keychain": "^2.0.0",
-    "@libp2p/interface-peer-id": "^2.0.0",
-    "@libp2p/interfaces": "^3.0.0",
+    "@libp2p/interface": "~0.0.1",
     "@libp2p/logger": "^2.0.0",
     "@libp2p/peer-id": "^2.0.0",
     "interface-datastore": "^8.2.0",
     "merge-options": "^3.0.4",
     "sanitize-filename": "^1.6.3",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^2.0.0",
     "aegir": "^39.0.10",
     "datastore-core": "^9.0.1",
-    "multiformats": "^11.0.1"
+    "multiformats": "^12.0.1"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

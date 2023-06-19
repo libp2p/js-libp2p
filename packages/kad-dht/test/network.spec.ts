@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { mockStream } from '@libp2p/interface-mocks'
+import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import * as lp from 'it-length-prefixed'
@@ -12,8 +12,8 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { DefaultDualKadDHT } from '../src/dual-kad-dht.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Connection } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Sink, Source } from 'it-stream-types'
 

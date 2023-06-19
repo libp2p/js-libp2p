@@ -1,8 +1,5 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { Libp2pRecord } from '@libp2p/record'
-import { bestRecord } from '@libp2p/record/selectors'
-import { verifyRecord } from '@libp2p/record/validators'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -15,13 +12,16 @@ import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
+import { Libp2pRecord } from '../record/index.js'
+import { bestRecord } from '../record/selectors.js'
+import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'
 import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryOptions, QueryEvent } from '../index.js'
 import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 
 export interface ContentFetchingInit {

@@ -14,8 +14,8 @@ import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import type { DefaultIdentifyService } from '../../src/identify/identify.js'
-import type { Libp2p, IdentifyResult } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Libp2p, IdentifyResult } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 describe('identify', () => {
   let peerId: PeerId

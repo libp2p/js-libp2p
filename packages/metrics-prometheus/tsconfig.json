@@ -9,13 +9,10 @@
   ],
   "references": [
     {
-      "path": "../interface-connection"
+      "path": "../interface"
     },
     {
-      "path": "../interface-metrics"
-    },
-    {
-      "path": "../interface-mocks"
+      "path": "../interface-compliance-tests"
     },
     {
       "path": "../logger"

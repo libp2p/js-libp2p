@@ -22,15 +22,15 @@
  * ```
  */
 
-import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface-connection-encrypter/errors'
+import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { handshake } from 'it-handshake'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import { Exchange, KeyType } from './pb/proto.js'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

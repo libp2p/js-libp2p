@@ -3,7 +3,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { WebRTCPeerListener } from '../src/private-to-private/listener'
-import type { Listener, TransportManager } from '@libp2p/interface-transport'
+import type { Listener } from '@libp2p/interface/transport'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 describe('webrtc private-to-private listener', () => {
   it('should only return relay addresses as webrtc listen addresses', async () => {

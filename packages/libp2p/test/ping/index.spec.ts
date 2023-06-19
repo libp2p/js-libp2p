@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { start, stop } from '@libp2p/interfaces/startable'
+import { EventEmitter } from '@libp2p/interface/events'
+import { start, stop } from '@libp2p/interface/startable'
+import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
@@ -15,8 +15,8 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { PROTOCOL } from '../../src/ping/constants.js'
 import { pingService, type PingServiceInit } from '../../src/ping/index.js'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import type { TransportManager } from '@libp2p/interface-transport'
+import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const defaultInit: PingServiceInit = {
   protocolPrefix: 'ipfs',

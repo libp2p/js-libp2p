@@ -1,12 +1,12 @@
-import { peerDiscovery } from '@libp2p/interface-peer-discovery'
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
+import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { logger } from '@libp2p/logger'
 import multicastDNS from 'multicast-dns'
 import * as query from './query.js'
 import { stringGen } from './utils.js'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 
 const log = logger('libp2p:mdns')
 

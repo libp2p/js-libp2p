@@ -12,16 +12,7 @@
   ],
   "references": [
     {
-      "path": "../interface-libp2p"
-    },
-    {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interface-peer-store"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface"
     },
     {
       "path": "../logger"

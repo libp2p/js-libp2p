@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import { messages, codes } from '../errors.js'
@@ -7,11 +7,11 @@ import {
   uniquePeers,
   requirePeers
 } from './utils.js'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { AbortOptions } from '@libp2p/interfaces'
-import type { Startable } from '@libp2p/interfaces/startable'
+import type { AbortOptions } from '@libp2p/interface'
+import type { ContentRouting } from '@libp2p/interface/content-routing'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Startable } from '@libp2p/interface/startable'
 import type { CID } from 'multiformats/cid'
 
 export interface CompoundContentRoutingInit {

@@ -1,8 +1,8 @@
 import { peerIdFromPeerId } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Peer as PeerPB } from '../pb/peer.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Peer, Tag } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Peer, Tag } from '@libp2p/interface/peer-store'
 
 export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
   const peer = PeerPB.decode(buf)

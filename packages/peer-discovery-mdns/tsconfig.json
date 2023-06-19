@@ -9,22 +9,13 @@
   ],
   "references": [
     {
-      "path": "../interface-address-manager"
+      "path": "../interface"
     },
     {
-      "path": "../interface-peer-discovery"
+      "path": "../interface-compliance-tests"
     },
     {
-      "path": "../interface-peer-discovery-compliance-tests"
-    },
-    {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interface-peer-info"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface-internal"
     },
     {
       "path": "../logger"

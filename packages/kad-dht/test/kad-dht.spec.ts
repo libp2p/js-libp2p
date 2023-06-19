@@ -1,8 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-import { CodeError } from '@libp2p/interfaces/errors'
-import { Libp2pRecord } from '@libp2p/record'
+import { CodeError } from '@libp2p/interface/errors'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -18,6 +17,7 @@ import * as c from '../src/constants.js'
 import { EventTypes, type FinalPeerEvent, MessageType, type QueryEvent, type ValueEvent } from '../src/index.js'
 import { MESSAGE_TYPE } from '../src/message/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
+import { Libp2pRecord } from '../src/record/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerIds } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
@@ -25,7 +25,7 @@ import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { DefaultDualKadDHT } from '../src/dual-kad-dht.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { CID } from 'multiformats/cid'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>

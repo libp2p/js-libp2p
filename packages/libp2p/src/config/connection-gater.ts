@@ -1,4 +1,4 @@
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
+import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 
 /**
  * Returns a default connection gater implementation that allows everything
