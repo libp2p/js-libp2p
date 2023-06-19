@@ -6,5 +6,13 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../interface-keys"
+    },
+    {
+      "path": "../interfaces"
+    }
   ]
 }

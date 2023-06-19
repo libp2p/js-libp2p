@@ -3,13 +3,13 @@
   "version": "1.0.17",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p-crypto#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/crypto#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-crypto.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-crypto/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "keywords": [
     "IPFS",
@@ -18,10 +18,6 @@
     "rsa",
     "secp256k1"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
@@ -77,91 +73,6 @@
       "src/*.d.ts"
     ]
   },
-  "release": {
-    "branches": [
-      "master"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits",
-          "releaseRules": [
-            {
-              "breaking": true,
-              "release": "major"
-            },
-            {
-              "revert": true,
-              "release": "patch"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "docs",
-              "release": "patch"
-            },
-            {
-              "type": "test",
-              "release": "patch"
-            },
-            {
-              "type": "deps",
-              "release": "patch"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "conventionalcommits",
-          "presetConfig": {
-            "types": [
-              {
-                "type": "feat",
-                "section": "Features"
-              },
-              {
-                "type": "fix",
-                "section": "Bug Fixes"
-              },
-              {
-                "type": "chore",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "docs",
-                "section": "Documentation"
-              },
-              {
-                "type": "deps",
-                "section": "Dependencies"
-              },
-              {
-                "type": "test",
-                "section": "Tests"
-              }
-            ]
-          }
-        }
-      ],
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      "@semantic-release/git"
-    ]
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -175,24 +86,22 @@
     "test:webkit": "bash -c '[ \"${CI}\" == \"true\" ] && playwright install-deps'; aegir test -t browser -- --browser webkit",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release",
-    "docs": "aegir docs",
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface-keys": "^1.0.2",
-    "@libp2p/interfaces": "^3.2.0",
+    "@libp2p/interface-keys": "^1.0.0",
+    "@libp2p/interfaces": "^3.0.0",
     "@noble/ed25519": "^1.6.0",
     "@noble/secp256k1": "^1.5.4",
-    "multiformats": "^11.0.0",
+    "multiformats": "^11.0.2",
     "node-forge": "^1.1.0",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.2"
+    "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.0",
-    "aegir": "^39.0.5",
+    "aegir": "^39.0.10",
     "benchmark": "^2.1.4",
     "protons": "^7.0.2"
   },
@@ -203,5 +112,8 @@
     "./dist/src/keys/ecdh.js": "./dist/src/keys/ecdh-browser.js",
     "./dist/src/keys/ed25519.js": "./dist/src/keys/ed25519-browser.js",
     "./dist/src/keys/rsa.js": "./dist/src/keys/rsa-browser.js"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
   }
 }
