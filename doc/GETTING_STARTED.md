@@ -36,7 +36,7 @@ Since `libp2p@0.37.0` modules are now [ESM-only](https://gist.github.com/sindres
 
 ESM is the module system for JavaScript, it allows us to structure our code in separate files without polluting a global namespace.
 
-Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and others, but ESM is [the official standard format](https://tc39.es/ecma262/#sec-modules) to package JavaScript code for reuse. This means that you need ensure your configuration uses the correct module system, if you are using Typescript, set the [`module` field in your tsconfig](https://www.typescriptlang.org/tsconfig#module) to your desired ESM version e.g.
+Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and others, but ESM is [the official standard format](https://tc39.es/ecma262/#sec-modules) to package JavaScript code for reuse. This means that you need ensure your configuration uses the correct module system, if you are using Typescript, set the [`module` field in your tsconfig](https://www.typescriptlang.org/tsconfig#module) to `ES2022 ` or later e.g.
 
 ```json
 {
@@ -47,8 +47,6 @@ Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and 
     "moduleResolution": "node"
   }
 }
-```
-For more info on enablng ES modules in Node, see [this guide](https://nodejs.org/api/esm.html).
 
 ### Basic setup
 
