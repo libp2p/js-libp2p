@@ -49,6 +49,7 @@ Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and 
 }
 
 For more info on enablng ES modules in Node, see [this guide](https://nodejs.org/api/esm.html).
+
 ### Basic setup
 
 Now that we have libp2p installed, let's configure the minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. However, we recommend that a basic setup should also have a [**Stream Multiplexer**](streamMuxer) configured, which we will explain shortly. Let's start by setting up a Transport.
