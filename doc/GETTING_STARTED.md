@@ -47,6 +47,7 @@ Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and 
     "moduleResolution": "node"
   }
 }
+```
 
 For more info on enablng ES modules in Node, see [this guide](https://nodejs.org/api/esm.html).
 
