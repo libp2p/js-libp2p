@@ -65,20 +65,20 @@ await node1.peerStore.patch(node2.peerId, {
 })
 await node1.dial(node2.peerId)
 
-node1.pubsub.addEventListener("message", (evt) => {
+node1.services.pubsub.addEventListener("message", (evt) => {
   console.log(`node1 received: ${uint8ArrayToString(evt.detail.data)} on topic ${evt.detail.topic}`)
 })
-await node1.pubsub.subscribe(topic)
+await node1.services.pubsub.subscribe(topic)
 
 // Will not receive own published messages by default
-node2.pubsub.addEventListener("message", (evt) => {
+node2.services.pubsub.addEventListener("message", (evt) => {
   console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)} on topic ${evt.detail.topic}`)
 })
-await node2.pubsub.subscribe(topic)
+await node2.services.pubsub.subscribe(topic)
 
 // node2 publishes "news" every second
 setInterval(() => {
-  node2.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
+  node2.services.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
     console.error(err)
   })
 }, 1000)
