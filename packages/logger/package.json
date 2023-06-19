@@ -52,7 +52,7 @@
     "@multiformats/multiaddr": "^12.1.3",
     "debug": "^4.3.4",
     "interface-datastore": "^8.2.0",
-    "multiformats": "^11.0.2"
+    "multiformats": "^12.0.1"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^2.0.0",

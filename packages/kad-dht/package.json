@@ -88,7 +88,7 @@
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "it-take": "^3.0.1",
-    "multiformats": "^11.0.2",
+    "multiformats": "^12.0.1",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-queue": "^7.3.4",
