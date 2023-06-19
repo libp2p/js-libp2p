@@ -5,12 +5,7 @@ name: test & maybe release
 on:
   push:
     branches:
-<<<<<<< HEAD
       - master
-=======
-      - main
->>>>>>> webrtc/main
-  pull_request:
 
 jobs:
 
@@ -169,11 +164,7 @@ jobs:
   release:
     needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-webkit, test-webkit-webworker, test-electron-main, test-electron-renderer]
     runs-on: ubuntu-latest
-<<<<<<< HEAD
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-=======
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
->>>>>>> webrtc/main
     steps:
       - uses: actions/checkout@v3
         with:
