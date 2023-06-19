@@ -7,3 +7,4 @@ node_modules
 package-lock.json
 yarn.lock
 .vscode
+packages/transport-webtransport/go-libp2p-webtransport-server/main
