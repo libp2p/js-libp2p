@@ -1,0 +1,48 @@
+{
+  "name": "perf-protocol",
+  "version": "1.0.0",
+  "description": "Performance Tests",
+  "type": "module",
+  "author": "@maschad / @marcopolo",
+  "license": "MIT",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "build": "aegir build",
+    "test": "aegir test",
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check -i protons"
+  },
+  "dependencies": {
+    "@libp2p/interface-connection-gater": "3.0.1",
+    "@libp2p/interface-connection-manager": "3.0.1",
+    "@libp2p/interface-mocks": "12.0.1",
+    "@libp2p/interface-peer-id": "2.0.2",
+    "@libp2p/interface-registrar": "^2.0.12",
+    "@libp2p/interface-transport": "4.0.3",
+    "@libp2p/interfaces": "3.3.2",
+    "@libp2p/logger": "^2.1.1",
+    "@libp2p/peer-id-factory": "2.0.4",
+    "@libp2p/peer-store": "8.2.1",
+    "any-signal": "^4.1.1",
+    "datastore-core": "9.2.0"
+  },
+  "devDependencies": {
+    "aegir": "^39.0.10",
+    "sinon-ts": "1.0.0"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
+  }
+}

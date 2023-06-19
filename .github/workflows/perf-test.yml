@@ -1,0 +1,37 @@
+name: Generate Performance Report
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        working-directory: ${{ steps.find-workdir.outputs.WORK_DIR }}
+        run: npm ci
+
+      - name: Generate Report
+        run: npm run test
+
+      - name: Exit with Error
+        working-directory: ${{ steps.find-workdir.outputs.WORK_DIR }}
+        run: |
+          if grep -q "color:red" ./Perfreport.md; then
+            exit 1
+          else
+            exit 0
+          fi
+        shell: bash
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: perf-output
+          path: |
+            ${{ steps.find-workdir.outputs.WORK_DIR }}/Perfreport.md
