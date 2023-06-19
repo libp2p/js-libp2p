@@ -1,12 +1,12 @@
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface-stream-muxer/stream'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
 import { logger } from '@libp2p/logger'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
 import { pEvent, TimeoutError } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
-import type { Direction, Stream } from '@libp2p/interface-connection'
+import type { Direction, Stream } from '@libp2p/interface/connection'
 
 const log = logger('libp2p:webrtc:stream')
 

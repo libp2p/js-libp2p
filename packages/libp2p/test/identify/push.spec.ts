@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { start, stop } from '@libp2p/interfaces/startable'
+import { EventEmitter } from '@libp2p/interface/events'
+import { start, stop } from '@libp2p/interface/startable'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -24,7 +24,7 @@ import {
 import { DefaultIdentifyService } from '../../src/identify/identify.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { IdentifyServiceInit } from '../../src/identify/index.js'
-import type { TransportManager } from '@libp2p/interface-transport'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 

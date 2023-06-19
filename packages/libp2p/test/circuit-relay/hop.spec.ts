@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 5] */
 
-import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { isStartable } from '@libp2p/interfaces/startable'
+import { EventEmitter } from '@libp2p/interface/events'
+import { isStartable } from '@libp2p/interface/startable'
+import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
@@ -16,16 +16,17 @@ import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } f
 import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
 import type { CircuitRelayServerInit } from '../../src/circuit-relay/server/index.js'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { Connection, Stream } from '@libp2p/interface-connection'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { ContentRouting } from '@libp2p/interface-content-routing'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Registrar } from '@libp2p/interface-registrar'
-import type { Transport, TransportManager, Upgrader } from '@libp2p/interface-transport'
+import type { Libp2pEvents } from '@libp2p/interface'
+import type { Connection, Stream } from '@libp2p/interface/connection'
+import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { ContentRouting } from '@libp2p/interface/content-routing'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Transport, Upgrader } from '@libp2p/interface/transport'
+import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 interface Node {
   peerId: PeerId

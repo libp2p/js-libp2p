@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
 import http from 'http'
-import tests from '@libp2p/interface-transport-compliance-tests'
+import tests from '@libp2p/interface-compliance-tests/transport'
 import { multiaddr } from '@multiformats/multiaddr'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
 import type { WebSocketListenerInit } from '../src/listener.js'
-import type { Listener } from '@libp2p/interface-transport'
+import type { Listener } from '@libp2p/interface/transport'
 
 describe('interface-transport compliance', () => {
   tests({

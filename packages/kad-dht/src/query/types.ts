@@ -1,5 +1,5 @@
 import type { QueryEvent } from '../index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 export interface QueryContext {
   // the key we are looking up

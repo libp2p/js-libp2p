@@ -2,7 +2,7 @@
 
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { Key } from 'interface-datastore/key'
@@ -11,8 +11,9 @@ import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { codes } from './errors.js'
-import type { KeyChain, KeyInfo, KeyType } from '@libp2p/interface-keychain'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { KeyChain, KeyInfo } from '@libp2p/interface/keychain'
+import type { KeyType } from '@libp2p/interface/keys'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:keychain')

@@ -1,9 +1,8 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interfaces/events'
+import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
-import { createTopology } from '@libp2p/topology'
 import type { KadDHTComponents } from '.'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Startable } from '@libp2p/interfaces/startable'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Startable } from '@libp2p/interface/startable'
 import type { Logger } from '@libp2p/logger'
 
 export interface TopologyListenerInit {
@@ -51,7 +50,7 @@ export class TopologyListener extends EventEmitter<TopologyListenerEvents> imple
     this.running = true
 
     // register protocol with topology
-    const topology = createTopology({
+    this.registrarId = await this.components.registrar.register(this.protocol, {
       onConnect: (peerId) => {
         this.log('observed peer %p with protocol %s', peerId, this.protocol)
         this.dispatchEvent(new CustomEvent('peer', {
@@ -59,7 +58,6 @@ export class TopologyListener extends EventEmitter<TopologyListenerEvents> imple
         }))
       }
     })
-    this.registrarId = await this.components.registrar.register(this.protocol, topology)
   }
 
   /**

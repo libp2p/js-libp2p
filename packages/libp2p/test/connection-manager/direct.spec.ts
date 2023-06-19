@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-mocks'
-import { AbortError } from '@libp2p/interfaces/errors'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { AbortError } from '@libp2p/interface/errors'
+import { EventEmitter } from '@libp2p/interface/events'
+import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -28,10 +28,10 @@ import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { DefaultIdentifyService } from '../../src/identify/identify.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { TransportManager } from '@libp2p/interface-transport'
+import type { Libp2p } from '@libp2p/interface'
+import type { Connection } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')

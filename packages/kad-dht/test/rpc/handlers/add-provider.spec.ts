@@ -10,7 +10,7 @@ import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
 import { createPeerIds } from '../../utils/create-peer-id.js'
 import { createValues } from '../../utils/create-values.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { CID } from 'multiformats'
 
 describe('rpc - handlers - AddProvider', () => {

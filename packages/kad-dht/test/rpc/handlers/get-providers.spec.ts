@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -13,10 +13,10 @@ import { Providers } from '../../../src/providers.js'
 import { GetProvidersHandler, type GetProvidersHandlerComponents } from '../../../src/rpc/handlers/get-providers.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import { createValues, type Value } from '../../utils/create-values.js'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { Libp2pEvents } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerStore } from '@libp2p/interface/peer-store'
 
 const T = MESSAGE_TYPE.GET_PROVIDERS
 

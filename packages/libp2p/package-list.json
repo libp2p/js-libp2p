@@ -9,7 +9,7 @@
   "rows": [
     "libp2p",
     ["libp2p/js-libp2p", "libp2p", "master", "main.yml"],
-    ["libp2p/js-libp2p-interfaces", "@libp2p/interface-libp2p", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p-interfaces", "@libp2p/interface", "master", "js-test-and-release.yml"],
 
     "transports",
     ["libp2p/js-libp2p-tcp", "@libp2p/tcp", "master", "js-test-and-release.yml"],

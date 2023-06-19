@@ -1,10 +1,10 @@
-import { symbol } from '@libp2p/interface-connection'
-import { OPEN, CLOSING, CLOSED } from '@libp2p/interface-connection/status'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { symbol } from '@libp2p/interface/connection'
+import { OPEN, CLOSING, CLOSED } from '@libp2p/interface/connection/status'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import type { Connection, ConnectionStat, Stream } from '@libp2p/interface-connection'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
+import type { Connection, ConnectionStat, Stream } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:connection')

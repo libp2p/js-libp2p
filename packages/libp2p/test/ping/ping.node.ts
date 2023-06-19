@@ -8,7 +8,7 @@ import { PROTOCOL } from '../../src/ping/constants.js'
 import { pingService, type PingService } from '../../src/ping/index.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import { createNode, populateAddressBooks } from '../fixtures/creators/peer.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Libp2p } from '@libp2p/interface'
 
 describe('ping', () => {
   let nodes: Array<Libp2p<{ ping: PingService }>>

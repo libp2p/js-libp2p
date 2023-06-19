@@ -48,7 +48,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface-peer-id": "^2.0.0",
+    "@libp2p/interface": "~0.0.1",
     "@libp2p/peer-id": "^2.0.0"
   },
   "devDependencies": {

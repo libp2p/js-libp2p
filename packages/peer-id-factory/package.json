@@ -53,13 +53,13 @@
   },
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",
+    "@libp2p/interface": "~0.0.1",
     "@libp2p/interface-keys": "^1.0.0",
-    "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/peer-id": "^2.0.0",
-    "multiformats": "^11.0.2",
+    "multiformats": "^12.0.1",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
     "aegir": "^39.0.10",

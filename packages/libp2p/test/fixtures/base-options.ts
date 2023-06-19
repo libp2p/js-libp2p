@@ -7,7 +7,7 @@ import mergeOptions from 'merge-options'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import type { Libp2pOptions } from '../../src'
-import type { ServiceMap } from '@libp2p/interface-libp2p'
+import type { ServiceMap } from '@libp2p/interface'
 
 export function createBaseOptions <T extends ServiceMap = Record<string, unknown>> (...overrides: Array<Libp2pOptions<T>>): Libp2pOptions<T> {
   const options: Libp2pOptions = {

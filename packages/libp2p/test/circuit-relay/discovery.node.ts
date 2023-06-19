@@ -8,7 +8,7 @@ import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } f
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { getRelayAddress, hasRelay, MockContentRouting, mockContentRouting } from './utils.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Libp2p } from '@libp2p/interface'
 
 describe('circuit-relay discovery', () => {
   let local: Libp2p

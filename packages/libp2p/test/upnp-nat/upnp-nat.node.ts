@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
-import { mockUpgrader } from '@libp2p/interface-mocks'
-import { FaultTolerance } from '@libp2p/interface-transport'
-import { EventEmitter } from '@libp2p/interfaces/events'
-import { start, stop } from '@libp2p/interfaces/startable'
+import { EventEmitter } from '@libp2p/interface/events'
+import { start, stop } from '@libp2p/interface/startable'
+import { FaultTolerance } from '@libp2p/interface/transport'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -17,9 +17,9 @@ import { codes } from '../../src/errors.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { uPnPNATService } from '../../src/upnp-nat/index.js'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
-import type { PeerUpdate } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerData, PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerUpdate } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerData, PeerStore } from '@libp2p/interface/peer-store'
 
 const DEFAULT_ADDRESSES = [
   '/ip4/127.0.0.1/tcp/0',

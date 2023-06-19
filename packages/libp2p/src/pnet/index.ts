@@ -23,7 +23,7 @@
  */
 
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import map from 'it-map'
@@ -37,7 +37,7 @@ import {
 } from './crypto.js'
 import * as Errors from './errors.js'
 import { NONCE_LENGTH } from './key-generator.js'
-import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface-connection'
+import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface/connection'
 
 const log = logger('libp2p:pnet')
 

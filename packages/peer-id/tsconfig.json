@@ -9,10 +9,7 @@
   ],
   "references": [
     {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface"
     }
   ]
 }

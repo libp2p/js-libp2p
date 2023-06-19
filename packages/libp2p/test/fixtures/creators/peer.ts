@@ -5,8 +5,8 @@ import { createLibp2pNode, type Libp2pNode } from '../../../src/libp2p.js'
 import { createBaseOptions } from '../base-options.browser.js'
 import type { AddressManagerInit } from '../../../src/address-manager/index.js'
 import type { Libp2pOptions } from '../../../src/index.js'
-import type { Libp2p, ServiceMap } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Libp2p, ServiceMap } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 

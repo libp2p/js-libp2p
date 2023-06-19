@@ -12,8 +12,8 @@ import { RoutingTableRefresh } from '../../src/routing-table/refresh.js'
 import {
   convertPeerId
 } from '../../src/utils.js'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 

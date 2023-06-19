@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { isPeerId } from '@libp2p/interface-peer-id'
+import { isPeerId } from '@libp2p/interface/peer-id'
 import { expect } from 'aegir/chai'
 import range from 'lodash.range'
 import { Message } from '../src/message/index.js'

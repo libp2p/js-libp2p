@@ -9,8 +9,8 @@ import { PeerRouting } from '../../../src/peer-routing/index.js'
 import { FindNodeHandler } from '../../../src/rpc/handlers/find-node.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { StubbedInstance } from 'ts-sinon'
 
 const T = MESSAGE_TYPE.FIND_NODE

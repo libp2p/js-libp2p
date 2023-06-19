@@ -48,17 +48,17 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface-peer-id": "^2.0.0",
+    "@libp2p/interface": "~0.0.1",
     "@multiformats/multiaddr": "^12.1.3",
     "debug": "^4.3.4",
     "interface-datastore": "^8.2.0",
-    "multiformats": "^11.0.2"
+    "multiformats": "^12.0.1"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^2.0.0",
     "@types/debug": "^4.1.7",
     "aegir": "^39.0.10",
-    "sinon": "^15.1.0",
+    "sinon": "^15.1.2",
     "uint8arrays": "^4.0.3"
   },
   "typedoc": {

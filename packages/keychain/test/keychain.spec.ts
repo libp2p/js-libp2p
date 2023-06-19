@@ -10,8 +10,8 @@ import { Key } from 'interface-datastore/key'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DefaultKeyChain, type KeyChainInit } from '../src/index.js'
-import type { KeyChain, KeyInfo } from '@libp2p/interface-keychain'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { KeyChain, KeyInfo } from '@libp2p/interface/keychain'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Datastore } from 'interface-datastore'
 
 describe('keychain', () => {

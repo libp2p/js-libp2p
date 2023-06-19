@@ -9,10 +9,7 @@
   ],
   "references": [
     {
-      "path": "../interface-keys"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface"
     }
   ]
 }

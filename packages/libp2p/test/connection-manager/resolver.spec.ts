@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-mocks'
+import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -16,8 +16,8 @@ import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } f
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Transport } from '@libp2p/interface-transport'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Transport } from '@libp2p/interface/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)

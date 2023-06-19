@@ -1,4 +1,4 @@
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface-stream-muxer/stream'
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_MSG_SIZE } from './decode.js'

@@ -1,5 +1,5 @@
 import { upnpNat, type NatAPI } from '@achingbrain/nat-port-mapper'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { fromNodeAddress } from '@multiformats/multiaddr'
@@ -7,10 +7,10 @@ import isPrivateIp from 'private-ip'
 import { isBrowser } from 'wherearewe'
 import { codes } from '../errors.js'
 import * as pkg from '../version.js'
-import type { AddressManager } from '@libp2p/interface-address-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { TransportManager } from '@libp2p/interface-transport'
-import type { Startable } from '@libp2p/interfaces/startable'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Startable } from '@libp2p/interface/startable'
+import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const log = logger('libp2p:upnp-nat')
 const DEFAULT_TTL = 7200

@@ -86,9 +86,7 @@
   },
   "dependencies": {
     "@achingbrain/ip-address": "^8.1.0",
-    "@libp2p/interface-connection": "^5.0.0",
-    "@libp2p/interface-peer-store": "^2.0.0",
-    "@libp2p/interfaces": "^3.0.0",
+    "@libp2p/interface": "~0.0.1",
     "@libp2p/logger": "^2.0.0",
     "@multiformats/multiaddr": "^12.1.3",
     "abortable-iterator": "^5.0.1",

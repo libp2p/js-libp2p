@@ -16,7 +16,7 @@
     "blockstore-core": "^4.1.0",
     "ipfs-bitswap": "^18.0.1",
     "libp2p": "^0.45.9",
-    "multiformats": "^11.0.2"
+    "multiformats": "^12.0.1"
   },
   "devDependencies": {
     "test-ipfs-example": "^1.0.0",

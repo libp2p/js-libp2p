@@ -10,6 +10,7 @@
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
+  - [Browser `<script>` tag](#browser-script-tag)
 - [Usage](#usage)
 - [API Docs](#api-docs)
 - [License](#license)
@@ -19,6 +20,14 @@
 
 ```console
 $ npm i @libp2p/interface-compliance-tests
+```
+
+### Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `Libp2pInterfaceComplianceTests` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@libp2p/interface-compliance-tests/dist/index.min.js"></script>
 ```
 
 ## Usage

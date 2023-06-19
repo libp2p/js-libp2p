@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import { mockUpgrader } from '@libp2p/interface-mocks'
-import { FaultTolerance } from '@libp2p/interface-transport'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
+import { FaultTolerance } from '@libp2p/interface/transport'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -15,8 +15,8 @@ import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Libp2p } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 

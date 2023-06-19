@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
-import { mockUpgrader } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
+import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
@@ -14,7 +14,7 @@ import sinon from 'sinon'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),

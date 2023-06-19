@@ -1,10 +1,10 @@
-import { CustomEvent } from '@libp2p/interfaces/events'
+import { CustomEvent } from '@libp2p/interface/events'
 import { MESSAGE_TYPE_LOOKUP } from '../message/index.js'
 import type { SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent, QueryOptions } from '../index.js'
 import type { Message } from '../message/dht.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { Libp2pRecord } from '@libp2p/record'
+import type { Libp2pRecord } from '../record/index.js'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
 
 export interface QueryEventFields {
   to: PeerId

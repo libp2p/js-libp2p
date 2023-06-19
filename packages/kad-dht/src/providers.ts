@@ -11,8 +11,8 @@ import {
   PROVIDERS_LRU_CACHE_SIZE,
   PROVIDER_KEY_PREFIX
 } from './constants.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Startable } from '@libp2p/interfaces/startable'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Startable } from '@libp2p/interface/startable'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats'
 

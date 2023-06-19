@@ -1,13 +1,13 @@
-import { peerDiscovery } from '@libp2p/interface-peer-discovery'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
+import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { Startable } from '@libp2p/interfaces/dist/src/startable'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Startable } from '@libp2p/interface/startable'
 
 const log = logger('libp2p:bootstrap')
 

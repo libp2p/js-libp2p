@@ -9,16 +9,10 @@
   ],
   "references": [
     {
-      "path": "../interface-connection"
+      "path": "../interface"
     },
     {
-      "path": "../interface-stream-muxer"
-    },
-    {
-      "path": "../interface-stream-muxer-compliance-tests"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface-compliance-tests"
     },
     {
       "path": "../logger"

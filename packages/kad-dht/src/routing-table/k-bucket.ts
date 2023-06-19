@@ -27,8 +27,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-import { EventEmitter } from '@libp2p/interfaces/events'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import { EventEmitter } from '@libp2p/interface/events'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 function arrayEquals (array1: Uint8Array, array2: Uint8Array): boolean {
   if (array1 === array2) {

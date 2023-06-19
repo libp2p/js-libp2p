@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-mocks'
-import { KEEP_ALIVE } from '@libp2p/interface-peer-store/tags'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
+import { KEEP_ALIVE } from '@libp2p/interface/peer-store/tags'
+import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -14,10 +14,10 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionGater } from '@libp2p/interface-connection-gater'
-import type { PeerStore } from '@libp2p/interface-peer-store'
-import type { TransportManager } from '@libp2p/interface-transport'
+import type { Connection } from '@libp2p/interface/connection'
+import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const defaultOptions = {
   maxConnections: 10,

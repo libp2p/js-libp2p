@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-mocks'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
+import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -30,12 +30,12 @@ import { preSharedKey } from '../../src/pnet/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
 import swarmKey from '../fixtures/swarm.key.js'
-import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface-connection'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface-connection-encrypter'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
-import type { Upgrader } from '@libp2p/interface-transport'
+import type { Libp2p } from '@libp2p/interface'
+import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface/connection'
+import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { Upgrader } from '@libp2p/interface/transport'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),

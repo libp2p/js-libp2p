@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -13,11 +13,11 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
-import type { Libp2pEvents } from '@libp2p/interface-libp2p'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore, Peer } from '@libp2p/interface-peer-store'
+import type { Libp2pEvents } from '@libp2p/interface'
+import type { Connection } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore, Peer } from '@libp2p/interface/peer-store'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 
 describe('auto-dial', () => {
   let autoDialler: AutoDial

@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { CID } from 'multiformats/cid'
 import { Message } from '../../message/index.js'
@@ -9,9 +9,9 @@ import {
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { Providers } from '../../providers.js'
 import type { DHTMessageHandler } from '../index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-providers')

@@ -79,7 +79,7 @@
 
 ### Dependencies
 
-* **dev:** bump @libp2p/interface-libp2p from 2.0.0 to 3.0.0 ([#466](https://github.com/libp2p/js-libp2p-kad-dht/issues/466)) ([d8f8e5a](https://github.com/libp2p/js-libp2p-kad-dht/commit/d8f8e5a3b2d5c57fc89129c2cf8ed2ed7c52d171))
+* **dev:** bump @libp2p/interface from 2.0.0 to 3.0.0 ([#466](https://github.com/libp2p/js-libp2p-kad-dht/issues/466)) ([d8f8e5a](https://github.com/libp2p/js-libp2p-kad-dht/commit/d8f8e5a3b2d5c57fc89129c2cf8ed2ed7c52d171))
 
 ## [9.1.2](https://github.com/libp2p/js-libp2p-kad-dht/compare/v9.1.1...v9.1.2) (2023-05-04)
 
@@ -146,7 +146,7 @@
 
 ### Dependencies
 
-* bump @libp2p/interface-connection-manager from 1.5.0 to 2.0.0 ([#455](https://github.com/libp2p/js-libp2p-kad-dht/issues/455)) ([e4ed616](https://github.com/libp2p/js-libp2p-kad-dht/commit/e4ed6168add1653400853c5c2bc416790b0699a2))
+* bump @libp2p/interface-internal/connection-manager from 1.5.0 to 2.0.0 ([#455](https://github.com/libp2p/js-libp2p-kad-dht/issues/455)) ([e4ed616](https://github.com/libp2p/js-libp2p-kad-dht/commit/e4ed6168add1653400853c5c2bc416790b0699a2))
 
 ## [8.0.7](https://github.com/libp2p/js-libp2p-kad-dht/compare/v8.0.6...v8.0.7) (2023-04-13)
 

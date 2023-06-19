@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import merge from 'it-merge'

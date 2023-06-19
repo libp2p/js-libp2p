@@ -1,12 +1,11 @@
-import { FaultTolerance } from '@libp2p/interface-transport'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
+import { FaultTolerance } from '@libp2p/interface/transport'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
 import { codes, messages } from './errors.js'
 import type { Libp2pInit } from './index.js'
-import type { ServiceMap } from '@libp2p/interface-libp2p'
-import type { RecursivePartial } from '@libp2p/interfaces'
+import type { ServiceMap, RecursivePartial } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const DefaultConfig: Partial<Libp2pInit> = {

@@ -21,7 +21,7 @@
  */
 
 import { isPrivate } from './multiaddr/is-private.js'
-import type { Address } from '@libp2p/interface-peer-store'
+import type { Address } from '@libp2p/interface/peer-store'
 
 /**
  * Compare function for array.sort().

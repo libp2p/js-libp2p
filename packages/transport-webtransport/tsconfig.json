@@ -9,16 +9,7 @@
   ],
   "references": [
     {
-      "path": "../interface-connection"
-    },
-    {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interface-stream-muxer"
-    },
-    {
-      "path": "../interface-transport"
+      "path": "../interface"
     },
     {
       "path": "../libp2p"

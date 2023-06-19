@@ -1,14 +1,13 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import mergeOptions from 'merge-options'
 import { pEvent } from 'p-event'
 import { type FetchService, fetchService } from '../../src/fetch/index.js'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { type PingService, pingService } from '../../src/ping/index.js'
-import { baseOptions } from './utils.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import { createBaseOptions } from '../fixtures/base-options.js'
+import type { Libp2p } from '@libp2p/interface'
 
 describe('Protocol prefix is configurable', () => {
   let libp2p: Libp2p<{ identify: unknown, ping: PingService, fetch: FetchService }>
@@ -21,7 +20,7 @@ describe('Protocol prefix is configurable', () => {
 
   it('protocolPrefix is provided', async () => {
     const testProtocol = 'test-protocol'
-    libp2p = await createLibp2p(mergeOptions(baseOptions, {
+    libp2p = await createLibp2p(createBaseOptions({
       services: {
         identify: identifyService({
           protocolPrefix: testProtocol
@@ -50,7 +49,7 @@ describe('Protocol prefix is configurable', () => {
   })
 
   it('protocolPrefix is not provided', async () => {
-    libp2p = await createLibp2p(mergeOptions(baseOptions, {
+    libp2p = await createLibp2p(createBaseOptions({
       services: {
         identify: identifyService(),
         ping: pingService(),

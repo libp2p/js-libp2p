@@ -1,5 +1,5 @@
-import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type Secp256k1PeerId, symbol, type PeerId } from '@libp2p/interface-peer-id'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
+import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type Secp256k1PeerId, symbol, type PeerId } from '@libp2p/interface/peer-id'
 import { base58btc } from 'multiformats/bases/base58'
 import { bases } from 'multiformats/basics'
 import { CID } from 'multiformats/cid'

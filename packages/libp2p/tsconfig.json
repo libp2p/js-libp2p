@@ -12,76 +12,13 @@
       "path": "../crypto"
     },
     {
-      "path": "../interface-address-manager"
+      "path": "../interface"
     },
     {
       "path": "../interface-compliance-tests"
     },
     {
-      "path": "../interface-connection"
-    },
-    {
-      "path": "../interface-connection-compliance-tests"
-    },
-    {
-      "path": "../interface-connection-encrypter"
-    },
-    {
-      "path": "../interface-connection-encrypter-compliance-tests"
-    },
-    {
-      "path": "../interface-connection-gater"
-    },
-    {
-      "path": "../interface-connection-manager"
-    },
-    {
-      "path": "../interface-content-routing"
-    },
-    {
-      "path": "../interface-keychain"
-    },
-    {
-      "path": "../interface-libp2p"
-    },
-    {
-      "path": "../interface-metrics"
-    },
-    {
-      "path": "../interface-mocks"
-    },
-    {
-      "path": "../interface-peer-discovery"
-    },
-    {
-      "path": "../interface-peer-id"
-    },
-    {
-      "path": "../interface-peer-info"
-    },
-    {
-      "path": "../interface-peer-routing"
-    },
-    {
-      "path": "../interface-peer-store"
-    },
-    {
-      "path": "../interface-pubsub"
-    },
-    {
-      "path": "../interface-record"
-    },
-    {
-      "path": "../interface-registrar"
-    },
-    {
-      "path": "../interface-stream-muxer"
-    },
-    {
-      "path": "../interface-transport"
-    },
-    {
-      "path": "../interfaces"
+      "path": "../interface-internal"
     },
     {
       "path": "../kad-dht"
@@ -118,12 +55,6 @@
     },
     {
       "path": "../stream-multiplexer-mplex"
-    },
-    {
-      "path": "../topology"
-    },
-    {
-      "path": "../tracked-map"
     },
     {
       "path": "../transport-tcp"

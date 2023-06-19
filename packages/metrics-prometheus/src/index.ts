@@ -101,8 +101,8 @@ import { PrometheusCounterGroup } from './counter-group.js'
 import { PrometheusCounter } from './counter.js'
 import { PrometheusMetricGroup } from './metric-group.js'
 import { PrometheusMetric } from './metric.js'
-import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface-connection'
-import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface-metrics'
+import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface/connection'
+import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface/metrics'
 import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:prometheus-metrics')

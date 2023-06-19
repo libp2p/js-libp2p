@@ -20,7 +20,7 @@ import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { QueryFunc } from '../src/query/types.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerId } from '@libp2p/interface/peer-id'
 
 interface TopologyEntry {
   delay?: number

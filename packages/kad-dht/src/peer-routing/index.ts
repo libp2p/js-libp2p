@@ -1,9 +1,7 @@
 import { keys } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import { Libp2pRecord } from '@libp2p/record'
-import { verifyRecord } from '@libp2p/record/validators'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
 import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
@@ -12,15 +10,17 @@ import {
   finalPeerEvent,
   valueEvent
 } from '../query/events.js'
+import { Libp2pRecord } from '../record/index.js'
+import { verifyRecord } from '../record/validators.js'
 import * as utils from '../utils.js'
 import type { KadDHTComponents, DHTRecord, DialPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerInfo } from '@libp2p/interface-peer-info'
-import type { AbortOptions } from '@libp2p/interfaces'
+import type { AbortOptions } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Logger } from '@libp2p/logger'
 
 export interface PeerRoutingInit {

@@ -1,4 +1,4 @@
-import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-mocks'
+import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -7,7 +7,7 @@ import { pipe } from 'it-pipe'
 import defer from 'p-defer'
 import client from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
-import type { Connection } from '@libp2p/interface-connection'
+import type { Connection } from '@libp2p/interface/connection'
 
 describe('streams', () => {
   let connectionA: Connection

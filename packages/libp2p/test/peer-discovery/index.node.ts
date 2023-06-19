@@ -2,8 +2,8 @@
 
 import { bootstrap } from '@libp2p/bootstrap'
 import { randomBytes } from '@libp2p/crypto'
-import { peerDiscovery } from '@libp2p/interface-peer-discovery'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
+import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -15,9 +15,9 @@ import { createLibp2p } from '../../src/index.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2pOptions } from '../../src/index.js'
-import type { Libp2p } from '@libp2p/interface-libp2p'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface-peer-discovery'
-import type { PeerId } from '@libp2p/interface-peer-id'
+import type { Libp2p } from '@libp2p/interface'
+import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { KadDHT } from '@libp2p/kad-dht'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')

@@ -1,15 +1,15 @@
-import { CodeError } from '@libp2p/interfaces/errors'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { Libp2pRecord } from '@libp2p/record'
 import {
   MAX_RECORD_AGE
 } from '../../constants.js'
 import { Message, MESSAGE_TYPE } from '../../message/index.js'
+import { Libp2pRecord } from '../../record/index.js'
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { DHTMessageHandler } from '../index.js'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { PeerStore } from '@libp2p/interface-peer-store'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p:kad-dht:rpc:handlers:get-value')

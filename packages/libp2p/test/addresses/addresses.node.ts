@@ -10,7 +10,7 @@ import { plaintext } from '../../src/insecure/index.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import { AddressesOptions } from './utils.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { PeerUpdate } from '@libp2p/interface-libp2p'
+import type { PeerUpdate } from '@libp2p/interface'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']
 const announceAddreses = ['/dns4/peer.io/tcp/433/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p']
