@@ -6,5 +6,19 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../interface-connection"
+    },
+    {
+      "path": "../interface-peer-store"
+    },
+    {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
+    }
   ]
 }

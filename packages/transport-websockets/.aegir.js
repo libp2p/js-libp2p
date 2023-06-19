@@ -1,12 +1,12 @@
-import { multiaddr } from '@multiformats/multiaddr'
-import { mockRegistrar, mockUpgrader } from '@libp2p/interface-mocks'
-import { pipe }from 'it-pipe'
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { pipe } from 'it-pipe'
 
 /** @type {import('aegir/types').PartialOptions} */
 export default {
   test: {
     async before () {
+      const { multiaddr } = await import('@multiformats/multiaddr')
+      const { mockRegistrar, mockUpgrader } = await import('@libp2p/interface-mocks')
+      const { EventEmitter } = await import('@libp2p/interfaces/events')
       const { webSockets } = await import('./dist/src/index.js')
 
       const protocol = '/echo/1.0.0'

@@ -8,5 +8,31 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../interface-peer-discovery"
+    },
+    {
+      "path": "../interface-peer-discovery-compliance-tests"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
+      "path": "../interface-peer-info"
+    },
+    {
+      "path": "../interface-peer-store"
+    },
+    {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    }
   ]
 }

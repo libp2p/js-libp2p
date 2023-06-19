@@ -1,11 +1,11 @@
 import debug from 'debug'
-import { base58btc } from 'multiformats/bases/base58'
 import { base32 } from 'multiformats/bases/base32'
+import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { CID } from 'multiformats/cid'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Key } from 'interface-datastore'
+import type { CID } from 'multiformats/cid'
 
 // Add a formatter for converting to a base58 string
 debug.formatters.b = (v?: Uint8Array): string => {

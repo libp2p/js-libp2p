@@ -1,16 +1,3 @@
-## [2.0.11](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.10...v2.0.11) (2023-06-15)
-
-
-### Trivial Changes
-
-* Update .github/workflows/semantic-pull-request.yml [skip ci] ([2cb3586](https://github.com/libp2p/js-libp2p-webrtc/commit/2cb3586fb0818235083554d8581694a65b00b31f))
-* Update .github/workflows/stale.yml [skip ci] ([c80d4e9](https://github.com/libp2p/js-libp2p-webrtc/commit/c80d4e9cb2eae1ce721e0bcf8c78f79a0f49aea5))
-
-
-### Dependencies
-
-* bump p-event from 5.0.1 to 6.0.0 ([#182](https://github.com/libp2p/js-libp2p-webrtc/issues/182)) ([4df61fb](https://github.com/libp2p/js-libp2p-webrtc/commit/4df61fbdebb7ccd9c75408dc1d7fcc076a430433))
-
 ## [2.0.10](https://github.com/libp2p/js-libp2p-webrtc/compare/v2.0.9...v2.0.10) (2023-06-12)
 
 

@@ -1,10 +1,5 @@
-import { createLibp2p } from 'libp2p'
-import { circuitRelayServer } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p/identify'
-import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 
+/** @type {import('aegir').PartialOptions} */
 export default {
   build: {
     config: {
@@ -14,6 +9,13 @@ export default {
   },
   test: {
     before: async () => {
+      const { createLibp2p } = await import('libp2p')
+      const { circuitRelayServer } = await import('libp2p/circuit-relay')
+      const { identifyService } = await import('libp2p/identify')
+      const { webSockets } = await import('@libp2p/websockets')
+      const { noise } = await import('@chainsafe/libp2p-noise')
+      const { yamux } = await import('@chainsafe/libp2p-yamux')
+
       // start a relay node for use in the tests
       const relay = await createLibp2p({
         addresses: {

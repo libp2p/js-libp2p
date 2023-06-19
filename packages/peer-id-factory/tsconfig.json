@@ -9,7 +9,16 @@
   ],
   "references": [
     {
-      "path": "../libp2p-peer-id"
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface-keys"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
+      "path": "../peer-id"
     }
   ]
 }

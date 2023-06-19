@@ -13,6 +13,9 @@
     },
     {
       "path": "../interfaces"
+    },
+    {
+      "path": "../logger"
     }
   ]
 }

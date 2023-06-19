@@ -6,5 +6,31 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
+      "path": "../interface-record"
+    },
+    {
+      "path": "../interface-record-compliance-tests"
+    },
+    {
+      "path": "../interfaces"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }

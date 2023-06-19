@@ -1,11 +1,9 @@
-# 📁 Archived - this module has been merged into [js-libp2p](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc)
-
 # @libp2p/webrtc <!-- omit in toc -->
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
-[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p-webrtc.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-webrtc)
-[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p-webrtc/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p-webrtc/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
 
 > A libp2p transport using WebRTC connections
 
@@ -25,6 +23,7 @@
   - [Lint](#lint)
   - [Clean](#clean)
   - [Check Dependencies](#check-dependencies)
+- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
 
@@ -172,6 +171,10 @@ npm run clean
 ```shell
 npm run deps-check
 ```
+
+## API Docs
+
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_webrtc.html>
 
 ## License
 
