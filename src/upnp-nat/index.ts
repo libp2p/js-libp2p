@@ -178,7 +178,7 @@ class UPnPNAT implements Startable {
       return this.client
     }
 
-    this.client = await upnpNat({
+    this.client = upnpNat({
       description: this.description,
       ttl: this.ttl,
       keepAlive: this.keepAlive,
