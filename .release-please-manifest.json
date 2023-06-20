@@ -1,1 +1,25 @@
-{"packages/interface-address-manager":"3.0.1","packages/interface-compliance-tests":"3.0.7","packages/interface-connection":"5.1.1","packages/interface-connection-compliance-tests":"2.0.9","packages/interface-connection-encrypter":"4.0.1","packages/interface-connection-encrypter-compliance-tests":"5.0.1","packages/interface-connection-gater":"3.0.1","packages/interface-connection-manager":"3.0.1","packages/interface-content-routing":"2.1.1","packages/interface-dht":"2.0.3","packages/interface-keychain":"2.0.5","packages/interface-keys":"1.0.8","packages/interface-libp2p":"3.2.0","packages/interface-metrics":"4.0.8","packages/interface-mocks":"12.0.1","packages/interface-peer-discovery":"2.0.0","packages/interface-peer-discovery-compliance-tests":"2.0.8","packages/interface-peer-id":"2.0.2","packages/interface-peer-info":"1.0.10","packages/interface-peer-routing":"1.1.1","packages/interface-peer-store":"2.0.4","packages/interface-pubsub":"4.0.1","packages/interface-pubsub-compliance-tests":"5.0.9","packages/interface-record":"2.0.7","packages/interface-record-compliance-tests":"2.0.5","packages/interface-registrar":"2.0.12","packages/interface-stream-muxer":"4.1.2","packages/interface-stream-muxer-compliance-tests":"7.0.3","packages/interface-transport":"4.0.3","packages/interface-transport-compliance-tests":"4.0.2","packages/interfaces":"3.3.2","packages/libp2p":"0.45.9"}
+{
+  "packages/crypto":"1.0.17",
+  "packages/interface":"0.0.1",
+  "packages/interface-compliance-tests":"3.0.7",
+  "packages/interface-internal":"0.0.1",
+  "packages/kad-dht":"9.3.6",
+  "packages/keychain":"2.0.1",
+  "packages/libp2p":"0.45.9",
+  "packages/logger":"2.1.1",
+  "packages/metrics-prometheus":"1.1.5",
+  "packages/multistream-select":"3.1.9",
+  "packages/peer-collections":"3.0.2",
+  "packages/peer-discovery-bootstrap":"8.0.0",
+  "packages/peer-discovery-mdns":"8.0.0",
+  "packages/peer-id":"2.0.3",
+  "packages/peer-id-factory":"2.0.3",
+  "packages/peer-record":"5.0.4",
+  "packages/peer-store":"8.2.1",
+  "packages/stream-multiplexer-mplex":"8.0.4",
+  "packages/transport-tcp":"7.0.3",
+  "packages/transport-webrtc":"2.0.10",
+  "packages/transport-websockets":"6.0.3",
+  "packages/transport-webtransport":"2.0.2",
+  "packages/utils":"3.0.12"
+}
