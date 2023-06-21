@@ -14,8 +14,8 @@ import { createLibp2p } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
 import { webRTC } from '../src/index.js'
-import type { Connection } from '@libp2p/interface-connection'
-import type { Libp2p } from '@libp2p/interface-libp2p'
+import type { Libp2p } from '@libp2p/interface'
+import type { Connection } from '@libp2p/interface/connection'
 
 async function createNode (): Promise<Libp2p> {
   return createLibp2p({
@@ -84,6 +84,17 @@ describe('basics', () => {
     localNode = await createNode()
     remoteNode = await createNode()
   })
+
+  // TODO: Streams are not closing gracefully, re-introduce after https://github.com/libp2p/js-libp2p/issues/1793 is addressed
+  // afterEach(async () => {
+  //   if (localNode != null) {
+  //     await localNode.stop()
+  //   }
+
+  //   if (remoteNode != null) {
+  //     await remoteNode.stop()
+  //   }
+  // })
 
   it('can dial through a relay', async () => {
     const connection = await connectNodes()

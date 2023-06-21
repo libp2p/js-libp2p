@@ -1,7 +1,8 @@
-import { EventEmitter } from '@libp2p/interfaces/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { Circuit } from '@multiformats/mafmt'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { ListenerEvents, Listener, TransportManager } from '@libp2p/interface-transport'
+import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ListenerEvents, Listener } from '@libp2p/interface/transport'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ListenerOptions {
