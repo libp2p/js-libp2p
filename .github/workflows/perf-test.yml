@@ -45,8 +45,9 @@ jobs:
       - name: Compare bandwidths with previous data
         id: compare_bandwidths
         run: |
-          previous_download_bandwidth=${{ steps.read_previous_data.outputs.previous_data | fromJson | .previousDownloadBandwidth }}
-          previous_upload_bandwidth=${{ steps.read_previous_data.outputs.previous_data | fromJson | .previousUploadBandwidth }}
+          previous_data="${{ steps.read_previous_data.outputs.previous_data }}"
+          previous_download_bandwidth=$(echo "$previous_data" | jq -r '.previousDownloadBandwidth')
+          previous_upload_bandwidth=$(echo "$previous_data" | jq -r '.previousUploadBandwidth')
           current_upload_bandwidth=${{ steps.extract_bandwidth.outputs.upload_bandwidth }}
           current_download_bandwidth=${{ steps.extract_bandwidth.outputs.download_bandwidth }}
           if (( $(bc <<< "$current_upload_bandwidth <= 0.8 * $previous_upload_bandwidth") )) || (( $(bc <<< "$current_download_bandwidth <= 0.8 * $previous_download_bandwidth") )); then
