@@ -1,10 +1,11 @@
 import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import { MAX_INBOUND_STREAMS, PROTOCOL_NAME, TIMEOUT, WRITE_BLOCK_SIZE } from './constants.js'
-import type { ConnectionManager } from '@libp2p/interface-connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { AbortOptions, Startable } from '@libp2p/interfaces'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import type {Startable } from '@libp2p/interface/startable'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:perf')
 
@@ -115,7 +116,7 @@ export class DefaultPerfService implements Startable, PerfService {
     const view = new DataView(this.databuf)
     view.setBigInt64(0, recvBytes, false)
 
-    log.trace('sending %i bytes to %p', sendBytes, peer)
+    log('sending %i bytes to %p', sendBytes, peer)
 
     await stream.sink((async function * () {
       // Send the number of bytes to receive

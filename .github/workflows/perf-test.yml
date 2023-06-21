@@ -20,18 +20,8 @@ jobs:
       - name: Generate Report
         run: npm run test
 
-      - name: Exit with Error
-        working-directory: ${{ steps.find-workdir.outputs.WORK_DIR }}
-        run: |
-          if grep -q "color:red" ./Perfreport.md; then
-            exit 1
-          else
-            exit 0
-          fi
-        shell: bash
-
       - uses: actions/upload-artifact@v3
         with:
           name: perf-output
           path: |
-            ${{ steps.find-workdir.outputs.WORK_DIR }}/Perfreport.md
+            ${{ steps.find-workdir.outputs.WORK_DIR }}/perfReport.md

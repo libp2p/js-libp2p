@@ -13,29 +13,29 @@ export function generatePerformanceOutput(currentDownloadSpeed: number, previous
 	`;
 
 	if (downloadProgress > 0) {
-		markdownContent += `<span style="color:green;"> The download bandwidth has improved by ${downloadProgress}% since the last test. </span>`;
-	} else if (uploadProgress < 0) {
-		markdownContent += `<span style="color:red;"> The download bandwidth has decreased by ${downloadProgress}% since the last test. </span>`;
+		markdownContent += `:white_check_mark: The download bandwidth has improved by ${downloadProgress}% since the last test. :white_check_mark:`;
+	} else if (downloadProgress < 0) {
+		markdownContent += `:x: The download bandwidth has decreased by ${downloadProgress}% since the last test. :x:`;
 	} else {
 		markdownContent += `The download bandwidth has not changed since the last test.`;
 	}
 
-	`
+	markdownContent += `
+
 	## Upload Bandwidth
 
 	The upload bandwidth measured during the test was: ${currentUploadSpeed} kiB/s.
 	`;
 
 	if (uploadProgress > 0) {
-		markdownContent += `<span style="color:green;">The upload bandwidth has improved by ${uploadProgress}% since the last test. </span>`;
+		markdownContent += `:white_check_mark: The upload bandwidth has improved by ${uploadProgress}% since the last test. :white_check_mark:`;
 	} else if (uploadProgress < 0) {
-		markdownContent += `The upload bandwidth has decreased by ${uploadProgress}% since the last test.`;
+		markdownContent += `:x: The upload bandwidth has decreased by ${uploadProgress}% since the last test. :x:`;
 	} else {
-		markdownContent += `<span style="color:red;"> The upload bandwidth has not changed since the last test.  </span>`;
+		markdownContent += `The upload bandwidth has not changed since the last test.`;
 	}
 
-
-	return markdownContent;
+	return markdownContent.replace(/\t/g, '');
 
 }
 

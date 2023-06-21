@@ -1,10 +1,18 @@
 {
-  "name": "perf-protocol",
+  "name": "@libp2p/perf",
   "version": "1.0.0",
-  "description": "Performance Tests",
+  "description": "Implementation of Perf Protocol",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/perf#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
   "type": "module",
   "author": "@maschad / @marcopolo",
-  "license": "MIT",
   "files": [
     "src",
     "dist",
@@ -19,24 +27,29 @@
   },
   "scripts": {
     "build": "aegir build",
-    "test": "aegir test",
+    "test": "aegir test -t node --cov",
     "clean": "aegir clean",
     "lint": "aegir lint",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
     "dep-check": "aegir dep-check -i protons"
   },
   "dependencies": {
+    "@libp2p/interface": "^0.0.1",
+    "@libp2p/interface-compliance-tests": "^3.0.7",
     "@libp2p/interface-connection-gater": "3.0.1",
-    "@libp2p/interface-connection-manager": "3.0.1",
-    "@libp2p/interface-mocks": "12.0.1",
+    "@libp2p/interface-internal": "^0.0.1",
     "@libp2p/interface-peer-id": "2.0.2",
-    "@libp2p/interface-registrar": "^2.0.12",
-    "@libp2p/interface-transport": "4.0.3",
     "@libp2p/interfaces": "3.3.2",
     "@libp2p/logger": "^2.1.1",
     "@libp2p/peer-id-factory": "2.0.4",
     "@libp2p/peer-store": "8.2.1",
     "any-signal": "^4.1.1",
-    "datastore-core": "9.2.0"
+    "datastore-core": "9.2.0",
+    "libp2p": "^0.45.9"
   },
   "devDependencies": {
     "aegir": "^39.0.10",
