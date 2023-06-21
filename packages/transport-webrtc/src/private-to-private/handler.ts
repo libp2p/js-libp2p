@@ -6,9 +6,9 @@ import { DataChannelMuxerFactory } from '../muxer.js'
 import { Message } from './pb/message.js'
 import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
 import type { DataChannelOpts } from '../stream.js'
-import type { Stream } from '@libp2p/interface/connection'
-import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { Stream } from '@libp2p/interface-connection'
+import type { IncomingStreamData } from '@libp2p/interface-registrar'
+import type { StreamMuxerFactory } from '@libp2p/interface-stream-muxer'
 
 const DEFAULT_TIMEOUT = 30 * 1000
 

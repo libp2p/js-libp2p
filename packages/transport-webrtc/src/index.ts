@@ -1,7 +1,7 @@
 import { WebRTCTransport } from './private-to-private/transport.js'
 import { WebRTCDirectTransport, type WebRTCTransportDirectInit, type WebRTCDirectTransportComponents } from './private-to-public/transport.js'
 import type { WebRTCTransportComponents, WebRTCTransportInit } from './private-to-private/transport.js'
-import type { Transport } from '@libp2p/interface/transport'
+import type { Transport } from '@libp2p/interface-transport'
 
 /**
  * @param {WebRTCTransportDirectInit} init - WebRTC direct transport configuration

@@ -4,7 +4,7 @@ import * as lengthPrefixed from 'it-length-prefixed'
 import { bytes } from 'multiformats'
 import { Message } from '../src/pb/message.js'
 import { createStream } from '../src/stream'
-import type { Stream } from '@libp2p/interface/connection'
+import type { Stream } from '@libp2p/interface-connection'
 const TEST_MESSAGE = 'test_message'
 
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: Stream } {

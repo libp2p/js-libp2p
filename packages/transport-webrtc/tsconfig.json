@@ -10,13 +10,31 @@
   ],
   "references": [
     {
-      "path": "../interface"
+      "path": "../interface-connection"
     },
     {
-      "path": "../interface-compliance-tests"
+      "path": "../interface-libp2p"
     },
     {
-      "path": "../interface-internal"
+      "path": "../interface-metrics"
+    },
+    {
+      "path": "../interface-mocks"
+    },
+    {
+      "path": "../interface-peer-id"
+    },
+    {
+      "path": "../interface-registrar"
+    },
+    {
+      "path": "../interface-stream-muxer"
+    },
+    {
+      "path": "../interface-transport"
+    },
+    {
+      "path": "../interfaces"
     },
     {
       "path": "../libp2p"

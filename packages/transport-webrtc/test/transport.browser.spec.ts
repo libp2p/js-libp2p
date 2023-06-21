@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import { type CreateListenerOptions, symbol } from '@libp2p/interface/transport'
-import { mockMetrics, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { mockMetrics, mockUpgrader } from '@libp2p/interface-mocks'
+import { type CreateListenerOptions, symbol } from '@libp2p/interface-transport'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect, assert } from 'aegir/chai'
 import { UnimplementedError } from '../src/error.js'
 import * as underTest from '../src/private-to-public/transport.js'
 import { expectError } from './util.js'
-import type { Metrics } from '@libp2p/interface/metrics'
+import type { Metrics } from '@libp2p/interface-metrics'
 
 function ignoredDialOption (): CreateListenerOptions {
   const upgrader = mockUpgrader({})

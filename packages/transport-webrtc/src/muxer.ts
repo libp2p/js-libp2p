@@ -1,9 +1,9 @@
 import { createStream } from './stream.js'
 import { nopSink, nopSource } from './util.js'
 import type { DataChannelOpts } from './stream.js'
-import type { Stream } from '@libp2p/interface/connection'
-import type { CounterGroup } from '@libp2p/interface/metrics'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { Stream } from '@libp2p/interface-connection'
+import type { CounterGroup } from '@libp2p/interface-metrics'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface-stream-muxer'
 import type { Source, Sink } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

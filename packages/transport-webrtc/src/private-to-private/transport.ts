@@ -1,5 +1,5 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener, type Upgrader } from '@libp2p/interface/transport'
+import { type CreateListenerOptions, type DialOptions, type Listener, symbol, type Transport, type Upgrader, type TransportManager } from '@libp2p/interface-transport'
+import { CodeError } from '@libp2p/interfaces/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
@@ -8,11 +8,10 @@ import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { initiateConnection, handleIncomingStream } from './handler.js'
 import { WebRTCPeerListener } from './listener.js'
 import type { DataChannelOpts } from '../stream.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { Connection } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
+import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:webrtc:peer')
 
