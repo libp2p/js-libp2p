@@ -1,10 +1,13 @@
 node_modules
+build
 dist
 .docs
 .coverage
+node_modules
 package-lock.json
 yarn.lock
 
 # IDE
 .DS_STORE
 .vscode
+packages/transport-webtransport/go-libp2p-webtransport-server/main
