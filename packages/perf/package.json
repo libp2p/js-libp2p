@@ -27,7 +27,7 @@
   },
   "scripts": {
     "build": "aegir build",
-    "test": "aegir test -t node --cov",
+    "test": "aegir test",
     "clean": "aegir clean",
     "lint": "aegir lint",
     "test:chrome": "aegir test -t browser --cov",

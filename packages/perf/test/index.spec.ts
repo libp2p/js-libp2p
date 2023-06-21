@@ -1,21 +1,16 @@
 /* eslint-env mocha */
 
-import * as fs from 'fs'
-import * as path from 'path'
-import { fileURLToPath } from 'url'
-
 import { connectionPair, mockConnectionGater, mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { EventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
-import { assert, expect } from 'aegir/chai'
+import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
 
 import { perfService, type PerfServiceInit } from '../src/index.js'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
-import { generatePerformanceOutput } from '../src/printResults.js'
 import { defaultComponents, type Components } from 'libp2p/components'
 import { DefaultConnectionManager } from 'libp2p/connection-manager'
 
@@ -111,28 +106,6 @@ describe('perf', () => {
     const uploadBandwidth = await client.measureDownloadBandwidth(remoteComponents.peerId, 10n << 20n) >> 10
     // eslint-disable-next-line no-console
     console.log('Upload bandwidth: ', uploadBandwidth, ' kiB/s')
-
-    const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-    const prevPerfFilePath = path.resolve(__dirname, '../..', 'previousPerf.txt');
-    const fileReportPath = path.resolve(__dirname, '../..', 'perfReport.md');
-
-    const { previousDownloadBandwidth, previousUploadBandwidth } = JSON.parse(fs.readFileSync(prevPerfFilePath, 'utf8'))
-
-    const markdownContent = generatePerformanceOutput(downloadBandwidth, previousDownloadBandwidth, uploadBandwidth, previousUploadBandwidth)
-
-    fs.writeFileSync(prevPerfFilePath, JSON.stringify({
-      previousDownloadBandwidth: downloadBandwidth ,
-      previousUploadBandwidth: uploadBandwidth
-    }))
-
-
-    fs.writeFileSync(fileReportPath, markdownContent)
-
-    const uploadProgress = (uploadBandwidth - previousUploadBandwidth) / previousUploadBandwidth;
-    const downloadProgress = (downloadBandwidth - previousDownloadBandwidth) / previousDownloadBandwidth;
-
-    assert(downloadProgress > -0.2, 'Download bandwidth decreased by more than 20%')
-    assert(uploadProgress >= -0.2, 'Upload bandwidth decreased by more than 20%')
   })
+
 })

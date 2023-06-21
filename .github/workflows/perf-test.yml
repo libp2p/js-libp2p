@@ -1,27 +1,80 @@
-name: Generate Performance Report
-
+name: Performance Test
 on:
   push:
     branches:
-      - main
+      - master
+  pull_request:
+    branches:
+      - "**"
 
 jobs:
-  build:
+  performance_test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install dependencies
-        working-directory: ${{ steps.find-workdir.outputs.WORK_DIR }}
-        run: npm ci
-
-      - name: Generate Report
-        run: npm run test
-
-      - uses: actions/upload-artifact@v3
+      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          name: perf-output
-          path: |
-            ${{ steps.find-workdir.outputs.WORK_DIR }}/perfReport.md
+          directories: |
+            ./packages/perf/node_modules
+
+      - name: Build perf
+        run: (cd pacakges/perf && npm i && npm run build)
+
+      - name: Run tests and capture console output
+        run: |
+          npm run test > test_output.txt
+          echo '::set-output name=test_output::$(cat test_output.txt)'
+
+      - name: Read previous performance data
+        id: read_previous_data
+        run: |
+          previous_data=$(cat previousPerf.json)
+          echo "::set-output name=previous_data::$previous_data"
+
+      - name: Extract bandwidth from test output
+        id: extract_bandwidth
+        run: |
+          test_output=$(cat test_output.txt)
+          upload_bandwidth=$(echo "$test_output" | grep -o 'Upload bandwidth: [0-9]*')
+          upload_bandwidth=${upload_bandwidth#*: }
+          download_bandwidth=$(echo "$test_output" | grep -o 'Download bandwidth: [0-9]*')
+          download_bandwidth=${download_bandwidth#*: }
+          echo "::set-output name=upload_bandwidth::$upload_bandwidth"
+          echo "::set-output name=download_bandwidth::$download_bandwidth"
+
+      - name: Compare bandwidths with previous data
+        id: compare_bandwidths
+        run: |
+          previous_download_bandwidth=${{ steps.read_previous_data.outputs.previous_data | fromJson | .previousDownloadBandwidth }}
+          previous_upload_bandwidth=${{ steps.read_previous_data.outputs.previous_data | fromJson | .previousUploadBandwidth }}
+          current_upload_bandwidth=${{ steps.extract_bandwidth.outputs.upload_bandwidth }}
+          current_download_bandwidth=${{ steps.extract_bandwidth.outputs.download_bandwidth }}
+          if (( $(bc <<< "$current_upload_bandwidth <= 0.8 * $previous_upload_bandwidth") )) || (( $(bc <<< "$current_download_bandwidth <= 0.8 * $previous_download_bandwidth") )); then
+            echo "::set-output name=bandwidth_comparison::fail"
+          else
+            echo "::set-output name=bandwidth_comparison::pass"
+          fi
+
+      - name: Save current performance data
+        id: save_performance_data
+        run: |
+          current_upload_bandwidth=${{ steps.extract_bandwidth.outputs.upload_bandwidth }}
+          current_download_bandwidth=${{ steps.extract_bandwidth.outputs.download_bandwidth }}
+          echo "{\"previousDownloadBandwidth\": $current_download_bandwidth, \"previousUploadBandwidth\": $current_upload_bandwidth}" > previousPerf.json
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update performance data
+          file_pattern: previousPerf.txt
+          branch: ${{ github.ref }}
+
+      - name: Check CI job status
+        run: |
+          bandwidth_comparison=${{ steps.compare_bandwidth.outputs.bandwidth_comparison }}
+          if [ "$bandwidth_comparison" == "fail" ]; then
+            echo "Performance test failed: bandwidth descreased by more than 20%."
+            exit 1
+          else
+            echo "Performance test passed."
+          fi
