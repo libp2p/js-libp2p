@@ -1,10 +1,10 @@
 import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import { MAX_INBOUND_STREAMS, PROTOCOL_NAME, TIMEOUT, WRITE_BLOCK_SIZE } from './constants.js'
+import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
-import type {Startable } from '@libp2p/interface/startable'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:perf')
