@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>js-libp2p WebRTC</title>
+    <style>
+      label,
+      button {
+        display: block;
+        font-weight: bold;
+        margin: 5px 0;
+      }
+      div {
+        margin-bottom: 20px;
+      }
+      #send-section {
+        display: none;
+      }
+      input[type='text'] {
+        width: 800px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <label for="peer">Server MultiAddress:</label>
+        <input type="text" id="peer" />
+        <button id="connect">Connect</button>
+      </div>
+      <div id="send-section">
+        <label for="message">Message:</label>
+        <input type="text" id="message" value="hello" />
+        <button id="send">Send</button>
+      </div>
+      <div id="output"></div>
+    </div>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
