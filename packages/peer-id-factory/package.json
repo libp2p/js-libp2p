@@ -1,0 +1,71 @@
+{
+  "name": "@libp2p/peer-id-factory",
+  "version": "2.0.3",
+  "description": "Create PeerId instances",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-id-factory#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "proto.d.ts"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "generate": "protons src/proto.proto",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@libp2p/crypto": "^1.0.0",
+    "@libp2p/interface": "~0.0.1",
+    "@libp2p/interface-keys": "^1.0.0",
+    "@libp2p/peer-id": "^2.0.0",
+    "multiformats": "^12.0.1",
+    "protons-runtime": "^5.0.0",
+    "uint8arraylist": "^2.4.3",
+    "uint8arrays": "^4.0.4"
+  },
+  "devDependencies": {
+    "aegir": "^39.0.10",
+    "protons": "^7.0.2"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
+  }
+}

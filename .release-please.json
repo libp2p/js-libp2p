@@ -1,0 +1,31 @@
+{
+  "plugins": ["node-workspace"],
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "group-pull-request-title-pattern": "chore: release ${component}",
+  "packages": {
+    "packages/crypto": {},
+    "packages/interface": {},
+    "packages/interface-compliance-tests": {},
+    "packages/interface-internal": {},
+    "packages/kad-dht": {},
+    "packages/keychain": {},
+    "packages/libp2p": {},
+    "packages/logger": {},
+    "packages/metrics-prometheus": {},
+    "packages/multistream-select": {},
+    "packages/peer-collections": {},
+    "packages/peer-discovery-bootstrap": {},
+    "packages/peer-discovery-mdns": {},
+    "packages/peer-id": {},
+    "packages/peer-id-factory": {},
+    "packages/peer-record": {},
+    "packages/peer-store": {},
+    "packages/stream-multiplexer-mplex": {},
+    "packages/transport-tcp": {},
+    "packages/transport-webrtc": {},
+    "packages/transport-websockets": {},
+    "packages/transport-webtransport": {},
+    "packages/utils": {}
+  }
+}

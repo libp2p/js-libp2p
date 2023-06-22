@@ -29,7 +29,8 @@
     - [Configuring Transport Manager](#configuring-transport-manager)
     - [Configuring Metrics](#configuring-metrics)
     - [Configuring PeerStore](#configuring-peerstore)
-    - [Configuring UPnP NAT Traversal](#configuring-upnp-nat-traversal)
+    - [Customizing Transports](#customizing-transports)
+    - [Configuring AutoNAT](#configuring-autonat)
       - [Browser support](#browser-support)
       - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
     - [Configuring protocol name](#configuring-protocol-name)
@@ -177,7 +178,7 @@ If this DHT implementation does not fulfill your needs and you want to create or
 
 If you want to know more about libp2p DHT, you should read the following content:
 
-- https://docs.libp2p.io/concepts/protocols/#kad-dht
+- https://docs.libp2p.io/concepts/fundamentals/protocols/#kad-dht
 - https://github.com/libp2p/specs/pull/108
 
 ### Pubsub
@@ -198,7 +199,7 @@ If you want to know more about libp2p pubsub, you should read the following cont
 
 ## Customizing libp2p
 
-When [creating a libp2p node](./API.md#create), the modules needed should be specified as follows:
+When [creating a libp2p node](./API.md#create), there are a number of services which are optional but will probably be needed for your use case such as the [kademlia](#dht), [peer discovery](#peer-discovery) and [pubsub](#pubsub) services for example. These are passed into the `services` object upon creating a node. You can also pass in custom services that will be used to create the node. This is done by providing your custom implementation to the `services` object, which should have the following structure:
 
 ```js
 const modules = {
@@ -209,7 +210,7 @@ const modules = {
   peerRouting: [],
   peerDiscovery: [],
   services: {
-    serviceKey: serviceImplementation
+    myService: myServiceImplementation
   }
 }
 ```
@@ -225,6 +226,8 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
   - `listen` addresses will be provided to the libp2p underlying transports for listening on them.
   - `announce` addresses will be used to compute the advertises that the node should advertise to the network.
   - `announceFilter`: filter function used to filter announced addresses programmatically: `(ma: Array<multiaddr>) => Array<multiaddr>`. Default: returns all addresses. [`libp2p-utils`](https://github.com/libp2p/js-libp2p-utils) provides useful [multiaddr utilities](https://github.com/libp2p/js-libp2p-utils/blob/master/API.md#multiaddr-isloopbackma) to create your filters.
+
+It's important to note that some services depend on others in order to function optimally, this is further explained in the examples below.
 
 ### Examples
 
@@ -326,6 +329,16 @@ const node = await createLibp2p({
 
 #### Customizing Pubsub
 
+Before a peer can subscribe to a topic it must find other peers and establish network connections with them. The pub/sub system doesn’t have any way to discover peers by itself. Instead, it relies upon the application to find new peers on its behalf, a process called ambient peer discovery.
+
+This means that pubsub requires the identify service to be configured in order to exchange peer information with other peers, including lists of supported protocols.
+
+Potential methods for discovering peers include:
+
+- [Distributed hash tables](#dht)
+- [Local network broadcasts](https://docs.libp2p.io/concepts/discovery-routing/mdns/)
+- [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
+- [Lists of bootstrap peers](https://github.com/libp2p/js-libp2p-bootstrap)
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
@@ -334,6 +347,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
 import { SignaturePolicy } from '@libp2p/interface-pubsub'
+import { identifyService } from 'libp2p/identify'
 
 const node = await createLibp2p({
     transports: [
@@ -347,16 +361,22 @@ const node = await createLibp2p({
       noise()
     ],
     services: {
+      identify: identifyService(),
       pubsub: gossipsub({
         emitSelf: false,                                  // whether the node should emit to self on publish
         globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
       })
     }
-  }
-})
+  })
 ```
 
 #### Customizing DHT
+
+As explained in [previous sections](#dht) the kad-dht is a Distributed Hash Table based on the Kademlia routing algorithm, with some modifications.
+
+libp2p uses the DHT as an implementation of its peer routing and content routing functionality.
+
+The kadDHT service requires the Identify service to discover other peers that support the protocol and which allows it to use them to make network queries.
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -364,6 +384,7 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { kadDHT } from '@libp2p/kad-dht'
+import { identifyService } from 'libp2p-identify'
 
 const node = await createLibp2p({
   transports: [
@@ -377,6 +398,7 @@ const node = await createLibp2p({
     noise()
   ],
   services: {
+    identify: identifyService(),
     dht: kadDHT({
       kBucketSize: 20,
       clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
@@ -435,6 +457,14 @@ const node = await createLibp2p({
 
 #### Setup with Relay
 
+[Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/), is a protocol for tunneling traffic through relay peers when two peers are unable to connect to each other directly.
+
+When a peer to be available to be connected to via a relay, it first needs to find a peer that supports the Circuit Relay protocol.
+
+It can search the network for providers of the service and/or it can rely on ambient discovery via the identify protocol, during which peers exchange lists of protocols they support.
+
+Thus, it is recommended to include the Identify service in your services configuration when you hope to find a relay peer that supports the Circuit Relay protocol.
+
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
@@ -442,6 +472,8 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport, circuitRelayServer } from 'libp2p/circuit-relay'
+import { identifyService } from 'libp2p-identify'
+
 
 const node = await createLibp2p({
   transports: [
@@ -469,11 +501,10 @@ const node = await createLibp2p({
     denyInboundRelayedConnection: (relay: PeerId, remotePeer: PeerId) => Promise<boolean>
   },
   services: {
+    identify: identifyService(),
     relay: circuitRelayServer({ // makes the node function as a relay server
       hopTimeout: 30 * 1000, // incoming relay requests must be resolved within this time limit
-      advertise: { // if set, use content routing to broadcast availability of this relay
-        bootDelay: 30 * 1000 // how long to wait after startup before broadcast
-      },
+      advertise: true,
       reservations: {
         maxReservations: 15 // how many peers are allowed to reserve relay slots on this server
         reservationClearInterval: 300 * 1000 // how often to reclaim stale reservations
@@ -552,10 +583,12 @@ const node = await createLibp2p({
 
 Libp2p allows you to setup a secure keychain to manage your keys. The keychain configuration object should have the following properties:
 
-| Name      | Type     | Description                                                                            |
-| --------- | -------- | -------------------------------------------------------------------------------------- |
-| pass      | `string` | Passphrase to use in the keychain (minimum of 20 characters).                          |
-| datastore | `object` | must implement [ipfs/interface-datastore](https://github.com/ipfs/interface-datastore) |
+| Name | Type        | Description                                                                                                                                                                                       |
+| ---- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pass | `string`    | Passphrase to use in the keychain (minimum of 20 characters).                                                                                                                                     |
+| dek  | `DEKConfig` | the default options for generating the derived encryption key, which, along with the passphrase are input to the PBKDF2 function. For more info see: https://github.com/libp2p/js-libp2p-keychain |
+
+The keychain will store keys encrypted in the datastore which default is an in memory datastore. If you want to store the keys on disc you need to initialize libp2p with a suitable datastore implementation.
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -563,9 +596,10 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { LevelDatastore } from 'datastore-level'
+import { FsDatastore } from 'datastore-fs';
 
-const datastore = new LevelDatastore('path/to/store')
+
+const datastore = new FsDatastore('path/to/store')
 await datastore.open()
 
 const node = await createLibp2p({
@@ -581,10 +615,11 @@ const node = await createLibp2p({
   ],
   keychain: {
     pass: 'notsafepassword123456789',
-    datastore: dsInstant,
-  }
+  },
+  datastore
 })
 ```
+
 
 #### Configuring Connection Manager
 
@@ -856,6 +891,96 @@ const node = await createLibp2p({
   }
 })
 ```
+
+#### Customizing Transports
+
+Some Transports can be passed additional options when they are created. For example, `libp2p-webrtc-star` accepts an optional, custom `wrtc` implementation. In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
+
+```js
+import { createLibp2p } from 'libp2p'
+import { webRTCStar } from '@libp2p/webrtc-star'
+import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@chainsafe/libp2p-noise'
+import wrtc from 'wrtc'
+
+const webRTC = webRTCStar({
+  wrtc
+})
+
+const node = await createLibp2p({
+  transports: [
+    webRTC.transport
+  ],
+  peerDiscovery: [
+    webRTC.discovery
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ]
+})
+```
+
+During Libp2p startup, transport listeners will be created for the configured listen multiaddrs.  Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) transport listener supports the configuration of its underlying [simple-peer](https://github.com/feross/simple-peer) ice server(STUN/TURN) config as follows:
+
+```js
+const webRTC = webRTCStar({
+  listenerOptions: {
+    config: {
+      iceServers: [
+        {"urls": ["turn:YOUR.TURN.SERVER:3478"], "username": "YOUR.USER", "credential": "YOUR.PASSWORD"},
+        {"urls": ["stun:YOUR.STUN.SERVER:3478"], "username": "", "credential": ""}]
+    }
+  }
+})
+
+const node = await createLibp2p({
+  transports: [
+    webRTC.transport
+  ],
+  peerDiscovery: [
+    webRTC.discovery
+  ],
+  streamMuxers: [
+    yamux(),
+    mplex()
+  ],
+  connectionEncryption: [
+    noise()
+  ],
+  addresses: {
+    listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star'] // your webrtc dns multiaddr
+  }
+})
+```
+
+#### Configuring AutoNAT
+
+In order for a node to have confidence that it is publicly dialable, the AutoNAT protocol can be used to instruct remote peers to dial the node on the addresses that it believes to be public.
+
+If enough peers report that this address is dialable, the node is free to change it's relationship to the rest of the network; for example, it could become a DHT server or fulfil some other public role.
+
+For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-autonat
+
+```ts
+import { createLibp2p } from 'libp2p'
+import { autoNATService } from 'libp2p/autonat'
+
+const node = await createLibp2p({
+  services: {
+    nat: autoNATService({
+      protocolPrefix: 'my-node', // this should be left as the default value to ensure maximum compatibility
+      timeout: 30000, // the remote must complete the AutoNAT protocol within this timeout
+      maxInboundStreams: 1, // how many concurrent inbound AutoNAT protocols streams to allow on each connection
+      maxOutboundStreams: 1 // how many concurrent outbound AutoNAT protocols streams to allow on each connection
+    })
+  }
+})
+
 
 #### Configuring UPnP NAT Traversal
 
