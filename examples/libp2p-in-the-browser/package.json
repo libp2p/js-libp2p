@@ -9,7 +9,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@chainsafe/libp2p-gossipsub": "^7.0.0",
+    "@chainsafe/libp2p-gossipsub": "^8.0.0",
     "@chainsafe/libp2p-noise": "^12.0.0",
     "@chainsafe/libp2p-yamux": "^4.0.1",
     "@libp2p/bootstrap": "^8.0.0",
@@ -18,7 +18,7 @@
     "@libp2p/webrtc": "^1.2.0",
     "@libp2p/websockets": "^6.0.1",
     "@libp2p/webtransport": "^2.0.1",
-    "libp2p": "file:../../"
+    "libp2p": "file:../../packages/libp2p"
   },
   "devDependencies": {
     "vite": "^2.8.6"

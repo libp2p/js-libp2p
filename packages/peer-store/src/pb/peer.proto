@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+message Peer {
+  // Multiaddrs we know about
+  repeated Address addresses = 1;
+
+  // The protocols the peer supports
+  repeated string protocols = 2;
+
+  // The public key of the peer
+  optional bytes public_key = 4;
+
+  // The most recently received signed PeerRecord
+  optional bytes peer_record_envelope = 5;
+
+  // Any peer metadata
+  map<string, bytes> metadata = 6;
+
+  // Any tags the peer has
+  map<string, Tag> tags = 7;
+}
+
+// Address represents a single multiaddr
+message Address {
+  bytes multiaddr = 1;
+
+  // Flag to indicate if the address comes from a certified source
+  optional bool isCertified = 2;
+}
+
+message Tag {
+  uint32 value = 1; // tag value 0-100
+  optional uint64 expiry = 2; // ms timestamp after which the tag is no longer valid
+}
