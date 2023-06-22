@@ -1,22 +1,12 @@
 {
-    "id": "firefox-js-libp2p-head",
-    "containerImageID": "firefox-js-libp2p-head",
-    "transports": [
-        {
-            "name": "webrtc-direct",
-            "onlyDial": true
-        },
-        "webrtc",
-        {
-            "name": "wss",
-            "onlyDial": true
-        }
-    ],
-    "secureChannels": [
-        "noise"
-    ],
-    "muxers": [
-        "mplex",
-        "yamux"
-    ]
+  "id": "firefox-js-libp2p-head",
+  "containerImageID": "firefox-js-libp2p-head",
+  "transports": [
+    {
+      "name": "wss",
+      "onlyDial": true
+    }
+  ],
+  "secureChannels": ["noise"],
+  "muxers": ["mplex", "yamux"]
 }
