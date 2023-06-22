@@ -58,32 +58,32 @@ import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 
 const topic = 'fruit'
 
-node1.pubsub.addEventListener('message', (msg) => {
+node1.services.pubsub.addEventListener('message', (msg) => {
   if (msg.detail.topic !== topic) {
     return
   }
 
   console.log(`node1 received: ${uint8ArrayToString(msg.data)}`)
 })
-await node1.pubsub.subscribe(topic)
+await node1.services.pubsub.subscribe(topic)
 
-node2.pubsub.addEventListener('message', (msg) => {
+node2.services.pubsub.addEventListener('message', (msg) => {
   if (msg.detail.topic !== topic) {
     return
   }
 
   console.log(`node2 received: ${uint8ArrayToString(msg.data)}`)
 })
-await node2.pubsub.subscribe(topic)
+await node2.services.pubsub.subscribe(topic)
 
-node3.pubsub.addEventListener('message', (msg) => {
+node3.services.pubsub.addEventListener('message', (msg) => {
   if (msg.detail.topic !== topic) {
     return
   }
 
 console.log(`node3 received: ${uint8ArrayToString(msg.data)}`)
 })
-await node3.pubsub.subscribe(topic)
+await node3.services.pubsub.subscribe(topic)
 ```
 Finally, let's define the additional filter in the fruit topic.
 
@@ -97,9 +97,9 @@ const validateFruit = (msgTopic, msg) => {
   }
 }
 
-node1.pubsub.topicValidators.set(topic, validateFruit)
-node2.pubsub.topicValidators.set(topic, validateFruit)
-node3.pubsub.topicValidators.set(topic, validateFruit)
+node1.services.pubsub.topicValidators.set(topic, validateFruit)
+node2.services.pubsub.topicValidators.set(topic, validateFruit)
+node3.services.pubsub.topicValidators.set(topic, validateFruit)
 ```
 
 In this example, node one has an outdated version of the system, or is a malicious node. When it tries to publish fruit, the messages are re-shared and all the nodes share the message. However, when it tries to publish a vehicle the message is not re-shared.
@@ -107,7 +107,7 @@ In this example, node one has an outdated version of the system, or is a malicio
 ```JavaScript
 for (const fruit of ['banana', 'apple', 'car', 'orange']) {
   console.log('############## fruit ' + fruit + ' ##############')
-  await node1.pubsub.publish(topic, uint8ArrayFromString(fruit))
+  await node1.services.pubsub.publish(topic, uint8ArrayFromString(fruit))
 }
 ```
 

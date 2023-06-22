@@ -1,0 +1,29 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "emitDeclarationOnly": false,
+    "module": "ES2020"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { createLibp2p } from '../../dist/src/index.js'
+import { createLibp2p } from '../../packages/libp2p/dist/src/index.js'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'

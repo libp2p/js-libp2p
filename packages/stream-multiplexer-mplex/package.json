@@ -1,0 +1,94 @@
+{
+  "name": "@libp2p/mplex",
+  "version": "8.0.4",
+  "description": "JavaScript implementation of https://github.com/libp2p/mplex",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/stream-multiplexer-mplex#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "keywords": [
+    "IPFS",
+    "connection",
+    "duplex",
+    "libp2p",
+    "mplex",
+    "multiplex",
+    "muxer",
+    "stream"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "benchmark": "node ./node_modules/.bin/benchmark benchmark/send-and-receive.js",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@libp2p/interface": "~0.0.1",
+    "@libp2p/logger": "^2.0.0",
+    "abortable-iterator": "^5.0.1",
+    "any-signal": "^4.1.1",
+    "benchmark": "^2.1.4",
+    "it-batched-bytes": "^2.0.2",
+    "it-pushable": "^3.1.3",
+    "it-stream-types": "^2.0.1",
+    "rate-limiter-flexible": "^2.3.11",
+    "uint8arraylist": "^2.4.3",
+    "uint8arrays": "^4.0.4",
+    "varint": "^6.0.0"
+  },
+  "devDependencies": {
+    "@libp2p/interface-compliance-tests": "^3.0.0",
+    "@types/varint": "^6.0.0",
+    "aegir": "^39.0.10",
+    "cborg": "^2.0.1",
+    "delay": "^6.0.0",
+    "iso-random-stream": "^2.0.2",
+    "it-all": "^3.0.1",
+    "it-drain": "^3.0.2",
+    "it-foreach": "^2.0.2",
+    "it-map": "^3.0.3",
+    "it-pipe": "^3.0.1",
+    "it-to-buffer": "^4.0.1",
+    "p-defer": "^4.0.0",
+    "random-int": "^3.0.0"
+  },
+  "browser": {
+    "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts"
+  }
+}
