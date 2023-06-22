@@ -14,7 +14,6 @@
   - [Examples](#examples)
     - [Basic setup](#basic-setup)
     - [Customizing Peer Discovery](#customizing-peer-discovery)
-    - [Setup webrtc transport and discovery](#setup-webrtc-transport-and-discovery)
     - [Customizing Pubsub](#customizing-pubsub)
     - [Customizing DHT](#customizing-dht)
     - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
@@ -293,36 +292,6 @@ const node = await createLibp2p({
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
       ]
     )
-  ]
-})
-```
-
-#### Setup webrtc transport and discovery
-
-```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { webRTCStar } from '@libp2p/webrtc-star'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
-
-const webRtc = webRTCStar()
-
-const node = await createLibp2p({
-  transports: [
-    webSockets(),
-    webRtc.transport
-  ],
-  peerDiscovery: [
-    webRtc.discovery
-  ],
-  streamMuxers: [
-    yamux(),
-    mplex()
-  ],
-  connectionEncryption: [
-    noise()
   ]
 })
 ```
@@ -894,30 +863,25 @@ const node = await createLibp2p({
 
 #### Customizing Transports
 
-Some Transports can be passed additional options when they are created. For example, `libp2p-webrtc-star` accepts an optional, custom `wrtc` implementation. In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
+Some Transports can be passed additional options when they are created. For example, [webRTC](../packages/transport-webrtc) accepts optional [DataChannel Options](https://github.com/libp2p/js-libp2p/blob/master/packages/transport-webrtc/src/stream.ts#L13-L17). In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { webRTCStar } from '@libp2p/webrtc-star'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import wrtc from 'wrtc'
+import { webRTC } from '@libp2p/webrtc'
 
-const webRTC = webRTCStar({
-  wrtc
-})
 
 const node = await createLibp2p({
   transports: [
-    webRTC.transport
-  ],
-  peerDiscovery: [
-    webRTC.discovery
+    webRTC({
+      dataChannel: {
+        maxMessageSize: 10
+      }
+    })
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncryption: [
     noise()
@@ -925,35 +889,30 @@ const node = await createLibp2p({
 })
 ```
 
-During Libp2p startup, transport listeners will be created for the configured listen multiaddrs.  Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) transport listener supports the configuration of its underlying [simple-peer](https://github.com/feross/simple-peer) ice server(STUN/TURN) config as follows:
+During Libp2p startup, transport listeners will be created for the configured listen multiaddrs.  Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [webRTC](../packages/transport-webrtc) transport listener supports the configuration of ice servers (STUN/TURN) config as follows:
 
 ```js
-const webRTC = webRTCStar({
-  listenerOptions: {
-    config: {
-      iceServers: [
-        {"urls": ["turn:YOUR.TURN.SERVER:3478"], "username": "YOUR.USER", "credential": "YOUR.PASSWORD"},
-        {"urls": ["stun:YOUR.STUN.SERVER:3478"], "username": "", "credential": ""}]
-    }
-  }
-})
-
 const node = await createLibp2p({
   transports: [
-    webRTC.transport
-  ],
-  peerDiscovery: [
-    webRTC.discovery
+    webRTC({
+      rtcConfiguration: {
+        iceServers:[{
+          urls: [
+            'stun:stun.l.google.com:19302',
+            'stun:global.stun.twilio.com:3478'
+          ]
+        }]
+    }
+})
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncryption: [
     noise()
   ],
   addresses: {
-    listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star'] // your webrtc dns multiaddr
+    listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc'] // your webrtc dns multiaddr
   }
 })
 ```

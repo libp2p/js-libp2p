@@ -1,32 +1,20 @@
-import { createLibp2p } from 'libp2p'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p/identify'
-import { kadDHT } from '@libp2p/kad-dht'
-import { webSockets } from '@libp2p/websockets'
-import { webTransport } from '@libp2p/webtransport'
-import { webRTCDirect, webRTC } from '@libp2p/webrtc'
 import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { bootstrap } from '@libp2p/bootstrap'
+import { kadDHT } from '@libp2p/kad-dht'
+import { webSockets } from '@libp2p/websockets'
+import { createLibp2p } from 'libp2p'
+import { identifyService } from 'libp2p/identify'
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node
   const libp2p = await createLibp2p({
     // transports allow us to dial peers that support certain types of addresses
     transports: [
-      webSockets(),
-      webTransport(),
-      webRTC(),
-      webRTCDirect(),
-      circuitRelayTransport({
-        // use content routing to find a circuit relay server we can reserve a
-        // slot on
-        discoverRelays: 1
-      })
+      webSockets()
     ],
     connectionEncryption: [noise()],
-    streamMuxers: [yamux(), mplex()],
+    streamMuxers: [yamux()],
     peerDiscovery: [
       bootstrap({
         list: [

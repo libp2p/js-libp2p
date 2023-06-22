@@ -18,9 +18,15 @@ Let us know if you find any issues, or if you want to contribute and add a new t
 
 ## Other examples
 
-- [Running libp2p in the Browser](./libp2p-in-the-browser)
 - Running libp2p in the Electron (future)
 - [The standard echo net example with libp2p](./echo)
 - [A simple chat app with libp2p](./chat)
 
-For go-libp2p examples, check out https://github.com/libp2p/go-libp2p-examples#examples-and-tutorials
+## libp2p in the Browser
+There are a number of ways libp2p can be used in the browser. Here are some examples:
+
+- [webRTC](../packages/transport-webrtc/examples)
+- [websockets](../packages/transport-websockets/examples)
+- [webtransport](../packages/transport-webtransport/examples)
+
+There is also an tutorial of how all of these transports can be [universally connected](https://github.com/libp2p/universal-connectivity/tree/main)
