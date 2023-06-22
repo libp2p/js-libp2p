@@ -23,7 +23,7 @@ import {
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
 } from './consts.js'
 import { Identify } from './pb/message.js'
-import type { IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
+import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { EventEmitter } from '@libp2p/interface/events'
@@ -50,10 +50,10 @@ const defaultValues = {
   maxPushOutgoingStreams: 1,
   maxObservedAddresses: 10,
   maxIdentifyMessageSize: 8192,
-  autodialOnConnectionOpen: true
+  runOnConnectionOpen: true
 }
 
-export class DefaultIdentifyService implements Startable {
+export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly identifyProtocolStr: string
   private readonly identifyPushProtocolStr: string
   public readonly host: {
@@ -101,7 +101,7 @@ export class DefaultIdentifyService implements Startable {
       agentVersion: init.agentVersion ?? defaultValues.agentVersion
     }
 
-    if (init.autodialOnConnectionOpen ?? defaultValues.autodialOnConnectionOpen) {
+    if (init.runOnConnectionOpen ?? defaultValues.runOnConnectionOpen) {
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail

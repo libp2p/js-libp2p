@@ -33,6 +33,7 @@ import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import { AGENT_VERSION } from '../../src/identify/consts.js'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')
 const relayMultiaddr = multiaddr(process.env.RELAY_MULTIADDR)
@@ -398,6 +399,57 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     await identifySpy.firstCall.returnValue
 
     expect(peerStorePatchSpy.callCount).to.equal(1)
+
+    await libp2p.stop()
+  })
+
+    it('should not run identify automatically after connecting', async () => {
+      libp2p = await createLibp2p({
+        peerId,
+        transports: [
+          webSockets({
+            filter: filters.all
+          })
+        ],
+        streamMuxers: [
+          yamux(),
+        ],
+        connectionEncryption: [
+          plaintext()
+        ],
+        services: {
+          identify: identifyService({
+            protocolPrefix: 'ipfs',
+            agentVersion: AGENT_VERSION,
+            timeout: 60000,
+            maxInboundStreams: 1,
+            maxOutboundStreams: 1,
+            maxPushIncomingStreams: 1,
+            maxPushOutgoingStreams: 1,
+            maxObservedAddresses: 10,
+            maxIdentifyMessageSize: 8192,
+            runOnConnectionOpen: false
+          })
+        },
+        connectionGater: mockConnectionGater()
+    })
+
+    if (libp2p.services.identify == null) {
+      throw new Error('Identify service missing')
+    }
+
+    const identifySpy = sinon.spy(libp2p.services.identify as DefaultIdentifyService, 'identify')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
+
+    await libp2p.start()
+
+    const connection = await libp2p.dial(relayMultiaddr)
+    expect(connection).to.exist()
+
+    // Wait for connection event to be emitted
+    await connectionPromise
+
+    expect(identifySpy.callCount).to.equal(0)
 
     await libp2p.stop()
   })

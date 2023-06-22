@@ -4,10 +4,11 @@ import {
 } from './consts.js'
 import { DefaultIdentifyService } from './identify.js'
 import { Identify } from './pb/message.js'
-import type { Libp2pEvents } from '@libp2p/interface'
+import type { AbortOptions, IdentifyResult, Libp2pEvents } from '@libp2p/interface'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Connection } from '@libp2p/interface/src/connection/index.js'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
@@ -43,7 +44,7 @@ export interface IdentifyServiceInit {
   /**
    * Whether to automatically dial identify on newly opened connections (default: true)
    */
-  autodialOnConnectionOpen?: boolean
+  runOnConnectionOpen?: boolean
 }
 
 export interface IdentifyServiceComponents {
@@ -64,6 +65,22 @@ export const multicodecs = {
 }
 
 export const Message = { Identify }
+
+export interface IdentifyService {
+  /**
+   * due to the default limits on inbound/outbound streams for this protocol,
+   * invoking this method when runOnConnectionOpen is true can lead to unpredictable results
+   * as streams may be closed by the local or the remote node.
+   * Please use with caution. If you find yourself needing to call this method to discover other peers that support your protocol,
+   * you may be better off configuring a topology to be notified instead.
+   *
+   * @param connection
+   * @param options
+   * @returns
+   */
+  identify: (connection: Connection, options: AbortOptions) => Promise<IdentifyResult>
+
+}
 
 export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
   return (components) => new DefaultIdentifyService(components, init)
