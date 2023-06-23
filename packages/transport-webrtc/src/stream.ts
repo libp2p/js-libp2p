@@ -6,7 +6,7 @@ import { type Pushable, pushable } from 'it-pushable'
 import { pEvent, TimeoutError } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
-import type { Direction, Stream } from '@libp2p/interface/connection'
+import type { Direction, RawStream } from '@libp2p/interface/connection'
 
 const log = logger('libp2p:webrtc:stream')
 
@@ -79,8 +79,8 @@ class WebRTCStream extends AbstractStream {
 
       case 'closed':
       case 'closing':
-        if (this.stat.timeline.close === undefined || this.stat.timeline.close === 0) {
-          this.stat.timeline.close = Date.now()
+        if (this.timeline.close === undefined || this.timeline.close === 0) {
+          this.timeline.close = Date.now()
         }
         break
       case 'connecting':
@@ -94,7 +94,7 @@ class WebRTCStream extends AbstractStream {
 
     // handle RTCDataChannel events
     this.channel.onopen = (_evt) => {
-      this.stat.timeline.open = new Date().getTime()
+      this.timeline.open = new Date().getTime()
 
       if (this.messageQueue != null) {
         // send any queued messages
@@ -106,8 +106,8 @@ class WebRTCStream extends AbstractStream {
       }
     }
 
-    this.channel.onclose = (_evt) => {
-      this.close()
+    this.channel.onclose = async (_evt) => {
+      await this.close()
     }
 
     this.channel.onerror = (evt) => {
@@ -131,7 +131,7 @@ class WebRTCStream extends AbstractStream {
     // surface data from the `Message.message` field through a source.
     Promise.resolve().then(async () => {
       for await (const buf of lengthPrefixed.decode(this.incomingData)) {
-        const message = self.processIncomingProtobuf(buf.subarray())
+        const message = await self.processIncomingProtobuf(buf.subarray())
 
         if (message != null) {
           self.sourcePush(new Uint8ArrayList(message))
@@ -205,7 +205,7 @@ class WebRTCStream extends AbstractStream {
   /**
    * Handle incoming
    */
-  private processIncomingProtobuf (buffer: Uint8Array): Uint8Array | undefined {
+  private async processIncomingProtobuf (buffer: Uint8Array): Promise<Uint8Array | undefined> {
     const message = Message.decode(buffer)
 
     if (message.flag !== undefined) {
@@ -222,7 +222,7 @@ class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.STOP_SENDING) {
         // The remote has stopped reading
-        this.closeWrite()
+        await this.closeWrite()
       }
     }
 
@@ -259,7 +259,7 @@ export interface WebRTCStreamOptions {
   onEnd?: (err?: Error | undefined) => void
 }
 
-export function createStream (options: WebRTCStreamOptions): Stream {
+export function createStream (options: WebRTCStreamOptions): RawStream {
   const { channel, direction, onEnd, dataChannelOptions } = options
 
   return new WebRTCStream({

@@ -2,13 +2,12 @@
 
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { readableStreamFromArray, writeableStreamToArray } from '@libp2p/utils/stream'
 import { webSockets } from '@libp2p/websockets'
 import * as filter from '@libp2p/websockets/filters'
 import { WebRTC } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
 import { createLibp2p } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
@@ -65,10 +64,7 @@ describe('basics', () => {
     }
 
     await remoteNode.handle(echo, ({ stream }) => {
-      void pipe(
-        stream,
-        stream
-      )
+      void stream.readable.pipeTo(stream.writable)
     })
 
     const connection = await localNode.dial(remoteAddr)
@@ -103,15 +99,14 @@ describe('basics', () => {
 
     // send and receive some data
     const input = new Array(5).fill(0).map(() => new Uint8Array(10))
-    const output = await pipe(
-      input,
-      stream,
-      (source) => map(source, list => list.subarray()),
-      async (source) => toBuffer(source)
-    )
+    const output: Uint8Array[] = []
+
+    await readableStreamFromArray(input)
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(output))
 
     // asset that we got the right data
-    expect(output).to.equalBytes(toBuffer(input))
+    expect(toBuffer(output)).to.equalBytes(toBuffer(input))
   })
 
   it('can send a large file', async () => {
@@ -122,12 +117,11 @@ describe('basics', () => {
 
     // send and receive some data
     const input = new Array(5).fill(0).map(() => new Uint8Array(1024 * 1024))
-    const output = await pipe(
-      input,
-      stream,
-      (source) => map(source, list => list.subarray()),
-      async (source) => toBuffer(source)
-    )
+    const output: Uint8Array[] = []
+
+    await readableStreamFromArray(input)
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(output))
 
     // asset that we got the right data
     expect(output).to.equalBytes(toBuffer(input))

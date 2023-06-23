@@ -1,6 +1,5 @@
+import { readableStreamFromGenerator, writeableStreamToArray, writeableStreamToDrain } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import drain from 'it-drain'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import pLimit from 'p-limit'
@@ -16,12 +15,8 @@ export default async (createMuxer: (init?: StreamMuxerInit) => Promise<StreamMux
   const listener = await createMuxer({
     direction: 'inbound',
     onIncomingStream: (stream) => {
-      void pipe(
-        stream,
-        drain
-      ).then(() => {
-        stream.close()
-      })
+      void stream.readable.pipeTo(writeableStreamToDrain())
+        .then(async () => stream.close())
     }
   })
   const dialer = await createMuxer({ direction: 'outbound' })
@@ -33,15 +28,15 @@ export default async (createMuxer: (init?: StreamMuxerInit) => Promise<StreamMux
     const stream = await dialer.newStream()
     expect(stream).to.exist // eslint-disable-line
 
-    const res = await pipe(
-      (async function * () {
-        for (let i = 0; i < nMsg; i++) {
-          yield msg
-        }
-      }()),
-      stream,
-      async (source) => all(source)
-    )
+    const res: Uint8Array[] = []
+
+    await readableStreamFromGenerator((async function * () {
+      for (let i = 0; i < nMsg; i++) {
+        yield * msg
+      }
+    }()))
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(res))
 
     expect(res).to.be.eql([])
   }

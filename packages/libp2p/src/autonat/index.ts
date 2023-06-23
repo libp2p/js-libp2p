@@ -2,14 +2,11 @@ import { setMaxListeners } from 'events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { pbStream } from '@libp2p/utils/stream'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { abortableDuplex } from 'abortable-iterator'
 import { anySignal } from 'any-signal'
-import first from 'it-first'
-import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import parallel from 'it-parallel'
-import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
 import {
   MAX_INBOUND_STREAMS,
@@ -145,228 +142,194 @@ class DefaultAutoNATService implements Startable {
     const ourHosts = this.components.addressManager.getAddresses()
       .map(ma => ma.toOptions().host)
 
+    const pb = pbStream(data.stream).pb(Message)
+
     try {
-      const source = abortableDuplex(data.stream, signal)
-      const self = this
+      const request: Message = await pb.read()
+      const dialRequest = request.dial
 
-      await pipe(
-        source,
-        (source) => lp.decode(source),
-        async function * (stream) {
-          const buf = await first(stream)
+      if (dialRequest == null) {
+        log.error('dial was missing from message')
 
-          if (buf == null) {
-            log('no message received')
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'No message was sent'
-              }
-            })
+        await pb.write({
+          type: Message.MessageType.DIAL_RESPONSE,
+          dialResponse: {
+            status: Message.ResponseStatus.E_BAD_REQUEST,
+            statusText: 'No Dial message found in message'
+          }
+        })
 
-            return
+        return
+      }
+
+      let peerId: PeerId
+      const peer = dialRequest.peer
+
+      if (peer == null || peer.id == null) {
+        log.error('PeerId missing from message')
+
+        await pb.write({
+          type: Message.MessageType.DIAL_RESPONSE,
+          dialResponse: {
+            status: Message.ResponseStatus.E_BAD_REQUEST,
+            statusText: 'missing peer info'
+          }
+        })
+
+        return
+      }
+
+      try {
+        peerId = peerIdFromBytes(peer.id)
+      } catch (err) {
+        log.error('invalid PeerId', err)
+
+        await pb.write({
+          type: Message.MessageType.DIAL_RESPONSE,
+          dialResponse: {
+            status: Message.ResponseStatus.E_BAD_REQUEST,
+            statusText: 'bad peer id'
+          }
+        })
+
+        return
+      }
+
+      log('incoming request from %p', peerId)
+
+      // reject any dial requests that arrive via relays
+      if (!data.connection.remotePeer.equals(peerId)) {
+        log('target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
+
+        await pb.write({
+          type: Message.MessageType.DIAL_RESPONSE,
+          dialResponse: {
+            status: Message.ResponseStatus.E_BAD_REQUEST,
+            statusText: 'peer id mismatch'
+          }
+        })
+
+        return
+      }
+
+      // get a list of multiaddrs to dial
+      const multiaddrs = peer.addrs
+        .map(buf => multiaddr(buf))
+        .filter(ma => {
+          const isFromSameHost = ma.toOptions().host === data.connection.remoteAddr.toOptions().host
+
+          log.trace('request to dial %s was sent from %s is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
+          // skip any Multiaddrs where the target node's IP does not match the sending node's IP
+          return isFromSameHost
+        })
+        .filter(ma => {
+          const host = ma.toOptions().host
+          const isPublicIp = !(isPrivateIp(host) ?? false)
+
+          log.trace('host %s was public %s', host, isPublicIp)
+          // don't try to dial private addresses
+          return isPublicIp
+        })
+        .filter(ma => {
+          const host = ma.toOptions().host
+          const isNotOurHost = !ourHosts.includes(host)
+
+          log.trace('host %s was not our host %s', host, isNotOurHost)
+          // don't try to dial nodes on the same host as us
+          return isNotOurHost
+        })
+        .filter(ma => {
+          const isSupportedTransport = Boolean(this.components.transportManager.transportForMultiaddr(ma))
+
+          log.trace('transport for %s is supported %s', ma, isSupportedTransport)
+          // skip any Multiaddrs that have transports we do not support
+          return isSupportedTransport
+        })
+        .map(ma => {
+          if (ma.getPeerId() == null) {
+            // make sure we have the PeerId as part of the Multiaddr
+            ma = ma.encapsulate(`/p2p/${peerId.toString()}`)
           }
 
-          let request: Message
+          return ma
+        })
 
-          try {
-            request = Message.decode(buf)
-          } catch (err) {
-            log.error('could not decode message', err)
+      // make sure we have something to dial
+      if (multiaddrs.length === 0) {
+        log('no valid multiaddrs for %p in message', peerId)
 
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'Could not decode message'
-              }
-            })
+        await pb.write({
+          type: Message.MessageType.DIAL_RESPONSE,
+          dialResponse: {
+            status: Message.ResponseStatus.E_DIAL_REFUSED,
+            statusText: 'no dialable addresses'
+          }
+        })
 
-            return
+        return
+      }
+
+      log('dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
+
+      let errorMessage = ''
+      let lastMultiaddr = multiaddrs[0]
+
+      for await (const multiaddr of multiaddrs) {
+        let connection: Connection | undefined
+        lastMultiaddr = multiaddr
+
+        try {
+          connection = await this.components.connectionManager.openConnection(multiaddr, {
+            signal
+          })
+
+          if (!connection.remoteAddr.equals(multiaddr)) {
+            log.error('tried to dial %s but dialed %s', multiaddr, connection.remoteAddr)
+            throw new Error('Unexpected remote address')
           }
 
-          const dialRequest = request.dial
+          log('Success %p', peerId)
 
-          if (dialRequest == null) {
-            log.error('dial was missing from message')
-
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'No Dial message found in message'
-              }
-            })
-
-            return
-          }
-
-          let peerId: PeerId
-          const peer = dialRequest.peer
-
-          if (peer == null || peer.id == null) {
-            log.error('PeerId missing from message')
-
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'missing peer info'
-              }
-            })
-
-            return
-          }
-
-          try {
-            peerId = peerIdFromBytes(peer.id)
-          } catch (err) {
-            log.error('invalid PeerId', err)
-
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'bad peer id'
-              }
-            })
-
-            return
-          }
-
-          log('incoming request from %p', peerId)
-
-          // reject any dial requests that arrive via relays
-          if (!data.connection.remotePeer.equals(peerId)) {
-            log('target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
-
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'peer id mismatch'
-              }
-            })
-
-            return
-          }
-
-          // get a list of multiaddrs to dial
-          const multiaddrs = peer.addrs
-            .map(buf => multiaddr(buf))
-            .filter(ma => {
-              const isFromSameHost = ma.toOptions().host === data.connection.remoteAddr.toOptions().host
-
-              log.trace('request to dial %s was sent from %s is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
-              // skip any Multiaddrs where the target node's IP does not match the sending node's IP
-              return isFromSameHost
-            })
-            .filter(ma => {
-              const host = ma.toOptions().host
-              const isPublicIp = !(isPrivateIp(host) ?? false)
-
-              log.trace('host %s was public %s', host, isPublicIp)
-              // don't try to dial private addresses
-              return isPublicIp
-            })
-            .filter(ma => {
-              const host = ma.toOptions().host
-              const isNotOurHost = !ourHosts.includes(host)
-
-              log.trace('host %s was not our host %s', host, isNotOurHost)
-              // don't try to dial nodes on the same host as us
-              return isNotOurHost
-            })
-            .filter(ma => {
-              const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
-
-              log.trace('transport for %s is supported %s', ma, isSupportedTransport)
-              // skip any Multiaddrs that have transports we do not support
-              return isSupportedTransport
-            })
-            .map(ma => {
-              if (ma.getPeerId() == null) {
-                // make sure we have the PeerId as part of the Multiaddr
-                ma = ma.encapsulate(`/p2p/${peerId.toString()}`)
-              }
-
-              return ma
-            })
-
-          // make sure we have something to dial
-          if (multiaddrs.length === 0) {
-            log('no valid multiaddrs for %p in message', peerId)
-
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_DIAL_REFUSED,
-                statusText: 'no dialable addresses'
-              }
-            })
-
-            return
-          }
-
-          log('dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
-
-          let errorMessage = ''
-          let lastMultiaddr = multiaddrs[0]
-
-          for await (const multiaddr of multiaddrs) {
-            let connection: Connection | undefined
-            lastMultiaddr = multiaddr
-
-            try {
-              connection = await self.components.connectionManager.openConnection(multiaddr, {
-                signal
-              })
-
-              if (!connection.remoteAddr.equals(multiaddr)) {
-                log.error('tried to dial %s but dialed %s', multiaddr, connection.remoteAddr)
-                throw new Error('Unexpected remote address')
-              }
-
-              log('Success %p', peerId)
-
-              yield Message.encode({
-                type: Message.MessageType.DIAL_RESPONSE,
-                dialResponse: {
-                  status: Message.ResponseStatus.OK,
-                  addr: connection.remoteAddr.decapsulateCode(protocols('p2p').code).bytes
-                }
-              })
-
-              return
-            } catch (err: any) {
-              log('could not dial %p', peerId, err)
-              errorMessage = err.message
-            } finally {
-              if (connection != null) {
-                await connection.close()
-              }
-            }
-          }
-
-          yield Message.encode({
+          await pb.write({
             type: Message.MessageType.DIAL_RESPONSE,
             dialResponse: {
-              status: Message.ResponseStatus.E_DIAL_ERROR,
-              statusText: errorMessage,
-              addr: lastMultiaddr.bytes
+              status: Message.ResponseStatus.OK,
+              addr: connection.remoteAddr.decapsulateCode(protocols('p2p').code).bytes
             }
           })
-        },
-        (source) => lp.encode(source),
-        // pipe to the stream, not the abortable source other wise we
-        // can't tell the remote when a dial timed out..
-        data.stream
-      )
-    } catch (err) {
+
+          return
+        } catch (err: any) {
+          log('could not dial %p', peerId, err)
+          errorMessage = err.message
+        } finally {
+          if (connection != null) {
+            await connection.close()
+          }
+        }
+      }
+
+      await pb.write({
+        type: Message.MessageType.DIAL_RESPONSE,
+        dialResponse: {
+          status: Message.ResponseStatus.E_DIAL_ERROR,
+          statusText: errorMessage,
+          addr: lastMultiaddr.bytes
+        }
+      })
+    } catch (err: any) {
       log.error('error handling incoming autonat stream', err)
+      await pb.write({
+        type: Message.MessageType.DIAL_RESPONSE,
+        dialResponse: {
+          status: Message.ResponseStatus.E_BAD_REQUEST,
+          statusText: err.message
+        }
+      })
+      pb.unwrap().unwrap().abort(err)
     } finally {
       signal.clear()
+      await pb.unwrap().unwrap().close()
     }
   }
 
@@ -418,15 +381,6 @@ class DefaultAutoNATService implements Startable {
     try {
       log('verify multiaddrs %s', multiaddrs.map(ma => ma.toString()).join(', '))
 
-      const request = Message.encode({
-        type: Message.MessageType.DIAL,
-        dial: {
-          peer: {
-            id: this.components.peerId.toBytes(),
-            addrs: multiaddrs.map(map => map.bytes)
-          }
-        }
-      })
       // find some random peers
       const randomPeer = await createEd25519PeerId()
       const randomCid = randomPeer.toBytes()
@@ -445,20 +399,19 @@ class DefaultAutoNATService implements Startable {
           const stream = await connection.newStream(this.protocol, {
             signal
           })
-          const source = abortableDuplex(stream, signal)
 
-          const buf = await pipe(
-            [request],
-            (source) => lp.encode(source),
-            source,
-            (source) => lp.decode(source),
-            async (stream) => first(stream)
-          )
-          if (buf == null) {
-            log('no response received from %p', connection.remotePeer)
-            return undefined
-          }
-          const response = Message.decode(buf)
+          const pb = pbStream(stream).pb(Message)
+          await pb.write({
+            type: Message.MessageType.DIAL,
+            dial: {
+              peer: {
+                id: this.components.peerId.toBytes(),
+                addrs: multiaddrs.map(map => map.bytes)
+              }
+            }
+          }, { signal })
+
+          const response = await pb.read({ signal })
 
           if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
             log('invalid autonat response from %p', connection.remotePeer)

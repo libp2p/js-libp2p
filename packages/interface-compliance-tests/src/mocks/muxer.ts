@@ -1,7 +1,6 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { AbstractStream } from '@libp2p/interface/stream-muxer/stream'
 import { type Logger, logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import map from 'it-map'
 import * as ndjson from 'it-ndjson'
 import { pipe } from 'it-pipe'
@@ -9,7 +8,8 @@ import { type Pushable, pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Stream } from '@libp2p/interface/connection'
+import type { AbortOptions } from '@libp2p/interface'
+import type { RawStream, Stream } from '@libp2p/interface/connection'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
 import type { Source } from 'it-stream-types'
 
@@ -30,9 +30,15 @@ interface ResetMessage {
   direction: 'initiator' | 'recipient'
 }
 
-interface CloseMessage {
+interface CloseWriteMessage {
   id: string
-  type: 'close'
+  type: 'close-write'
+  direction: 'initiator' | 'recipient'
+}
+
+interface CloseReadMessage {
+  id: string
+  type: 'close-read'
   direction: 'initiator' | 'recipient'
 }
 
@@ -42,223 +48,88 @@ interface CreateMessage {
   direction: 'initiator'
 }
 
-type StreamMessage = DataMessage | ResetMessage | CloseMessage | CreateMessage
+type StreamMessage = DataMessage | ResetMessage | CloseWriteMessage | CloseReadMessage | CreateMessage
 
-class MuxedStream {
-  public id: string
-  public input: Pushable<Uint8ArrayList>
-  public stream: Stream
-  public type: 'initiator' | 'recipient'
-
-  private sinkEnded: boolean
-  private sourceEnded: boolean
-  private readonly abortController: AbortController
-  private readonly resetController: AbortController
-  private readonly closeController: AbortController
-  private readonly log: Logger
+class MuxedStream extends AbstractStream {
+  public readonly type: 'initiator' | 'recipient'
+  public readonly pushable: Pushable<StreamMessage>
 
   constructor (init: { id: string, type: 'initiator' | 'recipient', push: Pushable<StreamMessage>, onEnd: (err?: Error) => void }) {
     const { id, type, push, onEnd } = init
 
-    this.log = logger(`libp2p:mock-muxer:stream:${id}:${type}`)
-
-    this.id = id
-    this.type = type
-    this.abortController = new AbortController()
-    this.resetController = new AbortController()
-    this.closeController = new AbortController()
-
-    this.sourceEnded = false
-    this.sinkEnded = false
-
-    let endErr: Error | undefined
-
-    const onSourceEnd = (err?: Error): void => {
-      if (this.sourceEnded) {
-        return
-      }
-
-      this.log('onSourceEnd sink ended? %s', this.sinkEnded)
-
-      this.sourceEnded = true
-
-      if (err != null && endErr == null) {
-        endErr = err
-      }
-
-      if (this.sinkEnded) {
-        this.stream.stat.timeline.close = Date.now()
-
-        if (onEnd != null) {
-          onEnd(endErr)
-        }
-      }
-    }
-
-    const onSinkEnd = (err?: Error): void => {
-      if (this.sinkEnded) {
-        return
-      }
-
-      this.log('onSinkEnd source ended? %s', this.sourceEnded)
-
-      this.sinkEnded = true
-
-      if (err != null && endErr == null) {
-        endErr = err
-      }
-
-      if (this.sourceEnded) {
-        this.stream.stat.timeline.close = Date.now()
-
-        if (onEnd != null) {
-          onEnd(endErr)
-        }
-      }
-    }
-
-    this.input = pushable({
-      onEnd: onSourceEnd
+    super({
+      id,
+      direction: type === 'initiator' ? 'outbound' : 'inbound',
+      maxDataSize: MAX_MESSAGE_SIZE,
+      onEnd
     })
 
-    this.stream = {
-      id,
-      sink: async (source) => {
-        if (this.sinkEnded) {
-          throw new CodeError('stream closed for writing', 'ERR_SINK_ENDED')
-        }
+    this.type = type
+    this.pushable = push
+  }
 
-        const signal = anySignal([
-          this.abortController.signal,
-          this.resetController.signal,
-          this.closeController.signal
-        ])
-
-        source = abortableSource(source, signal)
-
-        try {
-          if (this.type === 'initiator') {
-            // If initiator, open a new stream
-            const createMsg: CreateMessage = {
-              id: this.id,
-              type: 'create',
-              direction: this.type
-            }
-            push.push(createMsg)
-          }
-
-          const list = new Uint8ArrayList()
-
-          for await (const chunk of source) {
-            list.append(chunk)
-
-            while (list.length > 0) {
-              const available = Math.min(list.length, MAX_MESSAGE_SIZE)
-              const dataMsg: DataMessage = {
-                id,
-                type: 'data',
-                chunk: uint8ArrayToString(list.subarray(0, available), 'base64pad'),
-                direction: this.type
-              }
-
-              push.push(dataMsg)
-              list.consume(available)
-            }
-          }
-        } catch (err: any) {
-          if (err.type === 'aborted' && err.message === 'The operation was aborted') {
-            if (this.closeController.signal.aborted) {
-              return
-            }
-
-            if (this.resetController.signal.aborted) {
-              err.message = 'stream reset'
-              err.code = 'ERR_STREAM_RESET'
-            }
-
-            if (this.abortController.signal.aborted) {
-              err.message = 'stream aborted'
-              err.code = 'ERR_STREAM_ABORT'
-            }
-          }
-
-          // Send no more data if this stream was remotely reset
-          if (err.code !== 'ERR_STREAM_RESET') {
-            const resetMsg: ResetMessage = {
-              id,
-              type: 'reset',
-              direction: this.type
-            }
-            push.push(resetMsg)
-          }
-
-          this.log('sink erred', err)
-
-          this.input.end(err)
-          onSinkEnd(err)
-          return
-        } finally {
-          signal.clear()
-        }
-
-        this.log('sink ended')
-
-        onSinkEnd()
-
-        const closeMsg: CloseMessage = {
-          id,
-          type: 'close',
-          direction: this.type
-        }
-        push.push(closeMsg)
-      },
-      source: this.input,
-
-      // Close for reading
-      close: () => {
-        this.stream.closeRead()
-        this.stream.closeWrite()
-      },
-
-      closeRead: () => {
-        this.input.end()
-      },
-
-      closeWrite: () => {
-        this.closeController.abort()
-
-        const closeMsg: CloseMessage = {
-          id,
-          type: 'close',
-          direction: this.type
-        }
-        push.push(closeMsg)
-        onSinkEnd()
-      },
-
-      // Close for reading and writing (local error)
-      abort: (err: Error) => {
-        // End the source with the passed error
-        this.input.end(err)
-        this.abortController.abort()
-        onSinkEnd(err)
-      },
-
-      // Close immediately for reading and writing (remote error)
-      reset: () => {
-        const err = new CodeError('stream reset', 'ERR_STREAM_RESET')
-        this.resetController.abort()
-        this.input.end(err)
-        onSinkEnd(err)
-      },
-      stat: {
-        direction: type === 'initiator' ? 'outbound' : 'inbound',
-        timeline: {
-          open: Date.now()
-        }
-      },
-      metadata: {}
+  /**
+   * Send a message to the remote muxer informing them a new stream is being
+   * opened
+   */
+  sendNewStream (): void | Promise<void> {
+    const createMsg: CreateMessage = {
+      id: this.id,
+      type: 'create',
+      direction: 'initiator'
     }
+    this.pushable.push(createMsg)
+  }
+
+  /**
+   * Send a data message to the remote muxer
+   */
+  sendData (buf: Uint8ArrayList): void | Promise<void> {
+    const dataMsg: DataMessage = {
+      id: this.id,
+      type: 'data',
+      chunk: uint8ArrayToString(buf.subarray(), 'base64pad'),
+      direction: this.type
+    }
+    this.pushable.push(dataMsg)
+  }
+
+  /**
+   * Send a reset message to the remote muxer
+   */
+  sendReset (): void | Promise<void> {
+    const resetMsg: ResetMessage = {
+      id: this.id,
+      type: 'reset',
+      direction: this.type
+    }
+    this.pushable.push(resetMsg)
+  }
+
+  /**
+   * Send a message to the remote muxer, informing them no more data messages
+   * will be sent by this end of the stream
+   */
+  sendCloseWrite (): void | Promise<void> {
+    const closeMsg: CloseWriteMessage = {
+      id: this.id,
+      type: 'close-write',
+      direction: this.type
+    }
+    this.pushable.push(closeMsg)
+  }
+
+  /**
+   * Send a message to the remote muxer, informing them no more data messages
+   * will be read by this end of the stream
+   */
+  sendCloseRead (): void | Promise<void> {
+    const closeMsg: CloseReadMessage = {
+      id: this.id,
+      type: 'close-read',
+      direction: this.type
+    }
+    this.pushable.push(closeMsg)
   }
 }
 
@@ -285,11 +156,7 @@ class MockMuxer implements StreamMuxer {
     this.options = init ?? { direction: 'inbound' }
     this.closeController = new AbortController()
     // receives data from the muxer at the other end of the stream
-    this.source = this.input = pushable({
-      onEnd: (err) => {
-        this.close(err)
-      }
-    })
+    this.source = this.input = pushable()
 
     // receives messages from all of the muxed streams
     this.streamInput = pushable<StreamMessage>({
@@ -306,6 +173,11 @@ class MockMuxer implements StreamMuxer {
         ndjson.parse<StreamMessage>,
         async (source) => {
           for await (const message of source) {
+            if (message.type == null) {
+              // garbage message received, some tests send invalid data
+              continue
+            }
+
             this.log.trace('-> %s %s %s', message.type, message.direction, message.id)
             this.handleMessage(message)
           }
@@ -313,10 +185,10 @@ class MockMuxer implements StreamMuxer {
       )
 
       this.log('muxed stream ended')
-      this.input.end()
+      await this.close()
     } catch (err: any) {
       this.log('muxed stream errored', err)
-      this.input.end(err)
+      this.abort(err)
     }
   }
 
@@ -331,10 +203,10 @@ class MockMuxer implements StreamMuxer {
       }
 
       muxedStream = this.createStream(message.id, 'recipient')
-      registry.set(muxedStream.stream.id, muxedStream)
+      registry.set(muxedStream.id, muxedStream)
 
       if (this.options.onIncomingStream != null) {
-        this.options.onIncomingStream(muxedStream.stream)
+        this.options.onIncomingStream(muxedStream)
       }
     }
 
@@ -347,31 +219,30 @@ class MockMuxer implements StreamMuxer {
     }
 
     if (message.type === 'data') {
-      muxedStream.input.push(new Uint8ArrayList(uint8ArrayFromString(message.chunk, 'base64pad')))
+      muxedStream.sourcePush(uint8ArrayFromString(message.chunk, 'base64pad'))
     } else if (message.type === 'reset') {
-      this.log('-> reset stream %s %s', muxedStream.type, muxedStream.stream.id)
-      muxedStream.stream.reset()
-    } else if (message.type === 'close') {
-      this.log('-> closing stream %s %s', muxedStream.type, muxedStream.stream.id)
-      muxedStream.stream.closeRead()
+      muxedStream.reset()
+    } else if (message.type === 'close-write') {
+      // the remote closed it's write end so gracefully close the read end here
+      // as no more messages will be received
+      muxedStream.closeRead()
     }
   }
 
-  get streams (): Stream[] {
+  get streams (): Array<RawStream | Stream> {
     return Array.from(this.registryRecipientStreams.values())
       .concat(Array.from(this.registryInitiatorStreams.values()))
-      .map(({ stream }) => stream)
   }
 
-  newStream (name?: string): Stream {
+  newStream (name?: string): RawStream {
     if (this.closeController.signal.aborted) {
       throw new Error('Muxer already closed')
     }
     this.log('newStream %s', name)
     const storedStream = this.createStream(name, 'initiator')
-    this.registryInitiatorStreams.set(storedStream.stream.id, storedStream)
+    this.registryInitiatorStreams.set(storedStream.id, storedStream)
 
-    return storedStream.stream
+    return storedStream
   }
 
   createStream (name?: string, type: 'initiator' | 'recipient' = 'initiator'): MuxedStream {
@@ -393,7 +264,7 @@ class MockMuxer implements StreamMuxer {
         }
 
         if (this.options.onStreamEnd != null) {
-          this.options.onStreamEnd(muxedStream.stream)
+          this.options.onStreamEnd(muxedStream)
         }
       }
     })
@@ -401,19 +272,32 @@ class MockMuxer implements StreamMuxer {
     return muxedStream
   }
 
-  close (err?: Error): void {
-    if (this.closeController.signal.aborted) return
+  async close (options?: AbortOptions): Promise<void> {
+    if (this.closeController.signal.aborted) {
+      return
+    }
+
     this.log('closing muxed streams')
 
-    if (err == null) {
-      this.streams.forEach(s => {
-        s.close()
-      })
-    } else {
-      this.streams.forEach(s => {
-        s.abort(err)
-      })
+    await Promise.all(
+      this.streams.map(async stream => stream.close())
+    )
+
+    this.closeController.abort()
+    this.input.end()
+  }
+
+  abort (err: Error): void {
+    if (this.closeController.signal.aborted) {
+      return
     }
+
+    this.log('aborting muxed streams')
+
+    this.streams.forEach(s => {
+      s.abort(err)
+    })
+
     this.closeController.abort()
     this.input.end(err)
   }

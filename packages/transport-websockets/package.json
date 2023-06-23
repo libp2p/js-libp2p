@@ -86,13 +86,7 @@
     "@libp2p/interface-compliance-tests": "^3.0.0",
     "aegir": "^39.0.10",
     "is-loopback-addr": "^2.0.1",
-    "it-all": "^3.0.1",
-    "it-drain": "^3.0.2",
-    "it-goodbye": "^4.0.1",
-    "it-pipe": "^3.0.1",
-    "it-stream-types": "^2.0.1",
     "p-wait-for": "^5.0.0",
-    "uint8arraylist": "^2.3.2",
     "uint8arrays": "^4.0.3"
   },
   "browser": {

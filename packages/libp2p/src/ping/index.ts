@@ -2,10 +2,8 @@ import { setMaxListeners } from 'events'
 import { randomBytes } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { abortableDuplex } from 'abortable-iterator'
+import { readableStreamFromArray, writeableStreamToArray } from '@libp2p/utils/stream'
 import { anySignal } from 'any-signal'
-import first from 'it-first'
-import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { codes } from '../errors.js'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
@@ -79,7 +77,7 @@ class DefaultPingService implements Startable, PingService {
   handleMessage (data: IncomingStreamData): void {
     const { stream } = data
 
-    void pipe(stream, stream)
+    void stream.readable.pipeTo(stream.writable)
       .catch(err => {
         log.error(err)
       })
@@ -111,25 +109,24 @@ class DefaultPingService implements Startable, PingService {
         signal
       })
 
-      // make stream abortable
-      const source = abortableDuplex(stream, signal)
+      const result: Uint8Array[] = []
 
-      const result = await pipe(
-        [data],
-        source,
-        async (source) => first(source)
-      )
+      await readableStreamFromArray([data])
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(result))
+
       const end = Date.now()
 
-      if (result == null || !uint8ArrayEquals(data, result.subarray())) {
+      if (result == null || !uint8ArrayEquals(data, result[0])) {
         throw new CodeError('Received wrong ping ack', codes.ERR_WRONG_PING_ACK)
       }
 
       return end - start
     } finally {
       if (stream != null) {
-        stream.close()
+        await stream.close()
       }
+
       signal.clear()
     }
   }

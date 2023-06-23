@@ -1,6 +1,5 @@
 import { type Logger, logger } from '@libp2p/logger'
-import * as lp from 'it-length-prefixed'
-import { pipe } from 'it-pipe'
+import { pbTransform } from '@libp2p/utils/stream'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
 import { FindNodeHandler, type FindNodeHandlerComponents } from './handlers/find-node.js'
@@ -88,25 +87,17 @@ export class RPC {
 
       const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
-      await pipe(
-        stream,
-        (source) => lp.decode(source),
-        async function * (source) {
-          for await (const msg of source) {
-            // handle the message
-            const desMessage = Message.deserialize(msg)
-            self.log('incoming %s from %p', desMessage.type, peerId)
-            const res = await self.handleMessage(peerId, desMessage)
+      await stream.readable
+        .pipeThrough(pbTransform(async (message) => {
+          self.log('incoming %s from %p', message.type, peerId)
+          const res = await self.handleMessage(peerId, message)
 
-            // Not all handlers will return a response
-            if (res != null) {
-              yield res.serialize()
-            }
+          // Not all handlers will return a response
+          if (res != null) {
+            return message
           }
-        },
-        (source) => lp.encode(source),
-        stream
-      )
+        }, Message))
+        .pipeTo(stream.writable)
     })
       .catch(err => {
         this.log.error(err)

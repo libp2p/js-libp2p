@@ -1,54 +1,51 @@
 import { logger } from '@libp2p/logger'
-import { abortableSource } from 'abortable-iterator'
+import { abortableReadable } from '@libp2p/utils/stream'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 import type { Limit } from './pb/index.js'
 import type { Stream } from '@libp2p/interface/connection'
-import type { Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit-relay:utils')
 
-async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
-  for await (const buf of source) {
-    const len = BigInt(buf.byteLength)
+function readableCount (readable: ReadableStream<Uint8Array>, limit: { remaining: bigint }): ReadableStream<Uint8Array> {
+  const reader = readable.getReader()
+  let read = 0n
 
-    if ((limit.remaining - len) < 0) {
-      // this is a safe downcast since len is guarantee to be in the range for a number
-      const remaining = Number(limit.remaining)
-      limit.remaining = 0n
-
+  return new ReadableStream({
+    pull: async (controller) => {
       try {
-        if (remaining !== 0) {
-          yield buf.subarray(0, remaining)
+        const result = await reader.read()
+
+        if (result.done) {
+          controller.close()
+          reader.releaseLock()
+          return
         }
-      } catch (err: any) {
-        log.error(err)
+
+        read += BigInt(result.value.byteLength)
+
+        if (read > limit.remaining) {
+          throw new Error('data limit exceeded')
+        }
+
+        controller.enqueue(result.value)
+      } catch (err) {
+        reader.releaseLock()
+        controller.error(err)
       }
-
-      throw new Error('data limit exceeded')
     }
-
-    limit.remaining -= len
-    yield buf
-  }
+  })
 }
 
 const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Required<Limit>): void => {
   function abortStreams (err: Error): void {
     src.abort(err)
     dst.abort(err)
-    clearTimeout(timeout)
   }
 
-  const abortController = new AbortController()
-  const signal = anySignal([abortSignal, abortController.signal])
-
-  const timeout = setTimeout(() => {
-    abortController.abort()
-  }, limit.duration)
+  const signal = anySignal([abortSignal, AbortSignal.timeout(limit.duration)])
 
   let srcDstFinished = false
   let dstSrcFinished = false
@@ -58,9 +55,7 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
   }
 
   queueMicrotask(() => {
-    void dst.sink(countStreamBytes(abortableSource(src.source, signal, {
-      abortMessage: 'duration limit exceeded'
-    }), dataLimit))
+    void readableCount(abortableReadable(src.readable, signal), dataLimit).pipeTo(dst.writable)
       .catch(err => {
         log.error('error while relaying streams src -> dst', err)
         abortStreams(err)
@@ -70,15 +65,12 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
 
         if (dstSrcFinished) {
           signal.clear()
-          clearTimeout(timeout)
         }
       })
   })
 
   queueMicrotask(() => {
-    void src.sink(countStreamBytes(abortableSource(dst.source, signal, {
-      abortMessage: 'duration limit exceeded'
-    }), dataLimit))
+    void readableCount(abortableReadable(dst.readable, signal), dataLimit).pipeTo(src.writable)
       .catch(err => {
         log.error('error while relaying streams dst -> src', err)
         abortStreams(err)
@@ -88,7 +80,6 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
 
         if (srcDstFinished) {
           signal.clear()
-          clearTimeout(timeout)
         }
       })
   })

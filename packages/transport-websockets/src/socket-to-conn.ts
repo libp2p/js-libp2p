@@ -55,6 +55,16 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
       } finally {
         maConn.timeline.close = Date.now()
       }
+    },
+
+    abort (err: Error) {
+      log('aborting connection to %a due to error', maConn.remoteAddr, err)
+
+      try {
+        stream.destroy()
+      } finally {
+        maConn.timeline.close = Date.now()
+      }
     }
   }
 

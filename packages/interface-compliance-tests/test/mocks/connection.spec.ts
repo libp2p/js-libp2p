@@ -1,5 +1,4 @@
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { pipe } from 'it-pipe'
 import tests from '../../src/connection/index.js'
 import { connectionPair } from '../../src/mocks/connection.js'
 import { mockRegistrar } from '../../src/mocks/registrar.js'
@@ -21,10 +20,7 @@ describe('mock connection compliance tests', () => {
       connections = connectionPair(componentsA, componentsB)
 
       await componentsB.registrar.handle('/echo/0.0.1', (data) => {
-        void pipe(
-          data.stream,
-          data.stream
-        )
+        void data.stream.readable.pipeTo(data.stream.writable)
       })
 
       return connections[0]

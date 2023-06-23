@@ -7,14 +7,11 @@ import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { pbStream, transformStreamEach, readableStreamFromGenerator, readableStreamFromArray, pbEncoderTransform, writeableStreamToDrain, lengthPrefixedEncoderTransform, transformMap } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
-import drain from 'it-drain'
-import * as lp from 'it-length-prefixed'
-import { pbStream } from 'it-pb-stream'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -143,7 +140,7 @@ describe('identify', () => {
         const { connection, stream } = data
         const peer = await remoteComponents.peerStore.get(remoteComponents.peerId)
 
-        const message = Message.Identify.encode({
+        const message = {
           protocolVersion: '123',
           agentVersion: '123',
           // send bad public key
@@ -152,14 +149,13 @@ describe('identify', () => {
           signedPeerRecord: peer.peerRecordEnvelope,
           observedAddr: connection.remoteAddr.bytes,
           protocols: []
-        })
+        }
 
-        await pipe(
-          [message],
-          (source) => lp.encode(source),
-          stream,
-          drain
-        )
+        await readableStreamFromArray([message])
+          .pipeThrough(pbEncoderTransform(Message.Identify))
+          .pipeThrough(lengthPrefixedEncoderTransform())
+          .pipeThrough(stream)
+          .pipeTo(writeableStreamToDrain())
       })
     })
 
@@ -202,19 +198,13 @@ describe('identify', () => {
     // replace existing handler with a really slow one
     await remoteComponents.registrar.unhandle(MULTICODEC_IDENTIFY)
     await remoteComponents.registrar.handle(MULTICODEC_IDENTIFY, ({ stream }) => {
-      void pipe(
-        stream,
-        async function * (source) {
-          // we receive no data in the identify protocol, we just send our data
-          await drain(source)
+      // we receive no data in the identify protocol, we just send our data
+      void readableStreamFromGenerator(async function * (): AsyncGenerator<Uint8Array, void, unknown> {
+        // longer than the timeout
+        await delay(1000)
 
-          // longer than the timeout
-          await delay(1000)
-
-          yield new Uint8Array()
-        },
-        stream
-      )
+        yield new Uint8Array()
+      }()).pipeTo(stream.writable)
     })
 
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
@@ -231,7 +221,7 @@ describe('identify', () => {
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
     const stream = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('stat.timeline.close')
+    expect(stream).to.have.nested.property('timeline.close')
   })
 
   it('should limit incoming identify message sizes', async () => {
@@ -252,12 +242,10 @@ describe('identify', () => {
       const data = new Uint8Array(1024)
 
       void Promise.resolve().then(async () => {
-        await pipe(
-          [data],
-          (source) => lp.encode(source),
-          stream,
-          async (source) => { await drain(source) }
-        )
+        await readableStreamFromArray([data])
+          .pipeThrough(lengthPrefixedEncoderTransform())
+          .pipeThrough(stream)
+          .pipeTo(writeableStreamToDrain())
 
         deferred.resolve()
       })
@@ -296,22 +284,27 @@ describe('identify', () => {
     // handle incoming identify requests and don't send anything
     await localComponents.registrar.handle('/ipfs/id/1.0.0', ({ stream }) => {
       const data = new Uint8Array(1024)
+      let index = 0
 
       void Promise.resolve().then(async () => {
-        await pipe(
-          [data],
-          (source) => lp.encode(source),
-          async (source) => {
-            await stream.sink(async function * () {
-              for await (const buf of source) {
-                // don't send all of the data, remote will expect another message
-                yield buf.slice(0, buf.length - 100)
-
+        void Promise.resolve().then(async () => {
+          await readableStreamFromArray([data, data])
+            .pipeThrough(lengthPrefixedEncoderTransform())
+            .pipeThrough(transformMap(async (buf) => {
+              // don't send all of the data, remote will expect another message
+              return buf.slice(0, buf.length - 100)
+            }))
+            .pipeThrough(transformStreamEach(async () => {
+              if (index === 1) {
                 // wait for longer than the timeout without sending any more data or closing the stream
                 await delay(500)
               }
-            }())
-          }
+
+              index++
+            }))
+            .pipeThrough(stream)
+            .pipeTo(writeableStreamToDrain())
+        }
         )
 
         deferred.resolve()
@@ -425,7 +418,7 @@ describe('identify', () => {
     remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
       const { stream } = data
       const pb = pbStream(stream)
-      pb.writePB(message, Identify)
+      await pb.write(message, Identify)
     }
 
     // Run identify
@@ -480,7 +473,7 @@ describe('identify', () => {
     remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
       const { stream } = data
       const pb = pbStream(stream)
-      pb.writePB(message, Identify)
+      void pb.write(message, Identify)
     }
 
     // Run identify

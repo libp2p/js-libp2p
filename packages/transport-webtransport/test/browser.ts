@@ -2,6 +2,7 @@
 /* eslint-env mocha */
 
 import { noise } from '@chainsafe/libp2p-noise'
+import { readableStreamFromGenerator, writeableStreamEach } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
@@ -44,29 +45,25 @@ describe('libp2p-webtransport', () => {
       const data = new Uint8Array(32)
       globalThis.crypto.getRandomValues(data)
 
-      const pong = new Promise<void>((resolve, reject) => {
-        (async () => {
-          for await (const chunk of stream.source) {
-            const v = chunk.subarray()
-            const byteMatches: boolean = v.every((byte: number, i: number) => byte === data[i])
-            if (byteMatches) {
-              resolve()
-            } else {
-              reject(new Error('Wrong pong'))
-            }
+      const pong = Promise.resolve().then(async () => {
+        await stream.readable.pipeTo(writeableStreamEach(buf => {
+          const byteMatches: boolean = buf.every((byte: number, i: number) => byte === data[i])
+
+          if (!byteMatches) {
+            throw new Error('Wrong pong')
           }
-        })().catch(reject)
+        }))
       })
 
       let res = -1
-      await stream.sink((async function * () {
+      await readableStreamFromGenerator(async function * () {
         yield data
         // Wait for the pong before we close the write side
         await pong
         res = Date.now() - now
-      })())
+      }()).pipeTo(stream.writable)
 
-      stream.close()
+      await stream.close()
 
       expect(res).to.be.greaterThan(-1)
     }
@@ -119,7 +116,7 @@ describe('libp2p-webtransport', () => {
 
     // the address is unreachable but we can parse it correctly
     const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
-    stream.close()
+    await stream.close()
 
     await node.stop()
   })
@@ -151,20 +148,20 @@ describe('libp2p-webtransport', () => {
     await node.start()
     const stream = await node.dialProtocol(ma, 'echo')
 
-    await stream.sink(gen())
+    await readableStreamFromGenerator(gen()).pipeTo(stream.writable)
 
     let expectedNextNumber = 0
-    for await (const chunk of stream.source) {
-      for (const byte of chunk.subarray()) {
+    await stream.readable.pipeTo(writeableStreamEach(buf => {
+      for (const byte of buf) {
         expect(byte).to.equal(expectedNextNumber++)
       }
-    }
+    }))
     expect(expectedNextNumber).to.equal(16)
 
     // Close read, we've should have closed the write side during sink
-    stream.closeRead()
+    await stream.readable.cancel()
 
-    expect(stream.stat.timeline.close).to.be.greaterThan(0)
+    expect(stream.timeline.close).to.be.greaterThan(0)
 
     await node.stop()
   })

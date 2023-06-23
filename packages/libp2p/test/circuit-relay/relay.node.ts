@@ -4,11 +4,11 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
+import { pbStream, readableStreamFromGenerator } from '@libp2p/utils/stream'
 import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { pbStream } from 'it-pb-stream'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -572,7 +572,7 @@ describe('circuit-relay', () => {
       const streams = local.getConnections(relay1.peerId)
         .map(conn => conn.streams)
         .flat()
-        .filter(stream => stream.stat.protocol === RELAY_V2_HOP_CODEC)
+        .filter(stream => stream.protocol === RELAY_V2_HOP_CODEC)
 
       expect(streams).to.be.empty()
     })
@@ -627,7 +627,7 @@ describe('circuit-relay', () => {
 
       const hopStream = pbStream(stream).pb(HopMessage)
 
-      hopStream.write({
+      await hopStream.write({
         type: HopMessage.Type.CONNECT,
         peer: {
           id: remote.peerId.toBytes(),
@@ -776,9 +776,11 @@ describe('circuit-relay', () => {
       await remote.handle(protocol, ({ stream }) => {
         void Promise.resolve().then(async () => {
           try {
-            for await (const buf of stream.source) {
-              transferred.append(buf)
-            }
+            await stream.readable.pipeTo(new WritableStream({
+              write: (chunk) => {
+                transferred.append(chunk)
+              }
+            }))
           } catch {}
         })
       })
@@ -789,12 +791,13 @@ describe('circuit-relay', () => {
       try {
         const stream = await local.dialProtocol(ma, protocol)
 
-        await stream.sink(async function * () {
+        await readableStreamFromGenerator(async function * () {
           while (true) {
             await delay(100)
             yield new Uint8Array(2048)
           }
         }())
+          .pipeTo(stream.writable)
       } catch {}
 
       // we cannot be exact about this figure because mss, encryption and other
@@ -907,9 +910,11 @@ describe('circuit-relay', () => {
       await remote.handle(protocol, ({ stream }) => {
         void Promise.resolve().then(async () => {
           try {
-            for await (const buf of stream.source) {
-              transferred.append(buf)
-            }
+            await stream.readable.pipeTo(new WritableStream({
+              write: (chunk) => {
+                transferred.append(chunk)
+              }
+            }))
           } catch {}
         })
       })
@@ -920,13 +925,14 @@ describe('circuit-relay', () => {
       try {
         const stream = await local.dialProtocol(ma, protocol)
 
-        await stream.sink(async function * () {
+        await readableStreamFromGenerator(async function * () {
           while (true) {
             await delay(100)
             yield new Uint8Array(10)
             await delay(5000)
           }
         }())
+          .pipeTo(stream.writable)
       } catch {}
 
       expect(transferred.byteLength).to.equal(10)

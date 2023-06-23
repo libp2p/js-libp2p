@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
+import { transformStreamEach } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { PROTOCOL } from '../../src/ping/constants.js'
 import { pingService, type PingService } from '../../src/ping/index.js'
@@ -78,18 +78,12 @@ describe('ping', () => {
 
     await nodes[1].unhandle(PROTOCOL)
     await nodes[1].handle(PROTOCOL, ({ stream }) => {
-      void pipe(
-        stream,
-        async function * (stream) {
-          for await (const data of stream) {
-            yield data
-
-            // something longer than the test timeout
-            await defer.promise
-          }
-        },
-        stream
-      )
+      void stream.readable
+        .pipeThrough(transformStreamEach(async () => {
+          // something longer than the test timeout
+          await defer.promise
+        }))
+        .pipeTo(stream.writable)
     })
 
     const latency = await nodes[0].services.ping.ping(nodes[1].peerId)

@@ -11,6 +11,7 @@ export function mockMultiaddrConnection (source: Duplex<AsyncGenerator<Uint8Arra
     async close () {
 
     },
+    abort: () => {},
     timeline: {
       open: Date.now()
     },
@@ -44,6 +45,10 @@ export function mockMultiaddrConnPair (opts: MockMultiaddrConnPairOptions): { in
     close: async () => {
       outbound.timeline.close = Date.now()
       controller.abort()
+    },
+    abort: () => {
+      outbound.timeline.close = Date.now()
+      controller.abort()
     }
   }
 
@@ -54,6 +59,10 @@ export function mockMultiaddrConnPair (opts: MockMultiaddrConnPairOptions): { in
       open: Date.now()
     },
     close: async () => {
+      inbound.timeline.close = Date.now()
+      controller.abort()
+    },
+    abort: () => {
       inbound.timeline.close = Date.now()
       controller.abort()
     }

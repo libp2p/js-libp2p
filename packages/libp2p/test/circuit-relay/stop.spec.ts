@@ -4,9 +4,9 @@ import { EventEmitter } from '@libp2p/interface/events'
 import { isStartable } from '@libp2p/interface/startable'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { duplexPair } from '@libp2p/utils/stream'
+import { pbStream, type MessageStream } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream, type MessageStream } from 'it-pb-stream'
 import { stubInterface } from 'sinon-ts'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { Status, StopMessage } from '../../src/circuit-relay/pb/index.js'
@@ -51,7 +51,7 @@ describe('circuit-relay stop protocol', function () {
 
     handler = components.registrar.handle.getCall(0).args[1]
 
-    const [localStream, remoteStream] = duplexPair<any>()
+    const [localStream, remoteStream] = duplexPair()
 
     handler({
       stream: mockStream(remoteStream),
@@ -68,7 +68,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop - success', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toBytes(),
@@ -81,7 +81,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop error - invalid request - wrong type', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.STATUS,
       peer: {
         id: sourcePeer.toBytes(),
@@ -94,7 +94,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop error - invalid request - missing peer', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.CONNECT
     })
 
@@ -103,7 +103,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop error - invalid request - invalid peer addr', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toBytes(),

@@ -1,22 +1,21 @@
 /* eslint-env mocha */
 
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { writeableStreamToDrain, readableStreamFromGenerator, readableStreamFromArray, writeableStreamToArray } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import drain from 'it-drain'
-import { pushable } from 'it-pushable'
 import toBuffer from 'it-to-buffer'
 import Sinon from 'sinon'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../../src/circuit-relay/utils.js'
-import type { Duplex, Source } from 'it-stream-types'
+import type { ByteStream } from '@libp2p/interface/src/connection/index.js'
 
 describe('circuit-relay utils', () => {
   it('should create relay', async () => {
-    const received = pushable()
+    const received: Uint8Array[] = []
 
-    const local: Duplex<any, Source<any>, any> = {
-      source: (async function * () {
+    const local: ByteStream = {
+      readable: readableStreamFromGenerator(async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
         await delay(10)
@@ -24,21 +23,11 @@ describe('circuit-relay utils', () => {
         await delay(10)
         yield uint8arrayFromString('8912')
       }()),
-      sink: async (source) => {
-        await drain(source)
-      }
+      writable: writeableStreamToDrain()
     }
-    const remote: Duplex<any, Source<any>, any> = {
-      source: [],
-      sink: async (source) => {
-        try {
-          for await (const buf of source) {
-            received.push(buf.subarray())
-          }
-        } finally {
-          received.end()
-        }
-      }
+    const remote: ByteStream = {
+      readable: readableStreamFromArray([]),
+      writable: writeableStreamToArray(received)
     }
 
     const controller = new AbortController()
@@ -50,37 +39,27 @@ describe('circuit-relay utils', () => {
 
     createLimitedRelay(localStream, remoteStream, controller.signal)
 
-    expect(await toBuffer(received)).to.have.property('byteLength', 12)
+    expect(toBuffer(received)).to.have.property('byteLength', 12)
     expect(localStreamAbortSpy).to.have.property('called', false)
     expect(remoteStreamAbortSpy).to.have.property('called', false)
   })
 
   it('should create data limited relay', async () => {
-    const received = pushable()
+    const received: Uint8Array[] = []
 
-    const local: Duplex<any, Source<any>, any> = {
-      source: (async function * () {
+    const local: ByteStream = {
+      readable: readableStreamFromGenerator(async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
         await delay(10)
         yield uint8arrayFromString('4567')
         await delay(10)
       }()),
-      sink: async (source) => {
-        await drain(source)
-      }
+      writable: writeableStreamToDrain()
     }
-    const remote: Duplex<any, Source<any>, any> = {
-      source: [],
-      sink: async (source) => {
-        try {
-          for await (const buf of source) {
-            received.push(buf.subarray())
-          }
-        } finally {
-          received.end()
-        }
-      }
+    const remote: ByteStream = {
+      readable: readableStreamFromArray([]),
+      writable: writeableStreamToArray(received)
     }
 
     const controller = new AbortController()
@@ -96,49 +75,33 @@ describe('circuit-relay utils', () => {
 
     createLimitedRelay(localStream, remoteStream, controller.signal, limit)
 
-    expect(await toBuffer(received)).to.have.property('byteLength', 5)
+    expect(toBuffer(received)).to.have.property('byteLength', 5)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })
 
   it('should create data limited relay that limits data in both directions', async () => {
-    const received = pushable()
+    const received: Uint8Array[] = []
 
-    const local: Duplex<any, Source<any>, any> = {
-      source: (async function * () {
+    const local: ByteStream = {
+      readable: readableStreamFromGenerator(async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
         await delay(10)
         yield uint8arrayFromString('4567')
         await delay(10)
       }()),
-      sink: async (source) => {
-        try {
-          for await (const buf of source) {
-            received.push(buf.subarray())
-          }
-        } finally {
-          received.end()
-        }
-      }
+      writable: writeableStreamToArray(received)
     }
-    const remote: Duplex<any, Source<any>, any> = {
-      source: (async function * () {
+    const remote: ByteStream = {
+      readable: readableStreamFromGenerator(async function * () {
         await delay(10)
         yield uint8arrayFromString('8912')
         await delay(10)
         yield uint8arrayFromString('3456')
         await delay(10)
       }()),
-      sink: async (source) => {
-        try {
-          for await (const buf of source) {
-            received.push(buf.subarray())
-          }
-        } finally {
-          received.end()
-        }
-      }
+      writable: writeableStreamToArray(received)
     }
 
     const controller = new AbortController()
@@ -154,16 +117,16 @@ describe('circuit-relay utils', () => {
 
     createLimitedRelay(localStream, remoteStream, controller.signal, limit)
 
-    expect(await toBuffer(received)).to.have.property('byteLength', 5)
+    expect(toBuffer(received)).to.have.property('byteLength', 5)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })
 
   it('should create time limited relay', async () => {
-    const received = pushable()
+    const received: Uint8Array[] = []
 
-    const local: Duplex<any, Source<any>, any> = {
-      source: (async function * () {
+    const local: ByteStream = {
+      readable: readableStreamFromGenerator(async function * () {
         await delay(10)
         yield uint8arrayFromString('0123')
         await delay(10)
@@ -171,21 +134,11 @@ describe('circuit-relay utils', () => {
         await delay(5000)
         yield uint8arrayFromString('8912')
       }()),
-      sink: async (source) => {
-        await drain(source)
-      }
+      writable: writeableStreamToDrain()
     }
-    const remote: Duplex<any, Source<any>, any> = {
-      source: [],
-      sink: async (source) => {
-        try {
-          for await (const buf of source) {
-            received.push(buf.subarray())
-          }
-        } finally {
-          received.end()
-        }
-      }
+    const remote: ByteStream = {
+      readable: readableStreamFromArray([]),
+      writable: writeableStreamToArray(received)
     }
 
     const controller = new AbortController()
@@ -201,7 +154,7 @@ describe('circuit-relay utils', () => {
 
     createLimitedRelay(localStream, remoteStream, controller.signal, limit)
 
-    expect(await toBuffer(received)).to.have.property('byteLength', 8)
+    expect(toBuffer(received)).to.have.property('byteLength', 8)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })

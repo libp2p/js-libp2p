@@ -94,7 +94,8 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main"
+    "test:electron-main": "aegir test -t electron-main",
+    "generate": "protons src/stream-muxer/fixtures/pb/*.proto"
   },
   "dependencies": {
     "@libp2p/interface": "~0.0.1",
@@ -104,9 +105,9 @@
     "@libp2p/peer-collections": "^3.0.0",
     "@libp2p/peer-id": "^2.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
+    "@libp2p/utils": "^3.0.12",
     "@multiformats/multiaddr": "^12.1.3",
     "abortable-iterator": "^5.0.1",
-    "any-signal": "^4.1.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.2",
@@ -121,13 +122,15 @@
     "p-defer": "^4.0.0",
     "p-limit": "^4.0.0",
     "p-wait-for": "^5.0.2",
+    "protons-runtime": "^5.0.0",
     "sinon": "^15.1.2",
     "ts-sinon": "^2.0.2",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
-    "aegir": "^39.0.10"
+    "aegir": "^39.0.10",
+    "protons": "^7.0.2"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

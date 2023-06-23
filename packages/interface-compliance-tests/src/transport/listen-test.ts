@@ -1,8 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
+import { writeableStreamToDrain, readableStreamFromArray } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
-import drain from 'it-drain'
-import { pipe } from 'it-pipe'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -55,7 +54,8 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const protocol = '/test/protocol'
       void registrar.handle(protocol, (data) => {
-        void drain(data.stream.source)
+        void data.stream.readable
+          .pipeTo(writeableStreamToDrain())
       })
 
       const listener = transport.createListener({
@@ -85,20 +85,19 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       // Wait for the data send and close to finish
       await Promise.all([
-        pipe(
-          [uint8ArrayFromString('Some data that is never handled')],
-          stream1
-        ),
+        readableStreamFromArray([uint8ArrayFromString('Some data that is never handled')])
+          .pipeThrough(stream1)
+          .pipeTo(writeableStreamToDrain()),
         // Closer the listener (will take a couple of seconds to time out)
         listener.close()
       ])
 
-      stream1.close()
+      await stream1.close()
       await conn1.close()
 
-      expect(isValidTick(conn1.stat.timeline.close)).to.equal(true)
+      expect(isValidTick(conn1.timeline.close)).to.equal(true)
       listenerConns.forEach(conn => {
-        expect(isValidTick(conn.stat.timeline.close)).to.equal(true)
+        expect(isValidTick(conn.timeline.close)).to.equal(true)
       })
 
       // 2 dials = 2 connections upgraded
@@ -120,7 +119,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         upgrader
       })
 
-      await pWaitFor(() => typeof conn.stat.timeline.close === 'number')
+      await pWaitFor(() => typeof conn.timeline.close === 'number')
       await listener.close()
     })
 

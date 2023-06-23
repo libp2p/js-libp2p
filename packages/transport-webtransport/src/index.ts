@@ -4,8 +4,7 @@ import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { type Multiaddr, protocols } from '@multiformats/multiaddr'
 import { bases, digest } from 'multiformats/basics'
-import { Uint8ArrayList } from 'uint8arraylist'
-import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
+import type { Connection, Direction, MultiaddrConnection, RawStream, Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
 import type { Duplex, Source } from 'it-stream-types'
@@ -44,7 +43,7 @@ function inertDuplex (): Duplex<any, any, any> {
   }
 }
 
-async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
+async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string, direction: Direction, activeStreams: RawStream[], onStreamEnd: undefined | ((s: Stream | RawStream) => void)): Promise<RawStream> {
   const writer = bidiStream.writable.getWriter()
   const reader = bidiStream.readable.getReader()
   await writer.ready
@@ -53,7 +52,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     const index = activeStreams.findIndex(s => s === stream)
     if (index !== -1) {
       activeStreams.splice(index, 1)
-      stream.stat.timeline.close = Date.now()
+      stream.timeline.close = Date.now()
       onStreamEnd?.(stream)
     }
   }
@@ -89,91 +88,29 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     log.error('WebTransport failed to cleanup closed stream')
   })
 
-  let sinkSunk = false
-  const stream: Stream = {
+  const stream: RawStream = {
     id: streamId,
-    abort (_err: Error) {
+    readable: bidiStream.readable,
+    writable: bidiStream.writable,
+    abort (err: Error) {
       if (!writerClosed) {
         writer.abort()
         writerClosed = true
       }
-      stream.closeRead()
+      void stream.readable.cancel(err).catch(err => {
+        log.error('could not cancel readable', err)
+      })
       readerClosed = true
       cleanupStreamFromActiveStreams()
     },
-    close () {
-      stream.closeRead()
-      stream.closeWrite()
+    async close () {
+      await stream.readable.cancel()
+      await stream.writable.close()
       cleanupStreamFromActiveStreams()
     },
-
-    closeRead () {
-      if (!readerClosed) {
-        reader.cancel().catch((err: any) => {
-          if (err.toString().includes('RESET_STREAM') === true) {
-            writerClosed = true
-          }
-        })
-        readerClosed = true
-      }
-      if (writerClosed) {
-        cleanupStreamFromActiveStreams()
-      }
-    },
-    closeWrite () {
-      if (!writerClosed) {
-        writerClosed = true
-        writer.close().catch((err: any) => {
-          if (err.toString().includes('RESET_STREAM') === true) {
-            readerClosed = true
-          }
-        })
-      }
-      if (readerClosed) {
-        cleanupStreamFromActiveStreams()
-      }
-    },
-    reset () {
-      stream.close()
-    },
-    stat: {
-      direction,
-      timeline: { open: Date.now() }
-    },
-    metadata: {},
-    source: (async function * () {
-      while (true) {
-        const val = await reader.read()
-        if (val.done === true) {
-          readerClosed = true
-          if (writerClosed) {
-            cleanupStreamFromActiveStreams()
-          }
-          return
-        }
-
-        yield new Uint8ArrayList(val.value)
-      }
-    })(),
-    sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
-      if (sinkSunk) {
-        throw new Error('sink already called on stream')
-      }
-      sinkSunk = true
-      try {
-        for await (const chunks of source) {
-          if (chunks instanceof Uint8Array) {
-            await writer.write(chunks)
-          } else {
-            for (const buf of chunks) {
-              await writer.write(buf)
-            }
-          }
-        }
-      } finally {
-        stream.closeWrite()
-      }
-    }
+    direction,
+    timeline: { open: Date.now() },
+    metadata: {}
   }
 
   return stream
@@ -327,10 +264,11 @@ class WebTransportTransport implements Transport {
     }
 
     const maConn: MultiaddrConnection = {
-      close: async (err?: Error) => {
-        if (err != null) {
-          log('Closing webtransport with err:', err)
-        }
+      close: async () => {
+        wt.close()
+      },
+      abort: (err): void => {
+        log('Closing webtransport with err:', err)
         wt.close()
       },
       remoteAddr: ma,
@@ -418,7 +356,7 @@ class WebTransportTransport implements Transport {
           init = { onIncomingStream: init }
         }
 
-        const activeStreams: Stream[] = [];
+        const activeStreams: RawStream[] = [];
 
         (async function () {
           //! TODO unclear how to add backpressure here?
@@ -452,7 +390,7 @@ class WebTransportTransport implements Transport {
         const muxer: StreamMuxer = {
           protocol: 'webtransport',
           streams: activeStreams,
-          newStream: async (name?: string): Promise<Stream> => {
+          newStream: async (name?: string): Promise<RawStream> => {
             const wtStream = await wt.createBidirectionalStream()
 
             const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd)
@@ -464,10 +402,11 @@ class WebTransportTransport implements Transport {
           /**
            * Close or abort all tracked streams and stop the muxer
            */
-          close: (err?: Error) => {
-            if (err != null) {
-              log('Closing webtransport muxer with err:', err)
-            }
+          close: async () => {
+            wt.close()
+          },
+          abort: (err: Error) => {
+            log('Closing webtransport muxer with err:', err)
             wt.close()
           },
           // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.

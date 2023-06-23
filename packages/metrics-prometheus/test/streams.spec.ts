@@ -1,5 +1,6 @@
 import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { readableStreamFromArray, writeableStreamToDrain } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
@@ -104,7 +105,7 @@ describe('streams', () => {
       registrar: mockRegistrar()
     }
     await peerB.registrar.handle(protocol, ({ stream }) => {
-      void pipe(stream, drain)
+      void stream.readable.pipeTo(writeableStreamToDrain())
     })
 
     ;[connectionA, connectionB] = connectionPair(peerA, peerB)
@@ -117,9 +118,7 @@ describe('streams', () => {
 
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
-    await aToB.sink([
-      data
-    ])
+    await readableStreamFromArray([data]).pipeTo(aToB.writable)
 
     const scrapedMetrics = await client.register.metrics()
     expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="${protocol} sent"} ${data.length}`)
@@ -137,7 +136,7 @@ describe('streams', () => {
       metrics.trackProtocolStream(stream, connectionA)
 
       // ignore data
-      void pipe(stream, drain).then(() => {
+      void stream.readable.pipeTo(writeableStreamToDrain()).then(() => {
         deferred.resolve()
       })
     })
@@ -154,9 +153,7 @@ describe('streams', () => {
 
     // send data from remote to local
     const data = Uint8Array.from([0, 1, 2, 3, 4])
-    await bToA.sink([
-      data
-    ])
+    await readableStreamFromArray([data]).pipeTo(bToA.writable)
 
     // wait for data to have been transferred
     await deferred.promise

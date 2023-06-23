@@ -189,6 +189,19 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           socket.destroy()
         }
       })
+    },
+    abort (err: Error): void {
+      if (socket.destroyed) {
+        log('%s socket was already destroyed when trying to destroy', lOptsStr)
+        return
+      }
+
+      try {
+        log('%s destroying socket due to error', lOptsStr, err)
+        socket.destroy()
+      } finally {
+        maConn.timeline.close = Date.now()
+      }
     }
   }
 

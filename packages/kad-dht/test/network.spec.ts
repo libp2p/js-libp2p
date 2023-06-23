@@ -1,21 +1,17 @@
 /* eslint-env mocha */
 
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { readableStreamFromArray, pbEncoderTransform, pbReader, lengthPrefixedEncoderTransform, bytesTransform } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
-import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { DefaultDualKadDHT } from '../src/dual-kad-dht.js'
-import type { Connection } from '@libp2p/interface/connection'
+import type { ByteStream, Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Sink, Source } from 'it-stream-types'
 
 describe('Network', () => {
   let dht: DefaultDualKadDHT
@@ -60,38 +56,23 @@ describe('Network', () => {
           newStream: async (protocols: string | string[]) => {
             const protocol = Array.isArray(protocols) ? protocols[0] : protocols
             const msg = new Message(MESSAGE_TYPE.FIND_NODE, uint8ArrayFromString('world'), 0)
+            const duplexStream: ByteStream = {
+              readable: readableStreamFromArray([msg])
+                .pipeThrough(pbEncoderTransform(Message))
+                .pipeThrough(lengthPrefixedEncoderTransform())
+                .pipeThrough(bytesTransform()),
 
-            const data = await pipe(
-              [msg.serialize()],
-              (source) => lp.encode(source),
-              source => map(source, arr => new Uint8ArrayList(arr)),
-              async (source) => all(source)
-            )
-
-            const source = (async function * () {
-              const array = data
-
-              yield * array
-            })()
-
-            const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
-              const res = await pipe(
-                source,
-                (source) => lp.decode(source),
-                async (source) => all(source)
-              )
-              expect(Message.deserialize(res[0]).type).to.eql(MESSAGE_TYPE.PING)
-              finish()
+              writable: pbReader((message) => {
+                expect(message.type).to.eql(MESSAGE_TYPE.PING)
+                finish()
+              }, Message)
             }
 
-            const stream = mockStream({ source, sink })
+            const stream = mockStream(duplexStream)
 
             return {
               ...stream,
-              stat: {
-                ...stream.stat,
-                protocol
-              }
+              protocol
             }
           }
         }

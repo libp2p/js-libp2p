@@ -1,4 +1,4 @@
-import type { Direction, Stream } from '../connection/index.js'
+import type { Direction, RawStream, Stream } from '../connection/index.js'
 import type { AbortOptions } from '../index.js'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -27,29 +27,35 @@ export interface StreamMuxer extends Duplex<AsyncGenerator<Uint8Array>, Source<U
   /**
    * A list of streams that are currently open. Closed streams will not be returned.
    */
-  readonly streams: Stream[]
+  readonly streams: Array<RawStream | Stream>
+
   /**
    * Initiate a new stream with the given name. If no name is
    * provided, the id of the stream will be used.
    */
-  newStream: (name?: string) => Stream | Promise<Stream>
+  newStream: (name?: string) => RawStream | Promise<RawStream>
 
   /**
-   * Close or abort all tracked streams and stop the muxer
+   * Gracefully close all tracked streams and stop the muxer
    */
-  close: (err?: Error) => void
+  close: (options?: AbortOptions) => Promise<void>
+
+  /**
+   * Immediately abort all tracked streams and stop the muxer
+   */
+  abort: (err: Error) => void
 }
 
 export interface StreamMuxerInit extends AbortOptions {
   /**
    * A callback function invoked every time an incoming stream is opened
    */
-  onIncomingStream?: (stream: Stream) => void
+  onIncomingStream?: (stream: RawStream) => void
 
   /**
    * A callback function invoke every time a stream ends
    */
-  onStreamEnd?: (stream: Stream) => void
+  onStreamEnd?: (stream: RawStream | Stream) => void
 
   /**
    * Outbound stream muxers are opened by the local node, inbound stream muxers are opened by the remote

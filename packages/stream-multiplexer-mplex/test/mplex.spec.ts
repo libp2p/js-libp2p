@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
+import { writeableStreamToDrain, readableStreamFromArray } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -136,7 +137,7 @@ describe('mplex', () => {
         // do nothing with the stream so the buffer fills up
       },
       onStreamEnd (stream) {
-        void all(stream.source)
+        stream.readable.pipeTo(writeableStreamToDrain())
           .then(() => {
             streamSourceError.reject(new Error('Stream source did not error'))
           })
@@ -198,10 +199,8 @@ describe('mplex', () => {
     const streamFinished = pDefer()
     // send messages over the stream
     void Promise.resolve().then(async () => {
-      await stream.sink(async function * () {
-        yield * input
-      }())
-      stream.close()
+      await readableStreamFromArray(input).pipeTo(stream.writable)
+      await stream.close()
       streamFinished.resolve()
     })
 

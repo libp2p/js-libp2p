@@ -5,12 +5,11 @@ import { start, stop } from '@libp2p/interface/startable'
 import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { transformMap } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
-import drain from 'it-drain'
-import { pipe } from 'it-pipe'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -186,12 +185,8 @@ describe('identify (push)', () => {
     // replace existing handler with a really slow one
     await remoteComponents.registrar.unhandle(MULTICODEC_IDENTIFY_PUSH)
     await remoteComponents.registrar.handle(MULTICODEC_IDENTIFY_PUSH, ({ stream }) => {
-      void pipe(
-        stream,
-        async function * (source) {
-          // ignore the sent data
-          await drain(source)
-
+      void stream.readable
+        .pipeThrough(transformMap(async buf => {
           // longer than the timeout
           await delay(1000)
 
@@ -199,10 +194,9 @@ describe('identify (push)', () => {
           // occur after the local push method invocation has completed
           streamEnded = true
 
-          yield new Uint8Array()
-        },
-        stream
-      )
+          return new Uint8Array()
+        }))
+        .pipeTo(stream.writable)
     })
 
     // make sure we'll return the connection
@@ -221,7 +215,7 @@ describe('identify (push)', () => {
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
     const stream = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('stat.timeline.close')
+    expect(stream).to.have.nested.property('timeline.close')
 
     // method should have returned before the remote handler completes as we timed
     // out so we ignore the return value

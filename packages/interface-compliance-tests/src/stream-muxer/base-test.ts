@@ -1,22 +1,24 @@
+import { readableStreamFromArray, writeableStreamToArray } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
 import drain from 'it-drain'
-import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import defer from 'p-defer'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isValidTick } from '../is-valid-tick.js'
 import type { TestSetup } from '../index.js'
-import type { Stream } from '@libp2p/interface/connection'
+import type { RawStream, Stream } from '@libp2p/interface/connection'
 import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
-import type { Source, Duplex } from 'it-stream-types'
+import type { Duplex } from 'it-stream-types'
 import type { DeferredPromise } from 'p-defer'
 
 async function drainAndClose (stream: Duplex<any>): Promise<void> {
   await pipe([], stream, drain)
+}
+
+async function drainAndCloseStream (stream: Pick<Stream, 'close'>): Promise<void> {
+  await stream.close()
 }
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {
@@ -25,8 +27,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const p = duplexPair<Uint8Array>()
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
-      const onStreamPromise: DeferredPromise<Stream> = defer()
-      const onStreamEndPromise: DeferredPromise<Stream> = defer()
+      const onStreamPromise: DeferredPromise<RawStream> = defer()
+      const onStreamEndPromise: DeferredPromise<RawStream> = defer()
 
       const listenerFactory = await common.setup()
       const listener = listenerFactory.createStreamMuxer({
@@ -44,27 +46,27 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const conn = await dialer.newStream()
       expect(dialer.streams).to.include(conn)
-      expect(isValidTick(conn.stat.timeline.open)).to.equal(true)
+      expect(isValidTick(conn.timeline.open)).to.equal(true)
 
-      void drainAndClose(conn)
+      void drainAndCloseStream(conn)
 
       const stream = await onStreamPromise.promise
-      expect(isValidTick(stream.stat.timeline.open)).to.equal(true)
+      expect(isValidTick(stream.timeline.open)).to.equal(true)
       // Make sure the stream is being tracked
       expect(listener.streams).to.include(stream)
 
-      void drainAndClose(stream)
+      void drainAndCloseStream(stream)
 
       // Make sure stream is closed properly
       const endedStream = await onStreamEndPromise.promise
       expect(listener.streams).to.not.include(endedStream)
 
-      if (endedStream.stat.timeline.close == null) {
+      if (endedStream.timeline.close == null) {
         throw new Error('timeline had no close time')
       }
 
       // Make sure the stream is removed from tracking
-      expect(isValidTick(endedStream.stat.timeline.close)).to.equal(true)
+      expect(isValidTick(endedStream.timeline.close)).to.equal(true)
 
       await drainAndClose(dialer)
       await drainAndClose(listener)
@@ -76,11 +78,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
     it('Open a stream from the listener', async () => {
       const p = duplexPair<Uint8Array>()
-      const onStreamPromise: DeferredPromise<Stream> = defer()
+      const onStreamPromise: DeferredPromise<RawStream> = defer()
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({
         direction: 'outbound',
-        onIncomingStream: (stream: Stream) => {
+        onIncomingStream: (stream: RawStream) => {
           onStreamPromise.resolve(stream)
         }
       })
@@ -91,15 +93,14 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       void pipe(p[0], dialer, p[0])
       void pipe(p[1], listener, p[1])
 
-      const conn = await listener.newStream()
+      const listenerStream = await listener.newStream()
+      expect(listener.streams).to.include(listenerStream)
+      expect(isValidTick(listenerStream.timeline.open)).to.equal(true)
+      void drainAndCloseStream(listenerStream)
 
-      void drainAndClose(conn)
-
-      const stream = await onStreamPromise.promise
-      expect(isValidTick(stream.stat.timeline.open)).to.equal(true)
-      expect(listener.streams).to.include(conn)
-      expect(isValidTick(conn.stat.timeline.open)).to.equal(true)
-      void drainAndClose(stream)
+      const dialerStream = await onStreamPromise.promise
+      expect(isValidTick(dialerStream.timeline.open)).to.equal(true)
+      void drainAndCloseStream(dialerStream)
 
       await drainAndClose(dialer)
       await drainAndClose(listener)
@@ -107,8 +108,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
     it('Open a stream on both sides', async () => {
       const p = duplexPair<Uint8Array>()
-      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
-      const onListenerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDialerStreamPromise: DeferredPromise<RawStream> = defer()
+      const onListenerStreamPromise: DeferredPromise<RawStream> = defer()
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({
         direction: 'outbound',
@@ -132,23 +133,25 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const listenerInitiatorStream = await listener.newStream()
 
       await Promise.all([
-        drainAndClose(dialerInitiatorStream),
-        drainAndClose(listenerInitiatorStream),
-        onDialerStreamPromise.promise.then(async stream => { await drainAndClose(stream) }),
-        onListenerStreamPromise.promise.then(async stream => { await drainAndClose(stream) })
+        drainAndCloseStream(dialerInitiatorStream),
+        drainAndCloseStream(listenerInitiatorStream),
+        onDialerStreamPromise.promise.then(async stream => { await drainAndCloseStream(stream) }),
+        onListenerStreamPromise.promise.then(async stream => { await drainAndCloseStream(stream) })
       ])
 
       await Promise.all([
-        drainAndClose(dialer),
-        drainAndClose(listener)
+        dialer.close(),
+        listener.close()
       ])
+
+      expect(dialer.streams).to.be.empty()
+      expect(listener.streams).to.be.empty()
     })
 
     it('Open a stream on one side, write, open a stream on the other side', async () => {
-      const toString = (source: Source<Uint8ArrayList>): AsyncGenerator<string> => map(source, (u) => uint8ArrayToString(u.subarray()))
       const p = duplexPair<Uint8Array>()
-      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
-      const onListenerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDialerStreamPromise: DeferredPromise<RawStream> = defer()
+      const onListenerStreamPromise: DeferredPromise<RawStream> = defer()
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({
         direction: 'outbound',
@@ -170,8 +173,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const dialerConn = await dialer.newStream()
       const listenerConn = await listener.newStream()
 
-      void pipe([new Uint8ArrayList(uint8ArrayFromString('hey'))], dialerConn)
-      void pipe([new Uint8ArrayList(uint8ArrayFromString('hello'))], listenerConn)
+      await readableStreamFromArray([uint8ArrayFromString('hey')]).pipeTo(dialerConn.writable)
+      await readableStreamFromArray([uint8ArrayFromString('hello')]).pipeTo(listenerConn.writable)
 
       const [
         dialerStream,
@@ -181,16 +184,16 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         onListenerStreamPromise.promise
       ])
 
-      const [
-        listenerChunks,
-        dialerChunks
-      ] = await Promise.all([
-        pipe(listenerStream, toString, async (source) => all(source)),
-        pipe(dialerStream, toString, async (source) => all(source))
+      const listenerChunks: Uint8Array[] = []
+      const dialerChunks: Uint8Array[] = []
+
+      await Promise.all([
+        listenerStream.readable.pipeTo(writeableStreamToArray(listenerChunks)),
+        dialerStream.readable.pipeTo(writeableStreamToArray(dialerChunks))
       ])
 
-      expect(listenerChunks).to.be.eql(['hey'])
-      expect(dialerChunks).to.be.eql(['hello'])
+      expect(listenerChunks.map(u => uint8ArrayToString(u))).to.be.eql(['hey'])
+      expect(dialerChunks.map(u => uint8ArrayToString(u))).to.be.eql(['hello'])
     })
   })
 }

@@ -1,11 +1,10 @@
 import { mockConnection, mockMultiaddrConnection, mockRegistrar, mockStream, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { duplexPair, pbStream } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { detect } from 'detect-browser'
 import { pair } from 'it-pair'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-pb-stream'
 import Sinon from 'sinon'
 import { initiateConnection, handleIncomingStream } from '../src/private-to-private/handler'
 import { Message } from '../src/private-to-private/pb/message.js'
@@ -16,7 +15,7 @@ const browser = detect()
 describe('webrtc basic', () => {
   const isFirefox = ((browser != null) && browser.name === 'firefox')
   it('should connect', async () => {
-    const [receiver, initiator] = duplexPair<any>()
+    const [receiver, initiator] = duplexPair()
     const dstPeerId = await createEd25519PeerId()
     const connection = mockConnection(
       mockMultiaddrConnection(pair<any>(), dstPeerId)
@@ -39,7 +38,7 @@ describe('webrtc basic', () => {
 
 describe('webrtc receiver', () => {
   it('should fail receiving on invalid sdp offer', async () => {
-    const [receiver, initiator] = duplexPair<any>()
+    const [receiver, initiator] = duplexPair()
     const dstPeerId = await createEd25519PeerId()
     const connection = mockConnection(
       mockMultiaddrConnection(pair<any>(), dstPeerId)
@@ -47,14 +46,14 @@ describe('webrtc receiver', () => {
     const receiverPeerConnectionPromise = handleIncomingStream({ stream: mockStream(receiver), connection })
     const stream = pbStream(initiator).pb(Message)
 
-    stream.write({ type: Message.Type.SDP_OFFER, data: 'bad' })
+    await stream.write({ type: Message.Type.SDP_OFFER, data: 'bad' })
     await expect(receiverPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
   })
 })
 
 describe('webrtc dialer', () => {
   it('should fail receiving on invalid sdp answer', async () => {
-    const [receiver, initiator] = duplexPair<any>()
+    const [receiver, initiator] = duplexPair()
     const controller = new AbortController()
     const initiatorPeerConnectionPromise = initiateConnection({ signal: controller.signal, stream: mockStream(initiator) })
     const stream = pbStream(receiver).pb(Message)
@@ -64,19 +63,19 @@ describe('webrtc dialer', () => {
       expect(offerMessage.type).to.eq(Message.Type.SDP_OFFER)
     }
 
-    stream.write({ type: Message.Type.SDP_ANSWER, data: 'bad' })
+    await stream.write({ type: Message.Type.SDP_ANSWER, data: 'bad' })
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
   })
 
   it('should fail on receiving a candidate before an answer', async () => {
-    const [receiver, initiator] = duplexPair<any>()
+    const [receiver, initiator] = duplexPair()
     const controller = new AbortController()
     const initiatorPeerConnectionPromise = initiateConnection({ signal: controller.signal, stream: mockStream(initiator) })
     const stream = pbStream(receiver).pb(Message)
 
     const pc = new RTCPeerConnection()
-    pc.onicecandidate = ({ candidate }) => {
-      stream.write({ type: Message.Type.ICE_CANDIDATE, data: JSON.stringify(candidate?.toJSON()) })
+    pc.onicecandidate = async ({ candidate }) => {
+      await stream.write({ type: Message.Type.ICE_CANDIDATE, data: JSON.stringify(candidate?.toJSON()) })
     }
     {
       const offerMessage = await stream.read()

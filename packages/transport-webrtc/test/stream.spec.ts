@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 
+import { readableStreamFromGenerator } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
 import length from 'it-length'
 import * as lengthPrefixed from 'it-length-prefixed'
@@ -40,7 +41,7 @@ describe('Max message size', () => {
 
     p.push(data)
     p.end()
-    await webrtcStream.sink(p)
+    await readableStreamFromGenerator(p).pipeTo(webrtcStream.writable)
 
     // length(message) + message + length(FIN) + FIN
     expect(length(sent)).to.equal(4)
@@ -70,7 +71,7 @@ describe('Max message size', () => {
 
     p.push(data)
     p.end()
-    await webrtcStream.sink(p)
+    await readableStreamFromGenerator(p).pipeTo(webrtcStream.writable)
 
     expect(length(sent)).to.equal(6)
 
@@ -105,7 +106,7 @@ describe('Max message size', () => {
 
     const t0 = Date.now()
 
-    await expect(webrtcStream.sink(p)).to.eventually.be.rejected
+    await expect(readableStreamFromGenerator(p).pipeTo(webrtcStream.writable)).to.eventually.be.rejected
       .with.property('message', 'Timed out waiting for DataChannel buffer to clear')
     const t1 = Date.now()
     expect(t1 - t0).greaterThan(timeout)

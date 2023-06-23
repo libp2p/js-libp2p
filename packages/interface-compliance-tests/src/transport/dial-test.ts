@@ -1,9 +1,7 @@
 import { AbortError } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
+import { readableStreamFromArray, writeableStreamToDrain, writeableStreamToArray } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import drain from 'it-drain'
-import { pipe } from 'it-pipe'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { isValidTick } from '../is-valid-tick.js'
@@ -53,12 +51,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     it('simple', async () => {
       const protocol = '/hello/1.0.0'
       void registrar.handle(protocol, (data) => {
-        void pipe([
-          uint8ArrayFromString('hey')
-        ],
-        data.stream,
-        drain
-        )
+        void readableStreamFromArray([uint8ArrayFromString('hey')])
+          .pipeThrough(data.stream)
+          .pipeTo(writeableStreamToDrain())
       })
 
       const upgradeSpy = sinon.spy(upgrader, 'upgradeOutbound')
@@ -67,7 +62,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       const stream = await conn.newStream([protocol])
-      const result = await all(stream.source)
+      const result: Uint8Array[] = []
+      await stream.readable
+        .pipeTo(writeableStreamToArray(result))
 
       expect(upgradeSpy.callCount).to.equal(1)
       await expect(upgradeSpy.getCall(0).returnValue).to.eventually.equal(conn)
@@ -85,7 +82,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       expect(upgradeSpy.callCount).to.equal(1)
       await expect(upgradeSpy.getCall(0).returnValue).to.eventually.equal(conn)
       await conn.close()
-      expect(isValidTick(conn.stat.timeline.close)).to.equal(true)
+      expect(isValidTick(conn.timeline.close)).to.equal(true)
     })
 
     it('to non existent listener', async () => {
