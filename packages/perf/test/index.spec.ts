@@ -99,10 +99,10 @@ describe('perf', () => {
     // Run Perf
     const downloadBandwidth = await client.measureDownloadBandwidth(remoteComponents.peerId, 10n << 20n) >> 10
     // eslint-disable-next-line no-console
-    console.log('Download bandwidth: ', downloadBandwidth, ' kiB/s')
+    console.log('Download bandwidth:', downloadBandwidth, 'kiB/s')
 
     const uploadBandwidth = await client.measureDownloadBandwidth(remoteComponents.peerId, 10n << 20n) >> 10
     // eslint-disable-next-line no-console
-    console.log('Upload bandwidth: ', uploadBandwidth, ' kiB/s')
+    console.log('Upload bandwidth:', uploadBandwidth, 'kiB/s')
   })
 })
