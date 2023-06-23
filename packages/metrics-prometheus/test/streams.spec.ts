@@ -1,7 +1,6 @@
 import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { readableStreamFromArray } from '@libp2p/utils/dist/src/stream/readablestream-from-array.js'
-import { writeableStreamToDrain } from '@libp2p/utils/dist/src/stream/writablestream-to-drain.js'
+import { readableStreamFromArray, writeableStreamToDrain } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
