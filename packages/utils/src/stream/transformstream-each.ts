@@ -1,6 +1,6 @@
 import { pushable } from 'it-pushable'
 
-export function transformStreamEach <T> (fn: (chunk: T) => void | Promise<void>): ReadableWritablePair<T> {
+export function transformStreamEach <T> (fn: (chunk: T) => void | Promise<void>): ReadableWritablePair<T, T> {
   const queue = pushable<T>({
     objectMode: true
   })
