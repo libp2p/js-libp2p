@@ -95,6 +95,7 @@
  */
 
 import { logger } from '@libp2p/logger'
+import { readableEach, writableEach } from '@libp2p/utils/stream'
 import each from 'it-foreach'
 import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
@@ -203,7 +204,7 @@ class PrometheusMetrics implements Metrics {
    * Override the sink/source of the stream to count the bytes
    * in and out
    */
-  _track (stream: Duplex<Source<any>>, name: string): void {
+  _trackDuplex (stream: Duplex<Source<any>>, name: string): void {
     const self = this
 
     const sink = stream.sink
@@ -219,18 +220,34 @@ class PrometheusMetrics implements Metrics {
     })
   }
 
+  /**
+   * Override the readable/writable of the stream to count the bytes
+   * in and out
+   */
+  _trackStream (stream: Stream, name: string): void {
+    const self = this
+
+    stream.readable = readableEach(stream.readable, (buf) => {
+      self._incrementValue(`${name} sent`, buf.byteLength)
+    })
+
+    stream.writable = writableEach(stream.writable, (buf) => {
+      self._incrementValue(`${name} received`, buf.byteLength)
+    })
+  }
+
   trackMultiaddrConnection (maConn: MultiaddrConnection): void {
-    this._track(maConn, 'global')
+    this._trackDuplex(maConn, 'global')
   }
 
   trackProtocolStream (stream: Stream, connection: Connection): void {
-    if (stream.stat.protocol == null) {
+    if (stream.protocol == null) {
       // protocol not negotiated yet, should not happen as the upgrader
       // calls this handler after protocol negotiation
       return
     }
 
-    this._track(stream, stream.stat.protocol)
+    this._trackStream(stream, stream.protocol)
   }
 
   registerMetric (name: string, opts: PrometheusCalculatedMetricOptions): void

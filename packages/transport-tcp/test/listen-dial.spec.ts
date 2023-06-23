@@ -2,10 +2,9 @@ import os from 'os'
 import path from 'path'
 import { EventEmitter } from '@libp2p/interface/events'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { readableStreamFromArray, writeableStreamToArray } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { tcp } from '../src/index.js'
@@ -167,11 +166,8 @@ describe('dial', () => {
 
   beforeEach(async () => {
     const registrar = mockRegistrar()
-    void registrar.handle(protocol, (evt) => {
-      void pipe(
-        evt.stream,
-        evt.stream
-      )
+    void registrar.handle(protocol, ({ stream }) => {
+      void stream.readable.pipeTo(stream.writable)
     })
     upgrader = mockUpgrader({
       registrar,
@@ -192,12 +188,11 @@ describe('dial', () => {
       upgrader
     })
     const stream = await conn.newStream([protocol])
+    const values: Uint8Array[] = []
 
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
+    await readableStreamFromArray([uint8ArrayFromString('hey')])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(values))
 
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
@@ -218,12 +213,12 @@ describe('dial', () => {
       upgrader
     })
     const stream = await conn.newStream([protocol])
+    const values: Uint8Array[] = []
 
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
+    await readableStreamFromArray([uint8ArrayFromString('hey')])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(values))
+
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
     await listener.close()
@@ -240,12 +235,11 @@ describe('dial', () => {
       upgrader
     })
     const stream = await conn.newStream([protocol])
+    const values: Uint8Array[] = []
 
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
+    await readableStreamFromArray([uint8ArrayFromString('hey')])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(values))
 
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
     await conn.close()
@@ -276,7 +270,7 @@ describe('dial', () => {
       upgrader
     })
     const stream = await conn.newStream([protocol])
-    pipe(stream)
+    void stream.readable.pipeTo(stream.writable)
 
     await handledPromise
     await conn.close()
@@ -322,12 +316,12 @@ describe('dial', () => {
       upgrader
     })
     const stream = await conn.newStream([protocol])
+    const values: Uint8Array[] = []
 
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
+    await readableStreamFromArray([uint8ArrayFromString('hey')])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(values))
+
     expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
 
     await conn.close()

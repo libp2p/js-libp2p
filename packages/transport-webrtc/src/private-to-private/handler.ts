@@ -1,6 +1,5 @@
 import { logger } from '@libp2p/logger'
-import { abortableDuplex } from 'abortable-iterator'
-import { pbStream } from 'it-pb-stream'
+import { pbStream } from '@libp2p/utils/stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { Message } from './pb/message.js'
@@ -18,26 +17,29 @@ export type IncomingStreamOpts = { rtcConfiguration?: RTCConfiguration, dataChan
 
 export async function handleIncomingStream ({ rtcConfiguration, dataChannelOptions, stream: rawStream }: IncomingStreamOpts): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
   const signal = AbortSignal.timeout(DEFAULT_TIMEOUT)
-  const stream = pbStream(abortableDuplex(rawStream, signal)).pb(Message)
+  const stream = pbStream(rawStream).pb(Message)
   const pc = new RTCPeerConnection(rtcConfiguration)
   const muxerFactory = new DataChannelMuxerFactory({ peerConnection: pc, dataChannelOptions })
   const connectedPromise: DeferredPromise<void> = pDefer()
   const answerSentPromise: DeferredPromise<void> = pDefer()
-
-  signal.onabort = () => { connectedPromise.reject() }
+  signal.onabort = () => {
+    const err = new Error('Incoming RTC connection did not complete handshake before timeout')
+    rawStream.abort(err)
+    connectedPromise.reject(err)
+  }
   // candidate callbacks
   pc.onicecandidate = ({ candidate }) => {
     answerSentPromise.promise.then(
-      () => {
-        stream.write({
+      async () => {
+        await stream.write({
           type: Message.Type.ICE_CANDIDATE,
           data: (candidate != null) ? JSON.stringify(candidate.toJSON()) : ''
         })
-      },
-      (err) => {
-        log.error('cannot set candidate since sending answer failed', err)
       }
     )
+      .catch((err) => {
+        log.error('cannot set candidate since sending answer failed', err)
+      })
   }
 
   resolveOnConnected(pc, connectedPromise)
@@ -64,7 +66,7 @@ export async function handleIncomingStream ({ rtcConfiguration, dataChannelOptio
     throw new Error('Failed to create answer')
   })
   // write the answer to the remote
-  stream.write({ type: Message.Type.SDP_ANSWER, data: answer.sdp })
+  await stream.write({ type: Message.Type.SDP_ANSWER, data: answer.sdp })
 
   await pc.setLocalDescription(answer).catch(err => {
     log.error('could not execute setLocalDescription', err)
@@ -90,7 +92,7 @@ export interface ConnectOptions {
 }
 
 export async function initiateConnection ({ rtcConfiguration, dataChannelOptions, signal, stream: rawStream }: ConnectOptions): Promise<{ pc: RTCPeerConnection, muxerFactory: StreamMuxerFactory, remoteAddress: string }> {
-  const stream = pbStream(abortableDuplex(rawStream, signal)).pb(Message)
+  const stream = pbStream(rawStream).pb(Message)
   // setup peer connection
   const pc = new RTCPeerConnection(rtcConfiguration)
   const muxerFactory = new DataChannelMuxerFactory({ peerConnection: pc, dataChannelOptions })
@@ -99,15 +101,19 @@ export async function initiateConnection ({ rtcConfiguration, dataChannelOptions
   resolveOnConnected(pc, connectedPromise)
 
   // reject the connectedPromise if the signal aborts
-  signal.onabort = connectedPromise.reject
+  signal.onabort = () => {
+    const err = new Error('Outgoing RTC connection did not complete handshake before timeout')
+    rawStream.abort(err)
+    connectedPromise.reject(err)
+  }
   // we create the channel so that the peerconnection has a component for which
   // to collect candidates. The label is not relevant to connection initiation
   // but can be useful for debugging
   const channel = pc.createDataChannel('init')
   // setup callback to write ICE candidates to the remote
   // peer
-  pc.onicecandidate = ({ candidate }) => {
-    stream.write({
+  pc.onicecandidate = async ({ candidate }) => {
+    await stream.write({
       type: Message.Type.ICE_CANDIDATE,
       data: (candidate != null) ? JSON.stringify(candidate.toJSON()) : ''
     })
@@ -115,7 +121,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannelOptions
   // create an offer
   const offerSdp = await pc.createOffer()
   // write the offer to the stream
-  stream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp })
+  await stream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp })
   // set offer as local description
   await pc.setLocalDescription(offerSdp).catch(err => {
     log.error('could not execute setLocalDescription', err)

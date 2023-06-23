@@ -14,7 +14,7 @@ describe('Message', () => {
         path.join(process.cwd(), 'test', 'fixtures', `msg-${i}`)
       )
 
-      const msg = Message.deserialize(raw)
+      const msg = Message.decode(raw)
 
       expect(msg.clusterLevel).to.gte(0)
       if (msg.record != null) {

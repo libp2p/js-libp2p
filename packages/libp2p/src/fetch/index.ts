@@ -1,10 +1,7 @@
 import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { abortableDuplex } from 'abortable-iterator'
-import first from 'it-first'
-import * as lp from 'it-length-prefixed'
-import { pipe } from 'it-pipe'
+import { pbStream } from '@libp2p/utils/stream'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { codes } from '../errors.js'
@@ -109,11 +106,12 @@ class DefaultFetchService implements Startable, FetchService {
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
+        .then(async () => {
+          await data.stream.close()
+        })
         .catch(err => {
           log.error(err)
-        })
-        .finally(() => {
-          data.stream.close()
+          data.stream.abort(err)
         })
     }, {
       maxInboundStreams: this.init.maxInboundStreams,
@@ -157,51 +155,33 @@ class DefaultFetchService implements Startable, FetchService {
         signal
       })
 
-      // make stream abortable
-      const source = abortableDuplex(stream, signal)
-
       log('fetch %s', key)
+      const pb = pbStream(stream)
+      await pb.write({ identifier: key }, FetchRequest, { signal })
+      const response = await pb.read(FetchResponse, { signal })
 
-      const result = await pipe(
-        [FetchRequest.encode({ identifier: key })],
-        (source) => lp.encode(source),
-        source,
-        (source) => lp.decode(source),
-        async function (source) {
-          const buf = await first(source)
-
-          if (buf == null) {
-            throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
-          }
-
-          const response = FetchResponse.decode(buf)
-
-          switch (response.status) {
-            case (FetchResponse.StatusCode.OK): {
-              log('received status for %s ok', key)
-              return response.data
-            }
-            case (FetchResponse.StatusCode.NOT_FOUND): {
-              log('received status for %s not found', key)
-              return null
-            }
-            case (FetchResponse.StatusCode.ERROR): {
-              log('received status for %s error', key)
-              const errmsg = uint8arrayToString(response.data)
-              throw new CodeError('Error in fetch protocol response: ' + errmsg, codes.ERR_INVALID_PARAMETERS)
-            }
-            default: {
-              log('received status for %s unknown', key)
-              throw new CodeError('Unknown response status', codes.ERR_INVALID_MESSAGE)
-            }
-          }
+      switch (response.status) {
+        case (FetchResponse.StatusCode.OK): {
+          log('received status for %s ok', key)
+          return response.data
         }
-      )
-
-      return result ?? null
+        case (FetchResponse.StatusCode.NOT_FOUND): {
+          log('received status for %s not found', key)
+          return null
+        }
+        case (FetchResponse.StatusCode.ERROR): {
+          log('received status for %s error', key)
+          const errmsg = uint8arrayToString(response.data)
+          throw new CodeError('Error in fetch protocol response: ' + errmsg, codes.ERR_INVALID_PARAMETERS)
+        }
+        default: {
+          log('received status for %s unknown', key)
+          throw new CodeError('Unknown response status', codes.ERR_INVALID_MESSAGE)
+        }
+      }
     } finally {
       if (stream != null) {
-        stream.close()
+        await stream.close()
       }
     }
   }
@@ -214,43 +194,36 @@ class DefaultFetchService implements Startable, FetchService {
   async handleMessage (data: IncomingStreamData): Promise<void> {
     const { stream } = data
     const self = this
+    const signal = AbortSignal.timeout(30000)
 
-    await pipe(
-      stream,
-      (source) => lp.decode(source),
-      async function * (source) {
-        const buf = await first(source)
+    try {
+      const pb = pbStream(stream)
+      const request = await pb.read(FetchRequest, { signal })
 
-        if (buf == null) {
-          throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
-        }
-
-        // for await (const buf of source) {
-        const request = FetchRequest.decode(buf)
-
-        let response: FetchResponse
-        const lookup = self._getLookupFunction(request.identifier)
-        if (lookup != null) {
-          log('look up data with identifier %s', request.identifier)
-          const data = await lookup(request.identifier)
-          if (data != null) {
-            log('sending status for %s ok', request.identifier)
-            response = { status: FetchResponse.StatusCode.OK, data }
-          } else {
-            log('sending status for %s not found', request.identifier)
-            response = { status: FetchResponse.StatusCode.NOT_FOUND, data: new Uint8Array(0) }
-          }
+      let response: FetchResponse
+      const lookup = self._getLookupFunction(request.identifier)
+      if (lookup != null) {
+        log('look up data with identifier %s', request.identifier)
+        const data = await lookup(request.identifier)
+        if (data != null) {
+          log('sending status for %s ok', request.identifier)
+          response = { status: FetchResponse.StatusCode.OK, data }
         } else {
-          log('sending status for %s error', request.identifier)
-          const errmsg = uint8arrayFromString(`No lookup function registered for key: ${request.identifier}`)
-          response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
+          log('sending status for %s not found', request.identifier)
+          response = { status: FetchResponse.StatusCode.NOT_FOUND, data: new Uint8Array(0) }
         }
+      } else {
+        log('sending status for %s error', request.identifier)
+        const errmsg = uint8arrayFromString(`No lookup function registered for key: ${request.identifier}`)
+        response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
+      }
 
-        yield FetchResponse.encode(response)
-      },
-      (source) => lp.encode(source),
-      stream
-    )
+      await pb.write(response, FetchResponse, { signal })
+    } finally {
+      if (stream != null) {
+        await stream.close()
+      }
+    }
   }
 
   /**

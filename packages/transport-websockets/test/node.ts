@@ -6,38 +6,22 @@ import http from 'http'
 import https from 'https'
 import { EventEmitter } from '@libp2p/interface/events'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { readableStreamFromArray, writeableStreamToArray, infiniteRandomReadableStream } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
-import all from 'it-all'
-import drain from 'it-drain'
-import { goodbye } from 'it-goodbye'
-import { pipe } from 'it-pipe'
 import defer from 'p-defer'
 import waitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
 import type { Listener, Transport } from '@libp2p/interface/transport'
-import type { Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import './compliance.node.js'
 
-async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
-  for await (const list of source) {
-    yield * list
-  }
-}
-
-const protocol = '/say-hello/1.0.0'
+const protocol = '/echo/1.0.0'
 const registrar = mockRegistrar()
-void registrar.handle(protocol, (evt) => {
-  void pipe([
-    uint8ArrayFromString('hey')
-  ],
-  evt.stream,
-  drain
-  )
+void registrar.handle(protocol, ({ stream }) => {
+  void stream.readable.pipeTo(stream.writable)
 })
 const upgrader = mockUpgrader({
   registrar,
@@ -59,7 +43,7 @@ describe('listen', () => {
     const listener = ws.createListener({
       handler: (conn) => {
         void conn.newStream([protocol]).then(async (stream) => {
-          await pipe(stream, stream)
+          await infiniteRandomReadableStream().pipeTo(stream.writable)
         })
       },
       upgrader
@@ -70,11 +54,11 @@ describe('listen', () => {
       upgrader
     })
     const stream = await conn.newStream([protocol])
-    void pipe(stream, stream)
+    void stream.readable.pipeTo(stream.writable)
 
     await listener.close()
 
-    await waitFor(() => conn.stat.timeline.close != null)
+    await waitFor(() => conn.timeline.close != null)
   })
 
   describe('ip4', () => {
@@ -255,8 +239,15 @@ describe('dial', () => {
     it('dial', async () => {
       const conn = await ws.dial(ma, { upgrader })
       const stream = await conn.newStream([protocol])
+      const data = [uint8ArrayFromString('hey')]
+      const res: Uint8Array[] = []
 
-      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
+      await readableStreamFromArray(data)
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
+
+      expect(res).to.deep.equal(data)
+
       await conn.close()
     })
 
@@ -264,8 +255,15 @@ describe('dial', () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const conn = await ws.dial(ma, { upgrader })
       const stream = await conn.newStream([protocol])
+      const data = [uint8ArrayFromString('hey')]
+      const res: Uint8Array[] = []
 
-      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
+      await readableStreamFromArray(data)
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
+
+      expect(res).to.deep.equal(data)
+
       await conn.close()
     })
 
@@ -315,7 +313,7 @@ describe('dial', () => {
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
+            await stream.readable.pipeTo(stream.writable)
           })
         },
         upgrader
@@ -334,15 +332,17 @@ describe('dial', () => {
 
       // Dial first no loopback address
       const conn = await ws.dial(addrs[0], { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
       const stream = await conn.newStream([protocol])
+      const data = [uint8ArrayFromString('hey')]
+      const res: Uint8Array[] = []
 
-      await expect(pipe(
-        s,
-        stream,
-        toBuffers,
-        s
-      )).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await readableStreamFromArray(data)
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
+
+      expect(res).to.deep.equal(data)
+
+      await conn.close()
     })
   })
 
@@ -361,7 +361,7 @@ describe('dial', () => {
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
+            await stream.readable.pipeTo(stream.writable)
           })
         },
         upgrader
@@ -383,12 +383,16 @@ describe('dial', () => {
 
     it('dial ip4', async () => {
       const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
       const stream = await conn.newStream([protocol])
+      const data = [uint8ArrayFromString('hey')]
+      const res: Uint8Array[] = []
 
-      const res = await pipe(s, stream, toBuffers, s)
+      await readableStreamFromArray(data)
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
 
-      expect(res[0]).to.equalBytes(uint8ArrayFromString('hey'))
+      expect(res).to.deep.equal(data)
+
       await conn.close()
     })
   })
@@ -403,7 +407,7 @@ describe('dial', () => {
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
+            await stream.readable.pipeTo(stream.writable)
           })
         },
         upgrader
@@ -415,23 +419,33 @@ describe('dial', () => {
 
     it('dial ip6', async () => {
       const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
       const stream = await conn.newStream([protocol])
+      const data = [uint8ArrayFromString('hey')]
+      const res: Uint8Array[] = []
 
-      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await readableStreamFromArray(data)
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
+
+      expect(res).to.deep.equal(data)
+
+      await conn.close()
     })
 
     it('dial with p2p Id', async () => {
       const ma = multiaddr('/ip6/::1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const conn = await ws.dial(ma, { upgrader })
-
-      const s = goodbye({
-        source: [uint8ArrayFromString('hey')],
-        sink: all
-      })
       const stream = await conn.newStream([protocol])
+      const data = [uint8ArrayFromString('hey')]
+      const res: Uint8Array[] = []
 
-      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await readableStreamFromArray(data)
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
+
+      expect(res).to.deep.equal(data)
+
+      await conn.close()
     })
   })
 })

@@ -1,7 +1,7 @@
 import { createStream } from './stream.js'
 import { nopSink, nopSource } from './util.js'
 import type { DataChannelOpts } from './stream.js'
-import type { Stream } from '@libp2p/interface/connection'
+import type { RawStream } from '@libp2p/interface/connection'
 import type { CounterGroup } from '@libp2p/interface/metrics'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
 import type { Source, Sink } from 'it-stream-types'
@@ -38,7 +38,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
    * WebRTC Peer Connection
    */
   private readonly peerConnection: RTCPeerConnection
-  private streamBuffer: Stream[] = []
+  private streamBuffer: RawStream[] = []
   private readonly metrics?: CounterGroup
   private readonly dataChannelOptions?: Partial<DataChannelOpts>
 
@@ -75,7 +75,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
 }
 
 export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit, StreamMuxerInit {
-  streams: Stream[]
+  streams: RawStream[]
 }
 
 /**
@@ -85,7 +85,7 @@ export class DataChannelMuxer implements StreamMuxer {
   /**
    * Array of streams in the data channel
    */
-  public streams: Stream[]
+  public streams: RawStream[]
   public protocol: string
 
   private readonly peerConnection: RTCPeerConnection
@@ -93,9 +93,14 @@ export class DataChannelMuxer implements StreamMuxer {
   private readonly metrics?: CounterGroup
 
   /**
-   * Close or abort all tracked streams and stop the muxer
+   * Gracefully close all tracked streams and stop the muxer
    */
-  close: (err?: Error | undefined) => void = () => { }
+  close: () => Promise<void> = async () => { }
+
+  /**
+   * Abort all tracked streams and stop the muxer
+   */
+  abort: (err: Error) => void = () => { }
 
   /**
    * The stream source, a no-op as the transport natively supports multiplexing
@@ -144,7 +149,7 @@ export class DataChannelMuxer implements StreamMuxer {
     }
   }
 
-  newStream (): Stream {
+  newStream (): RawStream {
     // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('')
     const stream = createStream({

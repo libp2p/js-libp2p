@@ -2,10 +2,9 @@
 
 import { EventEmitter } from '@libp2p/interface/events'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { readableStreamFromArray, writeableStreamToArray } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import { webSockets } from '../src/index.js'
@@ -36,11 +35,11 @@ describe('libp2p-websockets', () => {
     const data = uint8ArrayFromString('hey')
     const stream = await conn.newStream([protocol])
 
-    const res = await pipe(
-      [data],
-      stream,
-      async (source) => all(source)
-    )
+    const res: Uint8Array[] = []
+
+    await readableStreamFromArray([data])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(res))
 
     expect(res[0].subarray()).to.equalBytes(data)
   })
@@ -66,11 +65,11 @@ describe('libp2p-websockets', () => {
       const data = new Uint8Array(1000000).fill(5)
       const stream = await conn.newStream([protocol])
 
-      const res = await pipe(
-        [data],
-        stream,
-        async (source) => all(source)
-      )
+      const res: Uint8Array[] = []
+
+      await readableStreamFromArray([data])
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
 
       expect(res[0].subarray()).to.deep.equal(data)
     })
@@ -82,11 +81,11 @@ describe('libp2p-websockets', () => {
       const data = Array(count).fill(0).map(() => uint8ArrayFromString(Math.random().toString()))
       const stream = await conn.newStream([protocol])
 
-      const res = await pipe(
-        data,
-        stream,
-        async (source) => all(source)
-      )
+      const res: Uint8Array[] = []
+
+      await readableStreamFromArray(data)
+        .pipeThrough(stream)
+        .pipeTo(writeableStreamToArray(res))
 
       expect(res.map(list => list.subarray())).to.deep.equal(data)
     })

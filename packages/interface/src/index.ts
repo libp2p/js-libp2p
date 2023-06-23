@@ -28,6 +28,7 @@ import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index
 import type { Topology } from './topology/index.js'
 import type { Listener } from './transport/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling
@@ -615,6 +616,27 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
  */
 export interface AbortOptions {
   signal?: AbortSignal
+}
+
+/**
+ * A type that is either a Uint8Array or a list of Uint8Arrays
+ */
+export type Bytes = Uint8Array | Uint8ArrayList
+
+/**
+ * A type that is either a value or a promise of a value
+ */
+export type Await<T> = T | Promise<T>
+
+/**
+ * Utility function that tells TSC if the passed object is a promise or not
+ */
+export function isThenable <T = void> (obj: any): obj is Promise<T> {
+  if (obj != null) {
+    return typeof obj.then === 'function'
+  }
+
+  return false
 }
 
 /**

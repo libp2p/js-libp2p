@@ -1,4 +1,3 @@
-import { pipe } from 'it-pipe'
 
 /** @type {import('aegir/types').PartialOptions} */
 export default {
@@ -12,10 +11,7 @@ export default {
       const protocol = '/echo/1.0.0'
       const registrar = mockRegistrar()
       registrar.handle(protocol, ({ stream }) => {
-        void pipe(
-          stream,
-          stream
-        )
+        void stream.readable.pipeTo(stream.writable)
       })
       const upgrader = mockUpgrader({
         registrar,

@@ -13,11 +13,11 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
+import { readableStreamFromGenerator } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
-import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
@@ -326,7 +326,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       ]
     })
     await remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => {
-      void pipe(stream, stream)
+      void stream.readable.pipeTo(stream.writable)
     })
 
     await remoteLibp2p.start()
@@ -370,7 +370,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     expect(connection).to.exist()
     const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
     await connection.close()
   })
 
@@ -393,16 +393,16 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     // register some stream handlers to simulate several protocols
     await libp2p.handle('/stream-count/1', ({ stream }) => {
-      void pipe(stream, stream)
+      void stream.readable.pipeTo(stream.writable)
     })
     await libp2p.handle('/stream-count/2', ({ stream }) => {
-      void pipe(stream, stream)
+      void stream.readable.pipeTo(stream.writable)
     })
     await remoteLibp2p.handle('/stream-count/3', ({ stream }) => {
-      void pipe(stream, stream)
+      void stream.readable.pipeTo(stream.writable)
     })
     await remoteLibp2p.handle('/stream-count/4', ({ stream }) => {
-      void pipe(stream, stream)
+      void stream.readable.pipeTo(stream.writable)
     })
 
     await libp2p.peerStore.patch(remotePeerId, {
@@ -417,7 +417,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     // Partially write to the echo stream
     const source = pushable()
-    void stream.sink(source)
+    void readableStreamFromGenerator(source).pipeTo(stream.writable)
     source.push(uint8ArrayFromString('hello'))
 
     // Create remote to local streams
@@ -487,9 +487,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
-    expect(connection.stat.timeline.close).to.not.exist()
+    expect(connection.timeline.close).to.not.exist()
     await libp2p.hangUp(connection.remotePeer)
-    expect(connection.stat.timeline.close).to.exist()
+    expect(connection.timeline.close).to.exist()
   })
 
   it('should use the protectors when provided for connecting', async () => {
@@ -522,7 +522,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     expect(connection).to.exist()
     const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
     await connection.close()
     expect(protectorProtectSpy.callCount).to.equal(1)
   })

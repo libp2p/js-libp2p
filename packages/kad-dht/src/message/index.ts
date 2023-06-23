@@ -55,24 +55,21 @@ export class Message {
     this.clusterLevelRaw = level
   }
 
-  /**
-   * Encode into protobuf
-   */
-  serialize (): Uint8Array {
+  static encode (message: Message): Uint8Array {
     return PBMessage.encode({
-      key: this.key,
-      type: this.type,
-      clusterLevelRaw: this.clusterLevelRaw,
-      closerPeers: this.closerPeers.map(toPbPeer),
-      providerPeers: this.providerPeers.map(toPbPeer),
-      record: this.record == null ? undefined : this.record.serialize().subarray()
+      key: message.key,
+      type: message.type,
+      clusterLevelRaw: message.clusterLevelRaw,
+      closerPeers: message.closerPeers.map(toPbPeer),
+      providerPeers: message.providerPeers.map(toPbPeer),
+      record: message.record == null ? undefined : message.record.serialize().subarray()
     })
   }
 
   /**
    * Decode from protobuf
    */
-  static deserialize (raw: Uint8ArrayList | Uint8Array): Message {
+  static decode (raw: Uint8ArrayList | Uint8Array): Message {
     const dec = PBMessage.decode(raw)
 
     const msg = new Message(dec.type ?? PBMessage.MessageType.PUT_VALUE, dec.key ?? Uint8Array.from([]), dec.clusterLevelRaw ?? 0)

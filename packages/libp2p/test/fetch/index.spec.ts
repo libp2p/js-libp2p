@@ -5,10 +5,10 @@ import { start, stop } from '@libp2p/interface/startable'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { transformStreamEach } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
-import { pipe } from 'it-pipe'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
@@ -112,18 +112,11 @@ describe('fetch', () => {
     // replace existing handler with a really slow one
     await remoteComponents.registrar.unhandle(remoteFetch.protocol)
     await remoteComponents.registrar.handle(remoteFetch.protocol, ({ stream }) => {
-      void pipe(
-        stream,
-        async function * (source) {
-          for await (const chunk of source) {
-            // longer than the timeout
-            await delay(1000)
-
-            yield chunk
-          }
-        },
-        stream
-      )
+      void stream.readable.pipeThrough(transformStreamEach(async () => {
+        // longer than the timeout
+        await delay(1000)
+      }))
+        .pipeTo(stream.writable)
     })
 
     const newStreamSpy = sinon.spy(localToRemote, 'newStream')
@@ -140,6 +133,6 @@ describe('fetch', () => {
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
     const stream = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('stat.timeline.close')
+    expect(stream).to.have.nested.property('timeline.close')
   })
 })

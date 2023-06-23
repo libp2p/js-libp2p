@@ -1,9 +1,9 @@
 import tests from '@libp2p/interface-compliance-tests/connection'
 import peers from '@libp2p/interface-compliance-tests/peers'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { pair } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createConnection } from '../../src/connection/index.js'
-import { pair } from './fixtures/pair.js'
 import type { Stream } from '@libp2p/interface/connection'
 
 describe('connection compliance', () => {
@@ -21,40 +21,35 @@ describe('connection compliance', () => {
       const connection = createConnection({
         remotePeer,
         remoteAddr,
-        stat: {
-          timeline: {
-            open: Date.now() - 10,
-            upgraded: Date.now()
-          },
-          direction: 'outbound',
-          encryption: '/secio/1.0.0',
-          multiplexer: '/mplex/6.7.0',
-          status: 'OPEN'
+        timeline: {
+          open: Date.now() - 10,
+          upgraded: Date.now()
         },
+        direction: 'outbound',
+        encryption: '/secio/1.0.0',
+        multiplexer: '/mplex/6.7.0',
+        status: 'OPEN',
         newStream: async (protocols) => {
           const id = `${streamId++}`
           const stream: Stream = {
             ...pair(),
-            close: () => {
-              void stream.sink(async function * () {}())
+            close: async () => {
+              await Promise.all([
+                stream.readable.cancel(),
+                stream.writable.close()
+              ])
+
               connection.removeStream(stream.id)
               openStreams = openStreams.filter(s => s.id !== id)
             },
-            closeRead: () => {},
-            closeWrite: () => {
-              void stream.sink(async function * () {}())
-            },
-            id,
             abort: () => {},
-            reset: () => {},
-            stat: {
-              direction: 'outbound',
-              protocol: protocols[0],
-              timeline: {
-                open: 0
-              }
+            id,
+            direction: 'inbound',
+            timeline: {
+              open: Date.now()
             },
-            metadata: {}
+            metadata: {},
+            protocol: protocols[0]
           }
 
           openStreams.push(stream)
@@ -62,6 +57,7 @@ describe('connection compliance', () => {
           return stream
         },
         close: async () => {},
+        abort: () => {},
         getStreams: () => openStreams,
         ...properties
       })

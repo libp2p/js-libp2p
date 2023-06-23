@@ -6,9 +6,9 @@ import { isStartable } from '@libp2p/interface/startable'
 import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { type MessageStream, pbStream } from '@libp2p/utils/stream'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { type MessageStream, pbStream } from 'it-pb-stream'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
@@ -149,7 +149,7 @@ describe('circuit-relay hop protocol', function () {
     const clientPbStream = await openStream(client, relay, RELAY_V2_HOP_CODEC)
 
     // send reserve message
-    clientPbStream.write({
+    await clientPbStream.write({
       type: HopMessage.Type.RESERVE
     })
 
@@ -163,7 +163,7 @@ describe('circuit-relay hop protocol', function () {
     const clientPbStream = await openStream(client, relay, RELAY_V2_HOP_CODEC)
 
     // send reserve message
-    clientPbStream.write({
+    await clientPbStream.write({
       type: HopMessage.Type.CONNECT,
       peer: {
         id: target.peerId.toBytes(),
@@ -206,7 +206,7 @@ describe('circuit-relay hop protocol', function () {
       const clientPbStream = await openStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
 
       // wrong initial message
-      clientPbStream.write({
+      await clientPbStream.write({
         type: HopMessage.Type.STATUS,
         status: Status.MALFORMED_MESSAGE
       })
@@ -322,7 +322,7 @@ describe('circuit-relay hop protocol', function () {
       await expect(makeReservation(targetNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
 
       const clientPbStream = await openStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
-      clientPbStream.write({
+      await clientPbStream.write({
         type: HopMessage.Type.CONNECT,
         // @ts-expect-error {} is missing the following properties from peer: id, addrs
         peer: {}

@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message Message {
+  string message = 1;
+  uint32 value = 2;
+  bool flag = 3;
+}

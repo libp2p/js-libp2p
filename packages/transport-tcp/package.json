@@ -61,8 +61,6 @@
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^3.0.0",
     "aegir": "^39.0.10",
-    "it-all": "^3.0.1",
-    "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0",
     "sinon": "^15.1.2",
     "uint8arrays": "^4.0.3"

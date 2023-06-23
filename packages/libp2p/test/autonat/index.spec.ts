@@ -3,6 +3,7 @@
 
 import { start, stop } from '@libp2p/interface/startable'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { readableStreamFromArray, writeableStreamToDrain, readableStreamFromGenerator, writeableStreamToArray } from '@libp2p/utils/stream'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -11,7 +12,6 @@ import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../../src/autonat/constants.js'
 import { autoNATService } from '../../src/autonat/index.js'
 import { Message } from '../../src/autonat/pb/index.js'
@@ -106,10 +106,8 @@ describe('autonat', () => {
           type: Message.MessageType.DIAL_RESPONSE,
           dialResponse
         })
-        stream.source = (async function * () {
-          yield lp.encode.single(response)
-        }())
-        stream.sink.returns(Promise.resolve())
+        stream.readable = readableStreamFromArray([lp.encode.single(response).subarray()])
+        stream.writable = writeableStreamToDrain()
 
         return stream
       })
@@ -425,18 +423,12 @@ describe('autonat', () => {
       const remotePeer = opts.remotePeer ?? requestingPeer
       const observedAddress = opts.observedAddress ?? multiaddr('/ip4/124.124.124.124/tcp/28319')
       const remoteAddr = opts.remoteAddr ?? observedAddress.encapsulate(`/p2p/${remotePeer.toString()}`)
-      const source = pushable<Uint8ArrayList>()
-      const sink = pushable<Uint8ArrayList>()
+      const source = pushable<Uint8Array>()
+      const sink: Uint8Array[] = []
       const stream: Stream = {
         ...stubInterface<Stream>(),
-        source,
-        sink: async (stream) => {
-          for await (const buf of stream) {
-            sink.push(new Uint8ArrayList(buf))
-          }
-
-          sink.end()
-        }
+        readable: readableStreamFromGenerator(source),
+        writable: writeableStreamToArray(sink)
       }
       const connection = {
         ...stubInterface<Connection>(),
@@ -480,7 +472,7 @@ describe('autonat', () => {
       }
 
       if (buf != null) {
-        source.push(lp.encode.single(buf))
+        source.push(lp.encode.single(buf).subarray())
       }
 
       source.end()

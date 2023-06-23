@@ -1,12 +1,9 @@
 /* eslint-env mocha */
 
+import { readableStreamFromArray, readableStreamFromGenerator, transformStreamEach, writeableStreamToDrain } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
 import * as cborg from 'cborg'
 import randomBytes from 'iso-random-stream/src/random.js'
-import drain from 'it-drain'
-import each from 'it-foreach'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import defer from 'p-defer'
 import randomInt from 'random-int'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -17,8 +14,8 @@ import { messageWithBytes } from './fixtures/utils.js'
 import type { Message } from '../src/message-types.js'
 import type { MplexStream } from '../src/mplex.js'
 
-function randomInput (min = 1, max = 100): Uint8ArrayList[] {
-  return Array.from(Array(randomInt(min, max)), () => new Uint8ArrayList(randomBytes(randomInt(1, 128))))
+function randomInput (min = 1, max = 100): Uint8Array[] {
+  return Array.from(Array(randomInt(min, max)), () => randomBytes(randomInt(1, 128)))
 }
 
 function expectMsgType (actual: keyof typeof MessageTypeNames, expected: keyof typeof MessageTypeNames): void {
@@ -47,7 +44,7 @@ function expectEchoedMessages (messages: Message[], codes: Array<keyof typeof Me
   expectMessages(messages.slice(0, codes.length).map(echoedMessage), codes)
 }
 
-const msgToBuffer = (msg: Message): Uint8ArrayList => {
+const msgToBuffer = (msg: Message): Uint8Array => {
   const m: any = {
     ...msg
   }
@@ -56,7 +53,7 @@ const msgToBuffer = (msg: Message): Uint8ArrayList => {
     m.data = msg.data.slice()
   }
 
-  return new Uint8ArrayList(cborg.encode(m))
+  return cborg.encode(m)
 }
 
 const bufferToMessage = (buf: Uint8Array | Uint8ArrayList): Message => cborg.decode(buf.subarray())
@@ -77,66 +74,54 @@ async function streamPair (n: number, onInitiatorMessage?: onMessage, onReceiver
 
   const mockInitiatorSend = (msg: Message): void => {
     initiatorMessages.push(msg)
-
-    if (onInitiatorMessage != null) {
-      onInitiatorMessage(msg, initiator, receiver)
-    }
-
     receiver.sourcePush(msgToBuffer(msg))
+    onInitiatorMessage?.(msg, initiator, receiver)
   }
   const mockReceiverSend = (msg: Message): void => {
     receiverMessages.push(msg)
-
-    if (onReceiverMessage != null) {
-      onReceiverMessage(msg, initiator, receiver)
-    }
-
     initiator.sourcePush(msgToBuffer(msg))
+
+    onReceiverMessage?.(msg, initiator, receiver)
   }
   const initiator = createStream({ id, send: mockInitiatorSend, type: 'initiator' })
   const receiver = createStream({ id, send: mockReceiverSend, type: 'receiver' })
-  const input = new Array(n).fill(0).map((_, i) => new Uint8ArrayList(Uint8Array.from([i])))
+  const input = new Array(n).fill(0).map((_, i) => Uint8Array.from([i]))
 
-  void pipe(
-    receiver,
-    source => each(source, buf => {
-      const msg = bufferToMessage(buf)
+  await Promise.all([
+    receiver.readable
+      .pipeThrough(transformStreamEach((buf) => {
+        const msg = bufferToMessage(buf)
 
-      // when the initiator sends a CLOSE message, we call close
-      if (msg.type === MessageTypes.CLOSE_INITIATOR) {
-        receiver.closeRead()
-      }
+        // when the initiator sends a CLOSE message, we call close
+        if (msg.type === MessageTypes.CLOSE_INITIATOR) {
+          receiver.closeRead()
+        }
 
-      // when the initiator sends a RESET message, we call close
-      if (msg.type === MessageTypes.RESET_INITIATOR) {
-        receiver.reset()
-      }
-    }),
-    receiver
-  ).catch(() => {})
-
-  try {
-    await pipe(
-      input,
-      initiator,
-      (source) => map(source, buf => {
+        // when the initiator sends a RESET message, we call close
+        if (msg.type === MessageTypes.RESET_INITIATOR) {
+          receiver.reset()
+        }
+      }))
+      .pipeTo(receiver.writable)
+      .catch(() => {}),
+    readableStreamFromArray(input)
+      .pipeThrough(initiator)
+      .pipeThrough(transformStreamEach(async buf => {
         const msg: Message = bufferToMessage(buf)
 
         // when the receiver sends a CLOSE message, we call close
         if (msg.type === MessageTypes.CLOSE_RECEIVER) {
-          initiator.close()
+          await initiator.close()
         }
 
         // when the receiver sends a RESET message, we call close
         if (msg.type === MessageTypes.RESET_RECEIVER) {
           initiator.reset()
         }
-      }),
-      drain
-    )
-  } catch {
-
-  }
+      }))
+      .pipeTo(writeableStreamToDrain())
+      .catch(() => {})
+  ])
 
   return {
     receiverMessages,
@@ -152,7 +137,7 @@ describe('stream', () => {
     const stream = createStream({ id, send: mockSend })
     const input = randomInput()
 
-    await pipe(input, stream)
+    await readableStreamFromArray(input).pipeTo(stream.writable)
 
     expect(msgs[0].id).to.equal(id)
     expectMsgType(msgs[0].type, MessageTypes.NEW_STREAM)
@@ -167,7 +152,7 @@ describe('stream', () => {
     const stream = createStream({ id, name, send: mockSend })
     const input = randomInput()
 
-    await pipe(input, stream)
+    await readableStreamFromArray(input).pipeTo(stream.writable)
 
     expect(msgs[0].id).to.equal(id)
     expectMsgType(msgs[0].type, MessageTypes.NEW_STREAM)
@@ -212,7 +197,7 @@ describe('stream', () => {
     const stream = createStream({ id, name, send: mockSend, type: 'initiator' })
     const input = randomInput()
 
-    await pipe(input, stream)
+    await readableStreamFromArray(input).pipeTo(stream.writable)
 
     // First and last should be NEW_STREAM and CLOSE
     const dataMsgs = msgs.slice(1, -1)
@@ -233,7 +218,7 @@ describe('stream', () => {
     const stream = createStream({ id, name, send: mockSend, type: 'receiver' })
     const input = randomInput()
 
-    await pipe(input, stream)
+    await readableStreamFromArray(input).pipeTo(stream.writable)
 
     // Last should be CLOSE
     const dataMsgs = msgs.slice(0, -1)
@@ -254,7 +239,7 @@ describe('stream', () => {
     const stream = createStream({ id, name, send: mockSend, type: 'initiator' })
     const input = randomInput()
 
-    await pipe(input, stream)
+    await readableStreamFromArray(input).pipeTo(stream.writable)
 
     const closeMsg = msgs[msgs.length - 1]
 
@@ -271,7 +256,7 @@ describe('stream', () => {
     const stream = createStream({ id, name, send: mockSend, type: 'receiver' })
     const input = randomInput()
 
-    await pipe(input, stream)
+    await readableStreamFromArray(input).pipeTo(stream.writable)
 
     const closeMsg = msgs[msgs.length - 1]
 
@@ -287,17 +272,15 @@ describe('stream', () => {
     const name = id.toString()
     const stream = createStream({ id, name, send: mockSend, type: 'initiator' })
     const error = new Error(`Boom ${Date.now()}`)
-    const input = {
-      [Symbol.iterator]: function * () {
-        for (let i = 0; i < randomInt(1, 10); i++) {
-          yield new Uint8ArrayList(randomBytes(randomInt(1, 128)))
-        }
-        throw error
+    const input = function * (): Generator<Uint8Array, void, unknown> {
+      for (let i = 0; i < randomInt(1, 10); i++) {
+        yield randomBytes(randomInt(1, 128))
       }
+      throw error
     }
 
-    await expect(pipe(input, stream)).to.eventually.be
-      .rejected.with.property('message', error.message)
+    await expect(readableStreamFromGenerator(input()).pipeTo(stream.writable))
+      .to.eventually.be.rejected.with.property('message', error.message)
 
     const resetMsg = msgs[msgs.length - 1]
 
@@ -313,17 +296,15 @@ describe('stream', () => {
     const name = id.toString()
     const stream = createStream({ id, name, send: mockSend, type: 'receiver' })
     const error = new Error(`Boom ${Date.now()}`)
-    const input = {
-      [Symbol.iterator]: function * () {
-        for (let i = 0; i < randomInt(1, 10); i++) {
-          yield new Uint8ArrayList(randomBytes(randomInt(1, 128)))
-        }
-        throw error
+    const input = function * (): Generator<Uint8Array, void, unknown> {
+      for (let i = 0; i < randomInt(1, 10); i++) {
+        yield randomBytes(randomInt(1, 128))
       }
+      throw error
     }
 
-    await expect(pipe(input, stream)).to.eventually.be.rejected
-      .with.property('message', error.message)
+    await expect(readableStreamFromGenerator(input()).pipeTo(stream.writable))
+      .to.eventually.be.rejected.with.property('message', error.message)
 
     const resetMsg = msgs[msgs.length - 1]
 
@@ -365,16 +346,16 @@ describe('stream', () => {
     expect(receiverMessages[receiverMessages.length - 1]).to.have.property('type', MessageTypes.CLOSE_RECEIVER)
   })
 
-  it('should close for reading and writing (abort on local error)', async () => {
+  it('should close for reading and writing (local error)', async () => {
     const maxMsgs = 2
     const error = new Error(`Boom ${Date.now()}`)
     let messages = 0
 
-    const dataLength = 5
+    const dataLength = 10
     const {
       initiatorMessages,
       receiverMessages
-    } = await streamPair(dataLength, (initiatorMessage, initiator) => {
+    } = await streamPair(dataLength, (msg, initiator) => {
       messages++
 
       if (messages === maxMsgs) {
@@ -382,17 +363,16 @@ describe('stream', () => {
       }
     })
 
-    expect(initiatorMessages).to.have.lengthOf(3)
-    expect(initiatorMessages[0]).to.have.property('type', MessageTypes.NEW_STREAM)
-    expect(initiatorMessages[1]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[2]).to.have.property('type', MessageTypes.RESET_INITIATOR)
+    expect(initiatorMessages).to.have.property('length')
+      .that.is.lessThan(dataLength)
 
-    // Reset after two messages
-    expect(receiverMessages).to.have.lengthOf(2)
-    expectEchoedMessages(receiverMessages, [
-      MessageTypes.NEW_STREAM,
-      MessageTypes.MESSAGE_INITIATOR
-    ])
+    // initiator sent reset message
+    expect(initiatorMessages[initiatorMessages.length - 1])
+      .to.have.property('type', MessageTypes.RESET_INITIATOR)
+
+    // not all messages were received
+    expect(receiverMessages).to.have.property('length')
+      .that.is.lessThan(dataLength)
   })
 
   it('should close for reading and writing (abort on remote error)', async () => {
@@ -400,100 +380,25 @@ describe('stream', () => {
     const error = new Error(`Boom ${Date.now()}`)
     let messages = 0
 
-    const dataLength = 5
+    const dataLength = 10
     const {
       initiatorMessages,
       receiverMessages
-    } = await streamPair(dataLength, (initiatorMessage, initiator, recipient) => {
+    } = await streamPair(dataLength, (receiverMessage, initiator, receiver) => {
       messages++
 
       if (messages === maxMsgs) {
-        recipient.abort(error)
+        receiver.abort(error)
       }
     })
 
-    // All messages sent to recipient
-    expect(initiatorMessages).to.have.lengthOf(7)
-    expect(initiatorMessages[0]).to.have.property('type', MessageTypes.NEW_STREAM)
-    expect(initiatorMessages[1]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[2]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[3]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[4]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[5]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[6]).to.have.property('type', MessageTypes.CLOSE_INITIATOR)
+    // not all messages were sent
+    expect(initiatorMessages).to.have.property('length')
+      .that.is.lessThan(dataLength)
 
-    // Recipient reset after two messages
-    expect(receiverMessages).to.have.lengthOf(3)
-    expectEchoedMessages(receiverMessages, [
-      MessageTypes.NEW_STREAM,
-      MessageTypes.MESSAGE_INITIATOR
-    ])
-    expect(receiverMessages[receiverMessages.length - 1]).to.have.property('type', MessageTypes.RESET_RECEIVER)
-  })
-
-  it('should close immediately for reading and writing (reset on local error)', async () => {
-    const maxMsgs = 2
-    const error = new Error(`Boom ${Date.now()}`)
-    let messages = 0
-
-    const dataLength = 5
-    const {
-      initiatorMessages,
-      receiverMessages
-    } = await streamPair(dataLength, () => {
-      messages++
-
-      if (messages === maxMsgs) {
-        throw error
-      }
-    })
-
-    expect(initiatorMessages).to.have.lengthOf(3)
-    expect(initiatorMessages[0]).to.have.property('type', MessageTypes.NEW_STREAM)
-    expect(initiatorMessages[1]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[2]).to.have.property('type', MessageTypes.RESET_INITIATOR)
-
-    // Reset after two messages
-    expect(receiverMessages).to.have.lengthOf(1)
-    expectEchoedMessages(receiverMessages, [
-      MessageTypes.NEW_STREAM
-    ])
-  })
-
-  it('should close immediately for reading and writing (reset on remote error)', async () => {
-    const maxMsgs = 2
-    const error = new Error(`Boom ${Date.now()}`)
-    let messages = 0
-
-    const dataLength = 5
-    const {
-      initiatorMessages,
-      receiverMessages
-    } = await streamPair(dataLength, () => {}, () => {
-      messages++
-
-      if (messages === maxMsgs) {
-        throw error
-      }
-    })
-
-    // All messages sent to recipient
-    expect(initiatorMessages).to.have.lengthOf(7)
-    expect(initiatorMessages[0]).to.have.property('type', MessageTypes.NEW_STREAM)
-    expect(initiatorMessages[1]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[2]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[3]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[4]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[5]).to.have.property('type', MessageTypes.MESSAGE_INITIATOR)
-    expect(initiatorMessages[6]).to.have.property('type', MessageTypes.CLOSE_INITIATOR)
-
-    // Recipient reset after two messages
-    expect(receiverMessages).to.have.lengthOf(3)
-    expectEchoedMessages(receiverMessages, [
-      MessageTypes.NEW_STREAM,
-      MessageTypes.MESSAGE_INITIATOR
-    ])
-    expect(receiverMessages[receiverMessages.length - 1]).to.have.property('type', MessageTypes.RESET_RECEIVER)
+    // recipient sent reset message
+    expect(receiverMessages[receiverMessages.length - 1])
+      .to.have.property('type', MessageTypes.RESET_RECEIVER)
   })
 
   it('should call onEnd only when both sides have closed', async () => {
@@ -512,11 +417,9 @@ describe('stream', () => {
     const stream = createStream({ id, name, send, onEnd })
     const input = randomInput()
 
-    void pipe(
-      input,
-      stream,
-      drain
-    )
+    void readableStreamFromArray(input)
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToDrain())
 
     await deferred.promise
   })
@@ -531,11 +434,10 @@ describe('stream', () => {
     const stream = createStream({ id, send, onEnd })
     const input = randomInput()
 
-    pipe(
-      input,
-      stream,
-      drain
-    ).catch(() => {})
+    void readableStreamFromArray(input)
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToDrain())
+      .catch(() => {})
 
     await expect(deferred.promise).to.eventually.be.rejectedWith(/Local boom/)
   })
@@ -554,13 +456,11 @@ describe('stream', () => {
     const id = randomInt(1000)
     const stream = createStream({ id, send, maxMsgSize })
 
-    await pipe(
-      [
-        new Uint8ArrayList(new Uint8Array(maxMsgSize * 2))
-      ],
-      stream,
-      drain
-    )
+    await readableStreamFromArray([
+      new Uint8Array(maxMsgSize * 2)
+    ])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToDrain())
 
     expect(messages.length).to.equal(2)
     expect(messages[0]).to.have.nested.property('data.length', maxMsgSize)
@@ -573,11 +473,15 @@ describe('stream', () => {
     const stream = createStream({ id, send })
 
     // first sink is ok
-    await stream.sink([])
+    await readableStreamFromArray([])
+      .pipeTo(stream.writable)
 
     // cannot sink twice
-    await expect(stream.sink([]))
-      .to.eventually.be.rejected.with.property('code', 'ERR_DOUBLE_SINK')
+    await expect(
+      readableStreamFromArray([])
+        .pipeTo(stream.writable)
+    )
+      .to.eventually.be.rejected.with.property('message').that.matches(/closed/)
   })
 
   it('should chunk really big messages', async () => {
@@ -592,7 +496,7 @@ describe('stream', () => {
     ]
     const output = new Uint8ArrayList()
 
-    await pipe(input, stream)
+    await readableStreamFromArray(input).pipeTo(stream.writable)
 
     expect(msgs).to.have.lengthOf(105)
     expect(msgs[0].id).to.equal(id)

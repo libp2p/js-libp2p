@@ -4,16 +4,12 @@ import { EventEmitter } from '@libp2p/interface/events'
 import { start } from '@libp2p/interface/startable'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { bytesTransform, lengthPrefixedEncoderTransform, pbReader, readableStreamFromArray, pbEncoderTransform } from '@libp2p/utils/stream'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import all from 'it-all'
-import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import Sinon, { type SinonStubbedInstance } from 'sinon'
 import { stubInterface } from 'ts-sinon'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../../src/message/index.js'
 import { PeerRouting } from '../../src/peer-routing/index.js'
@@ -23,12 +19,11 @@ import { RPC, type RPCComponents } from '../../src/rpc/index.js'
 import { createPeerId } from '../utils/create-peer-id.js'
 import type { Validators } from '../../src/index.js'
 import type { Libp2pEvents } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
+import type { ByteStream, Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { Datastore } from 'interface-datastore'
-import type { Duplex, Source } from 'it-stream-types'
 
 describe('rpc', () => {
   let peerId: PeerId
@@ -74,8 +69,7 @@ describe('rpc', () => {
     const defer = pDefer()
     const msg = new Message(MESSAGE_TYPE.GET_VALUE, uint8ArrayFromString('hello'), 5)
 
-    const validateMessage = (res: Uint8ArrayList[]): void => {
-      const msg = Message.deserialize(res[0])
+    const validateMessage = (msg: Message): void => {
       expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
       expect(msg).to.have.property('closerPeers').eql([])
       defer.resolve()
@@ -83,25 +77,15 @@ describe('rpc', () => {
 
     peerRouting.getCloserPeersOffline.resolves([])
 
-    const source = pipe(
-      [msg.serialize()],
-      (source) => lp.encode(source),
-      source => map(source, arr => new Uint8ArrayList(arr)),
-      (source) => all(source)
-    )
+    const duplexStream: ByteStream = {
+      readable: readableStreamFromArray([msg])
+        .pipeThrough(pbEncoderTransform(Message))
+        .pipeThrough(lengthPrefixedEncoderTransform())
+        .pipeThrough(bytesTransform()),
 
-    const duplexStream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>> = {
-      source: (async function * () {
-        yield * source
-      })(),
-      sink: async (source) => {
-        const res = await pipe(
-          source,
-          (source) => lp.decode(source),
-          async (source) => all(source)
-        )
-        validateMessage(res)
-      }
+      writable: pbReader((message) => {
+        validateMessage(message)
+      }, Message)
     }
 
     rpc.onIncomingStream({

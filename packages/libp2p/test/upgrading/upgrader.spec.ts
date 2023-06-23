@@ -6,20 +6,17 @@ import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mock
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { readableStreamFromArray, writeableStreamToArray, readableStreamFromGenerator, writeableStreamToDrain } from '@libp2p/utils/stream'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
-import all from 'it-all'
-import drain from 'it-drain'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { type Components, defaultComponents } from '../../src/components.js'
@@ -122,13 +119,13 @@ describe('Upgrader', () => {
     })
 
     await localComponents.registrar.handle('/echo/1.0.0', ({ stream }) => {
-      void pipe(stream, stream)
+      void stream.readable.pipeTo(stream.writable)
     }, {
       maxInboundStreams: 10,
       maxOutboundStreams: 10
     })
     await remoteComponents.registrar.handle('/echo/1.0.0', ({ stream }) => {
-      void pipe(stream, stream)
+      void stream.readable.pipeTo(stream.writable)
     }, {
       maxInboundStreams: 10,
       maxOutboundStreams: 10
@@ -150,19 +147,14 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
-    const result = await pipe(
-      [hello],
-      stream,
-      function toBuffer (source) {
-        return (async function * () {
-          for await (const val of source) yield val.slice()
-        })()
-      },
-      async (source) => all(source)
-    )
+    const result: Uint8Array[] = []
+
+    await readableStreamFromArray([hello])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(result))
 
     expect(result).to.eql([hello])
   })
@@ -222,19 +214,14 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
-    const result = await pipe(
-      [hello],
-      stream,
-      function toBuffer (source) {
-        return (async function * () {
-          for await (const val of source) yield val.slice()
-        })()
-      },
-      async (source) => all(source)
-    )
+    const result: Uint8Array[] = []
+
+    await readableStreamFromArray([hello])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(result))
 
     expect(result).to.eql([hello])
     expect(protectorProtectSpy.callCount).to.eql(2)
@@ -294,7 +281,8 @@ describe('Upgrader', () => {
       })()
 
       async sink (): Promise<void> {}
-      close (): void {}
+      async close (): Promise<void> {}
+      abort (): void {}
     }
 
     class OtherMuxerFactory implements StreamMuxerFactory {
@@ -446,12 +434,12 @@ describe('Upgrader', () => {
     const muxer = createStreamMuxerSpy.getCall(0).returnValue
     muxer.newStream = () => {
       return mockStream({
-        source: (async function * () {
+        readable: readableStreamFromGenerator(async function * () {
           // longer than the timeout
           await delay(1000)
-          yield new Uint8ArrayList()
+          yield new Uint8Array()
         }()),
-        sink: drain
+        writable: writeableStreamToDrain()
       })
     }
 
@@ -519,19 +507,14 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
-    const result = await pipe(
-      [hello],
-      stream,
-      function toBuffer (source) {
-        return (async function * () {
-          for await (const val of source) yield val.slice()
-        })()
-      },
-      async (source) => all(source)
-    )
+    const result: Uint8Array[] = []
+
+    await readableStreamFromArray([hello])
+      .pipeThrough(stream)
+      .pipeTo(writeableStreamToArray(result))
 
     expect(result).to.eql([hello])
 

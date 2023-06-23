@@ -3,6 +3,7 @@ import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { duplexToStream } from '@libp2p/utils/stream'
 import { abortableDuplex } from 'abortable-iterator'
 import { anySignal } from 'any-signal'
 import { createConnection } from './connection/index.js'
@@ -89,7 +90,7 @@ function countStreams (protocol: string, direction: 'inbound' | 'outbound', conn
   let streamCount = 0
 
   connection.streams.forEach(stream => {
-    if (stream.stat.direction === direction && stream.stat.protocol === protocol) {
+    if (stream.direction === direction && stream.protocol === protocol) {
       streamCount++
     }
   })
@@ -334,7 +335,7 @@ export class DefaultUpgrader implements Upgrader {
       }
     } catch (err: any) {
       log.error('Failed to upgrade outbound connection', err)
-      await maConn.close(err)
+      maConn.abort(err)
       throw err
     }
 
@@ -382,18 +383,18 @@ export class DefaultUpgrader implements Upgrader {
           void Promise.resolve()
             .then(async () => {
               const protocols = this.components.registrar.getProtocols()
-              const { stream, protocol } = await mss.handle(muxedStream, protocols)
-              log('%s: incoming stream opened on %s', direction, protocol)
+              const stream = await mss.handle(muxedStream, protocols)
+              log('%s: incoming stream opened on %s', direction, stream.protocol)
 
               if (connection == null) {
                 return
               }
 
-              const incomingLimit = findIncomingStreamLimit(protocol, this.components.registrar)
-              const streamCount = countStreams(protocol, 'inbound', connection)
+              const incomingLimit = findIncomingStreamLimit(stream.protocol, this.components.registrar)
+              const streamCount = countStreams(stream.protocol, 'inbound', connection)
 
               if (streamCount === incomingLimit) {
-                const err = new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS)
+                const err = new CodeError(`Too many inbound protocol streams for protocol "${stream.protocol}" - limit ${incomingLimit}`, codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS)
                 muxedStream.abort(err)
 
                 throw err
@@ -401,26 +402,24 @@ export class DefaultUpgrader implements Upgrader {
 
               // after the handshake the returned stream can have early data so override
               // the souce/sink
-              muxedStream.source = stream.source
-              muxedStream.sink = stream.sink
-              muxedStream.stat.protocol = protocol
+              muxedStream = stream
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
               // the peerstore should ensure that the peer is registered with that protocol
               await this.components.peerStore.merge(remotePeer, {
-                protocols: [protocol]
+                protocols: [stream.protocol]
               })
 
-              connection.addStream(muxedStream)
-              this.components.metrics?.trackProtocolStream(muxedStream, connection)
+              connection.addStream(stream)
+              this.components.metrics?.trackProtocolStream(stream, connection)
 
-              this._onStream({ connection, stream: muxedStream, protocol })
+              this._onStream({ connection, stream, protocol: stream.protocol })
             })
-            .catch(err => {
+            .catch(async err => {
               log.error(err)
 
-              if (muxedStream.stat.timeline.close == null) {
-                muxedStream.close()
+              if (muxedStream.timeline.close == null) {
+                muxedStream.abort(err)
               }
             })
         },
@@ -450,13 +449,13 @@ export class DefaultUpgrader implements Upgrader {
             } catch { }
           }
 
-          const { stream, protocol } = await mss.select(muxedStream, protocols, options)
+          const stream = await mss.select(muxedStream, protocols, options)
 
-          const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar, options)
-          const streamCount = countStreams(protocol, 'outbound', connection)
+          const outgoingLimit = findOutgoingStreamLimit(stream.protocol, this.components.registrar, options)
+          const streamCount = countStreams(stream.protocol, 'outbound', connection)
 
           if (streamCount >= outgoingLimit) {
-            const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - limit ${outgoingLimit}`, codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+            const err = new CodeError(`Too many outbound protocol streams for protocol "${stream.protocol}" - limit ${outgoingLimit}`, codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
             muxedStream.abort(err)
 
             throw err
@@ -465,23 +464,18 @@ export class DefaultUpgrader implements Upgrader {
           // If a protocol stream has been successfully negotiated and is to be passed to the application,
           // the peerstore should ensure that the peer is registered with that protocol
           await this.components.peerStore.merge(remotePeer, {
-            protocols: [protocol]
+            protocols: [stream.protocol]
           })
 
-          // after the handshake the returned stream can have early data so override
-          // the souce/sink
-          muxedStream.source = stream.source
-          muxedStream.sink = stream.sink
-          muxedStream.stat.protocol = protocol
+          this.components.metrics?.trackProtocolStream(stream, connection)
 
-          this.components.metrics?.trackProtocolStream(muxedStream, connection)
-
-          return muxedStream
+          // after the handshake the returned stream can have early data so use it instead
+          return stream
         } catch (err: any) {
           log.error('could not create new stream', err)
 
-          if (muxedStream.stat.timeline.close == null) {
-            muxedStream.close()
+          if (muxedStream.timeline.close == null) {
+            muxedStream.abort(err)
           }
 
           if (err.code != null) {
@@ -508,7 +502,7 @@ export class DefaultUpgrader implements Upgrader {
           // Wait for close to finish before notifying of the closure
           (async () => {
             try {
-              if (connection.stat.status === 'OPEN') {
+              if (connection.status === 'OPEN') {
                 await connection.close()
               }
             } catch (err: any) {
@@ -536,20 +530,25 @@ export class DefaultUpgrader implements Upgrader {
     connection = createConnection({
       remoteAddr: maConn.remoteAddr,
       remotePeer,
-      stat: {
-        status: 'OPEN',
-        direction,
-        timeline: maConn.timeline,
-        multiplexer: muxer?.protocol,
-        encryption: cryptoProtocol
-      },
+      status: 'OPEN',
+      direction,
+      timeline: maConn.timeline,
+      multiplexer: muxer?.protocol,
+      encryption: cryptoProtocol,
       newStream: newStream ?? errConnectionNotMultiplexed,
       getStreams: () => { if (muxer != null) { return muxer.streams } else { return errConnectionNotMultiplexed() } },
       close: async () => {
         await maConn.close()
         // Ensure remaining streams are closed
         if (muxer != null) {
-          muxer.close()
+          await muxer.close()
+        }
+      },
+      abort: (err: Error) => {
+        maConn.abort(err)
+        // Ensure remaining streams are closed
+        if (muxer != null) {
+          muxer.abort(err)
         }
       }
     })
@@ -574,25 +573,24 @@ export class DefaultUpgrader implements Upgrader {
   /**
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
-  async _encryptInbound (connection: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>): Promise<CryptoResult> {
+  async _encryptInbound (connection: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>): Promise<CryptoResult> {
     const protocols = Array.from(this.connectionEncryption.keys())
     log('handling inbound crypto protocol selection', protocols)
 
     try {
-      const { stream, protocol } = await mss.handle(connection, protocols, {
-        writeBytes: true
-      })
-      const encrypter = this.connectionEncryption.get(protocol)
+      const connStream = duplexToStream(connection)
+      const stream = await mss.handle(connStream, protocols)
+      const encrypter = this.connectionEncryption.get(stream.protocol)
 
       if (encrypter == null) {
-        throw new Error(`no crypto module found for ${protocol}`)
+        throw new Error(`no crypto module found for ${stream.protocol}`)
       }
 
       log('encrypting inbound connection...')
 
       return {
-        ...await encrypter.secureInbound(this.components.peerId, stream),
-        protocol
+        ...await encrypter.secureInbound(this.components.peerId, connection),
+        protocol: stream.protocol
       }
     } catch (err: any) {
       throw new CodeError(String(err), codes.ERR_ENCRYPTION_FAILED)
@@ -608,20 +606,19 @@ export class DefaultUpgrader implements Upgrader {
     log('selecting outbound crypto protocol', protocols)
 
     try {
-      const { stream, protocol } = await mss.select(connection, protocols, {
-        writeBytes: true
-      })
-      const encrypter = this.connectionEncryption.get(protocol)
+      const connStream = duplexToStream(connection)
+      const stream = await mss.select(connStream, protocols)
+      const encrypter = this.connectionEncryption.get(stream.protocol)
 
       if (encrypter == null) {
-        throw new Error(`no crypto module found for ${protocol}`)
+        throw new Error(`no crypto module found for ${stream.protocol}`)
       }
 
       log('encrypting outbound connection to %p', remotePeerId)
 
       return {
-        ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
-        protocol
+        ...await encrypter.secureOutbound(this.components.peerId, connection, remotePeerId),
+        protocol: stream.protocol
       }
     } catch (err: any) {
       throw new CodeError(String(err), codes.ERR_ENCRYPTION_FAILED)
@@ -636,13 +633,12 @@ export class DefaultUpgrader implements Upgrader {
     const protocols = Array.from(muxers.keys())
     log('outbound selecting muxer %s', protocols)
     try {
-      const { stream, protocol } = await mss.select(connection, protocols, {
-        writeBytes: true
-      })
-      log('%s selected as muxer protocol', protocol)
-      const muxerFactory = muxers.get(protocol)
+      const connStream = duplexToStream(connection)
+      const stream = await mss.select(connStream, protocols)
+      log('%s selected as muxer protocol', stream.protocol)
+      const muxerFactory = muxers.get(stream.protocol)
 
-      return { stream, muxerFactory }
+      return { stream: connection, muxerFactory }
     } catch (err: any) {
       log.error('error multiplexing outbound stream', err)
       throw new CodeError(String(err), codes.ERR_MUXER_UNAVAILABLE)
@@ -657,12 +653,11 @@ export class DefaultUpgrader implements Upgrader {
     const protocols = Array.from(muxers.keys())
     log('inbound handling muxers %s', protocols)
     try {
-      const { stream, protocol } = await mss.handle(connection, protocols, {
-        writeBytes: true
-      })
-      const muxerFactory = muxers.get(protocol)
+      const connStream = duplexToStream(connection)
+      const stream = await mss.handle(connStream, protocols)
+      const muxerFactory = muxers.get(stream.protocol)
 
-      return { stream, muxerFactory }
+      return { stream: connection, muxerFactory }
     } catch (err: any) {
       log.error('error multiplexing inbound stream', err)
       throw new CodeError(String(err), codes.ERR_MUXER_UNAVAILABLE)

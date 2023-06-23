@@ -10,8 +10,9 @@ import { encode } from './encode.js'
 import { MessageTypes, MessageTypeNames, type Message } from './message-types.js'
 import { createStream } from './stream.js'
 import type { MplexInit } from './index.js'
-import type { Stream } from '@libp2p/interface/connection'
+import type { RawStream, Stream } from '@libp2p/interface/connection'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { AbstractStream } from '@libp2p/interface/stream-muxer/stream'
 import type { Sink, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -39,9 +40,8 @@ function printMessage (msg: Message): any {
   return output
 }
 
-export interface MplexStream extends Stream {
-  sourceReadableLength: () => number
-  sourcePush: (data: Uint8ArrayList) => void
+export interface MplexStream extends AbstractStream {
+
 }
 
 interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {}
@@ -53,7 +53,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   public source: AsyncGenerator<Uint8Array>
 
   private _streamId: number
-  private readonly _streams: { initiators: Map<number, MplexStream>, receivers: Map<number, MplexStream> }
+  private readonly _streams: { initiators: Map<number, AbstractStream>, receivers: Map<number, AbstractStream> }
   private readonly _init: MplexStreamMuxerInit
   private readonly _source: { push: (val: Message) => void, end: (err?: Error) => void }
   private readonly closeController: AbortController
@@ -67,11 +67,11 @@ export class MplexStreamMuxer implements StreamMuxer {
       /**
        * Stream to ids map
        */
-      initiators: new Map<number, MplexStream>(),
+      initiators: new Map<number, AbstractStream>(),
       /**
        * Stream to ids map
        */
-      receivers: new Map<number, MplexStream>()
+      receivers: new Map<number, AbstractStream>()
     }
     this._init = init
 
@@ -99,11 +99,11 @@ export class MplexStreamMuxer implements StreamMuxer {
   }
 
   /**
-   * Returns a Map of streams and their ids
+   * Returns a list of streams
    */
-  get streams (): Stream[] {
+  get streams (): Array<Stream | RawStream> {
     // Inbound and Outbound streams may have the same ids, so we need to make those unique
-    const streams: Stream[] = []
+    const streams: Array<Stream | RawStream> = []
     for (const stream of this._streams.initiators.values()) {
       streams.push(stream)
     }
@@ -118,7 +118,7 @@ export class MplexStreamMuxer implements StreamMuxer {
    * Initiate a new stream with the given name. If no name is
    * provided, the id of the stream will be used.
    */
-  newStream (name?: string): Stream {
+  newStream (name?: string): RawStream {
     if (this.closeController.signal.aborted) {
       throw new Error('Muxer already closed')
     }
@@ -131,27 +131,36 @@ export class MplexStreamMuxer implements StreamMuxer {
   /**
    * Close or abort all tracked streams and stop the muxer
    */
-  close (err?: Error | undefined): void {
-    if (this.closeController.signal.aborted) return
-
-    if (err != null) {
-      this.streams.forEach(s => { s.abort(err) })
-    } else {
-      this.streams.forEach(s => { s.close() })
+  async close (): Promise<void> {
+    if (this.closeController.signal.aborted) {
+      return
     }
+
+    await Promise.all(this.streams.map(async s => s.close()))
+
+    this.closeController.abort()
+  }
+
+  abort (err: Error): void {
+    if (this.closeController.signal.aborted) {
+      return
+    }
+
+    this.streams.forEach(s => { s.abort(err) })
+
     this.closeController.abort()
   }
 
   /**
    * Called whenever an inbound stream is created
    */
-  _newReceiverStream (options: { id: number, name: string }): MplexStream {
+  _newReceiverStream (options: { id: number, name: string }): AbstractStream {
     const { id, name } = options
     const registry = this._streams.receivers
     return this._newStream({ id, name, type: 'receiver', registry })
   }
 
-  _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, MplexStream> }): MplexStream {
+  _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, AbstractStream> }): AbstractStream {
     const { id, name, type, registry } = options
 
     log('new %s stream %s', type, id)
@@ -173,7 +182,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     }
 
     const onEnd = (): void => {
-      log('%s stream with id %s and protocol %s ended', type, id, stream.stat.protocol)
+      log('%s stream with id %s and protocol %s ended', type, id, stream.protocol)
       registry.delete(id)
 
       if (this._init.onStreamEnd != null) {
@@ -223,7 +232,13 @@ export class MplexStreamMuxer implements StreamMuxer {
    */
   _createSource (): any {
     const onEnd = (err?: Error): void => {
-      this.close(err)
+      if (err != null) {
+        this.abort(err)
+      } else {
+        this.close().catch(err => {
+          log.error('could not close multiplexer', err)
+        })
+      }
     }
     const source = pushableV<Message>({
       objectMode: true,

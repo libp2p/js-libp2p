@@ -72,12 +72,17 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
     }
   }
 
-  async close (err?: Error | undefined): Promise<void> {
-    if (err !== undefined) {
-      log.error('error closing connection', err)
-    }
+  async close (): Promise<void> {
     log.trace('closing connection')
+    this.#close()
+  }
 
+  abort (err: Error | undefined): void {
+    log.error('closing connection due to error', err)
+    this.#close()
+  }
+
+  #close (): void {
     this.timeline.close = Date.now()
     this.peerConnection.close()
     this.metrics?.increment({ close: true })

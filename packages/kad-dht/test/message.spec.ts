@@ -50,8 +50,8 @@ describe('Message', () => {
     msg.providerPeers = provider
     msg.record = record
 
-    const enc = msg.serialize()
-    const dec = Message.deserialize(enc)
+    const enc = Message.encode(msg)
+    const dec = Message.decode(enc)
 
     expect(dec.type).to.be.eql(msg.type)
     expect(dec.key).to.be.eql(msg.key)

@@ -2,6 +2,7 @@ import { noise as Noise } from '@chainsafe/libp2p-noise'
 import { type CreateListenerOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
 import * as p from '@libp2p/peer-id'
+import { streamToDuplex } from '@libp2p/utils/stream'
 import { protocols } from '@multiformats/multiaddr'
 import * as multihashes from 'multihashes'
 import { concat } from 'uint8arrays/concat'
@@ -191,18 +192,8 @@ export class WebRTCDirectTransport implements Transport {
     // we pass in undefined for these parameters.
     const noise = Noise({ prologueBytes: fingerprintsPrologue })()
 
-    const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
-    const wrappedDuplex = {
-      ...wrappedChannel,
-      sink: wrappedChannel.sink.bind(wrappedChannel),
-      source: (async function * () {
-        for await (const list of wrappedChannel.source) {
-          for (const buf of list) {
-            yield buf
-          }
-        }
-      }())
-    }
+    const stream = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
+    const duplex = streamToDuplex(stream)
 
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
@@ -241,7 +232,7 @@ export class WebRTCDirectTransport implements Transport {
 
     // For outbound connections, the remote is expected to start the noise handshake.
     // Therefore, we need to secure an inbound noise connection from the remote.
-    await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
+    await noise.secureInbound(myPeerId, duplex, theirPeerId)
 
     return options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
   }

@@ -360,7 +360,7 @@ describe('libp2p.connections', () => {
       const conn = conns[0]
 
       await libp2p.stop()
-      expect(conn.stat.status).to.eql(STATUS.CLOSED)
+      expect(conn.status).to.eql(STATUS.CLOSED)
 
       await remoteLibp2p.stop()
     })
