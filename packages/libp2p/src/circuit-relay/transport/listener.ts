@@ -37,7 +37,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
   }
 
   async listen (addr: Multiaddr): Promise<void> {
-    log('listen on %s', addr)
+    log('listen on %a', addr)
 
     const relayPeerStr = addr.getPeerId()
     let relayConn: Connection | undefined
