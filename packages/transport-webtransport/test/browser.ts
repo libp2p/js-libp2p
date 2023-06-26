@@ -164,7 +164,7 @@ describe('libp2p-webtransport', () => {
     // Close read, we've should have closed the write side during sink
     stream.closeRead()
 
-    expect(stream.stat.timeline.close).to.be.greaterThan(0)
+    expect(stream.timeline.close).to.be.greaterThan(0)
 
     await node.stop()
   })

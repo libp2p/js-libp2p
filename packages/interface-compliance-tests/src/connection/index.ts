@@ -22,21 +22,19 @@ export default (test: TestSetup<Connection>): void => {
         expect(connection.id).to.exist()
         expect(connection.remotePeer).to.exist()
         expect(connection.remoteAddr).to.exist()
-        expect(connection.stat.status).to.equal('OPEN')
-        expect(connection.stat.timeline.open).to.exist()
-        expect(connection.stat.timeline.close).to.not.exist()
-        expect(connection.stat.direction).to.exist()
+        expect(connection.status).to.equal('OPEN')
+        expect(connection.timeline.open).to.exist()
+        expect(connection.timeline.close).to.not.exist()
+        expect(connection.direction).to.exist()
         expect(connection.streams).to.eql([])
         expect(connection.tags).to.eql([])
       })
 
       it('should get the metadata of an open connection', () => {
-        const stat = connection.stat
-
-        expect(stat.status).to.equal('OPEN')
-        expect(stat.direction).to.exist()
-        expect(stat.timeline.open).to.exist()
-        expect(stat.timeline.close).to.not.exist()
+        expect(connection.status).to.equal('OPEN')
+        expect(connection.direction).to.exist()
+        expect(connection.timeline.open).to.exist()
+        expect(connection.timeline.close).to.not.exist()
       })
 
       it('should return an empty array of streams', () => {
@@ -51,7 +49,7 @@ export default (test: TestSetup<Connection>): void => {
         const protocolToUse = '/echo/0.0.1'
         const stream = await connection.newStream([protocolToUse])
 
-        expect(stream).to.have.nested.property('stat.protocol', protocolToUse)
+        expect(stream).to.have.property('protocol', protocolToUse)
 
         const connStreams = connection.streams
 
@@ -79,7 +77,7 @@ export default (test: TestSetup<Connection>): void => {
         }, proxyHandler)
 
         connection = await test.setup()
-        connection.stat.timeline = timelineProxy
+        connection.timeline = timelineProxy
       })
 
       afterEach(async () => {
@@ -87,11 +85,11 @@ export default (test: TestSetup<Connection>): void => {
       })
 
       it('should be able to close the connection after being created', async () => {
-        expect(connection.stat.timeline.close).to.not.exist()
+        expect(connection.timeline.close).to.not.exist()
         await connection.close()
 
-        expect(connection.stat.timeline.close).to.exist()
-        expect(connection.stat.status).to.equal('CLOSED')
+        expect(connection.timeline.close).to.exist()
+        expect(connection.status).to.equal('CLOSED')
       })
 
       it('should be able to close the connection after opening a stream', async () => {
@@ -100,18 +98,18 @@ export default (test: TestSetup<Connection>): void => {
         await connection.newStream([protocol])
 
         // Close connection
-        expect(connection.stat.timeline.close).to.not.exist()
+        expect(connection.timeline.close).to.not.exist()
         await connection.close()
 
-        expect(connection.stat.timeline.close).to.exist()
-        expect(connection.stat.status).to.equal('CLOSED')
+        expect(connection.timeline.close).to.exist()
+        expect(connection.status).to.equal('CLOSED')
       })
 
       it('should properly track streams', async () => {
         // Open stream
         const protocol = '/echo/0.0.1'
         const stream = await connection.newStream([protocol])
-        expect(stream).to.have.nested.property('stat.protocol', protocol)
+        expect(stream).to.have.property('protocol', protocol)
 
         // Close stream
         stream.close()
@@ -123,7 +121,7 @@ export default (test: TestSetup<Connection>): void => {
         // Open stream
         const protocol = '/echo/0.0.1'
         const stream = await connection.newStream(protocol)
-        expect(stream).to.have.nested.property('stat.direction', 'outbound')
+        expect(stream).to.have.property('direction', 'outbound')
       })
 
       it.skip('should track inbound streams', async () => {
@@ -135,20 +133,20 @@ export default (test: TestSetup<Connection>): void => {
 
       it('should support a proxy on the timeline', async () => {
         sinon.spy(proxyHandler, 'set')
-        expect(connection.stat.timeline.close).to.not.exist()
+        expect(connection.timeline.close).to.not.exist()
 
         await connection.close()
         // @ts-expect-error - fails to infer callCount
         expect(proxyHandler.set.callCount).to.equal(1)
         // @ts-expect-error - fails to infer getCall
         const [obj, key, value] = proxyHandler.set.getCall(0).args
-        expect(obj).to.eql(connection.stat.timeline)
+        expect(obj).to.eql(connection.timeline)
         expect(key).to.equal('close')
-        expect(value).to.be.a('number').that.equals(connection.stat.timeline.close)
+        expect(value).to.be.a('number').that.equals(connection.timeline.close)
       })
 
       it('should fail to create a new stream if the connection is closing', async () => {
-        expect(connection.stat.timeline.close).to.not.exist()
+        expect(connection.timeline.close).to.not.exist()
         const p = connection.close()
 
         try {
@@ -165,7 +163,7 @@ export default (test: TestSetup<Connection>): void => {
       })
 
       it('should fail to create a new stream if the connection is closed', async () => {
-        expect(connection.stat.timeline.close).to.not.exist()
+        expect(connection.timeline.close).to.not.exist()
         await connection.close()
 
         try {

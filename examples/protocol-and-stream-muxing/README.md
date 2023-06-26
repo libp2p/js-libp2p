@@ -82,7 +82,7 @@ There is still one last feature, you can provide multiple protocols for the same
 
 ```JavaScript
 node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ stream }) => {
-  if (stream.stat.protocol === '/another-protocol/2.0.0') {
+  if (stream.protocol === '/another-protocol/2.0.0') {
     // handle backwards compatibility
   }
 
@@ -136,7 +136,7 @@ node2.handle(['/a', '/b'], ({ stream }) => {
     stream,
     async function (source) {
       for await (const msg of source) {
-        console.log(`from: ${stream.stat.protocol}, msg: ${uint8ArrayToString(msg.subarray())}`)
+        console.log(`from: ${stream.protocol}, msg: ${uint8ArrayToString(msg.subarray())}`)
       }
     }
   )

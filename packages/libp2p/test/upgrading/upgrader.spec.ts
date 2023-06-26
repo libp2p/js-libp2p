@@ -150,7 +150,7 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
     const result = await pipe(
@@ -222,7 +222,7 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
     const result = await pipe(
@@ -519,7 +519,7 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
     const result = await pipe(

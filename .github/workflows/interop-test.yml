@@ -12,11 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ipfs/aegir/actions/cache-node-modules@master
-        with:
-          directories: |
-            ./interop/node_modules
-      - name: Build interop
-        run: (cd interop && npm i && npm run build)
       - name: Build images
         run: (cd interop && make)
       - name: Save package-lock.json as artifact
