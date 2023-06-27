@@ -9,5 +9,28 @@
   ],
   "exclude": [
     "test/message/rpc.js"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../interface-internal"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    }
   ]
 }

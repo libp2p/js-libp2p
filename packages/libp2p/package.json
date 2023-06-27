@@ -166,7 +166,7 @@
     "@libp2p/bootstrap": "^8.0.0",
     "@libp2p/daemon-client": "^6.0.2",
     "@libp2p/daemon-server": "^5.0.2",
-    "@libp2p/floodsub": "^7.0.1",
+    "@libp2p/floodsub": "^7.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.0",
     "@libp2p/interop": "^8.0.0",
     "@libp2p/kad-dht": "^9.0.0",
