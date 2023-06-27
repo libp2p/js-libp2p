@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node index.js",
     "build": "aegir build",
-    "test": "aegir test"
+    "test:interop:multidim": "aegir test"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^12.0.0",
