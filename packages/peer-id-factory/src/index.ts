@@ -2,8 +2,8 @@ import { generateKeyPair, marshalPrivateKey, unmarshalPrivateKey, marshalPublicK
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PeerIdProto } from './proto.js'
-import type { RSAPeerId, Ed25519PeerId, Secp256k1PeerId, PeerId } from '@libp2p/interface/peer-id'
 import type { PublicKey, PrivateKey } from '@libp2p/interface/keys'
+import type { RSAPeerId, Ed25519PeerId, Secp256k1PeerId, PeerId } from '@libp2p/interface/peer-id'
 
 export const createEd25519PeerId = async (): Promise<Ed25519PeerId> => {
   const key = await generateKeyPair('Ed25519')
