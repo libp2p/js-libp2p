@@ -1,6 +1,28 @@
-# [Transports](http://libp2p.io/implementations/#transports)
+# @libp2p/example-transports <!-- omit in toc -->
 
-libp2p doesn't make assumptions for you, instead, it enables you as the developer of the application to pick the modules you need to run your application, which can vary depending on the runtime you are executing. A libp2p node can use one or more Transports to dial and listen for Connections. These transports are modules that offer a clean interface for dialing and listening, defined by the [interface-transport] specification. Some examples of possible transports are: TCP, UTP, WebRTC, QUIC, HTTP, Pigeon and so on.
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
+
+> An example using different types of libp2p transport
+
+## Table of contents <!-- omit in toc -->
+
+- [Install](#install)
+- [1. Creating a libp2p node with TCP](#1-creating-a-libp2p-node-with-tcp)
+- [2. Dialing from one node to another node](#2-dialing-from-one-node-to-another-node)
+- [3. Using multiple transports](#3-using-multiple-transports)
+- [4. How to create a new libp2p transport](#4-how-to-create-a-new-libp2p-transport)
+- [API Docs](#api-docs)
+- [License](#license)
+- [Contribution](#contribution)
+
+## Install
+
+```console
+$ npm i @libp2p/example-transports
+```
 
 A more complete definition of what is a transport can be found on the [interface-transport] specification. A way to recognize a candidate transport is through the badge:
 
@@ -92,6 +114,7 @@ import all from 'it-all'
 ```
 
 We are going to reuse the `createNode` function from step 1, but this time add a stream multiplexer from `libp2p-mplex`.
+
 ```js
 const createNode = async () => {
   const node = await createLibp2p({
@@ -108,6 +131,7 @@ const createNode = async () => {
   return node
 }
 ```
+
 We will also make things simpler by creating another function to print the multiaddresses to avoid duplicating code.
 
 ```JavaScript
@@ -149,6 +173,7 @@ await pipe(
   stream
 )
 ```
+
 For more information refer to the [docs](https://github.com/libp2p/js-libp2p/blob/master/doc/API.md).
 
 The result should look like:
@@ -299,7 +324,25 @@ If you decide to implement a transport yourself, please consider adding to the l
 
 Hope this tutorial was useful. We are always looking to improve it, so contributions are welcome!
 
+## API Docs
+
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_transports.html>
+
+## License
+
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+
 [interface-transport]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport
+
 [interface-transport badge]: https://raw.githubusercontent.com/libp2p/js-libp2p-interfaces/master/packages/libp2p-interfaces/src/transport/img/badge.png
+
 [interface-transport implementations]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#modules-that-implement-the-interface
+
 [interface-transport api]: https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/transport#api

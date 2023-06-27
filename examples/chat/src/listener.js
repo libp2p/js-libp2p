@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from './libp2p.js'
-import { stdinToStream, streamToConsole } from './stream.js'
 import { createFromJSON } from '@libp2p/peer-id-factory'
+import { createLibp2p } from './libp2p.js'
 import peerIdListenerJson from './peer-id-listener.js'
+import { stdinToStream, streamToConsole } from './stream.js'
 
 async function run () {
   // Create a new libp2p node with the given multi-address

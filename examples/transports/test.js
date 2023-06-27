@@ -3,9 +3,7 @@ import { test as test2 } from './test-2.js'
 import { test as test3 } from './test-3.js'
 import { test as test4 } from './test-4.js'
 
-export async function test() {
-  await test1()
-  await test2()
-  await test3()
-  await test4()
-}
+await test1()
+await test2()
+await test3()
+await test4()

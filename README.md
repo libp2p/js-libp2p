@@ -31,6 +31,19 @@
 
 ## Structure
 
+- [`/examples/auto-relay`](./examples/auto-relay) Shows how to configure relayed connections
+- [`/examples/chat`](./examples/chat) An example chat app using libp2p
+- [`/examples/connection-encryption`](./examples/connection-encryption) An example of how to configure connection encrypters
+- [`/examples/delegated-routing`](./examples/delegated-routing) How to configure libp2p delegated routers
+- [`/examples/discovery-mechanisms`](./examples/discovery-mechanisms) How to configure peer discovery mechanisms
+- [`/examples/echo`](./examples/echo) An example echo app
+- [`/examples/libp2p-in-the-browser`](./examples/libp2p-in-the-browser) A libp2p node running in the browser
+- [`/examples/peer-and-content-routing`](./examples/peer-and-content-routing) How to use peer and content routing
+- [`/examples/pnet`](./examples/pnet) How to configure a libp2p private network
+- [`/examples/protocol-and-stream-muxing`](./examples/protocol-and-stream-muxing) How to use multiplex protocols streams
+- [`/examples/pubsub`](./examples/pubsub) An example using libp2p pubsub
+- [`/examples/transports`](./examples/transports) An example using different types of libp2p transport
+- [`/interop`](./interop) Multidimension Interop Test
 - [`/packages/crypto`](./packages/crypto) Crypto primitives for libp2p
 - [`/packages/interface`](./packages/interface) The interface implemented by a libp2p node
 - [`/packages/interface-compliance-tests`](./packages/interface-compliance-tests) Compliance tests for JS libp2p interfaces

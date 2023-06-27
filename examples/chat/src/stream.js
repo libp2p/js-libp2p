@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 
-import { pipe } from 'it-pipe'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
+import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
-export function stdinToStream(stream) {
+export function stdinToStream (stream) {
   // Read utf-8 from stdin
   process.stdin.setEncoding('utf8')
   pipe(
@@ -21,7 +21,7 @@ export function stdinToStream(stream) {
   )
 }
 
-export function streamToConsole(stream) {
+export function streamToConsole (stream) {
   pipe(
     // Read from the stream (the source)
     stream.source,
