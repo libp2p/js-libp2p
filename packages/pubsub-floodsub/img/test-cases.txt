@@ -1,0 +1,22 @@
+                                                    
+         All subscribe to              Partial      
+          the same topic            subscriptions   
+                                                    
+           line                      line           
+           ◉────◉────◉               ◉────◎────◉    
+           a    b    c               a    b    c    
+                                                    
+                                                    
+         1 level tree              1 level tree     
+               ┌◉┐                       ┌◉┐        
+               │b│                       │b│        
+             ◉─┘ └─◉                   ◎─┘ └─◉      
+             a     c                   a     c      
+                                                    
+         2 levels tree             2 levels tree    
+               ┌◉┐                       ┌◉┐        
+               │c│                       │c│        
+            ┌◉─┘ └─◉┐                 ┌◎─┘ └─◉┐     
+            │b     d│                 │b     d│     
+          ◉─┘       └─◉             ◉─┘       └─◎   
+          a           e             a           e   

@@ -193,7 +193,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   }
 
   async onHop ({ connection, stream }: IncomingStreamData): Promise<void> {
-    log('received circuit v2 hop protocol stream from %s', connection.remotePeer)
+    log('received circuit v2 hop protocol stream from %p', connection.remotePeer)
 
     const hopTimeoutPromise = pDefer<HopMessage>()
     const timeout = setTimeout(() => {
@@ -239,7 +239,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       case HopMessage.Type.RESERVE: await this.handleReserve({ stream, request, connection }); break
       case HopMessage.Type.CONNECT: await this.handleConnect({ stream, request, connection }); break
       default: {
-        log.error('invalid hop request type %s via peer %s', request.type, connection.remotePeer)
+        log.error('invalid hop request type %s via peer %p', request.type, connection.remotePeer)
         stream.pb(HopMessage).write({ type: HopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
       }
     }
@@ -247,7 +247,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 
   async handleReserve ({ stream, request, connection }: HopProtocolOptions): Promise<void> {
     const hopstr = stream.pb(HopMessage)
-    log('hop reserve request from %s', connection.remotePeer)
+    log('hop reserve request from %p', connection.remotePeer)
 
     if (isRelayAddr(connection.remoteAddr)) {
       log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
@@ -329,7 +329,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       return
     }
 
-    log('hop connect request from %s', connection.remotePeer)
+    log('hop connect request from %p', connection.remotePeer)
 
     let dstPeer: PeerId
 
@@ -381,7 +381,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     })
 
     if (destinationStream == null) {
-      log.error('failed to open stream to destination peer %s', destinationConnection?.remotePeer)
+      log.error('failed to open stream to destination peer %p', destinationConnection?.remotePeer)
       hopstr.write({ type: HopMessage.Type.STATUS, status: Status.CONNECTION_FAILED })
       return
     }
@@ -414,17 +414,17 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     try {
       response = await stopstr.read()
     } catch (err) {
-      log.error('error parsing stop message response from %s', connection.remotePeer)
+      log.error('error parsing stop message response from %p', connection.remotePeer)
     }
 
     if (response == null) {
-      log.error('could not read response from %s', connection.remotePeer)
+      log.error('could not read response from %p', connection.remotePeer)
       stream.close()
       return
     }
 
     if (response.status === Status.OK) {
-      log('stop request to %s was successful', connection.remotePeer)
+      log('stop request to %p was successful', connection.remotePeer)
       return pbstr.unwrap()
     }
 

@@ -237,7 +237,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   }
 
   async #createReservation (connection: Connection): Promise<Reservation> {
-    log('requesting reservation from %s', connection.remotePeer)
+    log('requesting reservation from %p', connection.remotePeer)
     const stream = await connection.newStream(RELAY_V2_HOP_CODEC)
     const pbstr = pbStream(stream)
     const hopstr = pbstr.pb(HopMessage)

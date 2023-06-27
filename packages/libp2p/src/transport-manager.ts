@@ -190,7 +190,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
-        log('creating listener for %s on %s', key, addr)
+        log('creating listener for %s on %a', key, addr)
         const listener = transport.createListener({
           upgrader: this.components.upgrader
         })
