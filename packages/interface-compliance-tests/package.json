@@ -68,6 +68,10 @@
       "types": "./dist/src/peers.d.ts",
       "import": "./dist/src/peers.js"
     },
+    "./pubsub": {
+      "types": "./dist/src/pubsub/index.d.ts",
+      "import": "./dist/src/pubsub/index.js"
+    },
     "./stream-muxer": {
       "types": "./dist/src/stream-muxer/index.d.ts",
       "import": "./dist/src/stream-muxer/index.js"
@@ -119,6 +123,7 @@
     "it-stream-types": "^2.0.1",
     "merge-options": "^3.0.4",
     "p-defer": "^4.0.0",
+    "p-event": "^6.0.0",
     "p-limit": "^4.0.0",
     "p-wait-for": "^5.0.2",
     "sinon": "^15.1.2",
