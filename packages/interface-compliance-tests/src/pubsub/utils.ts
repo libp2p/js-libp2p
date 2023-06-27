@@ -1,3 +1,4 @@
+import { EventEmitter } from '@libp2p/interface/events'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
@@ -17,7 +18,8 @@ export async function waitForSubscriptionUpdate (a: PubSub, b: PeerId): Promise<
 export async function createComponents (): Promise<MockNetworkComponents> {
   const components: any = {
     peerId: await createEd25519PeerId(),
-    registrar: mockRegistrar()
+    registrar: mockRegistrar(),
+    events: new EventEmitter()
   }
   components.connectionManager = mockConnectionManager(components)
 
