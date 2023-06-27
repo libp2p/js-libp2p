@@ -1,45 +1,28 @@
 {
-  "name": "@chainsafe/libp2p-yamux",
-  "version": "4.0.2",
-  "description": "Yamux stream multiplexer for libp2p",
+  "name": "@libp2p/daemon",
+  "version": "2.0.9",
+  "description": "libp2p-daemon JavaScript implementation",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ChainSafe/js-libp2p-yamux#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p-daemon/tree/master/packages/libp2p-daemon#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ChainSafe/js-libp2p-yamux.git"
+    "url": "git+https://github.com/libp2p/js-libp2p-daemon.git"
   },
   "bugs": {
-    "url": "https://github.com/ChainSafe/js-libp2p-yamux/issues"
+    "url": "https://github.com/libp2p/js-libp2p-daemon/issues"
   },
   "keywords": [
-    "IPFS",
-    "libp2p",
-    "multiplexer",
-    "muxer",
-    "stream"
+    "libp2p"
   ],
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
+  "bin": {
+    "jsp2pd": "dist/src/index.js"
+  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -48,26 +31,15 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
+      "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./config": {
-      "types": "./dist/src/config.d.ts",
-      "import": "./dist/src/config.js"
-    },
-    "./stream": {
-      "types": "./dist/src/stream.d.ts",
-      "import": "./dist/src/stream.js"
     }
   },
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
       "sourceType": "module"
-    },
-    "ignorePatterns": [
-      "src/*.d.ts"
-    ]
+    }
   },
   "release": {
     "branches": [
@@ -158,36 +130,21 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
-    "benchmark": "benchmark dist/test/bench/*.bench.js --timeout 400000",
     "build": "aegir build",
-    "test": "aegir test",
-    "test:chrome": "aegir test -t browser",
-    "test:chrome-webworker": "aegir test -t webworker",
-    "test:firefox": "aegir test -t browser -- --browser firefox",
-    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
-    "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release",
-    "docs": "aegir docs"
+    "test": "aegir test -t node",
+    "test:node": "aegir test -t node",
+    "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/interface": "~0.0.1",
-    "@libp2p/logger": "^2.0.7",
-    "abortable-iterator": "^5.0.1",
-    "any-signal": "^4.1.1",
-    "it-pipe": "^3.0.1",
-    "it-pushable": "^3.1.3",
-    "uint8arraylist": "^2.4.3"
+    "@libp2p/daemon-server": "^5.0.0",
+    "@multiformats/multiaddr": "^12.0.0",
+    "es-main": "^1.0.2",
+    "yargs": "^17.3.1",
+    "yargs-promise": "^1.1.0"
   },
   "devDependencies": {
-    "@dapplion/benchmark": "^0.2.4",
-    "@libp2p/interface-compliance-tests": "^3.0.0",
-    "@libp2p/mplex": "^8.0.0",
     "aegir": "^39.0.10",
-    "it-drain": "^3.0.2",
-    "it-pair": "^2.0.6",
-    "it-stream-types": "^2.0.1"
+    "sinon": "^15.0.1"
   },
-  "browser": {},
   "private": true
 }

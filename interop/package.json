@@ -29,6 +29,6 @@
     "@libp2p/tcp": false
   },
   "devDependencies": {
-    "aegir": "^39.0.5"
+    "aegir": "^39.0.10"
   }
 }

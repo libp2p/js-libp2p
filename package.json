@@ -36,7 +36,7 @@
     "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs"
   },
   "devDependencies": {
-    "aegir": "^39.0.5"
+    "aegir": "^39.0.10"
   },
   "eslintConfig": {
     "extends": "ipfs",
