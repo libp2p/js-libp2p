@@ -1,9 +1,9 @@
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { PubSubBaseProtocol } from '../src/index.js'
+import { MockRegistrar } from './utils/index.js'
 import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import { MockRegistrar } from './utils/index.js'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 class PubsubProtocol extends PubSubBaseProtocol {
   decodeRpc (bytes: Uint8Array): PubSubRPC {

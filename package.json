@@ -198,7 +198,8 @@
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^2.0.3",
-    "aegir": "^38.1.6",
+    "@types/sinon": "^10.0.15",
+    "aegir": "^39.0.10",
     "delay": "^5.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",

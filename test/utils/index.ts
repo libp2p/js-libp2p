@@ -1,11 +1,11 @@
-import { duplexPair } from 'it-pair/duplex'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { duplexPair } from 'it-pair/duplex'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord, Topology } from '@libp2p/interface-registrar'
 import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord, Topology } from '@libp2p/interface-registrar'
 
 export const createPeerId = async (): Promise<PeerId> => {
   const peerId = await PeerIdFactory.createEd25519PeerId()
@@ -38,8 +38,8 @@ export class PubsubImplementation extends PubSubBaseProtocol {
 }
 
 export class MockRegistrar implements Registrar {
-  private readonly topologies: Map<string, { topology: Topology, protocols: string[] }> = new Map()
-  private readonly handlers: Map<string, StreamHandler> = new Map()
+  private readonly topologies = new Map<string, { topology: Topology, protocols: string[] }>()
+  private readonly handlers = new Map<string, StreamHandler>()
 
   getProtocols (): string[] {
     const protocols = new Set<string>()
@@ -131,7 +131,7 @@ export const ConnectionPair = (): [Connection, Connection] => {
   return [
     {
       // @ts-expect-error incomplete implementation
-      newStream: async (protocol: string[]) => await Promise.resolve({
+      newStream: async (protocol: string[]) => Promise.resolve({
         ...d0,
         stat: {
           protocol: protocol[0]
@@ -140,7 +140,7 @@ export const ConnectionPair = (): [Connection, Connection] => {
     },
     {
       // @ts-expect-error incomplete implementation
-      newStream: async (protocol: string[]) => await Promise.resolve({
+      newStream: async (protocol: string[]) => Promise.resolve({
         ...d1,
         stat: {
           protocol: protocol[0]

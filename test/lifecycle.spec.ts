@@ -1,4 +1,5 @@
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import sinon from 'sinon'
 import { PubSubBaseProtocol } from '../src/index.js'
 import {
@@ -9,10 +10,9 @@ import {
   mockIncomingStreamEvent
 } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Registrar } from '@libp2p/interface-registrar'
 import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import type { Registrar } from '@libp2p/interface-registrar'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import delay from 'delay'
 
 class PubsubProtocol extends PubSubBaseProtocol {
   decodeRpc (bytes: Uint8Array): PubSubRPC {

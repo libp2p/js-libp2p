@@ -1,9 +1,9 @@
-import { expect } from 'aegir/chai'
-import * as utils from '../src/utils.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { expect } from 'aegir/chai'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import * as utils from '../src/utils.js'
+import type { Message, PubSubRPCMessage } from '@libp2p/interface-pubsub'
 
 describe('utils', () => {
   it('randomSeqno', () => {

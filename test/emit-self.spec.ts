@@ -1,11 +1,11 @@
 import { expect } from 'aegir/chai'
+import delay from 'delay'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import {
   createPeerId,
   MockRegistrar,
   PubsubImplementation
 } from './utils/index.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import delay from 'delay'
 
 const protocol = '/pubsub/1.0.0'
 const topic = 'foo'

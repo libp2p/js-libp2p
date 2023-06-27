@@ -1,10 +1,10 @@
+import { keys } from '@libp2p/crypto'
+import { peerIdFromKeys } from '@libp2p/peer-id'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toRpcMessage } from './utils.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { keys } from '@libp2p/crypto'
 import type { PubSubRPCMessage, SignedMessage } from '@libp2p/interface-pubsub'
-import { peerIdFromKeys } from '@libp2p/peer-id'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
 
@@ -73,7 +73,7 @@ export async function verifySignature (message: SignedMessage, encode: (rpc: Pub
   const pubKey = keys.unmarshalPublicKey(pubKeyBytes)
 
   // verify the base message
-  return await pubKey.verify(bytes, message.signature)
+  return pubKey.verify(bytes, message.signature)
 }
 
 /**

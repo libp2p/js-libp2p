@@ -1,14 +1,14 @@
-import { logger } from '@libp2p/logger'
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
-import * as lp from 'it-length-prefixed'
-import { pushable } from 'it-pushable'
-import { pipe } from 'it-pipe'
+import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import type { PeerId } from '@libp2p/interface-peer-id'
-import type { Stream } from '@libp2p/interface-connection'
-import type { Pushable } from 'it-pushable'
-import type { PeerStreamEvents } from '@libp2p/interface-pubsub'
+import * as lp from 'it-length-prefixed'
+import { pipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
+import type { Stream } from '@libp2p/interface-connection'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PeerStreamEvents } from '@libp2p/interface-pubsub'
+import type { Pushable } from 'it-pushable'
 
 const log = logger('libp2p-pubsub:peer-streams')
 

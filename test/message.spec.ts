@@ -2,6 +2,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { randomSeqno } from '../src/utils.js'
 import {
   createPeerId,
   MockRegistrar,
@@ -9,7 +10,6 @@ import {
 } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { Message } from '@libp2p/interface-pubsub'
-import { randomSeqno } from '../src/utils.js'
 
 describe('pubsub base messages', () => {
   let peerId: PeerId

@@ -1,9 +1,14 @@
 /* eslint max-nested-callbacks: ["error", 6] */
+import { PeerSet } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
-import sinon from 'sinon'
+import delay from 'delay'
+import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
+import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PeerStreams } from '../src/peer-streams.js'
+import { noSignMsgId } from '../src/utils.js'
 import {
   createPeerId,
   MockRegistrar,
@@ -12,12 +17,7 @@ import {
   mockIncomingStreamEvent
 } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { PeerSet } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { noSignMsgId } from '../src/utils.js'
 import type { Message, PubSubRPC } from '@libp2p/interface-pubsub'
-import delay from 'delay'
-import pDefer from 'p-defer'
 
 const protocol = '/pubsub/1.0.0'
 const topic = 'test-topic'

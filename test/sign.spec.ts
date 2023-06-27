@@ -1,17 +1,17 @@
+import { keys } from '@libp2p/crypto'
+import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { RPC } from './message/rpc.js'
 import {
   signMessage,
   SignPrefix,
   verifySignature
 } from '../src/sign.js'
-import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { randomSeqno, toRpcMessage } from '../src/utils.js'
-import { keys } from '@libp2p/crypto'
-import type { PubSubRPCMessage } from '@libp2p/interface-pubsub'
+import { RPC } from './message/rpc.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PubSubRPCMessage } from '@libp2p/interface-pubsub'
 
 function encodeMessage (message: PubSubRPCMessage): Uint8Array {
   return RPC.Message.encode(message)

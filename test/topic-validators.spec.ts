@@ -1,7 +1,8 @@
-import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import pWaitFor from 'p-wait-for'
+import { type PubSubRPC, TopicValidatorResult } from '@libp2p/interface-pubsub'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { expect } from 'aegir/chai'
+import pWaitFor from 'p-wait-for'
+import sinon from 'sinon'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PeerStreams } from '../src/peer-streams.js'
@@ -10,7 +11,6 @@ import {
   PubsubImplementation
 } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import { PubSubRPC, TopicValidatorResult } from '@libp2p/interface-pubsub'
 
 const protocol = '/pubsub/1.0.0'
 

@@ -1,21 +1,21 @@
-import { logger } from '@libp2p/logger'
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { type PubSub, type Message, type StrictNoSign, type StrictSign, type PubSubInit, type PubSubEvents, type PeerStreams, type PubSubRPCMessage, type PubSubRPC, type PubSubRPCSubscription, type SubscriptionChangeData, type PublishResult, type TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface-pubsub'
 import { CodeError } from '@libp2p/interfaces/errors'
+import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { logger } from '@libp2p/logger'
+import { PeerMap, PeerSet } from '@libp2p/peer-collections'
+import { createTopology } from '@libp2p/topology'
 import { pipe } from 'it-pipe'
 import Queue from 'p-queue'
-import { createTopology } from '@libp2p/topology'
 import { codes } from './errors.js'
 import { PeerStreams as PeerStreamsImpl } from './peer-streams.js'
-import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
 import {
   signMessage,
   verifySignature
 } from './sign.js'
+import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
+import type { Connection } from '@libp2p/interface-connection'
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-registrar'
-import type { Connection } from '@libp2p/interface-connection'
-import { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface-pubsub'
-import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:pubsub')
@@ -132,7 +132,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       onConnect: this._onPeerConnected,
       onDisconnect: this._onPeerDisconnected
     })
-    this._registrarTopologyIds = await Promise.all(this.multicodecs.map(async multicodec => await registrar.register(multicodec, topology)))
+    this._registrarTopologyIds = await Promise.all(this.multicodecs.map(async multicodec => registrar.register(multicodec, topology)))
 
     log('started')
     this.started = true
@@ -589,9 +589,9 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictSign':
-        return await signMessage(this.components.peerId, message, this.encodeMessage.bind(this))
+        return signMessage(this.components.peerId, message, this.encodeMessage.bind(this))
       case 'StrictNoSign':
-        return await Promise.resolve({
+        return Promise.resolve({
           type: 'unsigned',
           ...message
         })
