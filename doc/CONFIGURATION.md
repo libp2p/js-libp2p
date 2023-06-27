@@ -350,7 +350,7 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
-import { SignaturePolicy } from '@libp2p/interface-pubsub'
+import { SignaturePolicy } from '@libp2p/interface/pubsub'
 import { identifyService } from 'libp2p/identify'
 
 const node = await createLibp2p({
