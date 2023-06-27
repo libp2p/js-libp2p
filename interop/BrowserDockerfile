@@ -4,8 +4,8 @@ FROM mcr.microsoft.com/playwright
 
 COPY --from=node-js-libp2p-head /app/ /app/
 WORKDIR /app/interop
-RUN ./node_modules/.bin/playwright install
+RUN npx playwright install
 ARG BROWSER=chromium # Options: chromium, firefox, webkit
 ENV BROWSER=$BROWSER
 
-ENTRYPOINT npm test -- --build false --types false -t browser -- --browser $BROWSER
+ENTRYPOINT npm run test:interop:multidim -- --build false --types false -t browser -- --browser $BROWSER
