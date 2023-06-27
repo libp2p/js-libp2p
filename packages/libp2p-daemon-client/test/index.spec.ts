@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
 import { createServer, type Libp2pServer } from '@libp2p/daemon-server'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { isPeerId } from '@libp2p/interface/peer-id'
+import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
