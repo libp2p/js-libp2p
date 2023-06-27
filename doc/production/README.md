@@ -12,7 +12,6 @@ This guide aims to guide you from using the public infrastructure into setting u
   - [Table of Contents](#table-of-contents)
   - [Joining the Network](#joining-the-network)
   - [Connecting to Nodes with connectivity limitations](#connecting-to-nodes-with-connectivity-limitations)
-    - [Circuit Relay](#circuit-relay)
   - [Querying the network from the browser](#querying-the-network-from-the-browser)
   - [Others](#others)
     - [SSL](#ssl)
@@ -31,7 +30,9 @@ While the libp2p core codebase aims to work in multiple environments, there are 
 
 In the browser, libp2p supports three transports: `websockets`, `webtransport`, and `webrtc`.
 
-### Circuit Relay
+- [websockets](https://github.com/libp2p/js-libp2p-websockets) is generally used as a full-duplex communication protocol over a single TCP connection, allowing for real-time data transfer between the client and the server.
+- [webRTC](https://github.com/libp2p/specs/tree/master/webrtc) is primarly geared towards facilitating browser-to-browser connections. It also enables browsers to connect to public server nodes without those server nodes providing a TLS certificate within the browser's trustchain. This differs from the `websockets` transport as the browser requires the remote to have a trusted TLS certificate. Please note that webRTC iss currently not supported by [go-libp2p](https://github.com/libp2p/go-libp2p/issues/2009) but this is in development.
+- [webtransports](https://github.com/libp2p/specs/tree/master/webtransport) is a way for browsers to establish a stream-multiplexed and bidirectional connection to servers, that uses QUIC to offer an alternative to WebSocket. It exhibits all the advantages of QUIC over TCP, including faster handshakes, no head-of-line blocking, and being future-proof. [Currently browsers cannot listen for webtransport connection]() but this is in development.
 
 Libp2p nodes acting as circuit relay aim to establish connectivity between libp2p nodes (e.g. IPFS nodes) that wouldn't otherwise be able to establish a direct connection to each other.
 

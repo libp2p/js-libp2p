@@ -4,6 +4,7 @@
 - [Modules](#modules)
   - [Transport](#transport)
   - [Stream Multiplexing](#stream-multiplexing)
+    - [Muxer Selection](#muxer-selection)
   - [Connection Encryption](#connection-encryption)
   - [Peer Discovery](#peer-discovery)
   - [Content Routing](#content-routing)
@@ -30,6 +31,7 @@
     - [Configuring PeerStore](#configuring-peerstore)
     - [Customizing Transports](#customizing-transports)
     - [Configuring AutoNAT](#configuring-autonat)
+    - [Configuring UPnP NAT Traversal](#configuring-upnp-nat-traversal)
       - [Browser support](#browser-support)
       - [UPnP and NAT-PMP](#upnp-and-nat-pmp)
     - [Configuring protocol name](#configuring-protocol-name)
@@ -68,11 +70,9 @@ Bear in mind that a **transport** and **connection encryption** module are **req
 Some available transports are:
 
 - [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) (not available in browsers)
-- [@libp2p/webrtc](https://github.com/libp2p/js-libp2p-webrtc)
-- [@libp2p/websockets](https://github.com/libp2p/js-libp2p-websockets)
-- [@libp2p/webtransport](https://github.com/libp2p/js-libp2p-webtransport)
-- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) ([Archived](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/README.md#%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F))
-- [@libp2p/webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) ([Archived](https://github.com/libp2p/js-libp2p-webrtc-direct/blob/master/README.md#%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F))
+- [@libp2p/webrtc](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc)
+- [@libp2p/websockets](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-websockets)
+- [@libp2p/webtransport](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webtransport)
 
 If none of the available transports fulfils your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
 
@@ -127,9 +127,8 @@ If you want to know more about libp2p connection encryption, you should read the
 Some available peer discovery modules are:
 
 - [@libp2p/mdns](https://github.com/libp2p/js-libp2p-mdns)
-- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p-bootstrap)
+- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-bootstrap)
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
-- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) ([Archived](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/README.md#%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F%EF%B8%8F))
 - [@chainsafe/discv5](https://github.com/chainsafe/discv5)
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-discovery).
@@ -914,7 +913,7 @@ const node = await createLibp2p({
     noise()
   ],
   addresses: {
-    listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc'] // your webrtc dns multiaddr
+    listen: ['/webrtc'] // your webrtc dns multiaddr
   }
 })
 ```
