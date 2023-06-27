@@ -1,3 +1,16 @@
+## [7.0.2](https://github.com/libp2p/js-libp2p-pubsub/compare/v7.0.1...v7.0.2) (2023-06-27)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([ab88716](https://github.com/libp2p/js-libp2p-pubsub/commit/ab8871630d551841696cbcfaa94a2d2943601d74))
+* Update .github/workflows/stale.yml [skip ci] ([f032696](https://github.com/libp2p/js-libp2p-pubsub/commit/f032696bbd33329985845341d2d1c6b7f9e8d23b))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 38.1.8 to 39.0.10 ([#146](https://github.com/libp2p/js-libp2p-pubsub/issues/146)) ([074e78b](https://github.com/libp2p/js-libp2p-pubsub/commit/074e78b1708190bc8f607bf0895fcfca77375d34))
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-pubsub/compare/v7.0.0...v7.0.1) (2023-04-19)
 
 
