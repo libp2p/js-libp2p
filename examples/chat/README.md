@@ -9,18 +9,10 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [Setup](#setup)
 - [Running](#running)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-chat
-```
 
 ## Setup
 
@@ -33,10 +25,6 @@ $ npm i @libp2p/example-chat
 2. Run the dialer in window 2, `node dialer.js`
 3. Type a message in either window and hit *enter*
 4. Tell yourself secrets to your hearts content!
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_chat.html>
 
 ## License
 

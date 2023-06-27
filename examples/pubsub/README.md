@@ -9,19 +9,11 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [0. Set up the example](#0-set-up-the-example)
 - [1. Setting up a simple PubSub network on top of libp2p](#1-setting-up-a-simple-pubsub-network-on-top-of-libp2p)
 - [2. Future work](#2-future-work)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-pubsub
-```
 
 We've seen many interesting use cases appear with this, here are some highlights:
 
@@ -135,10 +127,6 @@ libp2p/IPFS PubSub is enabling a whole set of Distributed Real Time applications
 - [Live DB - A always in Sync DB using CRDT](https://github.com/ipfs-labs/ipfs-live-db)
 - [IIIF Annotations over IPFS, CRDT and libp2p](https://www.youtube.com/watch?v=hmAniA6g9D0\&feature=youtu.be\&t=10m40s)
 - [orbit.chat - p2p chat application, fully running in the browser with js-ipfs, js-libp2p and orbit-db](http://orbit.chat/)
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_pubsub.html>
 
 ## License
 

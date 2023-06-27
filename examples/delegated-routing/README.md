@@ -9,20 +9,12 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [Prerequisite](#prerequisite)
 - [Running this example](#running-this-example)
   - [Finding Content via the Delegate](#finding-content-via-the-delegate)
   - [Finding Peers via the Delegate](#finding-peers-via-the-delegate)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-delegated-routing-example
-```
 
 The starting [Libp2p Bundle](./src/libp2p-bundle.js) in this example starts by disabling the DHT and adding the Delegated Peer and Content Routers.
 Once you've completed the example, you should try enabled the DHT and see what kind of results you get! You can also enable the various Peer Discovery modules and see the impact it has on your Peer count.
@@ -70,10 +62,6 @@ This will do a few things:
 2. Copy one of the CIDs from the list of peer addresses, this will be the last portion of the address and will look something like `QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8`.
 3. In your browser, paste the CID into the *Peer* field and hit `Find`.
 4. You should see information about the peer including its addresses.
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_delegated_routing_example.html>
 
 ## License
 

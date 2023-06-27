@@ -9,23 +9,15 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- - [Install](#install)
 - [1. Handle multiple protocols](#1-handle-multiple-protocols)
 - [2. Reuse existing connection](#2-reuse-existing-connection)
 - [3. Bidirectional connections](#3-bidirectional-connections)
-  - [API Docs](#api-docs)
-  - [License](#license)
-  - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-protocol-and-stream-muxing
-```
+- [License](#license)
+- [Contribution](#contribution)
 
 The feature of agreeing on a protocol over an established connection is what we call *protocol multiplexing* and it is possible through [multistream-select](https://github.com/multiformats/multistream), another protocol that lets you agree per connection (or stream) which protocol is going to be talked over that connection (select), it also enables you to request the other end to tell you which protocols it supports (ls). You can learn more about multistream-select at its [specification repo](https://github.com/multiformats/multistream).
 
-# 1. Handle multiple protocols
+## 1. Handle multiple protocols
 
 Let's see *protocol multiplexing* in action! You will need the following modules for this example: `libp2p`, `@libp2p/tcp`, `@libp2p/peer-id`, `it-pipe`, `it-buffer` and `streaming-iterables`. This example reuses the base left by the [Transports](../transports) example. You can see the complete solution at [1.js](./1.js).
 
@@ -120,7 +112,7 @@ node2.handle(['/another-protocol/1.0.0', '/another-protocol/2.0.0'], ({ stream }
 
 Try all of this out by executing [1.js](./1.js).
 
-# 2. Reuse existing connection
+## 2. Reuse existing connection
 
 The examples above would require a node to create a whole new connection for every time it dials in one of the protocols, this is a waste of resources and also it might be simply not possible (e.g lack of file descriptors, not enough ports being open, etc). What we really want is to dial a connection once and then multiplex several virtual connections (stream) over a single connection, this is where *stream multiplexing* comes into play.
 
@@ -189,7 +181,7 @@ By running [2.js](./2.js) you should see the following result:
     from: /b, msg: protocol (b)
     from: /b, msg: another stream on protocol (b)
 
-# 3. Bidirectional connections
+## 3. Bidirectional connections
 
 There is one last trick on *protocol and stream multiplexing* that libp2p uses to make everyone's life easier and that is *bidirectional connection*.
 
@@ -300,10 +292,6 @@ await pipe(
   stream1
 )
 ```
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_protocol_and_stream_muxing.html>
 
 ## License
 

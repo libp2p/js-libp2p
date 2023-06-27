@@ -9,21 +9,13 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [0. Setup the example](#0-setup-the-example)
 - [1. Set up a relay node](#1-set-up-a-relay-node)
 - [2. Set up a listener node with Auto Relay Enabled](#2-set-up-a-listener-node-with-auto-relay-enabled)
 - [3. Set up a dialer node for testing connectivity](#3-set-up-a-dialer-node-for-testing-connectivity)
 - [4. What is next?](#4-what-is-next)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-auto-relay
-```
 
 ## 0. Setup the example
 
@@ -195,10 +187,6 @@ As you can see from the output, the remote address of the established connection
 Before moving into production, there are a few things that you should take into account.
 
 A relay node should not advertise its private address in a real world scenario, as the node would not be reachable by others. You should provide an array of public addresses in the libp2p `addresses.announce` option. If you are using websockets, bear in mind that due to browser’s security policies you cannot establish unencrypted connection from secure context. The simplest solution is to setup SSL with nginx and proxy to the node and setup a domain name for the certificate.
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_auto_relay.html>
 
 ## License
 

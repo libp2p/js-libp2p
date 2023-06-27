@@ -9,20 +9,12 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [Setup](#setup)
 - [Run](#run)
   - [Using different keys](#using-different-keys)
   - [Exploring the repos](#exploring-the-repos)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-pnet
-```
 
 ## Setup
 
@@ -48,10 +40,6 @@ where lines are that pertain to changing the swarm key of node 2.
 Once you've run the example you can take a look at the repos in the `./tmp` directory to see how they differ, including
 the swarm keys. You should see a `swarm.key` file in each of the repos and when the nodes are on the same private network
 this contents of the `swarm.key` files should be the same.
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_pnet.html>
 
 ## License
 

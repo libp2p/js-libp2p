@@ -9,20 +9,12 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [1. Bootstrap list of Peers when booting a node](#1-bootstrap-list-of-peers-when-booting-a-node)
 - [2. MulticastDNS to find other peers in the network](#2-multicastdns-to-find-other-peers-in-the-network)
 - [3. Pubsub based Peer Discovery](#3-pubsub-based-peer-discovery)
 - [4. Where to find other Peer Discovery Mechanisms](#4-where-to-find-other-peer-discovery-mechanisms)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-discovery-mechanisms
-```
 
 With this system, a libp2p node can both have a set of nodes to always connect on boot (bootstraper nodes), discover nodes through locality (e.g connected in the same LAN) or through serendipity (random walks on a DHT).
 
@@ -311,10 +303,6 @@ There are plenty more Peer Discovery Mechanisms out there, you can:
 - Find one in [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star). Yes, a transport with discovery capabilities! This happens because WebRTC requires a rendezvous point for peers to exchange [SDP](https://tools.ietf.org/html/rfc4317) offer, which means we have one or more points that can introduce peers to each other. Think of it as MulticastDNS for the Web, as in MulticastDNS only works in LAN.
 - Any DHT will offer you a discovery capability. You can simple *random-walk* the routing tables to find other peers to connect to. For example [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht) can be used for peer discovery. An example of how to configure it to enable random walks can be found [here](https://github.com/libp2p/js-libp2p/blob/v0.28.4/doc/CONFIGURATION.md#customizing-dht).
 - You can create your own Discovery service, a registry, a list, a radio beacon, you name it!
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_discovery_mechanisms.html>
 
 ## License
 

@@ -9,18 +9,10 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [Setup](#setup)
 - [Running](#running)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-echo
-```
 
 ## Setup
 
@@ -33,10 +25,6 @@ $ npm i @libp2p/example-echo
 2. Run the dialer in window 2, `node dialer.js`
 3. You should see console logs showing the dial, and the received echo of *hey*
 4. If you look at the listener window, you will see it receiving the dial
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_echo.html>
 
 ## License
 

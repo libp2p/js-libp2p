@@ -9,19 +9,11 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [Setup](#setup)
 - [Running the examples](#running-the-examples)
 - [Going to production?](#going-to-production)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-libp2p-in-the-browser
-```
 
 ## Setup
 
@@ -68,10 +60,6 @@ This example uses public `libp2p-webrtc-star` servers. These servers should be u
 You can see how to deploy your own signaling server in [libp2p/js-libp2p-webrtc-star/DEPLOYMENT.md](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/packages/webrtc-star-signalling-server/DEPLOYMENT.md).
 
 Once you have your own server running, you should add its listen address in your libp2p node configuration.
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_libp2p_in_the_browser.html>
 
 ## License
 

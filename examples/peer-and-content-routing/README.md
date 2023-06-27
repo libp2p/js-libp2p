@@ -9,25 +9,17 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- - [Install](#install)
 - [1. Using Peer Routing to find other peers](#1-using-peer-routing-to-find-other-peers)
 - [2. Using Content Routing to find providers of content](#2-using-content-routing-to-find-providers-of-content)
 - [3. Future Work](#3-future-work)
-  - [API Docs](#api-docs)
-  - [License](#license)
-  - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-peer-and-content-routing
-```
+- [License](#license)
+- [Contribution](#contribution)
 
 Peer Routing is the category of modules that offer a way to find other peers in the network by intentionally issuing queries, iterative or recursive, until a Peer is found or the closest Peers, given the Peer Routing algorithm strategy are found.
 
 Content Routing is the category of modules that offer a way to find where content lives in the network, it works in two steps: 1) Peers provide (announce) to the network that they are holders of specific content (multihashes) and 2) Peers issue queries to find where that content lives. A Content Routing mechanism could be as complex as a Kademlia DHT or a simple registry somewhere in the network.
 
-# 1. Using Peer Routing to find other peers
+## 1. Using Peer Routing to find other peers
 
 This example builds on top of the [Protocol and Stream Muxing](../protocol-and-stream-muxing). We need to install `@libp2p/kad-dht`, go ahead and `npm install @libp2p/kad-dht`. If you want to see the final version, open [1.js](./1.js).
 
@@ -99,7 +91,7 @@ Found it, multiaddrs are:
 
 You have successfully used Peer Routing to find a peer that you were not directly connected. Now all you have to do is to dial to the multiaddrs you discovered.
 
-# 2. Using Content Routing to find providers of content
+## 2. Using Content Routing to find providers of content
 
 With Content Routing, you can create records that are stored in multiple points in the network, these records can be resolved by you or other peers and they act as memos or rendezvous points. A great usage of this feature is to support discovery of content, where one node holds a file and instead of using a centralized tracker to inform other nodes that it holds that file, it simply puts a record in the network that can be resolved by other peers. Peer Routing and Content Routing are commonly known as Distributed Hash Tables, DHT.
 
@@ -131,17 +123,13 @@ Found provider: QmSsmVPoTy3WpzwiNPnsKmonBaZjK2HitFs2nWUvwK31Pz
 
 That's it, now you know how to find peers that have pieces of information that interest you!
 
-# 3. Future Work
+## 3. Future Work
 
 Currently, the only mechanisms for Peer and Content Routing come from the DHT, however we do have the intention to support:
 
 - Multiple Peer Routing Mechanisms, including ones that do recursive searches (i.e [webrtc-explorer](http://daviddias.me/blog/webrtc-explorer-2-0-0-alpha-release/) like packet switching or [CJDNS](https://github.com/cjdelisle/cjdns) path finder)
 - Content Routing via PubSub
 - Content Routing via centralized index (i.e a tracker)
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_peer_and_content_routing.html>
 
 ## License
 

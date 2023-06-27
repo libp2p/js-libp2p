@@ -9,20 +9,12 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
 - [1. Creating a libp2p node with TCP](#1-creating-a-libp2p-node-with-tcp)
 - [2. Dialing from one node to another node](#2-dialing-from-one-node-to-another-node)
 - [3. Using multiple transports](#3-using-multiple-transports)
 - [4. How to create a new libp2p transport](#4-how-to-create-a-new-libp2p-transport)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i @libp2p/example-transports
-```
 
 A more complete definition of what is a transport can be found on the [interface-transport] specification. A way to recognize a candidate transport is through the badge:
 
@@ -323,10 +315,6 @@ Adding more transports is done through the same way as you added TCP and WebSock
 If you decide to implement a transport yourself, please consider adding to the list so that others can use it as well.
 
 Hope this tutorial was useful. We are always looking to improve it, so contributions are welcome!
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_example_transports.html>
 
 ## License
 
