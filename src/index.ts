@@ -1,11 +1,11 @@
-import { toString } from 'uint8arrays/to-string'
-import { PubSubBaseProtocol, PubSubComponents } from '@libp2p/pubsub'
-import { multicodec } from './config.js'
-import { SimpleTimeCache } from './cache.js'
-import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult, PubSub } from '@libp2p/interface-pubsub'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import { logger } from '@libp2p/logger'
+import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
+import { toString } from 'uint8arrays/to-string'
+import { SimpleTimeCache } from './cache.js'
+import { multicodec } from './config.js'
 import { RPC } from './message/rpc.js'
+import type { PeerId } from '@libp2p/interface-peer-id'
+import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult, PubSub } from '@libp2p/interface-pubsub'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:floodsub')

@@ -1,17 +1,17 @@
 /* eslint-env mocha */
 
+import { mockRegistrar } from '@libp2p/interface-mocks'
+import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface-pubsub'
+import { PeerSet } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { PeerStreams } from '@libp2p/pubsub/peer-streams'
 import { expect } from 'aegir/chai'
+import { sha256 } from 'multiformats/hashes/sha2'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { sha256 } from 'multiformats/hashes/sha2'
-import { Message, PubSubRPC, StrictNoSign } from '@libp2p/interface-pubsub'
-import { PeerStreams } from '@libp2p/pubsub/peer-streams'
 import { FloodSub, multicodec } from '../src/index.js'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { mockRegistrar } from '@libp2p/interface-mocks'
-import pWaitFor from 'p-wait-for'
-import { PeerSet } from '@libp2p/peer-collections'
 
 const topic = 'my-topic'
 const message = uint8ArrayFromString('a neat message')

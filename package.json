@@ -134,7 +134,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check -i protons",
+    "dep-check": "aegir dep-check",
     "build": "aegir build",
     "generate": "protons ./src/message/rpc.proto",
     "test": "aegir test",
@@ -156,12 +156,13 @@
     "uint8arrays": "^4.0.3"
   },
   "devDependencies": {
-    "@libp2p/interface-mocks": "^10.0.0",
-    "@libp2p/interface-pubsub-compliance-tests": "^5.0.0",
+    "@libp2p/interface-mocks": "^12.0.1",
+    "@libp2p/interface-pubsub-compliance-tests": "^5.0.9",
     "@libp2p/peer-collections": "^3.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
     "@multiformats/multiaddr": "^12.0.0",
-    "aegir": "^38.1.7",
+    "@types/sinon": "^10.0.15",
+    "aegir": "^39.0.10",
     "multiformats": "^11.0.0",
     "p-wait-for": "^5.0.0",
     "protons": "^7.0.2",
