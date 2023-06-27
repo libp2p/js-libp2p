@@ -35,7 +35,8 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "dep-check": "aegir dep-check -i protons"
+    "dep-check": "aegir dep-check",
+    "renderResults": "node dist/src/renderResults.js"
   },
   "dependencies": {
     "@libp2p/interface": "^0.0.1",

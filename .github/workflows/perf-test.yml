@@ -15,8 +15,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./packages/perf/node_modules
+          directories: ./packages/perf/node_modules
 
       - name: Install playwright dependencies
         uses: ipfs/aegir/actions/cache-node-modules@master
@@ -26,59 +25,111 @@ jobs:
         working-directory: packages/perf
         run: (npm i && npm run build)
 
-      - name: Run tests and capture console output
+      - name: Run tests and store in test_output
         working-directory: packages/perf
         run: |
           npm run test > test_output.txt
-          echo '::set-output name=test_output::$(cat test_output.txt)'
-
-      - name: Read previous performance data
-        id: read_previous_data
-        working-directory: packages/perf
-        run: |
-          previous_data=$(cat previousPerf.json)
-          echo "::set-output name=previous_data::$previous_data"
-          previous_download_bandwidth=$(echo "$previous_data" | jq -r '.previousDownloadBandwidth')
-          previous_upload_bandwidth=$(echo "$previous_data" | jq -r '.previousUploadBandwidth')
-          echo "::set-output name=previous_download_bandwidth::$previous_download_bandwidth"
-          echo "::set-output name=previous_upload_bandwidth::$previous_upload_bandwidth"
 
       - name: Extract bandwidth from test output
         id: extract_bandwidth
         working-directory: packages/perf
+        shell: bash
         run: |
-          test_output=$(cat test_output.txt)
-          upload_bandwidth=$(echo "$test_output" | grep -o 'Upload bandwidth: [0-9]*')
-          upload_bandwidth=${upload_bandwidth#*: }
-          download_bandwidth=$(echo "$test_output" | grep -o 'Download bandwidth: [0-9]*')
-          download_bandwidth=${download_bandwidth#*: }
-          echo "::set-output name=upload_bandwidth::$upload_bandwidth"
-          echo "::set-output name=download_bandwidth::$download_bandwidth"
+          bandwidth_file="test_output.txt"
+          bandwidth_object="{"
 
-      - name: Install bc for floating point arithmetic
-        run: sudo apt-get update && sudo apt-get install -y bc
+          # Function to assign bandwidth values to the object
+          assign_bandwidth() {
+            local environment=$1
+            local current_upload_bandwidth=$2
+            local current_download_bandwidth=$3
 
-      - name: Compare bandwidths with previous data
-        id: compare_bandwidths
-        working-directory: packages/perf
-        run: |
-          current_upload_bandwidth=${{ steps.extract_bandwidth.outputs.upload_bandwidth }}
-          current_download_bandwidth=${{ steps.extract_bandwidth.outputs.download_bandwidth }}
-          previous_upload_bandwidth=${{ steps.read_previous_data.outputs.previous_upload_bandwidth }}
-          previous_download_bandwidth=${{ steps.read_previous_data.outputs.previous_download_bandwidth }}
-          if (( $(bc <<< "$current_upload_bandwidth <= 0.8 * $previous_upload_bandwidth") )) || (( $(bc <<< "$current_download_bandwidth <= 0.8 * $previous_download_bandwidth") )); then
-            echo "::set-output name=bandwidth_comparison::fail"
-          else
-            echo "::set-output name=bandwidth_comparison::pass"
+            if [[ ${#bandwidth_object} -gt 1 ]]; then
+              bandwidth_object+=", "
+            fi
+
+            bandwidth_object+="\"$environment\": { \"currentUploadBandwidth\": $current_upload_bandwidth, \"currentDownloadBandwidth\": $current_download_bandwidth }"
+          }
+
+          # Read the bandwidth values from the file
+          upload_count=0
+          download_count=0
+
+          upload_bandwidths=()
+          download_bandwidths=()
+
+          while IFS= read -r line; do
+            if [[ $line == *"Upload bandwidth"* ]]; then
+              current_upload_bandwidth=$(grep -o 'Upload bandwidth: [0-9]*' <<< "$line" | grep -o '[0-9]*')
+              upload_count=$((upload_count + 1))
+            elif [[ $line == *"Download bandwidth"* ]]; then
+              current_download_bandwidth=$(grep -o 'Download bandwidth: [0-9]*' <<< "$line" | grep -o '[0-9]*')
+              download_count=$((download_count + 1))
+            fi
+
+            if [[ $upload_count -eq 1 && $download_count -eq 1 ]]; then
+              upload_bandwidths[0]=$current_upload_bandwidth
+              download_bandwidths[0]=$current_download_bandwidth
+            elif [[ $upload_count -eq 2 && $download_count -eq 2 ]]; then
+              upload_bandwidths[1]=$current_upload_bandwidth
+              download_bandwidths[1]=$current_download_bandwidth
+            elif [[ $upload_count -eq 3 && $download_count -eq 3 ]]; then
+              upload_bandwidths[2]=$current_upload_bandwidth
+              download_bandwidths[2]=$current_download_bandwidth
+              break  # Exit the loop after processing the third instance
+            fi
+          done < "$bandwidth_file"
+
+          # Construct the bandwidth object
+          assign_bandwidth "node" "${upload_bandwidths[0]}" "${download_bandwidths[0]}"
+          assign_bandwidth "browser" "${upload_bandwidths[1]}" "${download_bandwidths[1]}"
+          assign_bandwidth "webworker" "${upload_bandwidths[2]}" "${download_bandwidths[2]}"
+
+          # Remove trailing comma if there are values in the object
+          if [[ ${#bandwidth_object} -gt 1 ]]; then
+            bandwidth_object="${bandwidth_object#, }"
           fi
+
+          bandwidth_object+="}"
+
+          current_bandwidths=$bandwidth_object
+
+          echo "::set-output name=current_bandwidths::$current_bandwidths"
+
+          # Read the previous bandwidth values from the file
+          previous_bandwidths=$(cat previousPerf.json | jq -r '.')
+
+          # Iterate over the current bandwidth object and merge with previous values
+          merged_object=$(jq --argjson previous "$previous_bandwidths" '. as $current | reduce keys[] as $key ({}; .[$key] = ($current[$key] + $previous[$key]))' <<< "$current_bandwidths")
+
+          # Set the merged bandwidth object as environment variable
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "BANDWIDTH_TEST_RESULTS<<$EOF" >> "$GITHUB_ENV"
+          echo $merged_object >> "$GITHUB_ENV"
+          echo "$EOF" >> "$GITHUB_ENV"
+
+      - name: Generate Test Report
+        id: generate_report
+        working-directory: packages/perf
+        run: npm run renderResults > test_report.md
+
+      - name: Upload Test Report
+        id: upload_report
+        uses: actions/upload-artifact@v2
+        with:
+          name: test_report
+          path: packages/perf/test_report.md
 
       - name: Save current performance data
         id: save_performance_data
         working-directory: packages/perf
         run: |
-          current_upload_bandwidth=${{ steps.extract_bandwidth.outputs.upload_bandwidth }}
-          current_download_bandwidth=${{ steps.extract_bandwidth.outputs.download_bandwidth }}
-          echo "{\"previousDownloadBandwidth\": $current_download_bandwidth, \"previousUploadBandwidth\": $current_upload_bandwidth}" > previousPerf.json
+          current_bandwidths=$(echo "${{ steps.extract_bandwidth.outputs.current_bandwidths }}"" | jq -r '.')
+          # Parse the input object using jq, modify the keys, and store the result in a new variable
+          updated_object=$(echo "$current_bandwidths" | jq 'map_values(.previousUploadBandwidth = .currentUploadBandwidth | del(.currentUploadBandwidth) | .previousDownloadBandwidth = .currentDownloadBandwidth | del(.currentDownloadBandwidth))')
+
+          # Output the updated object
+          echo $updated_object > previousPerf.json
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -88,11 +139,14 @@ jobs:
           branch: ${{ github.ref }}
 
       - name: Check CI job status
+        id: check_ci
+        working-directory: packages/perf
         run: |
-          bandwidth_comparison=${{ steps.compare_bandwidths.outputs.bandwidth_comparison }}
-          if [ "$bandwidth_comparison" == "fail" ]; then
-            echo "Performance test failed: bandwidth descreased by more than 20%."
-            exit 1
+          # Check if the file contains the "❌ " symbol
+          if grep -q "❌ " test_report.md; then
+            echo "Failure: Test report contains the ❌ symbol."
+            exit 1  # Exit with a non-zero status code for failure
           else
-            echo "Performance test passed."
+            echo "Success: Test report does not contain the ❌ symbol."
+            exit 0  # Exit with a zero status code for pass
           fi
