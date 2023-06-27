@@ -112,6 +112,10 @@
       "types": "./dist/src/peer-store/tags.d.ts",
       "import": "./dist/src/peer-store/tags.js"
     },
+    "./pubsub": {
+      "types": "./dist/src/pubsub/index.d.ts",
+      "import": "./dist/src/pubsub/index.js"
+    },
     "./record": {
       "types": "./dist/src/record/index.d.ts",
       "import": "./dist/src/record/index.js"

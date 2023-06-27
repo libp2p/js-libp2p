@@ -93,8 +93,6 @@ Some available stream multiplexers are:
 
 Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
 
-If you configure multiple muxers for use in your application, js-libp2p will choose the first muxer in the list. Therefore, ordering matters.
-
 If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [Stream Muxer Interface](https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer).
 
 If you want to know more about libp2p stream multiplexing, you should read the following content:
@@ -102,6 +100,10 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 - https://docs.libp2p.io/concepts/stream-multiplexing
 - https://github.com/libp2p/specs/tree/master/connections
 - https://github.com/libp2p/specs/tree/master/mplex
+
+#### Muxer Selection
+
+If you configure multiple muxers for use in your application, js-libp2p will choose the first muxer in the list. Therefore, ordering matters.
 
 ### Connection Encryption
 
@@ -348,7 +350,7 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
-import { SignaturePolicy } from '@libp2p/interface-pubsub'
+import { SignaturePolicy } from '@libp2p/interface/pubsub'
 import { identifyService } from 'libp2p/identify'
 
 const node = await createLibp2p({
@@ -590,7 +592,7 @@ Libp2p allows you to setup a secure keychain to manage your keys. The keychain c
 | pass      | `string` | Passphrase to use in the keychain (minimum of 20 characters).                          |
 | dek      | `DEKConfig` | the default options for generating the derived encryption key, which, along with the passphrase are input to the PBKDF2 function. For more info see: https://github.com/libp2p/js-libp2p-keychain |
 
-The keychain will store keys encrypted in the datastore which default is an in memory datastore. If you want to store the keys on disc you need to initialize libp2p with a suitable datastore implementation. 
+The keychain will store keys encrypted in the datastore which default is an in memory datastore. If you want to store the keys on disc you need to initialize libp2p with a suitable datastore implementation.
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -982,7 +984,7 @@ const node = await createLibp2p({
     })
   }
 })
-
+```
 
 #### Configuring UPnP NAT Traversal
 
