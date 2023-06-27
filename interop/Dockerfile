@@ -4,12 +4,8 @@ WORKDIR /app
 COPY package.json .
 COPY ./node_modules ./node_modules
 COPY ./packages ./packages
+COPY ./interop ./interop
 
 WORKDIR /app/interop
-COPY ./interop/node_modules ./node_modules
-COPY ./interop/dist ./dist
-COPY ./interop/package.json .
-COPY ./interop/.aegir.js .
-COPY ./interop/relay.js .
 
-ENTRYPOINT [ "npm", "test", "--", "--build", "false", "--types", "false", "-t", "node" ]
+ENTRYPOINT [ "npm", "run", "test:interop:multidim", "--", "--build", "false", "--types", "false", "-t", "node" ]

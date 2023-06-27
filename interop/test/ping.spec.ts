@@ -142,8 +142,6 @@ describe('ping test', () => {
         case 'yamux':
           options.streamMuxers = [yamux()]
           break
-        case 'quic':
-          break
         default:
           throw new Error(`Unknown muxer: ${MUXER ?? '???'}`)
       }
