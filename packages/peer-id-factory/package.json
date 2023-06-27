@@ -54,7 +54,6 @@
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",
     "@libp2p/interface": "~0.0.1",
-    "@libp2p/interface-keys": "^1.0.0",
     "@libp2p/peer-id": "^2.0.0",
     "multiformats": "^12.0.1",
     "protons-runtime": "^5.0.0",
