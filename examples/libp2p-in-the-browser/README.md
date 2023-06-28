@@ -11,6 +11,8 @@
 
 - [Setup](#setup)
 - [Running the examples](#running-the-examples)
+- [License](#license)
+- [Contribution](#contribution)
 
 ## Setup
 
@@ -50,3 +52,14 @@ Now, if you open a second browser tab to `http://localhost:1234`, you should dis
 
 **Note**: In the example we assign libp2p to `window.libp2p`, in case you would like to play around with the API directly in the browser. You can of course make changes to `index.js` and vite will automatically rebuild and reload the browser tabs.
 
+
+## License
+
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
