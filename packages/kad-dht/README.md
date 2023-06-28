@@ -59,7 +59,9 @@ import { createLibp2pNode } from 'libp2p'
 import { kadDHT } from '@libp2p/kad-dht'
 
 const node = await createLibp2pNode({
-  dht: kadDHT()
+  services: {
+    dht: kadDHT()
+  }
   //... other config
 })
 await node.start()

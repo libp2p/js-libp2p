@@ -91,9 +91,9 @@
     "it-goodbye": "^4.0.1",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
-    "p-wait-for": "^5.0.0",
+    "p-wait-for": "^5.0.2",
     "uint8arraylist": "^2.3.2",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^4.0.4"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"

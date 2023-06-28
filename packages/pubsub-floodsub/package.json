@@ -72,7 +72,7 @@
     "@types/sinon": "^10.0.15",
     "aegir": "^39.0.10",
     "multiformats": "^12.0.1",
-    "p-wait-for": "^5.0.0",
+    "p-wait-for": "^5.0.2",
     "protons": "^7.0.2",
     "sinon": "^15.1.2"
   },
