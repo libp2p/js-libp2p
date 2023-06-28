@@ -25,8 +25,8 @@ Let us know if you find any issues, or if you want to contribute and add a new t
 ## libp2p in the Browser
 There are a number of ways libp2p can be used in the browser. Here are some examples:
 
-- [webRTC](../packages/transport-webrtc/examples)
-- [websockets](../packages/transport-websockets/examples)
-- [webtransport](../packages/transport-webtransport/examples)
+- [webRTC](./libp2p-in-the-browser/webrtc/README.md)
+- [websockets](./libp2p-in-the-browser/websockets/README.md)
+- [webtransport](./libp2p-in-the-browser/webtransport/README.md)
 
 There is also an tutorial of how all of these transports can be [universally connected](https://github.com/libp2p/universal-connectivity/tree/main)
