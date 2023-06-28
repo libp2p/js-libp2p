@@ -1,9 +1,19 @@
 // eslint-disable-next-line
 'use strict'
 
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { bootstrap } from '@libp2p/bootstrap'
+import { delegatedContentRouting } from '@libp2p/delegated-content-routing'
+import { delegatedPeerRouting } from '@libp2p/delegated-peer-routing'
+import { mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
+import { create as createKuboRpcClient } from 'kubo-rpc-client'
+import { createLibp2p } from 'libp2p'
+import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { CID } from 'multiformats/cid'
 import React from 'react'
-import Ipfs from 'ipfs-core'
-import libp2pBundle from './libp2p-bundle'
+
 const Component = React.Component
 
 const BootstrapNode = '/ip4/127.0.0.1/tcp/8081/ws/p2p/QmdoG8DpzYUZMVP5dGmgmigZwR1RE8Cf6SxMPg1SBXJAQ8'
@@ -32,84 +42,76 @@ class App extends Component {
       hash: event.target.value
     })
   }
+
   handlePeerChange (event) {
     this.setState({
       peer: event.target.value
     })
   }
 
-  handleHashSubmit (event) {
+  async handleHashSubmit (event) {
     event.preventDefault()
     this.setState({
       isLoading: this.state.isLoading + 1
     })
 
-    this.ipfs.cat(this.state.hash, (err, data) => {
-      if (err) console.log('Error', err)
+    const providers = []
+
+    for await (const provider of this.libp2p.contentRouting.findProviders(CID.parse(this.state.hash))) {
+      providers.push(provider)
 
       this.setState({
-        response: data.toString(),
+        response: providers.toString(),
         isLoading: this.state.isLoading - 1
       })
-    })
+    }
   }
-  handlePeerSubmit (event) {
+
+  async handlePeerSubmit (event) {
     event.preventDefault()
     this.setState({
       isLoading: this.state.isLoading + 1
     })
 
-    this.ipfs.dht.findpeer(this.state.peer, (err, results) => {
-      if (err) console.log('Error', err)
+    const peerInfo = await this.libp2p.peerRouting.findPeer(this.state.peer)
 
-      this.setState({
-        response: JSON.stringify(results, null, 2),
-        isLoading: this.state.isLoading - 1
-      })
+    this.setState({
+      response: JSON.stringify(peerInfo, null, 2),
+      isLoading: this.state.isLoading - 1
     })
   }
 
-  componentDidMount () {
-    window.ipfs = this.ipfs = Ipfs.create({
-      config: {
-        Addresses: {
-          Swarm: []
-        },
-        Discovery: {
-          MDNS: {
-            Enabled: false
-          },
-          webRTCStar: {
-            Enabled: false
+  async componentDidMount () {
+    const client = createKuboRpcClient({
+      host: '0.0.0.0',
+      protocol: 'http',
+      port: '8080'
+    })
+
+    window.libp2p = this.libp2p = await createLibp2p({
+      contentRouting: [
+        delegatedPeerRouting(client)
+      ],
+      peerRouting: [
+        delegatedContentRouting(client)
+      ],
+      peerDiscovery: [
+        bootstrap({
+          list: {
+            BootstrapNode
           }
-        },
-        Bootstrap: [
-          BootstrapNode
-        ]
-      },
-      preload: {
-        enabled: false
-      },
-      libp2p: libp2pBundle
-    })
-    this.ipfs.on('ready', () => {
-      if (this.peerInterval) {
-        clearInterval(this.peerInterval)
-      }
-
-      this.ipfs.swarm.connect(BootstrapNode, (err) => {
-        if (err) {
-          console.log('Error connecting to the node', err)
-        }
-        console.log('Connected!')
-      })
-
-      this.peerInterval = setInterval(() => {
-        this.ipfs.swarm.peers((err, peers) => {
-          if (err) console.log(err)
-          if (peers) this.setState({peers: peers.length})
         })
-      }, 2500)
+      ],
+      transports: [
+        webSockets(),
+        circuitRelayTransport()
+      ],
+      streamMuxers: [
+        yamux(), mplex()
+      ],
+      connectionEncryption: [
+        noise()
+      ]
     })
   }
 

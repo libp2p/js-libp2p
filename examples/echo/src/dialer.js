@@ -4,16 +4,16 @@
  * Dialer Node
  */
 
-import { createLibp2p } from './libp2p.js'
+import { createFromJSON } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import idd from './id-d.js'
 import idl from './id-l.js'
-import { createFromJSON } from '@libp2p/peer-id-factory'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { multiaddr } from '@multiformats/multiaddr'
+import { createLibp2p } from './libp2p.js'
 
-async function run() {
+async function run () {
   const [dialerId, listenerId] = await Promise.all([
     createFromJSON(idd),
     createFromJSON(idl)

@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 
+import { createFromJSON } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from './libp2p.js'
-import { stdinToStream, streamToConsole } from './stream.js'
-import { createFromJSON } from '@libp2p/peer-id-factory'
 import peerIdDialerJson from './peer-id-dialer.js'
 import peerIdListenerJson from './peer-id-listener.js'
+import { stdinToStream, streamToConsole } from './stream.js'
 
 async function run () {
   const [idDialer, idListener] = await Promise.all([
