@@ -115,16 +115,20 @@ jobs:
 
       - name: Upload Test Report
         id: upload_report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test_report
           path: packages/perf/test_report.md
+
+      - name: Show Report Output
+        working-directory: packages/perf
+        run: cat test_report.md >> $GITHUB_STEP_SUMMARY
 
       - name: Save current performance data
         id: save_performance_data
         working-directory: packages/perf
         run: |
-          current_bandwidths=$(echo "${{ steps.extract_bandwidth.outputs.current_bandwidths }}"" | jq -r '.')
+          current_bandwidths=$(echo "${{ steps.extract_bandwidth.outputs.current_bandwidths }}" | jq -r '.')
           # Parse the input object using jq, modify the keys, and store the result in a new variable
           updated_object=$(echo "$current_bandwidths" | jq 'map_values(.previousUploadBandwidth = .currentUploadBandwidth | del(.currentUploadBandwidth) | .previousDownloadBandwidth = .currentDownloadBandwidth | del(.currentDownloadBandwidth))')
 
