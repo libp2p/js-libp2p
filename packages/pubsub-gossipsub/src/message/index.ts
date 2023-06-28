@@ -1,1 +1,1 @@
-export { RPC, type IRPC } from './rpc.js'
+export * from './rpc.js'

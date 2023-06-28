@@ -40,7 +40,7 @@
     "multiformats": "^12.0.1"
   },
   "devDependencies": {
-    "aegir": "^39.0.12",
+    "aegir": "^39.0.13",
     "test-ipfs-example": "^1.0.0"
   },
   "private": true

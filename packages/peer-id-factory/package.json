@@ -61,7 +61,7 @@
     "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
-    "aegir": "^39.0.12",
+    "aegir": "^39.0.13",
     "protons": "^7.0.2"
   },
   "typedoc": {

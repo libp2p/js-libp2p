@@ -51,7 +51,7 @@
     "redis": "4.5.1"
   },
   "devDependencies": {
-    "aegir": "^39.0.12"
+    "aegir": "^39.0.13"
   },
   "browser": {
     "@libp2p/tcp": false

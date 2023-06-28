@@ -59,7 +59,7 @@
   "devDependencies": {
     "@libp2p/daemon-server": "^5.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.0",
-    "aegir": "^39.0.12",
+    "aegir": "^39.0.13",
     "it-all": "^3.0.1",
     "it-pipe": "^3.0.1",
     "sinon": "^15.1.2",

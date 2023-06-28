@@ -179,7 +179,7 @@
     "@dapplion/benchmark": "^0.2.4",
     "@libp2p/interface-compliance-tests": "^3.0.0",
     "@libp2p/mplex": "^8.0.0",
-    "aegir": "^39.0.12",
+    "aegir": "^39.0.13",
     "it-drain": "^3.0.2",
     "it-pair": "^2.0.6",
     "it-stream-types": "^2.0.1"

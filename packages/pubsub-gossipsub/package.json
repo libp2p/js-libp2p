@@ -106,7 +106,7 @@
     "@libp2p/interface-compliance-tests": "^3.0.0",
     "@libp2p/peer-id-factory": "^2.0.0",
     "@libp2p/peer-store": "^8.0.0",
-    "aegir": "^39.0.12",
+    "aegir": "^39.0.13",
     "datastore-core": "^9.1.1",
     "delay": "^6.0.0",
     "mkdirp": "^1.0.4",
