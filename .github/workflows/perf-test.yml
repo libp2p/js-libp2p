@@ -31,7 +31,7 @@ jobs:
           npm run test > test_output.txt
 
       - name: Extract bandwidth from test output
-        id: extract_bandwidth
+        id: extract_bandwidths
         working-directory: packages/perf
         shell: bash
         run: |
@@ -127,13 +127,17 @@ jobs:
       - name: Save current performance data
         id: save_performance_data
         working-directory: packages/perf
+        shell: bash
         run: |
-          current_bandwidths=$(echo "${{ steps.extract_bandwidth.outputs.current_bandwidths }}" | jq -r '.')
+          current_bandwidths=$(echo '${{ steps.extract_bandwidths.outputs.current_bandwidths }}' | jq -r '.')
+
           # Parse the input object using jq, modify the keys, and store the result in a new variable
           updated_object=$(echo "$current_bandwidths" | jq 'map_values(.previousUploadBandwidth = .currentUploadBandwidth | del(.currentUploadBandwidth) | .previousDownloadBandwidth = .currentDownloadBandwidth | del(.currentDownloadBandwidth))')
 
+          echo "updated object: $updated_object"
+
           # Output the updated object
-          echo $updated_object > previousPerf.json
+          echo "$updated_object" > previousPerf.json
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -146,11 +150,11 @@ jobs:
         id: check_ci
         working-directory: packages/perf
         run: |
-          # Check if the file contains the "❌ " symbol
-          if grep -q "❌ " test_report.md; then
-            echo "Failure: Test report contains the ❌ symbol."
+          # Check if the file contains the "❌" symbol
+          if grep -q "❌" test_report.md; then
+            echo "Failure: There was a performance degradation of over 20%."
             exit 1  # Exit with a non-zero status code for failure
           else
-            echo "Success: Test report does not contain the ❌ symbol."
+            echo "Success: Performance benchmarks passed."
             exit 0  # Exit with a zero status code for pass
           fi

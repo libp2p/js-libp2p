@@ -1,5 +1,5 @@
 {
-  "node": { "currentUploadBandwidth": 97407, "currentDownloadBandwidth": 94924 },
-  "browser": { "currentUploadBandwidth": 98343, "currentDownloadBandwidth": 95700 },
-  "webworker": { "currentUploadBandwidth": 94814, "currentDownloadBandwidth": 92879 }
+  "browser": { "previousUploadBandwidth": 98343, "previousDownloadBandwidth": 95700 },
+  "node": { "previousUploadBandwidth": 97407, "previousDownloadBandwidth": 94924 },
+  "webworker": { "previousUploadBandwidth": 94814, "previousDownloadBandwidth": 92879 }
 }
