@@ -160,7 +160,7 @@
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-gossipsub": "^8.0.0",
+    "@chainsafe/libp2p-gossipsub": "^9.0.0",
     "@chainsafe/libp2p-noise": "^12.0.0",
     "@chainsafe/libp2p-yamux": "^4.0.1",
     "@libp2p/bootstrap": "^8.0.0",
