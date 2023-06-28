@@ -3,13 +3,13 @@
   "version": "4.0.2",
   "description": "Yamux stream multiplexer for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ChainSafe/js-libp2p-yamux#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/stream-multiplexer-yamux#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ChainSafe/js-libp2p-yamux.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/ChainSafe/js-libp2p-yamux/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "keywords": [
     "IPFS",
@@ -18,10 +18,6 @@
     "muxer",
     "stream"
   ],
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
@@ -172,7 +168,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "~0.0.1",
-    "@libp2p/logger": "^2.0.7",
+    "@libp2p/logger": "^2.0.0",
     "abortable-iterator": "^5.0.1",
     "any-signal": "^4.1.1",
     "it-pipe": "^3.0.1",
@@ -183,11 +179,15 @@
     "@dapplion/benchmark": "^0.2.4",
     "@libp2p/interface-compliance-tests": "^3.0.0",
     "@libp2p/mplex": "^8.0.0",
-    "aegir": "^39.0.10",
+    "aegir": "^39.0.12",
     "it-drain": "^3.0.2",
     "it-pair": "^2.0.6",
     "it-stream-types": "^2.0.1"
   },
   "browser": {},
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "private": true
 }

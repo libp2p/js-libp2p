@@ -46,7 +46,7 @@
     "react-scripts": "^5.0.1"
   },
   "devDependencies": {
-    "aegir": "^39.0.10"
+    "aegir": "^39.0.12"
   },
   "browserslist": [
     ">0.2%",

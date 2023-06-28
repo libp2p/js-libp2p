@@ -9,10 +9,31 @@
   ],
   "references": [
     {
+      "path": "../interface"
+    },
+    {
+      "path": "../interface-compliance-tests"
+    },
+    {
+      "path": "../kad-dht"
+    },
+    {
       "path": "../libp2p-daemon-protocol"
     },
     {
       "path": "../libp2p-daemon-server"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../pubsub-gossipsub"
+    },
+    {
+      "path": "../transport-tcp"
     }
   ]
 }

@@ -9,7 +9,25 @@
   ],
   "references": [
     {
+      "path": "../interface"
+    },
+    {
+      "path": "../kad-dht"
+    },
+    {
       "path": "../libp2p-daemon-protocol"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../pubsub-gossipsub"
+    },
+    {
+      "path": "../transport-tcp"
     }
   ]
 }
