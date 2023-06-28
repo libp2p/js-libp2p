@@ -177,8 +177,8 @@ const node = await createLibp2p({
        * This field is optional, the default value is shown
        */
       maxOutboundStreams: 100,
-    }),
-  ],
+    })
+  ]
 });
 
 
