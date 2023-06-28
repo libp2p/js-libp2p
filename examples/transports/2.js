@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
 import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
 import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
+import { createLibp2p } from 'libp2p'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const createNode = async () => {
   const node = await createLibp2p({

@@ -7,6 +7,7 @@ import { connectionPair } from './connection.js'
 import type { Libp2pEvents } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { EventEmitter } from '@libp2p/interface/events'
+import type { PubSub } from '@libp2p/interface/pubsub'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager, PendingDial } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
@@ -16,6 +17,7 @@ export interface MockNetworkComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
   events: EventEmitter<Libp2pEvents>
+  pubsub?: PubSub
 }
 
 class MockNetwork {

@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from 'libp2p'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { pipe } from 'it-pipe'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { createLibp2p } from 'libp2p'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 const createNode = async (transports, addresses = []) => {
   if (!Array.isArray(addresses)) {
@@ -19,7 +19,7 @@ const createNode = async (transports, addresses = []) => {
     addresses: {
       listen: addresses
     },
-    transports: transports,
+    transports,
     connectionEncryption: [noise()],
     streamMuxers: [yamux(), mplex()]
   })
@@ -27,7 +27,7 @@ const createNode = async (transports, addresses = []) => {
   return node
 }
 
-function printAddrs(node, number) {
+function printAddrs (node, number) {
   console.log('node %s is listening on:', number)
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }
@@ -88,4 +88,4 @@ function print ({ stream }) {
   } catch (err) {
     console.log('node 3 failed to dial to node 1 with:', err.message)
   }
-})();
+})()

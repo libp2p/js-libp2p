@@ -4,12 +4,12 @@
  * Listener Node
  */
 
-import { createLibp2p } from './libp2p.js'
-import { pipe } from 'it-pipe'
 import { createFromJSON } from '@libp2p/peer-id-factory'
+import { pipe } from 'it-pipe'
 import idl from './id-l.js'
+import { createLibp2p } from './libp2p.js'
 
-async function run() {
+async function run () {
   const listenerId = await createFromJSON(idl)
 
   // Listener libp2p node

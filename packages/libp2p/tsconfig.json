@@ -54,6 +54,9 @@
       "path": "../peer-store"
     },
     {
+      "path": "../pubsub-floodsub"
+    },
+    {
       "path": "../stream-multiplexer-mplex"
     },
     {

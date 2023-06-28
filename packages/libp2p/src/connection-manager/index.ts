@@ -547,7 +547,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     })
 
     if (denyConnection) {
-      log('connection from %s refused - connection remote address was in deny list', maConn.remoteAddr)
+      log('connection from %a refused - connection remote address was in deny list', maConn.remoteAddr)
       return false
     }
 
@@ -564,7 +564,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     // check pending connections
     if (this.incomingPendingConnections === this.maxIncomingPendingConnections) {
-      log('connection from %s refused - incomingPendingConnections exceeded by peer %s', maConn.remoteAddr)
+      log('connection from %a refused - incomingPendingConnections exceeded by host', maConn.remoteAddr)
       return false
     }
 
@@ -574,7 +574,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       try {
         await this.inboundConnectionRateLimiter.consume(host, 1)
       } catch {
-        log('connection from %s refused - inboundConnectionThreshold exceeded by host %s', host, maConn.remoteAddr)
+        log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, host)
         return false
       }
     }
@@ -585,7 +585,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       return true
     }
 
-    log('connection from %s refused - maxConnections exceeded', maConn.remoteAddr)
+    log('connection from %a refused - maxConnections exceeded', maConn.remoteAddr)
     return false
   }
 

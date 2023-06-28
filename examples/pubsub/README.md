@@ -1,6 +1,19 @@
-# Publish Subscribe
+# @libp2p/example-pubsub <!-- omit in toc -->
 
-Publish Subscribe is also included on the stack. Currently, we have two PubSub implementation available [@libp2p/floodsub](https://github.com/libp2p/js-libp2p-floodsub) and [@chainsafe/libp2p-gossipsub](https://github.com/ChainSafe/js-libp2p-gossipsub), with many more being researched at [research-pubsub](https://github.com/libp2p/research-pubsub).
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
+
+> An example using libp2p pubsub
+
+## Table of contents <!-- omit in toc -->
+
+- [0. Set up the example](#0-set-up-the-example)
+- [1. Setting up a simple PubSub network on top of libp2p](#1-setting-up-a-simple-pubsub-network-on-top-of-libp2p)
+- [2. Future work](#2-future-work)
+- [License](#license)
+- [Contribution](#contribution)
 
 We've seen many interesting use cases appear with this, here are some highlights:
 
@@ -86,12 +99,10 @@ setInterval(() => {
 
 The output of the program should look like:
 
-```
-> node 1.js
-connected to QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82
-node1 received: Bird bird bird, bird is the word!
-node1 received: Bird bird bird, bird is the word!
-```
+    > node 1.js
+    connected to QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82
+    node1 received: Bird bird bird, bird is the word!
+    node1 received: Bird bird bird, bird is the word!
 
 You can change the pubsub `emitSelf` option if you want the publishing node to receive its own messages.
 
@@ -101,14 +112,12 @@ gossipsub({ allowPublishToZeroPeers: true, emitSelf: true })
 
 The output of the program should look like:
 
-```
-> node 1.js
-connected to QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82
-node1 received: Bird bird bird, bird is the word!
-node2 received: Bird bird bird, bird is the word!
-node1 received: Bird bird bird, bird is the word!
-node2 received: Bird bird bird, bird is the word!
-```
+    > node 1.js
+    connected to QmWpvkKm6qHLhoxpWrTswY6UMNWDyn8hN265Qp9ZYvgS82
+    node1 received: Bird bird bird, bird is the word!
+    node2 received: Bird bird bird, bird is the word!
+    node1 received: Bird bird bird, bird is the word!
+    node2 received: Bird bird bird, bird is the word!
 
 ## 2. Future work
 
@@ -116,5 +125,16 @@ libp2p/IPFS PubSub is enabling a whole set of Distributed Real Time applications
 
 - [PubSub Room](https://github.com/ipfs-labs/ipfs-pubsub-room)
 - [Live DB - A always in Sync DB using CRDT](https://github.com/ipfs-labs/ipfs-live-db)
-- [IIIF Annotations over IPFS, CRDT and libp2p](https://www.youtube.com/watch?v=hmAniA6g9D0&feature=youtu.be&t=10m40s)
+- [IIIF Annotations over IPFS, CRDT and libp2p](https://www.youtube.com/watch?v=hmAniA6g9D0\&feature=youtu.be\&t=10m40s)
 - [orbit.chat - p2p chat application, fully running in the browser with js-ipfs, js-libp2p and orbit-db](http://orbit.chat/)
+
+## License
+
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
