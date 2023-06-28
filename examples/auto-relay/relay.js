@@ -1,8 +1,10 @@
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
+/* eslint-disable no-console */
+
 import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
+import { createLibp2p } from 'libp2p'
 import { circuitRelayServer } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
 
@@ -20,7 +22,7 @@ async function main () {
       noise()
     ],
     streamMuxers: [
-      yamux(),mplex()
+      yamux(), mplex()
     ],
     services: {
       identify: identifyService(),

@@ -1,14 +1,16 @@
+/* eslint-disable no-console */
+
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { bootstrap } from '@libp2p/bootstrap'
+import { kadDHT } from '@libp2p/kad-dht'
+import { mplex } from '@libp2p/mplex'
+import { webRTCDirect, webRTC } from '@libp2p/webrtc'
+import { webSockets } from '@libp2p/websockets'
+import { webTransport } from '@libp2p/webtransport'
 import { createLibp2p } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
-import { kadDHT } from '@libp2p/kad-dht'
-import { webSockets } from '@libp2p/websockets'
-import { webTransport } from '@libp2p/webtransport'
-import { webRTCDirect, webRTC } from '@libp2p/webrtc'
-import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { bootstrap } from '@libp2p/bootstrap'
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Create our libp2p node

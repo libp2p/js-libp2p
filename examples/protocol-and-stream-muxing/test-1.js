@@ -1,6 +1,6 @@
 import path from 'path'
-import { waitForOutput } from '../utils.js'
 import { fileURLToPath } from 'url'
+import { waitForOutput } from 'test-ipfs-example/node'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

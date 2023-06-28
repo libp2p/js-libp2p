@@ -9,7 +9,17 @@ on:
 
 jobs:
 
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: lts/*
+    - uses: ipfs/aegir/actions/cache-node-modules@master
+
   check:
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -22,12 +32,12 @@ jobs:
     - run: npm run --if-present doc-check
 
   test-node:
-    needs: check
+    needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node: [16]
+        node: [lts/*]
       fail-fast: true
     steps:
       - uses: actions/checkout@v3
@@ -42,7 +52,7 @@ jobs:
           flags: node
 
   test-chrome:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -57,7 +67,7 @@ jobs:
           flags: chrome
 
   test-chrome-webworker:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -72,7 +82,7 @@ jobs:
           flags: chrome-webworker
 
   test-firefox:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -87,7 +97,7 @@ jobs:
           flags: firefox
 
   test-firefox-webworker:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -102,7 +112,7 @@ jobs:
           flags: firefox-webworker
 
   test-webkit:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -118,7 +128,7 @@ jobs:
           flags: webkit
 
   test-electron-main:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -133,7 +143,7 @@ jobs:
           flags: electron-main
 
   test-electron-renderer:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -148,7 +158,7 @@ jobs:
           flags: electron-renderer
 
   test-interop:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -157,6 +167,40 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run test:interop -- --bail
+
+  test-examples:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npm run --if-present test:example
+
+  multidim-interop:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - name: Build images
+        run: (cd interop && make)
+      - name: Save package-lock.json as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: package locks
+          path: |
+            package-lock.json
+            interop/package-lock.json
+      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@master
+        with:
+          test-filter: js-libp2p-head
+          extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json
+          s3-cache-bucket: ${{ vars.S3_LIBP2P_BUILD_CACHE_BUCKET_NAME }}
+          s3-access-key-id: ${{ vars.S3_LIBP2P_BUILD_CACHE_AWS_ACCESS_KEY_ID }}
+          s3-secret-access-key: ${{ secrets.S3_LIBP2P_BUILD_CACHE_AWS_SECRET_ACCESS_KEY }}
 
   release:
     runs-on: ubuntu-latest
@@ -168,7 +212,9 @@ jobs:
       test-firefox-webworker,
       test-electron-main,
       test-electron-renderer,
-      test-interop
+      test-interop,
+      test-examples,
+      multidim-interop
     ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
