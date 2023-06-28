@@ -1,15 +1,15 @@
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { createLibp2p } from 'libp2p'
 import { preSharedKey } from 'libp2p/pnet'
 
 /**
  * privateLibp2pNode returns a libp2p node function that will use the swarm
  * key with the given `swarmKey` to create the Protector
  *
- * @param swarmKey
+ * @param {any} swarmKey
  */
 export async function privateLibp2pNode (swarmKey) {
   const node = await createLibp2p({

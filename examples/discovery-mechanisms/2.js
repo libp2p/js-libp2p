@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { mdns } from '@libp2p/mdns'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { createLibp2p } from 'libp2p'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -16,7 +16,7 @@ const createNode = async () => {
       tcp()
     ],
     streamMuxers: [
-    yamux(),mplex()
+      yamux(), mplex()
     ],
     connectionEncryption: [
       noise()

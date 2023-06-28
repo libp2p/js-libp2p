@@ -59,7 +59,7 @@
     "@types/debug": "^4.1.7",
     "aegir": "^39.0.10",
     "sinon": "^15.1.2",
-    "uint8arrays": "^4.0.3"
+    "uint8arrays": "^4.0.4"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts"

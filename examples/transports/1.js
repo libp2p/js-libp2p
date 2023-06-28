@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
 import { noise } from '@chainsafe/libp2p-noise'
+import { tcp } from '@libp2p/tcp'
+import { createLibp2p } from 'libp2p'
 
 const createNode = async () => {
   const node = await createLibp2p({
@@ -30,4 +30,4 @@ const createNode = async () => {
   console.log('node has started (true/false):', node.isStarted())
   console.log('listening on:')
   node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
-})();
+})()

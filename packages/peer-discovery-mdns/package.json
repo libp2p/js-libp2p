@@ -57,7 +57,7 @@
     "@libp2p/interface-internal": "~0.0.1",
     "@libp2p/peer-id-factory": "^2.0.0",
     "aegir": "^39.0.10",
-    "p-wait-for": "^5.0.0",
+    "p-wait-for": "^5.0.2",
     "ts-sinon": "^2.0.2"
   },
   "typedoc": {
