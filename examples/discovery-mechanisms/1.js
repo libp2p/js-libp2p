@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 
-import { createLibp2p } from 'libp2p'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { bootstrap } from '@libp2p/bootstrap'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { createLibp2p } from 'libp2p'
 import bootstrappers from './bootstrappers.js'
 
 (async () => {
@@ -25,7 +25,7 @@ import bootstrappers from './bootstrappers.js'
 
   node.addEventListener('peer:connect', (evt) => {
     const peerId = evt.detail
-    console.log('Connection established to:', peerId.toString())	// Emitted when a peer has been found
+    console.log('Connection established to:', peerId.toString()) // Emitted when a peer has been found
   })
 
   node.addEventListener('peer:discovery', (evt) => {

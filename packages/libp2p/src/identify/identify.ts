@@ -325,11 +325,11 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
     log('identify completed for peer %p and protocols %o', id, protocols)
-    log('our observed address is %s', cleanObservedAddr)
+    log('our observed address is %a', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
         this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
-      log('storing our observed address %s', cleanObservedAddr?.toString())
+      log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
 
