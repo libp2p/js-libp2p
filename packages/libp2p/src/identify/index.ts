@@ -78,6 +78,6 @@ export interface IdentifyService {
 
 }
 
-export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => IdentifyService {
+export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
   return (components) => new DefaultIdentifyService(components, init)
 }
