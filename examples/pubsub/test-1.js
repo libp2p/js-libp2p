@@ -1,8 +1,8 @@
 import path from 'path'
+import { fileURLToPath } from 'url'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

@@ -1,6 +1,20 @@
-# Peer Discovery Mechanisms
+# @libp2p/example-discovery-mechanisms <!-- omit in toc -->
 
-A Peer Discovery module enables libp2p to find peers to connect to. Think of these mechanisms as ways to join the rest of the network, as railing points.
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
+
+> How to configure peer discovery mechanisms
+
+## Table of contents <!-- omit in toc -->
+
+- [1. Bootstrap list of Peers when booting a node](#1-bootstrap-list-of-peers-when-booting-a-node)
+- [2. MulticastDNS to find other peers in the network](#2-multicastdns-to-find-other-peers-in-the-network)
+- [3. Pubsub based Peer Discovery](#3-pubsub-based-peer-discovery)
+- [4. Where to find other Peer Discovery Mechanisms](#4-where-to-find-other-peer-discovery-mechanisms)
+- [License](#license)
+- [Contribution](#contribution)
 
 With this system, a libp2p node can both have a set of nodes to always connect on boot (bootstraper nodes), discover nodes through locality (e.g connected in the same LAN) or through serendipity (random walks on a DHT).
 
@@ -40,7 +54,7 @@ const node = await createLibp2p({
 })
 ```
 
-In this configuration, we use a `bootstrappers` array listing peers to connect _on boot_. Here is the list used by js-ipfs and go-ipfs.
+In this configuration, we use a `bootstrappers` array listing peers to connect *on boot*. Here is the list used by js-ipfs and go-ipfs.
 
 ```JavaScript
 const bootstrapers = [
@@ -288,3 +302,14 @@ There are plenty more Peer Discovery Mechanisms out there, you can:
 
 - Any DHT will offer you a discovery capability. You can simple _random-walk_ the routing tables to find other peers to connect to. For example [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht) can be used for peer discovery. An example of how to configure it to enable random walks can be found [here](https://github.com/libp2p/js-libp2p/blob/v0.28.4/doc/CONFIGURATION.md#customizing-dht).
 - You can create your own Discovery service, a registry, a list, a radio beacon, you name it!
+
+## License
+
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

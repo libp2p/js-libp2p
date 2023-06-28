@@ -1,0 +1,51 @@
+{
+  "name": "@libp2p/example-libp2p-in-the-browser",
+  "version": "1.0.0",
+  "description": "A libp2p node running in the browser",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/examples/libp2p-in-the-browser#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "type": "module",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "lint": "aegir lint",
+    "start": "vite",
+    "test:example": "node test.js"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^8.0.0",
+    "@chainsafe/libp2p-noise": "^12.0.1",
+    "@chainsafe/libp2p-yamux": "^4.0.2",
+    "@libp2p/bootstrap": "^8.0.0",
+    "@libp2p/kad-dht": "^9.0.0",
+    "@libp2p/mplex": "^8.0.0",
+    "@libp2p/webrtc": "^2.0.0",
+    "@libp2p/websockets": "^6.0.0",
+    "@libp2p/webtransport": "^2.0.0",
+    "libp2p": "^0.45.0"
+  },
+  "devDependencies": {
+    "aegir": "^39.0.10",
+    "execa": "^7.1.1",
+    "playwright": "^1.35.1",
+    "vite": "^2.8.6"
+  },
+  "private": true
+}

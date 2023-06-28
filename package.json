@@ -24,7 +24,7 @@
     "test:external": "aegir run test:external",
     "test:cli": "aegir run test:cli",
     "test:interop": "aegir run test:interop",
-    "test:examples": "cd examples && npm run test:all",
+    "test:example": "aegir run test:example",
     "coverage": "aegir run coverage",
     "build": "aegir run build",
     "clean": "aegir run clean",
@@ -46,6 +46,7 @@
   },
   "workspaces": [
     "packages/*",
-    "interop"
+    "interop",
+    "examples/*"
   ]
 }
