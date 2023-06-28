@@ -73,15 +73,11 @@ export interface IdentifyService {
    * as streams may be closed by the local or the remote node.
    * Please use with caution. If you find yourself needing to call this method to discover other peers that support your protocol,
    * you may be better off configuring a topology to be notified instead.
-   *
-   * @param connection
-   * @param options
-   * @returns
    */
   identify: (connection: Connection, options: AbortOptions) => Promise<IdentifyResult>
 
 }
 
-export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
+export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => IdentifyService {
   return (components) => new DefaultIdentifyService(components, init)
 }

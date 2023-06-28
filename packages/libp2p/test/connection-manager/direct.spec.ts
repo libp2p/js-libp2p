@@ -22,7 +22,6 @@ import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { AGENT_VERSION } from '../../src/identify/consts.js'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
@@ -419,15 +418,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       ],
       services: {
         identify: identifyService({
-          protocolPrefix: 'ipfs',
-          agentVersion: AGENT_VERSION,
-          timeout: 60000,
-          maxInboundStreams: 1,
-          maxOutboundStreams: 1,
-          maxPushIncomingStreams: 1,
-          maxPushOutgoingStreams: 1,
-          maxObservedAddresses: 10,
-          maxIdentifyMessageSize: 8192,
           runOnConnectionOpen: false
         })
       },
