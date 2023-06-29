@@ -134,16 +134,14 @@ jobs:
           # Parse the input object using jq, modify the keys, and store the result in a new variable
           updated_object=$(echo "$current_bandwidths" | jq 'map_values(.previousUploadBandwidth = .currentUploadBandwidth | del(.currentUploadBandwidth) | .previousDownloadBandwidth = .currentDownloadBandwidth | del(.currentDownloadBandwidth))')
 
-          echo "updated object: $updated_object"
-
           # Output the updated object
-          echo "$updated_object" > previousPerf.json
+          echo $updated_object > previousPerf.json
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update performance data
-          file_pattern: previousPerf.json
+          file_pattern: "*.json"
           branch: ${{ github.ref }}
 
       - name: Check CI job status
@@ -152,7 +150,7 @@ jobs:
         run: |
           # Check if the file contains the "❌" symbol
           if grep -q "❌" test_report.md; then
-            echo "Failure: There was a performance degradation of over 20%."
+            echo "Failure: There was a performance degradation of over 5%."
             exit 1  # Exit with a non-zero status code for failure
           else
             echo "Success: Performance benchmarks passed."
