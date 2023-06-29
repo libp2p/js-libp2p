@@ -81,7 +81,7 @@ describe('perf', () => {
     remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // Run Perf
-    await expect(client.perf(remoteComponents.peerId, 1n << 10n, 1n << 10n)).to.eventually.be.fulfilled()
+    await expect(client.perf(remoteComponents.peerId, 1024n, 1024n)).to.eventually.be.fulfilled()
   })
 
   it('should output benchmark', async () => {
@@ -96,13 +96,19 @@ describe('perf', () => {
     localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
     remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
-    // Run Perf
-    const downloadBandwidth = await client.measureDownloadBandwidth(remoteComponents.peerId, 10n << 20n) >> 10
-    // eslint-disable-next-line no-console
-    console.log('Download bandwidth:', downloadBandwidth, 'kiB/s')
+    let downloadBandwidth = 0
+    let uploadBandwidth = 0
 
-    const uploadBandwidth = await client.measureDownloadBandwidth(remoteComponents.peerId, 10n << 20n) >> 10
+    for (let i = 1; i < 5; i++) {
+      // Run Perf
+      downloadBandwidth += await client.measureDownloadBandwidth(remoteComponents.peerId, 10485760n)
+      uploadBandwidth += await client.measureUploadBandwidth(remoteComponents.peerId, 10485760n)
+    }
+
     // eslint-disable-next-line no-console
-    console.log('Upload bandwidth:', uploadBandwidth, 'kiB/s')
+    console.log('Upload bandwidth:', Math.floor(downloadBandwidth / 5), 'B/s')
+
+    // eslint-disable-next-line no-console
+    console.log('Download bandwidth:', Math.floor(uploadBandwidth / 5), 'B/s')
   })
 })

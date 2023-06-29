@@ -21,8 +21,8 @@ export function generateMarkdownTable (environments: TestEnvironment[]): string 
     const { name, results } = environment
     const { previousUploadBandwidth, currentUploadBandwidth, previousDownloadBandwidth, currentDownloadBandwidth } = results
 
-    const uploadComparison = currentUploadBandwidth <= 0.8 * previousUploadBandwidth ? '❌' : '✅'
-    const downloadComparison = currentDownloadBandwidth <= 0.8 * previousDownloadBandwidth ? '❌' : '✅'
+    const uploadComparison = currentUploadBandwidth <= 0.95 * previousUploadBandwidth ? '❌' : '✅'
+    const downloadComparison = currentDownloadBandwidth <= 0.95 * previousDownloadBandwidth ? '❌' : '✅'
 
     const row = `| ${name} | ${previousUploadBandwidth} | ${currentUploadBandwidth} | ${uploadComparison} | ${previousDownloadBandwidth} | ${currentDownloadBandwidth} | ${downloadComparison} |\n`
     bodyRows += row
