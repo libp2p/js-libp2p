@@ -1,0 +1,1678 @@
+
+> @libp2p/webrtc@2.0.10 test:webkit
+> aegir test -g "basics" -t browser -- --browser webkit
+
+build
+
+> @libp2p/webrtc@2.0.10 build
+> aegir build
+
+[17:30:38] tsc [started]
+[17:30:41] tsc [completed]
+[17:30:41] esbuild [started]
+[17:30:41] esbuild [completed]
+test browser
+[0m[0m
+[0m  basics[0m
+libp2p:peer-store:trace merge await write lock +0ms
+libp2p:peer-store:trace merge await write lock +2ms
+libp2p:peer-store:trace merge await write lock +0ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +5ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +4ms
+libp2p:peer-store:trace merge await write lock +0ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace merge await write lock +0ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:connection-manager:auto-dial:trace have enough connections 0/0 +0ms
+libp2p:peer-store:trace all await read lock +9ms
+libp2p:peer-store:trace all got read lock +2ms
+libp2p:peer-store:trace all release read lock +5ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/noise"] +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +13ms
+libp2p:mss:select:trace select: read "/noise" +1ms
+libp2p:noise:trace Stage 0 - Initiator starting to send first message. +0ms
+libp2p:noise:trace Stage 0 - Initiator finished sending first message. +3ms
+libp2p:noise:trace Stage 1 - Initiator waiting to receive first message from responder... +0ms
+libp2p:noise:trace Stage 1 - Initiator received the message. +21ms
+libp2p:noise:trace Initiator going to check remote's signature... +0ms
+libp2p:noise:trace All good with the signature! +6ms
+libp2p:noise:trace Stage 2 - Initiator sending third handshake message. +0ms
+libp2p:noise:trace Stage 2 - Initiator sent message with signed payload. +5ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/yamux/1.0.0"] +42ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +7ms
+libp2p:mss:select:trace select: read "/yamux/1.0.0" +6ms
+libp2p:yamux:trace muxer created +0ms
+libp2p:yamux:trace muxer keepalive enabled interval=30000 +1ms
+libp2p:peer-store:trace get await read lock +80ms
+libp2p:yamux:trace new outgoing stream id=1 +4ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/ipfs/id/1.0.0"] +7ms
+libp2p:peer-store:trace get got read lock +3ms
+libp2p:peer-store:trace get release read lock +1ms
+libp2p:yamux:trace sending frame streamID=1 type=Data flag= length=36 +2ms
+libp2p:yamux:trace new outgoing stream id=3 +3ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/libp2p/circuit/relay/0.2.0/hop"] +4ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=53 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=SYN length=0 +4ms
+libp2p:yamux:trace new incoming stream id=2 +0ms
+libp2p:yamux:trace stream received window update id=2 +1ms
+libp2p:yamux:trace received frame streamID=2 type=Data flag= length=36 +2ms
+libp2p:yamux:trace stream received data id=2 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=ACK length=36 +1ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +0ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=20 +1ms
+libp2p:mss:handle:trace read "/ipfs/id/1.0.0" +1ms
+libp2p:mss:handle:trace respond with "/ipfs/id/1.0.0" for "/ipfs/id/1.0.0" +0ms
+libp2p:peer-store:trace merge await write lock +15ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=16 +2ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace get await read lock +1ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get release read lock +1ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=2 +4ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=345 +1ms
+libp2p:yamux:trace stream sink ended id=2 +0ms
+libp2p:yamux:trace stream close write id=2 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream close id=2 +1ms
+libp2p:yamux:trace stream close read id=2 +0ms
+libp2p:yamux:trace stream source ended id=2 +0ms
+libp2p:yamux:trace stream finished id=2 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=ACK length=36 +2ms
+libp2p:yamux:trace stream received window update id=1 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=20 +0ms
+libp2p:yamux:trace stream received data id=1 +1ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=20 +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +22ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=16 +1ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=16 +1ms
+libp2p:mss:select:trace select: read "/ipfs/id/1.0.0" +1ms
+libp2p:peer-store:trace merge await write lock +9ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:yamux:trace stream sink ended id=1 +2ms
+libp2p:yamux:trace stream close write id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=352 +1ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=352 +1ms
+libp2p:yamux:trace stream close id=1 +1ms
+libp2p:yamux:trace stream close read id=1 +0ms
+libp2p:yamux:trace stream source ended id=1 +0ms
+libp2p:yamux:trace stream finished id=1 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=FIN length=0 +4ms
+libp2p:peer-store:trace get await read lock +15ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace patch got write lock +1ms
+libp2p:peer-store:trace patch release write lock +1ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag=ACK length=53 +10ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=20 +0ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=20 +1ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +21ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=33 +1ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=33 +0ms
+libp2p:mss:select:trace select: read "/libp2p/circuit/relay/0.2.0/hop" +2ms
+libp2p:peer-store:trace merge await write lock +4ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=3 +3ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=20 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=16 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=345 +0ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag= length=3 +4ms
+libp2p:yamux:trace stream received window update id=3 +1ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=277 +2ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=277 +0ms
+libp2p:yamux:trace stream close id=3 +1ms
+libp2p:yamux:trace stream close read id=3 +0ms
+libp2p:yamux:trace stream source ended id=3 +1ms
+libp2p:yamux:trace stream close write id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream finished id=3 +0ms
+libp2p:peer-store:trace merge await write lock +12ms
+libp2p:yamux:trace stream sink ended id=3 +1ms
+libp2p:peer-store:trace merge got write lock +1ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace merge await write lock +30ms
+libp2p:peer-store:trace merge await write lock +0ms
+libp2p:peer-store:trace merge await write lock +1ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace merge await write lock +0ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:peer-store:trace merge got write lock +1ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:peer-store:trace merge await write lock +0ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:connection-manager:auto-dial:trace have enough connections 0/0 +191ms
+libp2p:peer-store:trace all await read lock +2ms
+libp2p:peer-store:trace all got read lock +1ms
+libp2p:peer-store:trace all release read lock +1ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/noise"] +57ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +1ms
+libp2p:mss:select:trace select: read "/noise" +1ms
+libp2p:noise:trace Stage 0 - Initiator starting to send first message. +133ms
+libp2p:noise:trace Stage 0 - Initiator finished sending first message. +3ms
+libp2p:noise:trace Stage 1 - Initiator waiting to receive first message from responder... +0ms
+libp2p:noise:trace Stage 1 - Initiator received the message. +12ms
+libp2p:noise:trace Initiator going to check remote's signature... +0ms
+libp2p:noise:trace All good with the signature! +4ms
+libp2p:noise:trace Stage 2 - Initiator sending third handshake message. +0ms
+libp2p:noise:trace Stage 2 - Initiator sent message with signed payload. +3ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/yamux/1.0.0"] +25ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +4ms
+libp2p:mss:select:trace select: read "/yamux/1.0.0" +2ms
+libp2p:yamux:trace muxer created +77ms
+libp2p:yamux:trace muxer keepalive enabled interval=30000 +0ms
+libp2p:peer-store:trace get await read lock +38ms
+libp2p:yamux:trace new outgoing stream id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=SYN length=0 +1ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/ipfs/id/1.0.0"] +2ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:yamux:trace sending frame streamID=1 type=Data flag= length=36 +1ms
+libp2p:yamux:trace new outgoing stream id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/libp2p/circuit/relay/0.2.0/hop"] +2ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=53 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=SYN length=0 +1ms
+libp2p:yamux:trace new incoming stream id=2 +1ms
+libp2p:yamux:trace stream received window update id=2 +0ms
+libp2p:yamux:trace received frame streamID=2 type=Data flag= length=36 +1ms
+libp2p:yamux:trace stream received data id=2 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=ACK length=36 +0ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +133ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=20 +1ms
+libp2p:mss:handle:trace read "/ipfs/id/1.0.0" +0ms
+libp2p:mss:handle:trace respond with "/ipfs/id/1.0.0" for "/ipfs/id/1.0.0" +1ms
+libp2p:peer-store:trace merge await write lock +7ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=16 +1ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace get await read lock +0ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=2 +3ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=345 +0ms
+libp2p:yamux:trace stream sink ended id=2 +0ms
+libp2p:yamux:trace stream close write id=2 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream close id=2 +0ms
+libp2p:yamux:trace stream close read id=2 +1ms
+libp2p:yamux:trace stream source ended id=2 +0ms
+libp2p:yamux:trace stream finished id=2 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=ACK length=36 +1ms
+libp2p:yamux:trace stream received window update id=1 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=20 +0ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=20 +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +11ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=16 +1ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=16 +1ms
+libp2p:mss:select:trace select: read "/ipfs/id/1.0.0" +1ms
+libp2p:peer-store:trace merge await write lock +5ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:yamux:trace stream sink ended id=1 +2ms
+libp2p:yamux:trace stream close write id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=352 +1ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=352 +0ms
+libp2p:yamux:trace stream close id=1 +1ms
+libp2p:yamux:trace stream close read id=1 +0ms
+libp2p:yamux:trace stream source ended id=1 +0ms
+libp2p:yamux:trace stream finished id=1 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=FIN length=0 +2ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag=ACK length=53 +0ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=20 +1ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=20 +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +8ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=33 +1ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=33 +0ms
+libp2p:mss:select:trace select: read "/libp2p/circuit/relay/0.2.0/hop" +1ms
+libp2p:peer-store:trace merge await write lock +8ms
+libp2p:peer-store:trace merge got write lock +1ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=3 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=20 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=16 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:peer-store:trace get await read lock +4ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=2 +5ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=345 +0ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag= length=3 +1ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=277 +1ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=277 +0ms
+libp2p:yamux:trace stream close id=3 +0ms
+libp2p:yamux:trace stream close read id=3 +0ms
+libp2p:yamux:trace stream source ended id=3 +0ms
+libp2p:yamux:trace stream close write id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream finished id=3 +1ms
+libp2p:peer-store:trace merge await write lock +3ms
+libp2p:yamux:trace stream sink ended id=3 +0ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace merge await write lock +6ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace get await read lock +1ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:peer-store:trace get got read lock +2ms
+libp2p:yamux:trace new outgoing stream id=5 +15ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:peer-store:trace get release read lock +5ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/libp2p/circuit/relay/0.2.0/hop"] +26ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=53 +4ms
+libp2p:peer-store:trace get await read lock +6ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:yamux:trace new outgoing stream id=5 +3ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/ipfs/id/push/1.0.0"] +6ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=41 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag=ACK length=53 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=20 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=20 +1ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +3ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=33 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=33 +0ms
+libp2p:mss:select:trace select: read "/libp2p/circuit/relay/0.2.0/hop" +1ms
+libp2p:peer-store:trace merge await write lock +5ms
+libp2p:peer-store:trace merge got write lock +1ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=88 +2ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag=ACK length=41 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=20 +3ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=20 +1ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +7ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=21 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=21 +0ms
+libp2p:mss:select:trace select: read "/ipfs/id/push/1.0.0" +3ms
+libp2p:peer-store:trace merge await write lock +9ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +3ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=656 +1ms
+libp2p:yamux:trace stream sink ended id=5 +0ms
+libp2p:yamux:trace stream close write id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream close id=5 +0ms
+libp2p:yamux:trace stream close read id=5 +0ms
+libp2p:yamux:trace stream source ended id=5 +0ms
+libp2p:yamux:trace stream finished id=5 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=88 +2ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag=SYN length=0 +1ms
+libp2p:yamux:trace new incoming stream id=4 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=54 +0ms
+libp2p:yamux:trace stream received data id=4 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag=ACK length=54 +0ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +68ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=20 +0ms
+libp2p:mss:handle:trace read "/libp2p/circuit/relay/0.2.0/stop" +1ms
+libp2p:mss:handle:trace respond with "/libp2p/circuit/relay/0.2.0/stop" for "/libp2p/circuit/relay/0.2.0/stop" +0ms
+libp2p:peer-store:trace merge await write lock +7ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=34 +2ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +2ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=656 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag=FIN length=0 +3ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=20 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=34 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=45 +2ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=45 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=5 +6ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=5 +4ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=5 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=5 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/noise"] +30ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +2ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +40ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +64ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=20 +1ms
+libp2p:mss:handle:trace read "/noise" +1ms
+libp2p:mss:handle:trace respond with "/noise" for "/noise" +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=8 +1ms
+libp2p:noise:trace Stage 0 - Responder waiting to receive first message... +153ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=20 +2ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=20 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=20 +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +47ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=8 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=8 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=8 +0ms
+libp2p:mss:select:trace select: read "/noise" +2ms
+libp2p:noise:trace Stage 0 - Initiator starting to send first message. +5ms
+libp2p:noise:trace Stage 0 - Initiator finished sending first message. +3ms
+libp2p:noise:trace Stage 1 - Initiator waiting to receive first message from responder... +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=34 +5ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=34 +5ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=34 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=34 +0ms
+libp2p:noise:trace Stage 0 - Responder received first message. +7ms
+libp2p:noise:trace Stage 1 - Responder sending out first message with signed payload and static key. +0ms
+libp2p:noise:trace Stage 1 - Responder sent the second handshake message with signed payload. +9ms
+libp2p:noise:trace Stage 2 - Responder waiting for third handshake message... +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=204 +10ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=204 +3ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=204 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=204 +1ms
+libp2p:noise:trace Stage 1 - Initiator received the message. +11ms
+libp2p:noise:trace Initiator going to check remote's signature... +0ms
+libp2p:noise:trace All good with the signature! +4ms
+libp2p:noise:trace Stage 2 - Initiator sending third handshake message. +0ms
+libp2p:noise:trace Stage 2 - Initiator sent message with signed payload. +3ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/yamux/1.0.0"] +38ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=172 +14ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=50 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=172 +3ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=172 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=172 +0ms
+libp2p:noise:trace Stage 2 - Responder received the message, finished handshake. +8ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +8ms
+libp2p:yamux:trace stream received window update id=5 +1ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=50 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=50 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=50 +0ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +62ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:mss:handle:trace read "/yamux/1.0.0" +0ms
+libp2p:mss:handle:trace respond with "/yamux/1.0.0" for "/yamux/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace muxer created +1ms
+libp2p:yamux:trace muxer keepalive enabled interval=30000 +0ms
+libp2p:peer-store:trace get await read lock +127ms
+libp2p:yamux:trace new outgoing stream id=2 +1ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/ipfs/id/1.0.0"] +19ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=36 +1ms
+libp2p:peer-store:trace get release read lock +1ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=36 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=30 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=52 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +3ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=36 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=36 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=36 +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +9ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +2ms
+libp2p:yamux:trace stream received window update id=4 +1ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=30 +2ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=30 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=30 +0ms
+libp2p:mss:select:trace select: read "/yamux/1.0.0" +7ms
+libp2p:yamux:trace muxer created +1ms
+libp2p:yamux:trace muxer keepalive enabled interval=30000 +0ms
+libp2p:peer-store:trace get await read lock +16ms
+libp2p:yamux:trace new outgoing stream id=1 +1ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/ipfs/id/1.0.0"] +2ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:yamux:trace new outgoing stream id=3 +1ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=SYN length=0 +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/webrtc-signaling/0.0.1"] +1ms
+libp2p:yamux:trace sending frame streamID=1 type=Data flag= length=36 +1ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=45 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=52 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=61 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +2ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=SYN length=0 +1ms
+libp2p:yamux:trace new incoming stream id=2 +0ms
+libp2p:yamux:trace stream received window update id=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=Data flag= length=36 +1ms
+libp2p:yamux:trace stream received data id=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=52 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=52 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=52 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=ACK length=36 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +37ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=20 +0ms
+libp2p:mss:handle:trace read "/ipfs/id/1.0.0" +1ms
+libp2p:mss:handle:trace respond with "/ipfs/id/1.0.0" for "/ipfs/id/1.0.0" +0ms
+libp2p:peer-store:trace merge await write lock +18ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +2ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=16 +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace get await read lock +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=36 +3ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=32 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +2ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=SYN length=0 +1ms
+libp2p:yamux:trace new incoming stream id=1 +0ms
+libp2p:yamux:trace stream received window update id=1 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag=SYN length=0 +1ms
+libp2p:yamux:trace new incoming stream id=3 +0ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=36 +0ms
+libp2p:yamux:trace stream received data id=1 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=52 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=52 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=52 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=ACK length=36 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +24ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace sending frame streamID=1 type=Data flag= length=20 +0ms
+libp2p:mss:handle:trace read "/ipfs/id/1.0.0" +2ms
+libp2p:mss:handle:trace respond with "/ipfs/id/1.0.0" for "/ipfs/id/1.0.0" +0ms
+libp2p:peer-store:trace merge await write lock +24ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:yamux:trace sending frame streamID=1 type=Data flag= length=16 +2ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:peer-store:trace merge release write lock +2ms
+libp2p:peer-store:trace get await read lock +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=36 +12ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=32 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +9ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +4ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=45 +0ms
+libp2p:yamux:trace stream received data id=3 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=61 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=61 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=61 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=ACK length=45 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +36ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=20 +0ms
+libp2p:mss:handle:trace read "/webrtc-signaling/0.0.1" +1ms
+libp2p:mss:handle:trace respond with "/webrtc-signaling/0.0.1" for "/webrtc-signaling/0.0.1" +1ms
+libp2p:peer-store:trace merge await write lock +35ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=25 +2ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:peer-store:trace merge release write lock +2ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +195ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=36 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=41 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +2ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=ACK length=36 +0ms
+libp2p:yamux:trace stream received window update id=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=2 type=Data flag= length=20 +0ms
+libp2p:yamux:trace stream received data id=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=36 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=36 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=36 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag= length=20 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +286ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=32 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=Data flag= length=16 +0ms
+libp2p:yamux:trace stream received data id=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=32 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=32 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag= length=16 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:mss:select:trace select: read "/ipfs/id/1.0.0" +2ms
+libp2p:peer-store:trace merge await write lock +205ms
+libp2p:peer-store:trace merge got write lock +1ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:yamux:trace stream sink ended id=2 +1ms
+libp2p:yamux:trace stream close write id=2 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=ACK length=36 +0ms
+libp2p:yamux:trace stream received window update id=1 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=20 +1ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=36 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=36 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=36 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=20 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +6ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=16 +0ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=32 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=32 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=32 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=16 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:mss:select:trace select: read "/ipfs/id/1.0.0" +4ms
+libp2p:peer-store:trace merge await write lock +9ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:webrtc:peer:trace dialing address:  +0ms {
+  bytes: {
+    '0': 4,
+    '1': 127,
+    '2': 0,
+    '3': 0,
+    '4': 1,
+    '5': 6,
+    '6': 245,
+    '7': 124,
+    '8': 221,
+    '9': 3,
+    '10': 165,
+    '11': 3,
+    '12': 38,
+    '13': 0,
+    '14': 36,
+    '15': 8,
+    '16': 1,
+    '17': 18,
+    '18': 32,
+    '19': 88,
+    '20': 0,
+    '21': 112,
+    '22': 174,
+    '23': 250,
+    '24': 133,
+    '25': 173,
+    '26': 36,
+    '27': 3,
+    '28': 20,
+    '29': 12,
+    '30': 77,
+    '31': 3,
+    '32': 110,
+    '33': 17,
+    '34': 15,
+    '35': 132,
+    '36': 87,
+    '37': 117,
+    '38': 11,
+    '39': 229,
+    '40': 150,
+    '41': 89,
+    '42': 0,
+    '43': 110,
+    '44': 17,
+    '45': 73,
+    '46': 22,
+    '47': 128,
+    '48': 132,
+    '49': 154,
+    '50': 196,
+    '51': 162,
+    '52': 2,
+    '53': 153,
+    '54': 2,
+    '55': 165,
+    '56': 3,
+    '57': 38,
+    '58': 0,
+    '59': 36,
+    '60': 8,
+    '61': 1,
+    '62': 18,
+    '63': 32,
+    '64': 38,
+    '65': 220,
+    '66': 68,
+    '67': 110,
+    '68': 96,
+    '69': 130,
+    '70': 103,
+    '71': 28,
+    '72': 70,
+    '73': 63,
+    '74': 172,
+    '75': 0,
+    '76': 166,
+    '77': 68,
+    '78': 248,
+    '79': 96,
+    '80': 239,
+    '81': 129,
+    '82': 109,
+    '83': 63,
+    '84': 163,
+    '85': 122,
+    '86': 207,
+    '87': 129,
+    '88': 192,
+    '89': 31,
+    '90': 97,
+    '91': 7,
+    '92': 79,
+    '93': 194,
+    '94': 70,
+    '95': 105
+  }
+}
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:yamux:trace stream sink ended id=1 +2ms
+libp2p:yamux:trace stream close write id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=2 type=Data flag= length=777 +0ms
+libp2p:yamux:trace stream sink ended id=2 +1ms
+libp2p:yamux:trace stream close write id=2 +0ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream close id=2 +0ms
+libp2p:yamux:trace stream close read id=2 +0ms
+libp2p:yamux:trace stream source ended id=2 +0ms
+libp2p:yamux:trace stream finished id=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=18 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=793 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=Data flag= length=2 +2ms
+libp2p:yamux:trace sending frame streamID=1 type=Data flag= length=790 +0ms
+libp2p:yamux:trace stream sink ended id=1 +0ms
+libp2p:yamux:trace stream close write id=1 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream close id=1 +0ms
+libp2p:yamux:trace stream close read id=1 +0ms
+libp2p:yamux:trace stream source ended id=1 +0ms
+libp2p:yamux:trace stream finished id=1 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=18 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=806 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag=ACK length=45 +0ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=36 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=20 +1ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=41 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=36 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=36 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=20 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +17ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=25 +0ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=41 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=41 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=25 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:mss:select:trace select: read "/webrtc-signaling/0.0.1" +5ms
+libp2p:peer-store:trace merge await write lock +21ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +4ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=20 +1ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=16 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +5ms
+libp2p:yamux:trace stream received window update id=5 +14ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag= length=20 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +1ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag= length=16 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=FIN length=0 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=464 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=480 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=18 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=18 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=18 +1ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=2 type=Data flag= length=777 +0ms
+libp2p:yamux:trace stream received data id=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=793 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=793 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=793 +1ms
+libp2p:yamux:trace sending frame streamID=2 type=WindowUpdate flag= length=777 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream close id=2 +0ms
+libp2p:yamux:trace stream close read id=2 +0ms
+libp2p:yamux:trace stream source ended id=2 +0ms
+libp2p:yamux:trace stream finished id=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +3ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag= length=20 +0ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=18 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=18 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=18 +1ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +1ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=Data flag= length=790 +0ms
+libp2p:yamux:trace stream received data id=1 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=806 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=806 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=806 +0ms
+libp2p:yamux:trace sending frame streamID=1 type=WindowUpdate flag= length=790 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream close id=1 +0ms
+libp2p:yamux:trace stream close read id=1 +0ms
+libp2p:yamux:trace stream source ended id=1 +0ms
+libp2p:yamux:trace stream finished id=1 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +3ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag= length=25 +0ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:peer-store:trace get await read lock +69ms
+libp2p:peer-store:trace get await read lock +0ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get release read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +1ms
+libp2p:peer-store:trace patch got write lock +1ms
+libp2p:peer-store:trace patch release write lock +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +10ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=464 +0ms
+libp2p:yamux:trace stream received data id=3 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=480 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=480 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=480 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=464 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +1ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=2 type=WindowUpdate flag= length=777 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +4ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +4ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=1 type=WindowUpdate flag= length=790 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=226 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=242 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=WindowUpdate flag= length=464 +1ms
+libp2p:yamux:trace stream received window update id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=464 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=480 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +2ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=226 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=242 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=28 +2ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=28 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=226 +0ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=5 type=WindowUpdate flag= length=242 +1ms
+libp2p:yamux:trace stream received window update id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=Data flag= length=242 +1ms
+libp2p:yamux:trace stream received data id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag= length=242 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=226 +0ms
+libp2p:webrtc:peer:util:trace received new ICE candidate: {"candidate":"candidate:3218737663 1 udp 2122260223 300b7d92-46c0-4f54-9e30-7200d16d2079.local 65052 typ host generation 0 ufrag jGaT network-id 1 network-cost 50","sdpMLineIndex":0,"sdpMid":"0","usernameFragment":null} +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:webrtc:peer:util:trace receiver peerConnectionState state:  +3ms connecting
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +4ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:webrtc:peer:util:trace receiver peerConnectionState state:  +4ms connecting
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=464 +0ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=5 +1ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=Data flag= length=21 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=480 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=480 +1ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=480 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag= length=464 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace received frame streamID=3 type=Data flag= length=226 +0ms
+libp2p:yamux:trace stream received data id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=Data flag= length=5 +1ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=28 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=Data flag= length=21 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=5 type=Data flag= length=2 +0ms
+libp2p:yamux:trace stream received data id=5 +0ms
+libp2p:webrtc:peer:util:trace receiver peerConnectionState state:  +10ms connected
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/ipfs/id/1.0.0"] +139ms
+libp2p:yamux:trace stream close id=3 +10ms
+libp2p:yamux:trace stream close read id=3 +0ms
+libp2p:yamux:trace stream source ended id=3 +0ms
+libp2p:yamux:trace stream close write id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream finished id=3 +0ms
+libp2p:yamux:trace stream sink ended id=3 +1ms
+libp2p:connection-manager:auto-dial:trace have enough connections 2/0 +725ms
+libp2p:webrtc:stream:trace sending 39 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: connecting +0ms
+libp2p:yamux:trace muxer close reason=InternalError +1ms
+libp2p:yamux:trace sending frame streamID=0 type=GoAway flag= length=2 +1ms
+libp2p:yamux:trace muxer source ended +0ms
+libp2p:yamux:trace stream sink ended id=5 +0ms
+libp2p:yamux:trace stream close write id=5 +0ms
+libp2p:yamux:trace sending frame streamID=5 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace muxer sink ended +1ms
+libp2p:yamux:trace stream close id=5 +1ms
+libp2p:yamux:trace stream close read id=5 +0ms
+libp2p:yamux:trace stream source ended id=5 +0ms
+libp2p:yamux:trace stream finished id=5 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=242 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=28 +0ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=2 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:webrtc:stream:trace sending 39 bytes +6ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:peer:util:trace receiver peerConnectionState state:  +18ms connected
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/ipfs/id/1.0.0"] +10ms
+libp2p:yamux:trace stream close id=3 +2ms
+libp2p:yamux:trace stream close read id=3 +0ms
+libp2p:yamux:trace stream source ended id=3 +0ms
+libp2p:yamux:trace stream close write id=3 +0ms
+libp2p:yamux:trace sending frame streamID=3 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace stream finished id=3 +1ms
+libp2p:yamux:trace stream sink ended id=3 +11ms
+libp2p:connection-manager:auto-dial:trace have enough connections 2/0 +21ms
+libp2p:webrtc:stream:trace sending 39 bytes +14ms
+libp2p:webrtc:stream:trace channel ready state: connecting +0ms
+libp2p:yamux:trace muxer close reason=InternalError +0ms
+libp2p:yamux:trace sending frame streamID=0 type=GoAway flag= length=2 +1ms
+libp2p:yamux:trace muxer source ended +0ms
+libp2p:yamux:trace stream sink ended id=4 +0ms
+libp2p:yamux:trace stream close write id=4 +0ms
+libp2p:yamux:trace sending frame streamID=4 type=WindowUpdate flag=FIN length=0 +0ms
+libp2p:yamux:trace muxer sink ended +0ms
+libp2p:yamux:trace received frame streamID=4 type=WindowUpdate flag= length=21 +1ms
+libp2p:yamux:trace stream received window update id=4 +0ms
+libp2p:webrtc:stream:trace sending 0 bytes +3ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:peer-store:trace get await read lock +93ms
+libp2p:connection-manager:auto-dial:trace have enough connections 1/0 +4ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get release read lock +1ms
+libp2p:yamux:trace muxer sink ended +4ms
+libp2p:yamux:trace sending frame streamID=0 type=GoAway flag= length=2 +0ms
+libp2p:yamux:trace muxer source ended +0ms
+libp2p:yamux:trace stream close id=4 +1ms
+libp2p:yamux:trace stream close read id=4 +0ms
+libp2p:yamux:trace stream source ended id=4 +0ms
+libp2p:yamux:trace stream finished id=4 +0ms
+libp2p:webrtc:stream:trace sending 39 bytes +5ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 0 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +410ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:webrtc:stream:trace sending 23 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:mss:handle:trace read "/ipfs/id/1.0.0" +1ms
+libp2p:mss:handle:trace respond with "/ipfs/id/1.0.0" for "/ipfs/id/1.0.0" +0ms
+libp2p:peer-store:trace merge await write lock +6ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:webrtc:stream:trace sending 19 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:peer-store:trace get await read lock +0ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get release read lock +1ms
+libp2p:webrtc:stream:trace sending 5 bytes +2ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 342 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: FIN +1ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: STOP_SENDING +1ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +27ms
+libp2p:mss:select:trace select: read "/ipfs/id/1.0.0" +1ms
+libp2p:peer-store:trace merge await write lock +3ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:webrtc:stream:trace Sending flag: FIN +2ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: STOP_SENDING +1ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:peer-store:trace patch await write lock +2ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +1ms
+libp2p:peer-store:trace get await read lock +25ms
+libp2p:connection-manager:auto-dial:trace have enough connections 1/0 +42ms
+libp2p:peer-store:trace get got read lock +1ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:yamux:trace muxer sink ended +39ms
+libp2p:yamux:trace muxer close reason=NormalTermination +0ms
+libp2p:yamux:trace sending frame streamID=0 type=GoAway flag= length=0 +0ms
+libp2p:yamux:trace muxer source ended +0ms
+libp2p:mss:select:trace select: write ["/multistream/1.0.0", "/echo/1.0.0"] +31ms
+libp2p:webrtc:stream:trace sending 36 bytes +29ms
+libp2p:webrtc:stream:trace channel ready state: connecting +0ms
+libp2p:webrtc:stream:trace sending 36 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 0 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +1ms
+libp2p:mss:handle:trace read "/multistream/1.0.0" +38ms
+libp2p:mss:handle:trace respond with "/multistream/1.0.0" for "/multistream/1.0.0" +0ms
+libp2p:webrtc:stream:trace sending 23 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:mss:handle:trace read "/echo/1.0.0" +0ms
+libp2p:mss:handle:trace respond with "/echo/1.0.0" for "/echo/1.0.0" +1ms
+libp2p:peer-store:trace merge await write lock +4ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:webrtc:stream:trace sending 16 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:peer-store:trace merge release write lock +0ms
+libp2p:mss:select:trace select: read "/multistream/1.0.0" +4ms
+libp2p:mss:select:trace select: read "/echo/1.0.0" +0ms
+libp2p:peer-store:trace merge await write lock +1ms
+libp2p:peer-store:trace merge got write lock +0ms
+libp2p:peer-store:trace merge release write lock +1ms
+libp2p:webrtc:stream:trace sending 13 bytes +3ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: FIN +0ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace sending 13 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: STOP_SENDING +0ms
+libp2p:webrtc:stream:trace sending 3 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: FIN +0ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: STOP_SENDING +1ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+  [32m  ✅[0m[90m can dial through a relay[0m[31m (731ms)[0m
+libp2p:webrtc:stream:trace Sending flag: STOP_SENDING +4ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: FIN +1ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:connection:trace closing connection +0ms
+libp2p:peer-store:trace get await read lock +14ms
+libp2p:peer-store:trace patch await write lock +1ms
+libp2p:peer-store:trace patch await write lock +1ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get release read lock +1ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +0ms
+libp2p:peer-store:trace patch got write lock +1ms
+libp2p:peer-store:trace patch release write lock +0ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +0ms
+libp2p:peer-store:trace patch got write lock +1ms
+libp2p:peer-store:trace patch release write lock +1ms
+libp2p:webrtc:stream:trace Sending flag: STOP_SENDING +8ms
+libp2p:webrtc:stream:trace sending 3 bytes +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace Sending flag: FIN +0ms
+libp2p:webrtc:stream:trace sending 3 bytes +1ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:stream:trace channel ready state: open +0ms
+libp2p:webrtc:connection:trace closing connection +8ms
+libp2p:peer-store:trace get await read lock +2ms
+libp2p:peer-store:trace patch await write lock +1ms
+libp2p:peer-store:trace patch await write lock +1ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace get got read lock +0ms
+libp2p:peer-store:trace get release read lock +0ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +1ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +0ms
+libp2p:peer-store:trace patch await write lock +0ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +1ms
+libp2p:peer-store:trace patch got write lock +0ms
+libp2p:peer-store:trace patch release write lock +0ms
+libp2p:peer-store:trace get await read lock +12ms

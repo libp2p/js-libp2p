@@ -7,6 +7,7 @@ import { pEvent, TimeoutError } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { Direction, Stream } from '@libp2p/interface/connection'
+import delay from 'delay'
 
 const log = logger('libp2p:webrtc:stream')
 
@@ -148,6 +149,14 @@ class WebRTCStream extends AbstractStream {
   }
 
   async _sendMessage (data: Uint8ArrayList, checkBuffer: boolean = true): Promise<void> {
+    log.trace('sending %d bytes', data.length)
+
+    log.trace('channel ready state: %s', this.channel.readyState)
+
+    log.trace('binary type is: %s', this.channel.binaryType)
+
+    await delay(10)
+
     if (checkBuffer && this.channel.bufferedAmount > this.dataChannelOptions.maxBufferedAmount) {
       try {
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.dataChannelOptions.bufferedAmountLowEventTimeout })

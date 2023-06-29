@@ -85,16 +85,15 @@ describe('basics', () => {
     remoteNode = await createNode()
   })
 
-  // TODO: Streams are not closing gracefully, re-introduce after https://github.com/libp2p/js-libp2p/issues/1793 is addressed
-  // afterEach(async () => {
-  //   if (localNode != null) {
-  //     await localNode.stop()
-  //   }
+  afterEach(async () => {
+    if (localNode != null) {
+      await localNode.stop()
+    }
 
-  //   if (remoteNode != null) {
-  //     await remoteNode.stop()
-  //   }
-  // })
+    if (remoteNode != null) {
+      await remoteNode.stop()
+    }
+  })
 
   it('can dial through a relay', async () => {
     const connection = await connectNodes()
