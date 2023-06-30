@@ -1,0 +1,33 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "src/pb/peer.js"
+  ],
+  "references": [
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
+    },
+    {
+      "path": "../peer-record"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+enum KeyType {
+  RSA = 0;
+  Ed25519 = 1;
+  Secp256k1 = 2;
+}
+message PublicKey {
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional KeyType Type = 1;
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional bytes Data = 2;
+}
+message PrivateKey {
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional KeyType Type = 1;
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional bytes Data = 2;
+}

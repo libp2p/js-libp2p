@@ -1,9 +1,11 @@
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
+/* eslint-disable no-console */
+
 import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
-import { yamux } from '@chainsafe/libp2p-yamux/dist/src'
+import { createLibp2p } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import { identifyService } from 'libp2p/identify'
 

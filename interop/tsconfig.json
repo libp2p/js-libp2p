@@ -1,0 +1,30 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../packages/libp2p"
+    },
+    {
+      "path": "../packages/stream-multiplexer-mplex"
+    },
+    {
+      "path": "../packages/transport-tcp"
+    },
+    {
+      "path": "../packages/transport-webrtc"
+    },
+    {
+      "path": "../packages/transport-websockets"
+    },
+    {
+      "path": "../packages/transport-webtransport"
+    }
+  ]
+}

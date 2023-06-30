@@ -1,29 +1,58 @@
 {
-  "name": "delegated-routing-example",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@chainsafe/libp2p-noise": "^12.0.0",
-    "ipfs-core": "^0.15.4",
-    "ipfs-http-client": "^58.0.1",
-    "libp2p": "file:../../",
-    "@libp2p/delegated-content-routing": "^4.0.0",
-    "@libp2p/delegated-peer-routing": "^4.0.0",
-    "@libp2p/kad-dht": "^9.2.0",
-    "@libp2p/mplex": "^8.0.1",
-    "@libp2p/webrtc-star": "^7.0.0",
-    "@libp2p/websockets": "^6.0.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-scripts": "5.0.0"
+  "name": "@libp2p/example-delegated-routing-example",
+  "version": "0.0.0",
+  "description": "How to configure libp2p delegated routers",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/examples/delegated-routing#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "type": "module",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module",
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    }
   },
   "scripts": {
+    "lint": "aegir lint",
     "start": "react-scripts start"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^12.0.1",
+    "@libp2p/bootstrap": "^8.0.0",
+    "@libp2p/delegated-content-routing": "^4.0.0",
+    "@libp2p/delegated-peer-routing": "^4.0.0",
+    "@libp2p/kad-dht": "^9.0.0",
+    "@libp2p/mplex": "^8.0.0",
+    "@libp2p/websockets": "^6.0.0",
+    "kubo-rpc-client": "^3.0.1",
+    "libp2p": "^0.45.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "^5.0.1"
+  },
+  "devDependencies": {
+    "aegir": "^39.0.10"
   },
   "browserslist": [
     ">0.2%",
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "private": true
 }

@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { floodsub } from '@libp2p/floodsub'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
 import { createLibp2p } from 'libp2p'
 import { identifyService } from 'libp2p/identify'
-import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
-import { floodsub } from '@libp2p/floodsub'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
