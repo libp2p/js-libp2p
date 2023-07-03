@@ -4,12 +4,7 @@ import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
-import { abortableDuplex } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
-import first from 'it-first'
-import * as lp from 'it-length-prefixed'
-import { pbStream } from 'it-pb-stream'
-import { pipe } from 'it-pipe'
+import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
@@ -197,26 +192,27 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
           signal
         })
 
-        // make stream abortable
-        const source = abortableDuplex(stream, signal)
+        const pb = pbStream(stream, {
+          maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+        }).pb(Identify)
 
-        await source.sink(pipe(
-          [Identify.encode({
-            listenAddrs: listenAddresses.map(ma => ma.bytes),
-            signedPeerRecord: signedPeerRecord.marshal(),
-            protocols: supportedProtocols,
-            agentVersion,
-            protocolVersion
-          })],
-          (source) => lp.encode(source)
-        ))
+        await pb.write({
+          listenAddrs: listenAddresses.map(ma => ma.bytes),
+          signedPeerRecord: signedPeerRecord.marshal(),
+          protocols: supportedProtocols,
+          agentVersion,
+          protocolVersion
+        }, {
+          signal
+        })
+
+        await stream.close({
+          signal
+        })
       } catch (err: any) {
         // Just log errors
         log.error('could not push identify update to peer', err)
-      } finally {
-        if (stream != null) {
-          stream.close()
-        }
+        stream?.abort(err)
       }
     })
 
@@ -258,44 +254,24 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
     let stream: Stream | undefined
 
-    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
+    options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
     try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
+      stream = await connection.newStream([this.identifyProtocolStr], options)
 
-    try {
-      stream = await connection.newStream([this.identifyProtocolStr], {
-        signal
-      })
+      const pb = pbStream(stream, {
+        maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+      }).pb(Identify)
 
-      // make stream abortable
-      const source = abortableDuplex(stream, signal)
+      const message = await pb.read(options)
 
-      const data = await pipe(
-        [],
-        source,
-        (source) => lp.decode(source, {
-          maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
-        }),
-        async (source) => first(source)
-      )
+      await stream.close(options)
 
-      if (data == null) {
-        throw new CodeError('No data could be retrieved', codes.ERR_CONNECTION_ENDED)
-      }
-
-      try {
-        return Identify.decode(data)
-      } catch (err: any) {
-        throw new CodeError(String(err), codes.ERR_INVALID_MESSAGE)
-      }
-    } finally {
-      if (stream != null) {
-        stream.close()
-      }
-      signal.clear()
+      return message
+    } catch (err: any) {
+      log.error('error while reading identify message', err)
+      stream?.abort(err)
+      throw err
     }
   }
 
@@ -381,7 +357,9 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         signedPeerRecord = envelope.marshal().subarray()
       }
 
-      const message = Identify.encode({
+      const pb = pbStream(stream).pb(Identify)
+
+      await pb.write({
         protocolVersion: this.host.protocolVersion,
         agentVersion: this.host.agentVersion,
         publicKey,
@@ -389,17 +367,16 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         signedPeerRecord,
         observedAddr: connection.remoteAddr.bytes,
         protocols: peerData.protocols
+      }, {
+        signal
       })
 
-      // make stream abortable
-      const source = abortableDuplex(stream, signal)
-
-      const msgWithLenPrefix = pipe([message], (source) => lp.encode(source))
-      await source.sink(msgWithLenPrefix)
+      await stream.close({
+        signal
+      })
     } catch (err: any) {
       log.error('could not respond to identify request', err)
-    } finally {
-      stream.close()
+      stream.abort(err)
     }
   }
 
@@ -414,19 +391,22 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         throw new Error('received push from ourselves?')
       }
 
-      // make stream abortable
-      const source = abortableDuplex(stream, AbortSignal.timeout(this.timeout))
-      const pb = pbStream(source, {
+      const options = {
+        signal: AbortSignal.timeout(this.timeout)
+      }
+
+      const pb = pbStream(stream, {
         maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
-      })
-      const message = await pb.readPB(Identify)
+      }).pb(Identify)
+
+      const message = await pb.read(options)
+      await stream.close(options)
 
       await this.#consumeIdentifyMessage(connection.remotePeer, message)
     } catch (err: any) {
       log.error('received invalid message', err)
+      stream.abort(err)
       return
-    } finally {
-      stream.close()
     }
 
     log('handled push from %p', connection.remotePeer)

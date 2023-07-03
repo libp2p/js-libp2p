@@ -1,4 +1,5 @@
 import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
+import { logger } from '@libp2p/logger'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_MSG_SIZE } from './decode.js'
@@ -7,7 +8,7 @@ import type { Message } from './message-types.js'
 
 export interface Options {
   id: number
-  send: (msg: Message) => void
+  send: (msg: Message) => Promise<void>
   name?: string
   onEnd?: (err?: Error) => void
   type?: 'initiator' | 'receiver'
@@ -17,14 +18,21 @@ export interface Options {
 interface MplexStreamInit extends AbstractStreamInit {
   streamId: number
   name: string
-  send: (msg: Message) => void
+  send: (msg: Message) => Promise<void>
+
+  /**
+   * The maximum allowable data size, any data larger than this will be
+   * chunked and sent in multiple data messages
+   */
+  maxDataSize: number
 }
 
-class MplexStream extends AbstractStream {
+export class MplexStream extends AbstractStream {
   private readonly name: string
   private readonly streamId: number
-  private readonly send: (msg: Message) => void
+  private readonly send: (msg: Message) => Promise<void>
   private readonly types: Record<string, number>
+  private readonly maxDataSize: number
 
   constructor (init: MplexStreamInit) {
     super(init)
@@ -33,25 +41,37 @@ class MplexStream extends AbstractStream {
     this.send = init.send
     this.name = init.name
     this.streamId = init.streamId
+    this.maxDataSize = init.maxDataSize
   }
 
-  sendNewStream (): void {
-    this.send({ id: this.streamId, type: InitiatorMessageTypes.NEW_STREAM, data: new Uint8ArrayList(uint8ArrayFromString(this.name)) })
+  async sendNewStream (): Promise<void> {
+    await this.send({ id: this.streamId, type: InitiatorMessageTypes.NEW_STREAM, data: new Uint8ArrayList(uint8ArrayFromString(this.name)) })
   }
 
-  sendData (data: Uint8ArrayList): void {
-    this.send({ id: this.streamId, type: this.types.MESSAGE, data })
+  async sendData (data: Uint8ArrayList): Promise<void> {
+    data = data.sublist()
+
+    while (data.byteLength > 0) {
+      const toSend = Math.min(data.byteLength, this.maxDataSize)
+      await this.send({
+        id: this.streamId,
+        type: this.types.MESSAGE,
+        data: data.sublist(0, toSend)
+      })
+
+      data.consume(toSend)
+    }
   }
 
-  sendReset (): void {
-    this.send({ id: this.streamId, type: this.types.RESET })
+  async sendReset (): Promise<void> {
+    await this.send({ id: this.streamId, type: this.types.RESET })
   }
 
-  sendCloseWrite (): void {
-    this.send({ id: this.streamId, type: this.types.CLOSE })
+  async sendCloseWrite (): Promise<void> {
+    await this.send({ id: this.streamId, type: this.types.CLOSE })
   }
 
-  sendCloseRead (): void {
+  async sendCloseRead (): Promise<void> {
     // mplex does not support close read, only close write
   }
 }
@@ -66,6 +86,7 @@ export function createStream (options: Options): MplexStream {
     direction: type === 'initiator' ? 'outbound' : 'inbound',
     maxDataSize: maxMsgSize,
     onEnd,
-    send
+    send,
+    log: logger(`libp2p:mplex:stream:${type}:${id}`)
   })
 }

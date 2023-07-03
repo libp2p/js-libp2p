@@ -15,7 +15,7 @@
     "@chainsafe/libp2p-noise": "^12.0.0",
     "@libp2p/webrtc": "file:../../",
     "@multiformats/multiaddr": "^12.0.0",
-    "it-pushable": "^3.1.0",
+    "it-pushable": "^3.2.0",
     "libp2p": "^0.45.0",
     "vite": "^4.2.1"
   },

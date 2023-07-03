@@ -93,7 +93,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         listener.close()
       ])
 
-      stream1.close()
+      await stream1.close()
       await conn1.close()
 
       expect(isValidTick(conn1.timeline.close)).to.equal(true)

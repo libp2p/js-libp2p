@@ -7,6 +7,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { type Connection, type ConnectionProtector, isConnection } from '@libp2p/interface/connection'
 import { AbortError } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
+import { start, stop } from '@libp2p/interface/startable'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -74,7 +75,7 @@ describe('dialing (direct, TCP)', () => {
         listenAddr.toString()
       ]
     })
-    remoteTM = new DefaultTransportManager(remoteComponents)
+    remoteTM = remoteComponents.transportManager = new DefaultTransportManager(remoteComponents)
     remoteTM.add(tcp()())
 
     const localEvents = new EventEmitter()
@@ -92,18 +93,20 @@ describe('dialing (direct, TCP)', () => {
       minConnections: 50,
       inboundUpgradeTimeout: 1000
     })
-
-    localTM = new DefaultTransportManager(localComponents)
+    localComponents.addressManager = new DefaultAddressManager(localComponents)
+    localTM = localComponents.transportManager = new DefaultTransportManager(localComponents)
     localTM.add(tcp()())
 
-    localComponents.transportManager = localTM
-
-    await remoteTM.listen([listenAddr])
+    await start(localComponents)
+    await start(remoteComponents)
 
     remoteAddr = remoteTM.getAddrs()[0].encapsulate(`/p2p/${remotePeerId.toString()}`)
   })
 
-  afterEach(async () => { await remoteTM.stop() })
+  afterEach(async () => {
+    await stop(localComponents)
+    await stop(remoteComponents)
+  })
 
   afterEach(() => {
     sinon.restore()
@@ -405,10 +408,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       void pipe(stream, stream)
     })
 
-    await libp2p.peerStore.patch(remotePeerId, {
-      multiaddrs: remoteLibp2p.getMultiaddrs()
-    })
-    const connection = await libp2p.dial(remotePeerId)
+    const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
 
     // Create local to remote streams
     const stream = await connection.newStream('/echo/1.0.0')

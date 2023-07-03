@@ -6,7 +6,7 @@ import { type Pushable, pushable } from 'it-pushable'
 import { pEvent, TimeoutError } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
-import type { Direction, Stream } from '@libp2p/interface/connection'
+import type { Direction } from '@libp2p/interface/connection'
 
 const log = logger('libp2p:webrtc:stream')
 
@@ -26,6 +26,8 @@ export interface WebRTCStreamInit extends AbstractStreamInit {
   channel: RTCDataChannel
 
   dataChannelOptions?: Partial<DataChannelOpts>
+
+  maxDataSize: number
 }
 
 // Max message size that can be sent to the DataChannel
@@ -40,7 +42,7 @@ const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 // protobuf field definition overhead
 const PROTOBUF_OVERHEAD = 3
 
-class WebRTCStream extends AbstractStream {
+export class WebRTCStream extends AbstractStream {
   /**
    * The data channel used to send and receive data
    */
@@ -58,6 +60,7 @@ class WebRTCStream extends AbstractStream {
   private readonly incomingData: Pushable<Uint8Array>
 
   private messageQueue?: Uint8ArrayList
+  private readonly maxDataSize: number
 
   constructor (init: WebRTCStreamInit) {
     super(init)
@@ -71,6 +74,7 @@ class WebRTCStream extends AbstractStream {
       maxBufferedAmount: init.dataChannelOptions?.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT,
       maxMessageSize: init.dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE
     }
+    this.maxDataSize = init.maxDataSize
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -107,7 +111,9 @@ class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onclose = (_evt) => {
-      this.close()
+      void this.close().catch(err => {
+        log.error('error closing stream after channel closed', err)
+      })
     }
 
     this.channel.onerror = (evt) => {
@@ -153,7 +159,6 @@ class WebRTCStream extends AbstractStream {
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.dataChannelOptions.bufferedAmountLowEventTimeout })
       } catch (err: any) {
         if (err instanceof TimeoutError) {
-          this.abort(err)
           throw new Error('Timed out waiting for DataChannel buffer to clear')
         }
 
@@ -184,10 +189,17 @@ class WebRTCStream extends AbstractStream {
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {
-    const msgbuf = Message.encode({ message: data.subarray() })
-    const sendbuf = lengthPrefixed.encode.single(msgbuf)
+    data = data.sublist()
 
-    await this._sendMessage(sendbuf)
+    while (data.byteLength > 0) {
+      const toSend = Math.min(data.byteLength, this.maxDataSize)
+      const buf = data.subarray(0, toSend)
+      const msgbuf = Message.encode({ message: buf })
+      const sendbuf = lengthPrefixed.encode.single(msgbuf)
+      await this._sendMessage(sendbuf)
+
+      data.consume(toSend)
+    }
   }
 
   async sendReset (): Promise<void> {
@@ -212,7 +224,7 @@ class WebRTCStream extends AbstractStream {
       if (message.flag === Message.Flag.FIN) {
         // We should expect no more data from the remote, stop reading
         this.incomingData.end()
-        this.closeRead()
+        this.remoteCloseWrite()
       }
 
       if (message.flag === Message.Flag.RESET) {
@@ -222,7 +234,7 @@ class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.STOP_SENDING) {
         // The remote has stopped reading
-        this.closeWrite()
+        this.remoteCloseRead()
       }
     }
 
@@ -259,7 +271,7 @@ export interface WebRTCStreamOptions {
   onEnd?: (err?: Error | undefined) => void
 }
 
-export function createStream (options: WebRTCStreamOptions): Stream {
+export function createStream (options: WebRTCStreamOptions): WebRTCStream {
   const { channel, direction, onEnd, dataChannelOptions } = options
 
   return new WebRTCStream({
@@ -268,6 +280,7 @@ export function createStream (options: WebRTCStreamOptions): Stream {
     maxDataSize: (dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD,
     dataChannelOptions,
     onEnd,
-    channel
+    channel,
+    log: logger(`libp2p:mplex:stream:${direction}:${channel.id}`)
   })
 }

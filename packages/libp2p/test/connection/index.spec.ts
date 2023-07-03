@@ -47,29 +47,31 @@ describe('connection', () => {
       direction: 'outbound',
       encryption: '/secio/1.0.0',
       multiplexer: '/mplex/6.7.0',
-      status: 'OPEN',
+      status: 'open',
       newStream: async (protocols) => {
         const id = `${streamId++}`
         const stream: Stream = {
           ...pair(),
-          close: () => {
-            void stream.sink(async function * () {}())
+          close: async () => {
+            await stream.sink(async function * () {}())
 
             openStreams = openStreams.filter(s => s.id !== id)
           },
-          closeRead: () => {},
-          closeWrite: () => {
-            void stream.sink(async function * () {}())
+          closeRead: async () => {},
+          closeWrite: async () => {
+            await stream.sink(async function * () {}())
           },
           id,
           abort: () => {},
-          reset: () => {},
           direction: 'outbound',
           protocol: protocols[0],
           timeline: {
             open: 0
           },
-          metadata: {}
+          metadata: {},
+          status: 'open',
+          writeStatus: 'ready',
+          readStatus: 'ready'
         }
 
         openStreams.push(stream)
@@ -77,6 +79,7 @@ describe('connection', () => {
         return stream
       },
       close: async () => {},
+      abort: () => {},
       getStreams: () => openStreams
     })
   })

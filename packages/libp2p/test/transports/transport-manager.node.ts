@@ -1,6 +1,8 @@
 /* eslint-env mocha */
 
 import { EventEmitter } from '@libp2p/interface/events'
+import { start, stop } from '@libp2p/interface/startable'
+import { FaultTolerance } from '@libp2p/interface/transport'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -30,7 +32,7 @@ describe('Transport Manager (TCP)', () => {
     localPeer = await createEd25519PeerId()
   })
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const events = new EventEmitter()
     components = defaultComponents({
       peerId: localPeer,
@@ -41,14 +43,19 @@ describe('Transport Manager (TCP)', () => {
     components.addressManager = new DefaultAddressManager(components, { listen: addrs.map(addr => addr.toString()) })
     components.peerStore = new PersistentPeerStore(components)
 
-    tm = new DefaultTransportManager(components)
+    tm = new DefaultTransportManager(components, {
+      faultTolerance: FaultTolerance.NO_FATAL
+    })
 
     components.transportManager = tm
+
+    await start(tm)
   })
 
   afterEach(async () => {
     await tm.removeAll()
     expect(tm.getTransports()).to.be.empty()
+    await stop(tm)
   })
 
   it('should be able to add and remove a transport', async () => {

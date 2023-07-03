@@ -64,7 +64,7 @@ const node = await createLibp2p({
 To define component metrics first get a reference to the metrics object:
 
 ```ts
-import type { Metrics } from '@libp2p/interface-metrics'
+import type { Metrics } from '@libp2p/interface/metrics'
 
 interface MyClassComponents {
   metrics: Metrics
