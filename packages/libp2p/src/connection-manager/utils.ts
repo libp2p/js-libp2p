@@ -93,6 +93,6 @@ export const validateConnectionManagerConfig = (opts: ConnectionManagerInit): Ob
     allow: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
     deny: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
     inboundConnectionThreshold: number().max(opts?.maxConnections ?? MAX_CONNECTIONS, `inboundConnectionThreshold must be less than the max connections limit: ${opts?.maxConnections}`).integer().default(INBOUND_CONNECTION_THRESHOLD),
-    maxIncomingPendingConnections: number().integer().max(opts?.maxConnections ?? MAX_CONNECTIONS, `maxIncomingPendingConnections must be less than the max connections limit: ${opts?.maxConnections}`).default(MAX_INCOMING_PENDING_CONNECTIONS)
+    maxIncomingPendingConnections: number().integer().max(opts?.maxConnections ?? MAX_CONNECTIONS, `maxIncomingPendingConnections must be less than the max connections limit: ${opts?.maxConnections}`).default(MAX_INCOMING_PENDING_CONNECTIONS),
   })
 }
