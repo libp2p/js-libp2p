@@ -1,12 +1,16 @@
-import { CodeError } from '@libp2p/interface/errors'
 import { FaultTolerance } from '@libp2p/interface/transport'
 import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
-import { codes, messages } from './errors.js'
-import type { Libp2pInit } from './index.js'
 import type { ServiceMap, RecursivePartial } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Libp2pInit, ServiceFactoryMap } from '../index.js'
+import type { AddressManagerInit } from '../address-manager'
+import { validateAddressManagerConfig } from '../address-manager/utils.js'
+import { object } from 'yup'
+import { validateConnectionManagerConfig } from '../connection-manager/utils.js'
+import type { ConnectionManagerInit } from '../connection-manager/index.js'
+import { validateServicesConfig } from './helpers.js'
 
 const DefaultConfig: Partial<Libp2pInit> = {
   addresses: {
@@ -32,7 +36,7 @@ export function validateConfig <T extends ServiceMap = Record<string, unknown>> 
     connectionManager: validateConnectionManagerConfig(opts?.connectionManager as ConnectionManagerInit)
   })
 
-  // @ts-expect-error
+  //@ts-expect-error
   opts.services = validateServicesConfig(opts?.services as ServiceFactoryMap<T>) as ServiceFactoryMap<T>
 
   const parsedOpts = libp2pConfig.validateSync(opts)

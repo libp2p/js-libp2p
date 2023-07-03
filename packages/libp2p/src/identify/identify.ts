@@ -23,7 +23,8 @@ import {
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
-  MAX_PUSH_INCOMING_STREAMS
+  MAX_PUSH_INCOMING_STREAMS,
+  MAX_IDENTIFY_MESSAGE_SIZE
 } from './consts.js'
 import { Identify } from './pb/message.js'
 import type { IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
