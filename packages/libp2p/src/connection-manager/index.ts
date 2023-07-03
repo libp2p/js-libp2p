@@ -530,12 +530,16 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     return connection
   }
 
-  async closeConnections (peerId: PeerId): Promise<void> {
+  async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {
     const connections = this.connections.get(peerId) ?? []
 
     await Promise.all(
       connections.map(async connection => {
-        await connection.close()
+        try {
+          await connection.close(options)
+        } catch (err: any) {
+          connection.abort(err)
+        }
       })
     )
   }

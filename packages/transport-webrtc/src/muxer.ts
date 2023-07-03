@@ -4,6 +4,7 @@ import type { DataChannelOpts } from './stream.js'
 import type { Stream } from '@libp2p/interface/connection'
 import type { CounterGroup } from '@libp2p/interface/metrics'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -93,9 +94,14 @@ export class DataChannelMuxer implements StreamMuxer {
   private readonly metrics?: CounterGroup
 
   /**
-   * Close or abort all tracked streams and stop the muxer
+   * Gracefully close all tracked streams and stop the muxer
    */
-  close: (err?: Error | undefined) => void = () => { }
+  close: (options?: AbortOptions) => Promise<void> = async () => { }
+
+  /**
+   * Abort all tracked streams and stop the muxer
+   */
+  abort: (err: Error) => void = () => { }
 
   /**
    * The stream source, a no-op as the transport natively supports multiplexing

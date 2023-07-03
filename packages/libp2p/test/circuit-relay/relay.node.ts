@@ -8,7 +8,7 @@ import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { pbStream } from 'it-pb-stream'
+import { pbStream } from 'it-protobuf-stream'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -19,7 +19,7 @@ import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
+import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 
@@ -34,6 +34,9 @@ describe('circuit-relay', () => {
       // create 1 node and 3 relays
       [local, relay1, relay2, relay3] = await Promise.all([
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -55,6 +58,9 @@ describe('circuit-relay', () => {
           }
         }),
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -77,6 +83,9 @@ describe('circuit-relay', () => {
           }
         }),
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -99,6 +108,9 @@ describe('circuit-relay', () => {
           }
         }),
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -258,22 +270,24 @@ describe('circuit-relay', () => {
       // wait for identify for newly dialled peer
       await discoveredRelayConfig(relay1, relay3)
 
-      // disconnect not used listen relay
-      await relay1.hangUp(relay3.peerId)
-
-      // Stub dial
+      // stub dial, make sure we can't reconnect
       // @ts-expect-error private field
       sinon.stub(relay1.components.connectionManager, 'openConnection').callsFake(async () => {
         deferred.resolve()
         return Promise.reject(new Error('failed to dial'))
       })
 
-      // Remove peer used as relay from peerStore and disconnect it
-      await relay1.hangUp(relay2.peerId)
-      await relay1.peerStore.delete(relay2.peerId)
+      await Promise.all([
+        // disconnect not used listen relay
+        relay1.hangUp(relay3.peerId),
+
+        // disconnect from relay
+        relay1.hangUp(relay2.peerId)
+      ])
+
       expect(relay1.getConnections()).to.be.empty()
 
-      // Wait for failed dial
+      // wait for failed dial
       await deferred.promise
     })
 
@@ -316,24 +330,11 @@ describe('circuit-relay', () => {
       // wait for peer added as listen relay
       await usingAsRelay(local, relay1)
 
-      // set up listener for address change
-      const deferred = defer()
-
-      local.addEventListener('self:peer:update', ({ detail }) => {
-        const hasNoCircuitRelayAddress = detail.peer.addresses
-          .map(({ multiaddr }) => multiaddr)
-          .find(ma => Circuit.matches(ma)) == null
-
-        if (hasNoCircuitRelayAddress) {
-          deferred.resolve()
-        }
-      })
-
       // shut down the relay
       await relay1.stop()
 
       // should no longer have a circuit address
-      await deferred.promise
+      await doesNotHaveRelay(local)
     })
   })
 
@@ -550,7 +551,7 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const conns = local.getConnections(relay1.peerId)
       expect(conns).to.have.lengthOf(1)
-      expect(conns).to.have.nested.property('[0].status', 'OPEN')
+      expect(conns).to.have.nested.property('[0].status', 'open')
     })
 
     it('dialer should close hop stream on hop failure', async () => {
@@ -566,7 +567,7 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const conns = local.getConnections(relay1.peerId)
       expect(conns).to.have.lengthOf(1)
-      expect(conns).to.have.nested.property('[0].status', 'OPEN')
+      expect(conns).to.have.nested.property('[0].status', 'open')
 
       // we should not have any streams with the hop codec
       const streams = local.getConnections(relay1.peerId)
@@ -591,7 +592,7 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const remoteConns = local.getConnections(relay1.peerId)
       expect(remoteConns).to.have.lengthOf(1)
-      expect(remoteConns).to.have.nested.property('[0].status', 'OPEN')
+      expect(remoteConns).to.have.nested.property('[0].status', 'open')
     })
 
     it('should fail to dial remote over relay over relay', async () => {
@@ -627,7 +628,7 @@ describe('circuit-relay', () => {
 
       const hopStream = pbStream(stream).pb(HopMessage)
 
-      hopStream.write({
+      await hopStream.write({
         type: HopMessage.Type.CONNECT,
         peer: {
           id: remote.peerId.toBytes(),

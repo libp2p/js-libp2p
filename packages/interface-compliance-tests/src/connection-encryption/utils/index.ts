@@ -10,6 +10,7 @@ export function createMaConnPair (): [MultiaddrConnection, MultiaddrConnection] 
     const output: MultiaddrConnection = {
       ...duplex,
       close: async () => {},
+      abort: () => {},
       remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
       timeline: {
         open: Date.now()

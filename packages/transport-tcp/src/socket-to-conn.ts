@@ -1,13 +1,14 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
+import { anySignal } from 'any-signal'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { MultiaddrConnection } from '@libp2p/interface/connection'
 import type { CounterGroup } from '@libp2p/interface/metrics'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
 
 const log = logger('libp2p:tcp:socket')
@@ -120,75 +121,68 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
     timeline: { open: Date.now() },
 
-    async close () {
+    async close (options?: AbortOptions) {
       if (socket.destroyed) {
         log('%s socket was already destroyed when trying to close', lOptsStr)
         return
       }
 
-      log('%s closing socket', lOptsStr)
-      await new Promise<void>((resolve, reject) => {
-        const start = Date.now()
+      const start = Date.now()
+      const signal = anySignal([AbortSignal.timeout(closeTimeout), options?.signal])
+      signal.addEventListener('abort', () => {
+        log('%s socket close timeout after %dms, destroying it manually', lOptsStr, Date.now() - start)
 
-        let timeout: NodeJS.Timeout | undefined
-
-        socket.once('close', () => {
-          log('%s socket closed', lOptsStr)
-          // socket completely closed
-          if (timeout !== undefined) {
-            clearTimeout(timeout)
-          }
-          resolve()
-        })
-        socket.once('error', (err: Error) => {
-          log('%s socket error', lOptsStr, err)
-
-          // error closing socket
-          if (maConn.timeline.close == null) {
-            maConn.timeline.close = Date.now()
-          }
-
-          if (socket.destroyed) {
-            if (timeout !== undefined) {
-              clearTimeout(timeout)
-            }
-          }
-
-          reject(err)
-        })
-
-        // shorten inactivity timeout
-        socket.setTimeout(closeTimeout)
-
-        // close writable end of the socket
-        socket.end()
-
-        if (socket.writableLength > 0) {
-          // Attempt to end the socket. If it takes longer to close than the
-          // timeout, destroy it manually.
-          timeout = setTimeout(() => {
-            if (socket.destroyed) {
-              log('%s is already destroyed', lOptsStr)
-              resolve()
-            } else {
-              log('%s socket close timeout after %dms, destroying it manually', lOptsStr, Date.now() - start)
-
-              // will trigger 'error' and 'close' events that resolves promise
-              socket.destroy(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
-            }
-          }, closeTimeout).unref()
-          // there are outgoing bytes waiting to be sent
-          socket.once('drain', () => {
-            log('%s socket drained', lOptsStr)
-
-            // all bytes have been sent we can destroy the socket (maybe) before the timeout
-            socket.destroy()
-          })
-        } else {
-          // nothing to send, destroy immediately, no need the timeout
-          socket.destroy()
-        }
+        // will trigger 'error' and 'close' events that resolves promise
+        this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
       })
+
+      try {
+        log('%s closing socket', lOptsStr)
+        await new Promise<void>((resolve, reject) => {
+          socket.once('close', () => {
+            // socket completely closed
+            log('%s socket closed', lOptsStr)
+            resolve()
+          })
+          socket.once('error', (err: Error) => {
+            log('%s socket error', lOptsStr, err)
+
+            // error closing socket
+            if (maConn.timeline.close == null) {
+              maConn.timeline.close = Date.now()
+            }
+
+            reject(err)
+          })
+
+          // shorten inactivity timeout
+          socket.setTimeout(closeTimeout)
+
+          // close writable end of the socket
+          socket.end()
+
+          if (socket.writableLength > 0) {
+            // there are outgoing bytes waiting to be sent
+            socket.once('drain', () => {
+              log('%s socket drained', lOptsStr)
+
+              // all bytes have been sent we can destroy the socket (maybe) before the timeout
+              socket.destroy()
+            })
+          } else {
+            // nothing to send, destroy immediately, no need for the timeout
+            socket.destroy()
+          }
+        })
+      } finally {
+        signal.clear()
+      }
+    },
+
+    abort: (err: Error) => {
+      log('%s socket abort due to error', lOptsStr, err)
+
+      socket.destroy(err)
     }
   }
 

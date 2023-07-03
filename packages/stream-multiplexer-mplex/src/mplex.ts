@@ -1,15 +1,16 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
-import { pushableV } from 'it-pushable'
+import { pipe } from 'it-pipe'
+import { type PushableV, pushableV } from 'it-pushable'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { Decoder } from './decode.js'
 import { encode } from './encode.js'
 import { MessageTypes, MessageTypeNames, type Message } from './message-types.js'
-import { createStream } from './stream.js'
+import { createStream, type MplexStream } from './stream.js'
 import type { MplexInit } from './index.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
 import type { Sink, Source } from 'it-stream-types'
@@ -21,6 +22,7 @@ const MAX_STREAMS_INBOUND_STREAMS_PER_CONNECTION = 1024
 const MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION = 1024
 const MAX_STREAM_BUFFER_SIZE = 1024 * 1024 * 4 // 4MB
 const DISCONNECT_THRESHOLD = 5
+const CLOSE_TIMEOUT = 2000
 
 function printMessage (msg: Message): any {
   const output: any = {
@@ -39,12 +41,12 @@ function printMessage (msg: Message): any {
   return output
 }
 
-export interface MplexStream extends Stream {
-  sourceReadableLength: () => number
-  sourcePush: (data: Uint8ArrayList) => void
+interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {
+  /**
+   * The default timeout to use in ms when shutting down the muxer.
+   */
+  closeTimeout?: number
 }
-
-interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {}
 
 export class MplexStreamMuxer implements StreamMuxer {
   public protocol = '/mplex/6.7.0'
@@ -55,9 +57,10 @@ export class MplexStreamMuxer implements StreamMuxer {
   private _streamId: number
   private readonly _streams: { initiators: Map<number, MplexStream>, receivers: Map<number, MplexStream> }
   private readonly _init: MplexStreamMuxerInit
-  private readonly _source: { push: (val: Message) => void, end: (err?: Error) => void }
+  private readonly _source: PushableV<Message>
   private readonly closeController: AbortController
   private readonly rateLimiter: RateLimiterMemory
+  private readonly closeTimeout: number
 
   constructor (init?: MplexStreamMuxerInit) {
     init = init ?? {}
@@ -74,6 +77,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       receivers: new Map<number, MplexStream>()
     }
     this._init = init
+    this.closeTimeout = init.closeTimeout ?? CLOSE_TIMEOUT
 
     /**
      * An iterable sink
@@ -83,9 +87,24 @@ export class MplexStreamMuxer implements StreamMuxer {
     /**
      * An iterable source
      */
-    const source = this._createSource()
-    this._source = source
-    this.source = source
+    this._source = pushableV<Message>({
+      objectMode: true,
+      onEnd: (): void => {
+        // the source has ended, we can't write any more messages to gracefully
+        // close streams so all we can do is destroy them
+        for (const stream of this._streams.initiators.values()) {
+          stream.destroy()
+        }
+
+        for (const stream of this._streams.receivers.values()) {
+          stream.destroy()
+        }
+      }
+    })
+    this.source = pipe(
+      this._source,
+      source => encode(source, this._init.minSendBytes)
+    )
 
     /**
      * Close controller
@@ -131,15 +150,41 @@ export class MplexStreamMuxer implements StreamMuxer {
   /**
    * Close or abort all tracked streams and stop the muxer
    */
-  close (err?: Error | undefined): void {
-    if (this.closeController.signal.aborted) return
-
-    if (err != null) {
-      this.streams.forEach(s => { s.abort(err) })
-    } else {
-      this.streams.forEach(s => { s.close() })
+  async close (options?: AbortOptions): Promise<void> {
+    if (this.closeController.signal.aborted) {
+      return
     }
-    this.closeController.abort()
+
+    const signal = options?.signal ?? AbortSignal.timeout(this.closeTimeout)
+
+    try {
+      // try to gracefully close all streams
+      await Promise.all(
+        this.streams.map(async s => s.close({
+          signal
+        }))
+      )
+
+      this._source.end()
+
+      // try to gracefully close the muxer
+      await this._source.onEmpty({
+        signal
+      })
+
+      this.closeController.abort()
+    } catch (err: any) {
+      this.abort(err)
+    }
+  }
+
+  abort (err: Error): void {
+    if (this.closeController.signal.aborted) {
+      return
+    }
+
+    this.streams.forEach(s => { s.abort(err) })
+    this.closeController.abort(err)
   }
 
   /**
@@ -164,7 +209,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       throw new Error(`${type} stream ${id} already exists!`)
     }
 
-    const send = (msg: Message): void => {
+    const send = async (msg: Message): Promise<void> => {
       if (log.enabled) {
         log.trace('%s stream %s send', type, id, printMessage(msg))
       }
@@ -192,10 +237,10 @@ export class MplexStreamMuxer implements StreamMuxer {
    */
   _createSink (): Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> {
     const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
-      const signal = anySignal([this.closeController.signal, this._init.signal])
-
       try {
-        source = abortableSource(source, signal)
+        source = abortableSource(source, this.closeController.signal, {
+          returnOnAbort: true
+        })
 
         const decoder = new Decoder(this._init.maxMsgSize, this._init.maxUnprocessedMessageQueueSize)
 
@@ -209,32 +254,10 @@ export class MplexStreamMuxer implements StreamMuxer {
       } catch (err: any) {
         log('error in sink', err)
         this._source.end(err) // End the source with an error
-      } finally {
-        signal.clear()
       }
     }
 
     return sink
-  }
-
-  /**
-   * Creates a source that restricts outgoing message sizes
-   * and varint encodes them
-   */
-  _createSource (): any {
-    const onEnd = (err?: Error): void => {
-      this.close(err)
-    }
-    const source = pushableV<Message>({
-      objectMode: true,
-      onEnd
-    })
-
-    return Object.assign(encode(source, this._init.minSendBytes), {
-      push: source.push,
-      end: source.end,
-      return: source.return
-    })
   }
 
   async _handleIncoming (message: Message): Promise<void> {
@@ -264,7 +287,7 @@ export class MplexStreamMuxer implements StreamMuxer {
         } catch {
           log('rate limit hit when opening too many new streams over the inbound stream limit - closing remote connection')
           // since there's no backpressure in mplex, the only thing we can really do to protect ourselves is close the connection
-          this._source.end(new Error('Too many open streams'))
+          this.abort(new Error('Too many open streams'))
           return
         }
 
@@ -286,43 +309,57 @@ export class MplexStreamMuxer implements StreamMuxer {
     if (stream == null) {
       log('missing stream %s for message type %s', id, MessageTypeNames[type])
 
+      // if the remote keeps sending us messages for streams that have been
+      // closed or were never opened they may be attacking us so if they do
+      // this very quickly all we can do is close the connection
+      try {
+        await this.rateLimiter.consume('missing-stream', 1)
+      } catch {
+        log('rate limit hit when receiving messages for streams that do not exist - closing remote connection')
+        // since there's no backpressure in mplex, the only thing we can really do to protect ourselves is close the connection
+        this.abort(new Error('Too many messages for missing streams'))
+        return
+      }
+
       return
     }
 
     const maxBufferSize = this._init.maxStreamBufferSize ?? MAX_STREAM_BUFFER_SIZE
 
-    switch (type) {
-      case MessageTypes.MESSAGE_INITIATOR:
-      case MessageTypes.MESSAGE_RECEIVER:
-        if (stream.sourceReadableLength() > maxBufferSize) {
-          // Stream buffer has got too large, reset the stream
-          this._source.push({
-            id: message.id,
-            type: type === MessageTypes.MESSAGE_INITIATOR ? MessageTypes.RESET_RECEIVER : MessageTypes.RESET_INITIATOR
-          })
+    try {
+      switch (type) {
+        case MessageTypes.MESSAGE_INITIATOR:
+        case MessageTypes.MESSAGE_RECEIVER:
+          if (stream.sourceReadableLength() > maxBufferSize) {
+            // Stream buffer has got too large, reset the stream
+            this._source.push({
+              id: message.id,
+              type: type === MessageTypes.MESSAGE_INITIATOR ? MessageTypes.RESET_RECEIVER : MessageTypes.RESET_INITIATOR
+            })
 
-          // Inform the stream consumer they are not fast enough
-          const error = new CodeError('Input buffer full - increase Mplex maxBufferSize to accommodate slow consumers', 'ERR_STREAM_INPUT_BUFFER_FULL')
-          stream.abort(error)
+            // Inform the stream consumer they are not fast enough
+            throw new CodeError('Input buffer full - increase Mplex maxBufferSize to accommodate slow consumers', 'ERR_STREAM_INPUT_BUFFER_FULL')
+          }
 
-          return
-        }
-
-        // We got data from the remote, push it into our local stream
-        stream.sourcePush(message.data)
-        break
-      case MessageTypes.CLOSE_INITIATOR:
-      case MessageTypes.CLOSE_RECEIVER:
-        // We should expect no more data from the remote, stop reading
-        stream.closeRead()
-        break
-      case MessageTypes.RESET_INITIATOR:
-      case MessageTypes.RESET_RECEIVER:
-        // Stop reading and writing to the stream immediately
-        stream.reset()
-        break
-      default:
-        log('unknown message type %s', type)
+          // We got data from the remote, push it into our local stream
+          stream.sourcePush(message.data)
+          break
+        case MessageTypes.CLOSE_INITIATOR:
+        case MessageTypes.CLOSE_RECEIVER:
+          // The remote has stopped writing, so we can stop reading
+          stream.remoteCloseWrite()
+          break
+        case MessageTypes.RESET_INITIATOR:
+        case MessageTypes.RESET_RECEIVER:
+          // The remote has errored, stop reading and writing to the stream immediately
+          stream.reset()
+          break
+        default:
+          log('unknown message type %s', type)
+      }
+    } catch (err: any) {
+      log.error('error while processing message', err)
+      stream.abort(err)
     }
   }
 }

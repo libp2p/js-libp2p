@@ -1,12 +1,9 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { abortableSource } from 'abortable-iterator'
-import { pushable, type Pushable } from 'it-pushable'
-import { ERR_RECV_WINDOW_EXCEEDED, ERR_STREAM_ABORT, ERR_STREAM_RESET, INITIAL_STREAM_WINDOW } from './constants.js'
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
+import each from 'it-foreach'
+import { ERR_RECV_WINDOW_EXCEEDED, ERR_STREAM_ABORT, INITIAL_STREAM_WINDOW } from './constants.js'
 import { Flag, type FrameHeader, FrameType, HEADER_LENGTH } from './frame.js'
 import type { Config } from './config.js'
-import type { Direction, Stream, StreamTimeline } from '@libp2p/interface/connection'
-import type { Logger } from '@libp2p/logger'
-import type { Sink, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum StreamState {
@@ -23,25 +20,17 @@ export enum HalfStreamState {
   Reset,
 }
 
-export interface YamuxStreamInit {
-  id: number
+export interface YamuxStreamInit extends AbstractStreamInit {
   name?: string
   sendFrame: (header: FrameHeader, body?: Uint8Array) => void
-  onStreamEnd: () => void
   getRTT: () => number
   config: Config
   state: StreamState
-  log?: Logger
-  direction: 'inbound' | 'outbound'
 }
 
 /** YamuxStream is used to represent a logical stream within a session */
-export class YamuxStream implements Stream {
-  id: string
+export class YamuxStream extends AbstractStream {
   name?: string
-  direction: Direction
-  timeline: StreamTimeline
-  metadata: Record<string, any>
 
   state: StreamState
   /** Used to track received FIN/RST */
@@ -49,15 +38,7 @@ export class YamuxStream implements Stream {
   /** Used to track sent FIN/RST */
   writeState: HalfStreamState
 
-  /** Input to the read side of the stream */
-  sourceInput: Pushable<Uint8ArrayList>
-  /** Read side of the stream */
-  source: AsyncGenerator<Uint8ArrayList>
-  /** Write side of the stream */
-  sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>>
-
   private readonly config: Config
-  private readonly log?: Logger
   private readonly _id: number
 
   /** The number of available bytes to send */
@@ -82,19 +63,35 @@ export class YamuxStream implements Stream {
   private readonly abortController: AbortController
 
   private readonly sendFrame: (header: FrameHeader, body?: Uint8Array) => void
-  private readonly onStreamEnd: () => void
 
   constructor (init: YamuxStreamInit) {
+    super({
+      ...init,
+      onEnd: (err?: Error) => {
+        this.state = StreamState.Finished
+        init.onEnd?.(err)
+      },
+      onCloseRead: () => {
+        this.readState = HalfStreamState.Closed
+      },
+      onCloseWrite: () => {
+        this.writeState = HalfStreamState.Closed
+      },
+      onReset: () => {
+        this.readState = HalfStreamState.Reset
+        this.writeState = HalfStreamState.Reset
+        this.abortController.abort()
+      },
+      onAbort: () => {
+        this.readState = HalfStreamState.Reset
+        this.writeState = HalfStreamState.Reset
+        this.abortController.abort()
+      }
+    })
+
     this.config = init.config
-    this.log = init.log
-    this._id = init.id
-    this.id = String(init.id)
+    this._id = parseInt(init.id, 10)
     this.name = init.name
-    this.direction = init.direction
-    this.timeline = {
-      open: Date.now()
-    }
-    this.metadata = {}
 
     this.state = init.state
     this.readState = HalfStreamState.Open
@@ -109,174 +106,87 @@ export class YamuxStream implements Stream {
     this.abortController = new AbortController()
 
     this.sendFrame = init.sendFrame
-    this.onStreamEnd = init.onStreamEnd
 
-    this.sourceInput = pushable({
-      onEnd: (err?: Error) => {
-        if (err != null) {
-          this.log?.error('stream source ended id=%s', this._id, err)
-        } else {
-          this.log?.trace('stream source ended id=%s', this._id)
-        }
-
-        this.closeRead()
-      }
+    this.source = each(this.source, () => {
+      this.sendWindowUpdate()
     })
-
-    this.source = this.createSource()
-
-    this.sink = async (source: Source<Uint8Array | Uint8ArrayList>): Promise<void> => {
-      if (this.writeState !== HalfStreamState.Open) {
-        throw new Error('stream closed for writing')
-      }
-
-      source = abortableSource(source, this.abortController.signal, { returnOnAbort: true })
-
-      try {
-        for await (let data of source) {
-          // send in chunks, waiting for window updates
-          while (data.length !== 0) {
-            // wait for the send window to refill
-            if (this.sendWindowCapacity === 0) await this.waitForSendWindowCapacity()
-
-            // send as much as we can
-            const toSend = Math.min(this.sendWindowCapacity, this.config.maxMessageSize - HEADER_LENGTH, data.length)
-            this.sendData(data.subarray(0, toSend))
-            this.sendWindowCapacity -= toSend
-            data = data.subarray(toSend)
-          }
-        }
-      } catch (e) {
-        this.log?.error('stream sink error id=%s', this._id, e)
-      } finally {
-        this.log?.trace('stream sink ended id=%s', this._id)
-        this.closeWrite()
-      }
-    }
-  }
-
-  private async * createSource (): AsyncGenerator<Uint8ArrayList> {
-    try {
-      for await (const val of this.sourceInput) {
-        this.sendWindowUpdate()
-        yield val
-      }
-    } catch (err) {
-      const errCode = (err as { code: string }).code
-      if (errCode !== ERR_STREAM_ABORT) {
-        this.log?.error('stream source error id=%s', this._id, err)
-        throw err
-      }
-    }
-  }
-
-  close (): void {
-    this.log?.trace('stream close id=%s', this._id)
-    this.closeRead()
-    this.closeWrite()
-  }
-
-  closeRead (): void {
-    if (this.state === StreamState.Finished) {
-      return
-    }
-
-    if (this.readState !== HalfStreamState.Open) {
-      return
-    }
-
-    this.log?.trace('stream close read id=%s', this._id)
-
-    this.readState = HalfStreamState.Closed
-
-    // close the source
-    this.sourceInput.end()
-
-    // If the both read and write are closed, finish it
-    if (this.writeState !== HalfStreamState.Open) {
-      this.finish()
-    }
-  }
-
-  closeWrite (): void {
-    if (this.state === StreamState.Finished) {
-      return
-    }
-
-    if (this.writeState !== HalfStreamState.Open) {
-      return
-    }
-
-    this.log?.trace('stream close write id=%s', this._id)
-
-    this.writeState = HalfStreamState.Closed
-
-    this.sendClose()
-
-    // close the sink
-    this.abortController.abort()
-
-    // If the both read and write are closed, finish it
-    if (this.readState !== HalfStreamState.Open) {
-      this.finish()
-    }
-  }
-
-  abort (err?: Error): void {
-    switch (this.state) {
-      case StreamState.Finished:
-        return
-      case StreamState.Init:
-        // we haven't sent anything, so we don't need to send a reset.
-        break
-      case StreamState.SYNSent:
-      case StreamState.SYNReceived:
-      case StreamState.Established:
-        // at least one direction is open, we need to send a reset.
-        this.sendReset()
-        break
-      default:
-        throw new Error('unreachable')
-    }
-
-    if (err != null) {
-      this.log?.error('stream abort id=%s error=%s', this._id, err)
-    } else {
-      this.log?.trace('stream abort id=%s', this._id)
-    }
-
-    this.onReset(new CodeError(String(err) ?? 'stream aborted', ERR_STREAM_ABORT))
-  }
-
-  reset (): void {
-    if (this.state === StreamState.Finished) {
-      return
-    }
-
-    this.log?.trace('stream reset id=%s', this._id)
-
-    this.onReset(new CodeError('stream reset', ERR_STREAM_RESET))
   }
 
   /**
-   * Called when initiating and receiving a stream reset
+   * Send a message to the remote muxer informing them a new stream is being
+   * opened
    */
-  private onReset (err: Error): void {
-    // Update stream state to reset / finished
-    if (this.writeState === HalfStreamState.Open) {
-      this.writeState = HalfStreamState.Reset
-    }
-    if (this.readState === HalfStreamState.Open) {
-      this.readState = HalfStreamState.Reset
-    }
-    this.state = StreamState.Finished
+  async sendNewStream (): Promise<void> {
 
-    // close both the source and sink
-    this.sourceInput.end(err)
-    this.abortController.abort()
+  }
 
-    // and finish the stream
-    this.finish()
+  /**
+   * Send a data message to the remote muxer
+   */
+  async sendData (buf: Uint8ArrayList): Promise<void> {
+    buf = buf.sublist()
+
+    // send in chunks, waiting for window updates
+    while (buf.byteLength !== 0) {
+      // wait for the send window to refill
+      if (this.sendWindowCapacity === 0) {
+        await this.waitForSendWindowCapacity()
+      }
+
+      // check we didn't close while waiting for send window capacity
+      if (this.status !== 'open') {
+        return
+      }
+
+      // send as much as we can
+      const toSend = Math.min(this.sendWindowCapacity, this.config.maxMessageSize - HEADER_LENGTH, buf.length)
+      const flags = this.getSendFlags()
+
+      this.sendFrame({
+        type: FrameType.Data,
+        flag: flags,
+        streamID: this._id,
+        length: toSend
+      }, buf.subarray(0, toSend))
+
+      this.sendWindowCapacity -= toSend
+
+      buf.consume(toSend)
+    }
+  }
+
+  /**
+   * Send a reset message to the remote muxer
+   */
+  async sendReset (): Promise<void> {
+    this.sendFrame({
+      type: FrameType.WindowUpdate,
+      flag: Flag.RST,
+      streamID: this._id,
+      length: 0
+    })
+  }
+
+  /**
+   * Send a message to the remote muxer, informing them no more data messages
+   * will be sent by this end of the stream
+   */
+  async sendCloseWrite (): Promise<void> {
+    const flags = this.getSendFlags() | Flag.FIN
+    this.sendFrame({
+      type: FrameType.WindowUpdate,
+      flag: flags,
+      streamID: this._id,
+      length: 0
+    })
+  }
+
+  /**
+   * Send a message to the remote muxer, informing them no more data messages
+   * will be read by this end of the stream
+   */
+  async sendCloseRead (): Promise<void> {
+
   }
 
   /**
@@ -291,17 +201,24 @@ export class YamuxStream implements Stream {
     if (this.sendWindowCapacity > 0) {
       return
     }
+    let resolve: () => void
     let reject: (err: Error) => void
     const abort = (): void => {
-      reject(new CodeError('stream aborted', ERR_STREAM_ABORT))
+      if (this.status === 'open') {
+        reject(new CodeError('stream aborted', ERR_STREAM_ABORT))
+      } else {
+        // the stream was closed already, ignore the failure to send
+        resolve()
+      }
     }
     this.abortController.signal.addEventListener('abort', abort)
-    await new Promise((_resolve, _reject) => {
+    await new Promise<void>((_resolve, _reject) => {
       this.sendWindowCapacityUpdate = () => {
         this.abortController.signal.removeEventListener('abort', abort)
-        _resolve(undefined)
+        _resolve()
       }
       reject = _reject
+      resolve = _resolve
     })
   }
 
@@ -335,7 +252,8 @@ export class YamuxStream implements Stream {
 
     const data = await readData()
     this.recvWindowCapacity -= header.length
-    this.sourceInput.push(data)
+
+    this.sourcePush(data)
   }
 
   /**
@@ -348,21 +266,11 @@ export class YamuxStream implements Stream {
       }
     }
     if ((flags & Flag.FIN) === Flag.FIN) {
-      this.closeRead()
+      this.remoteCloseWrite()
     }
     if ((flags & Flag.RST) === Flag.RST) {
       this.reset()
     }
-  }
-
-  /**
-   * finish sets the state and triggers eventual garbage collection of the stream
-   */
-  private finish (): void {
-    this.log?.trace('stream finished id=%s', this._id)
-    this.state = StreamState.Finished
-    this.timeline.close = Date.now()
-    this.onStreamEnd()
   }
 
   /**
@@ -419,35 +327,6 @@ export class YamuxStream implements Stream {
       flag: flags,
       streamID: this._id,
       length: delta
-    })
-  }
-
-  private sendData (data: Uint8Array): void {
-    const flags = this.getSendFlags()
-    this.sendFrame({
-      type: FrameType.Data,
-      flag: flags,
-      streamID: this._id,
-      length: data.length
-    }, data)
-  }
-
-  private sendClose (): void {
-    const flags = this.getSendFlags() | Flag.FIN
-    this.sendFrame({
-      type: FrameType.WindowUpdate,
-      flag: flags,
-      streamID: this._id,
-      length: 0
-    })
-  }
-
-  private sendReset (): void {
-    this.sendFrame({
-      type: FrameType.WindowUpdate,
-      flag: Flag.RST,
-      streamID: this._id,
-      length: 0
     })
   }
 }

@@ -14,17 +14,19 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 function toMuxedStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>): Stream {
   const muxedStream: Stream = {
     ...stream,
-    close: () => {},
-    closeRead: () => {},
-    closeWrite: () => {},
+    close: async () => {},
+    closeRead: async () => {},
+    closeWrite: async () => {},
     abort: () => {},
-    reset: () => {},
     direction: 'outbound',
     timeline: {
       open: Date.now()
     },
     metadata: {},
-    id: `muxed-stream-${Math.random()}`
+    id: `muxed-stream-${Math.random()}`,
+    status: 'open',
+    readStatus: 'ready',
+    writeStatus: 'ready'
   }
 
   return muxedStream

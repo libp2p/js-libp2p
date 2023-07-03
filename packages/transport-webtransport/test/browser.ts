@@ -66,7 +66,7 @@ describe('libp2p-webtransport', () => {
         res = Date.now() - now
       })())
 
-      stream.close()
+      await stream.close()
 
       expect(res).to.be.greaterThan(-1)
     }
@@ -119,7 +119,7 @@ describe('libp2p-webtransport', () => {
 
     // the address is unreachable but we can parse it correctly
     const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
-    stream.close()
+    await stream.close()
 
     await node.stop()
   })
@@ -162,7 +162,7 @@ describe('libp2p-webtransport', () => {
     expect(expectedNextNumber).to.equal(16)
 
     // Close read, we've should have closed the write side during sink
-    stream.closeRead()
+    await stream.closeRead()
 
     expect(stream.timeline.close).to.be.greaterThan(0)
 

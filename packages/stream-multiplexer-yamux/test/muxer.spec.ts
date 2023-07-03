@@ -10,9 +10,9 @@ describe('muxer', () => {
   it('test repeated close', async () => {
     const client1 = testYamuxMuxer('libp2p:yamux:1', true)
     // inspect logs to ensure its only closed once
-    client1.close()
-    client1.close()
-    client1.close()
+    await client1.close()
+    await client1.close()
+    await client1.close()
   })
 
   it('test client<->client', async () => {
@@ -60,8 +60,8 @@ describe('muxer', () => {
     server.unpauseWrite()
     expect(await serverRTT).to.not.equal(0)
 
-    client.close()
-    server.close()
+    await client.close()
+    await server.close()
   })
 
   it('test multiple simultaneous pings', async () => {
@@ -84,18 +84,16 @@ describe('muxer', () => {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     expect(client['nextPingID']).to.equal(1)
 
-    client.close()
+    await client.close()
   })
 
-  it('test go away', () => {
+  it('test go away', async () => {
     const { client } = testClientServer()
-    client.close()
-    try {
+    await client.close()
+
+    expect(() => {
       client.newStream()
-      expect.fail('should not be able to open a stream after close')
-    } catch (e) {
-      expect((e as { code: string }).code).to.equal(ERR_MUXER_LOCAL_CLOSED)
-    }
+    }).to.throw().with.property('code', ERR_MUXER_LOCAL_CLOSED, 'should not be able to open a stream after close')
   })
 
   it('test keep alive', async () => {
@@ -105,7 +103,7 @@ describe('muxer', () => {
 
     // eslint-disable-next-line @typescript-eslint/dot-notation
     expect(client['nextPingID']).to.be.gt(2)
-    client.close()
+    await client.close()
   })
 
   it('test max inbound streams', async () => {

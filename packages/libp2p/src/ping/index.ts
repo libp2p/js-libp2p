@@ -128,7 +128,7 @@ class DefaultPingService implements Startable, PingService {
       return end - start
     } finally {
       if (stream != null) {
-        stream.close()
+        await stream.close()
       }
       signal.clear()
     }

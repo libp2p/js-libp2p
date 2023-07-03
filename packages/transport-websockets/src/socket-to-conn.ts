@@ -1,6 +1,7 @@
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import pTimeout from 'p-timeout'
+import { anySignal } from 'any-signal'
 import { CLOSE_TIMEOUT } from './constants.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { MultiaddrConnection } from '@libp2p/interface/connection'
@@ -39,22 +40,34 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
     timeline: { open: Date.now() },
 
-    async close () {
+    async close (options?: AbortOptions) {
       const start = Date.now()
+      const signal = anySignal([AbortSignal.timeout(CLOSE_TIMEOUT), options?.signal])
 
-      try {
-        await pTimeout(stream.close(), {
-          milliseconds: CLOSE_TIMEOUT
-        })
-      } catch (err) {
+      signal.addEventListener('abort', () => {
         const { host, port } = maConn.remoteAddr.toOptions()
         log('timeout closing stream to %s:%s after %dms, destroying it manually',
           host, port, Date.now() - start)
 
-        stream.destroy()
+        this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
+      })
+
+      try {
+        await stream.close()
+      } catch (err: any) {
+        this.abort(err)
       } finally {
         maConn.timeline.close = Date.now()
       }
+    },
+
+    abort (err: Error): void {
+      const { host, port } = maConn.remoteAddr.toOptions()
+      log('timeout closing stream to %s:%s due to error',
+        host, port, err)
+
+      stream.destroy()
+      maConn.timeline.close = Date.now()
     }
   }
 

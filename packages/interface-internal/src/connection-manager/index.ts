@@ -51,7 +51,7 @@ export interface ConnectionManager {
   /**
    * Close our connections to a peer
    */
-  closeConnections: (peer: PeerId) => Promise<void>
+  closeConnections: (peer: PeerId, options?: AbortOptions) => Promise<void>
 
   /**
    * Invoked after an incoming connection is opened but before PeerIds are

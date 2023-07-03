@@ -13,8 +13,8 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
-import { pbStream } from 'it-pb-stream'
 import { pipe } from 'it-pipe'
+import { pbStream } from 'it-protobuf-stream'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -235,7 +235,7 @@ describe('identify', () => {
   })
 
   it('should limit incoming identify message sizes', async () => {
-    const deferred = pDefer()
+    const deferred = pDefer<Error>()
 
     const remoteIdentify = new DefaultIdentifyService(remoteComponents, {
       ...defaultInit,
@@ -252,14 +252,16 @@ describe('identify', () => {
       const data = new Uint8Array(1024)
 
       void Promise.resolve().then(async () => {
-        await pipe(
-          [data],
-          (source) => lp.encode(source),
-          stream,
-          async (source) => { await drain(source) }
-        )
-
-        deferred.resolve()
+        try {
+          await pipe(
+            [data],
+            (source) => lp.encode(source),
+            stream,
+            async (source) => { await drain(source) }
+          )
+        } catch (err: any) {
+          deferred.resolve(err)
+        }
       })
     })
 
@@ -271,7 +273,10 @@ describe('identify', () => {
       detail: remoteToLocal
     })
 
-    await deferred.promise
+    // stream sending too much data should have received a reset message
+    const err = await deferred.promise
+    expect(err).to.have.property('code', 'ERR_STREAM_RESET')
+
     await stop(remoteIdentify)
 
     expect(identifySpy.called).to.be.true()
@@ -425,7 +430,7 @@ describe('identify', () => {
     remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
       const { stream } = data
       const pb = pbStream(stream)
-      pb.writePB(message, Identify)
+      await pb.write(message, Identify)
     }
 
     // Run identify
@@ -480,7 +485,7 @@ describe('identify', () => {
     remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
       const { stream } = data
       const pb = pbStream(stream)
-      pb.writePB(message, Identify)
+      await pb.write(message, Identify)
     }
 
     // Run identify

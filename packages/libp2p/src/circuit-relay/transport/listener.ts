@@ -95,6 +95,8 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
   #removeRelayPeer (peerId: PeerId): void {
     const had = this.listeningAddrs.has(peerId)
 
+    log('relay peer removed %p - had reservation', peerId, had)
+
     this.listeningAddrs.delete(peerId)
 
     if (had) {

@@ -2,7 +2,7 @@ import { EventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { multiaddr } from '@multiformats/multiaddr'
-import { pbStream } from 'it-pb-stream'
+import { pbStream } from 'it-protobuf-stream'
 import { PeerJobQueue } from '../../utils/peer-job-queue.js'
 import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
@@ -241,7 +241,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     const stream = await connection.newStream(RELAY_V2_HOP_CODEC)
     const pbstr = pbStream(stream)
     const hopstr = pbstr.pb(HopMessage)
-    hopstr.write({ type: HopMessage.Type.RESERVE })
+    await hopstr.write({ type: HopMessage.Type.RESERVE })
 
     let response: HopMessage
 
@@ -251,7 +251,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
       log.error('error parsing reserve message response from %p because', connection.remotePeer, err)
       throw err
     } finally {
-      stream.close()
+      await stream.close()
     }
 
     if (response.status === Status.OK && (response.reservation != null)) {

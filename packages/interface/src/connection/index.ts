@@ -1,4 +1,3 @@
-import type * as Status from './status.js'
 import type { AbortOptions } from '../index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -41,7 +40,37 @@ export interface StreamTimeline {
    * A timestamp of when the stream was reset
    */
   reset?: number
+
+  /**
+   * A timestamp of when the stream was
+   */
+  abort?: number
 }
+
+/**
+ * The states a stream can be in
+ */
+export type StreamStatus = 'open' | 'closing' | 'closed' | 'aborted' | 'reset'
+
+/**
+ * The states the readable end of a stream can be in
+ *
+ * ready - the readable end is ready for reading
+ * closing - the readable end is closing
+ * closed - the readable end has closed
+ */
+export type ReadStatus = 'ready' | 'closing' | 'closed'
+
+/**
+ * The states the writable end of a stream can be in
+ *
+ * ready - the writable end is ready for writing
+ * writing - the writable end is in the process of being written to
+ * done - the source passed to the `.sink` function yielded all values without error
+ * closing - the writable end is closing
+ * closed - the writable end has closed
+ */
+export type WriteStatus = 'ready' | 'writing' | 'done' | 'closing' | 'closed'
 
 /**
  * A Stream is a data channel between two peers that
@@ -60,7 +89,7 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    *
    * The sink and the source will return normally.
    */
-  close: () => void
+  close: (options?: AbortOptions) => Promise<void>
 
   /**
    * Closes the stream for **reading**. If iterating over the source of this stream in a `for await of` loop, it will return (exit the loop) after any buffered data has been consumed.
@@ -69,14 +98,14 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    *
    * The source will return normally, the sink will continue to consume.
    */
-  closeRead: () => void
+  closeRead: (options?: AbortOptions) => Promise<void>
 
   /**
    * Closes the stream for **writing**. If iterating over the source of this stream in a `for await of` loop, it will return (exit the loop) after any buffered data has been consumed.
    *
    * The source will return normally, the sink will continue to consume.
    */
-  closeWrite: () => void
+  closeWrite: (options?: AbortOptions) => Promise<void>
 
   /**
    * Closes the stream for **reading** *and* **writing**. This should be called when a *local error* has occurred.
@@ -88,15 +117,6 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    * The sink will return and the source will throw if an error is passed or return normally if not.
    */
   abort: (err: Error) => void
-
-  /**
-   * Closes the stream *immediately* for **reading** *and* **writing**. This should be called when a *remote error* has occurred.
-   *
-   * This function is called automatically by the muxer when it receives a `RESET` message from the remote.
-   *
-   * The sink will return and the source will throw.
-   */
-  reset: () => void
 
   /**
    * Unique identifier for a stream. Identifiers are not unique across muxers.
@@ -122,6 +142,21 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    * User defined stream metadata
    */
   metadata: Record<string, any>
+
+  /**
+   * The current status of the stream
+   */
+  status: StreamStatus
+
+  /**
+   * The current status of the readable end of the stream
+   */
+  readStatus: ReadStatus
+
+  /**
+   * The current status of the writable end of the stream
+   */
+  writeStatus: WriteStatus
 }
 
 export interface NewStreamOptions extends AbortOptions {
@@ -132,6 +167,8 @@ export interface NewStreamOptions extends AbortOptions {
    */
   maxOutboundStreams?: number
 }
+
+export type ConnectionStatus = 'open' | 'closing' | 'closed'
 
 /**
  * A Connection is a high-level representation of a connection
@@ -188,12 +225,32 @@ export interface Connection {
   /**
    * The current status of the connection
    */
-  status: keyof typeof Status
+  status: ConnectionStatus
 
-  newStream: (multicodecs: string | string[], options?: NewStreamOptions) => Promise<Stream>
+  /**
+   * Create a new stream on this connection and negotiate one of the passed protocols
+   */
+  newStream: (protocols: string | string[], options?: NewStreamOptions) => Promise<Stream>
+
+  /**
+   * Add a stream to this connection
+   */
   addStream: (stream: Stream) => void
+
+  /**
+   * Remove a stream from this connection
+   */
   removeStream: (id: string) => void
-  close: () => Promise<void>
+
+  /**
+   * Gracefully close the connection. All queued data will be written/read
+   */
+  close: (options?: AbortOptions) => Promise<void>
+
+  /**
+   * Immediately close the connection, any queued data will be discarded
+   */
+  abort: (err: Error) => void
 }
 
 export const symbol = Symbol.for('@libp2p/connection')
@@ -224,7 +281,23 @@ export interface MultiaddrConnectionTimeline {
  * without encryption or stream multiplexing.
  */
 export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>> {
-  close: (err?: Error) => Promise<void>
+  /**
+   * Gracefully close the connection. All queued data will be written/read
+   */
+  close: (options?: AbortOptions) => Promise<void>
+
+  /**
+   * Immediately close the connection, any queued data will be discarded
+   */
+  abort: (err: Error) => void
+
+  /**
+   * The address of the remote end of the connection
+   */
   remoteAddr: Multiaddr
+
+  /**
+   * When connection lifecycle events occured
+   */
   timeline: MultiaddrConnectionTimeline
 }

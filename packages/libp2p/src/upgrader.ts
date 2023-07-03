@@ -416,11 +416,11 @@ export class DefaultUpgrader implements Upgrader {
 
               this._onStream({ connection, stream: muxedStream, protocol })
             })
-            .catch(err => {
+            .catch(async err => {
               log.error(err)
 
               if (muxedStream.timeline.close == null) {
-                muxedStream.close()
+                await muxedStream.close()
               }
             })
         },
@@ -481,7 +481,7 @@ export class DefaultUpgrader implements Upgrader {
           log.error('could not create new stream', err)
 
           if (muxedStream.timeline.close == null) {
-            muxedStream.close()
+            muxedStream.abort(err)
           }
 
           if (err.code != null) {
@@ -508,7 +508,7 @@ export class DefaultUpgrader implements Upgrader {
           // Wait for close to finish before notifying of the closure
           (async () => {
             try {
-              if (connection.status === 'OPEN') {
+              if (connection.status === 'open') {
                 await connection.close()
               }
             } catch (err: any) {
@@ -536,18 +536,25 @@ export class DefaultUpgrader implements Upgrader {
     connection = createConnection({
       remoteAddr: maConn.remoteAddr,
       remotePeer,
-      status: 'OPEN',
+      status: 'open',
       direction,
       timeline: maConn.timeline,
       multiplexer: muxer?.protocol,
       encryption: cryptoProtocol,
       newStream: newStream ?? errConnectionNotMultiplexed,
-      getStreams: () => { if (muxer != null) { return muxer.streams } else { return errConnectionNotMultiplexed() } },
-      close: async () => {
-        await maConn.close()
-        // Ensure remaining streams are closed
+      getStreams: () => { if (muxer != null) { return muxer.streams } else { return [] } },
+      close: async (options?: AbortOptions) => {
+        await maConn.close(options)
+        // Ensure remaining streams are closed gracefully
         if (muxer != null) {
-          muxer.close()
+          await muxer.close(options)
+        }
+      },
+      abort: (err) => {
+        maConn.abort(err)
+        // Ensure remaining streams are aborted
+        if (muxer != null) {
+          muxer.abort(err)
         }
       }
     })

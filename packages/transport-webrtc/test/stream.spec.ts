@@ -99,17 +99,15 @@ describe('Max message size', () => {
       }
     })
 
-    const p = pushable()
-    p.push(new Uint8Array(1))
-    p.end()
-
     const t0 = Date.now()
 
-    await expect(webrtcStream.sink(p)).to.eventually.be.rejected
+    await expect(webrtcStream.sink([new Uint8Array(1)])).to.eventually.be.rejected
       .with.property('message', 'Timed out waiting for DataChannel buffer to clear')
     const t1 = Date.now()
     expect(t1 - t0).greaterThan(timeout)
     expect(t1 - t0).lessThan(timeout + 1000) // Some upper bound
     expect(closed).true()
+    expect(webrtcStream.timeline.close).to.be.greaterThan(webrtcStream.timeline.open)
+    expect(webrtcStream.timeline.abort).to.be.greaterThan(webrtcStream.timeline.open)
   })
 })

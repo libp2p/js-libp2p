@@ -56,6 +56,7 @@
     "@multiformats/mafmt": "^12.1.2",
     "@multiformats/multiaddr": "^12.1.3",
     "@types/sinon": "^10.0.15",
+    "any-signal": "^4.1.1",
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {

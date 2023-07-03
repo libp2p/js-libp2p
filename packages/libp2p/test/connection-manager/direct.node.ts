@@ -405,10 +405,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       void pipe(stream, stream)
     })
 
-    await libp2p.peerStore.patch(remotePeerId, {
-      multiaddrs: remoteLibp2p.getMultiaddrs()
-    })
-    const connection = await libp2p.dial(remotePeerId)
+    const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
 
     // Create local to remote streams
     const stream = await connection.newStream('/echo/1.0.0')

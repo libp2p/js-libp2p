@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import { detect } from 'detect-browser'
 import { pair } from 'it-pair'
 import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-pb-stream'
+import { pbStream } from 'it-protobuf-stream'
 import Sinon from 'sinon'
 import { initiateConnection, handleIncomingStream } from '../src/private-to-private/handler'
 import { Message } from '../src/private-to-private/pb/message.js'
@@ -47,7 +47,7 @@ describe('webrtc receiver', () => {
     const receiverPeerConnectionPromise = handleIncomingStream({ stream: mockStream(receiver), connection })
     const stream = pbStream(initiator).pb(Message)
 
-    stream.write({ type: Message.Type.SDP_OFFER, data: 'bad' })
+    await stream.write({ type: Message.Type.SDP_OFFER, data: 'bad' })
     await expect(receiverPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
   })
 })
@@ -64,7 +64,7 @@ describe('webrtc dialer', () => {
       expect(offerMessage.type).to.eq(Message.Type.SDP_OFFER)
     }
 
-    stream.write({ type: Message.Type.SDP_ANSWER, data: 'bad' })
+    await stream.write({ type: Message.Type.SDP_ANSWER, data: 'bad' })
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
   })
 
@@ -76,7 +76,7 @@ describe('webrtc dialer', () => {
 
     const pc = new RTCPeerConnection()
     pc.onicecandidate = ({ candidate }) => {
-      stream.write({ type: Message.Type.ICE_CANDIDATE, data: JSON.stringify(candidate?.toJSON()) })
+      void stream.write({ type: Message.Type.ICE_CANDIDATE, data: JSON.stringify(candidate?.toJSON()) })
     }
     {
       const offerMessage = await stream.read()
