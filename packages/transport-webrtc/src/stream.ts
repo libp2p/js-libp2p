@@ -148,12 +148,6 @@ class WebRTCStream extends AbstractStream {
   }
 
   async _sendMessage (data: Uint8ArrayList, checkBuffer: boolean = true): Promise<void> {
-    log.trace('sending %d bytes', data.length)
-
-    log.trace('channel ready state: %s', this.channel.readyState)
-
-    log.trace('binary type is: %s', this.channel.binaryType)
-
     if (checkBuffer && this.channel.bufferedAmount > this.dataChannelOptions.maxBufferedAmount) {
       try {
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.dataChannelOptions.bufferedAmountLowEventTimeout })
