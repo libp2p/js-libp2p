@@ -119,7 +119,7 @@
     "it-ndjson": "^1.0.3",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "it-pushable": "^3.1.3",
+    "it-pushable": "3.1.3",
     "it-stream-types": "^2.0.1",
     "merge-options": "^3.0.4",
     "p-defer": "^4.0.0",
