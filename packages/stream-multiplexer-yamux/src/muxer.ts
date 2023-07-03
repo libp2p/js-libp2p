@@ -17,7 +17,7 @@ import type { Sink, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const YAMUX_PROTOCOL_ID = '/yamux/1.0.0'
-const CLOSE_TIMEOUT = 2000
+const CLOSE_TIMEOUT = 500
 
 export interface YamuxMuxerInit extends StreamMuxerInit, Partial<Config> {
 }

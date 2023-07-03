@@ -92,6 +92,12 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
    * (default: 30000)
    */
   stopTimeout?: number
+
+  /**
+   * When creating a reservation it must complete within this number of ms
+   * (default: 10000)
+   */
+  reservationCompletionTimeout?: number
 }
 
 const defaults = {

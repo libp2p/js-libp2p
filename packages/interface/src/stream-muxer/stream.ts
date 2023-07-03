@@ -16,8 +16,7 @@ interface Logger {
 
 const ERR_STREAM_RESET = 'ERR_STREAM_RESET'
 const ERR_SINK_INVALID_STATE = 'ERR_SINK_INVALID_STATE'
-// const ERR_CLOSE_READ_ABORTED = 'ERR_CLOSE_READ_ABORTED'
-const CLOSE_TIMEOUT = 2000
+const CLOSE_TIMEOUT = 500
 
 export interface AbstractStreamInit {
   /**
@@ -67,7 +66,7 @@ export interface AbstractStreamInit {
 
   /**
    * How long to wait in ms for stream data to be written to the underlying
-   * connection when closing the writable end of the stream. (default: 2000)
+   * connection when closing the writable end of the stream. (default: 500)
    */
   closeTimeout?: number
 }

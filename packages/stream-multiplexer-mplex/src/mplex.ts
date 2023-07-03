@@ -22,7 +22,7 @@ const MAX_STREAMS_INBOUND_STREAMS_PER_CONNECTION = 1024
 const MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION = 1024
 const MAX_STREAM_BUFFER_SIZE = 1024 * 1024 * 4 // 4MB
 const DISCONNECT_THRESHOLD = 5
-const CLOSE_TIMEOUT = 2000
+const CLOSE_TIMEOUT = 500
 
 function printMessage (msg: Message): any {
   const output: any = {

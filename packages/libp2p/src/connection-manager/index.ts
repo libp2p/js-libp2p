@@ -488,6 +488,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       throw new CodeError('Not started', codes.ERR_NODE_NOT_STARTED)
     }
 
+    options.signal?.throwIfAborted()
+
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null) {

@@ -7,7 +7,7 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:connection')
 
-const CLOSE_TIMEOUT = 2000
+const CLOSE_TIMEOUT = 500
 
 interface ConnectionInit {
   remoteAddr: Multiaddr

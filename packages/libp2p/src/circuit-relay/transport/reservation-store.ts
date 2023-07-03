@@ -8,7 +8,7 @@ import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
-import type { Libp2pEvents } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -55,6 +55,12 @@ export interface RelayStoreInit {
    * Limit the number of potential relays we will dial (default: 100)
    */
   maxReservationQueueLength?: number
+
+  /**
+   * When creating a reservation it must complete within this number of ms
+   * (default: 5000)
+   */
+  reservationCompletionTimeout?: number
 }
 
 export type RelayType = 'discovered' | 'configured'
@@ -80,6 +86,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   private readonly reservations: PeerMap<RelayEntry>
   private readonly maxDiscoveredRelays: number
   private readonly maxReservationQueueLength: number
+  private readonly reservationCompletionTimeout: number
   private started: boolean
 
   constructor (components: RelayStoreComponents, init?: RelayStoreInit) {
@@ -93,6 +100,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.reservations = new PeerMap()
     this.maxDiscoveredRelays = init?.discoverRelays ?? 0
     this.maxReservationQueueLength = init?.maxReservationQueueLength ?? 100
+    this.reservationCompletionTimeout = init?.reservationCompletionTimeout ?? 10000
     this.started = false
 
     // ensure we don't listen on multiple relays simultaneously
@@ -117,12 +125,12 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
   }
 
   async stop (): Promise<void> {
+    this.reserveQueue.clear()
     this.reservations.forEach(({ timeout }) => {
       clearTimeout(timeout)
     })
     this.reservations.clear()
-
-    this.started = true
+    this.started = false
   }
 
   /**
@@ -175,14 +183,20 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
           return
         }
 
-        const connection = await this.connectionManager.openConnection(peerId)
+        const signal = AbortSignal.timeout(this.reservationCompletionTimeout)
+
+        const connection = await this.connectionManager.openConnection(peerId, {
+          signal
+        })
 
         if (connection.remoteAddr.protoNames().includes('p2p-circuit')) {
           log('not creating reservation over relayed connection')
           return
         }
 
-        const reservation = await this.#createReservation(connection)
+        const reservation = await this.#createReservation(connection, {
+          signal
+        })
 
         log('created reservation on relay peer %p', peerId)
 
@@ -220,6 +234,13 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
       } catch (err) {
         log.error('could not reserve slot on %p', peerId, err)
 
+        // cancel the renewal timeout if it's been set
+        const reservation = this.reservations.get(peerId)
+
+        if (reservation != null) {
+          clearTimeout(reservation.timeout)
+        }
+
         // if listening failed, remove the reservation
         this.reservations.delete(peerId)
       }
@@ -236,17 +257,19 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     return this.reservations.get(peerId)?.reservation
   }
 
-  async #createReservation (connection: Connection): Promise<Reservation> {
+  async #createReservation (connection: Connection, options: AbortOptions): Promise<Reservation> {
+    options.signal?.throwIfAborted()
+
     log('requesting reservation from %p', connection.remotePeer)
     const stream = await connection.newStream(RELAY_V2_HOP_CODEC)
     const pbstr = pbStream(stream)
     const hopstr = pbstr.pb(HopMessage)
-    await hopstr.write({ type: HopMessage.Type.RESERVE })
+    await hopstr.write({ type: HopMessage.Type.RESERVE }, options)
 
     let response: HopMessage
 
     try {
-      response = await hopstr.read()
+      response = await hopstr.read(options)
     } catch (err: any) {
       log.error('error parsing reserve message response from %p because', connection.remotePeer, err)
       throw err
