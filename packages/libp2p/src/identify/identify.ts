@@ -24,7 +24,10 @@ import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
   MAX_PUSH_INCOMING_STREAMS,
-  MAX_IDENTIFY_MESSAGE_SIZE
+  MAX_IDENTIFY_MESSAGE_SIZE,
+  TIMEOUT,
+  MAX_PUSH_OUTGOING_STREAMS,
+  MAX_OBSERVED_ADDRESSES
 } from './consts.js'
 import { Identify } from './pb/message.js'
 import type { IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
@@ -41,19 +44,6 @@ import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/r
 const log = logger('libp2p:identify')
 
 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
-
-const defaultValues = {
-  protocolPrefix: 'ipfs',
-  agentVersion: AGENT_VERSION,
-  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
-  timeout: 60000,
-  maxInboundStreams: MAX_INBOUND_STREAMS,
-  maxOutboundStreams: MAX_OUTBOUND_STREAMS,
-  maxPushIncomingStreams: MAX_PUSH_INCOMING_STREAMS,
-  maxPushOutgoingStreams: 1,
-  maxObservedAddresses: 10,
-  maxIdentifyMessageSize: 8192
-}
 
 export class DefaultIdentifyService implements Startable {
   private readonly identifyProtocolStr: string
@@ -87,20 +77,20 @@ export class DefaultIdentifyService implements Startable {
     this.connectionManager = components.connectionManager
     this.events = components.events
 
-    this.identifyProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
-    this.identifyPushProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
-    this.timeout = init.timeout ?? defaultValues.timeout
-    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
-    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
-    this.maxPushIncomingStreams = init.maxPushIncomingStreams ?? defaultValues.maxPushIncomingStreams
-    this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? defaultValues.maxPushOutgoingStreams
-    this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? defaultValues.maxIdentifyMessageSize
-    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
+    this.identifyProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
+    this.identifyPushProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    this.timeout = init.timeout ?? TIMEOUT
+    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
+    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
+    this.maxPushIncomingStreams = init.maxPushIncomingStreams ?? MAX_PUSH_INCOMING_STREAMS
+    this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? MAX_PUSH_OUTGOING_STREAMS
+    this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+    this.maxObservedAddresses = init.maxObservedAddresses ?? MAX_OBSERVED_ADDRESSES
 
     // Store self host metadata
     this.host = {
-      protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: init.agentVersion ?? defaultValues.agentVersion
+      protocolVersion: `${init.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
+      agentVersion: init.agentVersion ?? AGENT_VERSION
     }
 
     // When a new connection happens, trigger identify
@@ -277,7 +267,7 @@ export class DefaultIdentifyService implements Startable {
         [],
         source,
         (source) => lp.decode(source, {
-          maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+          maxDataLength: this.maxIdentifyMessageSize
         }),
         async (source) => first(source)
       )
@@ -328,7 +318,7 @@ export class DefaultIdentifyService implements Startable {
     log('our observed address is %a', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
-        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
+        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses)) {
       log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
@@ -415,7 +405,7 @@ export class DefaultIdentifyService implements Startable {
       // make stream abortable
       const source = abortableDuplex(stream, AbortSignal.timeout(this.timeout))
       const pb = pbStream(source, {
-        maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
+        maxDataLength: this.maxIdentifyMessageSize
       })
       const message = await pb.readPB(Identify)
 

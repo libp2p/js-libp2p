@@ -161,7 +161,6 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     })
 
     // User defined modules
-    console.log('services', init.services)
     if (init.services != null) {
       for (const name of Object.keys(init.services)) {
         const createService = init.services[name]
