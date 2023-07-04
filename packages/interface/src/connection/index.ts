@@ -5,8 +5,20 @@ import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface ConnectionTimeline {
+  /**
+   * When the connection was opened
+   */
   open: number
+
+  /**
+   * When the MultiaddrConnection was upgraded to a Connection - e.g. the type
+   * of connection encryption and multiplexing was negotiated.
+   */
   upgraded?: number
+
+  /**
+   * When the connection was closed.
+   */
   close?: number
 }
 
@@ -243,7 +255,8 @@ export interface Connection {
   removeStream: (id: string) => void
 
   /**
-   * Gracefully close the connection. All queued data will be written/read
+   * Gracefully close the connection. All queued data will be written to the
+   * underlying transport.
    */
   close: (options?: AbortOptions) => Promise<void>
 
@@ -260,7 +273,6 @@ export function isConnection (other: any): other is Connection {
 }
 
 export interface ConnectionProtector {
-
   /**
    * Takes a given Connection and creates a private encryption stream
    * between its two peers from the PSK the Protector instance was
@@ -270,8 +282,20 @@ export interface ConnectionProtector {
 }
 
 export interface MultiaddrConnectionTimeline {
+  /**
+   * When the connection was opened
+   */
   open: number
+
+  /**
+   * When the MultiaddrConnection was upgraded to a Connection - the type of
+   * connection encryption and multiplexing was negotiated.
+   */
   upgraded?: number
+
+  /**
+   * When the connection was closed.
+   */
   close?: number
 }
 
@@ -282,7 +306,8 @@ export interface MultiaddrConnectionTimeline {
  */
 export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>> {
   /**
-   * Gracefully close the connection. All queued data will be written/read
+   * Gracefully close the connection. All queued data will be written to the
+   * underlying transport.
    */
   close: (options?: AbortOptions) => Promise<void>
 
@@ -297,7 +322,7 @@ export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, 
   remoteAddr: Multiaddr
 
   /**
-   * When connection lifecycle events occured
+   * When connection lifecycle events occurred
    */
   timeline: MultiaddrConnectionTimeline
 }

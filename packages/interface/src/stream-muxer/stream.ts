@@ -16,7 +16,6 @@ interface Logger {
 
 const ERR_STREAM_RESET = 'ERR_STREAM_RESET'
 const ERR_SINK_INVALID_STATE = 'ERR_SINK_INVALID_STATE'
-const CLOSE_TIMEOUT = 500
 
 export interface AbstractStreamInit {
   /**
@@ -95,24 +94,18 @@ export abstract class AbstractStream implements Stream {
   private readonly onCloseWrite?: () => void
   private readonly onReset?: () => void
   private readonly onAbort?: (err: Error) => void
-  private readonly closeTimeout: number
-  private streamDataSent: boolean
 
   protected readonly log: Logger
 
   constructor (init: AbstractStreamInit) {
     this.sinkController = new AbortController()
     this.sinkEnd = defer()
-    // this.closeReadTimeout = init.closeReadTimeout ?? CLOSE_TIMEOUT
-    this.closeTimeout = init.closeTimeout ?? CLOSE_TIMEOUT
     this.log = init.log
 
     // stream status
     this.status = 'open'
     this.readStatus = 'ready'
     this.writeStatus = 'ready'
-
-    this.streamDataSent = false
 
     this.id = init.id
     this.metadata = init.metadata ?? {}
@@ -167,11 +160,6 @@ export abstract class AbstractStream implements Stream {
       this.log.trace('sink reading from source')
 
       for await (let data of source) {
-        // if a protocol has been negotiated, and we receive subsequent data, it
-        // is stream data and we should wait for the source to end before
-        // considering the write end of this stream to be gracefully closed
-        this.streamDataSent = this.protocol != null
-
         data = data instanceof Uint8Array ? new Uint8ArrayList(data) : data
 
         const res = this.sendData(data)
@@ -287,37 +275,6 @@ export abstract class AbstractStream implements Stream {
     this.log.trace('closed readable end of stream')
   }
 
-  /*
-  private async _waitForConsumerToReadBytes (options: AbortOptions = {}): Promise<void> {
-    this.log.trace('source has %d bytes to be read by consumer', this.streamSource.readableLength)
-
-    if (this.streamSource.readableLength === 0) {
-      return
-    }
-
-    // if the application has yet to read all the data, wait for it to do so or
-    // for a timeout to be reached
-    this.log.trace('wait for consumer to read bytes')
-
-    // wait for data to be read from the stream
-    const signal = options.signal ?? AbortSignal.timeout(this.closeReadTimeout)
-    const sourceAbortPromise = new Promise<void>((resolve, reject) => {
-      signal.addEventListener('abort', () => {
-        this.log.trace('close read aborted')
-
-        reject(new CodeError(`${this.direction} stream close read aborted`, ERR_CLOSE_READ_ABORTED))
-      })
-    })
-
-    // either wait for all data to be read or the close timeout to be reached
-    await Promise.race([
-      this.streamSource.drain,
-      sourceAbortPromise
-    ])
-
-    this.log.trace('source was read to completion by consumer')
-  }
-*/
   async closeWrite (options: AbortOptions = {}): Promise<void> {
     if (this.writeStatus === 'closing' || this.writeStatus === 'closed') {
       return
@@ -334,36 +291,17 @@ export abstract class AbstractStream implements Stream {
 
     this.writeStatus = 'closing'
 
-    // if `.sink(source)` has been called, wait for the source to end or forcibly
-    // end the iteration after a timeout
     if (writeStatus === 'writing') {
-      if (this.streamDataSent) {
-        // the application has sent stream data so wait for it to finish before
-        // proceeding
-        this.log.trace('stream data has been sent, waiting for the sink to end')
-
-        const signal = options.signal ?? AbortSignal.timeout(this.closeTimeout)
-        const listener = (): void => {
-          this.log.trace('close write aborted')
+      // stop reading from the source passed to `.sink` in the microtask queue
+      // - this lets any data queued by the user in the current tick get read
+      // before we exit
+      await new Promise((resolve, reject) => {
+        queueMicrotask(() => {
+          this.log.trace('aborting source passed to .sink')
           this.sinkController.abort()
-        }
-        signal.addEventListener('abort', listener)
-
-        try {
-          // either wait for the sink to end or the close timeout to be reached
-          await this.sinkEnd.promise
-        } finally {
-          signal.removeEventListener('abort', listener)
-        }
-
-        this.log.trace('raced sink end against sink abort')
-      } else {
-        // we have negotiated a protocol, but no actual stream data has been sent
-        // so just abort the sink
-        this.log.trace('no stream data was sent, aborting sink')
-        this.sinkController.abort()
-        await this.sinkEnd.promise
-      }
+          this.sinkEnd.promise.then(resolve, reject)
+        })
+      })
     }
 
     if (this.status !== 'reset' && this.status !== 'aborted') {
