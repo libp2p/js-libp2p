@@ -47,8 +47,14 @@ describe('ping test', () => {
         denyDialMultiaddr: async () => false
       },
       services: {
-        ping: pingService(),
-        identify: identifyService()
+        ping: pingService({
+          // increase default timeout because slow CI is slow
+          timeout: 60000
+        }),
+        identify: identifyService({
+          // increase default timeout because slow CI is slow
+          timeout: 60000
+        })
       }
     }
 
