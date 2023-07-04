@@ -16,6 +16,7 @@ import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import { number, object, string } from 'yup'
 
 const log = logger('libp2p:ping')
 
@@ -136,5 +137,13 @@ class DefaultPingService implements Startable, PingService {
 }
 
 export function pingService (init: PingServiceInit = {}): (components: PingServiceComponents) => PingService {
+
+  object({
+    protocolPrefix: string().default(PROTOCOL_PREFIX),
+    timeout: number().integer().default(TIMEOUT),
+    maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
+  }).validateSync(init)
+
   return (components) => new DefaultPingService(components, init)
 }

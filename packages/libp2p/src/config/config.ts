@@ -3,13 +3,12 @@ import { publicAddressesFirst } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
 import type { ServiceMap, RecursivePartial } from '@libp2p/interface'
-import type { Libp2pInit, ServiceFactoryMap } from '../index.js'
+import type { Libp2pInit } from '../index.js'
 import type { AddressManagerInit } from '../address-manager'
 import { validateAddressManagerConfig } from '../address-manager/utils.js'
 import { object } from 'yup'
 import { validateConnectionManagerConfig } from '../connection-manager/utils.js'
 import type { ConnectionManagerInit } from '../connection-manager/index.js'
-import { validateServicesConfig } from './helpers.js'
 
 const DefaultConfig: Partial<Libp2pInit> = {
   connectionManager: {
@@ -29,8 +28,12 @@ export function validateConfig <T extends ServiceMap = Record<string, unknown>> 
     connectionManager: validateConnectionManagerConfig(opts?.connectionManager as ConnectionManagerInit),
   })
 
-  //@ts-expect-error
-  opts.services = validateServicesConfig(opts?.services as ServiceFactoryMap<T>) as ServiceFactoryMap<T>
+  if (opts?.services) {
+    // @ts-expect-error
+   if ((opts.services?.kadDHT || opts.services?.relay || opts.services?.ping) && !opts.services.identify) {
+      throw new Error('identify service is required when using kadDHT, relay, or ping')
+    }
+  }
 
   const parsedOpts = libp2pConfig.validateSync(opts)
 

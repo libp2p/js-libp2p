@@ -3,11 +3,7 @@ import { abortableSource } from 'abortable-iterator'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { object, number, boolean } from 'yup'
-import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from '../registrar.js'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_HOP_TIMEOUT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from './constants.js'
-import { type CircuitRelayServerInit, circuitRelayServer, type CircuitRelayServerComponents } from './server/index.js'
-import type { CircuitRelayService } from './index.js'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 import type { Limit } from './pb/index.js'
 import type { Stream } from '@libp2p/interface/connection'
 import type { Source } from 'it-stream-types'
@@ -127,19 +123,4 @@ export function getExpirationMilliseconds (expireTimeSeconds: bigint): number {
 
   // downcast to number to use with setTimeout
   return Number(expireTimeMillis - BigInt(currentTime))
-}
-
-export const validateCircuitRelayServicesConfig = (opts: CircuitRelayServerInit): (components: CircuitRelayServerComponents) => CircuitRelayService => {
-  return circuitRelayServer(object({
-    hopTimeout: number().min(0).integer().default(DEFAULT_HOP_TIMEOUT).optional(),
-    reservations: object({
-      maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE).optional(),
-      reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL).optional(),
-      applyDefaultLimit: boolean().default(true).optional(),
-      reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL).optional(),
-      defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT).max(opts?.reservations?.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL, `default duration limit must be less than reservation TTL: ${opts?.reservations?.reservationTtl}`).optional()
-    }),
-    maxInboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS).optional(),
-    maxOutboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS).optional()
-  }).validateSync(opts))
 }

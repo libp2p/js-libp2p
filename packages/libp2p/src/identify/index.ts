@@ -1,6 +1,12 @@
 import {
+  AGENT_VERSION,
+  MAX_IDENTIFY_MESSAGE_SIZE,
+  MAX_INBOUND_STREAMS,
+  MAX_OUTBOUND_STREAMS,
   MULTICODEC_IDENTIFY,
-  MULTICODEC_IDENTIFY_PUSH
+  MULTICODEC_IDENTIFY_PUSH,
+  PROTOCOL_PREFIX,
+  TIMEOUT
 } from './consts.js'
 import { DefaultIdentifyService } from './identify.js'
 import { Identify } from './pb/message.js'
@@ -11,6 +17,7 @@ import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
+import { number, object, string } from 'yup'
 
 export interface IdentifyServiceInit {
   /**
@@ -61,5 +68,14 @@ export const multicodecs = {
 export const Message = { Identify }
 
 export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
+  object({
+    protocolPrefix: string().default(PROTOCOL_PREFIX),
+    agentVersion: string().default(AGENT_VERSION),
+    timeout: number().integer().default(TIMEOUT),
+    maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
+    maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  }).validateSync(init)
+
   return (components) => new DefaultIdentifyService(components, init)
 }

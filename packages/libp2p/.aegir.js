@@ -52,7 +52,7 @@ export default {
           fetch: fetchService(),
           relay: circuitRelayServer({
             reservations: {
-              maxReservations: Infinity
+              maxReservations: 100000
             }
           })
         }

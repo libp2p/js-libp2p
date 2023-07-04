@@ -9,7 +9,11 @@ import pDefer from 'p-defer'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import {
   CIRCUIT_PROTO_CODE,
+  DEFAULT_DURATION_LIMIT,
   DEFAULT_HOP_TIMEOUT,
+  DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL,
+  DEFAULT_MAX_RESERVATION_STORE_SIZE,
+  DEFAULT_MAX_RESERVATION_TTL,
   RELAY_SOURCE_TAG
   , RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC
 } from '../constants.js'
@@ -28,6 +32,8 @@ import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 import type { PeerMap } from '@libp2p/peer-collections'
+import { object, number, boolean } from 'yup'
+import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from '../../registrar.js'
 
 const log = logger('libp2p:circuit-relay:server')
 
@@ -438,6 +444,19 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 }
 
 export function circuitRelayServer (init: CircuitRelayServerInit = {}): (components: CircuitRelayServerComponents) => CircuitRelayService {
+  object({
+    hopTimeout: number().min(0).integer().default(DEFAULT_HOP_TIMEOUT),
+    reservations: object({
+      maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
+      reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
+      applyDefaultLimit: boolean().default(true),
+      reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
+      defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT).max(init?.reservations?.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL, `default duration limit must be less than reservation TTL: ${init?.reservations?.reservationTtl}`)
+    }),
+    maxInboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
+    maxOutboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS)
+  }).validateSync(init)
+
   return (components) => {
     return new CircuitRelayServer(components, init)
   }

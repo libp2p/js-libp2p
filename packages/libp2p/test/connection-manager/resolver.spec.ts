@@ -19,6 +19,7 @@ import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Transport } from '@libp2p/interface/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import { identifyService } from '../../src/identify/index.js'
 
 const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)
 
@@ -93,7 +94,8 @@ describe('dialing (resolvable addresses)', () => {
           plaintext()
         ],
         services: {
-          relay: circuitRelayServer()
+          relay: circuitRelayServer(),
+          identify: identifyService()
         },
         connectionGater: mockConnectionGater()
       })

@@ -8,7 +8,7 @@ import { pipe } from 'it-pipe'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { codes } from '../errors.js'
-import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
+import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
@@ -16,6 +16,7 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import { number, object, string } from 'yup'
 
 const log = logger('libp2p:fetch')
 
@@ -309,5 +310,13 @@ class DefaultFetchService implements Startable, FetchService {
 }
 
 export function fetchService (init: FetchServiceInit = {}): (components: FetchServiceComponents) => FetchService {
+
+  object({
+    protocolPrefix: string().default('ipfs'),
+    timeout: number().integer().default(TIMEOUT),
+    maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  }).validateSync(init)
+
   return (components) => new DefaultFetchService(components, init)
 }
