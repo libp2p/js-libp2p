@@ -42,7 +42,7 @@ export interface StreamTimeline {
   reset?: number
 
   /**
-   * A timestamp of when the stream was
+   * A timestamp of when the stream was aborted
    */
   abort?: number
 }
