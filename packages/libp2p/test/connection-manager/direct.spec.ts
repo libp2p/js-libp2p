@@ -27,7 +27,6 @@ import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
-import type { DefaultIdentifyService } from '../../src/identify/identify.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -428,7 +427,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       throw new Error('Identify service missing')
     }
 
-    const identifySpy = sinon.spy(libp2p.services.identify as DefaultIdentifyService, 'identify')
+    const identifySpy = sinon.spy(libp2p.services.identify, 'identify')
     const connectionPromise = pEvent(libp2p, 'connection:open')
 
     await libp2p.start()

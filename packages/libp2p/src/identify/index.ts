@@ -76,6 +76,7 @@ export interface IdentifyService {
    */
   identify: (connection: Connection, options: AbortOptions) => Promise<IdentifyResult>
 
+  push: () => Promise<void>
 }
 
 export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
