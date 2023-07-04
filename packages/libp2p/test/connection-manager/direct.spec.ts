@@ -22,7 +22,7 @@ import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { identifyService } from '../../src/identify/index.js'
+import { IdentifyService, identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
@@ -342,7 +342,7 @@ describe('dialing (direct, WebSockets)', () => {
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
-  let libp2p: Libp2p<{ identify: unknown }>
+  let libp2p: Libp2p<{ identify: IdentifyService }>
   let peerId: PeerId
 
   beforeEach(async () => {
@@ -382,7 +382,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       throw new Error('Identify service missing')
     }
 
-    const identifySpy = sinon.spy(libp2p.services.identify as DefaultIdentifyService, 'identify')
+    const identifySpy = sinon.spy(libp2p.services.identify, 'identify')
     const peerStorePatchSpy = sinon.spy(libp2p.peerStore, 'patch')
     const connectionPromise = pEvent(libp2p, 'connection:open')
 
