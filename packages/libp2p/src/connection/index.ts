@@ -1,3 +1,4 @@
+import { setMaxListeners } from 'events'
 import { type Direction, symbol, type Connection, type Stream, type ConnectionTimeline, type ConnectionStatus } from '@libp2p/interface/connection'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
@@ -156,6 +157,11 @@ export class ConnectionImpl implements Connection {
     this.status = 'closing'
 
     options.signal = options?.signal ?? AbortSignal.timeout(CLOSE_TIMEOUT)
+
+    try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, options.signal)
+    } catch { }
 
     try {
       // close all streams gracefully - this can throw if we're not multiplexed
