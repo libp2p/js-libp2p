@@ -112,7 +112,11 @@ class DefaultPingService implements Startable, PingService {
       )
       const end = Date.now()
 
-      if (result == null || !uint8ArrayEquals(data, result.subarray())) {
+      if (result == null) {
+        throw new CodeError('Did not receive a ping ack', codes.ERR_WRONG_PING_ACK)
+      }
+
+      if (!uint8ArrayEquals(data, result.subarray())) {
         throw new CodeError('Received wrong ping ack', codes.ERR_WRONG_PING_ACK)
       }
 
