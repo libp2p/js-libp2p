@@ -6,7 +6,9 @@ import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-pb-stream'
 import pDefer from 'p-defer'
+import { object, number, boolean } from 'yup'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
+import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from '../../registrar.js'
 import {
   CIRCUIT_PROTO_CODE,
   DEFAULT_DURATION_LIMIT,
@@ -32,8 +34,6 @@ import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 import type { PeerMap } from '@libp2p/peer-collections'
-import { object, number, boolean } from 'yup'
-import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from '../../registrar.js'
 
 const log = logger('libp2p:circuit-relay:server')
 

@@ -7,6 +7,7 @@ import { anySignal } from 'any-signal'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { number, object, string } from 'yup'
 import { codes } from '../errors.js'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { AbortOptions } from '@libp2p/interface'
@@ -16,7 +17,6 @@ import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import { number, object, string } from 'yup'
 
 const log = logger('libp2p:ping')
 
@@ -137,7 +137,6 @@ class DefaultPingService implements Startable, PingService {
 }
 
 export function pingService (init: PingServiceInit = {}): (components: PingServiceComponents) => PingService {
-
   object({
     protocolPrefix: string().default(PROTOCOL_PREFIX),
     timeout: number().integer().default(TIMEOUT),

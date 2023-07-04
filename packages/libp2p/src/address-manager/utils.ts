@@ -22,6 +22,6 @@ export function validateAddressManagerConfig (opts: AddressManagerInit): ObjectS
     listen: array().of(string()).test('is multiaddr', validateMultiaddr).default([]),
     announce: array().of(string()).test('is multiaddr', validateMultiaddr).default([]),
     noAnnounce: array().of(string()).test('is multiaddr', validateMultiaddr).default([]),
-    announceFilter: mixed().default(() => (addrs: Multiaddr[]): Multiaddr[] => addrs),
+    announceFilter: mixed().default(() => (addrs: Multiaddr[]): Multiaddr[] => addrs)
   })
 }

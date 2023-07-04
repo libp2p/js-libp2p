@@ -14,12 +14,12 @@ import sinon from 'sinon'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
+import { identifyService } from '../../src/identify/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Transport } from '@libp2p/interface/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import { identifyService } from '../../src/identify/index.js'
 
 const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)
 
