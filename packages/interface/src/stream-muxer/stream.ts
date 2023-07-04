@@ -145,8 +145,12 @@ export abstract class AbstractStream implements Stream {
     try {
       this.writeStatus = 'writing'
 
+      const options: AbortOptions = {
+        signal: this.sinkController.signal
+      }
+
       if (this.direction === 'outbound') { // If initiator, open a new stream
-        const res = this.sendNewStream()
+        const res = this.sendNewStream(options)
 
         if (isPromise(res)) {
           await res
@@ -162,7 +166,7 @@ export abstract class AbstractStream implements Stream {
       for await (let data of source) {
         data = data instanceof Uint8Array ? new Uint8ArrayList(data) : data
 
-        const res = this.sendData(data)
+        const res = this.sendData(data, options)
 
         if (isPromise(res)) { // eslint-disable-line max-depth
           await res
@@ -173,7 +177,7 @@ export abstract class AbstractStream implements Stream {
       this.writeStatus = 'done'
 
       this.log.trace('sink calling closeWrite')
-      await this.closeWrite()
+      await this.closeWrite(options)
       this.onSinkEnd()
     } catch (err: any) {
       this.log.trace('sink ended with error, calling abort with error', err)
@@ -269,7 +273,7 @@ export abstract class AbstractStream implements Stream {
 
     if (this.status !== 'reset' && this.status !== 'aborted') {
       this.log.trace('send close read to remote')
-      await this.sendCloseRead()
+      await this.sendCloseRead(options)
     }
 
     this.log.trace('closed readable end of stream')
@@ -306,7 +310,7 @@ export abstract class AbstractStream implements Stream {
 
     if (this.status !== 'reset' && this.status !== 'aborted') {
       this.log.trace('send close write to remote')
-      await this.sendCloseWrite()
+      await this.sendCloseWrite(options)
     }
 
     this.writeStatus = 'closed'
@@ -444,27 +448,27 @@ export abstract class AbstractStream implements Stream {
    * Send a message to the remote muxer informing them a new stream is being
    * opened
    */
-  abstract sendNewStream (): void | Promise<void>
+  abstract sendNewStream (options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a data message to the remote muxer
    */
-  abstract sendData (buf: Uint8ArrayList): void | Promise<void>
+  abstract sendData (buf: Uint8ArrayList, options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a reset message to the remote muxer
    */
-  abstract sendReset (): void | Promise<void>
+  abstract sendReset (options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a message to the remote muxer, informing them no more data messages
    * will be sent by this end of the stream
    */
-  abstract sendCloseWrite (): void | Promise<void>
+  abstract sendCloseWrite (options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a message to the remote muxer, informing them no more data messages
    * will be read by this end of the stream
    */
-  abstract sendCloseRead (): void | Promise<void>
+  abstract sendCloseRead (options?: AbortOptions): void | Promise<void>
 }

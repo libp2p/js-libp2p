@@ -1,7 +1,6 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import { anySignal } from 'any-signal'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
@@ -121,20 +120,13 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
     timeline: { open: Date.now() },
 
-    async close (options?: AbortOptions) {
+    async close (options: AbortOptions = {}) {
       if (socket.destroyed) {
         log('%s socket was already destroyed when trying to close', lOptsStr)
         return
       }
 
-      const start = Date.now()
-      const signal = anySignal([AbortSignal.timeout(closeTimeout), options?.signal])
-      signal.addEventListener('abort', () => {
-        log('%s socket close timeout after %dms, destroying it manually', lOptsStr, Date.now() - start)
-
-        // will trigger 'error' and 'close' events that resolves promise
-        this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
-      })
+      options.signal = options.signal ?? AbortSignal.timeout(closeTimeout)
 
       try {
         log('%s closing socket', lOptsStr)
@@ -174,8 +166,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             socket.destroy()
           }
         })
-      } finally {
-        signal.clear()
+      } catch (err: any) {
+        this.abort(err)
       }
     },
 

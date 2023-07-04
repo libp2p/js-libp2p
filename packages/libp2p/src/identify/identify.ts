@@ -4,7 +4,6 @@ import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
-import { anySignal } from 'any-signal'
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -204,7 +203,9 @@ export class DefaultIdentifyService implements Startable {
           signal
         })
 
-        await stream.close()
+        await stream.close({
+          signal
+        })
       } catch (err: any) {
         // Just log errors
         log.error('could not push identify update to peer', err)
@@ -250,35 +251,24 @@ export class DefaultIdentifyService implements Startable {
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
     let stream: Stream | undefined
 
-    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
+    options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
     try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
-
-    try {
-      stream = await connection.newStream([this.identifyProtocolStr], {
-        signal
-      })
+      stream = await connection.newStream([this.identifyProtocolStr], options)
 
       const pb = pbStream(stream, {
         maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
       }).pb(Identify)
 
-      const message = await pb.read({
-        signal
-      })
+      const message = await pb.read(options)
 
-      await stream.close()
+      await stream.close(options)
 
       return message
     } catch (err: any) {
       log.error('error while reading identify message', err)
       stream?.abort(err)
       throw err
-    } finally {
-      signal.clear()
     }
   }
 
@@ -376,7 +366,9 @@ export class DefaultIdentifyService implements Startable {
         signal
       })
 
-      await stream.close()
+      await stream.close({
+        signal
+      })
     } catch (err: any) {
       log.error('could not respond to identify request', err)
       stream.abort(err)
@@ -394,20 +386,22 @@ export class DefaultIdentifyService implements Startable {
         throw new Error('received push from ourselves?')
       }
 
+      const options = {
+        signal: AbortSignal.timeout(this.timeout)
+      }
+
       const pb = pbStream(stream, {
         maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
       }).pb(Identify)
 
-      const message = await pb.read({
-        signal: AbortSignal.timeout(this.timeout)
-      })
+      const message = await pb.read(options)
+      await stream.close(options)
 
       await this.#consumeIdentifyMessage(connection.remotePeer, message)
     } catch (err: any) {
       log.error('received invalid message', err)
+      stream.abort(err)
       return
-    } finally {
-      await stream.close()
     }
 
     log('handled push from %p', connection.remotePeer)

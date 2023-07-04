@@ -4,9 +4,22 @@ import { expect } from 'aegir/chai'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import { ERR_MUXER_LOCAL_CLOSED } from '../src/constants.js'
-import { sleep, testClientServer, testYamuxMuxer } from './util.js'
+import { sleep, testClientServer, testYamuxMuxer, type YamuxFixture } from './util.js'
 
 describe('muxer', () => {
+  let client: YamuxFixture
+  let server: YamuxFixture
+
+  afterEach(async () => {
+    if (client != null) {
+      await client.close()
+    }
+
+    if (server != null) {
+      await server.close()
+    }
+  })
+
   it('test repeated close', async () => {
     const client1 = testYamuxMuxer('libp2p:yamux:1', true)
     // inspect logs to ensure its only closed once
@@ -46,7 +59,7 @@ describe('muxer', () => {
   })
 
   it('test ping', async () => {
-    const { client, server } = testClientServer()
+    ({ client, server } = testClientServer())
 
     server.pauseRead()
     const clientRTT = client.ping()
@@ -59,13 +72,10 @@ describe('muxer', () => {
     await sleep(10)
     server.unpauseWrite()
     expect(await serverRTT).to.not.equal(0)
-
-    await client.close()
-    await server.close()
   })
 
   it('test multiple simultaneous pings', async () => {
-    const { client } = testClientServer()
+    ({ client, server } = testClientServer())
 
     client.pauseWrite()
     const promise = [
@@ -88,7 +98,7 @@ describe('muxer', () => {
   })
 
   it('test go away', async () => {
-    const { client } = testClientServer()
+    ({ client, server } = testClientServer())
     await client.close()
 
     expect(() => {
@@ -97,17 +107,19 @@ describe('muxer', () => {
   })
 
   it('test keep alive', async () => {
-    const { client } = testClientServer({ enableKeepAlive: true, keepAliveInterval: 10 })
+    ({ client, server } = testClientServer({ enableKeepAlive: true, keepAliveInterval: 10 }))
 
-    await sleep(100)
+    await sleep(1000)
 
     // eslint-disable-next-line @typescript-eslint/dot-notation
     expect(client['nextPingID']).to.be.gt(2)
     await client.close()
+    await server.close()
   })
 
   it('test max inbound streams', async () => {
-    const { client, server } = testClientServer({ maxInboundStreams: 1 })
+    ({ client, server } = testClientServer({ maxInboundStreams: 1 }))
+
     client.newStream()
     client.newStream()
     await sleep(10)
@@ -117,7 +129,8 @@ describe('muxer', () => {
   })
 
   it('test max outbound streams', async () => {
-    const { client, server } = testClientServer({ maxOutboundStreams: 1 })
+    ({ client, server } = testClientServer({ maxOutboundStreams: 1 }))
+
     client.newStream()
     await sleep(10)
 

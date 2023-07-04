@@ -4,6 +4,7 @@ import each from 'it-foreach'
 import { ERR_RECV_WINDOW_EXCEEDED, ERR_STREAM_ABORT, INITIAL_STREAM_WINDOW } from './constants.js'
 import { Flag, type FrameHeader, FrameType, HEADER_LENGTH } from './frame.js'
 import type { Config } from './config.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum StreamState {
@@ -59,9 +60,6 @@ export class YamuxStream extends AbstractStream {
   private epochStart: number
   private readonly getRTT: () => number
 
-  /** Used to stop the sink */
-  private readonly abortController: AbortController
-
   private readonly sendFrame: (header: FrameHeader, body?: Uint8Array) => void
 
   constructor (init: YamuxStreamInit) {
@@ -80,12 +78,10 @@ export class YamuxStream extends AbstractStream {
       onReset: () => {
         this.readState = HalfStreamState.Reset
         this.writeState = HalfStreamState.Reset
-        this.abortController.abort()
       },
       onAbort: () => {
         this.readState = HalfStreamState.Reset
         this.writeState = HalfStreamState.Reset
-        this.abortController.abort()
       }
     })
 
@@ -102,8 +98,6 @@ export class YamuxStream extends AbstractStream {
     this.recvWindowCapacity = this.recvWindow
     this.epochStart = Date.now()
     this.getRTT = init.getRTT
-
-    this.abortController = new AbortController()
 
     this.sendFrame = init.sendFrame
 
@@ -123,14 +117,14 @@ export class YamuxStream extends AbstractStream {
   /**
    * Send a data message to the remote muxer
    */
-  async sendData (buf: Uint8ArrayList): Promise<void> {
+  async sendData (buf: Uint8ArrayList, options: AbortOptions = {}): Promise<void> {
     buf = buf.sublist()
 
     // send in chunks, waiting for window updates
     while (buf.byteLength !== 0) {
       // wait for the send window to refill
       if (this.sendWindowCapacity === 0) {
-        await this.waitForSendWindowCapacity()
+        await this.waitForSendWindowCapacity(options)
       }
 
       // check we didn't close while waiting for send window capacity
@@ -194,13 +188,11 @@ export class YamuxStream extends AbstractStream {
    *
    * Will throw with ERR_STREAM_ABORT if the stream gets aborted
    */
-  async waitForSendWindowCapacity (): Promise<void> {
-    if (this.abortController.signal.aborted) {
-      throw new CodeError('stream aborted', ERR_STREAM_ABORT)
-    }
+  async waitForSendWindowCapacity (options: AbortOptions = {}): Promise<void> {
     if (this.sendWindowCapacity > 0) {
       return
     }
+
     let resolve: () => void
     let reject: (err: Error) => void
     const abort = (): void => {
@@ -211,15 +203,19 @@ export class YamuxStream extends AbstractStream {
         resolve()
       }
     }
-    this.abortController.signal.addEventListener('abort', abort)
-    await new Promise<void>((_resolve, _reject) => {
-      this.sendWindowCapacityUpdate = () => {
-        this.abortController.signal.removeEventListener('abort', abort)
-        _resolve()
-      }
-      reject = _reject
-      resolve = _resolve
-    })
+    options.signal?.addEventListener('abort', abort)
+
+    try {
+      await new Promise<void>((_resolve, _reject) => {
+        this.sendWindowCapacityUpdate = () => {
+          _resolve()
+        }
+        reject = _reject
+        resolve = _resolve
+      })
+    } finally {
+      options.signal?.removeEventListener('abort', abort)
+    }
   }
 
   /**

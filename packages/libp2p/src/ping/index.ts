@@ -1,9 +1,7 @@
-import { setMaxListeners } from 'events'
 import { randomBytes } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { abortableDuplex } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -99,20 +97,13 @@ class DefaultPingService implements Startable, PingService {
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let stream: Stream | undefined
 
-    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
+    options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
     try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
-
-    try {
-      stream = await connection.newStream([this.protocol], {
-        signal
-      })
+      stream = await connection.newStream([this.protocol], options)
 
       // make stream abortable
-      const source = abortableDuplex(stream, signal)
+      const source = abortableDuplex(stream, options.signal)
 
       const result = await pipe(
         [data],
@@ -126,11 +117,16 @@ class DefaultPingService implements Startable, PingService {
       }
 
       return end - start
+    } catch (err: any) {
+      log.error('error while pinging remote peer', err)
+
+      stream?.abort(err)
+
+      throw err
     } finally {
       if (stream != null) {
         await stream.close()
       }
-      signal.clear()
     }
   }
 }

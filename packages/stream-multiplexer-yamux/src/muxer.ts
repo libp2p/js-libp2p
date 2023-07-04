@@ -1,7 +1,6 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { logger, type Logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import { pipe } from 'it-pipe'
 import { pushable, type Pushable } from 'it-pushable'
 import { type Config, defaultConfig, verifyConfig } from './config.js'
@@ -263,7 +262,7 @@ export class YamuxMuxer implements StreamMuxer {
   /**
    * Close the muxer
    */
-  async close (options?: CloseOptions): Promise<void> {
+  async close (options: CloseOptions = {}): Promise<void> {
     if (this.closeController.signal.aborted) {
       // already closed
       return
@@ -273,17 +272,12 @@ export class YamuxMuxer implements StreamMuxer {
 
     this.log?.trace('muxer close reason=%s', reason)
 
-    const signal = anySignal([AbortSignal.timeout(CLOSE_TIMEOUT), options?.signal])
-    signal.addEventListener('abort', () => {
-      this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
-    })
+    options.signal = options.signal ?? AbortSignal.timeout(CLOSE_TIMEOUT)
 
     try {
       // If err is provided, abort all underlying streams, else close all underlying streams
       await Promise.all(
-        [...this._streams.values()].map(async s => s.close({
-          signal
-        }))
+        [...this._streams.values()].map(async s => s.close(options))
       )
 
       // send reason to the other side, allow the other side to close gracefully
@@ -292,8 +286,6 @@ export class YamuxMuxer implements StreamMuxer {
       this._closeMuxer()
     } catch (err: any) {
       this.abort(err)
-    } finally {
-      signal.clear()
     }
   }
 
