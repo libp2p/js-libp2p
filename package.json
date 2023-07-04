@@ -20,6 +20,7 @@
     "test:chrome-webworker": "aegir run test:chrome-webworker",
     "test:firefox": "aegir run test:firefox",
     "test:firefox-webworker": "aegir run test:firefox-webworker",
+    "test:webkit": "aegir run test:webkit",
     "test:electron-main": "aegir run test:electron-main",
     "test:external": "aegir run test:external",
     "test:cli": "aegir run test:cli",
