@@ -68,7 +68,7 @@ export const multicodecs = {
 export const Message = { Identify }
 
 export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => DefaultIdentifyService {
-  object({
+  const validatedConfig = object({
     protocolPrefix: string().default(PROTOCOL_PREFIX),
     agentVersion: string().default(AGENT_VERSION),
     timeout: number().integer().default(TIMEOUT),
@@ -77,5 +77,5 @@ export function identifyService (init: IdentifyServiceInit = {}): (components: I
     maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
   }).validateSync(init)
 
-  return (components) => new DefaultIdentifyService(components, init)
+  return (components) => new DefaultIdentifyService(components, validatedConfig)
 }

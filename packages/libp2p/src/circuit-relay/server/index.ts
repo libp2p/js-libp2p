@@ -444,7 +444,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 }
 
 export function circuitRelayServer (init: CircuitRelayServerInit = {}): (components: CircuitRelayServerComponents) => CircuitRelayService {
-  object({
+  const validatedConfig = object({
     hopTimeout: number().min(0).integer().default(DEFAULT_HOP_TIMEOUT),
     reservations: object({
       maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
@@ -458,6 +458,6 @@ export function circuitRelayServer (init: CircuitRelayServerInit = {}): (compone
   }).validateSync(init)
 
   return (components) => {
-    return new CircuitRelayServer(components, init)
+    return new CircuitRelayServer(components, validatedConfig)
   }
 }

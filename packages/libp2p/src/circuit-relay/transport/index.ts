@@ -6,6 +6,7 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-pb-stream'
+import { object } from 'yup'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import { codes } from '../../errors.js'
 import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
@@ -351,7 +352,11 @@ class CircuitRelayTransport implements Transport {
 }
 
 export function circuitRelayTransport (init: CircuitRelayTransportInit = {}): (components: CircuitRelayTransportComponents) => Transport {
+  const validatedConfig = object({
+
+  }).validate(init)
+
   return (components) => {
-    return new CircuitRelayTransport(components, init)
+    return new CircuitRelayTransport(components, validatedConfig)
   }
 }

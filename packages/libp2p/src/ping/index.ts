@@ -137,12 +137,12 @@ class DefaultPingService implements Startable, PingService {
 }
 
 export function pingService (init: PingServiceInit = {}): (components: PingServiceComponents) => PingService {
-  object({
+  const validatedConfig = object({
     protocolPrefix: string().default(PROTOCOL_PREFIX),
     timeout: number().integer().default(TIMEOUT),
     maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
     maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
   }).validateSync(init)
 
-  return (components) => new DefaultPingService(components, init)
+  return (components) => new DefaultPingService(components, validatedConfig)
 }

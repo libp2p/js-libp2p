@@ -310,12 +310,12 @@ class DefaultFetchService implements Startable, FetchService {
 }
 
 export function fetchService (init: FetchServiceInit = {}): (components: FetchServiceComponents) => FetchService {
-  object({
+  const validatedConfig = object({
     protocolPrefix: string().default('ipfs'),
     timeout: number().integer().default(TIMEOUT),
     maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
     maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
   }).validateSync(init)
 
-  return (components) => new DefaultFetchService(components, init)
+  return (components) => new DefaultFetchService(components, validatedConfig)
 }

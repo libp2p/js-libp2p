@@ -5,6 +5,7 @@ import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { fromNodeAddress } from '@multiformats/multiaddr'
 import isPrivateIp from 'private-ip'
 import { isBrowser } from 'wherearewe'
+import { object } from 'yup'
 import { codes } from '../errors.js'
 import * as pkg from '../version.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -206,7 +207,9 @@ class UPnPNAT implements Startable {
 }
 
 export function uPnPNATService (init: UPnPNATInit = {}): (components: UPnPNATComponents) => UPnPNAT {
+  const validatedConfig = object({}).validate(init)
+
   return (components: UPnPNATComponents) => {
-    return new UPnPNAT(components, init)
+    return new UPnPNAT(components, validatedConfig)
   }
 }
