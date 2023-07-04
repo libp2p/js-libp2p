@@ -40,6 +40,9 @@ describe('ping test', () => {
 
     const options: Libp2pOptions<{ ping: PingService, identify: DefaultIdentifyService }> = {
       start: true,
+      connectionManager: {
+        minConnections: 0
+      },
       connectionGater: {
         denyDialMultiaddr: async () => false
       },
