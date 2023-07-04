@@ -39,5 +39,6 @@
     "aegir": "^39.0.13",
     "libp2p": "^0.45.9",
     "prom-client": "^14.2.0"
-  }
+  },
+  "private": true
 }
