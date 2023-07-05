@@ -110,17 +110,18 @@ class DefaultPingService implements Startable, PingService {
         source,
         async (source) => first(source)
       )
-      const end = Date.now()
+
+      const ms = Date.now() - start
 
       if (result == null) {
-        throw new CodeError('Did not receive a ping ack', codes.ERR_WRONG_PING_ACK)
+        throw new CodeError(`Did not receive a ping ack after ${ms}ms`, codes.ERR_WRONG_PING_ACK)
       }
 
       if (!uint8ArrayEquals(data, result.subarray())) {
-        throw new CodeError('Received wrong ping ack', codes.ERR_WRONG_PING_ACK)
+        throw new CodeError(`Received wrong ping ack after ${ms}ms`, codes.ERR_WRONG_PING_ACK)
       }
 
-      return end - start
+      return ms
     } catch (err: any) {
       log.error('error while pinging remote peer', err)
 

@@ -152,7 +152,7 @@ export class ConnectionImpl implements Connection {
       return
     }
 
-    log('closing connection to %a', this.remoteAddr)
+    log('closing connection to %a at', this.remoteAddr, new Error('where').stack)
 
     this.status = 'closing'
 
