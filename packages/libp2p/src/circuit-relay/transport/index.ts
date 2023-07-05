@@ -6,7 +6,7 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-pb-stream'
-import { object } from 'yup'
+import { number, object } from 'yup'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import { codes } from '../../errors.js'
 import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
@@ -88,11 +88,6 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
   maxOutboundStopStreams?: number
 }
 
-const defaults = {
-  maxInboundStopStreams: MAX_CONNECTIONS,
-  maxOutboundStopStreams: MAX_CONNECTIONS
-}
-
 class CircuitRelayTransport implements Transport {
   private readonly discovery?: RelayDiscovery
   private readonly registrar: Registrar
@@ -103,7 +98,7 @@ class CircuitRelayTransport implements Transport {
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
-  private readonly maxInboundStopStreams: number
+  private readonly maxInboundStopStreams?: number
   private readonly maxOutboundStopStreams?: number
   private started: boolean
 
@@ -115,8 +110,8 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
-    this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
+    this.maxInboundStopStreams = init.maxInboundStopStreams
+    this.maxOutboundStopStreams = init.maxOutboundStopStreams
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -351,10 +346,12 @@ class CircuitRelayTransport implements Transport {
   }
 }
 
-export function circuitRelayTransport (init: CircuitRelayTransportInit = {}): (components: CircuitRelayTransportComponents) => Transport {
+export function circuitRelayTransport (init?: CircuitRelayTransportInit): (components: CircuitRelayTransportComponents) => Transport {
   const validatedConfig = object({
-
-  }).validate(init)
+    discoverRelays: number().min(0).integer().default(0),
+    maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+    maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS)
+  }).validateSync(init)
 
   return (components) => {
     return new CircuitRelayTransport(components, validatedConfig)

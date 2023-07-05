@@ -5,7 +5,7 @@ import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { fromNodeAddress } from '@multiformats/multiaddr'
 import isPrivateIp from 'private-ip'
 import { isBrowser } from 'wherearewe'
-import { object } from 'yup'
+import { boolean, number, object, string } from 'yup'
 import { codes } from '../errors.js'
 import * as pkg from '../version.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -71,7 +71,7 @@ class UPnPNAT implements Startable {
   private readonly localAddress?: string
   private readonly description: string
   private readonly ttl: number
-  private readonly keepAlive: boolean
+  private readonly keepAlive?: boolean
   private readonly gateway?: string
   private started: boolean
   private client?: NatAPI
@@ -84,7 +84,7 @@ class UPnPNAT implements Startable {
     this.localAddress = init.localAddress
     this.description = init.description ?? `${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`
     this.ttl = init.ttl ?? DEFAULT_TTL
-    this.keepAlive = init.keepAlive ?? true
+    this.keepAlive = init.keepAlive
     this.gateway = init.gateway
 
     if (this.ttl < DEFAULT_TTL) {
@@ -206,8 +206,17 @@ class UPnPNAT implements Startable {
   }
 }
 
-export function uPnPNATService (init: UPnPNATInit = {}): (components: UPnPNATComponents) => UPnPNAT {
-  const validatedConfig = object({}).validate(init)
+export function uPnPNATService (init?: UPnPNATInit): (components: UPnPNATComponents) => UPnPNAT {
+  const validIPRegex = /^(?:(?:^|\.)(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){4}$/
+
+  const validatedConfig = object({
+    externalAddress: string().matches(validIPRegex, 'Invalid IP address'),
+    localAddress: string().matches(validIPRegex, 'Invalid IP address'),
+    description: string().optional(),
+    ttl: number().integer().default(DEFAULT_TTL),
+    keepAlive: boolean().default(true),
+    gateway: string().optional()
+  }).validateSync(init)
 
   return (components: UPnPNATComponents) => {
     return new UPnPNAT(components, validatedConfig)
