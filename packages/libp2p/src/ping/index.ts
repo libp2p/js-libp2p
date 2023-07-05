@@ -75,11 +75,19 @@ class DefaultPingService implements Startable, PingService {
    * A handler to register with Libp2p to process ping messages
    */
   handleMessage (data: IncomingStreamData): void {
+    log('incoming ping from %p', data.connection.remotePeer)
+
     const { stream } = data
+    const start = Date.now()
 
     void pipe(stream, stream)
       .catch(err => {
         log.error(err)
+      })
+      .finally(() => {
+        const ms = Date.now() - start
+
+        log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
       })
   }
 
@@ -90,7 +98,7 @@ class DefaultPingService implements Startable, PingService {
    * @returns {Promise<number>}
    */
   async ping (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<number> {
-    log('dialing %s to %p', this.protocol, peer)
+    log('pinging %p', peer)
 
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
@@ -121,9 +129,11 @@ class DefaultPingService implements Startable, PingService {
         throw new CodeError(`Received wrong ping ack after ${ms}ms`, codes.ERR_WRONG_PING_ACK)
       }
 
+      log('ping %p complete in %dms', connection.remotePeer, ms)
+
       return ms
     } catch (err: any) {
-      log.error('error while pinging remote peer', err)
+      log.error('error while pinging %p', connection.remotePeer, err)
 
       stream?.abort(err)
 
