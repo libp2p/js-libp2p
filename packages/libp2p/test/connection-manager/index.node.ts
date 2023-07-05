@@ -236,7 +236,9 @@ describe('libp2p.connections', () => {
           },
           connectionManager: {
             minConnections,
-            maxConnections: 1
+            maxConnections: 1,
+            inboundConnectionThreshold: 1,
+            maxIncomingPendingConnections: 1
           }
         }
       })

@@ -9,6 +9,7 @@ import { pingService, type PingService } from '../../src/ping/index.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import { createNode, populateAddressBooks } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'
+import { identifyService } from '../../src/identify/index.js'
 
 describe('ping', () => {
   let nodes: Array<Libp2p<{ ping: PingService }>>
@@ -18,6 +19,7 @@ describe('ping', () => {
       createNode({
         config: createBaseOptions({
           services: {
+            identify: identifyService(),
             ping: pingService()
           }
         })
@@ -25,6 +27,7 @@ describe('ping', () => {
       createNode({
         config: createBaseOptions({
           services: {
+            identify: identifyService(),
             ping: pingService()
           }
         })
@@ -32,6 +35,7 @@ describe('ping', () => {
       createNode({
         config: createBaseOptions({
           services: {
+            identify: identifyService(),
             ping: pingService()
           }
         })
@@ -104,6 +108,7 @@ describe('ping', () => {
     const client = await createNode({
       config: createBaseOptions({
         services: {
+          identify: identifyService(),
           ping: pingService({
             // Allow two outbound ping streams.
             // It is not allowed by the spec, but this test needs to open two concurrent streams.

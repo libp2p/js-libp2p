@@ -101,7 +101,7 @@ class DefaultFetchService implements Startable, FetchService {
   constructor (components: FetchServiceComponents, init: FetchServiceInit) {
     this.started = false
     this.components = components
-    this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.protocol = `/${init.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)
     this.init = init
@@ -311,7 +311,7 @@ class DefaultFetchService implements Startable, FetchService {
 
 export function fetchService (init: FetchServiceInit = {}): (components: FetchServiceComponents) => FetchService {
   const validatedConfig = object({
-    protocolPrefix: string().default('ipfs'),
+    protocolPrefix: string().default('libp2p'),
     timeout: number().integer().default(TIMEOUT),
     maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
     maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
