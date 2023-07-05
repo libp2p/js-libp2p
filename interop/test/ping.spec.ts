@@ -13,9 +13,8 @@ import { webTransport } from '@libp2p/webtransport'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p/identify'
+import { IdentifyService, identifyService } from 'libp2p/identify'
 import { pingService, type PingService } from 'libp2p/ping'
-import type { DefaultIdentifyService } from 'libp2p/identify/identify'
 
 async function redisProxy (commands: any[]): Promise<any> {
   const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, { body: JSON.stringify(commands), method: 'POST' })
@@ -25,7 +24,7 @@ async function redisProxy (commands: any[]): Promise<any> {
   return res.json()
 }
 
-let node: Libp2p<{ ping: PingService, identify: DefaultIdentifyService }>
+let node: Libp2p<{ ping: PingService, identify: IdentifyService }>
 const isDialer: boolean = process.env.is_dialer === 'true'
 const timeoutSecs: string = process.env.test_timeout_secs ?? '180'
 
@@ -38,7 +37,7 @@ describe('ping test', () => {
     const MUXER = process.env.muxer
     const IP = process.env.ip ?? '0.0.0.0'
 
-    const options: Libp2pOptions<{ ping: PingService, identify: DefaultIdentifyService }> = {
+    const options: Libp2pOptions<{ ping: PingService, identify: IdentifyService }> = {
       start: true,
       connectionGater: {
         denyDialMultiaddr: async () => false
