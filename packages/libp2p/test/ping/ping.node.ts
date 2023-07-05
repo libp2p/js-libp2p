@@ -4,12 +4,12 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
+import { identifyService } from '../../src/identify/index.js'
 import { PROTOCOL } from '../../src/ping/constants.js'
 import { pingService, type PingService } from '../../src/ping/index.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import { createNode, populateAddressBooks } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'
-import { identifyService } from '../../src/identify/index.js'
 
 describe('ping', () => {
   let nodes: Array<Libp2p<{ ping: PingService }>>
