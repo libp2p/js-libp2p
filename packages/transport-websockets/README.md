@@ -90,7 +90,7 @@ const node = await Libp2p.create({
   transport: [
     websockets({
       // connect to all sockets, even insecure ones
-      filters: filters.all
+      filter: filters.all
     })
   ],
   streamMuxers: [
