@@ -131,6 +131,7 @@ export class DataChannelMuxer implements StreamMuxer {
         direction: 'inbound',
         dataChannelOptions: this.dataChannelOptions,
         onEnd: () => {
+          channel.close()
           this.streams = this.streams.filter(s => s.id !== stream.id)
           this.metrics?.increment({ stream_end: true })
           init?.onStreamEnd?.(stream)
@@ -158,6 +159,7 @@ export class DataChannelMuxer implements StreamMuxer {
       direction: 'outbound',
       dataChannelOptions: this.dataChannelOptions,
       onEnd: () => {
+        channel.close()
         this.streams = this.streams.filter(s => s.id !== stream.id)
         this.metrics?.increment({ stream_end: true })
         this.init?.onStreamEnd?.(stream)
