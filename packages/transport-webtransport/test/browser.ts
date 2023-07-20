@@ -101,7 +101,10 @@ describe('libp2p-webtransport', () => {
     await node.stop()
   })
 
-  it('connects to ipv6 addresses', async () => {
+  it('connects to ipv6 addresses', async function () {
+    if (process.env.disableIp6 === 'true') {
+      return this.skip()
+    }
     if (process.env.serverAddr6 == null) {
       throw new Error('serverAddr6 not found')
     }
