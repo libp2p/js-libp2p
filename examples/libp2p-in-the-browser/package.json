@@ -45,7 +45,7 @@
     "aegir": "^39.0.13",
     "execa": "^7.1.1",
     "playwright": "^1.35.1",
-    "vite": "^2.8.6"
+    "vite": "^4.4.4"
   },
   "private": true
 }
