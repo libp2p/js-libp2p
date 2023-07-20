@@ -67,6 +67,7 @@
     "build": "aegir build"
   },
   "dependencies": {
+    "@libp2p/logger": "^2.1.1",
     "@libp2p/interface": "~0.0.1",
     "it-handshake": "^4.1.3",
     "protons-runtime": "^5.0.0",
