@@ -4,7 +4,7 @@ import { anySignal } from 'any-signal'
 import { type Pushable, pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { CodeError } from '../errors.js'
-import type { Direction, Stream, StreamStat } from '../connection/index.js'
+import type { Direction, Stream, StreamTimeline } from '../connection/index.js'
 import type { Source } from 'it-stream-types'
 
 // const log = logger('libp2p:stream')
@@ -52,7 +52,9 @@ function isPromise (res?: any): res is Promise<void> {
 
 export abstract class AbstractStream implements Stream {
   public id: string
-  public stat: StreamStat
+  public direction: Direction
+  public timeline: StreamTimeline
+  public protocol?: string
   public metadata: Record<string, unknown>
   public source: AsyncGenerator<Uint8ArrayList, void, unknown>
 
@@ -77,11 +79,9 @@ export abstract class AbstractStream implements Stream {
 
     this.id = init.id
     this.metadata = init.metadata ?? {}
-    this.stat = {
-      direction: init.direction,
-      timeline: {
-        open: Date.now()
-      }
+    this.direction = init.direction
+    this.timeline = {
+      open: Date.now()
     }
     this.maxDataSize = init.maxDataSize
     this.onEnd = init.onEnd
@@ -89,7 +89,7 @@ export abstract class AbstractStream implements Stream {
     this.source = this.streamSource = pushable<Uint8ArrayList>({
       onEnd: () => {
         // already sent a reset message
-        if (this.stat.timeline.reset !== null) {
+        if (this.timeline.reset !== null) {
           const res = this.sendCloseRead()
 
           if (isPromise(res)) {
@@ -112,16 +112,16 @@ export abstract class AbstractStream implements Stream {
       return
     }
 
-    this.stat.timeline.closeRead = Date.now()
+    this.timeline.closeRead = Date.now()
     this.sourceEnded = true
-    log.trace('%s stream %s source end - err: %o', this.stat.direction, this.id, err)
+    log.trace('%s stream %s source end - err: %o', this.direction, this.id, err)
 
     if (err != null && this.endErr == null) {
       this.endErr = err
     }
 
     if (this.sinkEnded) {
-      this.stat.timeline.close = Date.now()
+      this.timeline.close = Date.now()
 
       if (this.onEnd != null) {
         this.onEnd(this.endErr)
@@ -134,16 +134,16 @@ export abstract class AbstractStream implements Stream {
       return
     }
 
-    this.stat.timeline.closeWrite = Date.now()
+    this.timeline.closeWrite = Date.now()
     this.sinkEnded = true
-    log.trace('%s stream %s sink end - err: %o', this.stat.direction, this.id, err)
+    log.trace('%s stream %s sink end - err: %o', this.direction, this.id, err)
 
     if (err != null && this.endErr == null) {
       this.endErr = err
     }
 
     if (this.sourceEnded) {
-      this.stat.timeline.close = Date.now()
+      this.timeline.close = Date.now()
 
       if (this.onEnd != null) {
         this.onEnd(this.endErr)
@@ -153,7 +153,7 @@ export abstract class AbstractStream implements Stream {
 
   // Close for both Reading and Writing
   close (): void {
-    log.trace('%s stream %s close', this.stat.direction, this.id)
+    log.trace('%s stream %s close', this.direction, this.id)
 
     this.closeRead()
     this.closeWrite()
@@ -161,7 +161,7 @@ export abstract class AbstractStream implements Stream {
 
   // Close for reading
   closeRead (): void {
-    log.trace('%s stream %s closeRead', this.stat.direction, this.id)
+    log.trace('%s stream %s closeRead', this.direction, this.id)
 
     if (this.sourceEnded) {
       return
@@ -172,7 +172,7 @@ export abstract class AbstractStream implements Stream {
 
   // Close for writing
   closeWrite (): void {
-    log.trace('%s stream %s closeWrite', this.stat.direction, this.id)
+    log.trace('%s stream %s closeWrite', this.direction, this.id)
 
     if (this.sinkEnded) {
       return
@@ -191,7 +191,7 @@ export abstract class AbstractStream implements Stream {
         })
       }
     } catch (err) {
-      log.trace('%s stream %s error sending close', this.stat.direction, this.id, err)
+      log.trace('%s stream %s error sending close', this.direction, this.id, err)
     }
 
     this.onSinkEnd()
@@ -199,7 +199,7 @@ export abstract class AbstractStream implements Stream {
 
   // Close for reading and writing (local error)
   abort (err: Error): void {
-    log.trace('%s stream %s abort', this.stat.direction, this.id, err)
+    log.trace('%s stream %s abort', this.direction, this.id, err)
     // End the source with the passed error
     this.streamSource.end(err)
     this.abortController.abort()
@@ -234,7 +234,7 @@ export abstract class AbstractStream implements Stream {
     try {
       source = abortableSource(source, signal)
 
-      if (this.stat.direction === 'outbound') { // If initiator, open a new stream
+      if (this.direction === 'outbound') { // If initiator, open a new stream
         const res = this.sendNewStream()
 
         if (isPromise(res)) {
@@ -282,9 +282,9 @@ export abstract class AbstractStream implements Stream {
 
       // Send no more data if this stream was remotely reset
       if (err.code === ERR_STREAM_RESET) {
-        log.trace('%s stream %s reset', this.stat.direction, this.id)
+        log.trace('%s stream %s reset', this.direction, this.id)
       } else {
-        log.trace('%s stream %s error', this.stat.direction, this.id, err)
+        log.trace('%s stream %s error', this.direction, this.id, err)
         try {
           const res = this.sendReset()
 
@@ -292,9 +292,9 @@ export abstract class AbstractStream implements Stream {
             await res
           }
 
-          this.stat.timeline.reset = Date.now()
+          this.timeline.reset = Date.now()
         } catch (err) {
-          log.trace('%s stream %s error sending reset', this.stat.direction, this.id, err)
+          log.trace('%s stream %s error sending reset', this.direction, this.id, err)
         }
       }
 
@@ -313,7 +313,7 @@ export abstract class AbstractStream implements Stream {
         await res
       }
     } catch (err) {
-      log.trace('%s stream %s error sending close', this.stat.direction, this.id, err)
+      log.trace('%s stream %s error sending close', this.direction, this.id, err)
     }
 
     this.onSinkEnd()

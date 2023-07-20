@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@types/varint": "^6.0.0",
-    "aegir": "^39.0.10",
+    "aegir": "^39.0.13",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
     "it-map": "^3.0.3",

@@ -1,9 +1,9 @@
-import { symbol } from '@libp2p/interface/connection'
+import { type Direction, symbol, type Connection, type Stream, type ConnectionTimeline } from '@libp2p/interface/connection'
 import { OPEN, CLOSING, CLOSED } from '@libp2p/interface/connection/status'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interface'
-import type { Connection, ConnectionStat, Stream } from '@libp2p/interface/connection'
+import type * as Status from '@libp2p/interface/connection/status'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -15,7 +15,11 @@ interface ConnectionInit {
   newStream: (protocols: string[], options?: AbortOptions) => Promise<Stream>
   close: () => Promise<void>
   getStreams: () => Stream[]
-  stat: ConnectionStat
+  status: keyof typeof Status
+  direction: Direction
+  timeline: ConnectionTimeline
+  multiplexer?: string
+  encryption?: string
 }
 
 /**
@@ -38,10 +42,11 @@ export class ConnectionImpl implements Connection {
    */
   public readonly remotePeer: PeerId
 
-  /**
-   * Connection metadata
-   */
-  public readonly stat: ConnectionStat
+  public direction: Direction
+  public timeline: ConnectionTimeline
+  public multiplexer?: string
+  public encryption?: string
+  public status: keyof typeof Status
 
   /**
    * User provided tags
@@ -71,15 +76,17 @@ export class ConnectionImpl implements Connection {
    * Any libp2p transport should use an upgrader to return this connection.
    */
   constructor (init: ConnectionInit) {
-    const { remoteAddr, remotePeer, newStream, close, getStreams, stat } = init
+    const { remoteAddr, remotePeer, newStream, close, getStreams } = init
 
     this.id = `${(parseInt(String(Math.random() * 1e9))).toString(36)}${Date.now()}`
     this.remoteAddr = remoteAddr
     this.remotePeer = remotePeer
-    this.stat = {
-      ...stat,
-      status: OPEN
-    }
+    this.direction = init.direction
+    this.status = OPEN
+    this.timeline = init.timeline
+    this.multiplexer = init.multiplexer
+    this.encryption = init.encryption
+
     this._newStream = newStream
     this._close = close
     this._getStreams = getStreams
@@ -102,11 +109,11 @@ export class ConnectionImpl implements Connection {
    * Create a new stream from this connection
    */
   async newStream (protocols: string | string[], options?: AbortOptions): Promise<Stream> {
-    if (this.stat.status === CLOSING) {
+    if (this.status === CLOSING) {
       throw new CodeError('the connection is being closed', 'ERR_CONNECTION_BEING_CLOSED')
     }
 
-    if (this.stat.status === CLOSED) {
+    if (this.status === CLOSED) {
       throw new CodeError('the connection is closed', 'ERR_CONNECTION_CLOSED')
     }
 
@@ -116,7 +123,7 @@ export class ConnectionImpl implements Connection {
 
     const stream = await this._newStream(protocols, options)
 
-    stream.stat.direction = 'outbound'
+    stream.direction = 'outbound'
 
     return stream
   }
@@ -125,7 +132,7 @@ export class ConnectionImpl implements Connection {
    * Add a stream when it is opened to the registry
    */
   addStream (stream: Stream): void {
-    stream.stat.direction = 'inbound'
+    stream.direction = 'inbound'
   }
 
   /**
@@ -139,11 +146,11 @@ export class ConnectionImpl implements Connection {
    * Close the connection
    */
   async close (): Promise<void> {
-    if (this.stat.status === CLOSED || this._closing) {
+    if (this.status === CLOSED || this._closing) {
       return
     }
 
-    this.stat.status = CLOSING
+    this.status = CLOSING
 
     // close all streams - this can throw if we're not multiplexed
     try {
@@ -157,8 +164,8 @@ export class ConnectionImpl implements Connection {
     await this._close()
     this._closing = false
 
-    this.stat.timeline.close = Date.now()
-    this.stat.status = CLOSED
+    this.timeline.close = Date.now()
+    this.status = CLOSED
   }
 }
 

@@ -12,36 +12,9 @@ export interface ConnectionTimeline {
 }
 
 /**
- * Outbound conections are opened by the local node, inbound streams are opened by the remote
+ * Outbound connections are opened by the local node, inbound streams are opened by the remote
  */
 export type Direction = 'inbound' | 'outbound'
-
-export interface ConnectionStat {
-  /**
-   * Outbound conections are opened by the local node, inbound streams are opened by the remote
-   */
-  direction: Direction
-
-  /**
-   * Lifecycle times for the connection
-   */
-  timeline: ConnectionTimeline
-
-  /**
-   * Once a multiplexer has been negotiated for this stream, it will be set on the stat object
-   */
-  multiplexer?: string
-
-  /**
-   * Once a connection encrypter has been negotiated for this stream, it will be set on the stat object
-   */
-  encryption?: string
-
-  /**
-   * The current status of the connection
-   */
-  status: keyof typeof Status
-}
 
 export interface StreamTimeline {
   /**
@@ -68,23 +41,6 @@ export interface StreamTimeline {
    * A timestamp of when the stream was reset
    */
   reset?: number
-}
-
-export interface StreamStat {
-  /**
-   * Outbound streams are opened by the local node, inbound streams are opened by the remote
-   */
-  direction: Direction
-
-  /**
-   * Lifecycle times for the stream
-   */
-  timeline: StreamTimeline
-
-  /**
-   * Once a protocol has been negotiated for this stream, it will be set on the stat object
-   */
-  protocol?: string
 }
 
 /**
@@ -148,9 +104,19 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
   id: string
 
   /**
-   * Stats about this stream
+   * Outbound streams are opened by the local node, inbound streams are opened by the remote
    */
-  stat: StreamStat
+  direction: Direction
+
+  /**
+   * Lifecycle times for the stream
+   */
+  timeline: StreamTimeline
+
+  /**
+   * Once a protocol has been negotiated for this stream, it will be set on the stat object
+   */
+  protocol?: string
 
   /**
    * User defined stream metadata
@@ -174,12 +140,55 @@ export interface NewStreamOptions extends AbortOptions {
  * between which the connection is made.
  */
 export interface Connection {
+  /**
+   * The unique identifier for this connection
+   */
   id: string
-  stat: ConnectionStat
+
+  /**
+   * The address of the remote end of the connection
+   */
   remoteAddr: Multiaddr
+
+  /**
+   * The id of the peer at the remote end of the connection
+   */
   remotePeer: PeerId
+
+  /**
+   * A list of tags applied to this connection
+   */
   tags: string[]
+
+  /**
+   * A list of open streams on this connection
+   */
   streams: Stream[]
+
+  /**
+   * Outbound conections are opened by the local node, inbound streams are opened by the remote
+   */
+  direction: Direction
+
+  /**
+   * Lifecycle times for the connection
+   */
+  timeline: ConnectionTimeline
+
+  /**
+   * Once a multiplexer has been negotiated for this stream, it will be set on the stat object
+   */
+  multiplexer?: string
+
+  /**
+   * Once a connection encrypter has been negotiated for this stream, it will be set on the stat object
+   */
+  encryption?: string
+
+  /**
+   * The current status of the connection
+   */
+  status: keyof typeof Status
 
   newStream: (multicodecs: string | string[], options?: NewStreamOptions) => Promise<Stream>
   addStream: (stream: Stream) => void

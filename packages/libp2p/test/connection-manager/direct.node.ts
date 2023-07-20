@@ -370,7 +370,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     expect(connection).to.exist()
     const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
     await connection.close()
   })
 
@@ -487,9 +487,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
-    expect(connection.stat.timeline.close).to.not.exist()
+    expect(connection.timeline.close).to.not.exist()
     await libp2p.hangUp(connection.remotePeer)
-    expect(connection.stat.timeline.close).to.exist()
+    expect(connection.timeline.close).to.exist()
   })
 
   it('should use the protectors when provided for connecting', async () => {
@@ -522,7 +522,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     expect(connection).to.exist()
     const stream = await connection.newStream('/echo/1.0.0')
     expect(stream).to.exist()
-    expect(stream).to.have.nested.property('stat.protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', '/echo/1.0.0')
     await connection.close()
     expect(protectorProtectSpy.callCount).to.equal(1)
   })

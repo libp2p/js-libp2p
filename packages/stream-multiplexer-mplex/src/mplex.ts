@@ -173,7 +173,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     }
 
     const onEnd = (): void => {
-      log('%s stream with id %s and protocol %s ended', type, id, stream.stat.protocol)
+      log('%s stream with id %s and protocol %s ended', type, id, stream.protocol)
       registry.delete(id)
 
       if (this._init.onStreamEnd != null) {

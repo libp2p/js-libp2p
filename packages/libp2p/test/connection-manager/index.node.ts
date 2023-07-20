@@ -80,7 +80,7 @@ describe('Connection Manager', () => {
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(1)
 
-    expect(conn1).to.have.nested.property('stat.status', STATUS.OPEN)
+    expect(conn1).to.have.nested.property('status', STATUS.OPEN)
 
     await connectionManager.stop()
   })
@@ -360,7 +360,7 @@ describe('libp2p.connections', () => {
       const conn = conns[0]
 
       await libp2p.stop()
-      expect(conn.stat.status).to.eql(STATUS.CLOSED)
+      expect(conn.status).to.eql(STATUS.CLOSED)
 
       await remoteLibp2p.stop()
     })

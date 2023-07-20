@@ -96,9 +96,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       stream1.close()
       await conn1.close()
 
-      expect(isValidTick(conn1.stat.timeline.close)).to.equal(true)
+      expect(isValidTick(conn1.timeline.close)).to.equal(true)
       listenerConns.forEach(conn => {
-        expect(isValidTick(conn.stat.timeline.close)).to.equal(true)
+        expect(isValidTick(conn.timeline.close)).to.equal(true)
       })
 
       // 2 dials = 2 connections upgraded
@@ -120,7 +120,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         upgrader
       })
 
-      await pWaitFor(() => typeof conn.stat.timeline.close === 'number')
+      await pWaitFor(() => typeof conn.timeline.close === 'number')
       await listener.close()
     })
 

@@ -550,7 +550,7 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const conns = local.getConnections(relay1.peerId)
       expect(conns).to.have.lengthOf(1)
-      expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
+      expect(conns).to.have.nested.property('[0].status', 'OPEN')
     })
 
     it('dialer should close hop stream on hop failure', async () => {
@@ -566,13 +566,13 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const conns = local.getConnections(relay1.peerId)
       expect(conns).to.have.lengthOf(1)
-      expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
+      expect(conns).to.have.nested.property('[0].status', 'OPEN')
 
       // we should not have any streams with the hop codec
       const streams = local.getConnections(relay1.peerId)
         .map(conn => conn.streams)
         .flat()
-        .filter(stream => stream.stat.protocol === RELAY_V2_HOP_CODEC)
+        .filter(stream => stream.protocol === RELAY_V2_HOP_CODEC)
 
       expect(streams).to.be.empty()
     })
@@ -591,7 +591,7 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const remoteConns = local.getConnections(relay1.peerId)
       expect(remoteConns).to.have.lengthOf(1)
-      expect(remoteConns).to.have.nested.property('[0].stat.status', 'OPEN')
+      expect(remoteConns).to.have.nested.property('[0].status', 'OPEN')
     })
 
     it('should fail to dial remote over relay over relay', async () => {

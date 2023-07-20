@@ -53,7 +53,7 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     const index = activeStreams.findIndex(s => s === stream)
     if (index !== -1) {
       activeStreams.splice(index, 1)
-      stream.stat.timeline.close = Date.now()
+      stream.timeline.close = Date.now()
       onStreamEnd?.(stream)
     }
   }
@@ -136,10 +136,8 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
     reset () {
       stream.close()
     },
-    stat: {
-      direction,
-      timeline: { open: Date.now() }
-    },
+    direction,
+    timeline: { open: Date.now() },
     metadata: {},
     source: (async function * () {
       while (true) {

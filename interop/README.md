@@ -10,7 +10,6 @@
 ## Table of contents <!-- omit in toc -->
 
 - [Install](#install)
-- [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
 
@@ -19,10 +18,6 @@
 ```console
 $ npm i multidim-interop
 ```
-
-## API Docs
-
-- <https://libp2p.github.io/js-libp2p/modules/multidim_interop.html>
 
 ## License
 

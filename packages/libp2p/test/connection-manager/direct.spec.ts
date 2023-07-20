@@ -465,10 +465,10 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     const connection = await libp2p.dial(relayMultiaddr)
     expect(connection).to.exist()
-    expect(connection.stat.timeline.close).to.not.exist()
+    expect(connection.timeline.close).to.not.exist()
 
     await libp2p.hangUp(connection.remotePeer)
-    expect(connection.stat.timeline.close).to.exist()
+    expect(connection.timeline.close).to.exist()
 
     await libp2p.stop()
   })

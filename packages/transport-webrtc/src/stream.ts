@@ -79,8 +79,8 @@ class WebRTCStream extends AbstractStream {
 
       case 'closed':
       case 'closing':
-        if (this.stat.timeline.close === undefined || this.stat.timeline.close === 0) {
-          this.stat.timeline.close = Date.now()
+        if (this.timeline.close === undefined || this.timeline.close === 0) {
+          this.timeline.close = Date.now()
         }
         break
       case 'connecting':
@@ -94,7 +94,7 @@ class WebRTCStream extends AbstractStream {
 
     // handle RTCDataChannel events
     this.channel.onopen = (_evt) => {
-      this.stat.timeline.open = new Date().getTime()
+      this.timeline.open = new Date().getTime()
 
       if (this.messageQueue != null) {
         // send any queued messages

@@ -54,7 +54,6 @@
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",
     "@libp2p/interface": "~0.0.1",
-    "@libp2p/interface-keys": "^1.0.0",
     "@libp2p/peer-id": "^2.0.0",
     "multiformats": "^12.0.1",
     "protons-runtime": "^5.0.0",
@@ -62,7 +61,7 @@
     "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
-    "aegir": "^39.0.10",
+    "aegir": "^39.0.13",
     "protons": "^7.0.2"
   },
   "typedoc": {

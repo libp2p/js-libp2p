@@ -19,11 +19,9 @@ function toMuxedStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
     closeWrite: () => {},
     abort: () => {},
     reset: () => {},
-    stat: {
-      direction: 'outbound',
-      timeline: {
-        open: Date.now()
-      }
+    direction: 'outbound',
+    timeline: {
+      open: Date.now()
     },
     metadata: {},
     id: `muxed-stream-${Math.random()}`
