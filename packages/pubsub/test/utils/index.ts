@@ -134,14 +134,16 @@ export const ConnectionPair = (): [Connection, Connection] => {
       // @ts-expect-error incomplete implementation
       newStream: async (protocol: string[]) => Promise.resolve({
         ...d0,
-        protocol: protocol[0]
+        protocol: protocol[0],
+        closeWrite: async () => {}
       })
     },
     {
       // @ts-expect-error incomplete implementation
       newStream: async (protocol: string[]) => Promise.resolve({
         ...d1,
-        protocol: protocol[0]
+        protocol: protocol[0],
+        closeWrite: async () => {}
       })
     }
   ]

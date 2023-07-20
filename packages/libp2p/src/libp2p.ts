@@ -307,12 +307,12 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     return this.components.registrar.getProtocols()
   }
 
-  async hangUp (peer: PeerId | Multiaddr): Promise<void> {
+  async hangUp (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<void> {
     if (isMultiaddr(peer)) {
       peer = peerIdFromString(peer.getPeerId() ?? '')
     }
 
-    await this.components.connectionManager.closeConnections(peer)
+    await this.components.connectionManager.closeConnections(peer, options)
   }
 
   /**

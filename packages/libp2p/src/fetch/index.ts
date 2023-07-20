@@ -109,11 +109,11 @@ class DefaultFetchService implements Startable, FetchService {
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
+        .then(async () => {
+          await data.stream.close()
+        })
         .catch(err => {
           log.error(err)
-        })
-        .finally(() => {
-          data.stream.close()
         })
     }, {
       maxInboundStreams: this.init.maxInboundStreams,
@@ -201,7 +201,7 @@ class DefaultFetchService implements Startable, FetchService {
       return result ?? null
     } finally {
       if (stream != null) {
-        stream.close()
+        await stream.close()
       }
     }
   }

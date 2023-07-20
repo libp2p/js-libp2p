@@ -1,6 +1,6 @@
 import { CodeError } from '@libp2p/interface/errors'
+import { logger, type Logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import { anySignal, type ClearableSignal } from 'any-signal'
 import { pipe } from 'it-pipe'
 import { pushable, type Pushable } from 'it-pushable'
 import { type Config, defaultConfig, verifyConfig } from './config.js'
@@ -9,13 +9,14 @@ import { Decoder } from './decode.js'
 import { encodeHeader } from './encode.js'
 import { Flag, type FrameHeader, FrameType, GoAwayCode, stringifyHeader } from './frame.js'
 import { StreamState, YamuxStream } from './stream.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
-import type { Logger } from '@libp2p/logger'
 import type { Sink, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const YAMUX_PROTOCOL_ID = '/yamux/1.0.0'
+const CLOSE_TIMEOUT = 500
 
 export interface YamuxMuxerInit extends StreamMuxerInit, Partial<Config> {
 }
@@ -36,12 +37,15 @@ export class Yamux implements StreamMuxerFactory {
   }
 }
 
+export interface CloseOptions extends AbortOptions {
+  reason?: GoAwayCode
+}
+
 export class YamuxMuxer implements StreamMuxer {
   protocol = YAMUX_PROTOCOL_ID
   source: Pushable<Uint8Array>
   sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>>
 
-  private readonly _init: YamuxMuxerInit
   private readonly config: Config
   private readonly log?: Logger
 
@@ -75,7 +79,6 @@ export class YamuxMuxer implements StreamMuxer {
   private readonly onStreamEnd?: (stream: Stream) => void
 
   constructor (init: YamuxMuxerInit) {
-    this._init = init
     this.client = init.direction === 'outbound'
     this.config = { ...defaultConfig, ...init }
     this.log = this.config.log
@@ -89,22 +92,19 @@ export class YamuxMuxer implements StreamMuxer {
     this._streams = new Map()
 
     this.source = pushable({
-      onEnd: (err?: Error): void => {
+      onEnd: (): void => {
         this.log?.trace('muxer source ended')
-        this.close(err)
+
+        this._streams.forEach(stream => {
+          stream.destroy()
+        })
       }
     })
 
     this.sink = async (source: Source<Uint8ArrayList | Uint8Array>): Promise<void> => {
-      let signal: ClearableSignal | undefined
-
-      if (this._init.signal != null) {
-        signal = anySignal([this.closeController.signal, this._init.signal])
-      }
-
       source = abortableSource(
         source,
-        signal ?? this.closeController.signal,
+        this.closeController.signal,
         { returnOnAbort: true }
       )
 
@@ -133,15 +133,15 @@ export class YamuxMuxer implements StreamMuxer {
         }
 
         error = err as Error
-      } finally {
-        if (signal != null) {
-          signal.clear()
-        }
       }
 
       this.log?.trace('muxer sink ended')
 
-      this.close(error, reason)
+      if (error != null) {
+        this.abort(error, reason)
+      } else {
+        await this.close({ reason })
+      }
     }
 
     this.numInboundStreams = 0
@@ -261,34 +261,48 @@ export class YamuxMuxer implements StreamMuxer {
 
   /**
    * Close the muxer
-   *
-   * @param err
-   * @param reason - The GoAway reason to be sent
    */
-  close (err?: Error, reason?: GoAwayCode): void {
+  async close (options: CloseOptions = {}): Promise<void> {
     if (this.closeController.signal.aborted) {
       // already closed
       return
     }
 
-    // If reason was provided, use that, otherwise use the presence of `err` to determine the reason
-    reason = reason ?? (err === undefined ? GoAwayCode.InternalError : GoAwayCode.NormalTermination)
+    const reason = options?.reason ?? GoAwayCode.NormalTermination
 
-    if (err != null) {
-      this.log?.error('muxer close reason=%s error=%s', GoAwayCode[reason], err)
-    } else {
-      this.log?.trace('muxer close reason=%s', GoAwayCode[reason])
+    this.log?.trace('muxer close reason=%s', reason)
+
+    options.signal = options.signal ?? AbortSignal.timeout(CLOSE_TIMEOUT)
+
+    try {
+      // If err is provided, abort all underlying streams, else close all underlying streams
+      await Promise.all(
+        [...this._streams.values()].map(async s => s.close(options))
+      )
+
+      // send reason to the other side, allow the other side to close gracefully
+      this.sendGoAway(reason)
+
+      this._closeMuxer()
+    } catch (err: any) {
+      this.abort(err)
+    }
+  }
+
+  abort (err: Error, reason?: GoAwayCode): void {
+    if (this.closeController.signal.aborted) {
+      // already closed
+      return
     }
 
-    // If err is provided, abort all underlying streams, else close all underlying streams
-    if (err === undefined) {
-      for (const stream of this._streams.values()) {
-        stream.close()
-      }
-    } else {
-      for (const stream of this._streams.values()) {
-        stream.abort(err)
-      }
+    reason = reason ?? GoAwayCode.InternalError
+
+    // If reason was provided, use that, otherwise use the presence of `err` to determine the reason
+    this.log?.error('muxer abort reason=%s error=%s', reason, err)
+
+    // Abort all underlying streams
+    for (const stream of this._streams.values()) {
+      stream.abort(err)
     }
 
     // send reason to the other side, allow the other side to close gracefully
@@ -319,16 +333,16 @@ export class YamuxMuxer implements StreamMuxer {
     }
 
     const stream = new YamuxStream({
-      id,
+      id: id.toString(),
       name,
       state,
       direction,
       sendFrame: this.sendFrame.bind(this),
-      onStreamEnd: () => {
+      onEnd: () => {
         this.closeStream(id)
         this.onStreamEnd?.(stream)
       },
-      log: this.log,
+      log: logger(`libp2p:yamux:${direction}:${id}`),
       config: this.config,
       getRTT: this.getRTT.bind(this)
     })

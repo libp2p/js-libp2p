@@ -22,7 +22,7 @@ export default (test: TestSetup<Connection>): void => {
         expect(connection.id).to.exist()
         expect(connection.remotePeer).to.exist()
         expect(connection.remoteAddr).to.exist()
-        expect(connection.status).to.equal('OPEN')
+        expect(connection.status).to.equal('open')
         expect(connection.timeline.open).to.exist()
         expect(connection.timeline.close).to.not.exist()
         expect(connection.direction).to.exist()
@@ -31,7 +31,7 @@ export default (test: TestSetup<Connection>): void => {
       })
 
       it('should get the metadata of an open connection', () => {
-        expect(connection.status).to.equal('OPEN')
+        expect(connection.status).to.equal('open')
         expect(connection.direction).to.exist()
         expect(connection.timeline.open).to.exist()
         expect(connection.timeline.close).to.not.exist()
@@ -89,7 +89,7 @@ export default (test: TestSetup<Connection>): void => {
         await connection.close()
 
         expect(connection.timeline.close).to.exist()
-        expect(connection.status).to.equal('CLOSED')
+        expect(connection.status).to.equal('closed')
       })
 
       it('should be able to close the connection after opening a stream', async () => {
@@ -102,7 +102,7 @@ export default (test: TestSetup<Connection>): void => {
         await connection.close()
 
         expect(connection.timeline.close).to.exist()
-        expect(connection.status).to.equal('CLOSED')
+        expect(connection.status).to.equal('closed')
       })
 
       it('should properly track streams', async () => {
@@ -112,7 +112,7 @@ export default (test: TestSetup<Connection>): void => {
         expect(stream).to.have.property('protocol', protocol)
 
         // Close stream
-        stream.close()
+        await stream.close()
 
         expect(connection.streams.filter(s => s.id === stream.id)).to.be.empty()
       })

@@ -1,7 +1,6 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
 import { type Logger, logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import map from 'it-map'
 import * as ndjson from 'it-ndjson'
 import { pipe } from 'it-pipe'
@@ -9,254 +8,94 @@ import { type Pushable, pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Stream } from '@libp2p/interface/connection'
+import type { AbortOptions } from '@libp2p/interface'
+import type { Direction, Stream } from '@libp2p/interface/connection'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
 import type { Source } from 'it-stream-types'
 
 let muxers = 0
 let streams = 0
-const MAX_MESSAGE_SIZE = 1024 * 1024
 
 interface DataMessage {
   id: string
   type: 'data'
-  direction: 'initiator' | 'recipient'
+  direction: Direction
   chunk: string
 }
 
 interface ResetMessage {
   id: string
   type: 'reset'
-  direction: 'initiator' | 'recipient'
+  direction: Direction
 }
 
 interface CloseMessage {
   id: string
   type: 'close'
-  direction: 'initiator' | 'recipient'
+  direction: Direction
 }
 
 interface CreateMessage {
   id: string
   type: 'create'
-  direction: 'initiator'
+  direction: 'outbound'
 }
 
 type StreamMessage = DataMessage | ResetMessage | CloseMessage | CreateMessage
 
-class MuxedStream {
-  public id: string
-  public input: Pushable<Uint8ArrayList>
-  public stream: Stream
-  public type: 'initiator' | 'recipient'
+export interface MockMuxedStreamInit extends AbstractStreamInit {
+  push: Pushable<StreamMessage>
+}
 
-  private sinkEnded: boolean
-  private sourceEnded: boolean
-  private readonly abortController: AbortController
-  private readonly resetController: AbortController
-  private readonly closeController: AbortController
-  private readonly log: Logger
+class MuxedStream extends AbstractStream {
+  private readonly push: Pushable<StreamMessage>
 
-  constructor (init: { id: string, type: 'initiator' | 'recipient', push: Pushable<StreamMessage>, onEnd: (err?: Error) => void }) {
-    const { id, type, push, onEnd } = init
+  constructor (init: MockMuxedStreamInit) {
+    super(init)
 
-    this.log = logger(`libp2p:mock-muxer:stream:${id}:${type}`)
+    this.push = init.push
+  }
 
-    this.id = id
-    this.type = type
-    this.abortController = new AbortController()
-    this.resetController = new AbortController()
-    this.closeController = new AbortController()
-
-    this.sourceEnded = false
-    this.sinkEnded = false
-
-    let endErr: Error | undefined
-
-    const onSourceEnd = (err?: Error): void => {
-      if (this.sourceEnded) {
-        return
-      }
-
-      this.log('onSourceEnd sink ended? %s', this.sinkEnded)
-
-      this.sourceEnded = true
-
-      if (err != null && endErr == null) {
-        endErr = err
-      }
-
-      if (this.sinkEnded) {
-        this.stream.timeline.close = Date.now()
-
-        if (onEnd != null) {
-          onEnd(endErr)
-        }
-      }
+  sendNewStream (): void {
+    // If initiator, open a new stream
+    const createMsg: CreateMessage = {
+      id: this.id,
+      type: 'create',
+      direction: 'outbound'
     }
+    this.push.push(createMsg)
+  }
 
-    const onSinkEnd = (err?: Error): void => {
-      if (this.sinkEnded) {
-        return
-      }
-
-      this.log('onSinkEnd source ended? %s', this.sourceEnded)
-
-      this.sinkEnded = true
-
-      if (err != null && endErr == null) {
-        endErr = err
-      }
-
-      if (this.sourceEnded) {
-        this.stream.timeline.close = Date.now()
-
-        if (onEnd != null) {
-          onEnd(endErr)
-        }
-      }
+  sendData (data: Uint8ArrayList): void {
+    const dataMsg: DataMessage = {
+      id: this.id,
+      type: 'data',
+      chunk: uint8ArrayToString(data.subarray(), 'base64pad'),
+      direction: this.direction
     }
+    this.push.push(dataMsg)
+  }
 
-    this.input = pushable({
-      onEnd: onSourceEnd
-    })
-
-    this.stream = {
-      id,
-      sink: async (source) => {
-        if (this.sinkEnded) {
-          throw new CodeError('stream closed for writing', 'ERR_SINK_ENDED')
-        }
-
-        const signal = anySignal([
-          this.abortController.signal,
-          this.resetController.signal,
-          this.closeController.signal
-        ])
-
-        source = abortableSource(source, signal)
-
-        try {
-          if (this.type === 'initiator') {
-            // If initiator, open a new stream
-            const createMsg: CreateMessage = {
-              id: this.id,
-              type: 'create',
-              direction: this.type
-            }
-            push.push(createMsg)
-          }
-
-          const list = new Uint8ArrayList()
-
-          for await (const chunk of source) {
-            list.append(chunk)
-
-            while (list.length > 0) {
-              const available = Math.min(list.length, MAX_MESSAGE_SIZE)
-              const dataMsg: DataMessage = {
-                id,
-                type: 'data',
-                chunk: uint8ArrayToString(list.subarray(0, available), 'base64pad'),
-                direction: this.type
-              }
-
-              push.push(dataMsg)
-              list.consume(available)
-            }
-          }
-        } catch (err: any) {
-          if (err.type === 'aborted' && err.message === 'The operation was aborted') {
-            if (this.closeController.signal.aborted) {
-              return
-            }
-
-            if (this.resetController.signal.aborted) {
-              err.message = 'stream reset'
-              err.code = 'ERR_STREAM_RESET'
-            }
-
-            if (this.abortController.signal.aborted) {
-              err.message = 'stream aborted'
-              err.code = 'ERR_STREAM_ABORT'
-            }
-          }
-
-          // Send no more data if this stream was remotely reset
-          if (err.code !== 'ERR_STREAM_RESET') {
-            const resetMsg: ResetMessage = {
-              id,
-              type: 'reset',
-              direction: this.type
-            }
-            push.push(resetMsg)
-          }
-
-          this.log('sink erred', err)
-
-          this.input.end(err)
-          onSinkEnd(err)
-          return
-        } finally {
-          signal.clear()
-        }
-
-        this.log('sink ended')
-
-        onSinkEnd()
-
-        const closeMsg: CloseMessage = {
-          id,
-          type: 'close',
-          direction: this.type
-        }
-        push.push(closeMsg)
-      },
-      source: this.input,
-
-      // Close for reading
-      close: () => {
-        this.stream.closeRead()
-        this.stream.closeWrite()
-      },
-
-      closeRead: () => {
-        this.input.end()
-      },
-
-      closeWrite: () => {
-        this.closeController.abort()
-
-        const closeMsg: CloseMessage = {
-          id,
-          type: 'close',
-          direction: this.type
-        }
-        push.push(closeMsg)
-        onSinkEnd()
-      },
-
-      // Close for reading and writing (local error)
-      abort: (err: Error) => {
-        // End the source with the passed error
-        this.input.end(err)
-        this.abortController.abort()
-        onSinkEnd(err)
-      },
-
-      // Close immediately for reading and writing (remote error)
-      reset: () => {
-        const err = new CodeError('stream reset', 'ERR_STREAM_RESET')
-        this.resetController.abort()
-        this.input.end(err)
-        onSinkEnd(err)
-      },
-      direction: type === 'initiator' ? 'outbound' : 'inbound',
-      timeline: {
-        open: Date.now()
-      },
-      metadata: {}
+  sendReset (): void {
+    const resetMsg: ResetMessage = {
+      id: this.id,
+      type: 'reset',
+      direction: this.direction
     }
+    this.push.push(resetMsg)
+  }
+
+  sendCloseWrite (): void {
+    const closeMsg: CloseMessage = {
+      id: this.id,
+      type: 'close',
+      direction: this.direction
+    }
+    this.push.push(closeMsg)
+  }
+
+  sendCloseRead (): void {
+    // does not support close read, only close write
   }
 }
 
@@ -284,8 +123,14 @@ class MockMuxer implements StreamMuxer {
     this.closeController = new AbortController()
     // receives data from the muxer at the other end of the stream
     this.source = this.input = pushable({
-      onEnd: (err) => {
-        this.close(err)
+      onEnd: () => {
+        for (const stream of this.registryInitiatorStreams.values()) {
+          stream.destroy()
+        }
+
+        for (const stream of this.registryRecipientStreams.values()) {
+          stream.destroy()
+        }
       }
     })
 
@@ -321,18 +166,18 @@ class MockMuxer implements StreamMuxer {
   handleMessage (message: StreamMessage): void {
     let muxedStream: MuxedStream | undefined
 
-    const registry = message.direction === 'initiator' ? this.registryRecipientStreams : this.registryInitiatorStreams
+    const registry = message.direction === 'outbound' ? this.registryRecipientStreams : this.registryInitiatorStreams
 
     if (message.type === 'create') {
       if (registry.has(message.id)) {
         throw new Error(`Already had stream for ${message.id}`)
       }
 
-      muxedStream = this.createStream(message.id, 'recipient')
-      registry.set(muxedStream.stream.id, muxedStream)
+      muxedStream = this.createStream(message.id, 'inbound')
+      registry.set(muxedStream.id, muxedStream)
 
       if (this.options.onIncomingStream != null) {
-        this.options.onIncomingStream(muxedStream.stream)
+        this.options.onIncomingStream(muxedStream)
       }
     }
 
@@ -345,20 +190,19 @@ class MockMuxer implements StreamMuxer {
     }
 
     if (message.type === 'data') {
-      muxedStream.input.push(new Uint8ArrayList(uint8ArrayFromString(message.chunk, 'base64pad')))
+      muxedStream.sourcePush(new Uint8ArrayList(uint8ArrayFromString(message.chunk, 'base64pad')))
     } else if (message.type === 'reset') {
-      this.log('-> reset stream %s %s', muxedStream.type, muxedStream.stream.id)
-      muxedStream.stream.reset()
+      this.log('-> reset stream %s %s', muxedStream.direction, muxedStream.id)
+      muxedStream.reset()
     } else if (message.type === 'close') {
-      this.log('-> closing stream %s %s', muxedStream.type, muxedStream.stream.id)
-      muxedStream.stream.closeRead()
+      this.log('-> closing stream %s %s', muxedStream.direction, muxedStream.id)
+      muxedStream.remoteCloseWrite()
     }
   }
 
   get streams (): Stream[] {
     return Array.from(this.registryRecipientStreams.values())
       .concat(Array.from(this.registryInitiatorStreams.values()))
-      .map(({ stream }) => stream)
   }
 
   newStream (name?: string): Stream {
@@ -366,53 +210,67 @@ class MockMuxer implements StreamMuxer {
       throw new Error('Muxer already closed')
     }
     this.log('newStream %s', name)
-    const storedStream = this.createStream(name, 'initiator')
-    this.registryInitiatorStreams.set(storedStream.stream.id, storedStream)
+    const storedStream = this.createStream(name, 'outbound')
+    this.registryInitiatorStreams.set(storedStream.id, storedStream)
 
-    return storedStream.stream
+    return storedStream
   }
 
-  createStream (name?: string, type: 'initiator' | 'recipient' = 'initiator'): MuxedStream {
-    const id = name ?? `${this.name}:stream:${streams++}`
+  createStream (name?: string, direction: Direction = 'outbound'): MuxedStream {
+    const id = name ?? `${streams++}`
 
-    this.log('createStream %s %s', type, id)
+    this.log('createStream %s %s', direction, id)
 
     const muxedStream: MuxedStream = new MuxedStream({
       id,
-      type,
+      direction,
       push: this.streamInput,
       onEnd: () => {
-        this.log('stream ended %s %s', type, id)
+        this.log('stream ended')
 
-        if (type === 'initiator') {
-          this.registryInitiatorStreams.delete(id)
+        if (direction === 'outbound') {
+          this.registryInitiatorStreams.delete(muxedStream.id)
         } else {
-          this.registryRecipientStreams.delete(id)
+          this.registryRecipientStreams.delete(muxedStream.id)
         }
 
         if (this.options.onStreamEnd != null) {
-          this.options.onStreamEnd(muxedStream.stream)
+          this.options.onStreamEnd(muxedStream)
         }
-      }
+      },
+      log: logger(`libp2p:mock-muxer:stream:${direction}:${id}`)
     })
 
     return muxedStream
   }
 
-  close (err?: Error): void {
-    if (this.closeController.signal.aborted) return
+  async close (options?: AbortOptions): Promise<void> {
+    if (this.closeController.signal.aborted) {
+      return
+    }
+
     this.log('closing muxed streams')
 
-    if (err == null) {
-      this.streams.forEach(s => {
-        s.close()
-      })
-    } else {
-      this.streams.forEach(s => {
-        s.abort(err)
-      })
-    }
+    await Promise.all(
+      this.streams.map(async s => s.close())
+    )
+
     this.closeController.abort()
+    this.input.end()
+  }
+
+  abort (err: Error): void {
+    if (this.closeController.signal.aborted) {
+      return
+    }
+
+    this.log('aborting muxed streams')
+
+    this.streams.forEach(s => {
+      s.abort(err)
+    })
+
+    this.closeController.abort(err)
     this.input.end(err)
   }
 }

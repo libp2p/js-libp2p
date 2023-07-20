@@ -30,6 +30,16 @@ export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitFor
   }, opts)
 }
 
+export async function notUsingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
+  // Wait for peer to be used as a relay
+  await pWaitFor(() => {
+    const search = `${relay.peerId.toString()}/p2p-circuit`
+    const relayAddrs = node.getMultiaddrs().filter(addr => addr.toString().includes(search))
+
+    return relayAddrs.length === 0
+  }, opts)
+}
+
 export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): Promise<PeerId> {
   let relayPeerId: PeerId | undefined
 
@@ -68,6 +78,15 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
   }
 
   return relayPeerId
+}
+
+export async function doesNotHaveRelay (node: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
+  // Wait for peer to be used as a relay
+  await pWaitFor(() => {
+    const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
+
+    return relayAddrs.length === 0
+  }, opts)
 }
 
 export async function discoveredRelayConfig (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {

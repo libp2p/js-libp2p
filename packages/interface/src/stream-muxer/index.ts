@@ -37,10 +37,15 @@ export interface StreamMuxer extends Duplex<AsyncGenerator<Uint8Array>, Source<U
   /**
    * Close or abort all tracked streams and stop the muxer
    */
-  close: (err?: Error) => void
+  close: (options?: AbortOptions) => Promise<void>
+
+  /**
+   * Close or abort all tracked streams and stop the muxer
+   */
+  abort: (err: Error) => void
 }
 
-export interface StreamMuxerInit extends AbortOptions {
+export interface StreamMuxerInit {
   /**
    * A callback function invoked every time an incoming stream is opened
    */

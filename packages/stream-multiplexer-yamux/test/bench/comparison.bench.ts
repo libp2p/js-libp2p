@@ -23,7 +23,7 @@ describe('comparison benchmark', () => {
         id: `${name} send and receive ${numMessages} ${msgSize / 1024}KB chunks`,
         beforeEach: () => impl({
           onIncomingStream: (stream) => {
-            void pipe(stream, drain).then(() => { stream.close() })
+            void pipe(stream, drain).then(async () => { await stream.close() })
           }
         }),
         fn: async ({ client, server }) => {

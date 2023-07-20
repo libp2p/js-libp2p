@@ -13,7 +13,7 @@ import { webTransport } from '@libp2p/webtransport'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
-import { IdentifyService, identifyService } from 'libp2p/identify'
+import { type IdentifyService, identifyService } from 'libp2p/identify'
 import { pingService, type PingService } from 'libp2p/ping'
 
 async function redisProxy (commands: any[]): Promise<any> {
@@ -28,7 +28,10 @@ let node: Libp2p<{ ping: PingService, identify: IdentifyService }>
 const isDialer: boolean = process.env.is_dialer === 'true'
 const timeoutSecs: string = process.env.test_timeout_secs ?? '180'
 
-describe('ping test', () => {
+describe('ping test', function () {
+  // make the default timeout longer than the listener timeout
+  this.timeout((parseInt(timeoutSecs) * 1000) + 30000)
+
   // eslint-disable-next-line complexity
   beforeEach(async () => {
     // Setup libp2p node
@@ -39,6 +42,9 @@ describe('ping test', () => {
 
     const options: Libp2pOptions<{ ping: PingService, identify: IdentifyService }> = {
       start: true,
+      connectionManager: {
+        minConnections: 0
+      },
       connectionGater: {
         denyDialMultiaddr: async () => false
       },
@@ -208,14 +214,18 @@ describe('ping test', () => {
   // eslint-disable-next-line complexity
   (isDialer ? it : it.skip)('should dial and ping', async () => {
     try {
-      let otherMa: string = (await redisProxy(['BLPOP', 'listenerAddr', timeoutSecs]).catch(err => { throw new Error(`Failed to wait for listener: ${err}`) }))[1]
+      let otherMaStr: string = (await redisProxy(['BLPOP', 'listenerAddr', timeoutSecs]).catch(err => { throw new Error(`Failed to wait for listener: ${err}`) }))[1]
       // Hack until these are merged:
       // - https://github.com/multiformats/js-multiaddr-to-uri/pull/120
-      otherMa = otherMa.replace('/tls/ws', '/wss')
+      otherMaStr = otherMaStr.replace('/tls/ws', '/wss')
+
+      const otherMa = multiaddr(otherMaStr)
 
       console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
       const handshakeStartInstant = Date.now()
-      await node.dial(multiaddr(otherMa))
+
+      await node.dial(otherMa)
+
       const pingRTT = await node.services.ping.ping(multiaddr(otherMa))
       const handshakePlusOneRTT = Date.now() - handshakeStartInstant
       console.log(JSON.stringify({
