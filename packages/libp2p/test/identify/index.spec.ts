@@ -105,8 +105,8 @@ describe('identify', () => {
   })
 
   it('should be able to identify another peer', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -128,8 +128,8 @@ describe('identify', () => {
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -191,8 +191,8 @@ describe('identify', () => {
   })
 
   it('should time out during identify', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -237,10 +237,10 @@ describe('identify', () => {
   it('should limit incoming identify message sizes', async () => {
     const deferred = pDefer()
 
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, {
+    const remoteIdentify = identifyService({
       ...defaultInit,
       maxIdentifyMessageSize: 100
-    })
+    })(remoteComponents)
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')
@@ -283,10 +283,10 @@ describe('identify', () => {
   it('should time out incoming identify messages', async () => {
     const deferred = pDefer()
 
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, {
+    const remoteIdentify = identifyService({
       ...defaultInit,
       timeout: 100
-    })
+    })(remoteComponents)
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')
@@ -336,8 +336,8 @@ describe('identify', () => {
   })
 
   it('should retain existing peer metadata', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -363,8 +363,8 @@ describe('identify', () => {
   })
 
   it('should ignore older signed peer record', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)

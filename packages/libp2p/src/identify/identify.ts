@@ -23,7 +23,7 @@ import {
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
 } from './consts.js'
 import { Identify } from './pb/message.js'
-import type { IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
+import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { EventEmitter } from '@libp2p/interface/events'
@@ -49,10 +49,11 @@ const defaultValues = {
   maxPushIncomingStreams: 1,
   maxPushOutgoingStreams: 1,
   maxObservedAddresses: 10,
-  maxIdentifyMessageSize: 8192
+  maxIdentifyMessageSize: 8192,
+  runOnConnectionOpen: true
 }
 
-export class DefaultIdentifyService implements Startable {
+export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly identifyProtocolStr: string
   private readonly identifyPushProtocolStr: string
   public readonly host: {
@@ -100,11 +101,13 @@ export class DefaultIdentifyService implements Startable {
       agentVersion: init.agentVersion ?? defaultValues.agentVersion
     }
 
-    // When a new connection happens, trigger identify
-    components.events.addEventListener('connection:open', (evt) => {
-      const connection = evt.detail
-      this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
-    })
+    if (init.runOnConnectionOpen ?? defaultValues.runOnConnectionOpen) {
+      // When a new connection happens, trigger identify
+      components.events.addEventListener('connection:open', (evt) => {
+        const connection = evt.detail
+        this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
+      })
+    }
 
     // When self peer record changes, trigger identify-push
     components.events.addEventListener('self:peer:update', (evt) => {
@@ -296,7 +299,7 @@ export class DefaultIdentifyService implements Startable {
     }
   }
 
-  async identify (connection: Connection, options: AbortOptions = {}): Promise<void> {
+  async identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyResult> {
     const message = await this._identify(connection, options)
     const {
       publicKey,
@@ -344,6 +347,8 @@ export class DefaultIdentifyService implements Startable {
     }
 
     this.events.safeDispatchEvent('peer:identify', { detail: result })
+
+    return result
   }
 
   /**
