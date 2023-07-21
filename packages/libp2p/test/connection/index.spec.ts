@@ -40,40 +40,38 @@ describe('connection', () => {
     return createConnection({
       remotePeer,
       remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      stat: {
-        timeline: {
-          open: Date.now() - 10,
-          upgraded: Date.now()
-        },
-        direction: 'outbound',
-        encryption: '/secio/1.0.0',
-        multiplexer: '/mplex/6.7.0',
-        status: 'OPEN'
+      timeline: {
+        open: Date.now() - 10,
+        upgraded: Date.now()
       },
+      direction: 'outbound',
+      encryption: '/secio/1.0.0',
+      multiplexer: '/mplex/6.7.0',
+      status: 'open',
       newStream: async (protocols) => {
         const id = `${streamId++}`
         const stream: Stream = {
           ...pair(),
-          close: () => {
-            void stream.sink(async function * () {}())
+          close: async () => {
+            await stream.sink(async function * () {}())
 
             openStreams = openStreams.filter(s => s.id !== id)
           },
-          closeRead: () => {},
-          closeWrite: () => {
-            void stream.sink(async function * () {}())
+          closeRead: async () => {},
+          closeWrite: async () => {
+            await stream.sink(async function * () {}())
           },
           id,
           abort: () => {},
-          reset: () => {},
-          stat: {
-            direction: 'outbound',
-            protocol: protocols[0],
-            timeline: {
-              open: 0
-            }
+          direction: 'outbound',
+          protocol: protocols[0],
+          timeline: {
+            open: 0
           },
-          metadata: {}
+          metadata: {},
+          status: 'open',
+          writeStatus: 'ready',
+          readStatus: 'ready'
         }
 
         openStreams.push(stream)
@@ -81,6 +79,7 @@ describe('connection', () => {
         return stream
       },
       close: async () => {},
+      abort: () => {},
       getStreams: () => openStreams
     })
   })

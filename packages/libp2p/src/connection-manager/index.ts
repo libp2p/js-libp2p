@@ -273,7 +273,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
         for (const conns of this.connections.values()) {
           for (const conn of conns) {
-            if (conn.stat.direction === 'inbound') {
+            if (conn.direction === 'inbound') {
               metric.inbound++
             } else {
               metric.outbound++
@@ -294,7 +294,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         for (const conns of this.connections.values()) {
           for (const conn of conns) {
             for (const stream of conn.streams) {
-              const key = `${stream.stat.direction} ${stream.stat.protocol ?? 'unnegotiated'}`
+              const key = `${stream.direction} ${stream.protocol ?? 'unnegotiated'}`
 
               metric[key] = (metric[key] ?? 0) + 1
             }
@@ -316,7 +316,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
             const streams: Record<string, number> = {}
 
             for (const stream of conn.streams) {
-              const key = `${stream.stat.direction} ${stream.stat.protocol ?? 'unnegotiated'}`
+              const key = `${stream.direction} ${stream.protocol ?? 'unnegotiated'}`
 
               streams[key] = (streams[key] ?? 0) + 1
             }
@@ -488,6 +488,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       throw new CodeError('Not started', codes.ERR_NODE_NOT_STARTED)
     }
 
+    options.signal?.throwIfAborted()
+
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null) {
@@ -530,12 +532,16 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     return connection
   }
 
-  async closeConnections (peerId: PeerId): Promise<void> {
+  async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {
     const connections = this.connections.get(peerId) ?? []
 
     await Promise.all(
       connections.map(async connection => {
-        await connection.close()
+        try {
+          await connection.close(options)
+        } catch (err: any) {
+          connection.abort(err)
+        }
       })
     )
   }

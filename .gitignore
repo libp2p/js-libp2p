@@ -8,6 +8,6 @@ package-lock.json
 yarn.lock
 
 # IDE
-.DS_STORE
+.DS_Store
 .vscode
 packages/transport-webtransport/go-libp2p-webtransport-server/main

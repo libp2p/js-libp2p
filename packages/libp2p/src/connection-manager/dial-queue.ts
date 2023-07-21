@@ -16,7 +16,7 @@ import {
   MAX_PEER_ADDRS_TO_DIAL
 } from './constants.js'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
-import type { AddressSorter, AbortOptions } from '@libp2p/interface'
+import type { AddressSorter, AbortOptions, PendingDial } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { Metric, Metrics } from '@libp2p/interface/metrics'
@@ -26,16 +26,6 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 
 const log = logger('libp2p:connection-manager:dial-queue')
 
-export type PendingDialStatus = 'queued' | 'active' | 'error' | 'success'
-
-export interface PendingDial {
-  id: string
-  status: PendingDialStatus
-  peerId?: PeerId
-  multiaddrs: Multiaddr[]
-  promise: Promise<Connection>
-}
-
 export interface PendingDialTarget {
   resolve: (value: any) => void
   reject: (err: Error) => void
@@ -43,6 +33,10 @@ export interface PendingDialTarget {
 
 export interface DialOptions extends AbortOptions {
   priority?: number
+}
+
+interface PendingDialInternal extends PendingDial {
+  promise: Promise<Connection>
 }
 
 interface DialerInit {
@@ -74,7 +68,7 @@ interface DialQueueComponents {
 }
 
 export class DialQueue {
-  public pendingDials: PendingDial[]
+  public pendingDials: PendingDialInternal[]
   public queue: PQueue
   private readonly peerId: PeerId
   private readonly peerStore: PeerStore
@@ -218,7 +212,7 @@ export class DialQueue {
 
     log('creating dial target for', addrsToDial.map(({ multiaddr }) => multiaddr.toString()))
     // @ts-expect-error .promise property is set below
-    const pendingDial: PendingDial = {
+    const pendingDial: PendingDialInternal = {
       id: randomId(),
       status: 'queued',
       peerId,
@@ -394,7 +388,7 @@ export class DialQueue {
     return sortedGatedAddrs
   }
 
-  private async performDial (pendingDial: PendingDial, options: DialOptions = {}): Promise<Connection> {
+  private async performDial (pendingDial: PendingDialInternal, options: DialOptions = {}): Promise<Connection> {
     const dialAbortControllers: Array<(AbortController | undefined)> = pendingDial.multiaddrs.map(() => new AbortController())
 
     try {

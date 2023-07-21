@@ -106,8 +106,8 @@ export class ConnectionPruner {
       }
 
       // if the peers have an equal tag value then we want to close short-lived connections first
-      const connectionALifespan = a.stat.timeline.open
-      const connectionBLifespan = b.stat.timeline.open
+      const connectionALifespan = a.timeline.open
+      const connectionBLifespan = b.timeline.open
 
       if (connectionALifespan < connectionBLifespan) {
         return 1

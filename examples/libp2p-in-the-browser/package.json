@@ -30,9 +30,9 @@
     "test:example": "node test.js"
   },
   "dependencies": {
-    "@chainsafe/libp2p-gossipsub": "^8.0.0",
+    "@chainsafe/libp2p-gossipsub": "^9.0.0",
     "@chainsafe/libp2p-noise": "^12.0.1",
-    "@chainsafe/libp2p-yamux": "^4.0.2",
+    "@chainsafe/libp2p-yamux": "^4.0.0",
     "@libp2p/bootstrap": "^8.0.0",
     "@libp2p/kad-dht": "^9.0.0",
     "@libp2p/mplex": "^8.0.0",
@@ -42,7 +42,7 @@
     "libp2p": "^0.45.0"
   },
   "devDependencies": {
-    "aegir": "^39.0.10",
+    "aegir": "^39.0.13",
     "execa": "^7.1.1",
     "playwright": "^1.35.1",
     "vite": "^2.8.6"

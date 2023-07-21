@@ -14,6 +14,7 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -88,7 +89,7 @@ describe('Connection Manager', () => {
 
     const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
-    const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
+    const spies = new Map<number, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
 
     // wait for prune event
     const eventPromise = pEvent(libp2p, 'connection:prune')
@@ -149,7 +150,7 @@ describe('Connection Manager', () => {
 
     const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
-    const spies = new Map<string, sinon.SinonSpy<[], Promise<void>>>()
+    const spies = new Map<string, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
     const createConnection = async (value: number, open: number = Date.now(), peerTag: string = 'test-tag'): Promise<void> => {
@@ -219,7 +220,7 @@ describe('Connection Manager', () => {
 
     const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
-    const spies = new Map<number, sinon.SinonSpy<[], Promise<void>>>()
+    const spies = new Map<number, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
     // Max out connections

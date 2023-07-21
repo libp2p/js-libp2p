@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { EventEmitter } from '@libp2p/interface/events'
+import { start, stop } from '@libp2p/interface/startable'
 import { FaultTolerance } from '@libp2p/interface/transport'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -24,7 +25,7 @@ describe('Transport Manager (WebSockets)', () => {
   let tm: DefaultTransportManager
   let components: Components
 
-  before(async () => {
+  beforeEach(async () => {
     const events = new EventEmitter()
     components = {
       peerId: await createEd25519PeerId(),
@@ -33,11 +34,15 @@ describe('Transport Manager (WebSockets)', () => {
     } as any
     components.addressManager = new DefaultAddressManager(components, { listen: [listenAddr.toString()] })
 
-    tm = new DefaultTransportManager(components)
+    tm = new DefaultTransportManager(components, {
+      faultTolerance: FaultTolerance.NO_FATAL
+    })
+    await start(tm)
   })
 
   afterEach(async () => {
     await tm.removeAll()
+    await stop(tm)
     expect(tm.getTransports()).to.be.empty()
   })
 
@@ -81,11 +86,14 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to listen with no valid address', async () => {
+    tm = new DefaultTransportManager(components)
     tm.add(webSockets({ filter: filters.all })())
 
-    await expect(tm.listen([listenAddr]))
+    await expect(start(tm))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+
+    await stop(tm)
   })
 })
 

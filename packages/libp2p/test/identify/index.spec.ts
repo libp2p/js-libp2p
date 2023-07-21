@@ -13,8 +13,8 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
-import { pbStream } from 'it-pb-stream'
 import { pipe } from 'it-pipe'
+import { pbStream } from 'it-protobuf-stream'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -105,8 +105,8 @@ describe('identify', () => {
   })
 
   it('should be able to identify another peer', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -128,8 +128,8 @@ describe('identify', () => {
   })
 
   it('should throw if identified peer is the wrong peer', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -191,8 +191,8 @@ describe('identify', () => {
   })
 
   it('should time out during identify', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -231,16 +231,16 @@ describe('identify', () => {
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
     const stream = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('stat.timeline.close')
+    expect(stream).to.have.nested.property('timeline.close')
   })
 
   it('should limit incoming identify message sizes', async () => {
-    const deferred = pDefer()
+    const deferred = pDefer<Error>()
 
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, {
+    const remoteIdentify = identifyService({
       ...defaultInit,
       maxIdentifyMessageSize: 100
-    })
+    })(remoteComponents)
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')
@@ -252,14 +252,16 @@ describe('identify', () => {
       const data = new Uint8Array(1024)
 
       void Promise.resolve().then(async () => {
-        await pipe(
-          [data],
-          (source) => lp.encode(source),
-          stream,
-          async (source) => { await drain(source) }
-        )
-
-        deferred.resolve()
+        try {
+          await pipe(
+            [data],
+            (source) => lp.encode(source),
+            stream,
+            async (source) => { await drain(source) }
+          )
+        } catch (err: any) {
+          deferred.resolve(err)
+        }
       })
     })
 
@@ -271,7 +273,10 @@ describe('identify', () => {
       detail: remoteToLocal
     })
 
-    await deferred.promise
+    // stream sending too much data should have received a reset message
+    const err = await deferred.promise
+    expect(err).to.have.property('code', 'ERR_STREAM_RESET')
+
     await stop(remoteIdentify)
 
     expect(identifySpy.called).to.be.true()
@@ -283,10 +288,10 @@ describe('identify', () => {
   it('should time out incoming identify messages', async () => {
     const deferred = pDefer()
 
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, {
+    const remoteIdentify = identifyService({
       ...defaultInit,
       timeout: 100
-    })
+    })(remoteComponents)
     await start(remoteIdentify)
 
     const identifySpy = sinon.spy(remoteIdentify, 'identify')
@@ -336,8 +341,8 @@ describe('identify', () => {
   })
 
   it('should retain existing peer metadata', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -363,8 +368,8 @@ describe('identify', () => {
   })
 
   it('should ignore older signed peer record', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -425,7 +430,7 @@ describe('identify', () => {
     remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
       const { stream } = data
       const pb = pbStream(stream)
-      pb.writePB(message, Identify)
+      await pb.write(message, Identify)
     }
 
     // Run identify
@@ -480,7 +485,7 @@ describe('identify', () => {
     remoteIdentify._handleIdentify = async (data: IncomingStreamData): Promise<void> => {
       const { stream } = data
       const pb = pbStream(stream)
-      pb.writePB(message, Identify)
+      await pb.write(message, Identify)
     }
 
     // Run identify

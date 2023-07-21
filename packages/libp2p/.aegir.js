@@ -26,7 +26,8 @@ export default {
         connectionManager: {
           inboundConnectionThreshold: 1000,
           maxIncomingPendingConnections: 1000,
-          maxConnections: 1000
+          maxConnections: 1000,
+          minConnections: 0
         },
         addresses: {
           listen: [

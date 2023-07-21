@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import * as STATUS from '@libp2p/interface/connection/status'
 import { EventEmitter } from '@libp2p/interface/events'
 import { start } from '@libp2p/interface/startable'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
@@ -80,7 +79,7 @@ describe('Connection Manager', () => {
 
     expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(1)
 
-    expect(conn1).to.have.nested.property('stat.status', STATUS.OPEN)
+    expect(conn1).to.have.nested.property('status', 'open')
 
     await connectionManager.stop()
   })
@@ -362,7 +361,7 @@ describe('libp2p.connections', () => {
       const conn = conns[0]
 
       await libp2p.stop()
-      expect(conn.stat.status).to.eql(STATUS.CLOSED)
+      expect(conn.status).to.eql('closed')
 
       await remoteLibp2p.stop()
     })

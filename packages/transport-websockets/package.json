@@ -78,13 +78,12 @@
     "abortable-iterator": "^5.0.1",
     "it-ws": "^6.0.0",
     "p-defer": "^4.0.0",
-    "p-timeout": "^6.0.0",
     "wherearewe": "^2.0.1",
     "ws": "^8.12.1"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^3.0.0",
-    "aegir": "^39.0.10",
+    "aegir": "^39.0.13",
     "is-loopback-addr": "^2.0.1",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.2",

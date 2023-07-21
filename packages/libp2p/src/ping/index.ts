@@ -1,9 +1,7 @@
-import { setMaxListeners } from 'events'
 import { randomBytes } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { abortableDuplex } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -78,11 +76,19 @@ class DefaultPingService implements Startable, PingService {
    * A handler to register with Libp2p to process ping messages
    */
   handleMessage (data: IncomingStreamData): void {
+    log('incoming ping from %p', data.connection.remotePeer)
+
     const { stream } = data
+    const start = Date.now()
 
     void pipe(stream, stream)
       .catch(err => {
-        log.error(err)
+        log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
+      })
+      .finally(() => {
+        const ms = Date.now() - start
+
+        log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
       })
   }
 
@@ -93,45 +99,50 @@ class DefaultPingService implements Startable, PingService {
    * @returns {Promise<number>}
    */
   async ping (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<number> {
-    log('dialing %s to %p', this.protocol, peer)
+    log('pinging %p', peer)
 
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let stream: Stream | undefined
 
-    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
+    options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
     try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
-
-    try {
-      stream = await connection.newStream([this.protocol], {
-        signal
-      })
+      stream = await connection.newStream([this.protocol], options)
 
       // make stream abortable
-      const source = abortableDuplex(stream, signal)
+      const source = abortableDuplex(stream, options.signal)
 
       const result = await pipe(
         [data],
         source,
         async (source) => first(source)
       )
-      const end = Date.now()
 
-      if (result == null || !uint8ArrayEquals(data, result.subarray())) {
-        throw new CodeError('Received wrong ping ack', codes.ERR_WRONG_PING_ACK)
+      const ms = Date.now() - start
+
+      if (result == null) {
+        throw new CodeError(`Did not receive a ping ack after ${ms}ms`, codes.ERR_WRONG_PING_ACK)
       }
 
-      return end - start
+      if (!uint8ArrayEquals(data, result.subarray())) {
+        throw new CodeError(`Received wrong ping ack after ${ms}ms`, codes.ERR_WRONG_PING_ACK)
+      }
+
+      log('ping %p complete in %dms', connection.remotePeer, ms)
+
+      return ms
+    } catch (err: any) {
+      log.error('error while pinging %p', connection.remotePeer, err)
+
+      stream?.abort(err)
+
+      throw err
     } finally {
       if (stream != null) {
-        stream.close()
+        await stream.close()
       }
-      signal.clear()
     }
   }
 }

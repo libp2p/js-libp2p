@@ -5,7 +5,7 @@ import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
-import { pbStream } from 'it-pb-stream'
+import { pbStream } from 'it-protobuf-stream'
 import { number, object } from 'yup'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import { codes } from '../../errors.js'
@@ -86,6 +86,19 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
    * should be set to the same value (default: 300)
    */
   maxOutboundStopStreams?: number
+
+  /**
+   * Incoming STOP requests (e.g. when a remote peer wants to dial us via a relay)
+   * must finish the initial protocol negotiation within this timeout in ms
+   * (default: 30000)
+   */
+  stopTimeout: number
+
+  /**
+   * When creating a reservation it must complete within this number of ms
+   * (default: 10000)
+   */
+  reservationCompletionTimeout?: number
 }
 
 class CircuitRelayTransport implements Transport {
@@ -100,6 +113,7 @@ class CircuitRelayTransport implements Transport {
   private readonly reservationStore: ReservationStore
   private readonly maxInboundStopStreams?: number
   private readonly maxOutboundStopStreams?: number
+  private readonly stopTimeout: number
   private started: boolean
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
@@ -112,6 +126,7 @@ class CircuitRelayTransport implements Transport {
     this.connectionGater = components.connectionGater
     this.maxInboundStopStreams = init.maxInboundStopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams
+    this.stopTimeout = init.stopTimeout
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
@@ -144,7 +159,8 @@ class CircuitRelayTransport implements Transport {
 
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this.onStop(data).catch(err => {
-        log.error(err)
+        log.error('error while handling STOP protocol', err)
+        data.stream.abort(err)
       })
     }, {
       maxInboundStreams: this.maxInboundStopStreams,
@@ -299,43 +315,62 @@ class CircuitRelayTransport implements Transport {
    * An incoming STOP request means a remote peer wants to dial us via a relay
    */
   async onStop ({ connection, stream }: IncomingStreamData): Promise<void> {
-    const pbstr = pbStream(stream)
-    const request = await pbstr.readPB(StopMessage)
-    log('received circuit v2 stop protocol request from %s', connection.remotePeer)
+    const signal = AbortSignal.timeout(this.stopTimeout)
+    const pbstr = pbStream(stream).pb(StopMessage)
+    const request = await pbstr.read({
+      signal
+    })
+
+    log('new circuit relay v2 stop stream from %p with type %s', connection.remotePeer, request.type)
 
     if (request?.type === undefined) {
+      log.error('type was missing from circuit v2 stop protocol request from %s', connection.remotePeer)
+      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
+        signal
+      })
+      await stream.close()
       return
     }
-
-    const stopstr = pbstr.pb(StopMessage)
-    log('new circuit relay v2 stop stream from %p', connection.remotePeer)
 
     // Validate the STOP request has the required input
     if (request.type !== StopMessage.Type.CONNECT) {
       log.error('invalid stop connect request via peer %p', connection.remotePeer)
-      stopstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
+      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
+        signal
+      })
+      await stream.close()
       return
     }
 
     if (!isValidStop(request)) {
       log.error('invalid stop connect request via peer %p', connection.remotePeer)
-      stopstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
+      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
+        signal
+      })
+      await stream.close()
       return
     }
 
     const remotePeerId = peerIdFromBytes(request.peer.id)
 
     if ((await this.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
-      stopstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)
+      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
+        signal
+      })
+      await stream.close()
       return
     }
 
-    stopstr.write({ type: StopMessage.Type.STATUS, status: Status.OK })
+    log.trace('sending success response to %p', connection.remotePeer)
+    pbstr.write({ type: StopMessage.Type.STATUS, status: Status.OK }, {
+      signal
+    })
 
     const remoteAddr = connection.remoteAddr.encapsulate(`/p2p-circuit/p2p/${remotePeerId.toString()}`)
     const localAddr = this.addressManager.getAddresses()[0]
     const maConn = streamToMaConnection({
-      stream: pbstr.unwrap(),
+      stream: pbstr.unwrap().unwrap(),
       remoteAddr,
       localAddr
     })
@@ -350,7 +385,8 @@ export function circuitRelayTransport (init?: CircuitRelayTransportInit): (compo
   const validatedConfig = object({
     discoverRelays: number().min(0).integer().default(0),
     maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
-    maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS)
+    maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+    stopTimeout: number().min(0).integer().default(30000)
   }).validateSync(init)
 
   return (components) => {

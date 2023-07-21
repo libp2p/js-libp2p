@@ -70,8 +70,8 @@
   },
   "devDependencies": {
     "@types/sinon": "^10.0.15",
-    "aegir": "^39.0.10",
-    "datastore-core": "^9.0.1",
+    "aegir": "^39.0.13",
+    "datastore-core": "^9.1.1",
     "delay": "^6.0.0",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",

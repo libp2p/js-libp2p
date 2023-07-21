@@ -22,12 +22,11 @@ import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { identifyService } from '../../src/identify/index.js'
+import { type IdentifyService, identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
-import type { DefaultIdentifyService } from '../../src/identify/identify.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -342,7 +341,7 @@ describe('dialing (direct, WebSockets)', () => {
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
-  let libp2p: Libp2p<{ identify: unknown }>
+  let libp2p: Libp2p<{ identify: IdentifyService }>
   let peerId: PeerId
 
   beforeEach(async () => {
@@ -382,7 +381,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       throw new Error('Identify service missing')
     }
 
-    const identifySpy = sinon.spy(libp2p.services.identify as DefaultIdentifyService, 'identify')
+    const identifySpy = sinon.spy(libp2p.services.identify, 'identify')
     const peerStorePatchSpy = sinon.spy(libp2p.peerStore, 'patch')
     const connectionPromise = pEvent(libp2p, 'connection:open')
 
@@ -398,6 +397,48 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     await identifySpy.firstCall.returnValue
 
     expect(peerStorePatchSpy.callCount).to.equal(1)
+
+    await libp2p.stop()
+  })
+
+  it('should not run identify automatically after connecting', async () => {
+    libp2p = await createLibp2p({
+      peerId,
+      transports: [
+        webSockets({
+          filter: filters.all
+        })
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ],
+      services: {
+        identify: identifyService({
+          runOnConnectionOpen: false
+        })
+      },
+      connectionGater: mockConnectionGater()
+    })
+
+    if (libp2p.services.identify == null) {
+      throw new Error('Identify service missing')
+    }
+
+    const identifySpy = sinon.spy(libp2p.services.identify, 'identify')
+    const connectionPromise = pEvent(libp2p, 'connection:open')
+
+    await libp2p.start()
+
+    const connection = await libp2p.dial(relayMultiaddr)
+    expect(connection).to.exist()
+
+    // Wait for connection event to be emitted
+    await connectionPromise
+
+    expect(identifySpy.callCount).to.equal(0)
 
     await libp2p.stop()
   })
@@ -424,10 +465,10 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     const connection = await libp2p.dial(relayMultiaddr)
     expect(connection).to.exist()
-    expect(connection.stat.timeline.close).to.not.exist()
+    expect(connection.timeline.close).to.not.exist()
 
     await libp2p.hangUp(connection.remotePeer)
-    expect(connection.stat.timeline.close).to.exist()
+    expect(connection.timeline.close).to.exist()
 
     await libp2p.stop()
   })
