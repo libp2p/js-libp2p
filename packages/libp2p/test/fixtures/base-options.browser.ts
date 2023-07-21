@@ -1,5 +1,4 @@
 
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { webSockets } from '@libp2p/websockets'
@@ -19,7 +18,7 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       circuitRelayTransport()
     ],
     streamMuxers: [
-      yamux(),
+      mplex(),
       mplex()
     ],
     connectionEncryption: [

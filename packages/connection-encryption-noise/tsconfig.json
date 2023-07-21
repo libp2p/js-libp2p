@@ -1,0 +1,42 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../stream-multiplexer-yamux"
+    },
+    {
+      "path": "../libp2p-daemon-client"
+    },
+    {
+      "path": "../libp2p-daemon-server"
+    },
+    {
+      "path": "../interface-compliance-tests"
+    },
+    {
+      "path": "../peer-id-factory"
+    },
+    {
+      "path": "../transport-tcp"
+    }
+  ]
+}

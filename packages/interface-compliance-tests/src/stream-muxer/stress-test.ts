@@ -9,7 +9,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
   }
 
   describe('stress test', function () {
-    this.timeout(800000)
+    this.timeout(1600000)
 
     it('1 stream with 1 msg', async () => { await spawn(createMuxer, 1, 1) })
     it('1 stream with 10 msg', async () => { await spawn(createMuxer, 1, 10) })

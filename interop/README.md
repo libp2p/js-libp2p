@@ -9,20 +9,88 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Install](#install)
-- [API Docs](#api-docs)
+- [Usage](#usage)
+  - [Build js-libp2p](#build-js-libp2p)
+    - [node.js](#nodejs)
+    - [Browsers](#browsers)
+  - [Build another libp2p implementation](#build-another-libp2p-implementation)
+  - [Running Redis](#running-redis)
+  - [Start libp2p](#start-libp2p)
+  - [Start another libp2p implementation](#start-another-libp2p-implementation)
 - [License](#license)
 - [Contribution](#contribution)
 
-## Install
+## Usage
+
+The multidim interop tests use random high ports for listeners. Since you need to know which port will be listened on ahead of time to `EXPOSE` a port in a Docker image to the host machine, this means everything has to be run in Docker.
+
+### Build js-libp2p
+
+This must be repeated every time you make a change to the js-libp2p source code.
+
+#### node.js
 
 ```console
-$ npm i multidim-interop
+$ npm run build
+$ docker build . -f ./interop/Dockerfile -t js-libp2p-node
 ```
 
-## API Docs
+#### Browsers
 
-- <https://libp2p.github.io/js-libp2p/modules/multidim_interop.html>
+```console
+$ npm run build
+$ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
+```
+
+### Build another libp2p implementation
+
+1. Clone the test-plans repo somewhere
+   ```console
+   $ git clone https://github.com/libp2p/test-plans.git
+   ```
+2. (Optional) If you are running an M1 Mac you may need to override the build platform.
+    - Edit `/multidim-interop/dockerBuildWrapper.sh`
+    - Add `--platform linux/arm64/v8` to the `docker buildx build` command
+      ```
+      docker buildx build \
+        --platform linux/arm64/v8 \    <-- add this line
+        --load \
+        -t $IMAGE_NAME $CACHING_OPTIONS "$@"
+      ```
+3. (Optional) Enable some sort of debug output
+   - nim-libp2p
+     - edit `/multidim-interop/impl/nim/$VERSION/Dockerfile`
+     - Change `-d:chronicles_log_level=WARN` to `-d:chronicles_log_level=DEBUG`
+   - rust-libp2p
+     - When starting the docker container add `-e RUST_LOG=debug`
+   - go-libp2p
+     - When starting the docker container add `-e GOLOG_LOG_LEVEL=debug`
+4. Build the version you want to test against
+   ```console
+   $ cd impl/$IMPL/$VERSION
+   $ make
+   ...
+   ```
+
+### Running Redis
+
+Redis is used to allow inter-container communication, exchanging listen addresses etc. It must be started as a Docker container:
+
+```console
+$ docker run --name redis --rm -p 6379:6379 redis:7-alpine
+```
+
+### Start libp2p
+
+```console
+$ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=true -e redis_addr=redis:6379 --link redis:redis js-libp2p-node
+```
+
+### Start another libp2p implementation
+
+```console
+$ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=false -e redis_addr=redis:6379 --link redis:redis nim-v1.0
+```
 
 ## License
 

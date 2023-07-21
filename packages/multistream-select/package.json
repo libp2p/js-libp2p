@@ -60,7 +60,7 @@
     "it-length-prefixed": "^9.0.1",
     "it-merge": "^3.0.0",
     "it-pipe": "^3.0.1",
-    "it-pushable": "^3.1.3",
+    "it-pushable": "^3.2.0",
     "it-reader": "^6.0.1",
     "it-stream-types": "^2.0.1",
     "uint8arraylist": "^2.4.3",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@types/varint": "^6.0.0",
-    "aegir": "^39.0.10",
+    "aegir": "^39.0.13",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
     "it-map": "^3.0.3",

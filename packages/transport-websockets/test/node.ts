@@ -74,7 +74,7 @@ describe('listen', () => {
 
     await listener.close()
 
-    await waitFor(() => conn.stat.timeline.close != null)
+    await waitFor(() => conn.timeline.close != null)
   })
 
   describe('ip4', () => {

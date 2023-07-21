@@ -1,17 +1,8 @@
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, PendingDial } from '@libp2p/interface'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-export type PendingDialStatus = 'queued' | 'active' | 'error' | 'success'
-
-export interface PendingDial {
-  id: string
-  status: PendingDialStatus
-  peerId?: PeerId
-  multiaddrs: Multiaddr[]
-}
 
 export interface ConnectionManager {
   /**
@@ -51,7 +42,7 @@ export interface ConnectionManager {
   /**
    * Close our connections to a peer
    */
-  closeConnections: (peer: PeerId) => Promise<void>
+  closeConnections: (peer: PeerId, options?: AbortOptions) => Promise<void>
 
   /**
    * Invoked after an incoming connection is opened but before PeerIds are

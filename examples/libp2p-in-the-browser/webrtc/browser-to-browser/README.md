@@ -44,8 +44,8 @@ The output should look like:
 `Browser A`
 ```text
 Dialing '/ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk'
-Listening on /ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC/p2p-webrtc-direct/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC
-Dialing '/ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9/p2p-webrtc-direct/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9'
+Listening on /ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC/p2p-circuit/webrtc/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC
+Dialing '/ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9/p2p-circuit/webrtc/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9'
 Sending message 'helloa'
 Received message 'helloa'
 Received message 'hellob'
@@ -53,8 +53,8 @@ Received message 'hellob'
 
 `Browser B`
 ```text
-Dialing '/ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC/p2p-webrtc-direct/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC'
-Listening on /ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9/p2p-webrtc-direct/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9
+Dialing '/ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC/p2p-circuit/webrtc/p2p/12D3KooW9wFiWFELqGJTbzEwtByXsPiHJdHB8n7Kin71VMYyERmC'
+Listening on /ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9/p2p-circuit/webrtc/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9
 Received message 'helloa'
 Sending message 'hellob'
 Received message 'hellob'

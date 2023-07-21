@@ -21,9 +21,8 @@ import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH
 } from '../../src/identify/consts.js'
-import { DefaultIdentifyService } from '../../src/identify/identify.js'
+import { identifyService, type IdentifyServiceInit } from '../../src/identify/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import type { IdentifyServiceInit } from '../../src/identify/index.js'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
@@ -97,8 +96,8 @@ describe('identify (push)', () => {
   })
 
   it('should be able to push identify updates to another peer', async () => {
-    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    const localIdentify = identifyService(defaultInit)(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -171,11 +170,11 @@ describe('identify (push)', () => {
 
   it('should time out during push identify', async () => {
     let streamEnded = false
-    const localIdentify = new DefaultIdentifyService(localComponents, {
+    const localIdentify = identifyService({
       ...defaultInit,
       timeout: 10
-    })
-    const remoteIdentify = new DefaultIdentifyService(remoteComponents, defaultInit)
+    })(localComponents)
+    const remoteIdentify = identifyService(defaultInit)(remoteComponents)
 
     await start(localIdentify)
     await start(remoteIdentify)
@@ -221,7 +220,7 @@ describe('identify (push)', () => {
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
     const stream = await newStreamSpy.getCall(0).returnValue
-    expect(stream).to.have.nested.property('stat.timeline.close')
+    expect(stream).to.have.nested.property('timeline.close')
 
     // method should have returned before the remote handler completes as we timed
     // out so we ignore the return value

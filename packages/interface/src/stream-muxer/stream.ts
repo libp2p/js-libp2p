@@ -1,22 +1,21 @@
-// import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import { type Pushable, pushable } from 'it-pushable'
+import defer, { type DeferredPromise } from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { CodeError } from '../errors.js'
-import type { Direction, Stream, StreamStat } from '../connection/index.js'
+import type { Direction, ReadStatus, Stream, StreamStatus, StreamTimeline, WriteStatus } from '../connection/index.js'
+import type { AbortOptions } from '../index.js'
 import type { Source } from 'it-stream-types'
 
-// const log = logger('libp2p:stream')
-
-const log: any = () => {}
-log.trace = () => {}
-log.error = () => {}
+interface Logger {
+  (formatter: any, ...args: any[]): void
+  error: (formatter: any, ...args: any[]) => void
+  trace: (formatter: any, ...args: any[]) => void
+  enabled: boolean
+}
 
 const ERR_STREAM_RESET = 'ERR_STREAM_RESET'
-const ERR_STREAM_ABORT = 'ERR_STREAM_ABORT'
-const ERR_SINK_ENDED = 'ERR_SINK_ENDED'
-const ERR_DOUBLE_SINK = 'ERR_DOUBLE_SINK'
+const ERR_SINK_INVALID_STATE = 'ERR_SINK_INVALID_STATE'
 
 export interface AbstractStreamInit {
   /**
@@ -30,10 +29,9 @@ export interface AbstractStreamInit {
   direction: Direction
 
   /**
-   * The maximum allowable data size, any data larger than this will be
-   * chunked and sent in multiple data messages
+   * A Logger implementation used to log stream-specific information
    */
-  maxDataSize: number
+  log: Logger
 
   /**
    * User specific stream metadata
@@ -44,6 +42,32 @@ export interface AbstractStreamInit {
    * Invoked when the stream ends
    */
   onEnd?: (err?: Error | undefined) => void
+
+  /**
+   * Invoked when the readable end of the stream is closed
+   */
+  onCloseRead?: () => void
+
+  /**
+   * Invoked when the writable end of the stream is closed
+   */
+  onCloseWrite?: () => void
+
+  /**
+   * Invoked when the the stream has been reset by the remote
+   */
+  onReset?: () => void
+
+  /**
+   * Invoked when the the stream has errored
+   */
+  onAbort?: (err: Error) => void
+
+  /**
+   * How long to wait in ms for stream data to be written to the underlying
+   * connection when closing the writable end of the stream. (default: 500)
+   */
+  closeTimeout?: number
 }
 
 function isPromise (res?: any): res is Promise<void> {
@@ -52,54 +76,60 @@ function isPromise (res?: any): res is Promise<void> {
 
 export abstract class AbstractStream implements Stream {
   public id: string
-  public stat: StreamStat
+  public direction: Direction
+  public timeline: StreamTimeline
+  public protocol?: string
   public metadata: Record<string, unknown>
   public source: AsyncGenerator<Uint8ArrayList, void, unknown>
+  public status: StreamStatus
+  public readStatus: ReadStatus
+  public writeStatus: WriteStatus
 
-  private readonly abortController: AbortController
-  private readonly resetController: AbortController
-  private readonly closeController: AbortController
-  private sourceEnded: boolean
-  private sinkEnded: boolean
-  private sinkSunk: boolean
+  private readonly sinkController: AbortController
+  private readonly sinkEnd: DeferredPromise<void>
   private endErr: Error | undefined
   private readonly streamSource: Pushable<Uint8ArrayList>
   private readonly onEnd?: (err?: Error | undefined) => void
-  private readonly maxDataSize: number
+  private readonly onCloseRead?: () => void
+  private readonly onCloseWrite?: () => void
+  private readonly onReset?: () => void
+  private readonly onAbort?: (err: Error) => void
+
+  protected readonly log: Logger
 
   constructor (init: AbstractStreamInit) {
-    this.abortController = new AbortController()
-    this.resetController = new AbortController()
-    this.closeController = new AbortController()
-    this.sourceEnded = false
-    this.sinkEnded = false
-    this.sinkSunk = false
+    this.sinkController = new AbortController()
+    this.sinkEnd = defer()
+    this.log = init.log
+
+    // stream status
+    this.status = 'open'
+    this.readStatus = 'ready'
+    this.writeStatus = 'ready'
 
     this.id = init.id
     this.metadata = init.metadata ?? {}
-    this.stat = {
-      direction: init.direction,
-      timeline: {
-        open: Date.now()
-      }
+    this.direction = init.direction
+    this.timeline = {
+      open: Date.now()
     }
-    this.maxDataSize = init.maxDataSize
+
     this.onEnd = init.onEnd
+    this.onCloseRead = init?.onCloseRead
+    this.onCloseWrite = init?.onCloseWrite
+    this.onReset = init?.onReset
+    this.onAbort = init?.onAbort
 
     this.source = this.streamSource = pushable<Uint8ArrayList>({
-      onEnd: () => {
-        // already sent a reset message
-        if (this.stat.timeline.reset !== null) {
-          const res = this.sendCloseRead()
-
-          if (isPromise(res)) {
-            res.catch(err => {
-              log.error('error while sending close read', err)
-            })
-          }
+      onEnd: (err) => {
+        if (err != null) {
+          this.log.trace('source ended with error', err)
+        } else {
+          this.log.trace('source ended')
         }
 
-        this.onSourceEnd()
+        this.readStatus = 'closed'
+        this.onSourceEnd(err)
       }
     })
 
@@ -107,216 +137,295 @@ export abstract class AbstractStream implements Stream {
     this.sink = this.sink.bind(this)
   }
 
-  protected onSourceEnd (err?: Error): void {
-    if (this.sourceEnded) {
-      return
-    }
-
-    this.stat.timeline.closeRead = Date.now()
-    this.sourceEnded = true
-    log.trace('%s stream %s source end - err: %o', this.stat.direction, this.id, err)
-
-    if (err != null && this.endErr == null) {
-      this.endErr = err
-    }
-
-    if (this.sinkEnded) {
-      this.stat.timeline.close = Date.now()
-
-      if (this.onEnd != null) {
-        this.onEnd(this.endErr)
-      }
-    }
-  }
-
-  protected onSinkEnd (err?: Error): void {
-    if (this.sinkEnded) {
-      return
-    }
-
-    this.stat.timeline.closeWrite = Date.now()
-    this.sinkEnded = true
-    log.trace('%s stream %s sink end - err: %o', this.stat.direction, this.id, err)
-
-    if (err != null && this.endErr == null) {
-      this.endErr = err
-    }
-
-    if (this.sourceEnded) {
-      this.stat.timeline.close = Date.now()
-
-      if (this.onEnd != null) {
-        this.onEnd(this.endErr)
-      }
-    }
-  }
-
-  // Close for both Reading and Writing
-  close (): void {
-    log.trace('%s stream %s close', this.stat.direction, this.id)
-
-    this.closeRead()
-    this.closeWrite()
-  }
-
-  // Close for reading
-  closeRead (): void {
-    log.trace('%s stream %s closeRead', this.stat.direction, this.id)
-
-    if (this.sourceEnded) {
-      return
-    }
-
-    this.streamSource.end()
-  }
-
-  // Close for writing
-  closeWrite (): void {
-    log.trace('%s stream %s closeWrite', this.stat.direction, this.id)
-
-    if (this.sinkEnded) {
-      return
-    }
-
-    this.closeController.abort()
-
-    try {
-      // need to call this here as the sink method returns in the catch block
-      // when the close controller is aborted
-      const res = this.sendCloseWrite()
-
-      if (isPromise(res)) {
-        res.catch(err => {
-          log.error('error while sending close write', err)
-        })
-      }
-    } catch (err) {
-      log.trace('%s stream %s error sending close', this.stat.direction, this.id, err)
-    }
-
-    this.onSinkEnd()
-  }
-
-  // Close for reading and writing (local error)
-  abort (err: Error): void {
-    log.trace('%s stream %s abort', this.stat.direction, this.id, err)
-    // End the source with the passed error
-    this.streamSource.end(err)
-    this.abortController.abort()
-    this.onSinkEnd(err)
-  }
-
-  // Close immediately for reading and writing (remote error)
-  reset (): void {
-    const err = new CodeError('stream reset', ERR_STREAM_RESET)
-    this.resetController.abort()
-    this.streamSource.end(err)
-    this.onSinkEnd(err)
-  }
-
   async sink (source: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
-    if (this.sinkSunk) {
-      throw new CodeError('sink already called on stream', ERR_DOUBLE_SINK)
+    if (this.writeStatus !== 'ready') {
+      throw new CodeError(`writable end state is "${this.writeStatus}" not "ready"`, ERR_SINK_INVALID_STATE)
     }
-
-    this.sinkSunk = true
-
-    if (this.sinkEnded) {
-      throw new CodeError('stream closed for writing', ERR_SINK_ENDED)
-    }
-
-    const signal = anySignal([
-      this.abortController.signal,
-      this.resetController.signal,
-      this.closeController.signal
-    ])
 
     try {
-      source = abortableSource(source, signal)
+      this.writeStatus = 'writing'
 
-      if (this.stat.direction === 'outbound') { // If initiator, open a new stream
-        const res = this.sendNewStream()
+      const options: AbortOptions = {
+        signal: this.sinkController.signal
+      }
+
+      if (this.direction === 'outbound') { // If initiator, open a new stream
+        const res = this.sendNewStream(options)
 
         if (isPromise(res)) {
           await res
         }
       }
 
+      source = abortableSource(source, this.sinkController.signal, {
+        returnOnAbort: true
+      })
+
+      this.log.trace('sink reading from source')
+
       for await (let data of source) {
-        while (data.length > 0) {
-          if (data.length <= this.maxDataSize) {
-            const res = this.sendData(data instanceof Uint8Array ? new Uint8ArrayList(data) : data)
+        data = data instanceof Uint8Array ? new Uint8ArrayList(data) : data
 
-            if (isPromise(res)) { // eslint-disable-line max-depth
-              await res
-            }
+        const res = this.sendData(data, options)
 
-            break
-          }
-          data = data instanceof Uint8Array ? new Uint8ArrayList(data) : data
-          const res = this.sendData(data.sublist(0, this.maxDataSize))
-
-          if (isPromise(res)) {
-            await res
-          }
-
-          data.consume(this.maxDataSize)
+        if (isPromise(res)) { // eslint-disable-line max-depth
+          await res
         }
       }
+
+      this.log.trace('sink finished reading from source')
+      this.writeStatus = 'done'
+
+      this.log.trace('sink calling closeWrite')
+      await this.closeWrite(options)
+      this.onSinkEnd()
     } catch (err: any) {
-      if (err.type === 'aborted' && err.message === 'The operation was aborted') {
-        if (this.closeController.signal.aborted) {
-          return
-        }
-
-        if (this.resetController.signal.aborted) {
-          err.message = 'stream reset'
-          err.code = ERR_STREAM_RESET
-        }
-
-        if (this.abortController.signal.aborted) {
-          err.message = 'stream aborted'
-          err.code = ERR_STREAM_ABORT
-        }
-      }
-
-      // Send no more data if this stream was remotely reset
-      if (err.code === ERR_STREAM_RESET) {
-        log.trace('%s stream %s reset', this.stat.direction, this.id)
-      } else {
-        log.trace('%s stream %s error', this.stat.direction, this.id, err)
-        try {
-          const res = this.sendReset()
-
-          if (isPromise(res)) {
-            await res
-          }
-
-          this.stat.timeline.reset = Date.now()
-        } catch (err) {
-          log.trace('%s stream %s error sending reset', this.stat.direction, this.id, err)
-        }
-      }
-
-      this.streamSource.end(err)
-      this.onSinkEnd(err)
+      this.log.trace('sink ended with error, calling abort with error', err)
+      this.abort(err)
 
       throw err
     } finally {
-      signal.clear()
+      this.log.trace('resolve sink end')
+      this.sinkEnd.resolve()
+    }
+  }
+
+  protected onSourceEnd (err?: Error): void {
+    if (this.timeline.closeRead != null) {
+      return
     }
 
-    try {
-      const res = this.sendCloseWrite()
+    this.timeline.closeRead = Date.now()
 
-      if (isPromise(res)) {
-        await res
+    if (err != null && this.endErr == null) {
+      this.endErr = err
+    }
+
+    this.onCloseRead?.()
+
+    if (this.timeline.closeWrite != null) {
+      this.log.trace('source and sink ended')
+      this.timeline.close = Date.now()
+
+      if (this.onEnd != null) {
+        this.onEnd(this.endErr)
       }
-    } catch (err) {
-      log.trace('%s stream %s error sending close', this.stat.direction, this.id, err)
+    } else {
+      this.log.trace('source ended, waiting for sink to end')
+    }
+  }
+
+  protected onSinkEnd (err?: Error): void {
+    if (this.timeline.closeWrite != null) {
+      return
     }
 
-    this.onSinkEnd()
+    this.timeline.closeWrite = Date.now()
+
+    if (err != null && this.endErr == null) {
+      this.endErr = err
+    }
+
+    this.onCloseWrite?.()
+
+    if (this.timeline.closeRead != null) {
+      this.log.trace('sink and source ended')
+      this.timeline.close = Date.now()
+
+      if (this.onEnd != null) {
+        this.onEnd(this.endErr)
+      }
+    } else {
+      this.log.trace('sink ended, waiting for source to end')
+    }
+  }
+
+  // Close for both Reading and Writing
+  async close (options?: AbortOptions): Promise<void> {
+    this.log.trace('closing gracefully')
+
+    this.status = 'closing'
+
+    await Promise.all([
+      this.closeRead(options),
+      this.closeWrite(options)
+    ])
+
+    this.status = 'closed'
+
+    this.log.trace('closed gracefully')
+  }
+
+  async closeRead (options: AbortOptions = {}): Promise<void> {
+    if (this.readStatus === 'closing' || this.readStatus === 'closed') {
+      return
+    }
+
+    this.log.trace('closing readable end of stream with starting read status "%s"', this.readStatus)
+
+    const readStatus = this.readStatus
+    this.readStatus = 'closing'
+
+    if (readStatus === 'ready') {
+      this.log.trace('ending internal source queue')
+      this.streamSource.end()
+    }
+
+    if (this.status !== 'reset' && this.status !== 'aborted') {
+      this.log.trace('send close read to remote')
+      await this.sendCloseRead(options)
+    }
+
+    this.log.trace('closed readable end of stream')
+  }
+
+  async closeWrite (options: AbortOptions = {}): Promise<void> {
+    if (this.writeStatus === 'closing' || this.writeStatus === 'closed') {
+      return
+    }
+
+    this.log.trace('closing writable end of stream with starting write status "%s"', this.writeStatus)
+
+    const writeStatus = this.writeStatus
+
+    if (this.writeStatus === 'ready') {
+      this.log.trace('sink was never sunk, sink an empty array')
+      await this.sink([])
+    }
+
+    this.writeStatus = 'closing'
+
+    if (writeStatus === 'writing') {
+      // stop reading from the source passed to `.sink` in the microtask queue
+      // - this lets any data queued by the user in the current tick get read
+      // before we exit
+      await new Promise((resolve, reject) => {
+        queueMicrotask(() => {
+          this.log.trace('aborting source passed to .sink')
+          this.sinkController.abort()
+          this.sinkEnd.promise.then(resolve, reject)
+        })
+      })
+    }
+
+    if (this.status !== 'reset' && this.status !== 'aborted') {
+      this.log.trace('send close write to remote')
+      await this.sendCloseWrite(options)
+    }
+
+    this.writeStatus = 'closed'
+
+    this.log.trace('closed writable end of stream')
+  }
+
+  /**
+   * Close immediately for reading and writing and send a reset message (local
+   * error)
+   */
+  abort (err: Error): void {
+    if (this.status === 'closed' || this.status === 'aborted' || this.status === 'reset') {
+      return
+    }
+
+    this.log('abort with error', err)
+
+    // try to send a reset message
+    this.log('try to send reset to remote')
+    const res = this.sendReset()
+
+    if (isPromise(res)) {
+      res.catch((err) => {
+        this.log.error('error sending reset message', err)
+      })
+    }
+
+    this.status = 'aborted'
+    this.timeline.abort = Date.now()
+    this._closeSinkAndSource(err)
+    this.onAbort?.(err)
+  }
+
+  /**
+   * Receive a reset message - close immediately for reading and writing (remote
+   * error)
+   */
+  reset (): void {
+    if (this.status === 'closed' || this.status === 'aborted' || this.status === 'reset') {
+      return
+    }
+
+    const err = new CodeError('stream reset', ERR_STREAM_RESET)
+
+    this.status = 'reset'
+    this._closeSinkAndSource(err)
+    this.onReset?.()
+  }
+
+  _closeSinkAndSource (err?: Error): void {
+    this._closeSink(err)
+    this._closeSource(err)
+  }
+
+  _closeSink (err?: Error): void {
+    // if the sink function is running, cause it to end
+    if (this.writeStatus === 'writing') {
+      this.log.trace('end sink source')
+      this.sinkController.abort()
+    }
+
+    this.onSinkEnd(err)
+  }
+
+  _closeSource (err?: Error): void {
+    // if the source is not ending, end it
+    if (this.readStatus !== 'closing' && this.readStatus !== 'closed') {
+      this.log.trace('ending source with %d bytes to be read by consumer', this.streamSource.readableLength)
+      this.readStatus = 'closing'
+      this.streamSource.end(err)
+    }
+  }
+
+  /**
+   * The remote closed for writing so we should expect to receive no more
+   * messages
+   */
+  remoteCloseWrite (): void {
+    if (this.readStatus === 'closing' || this.readStatus === 'closed') {
+      this.log('received remote close write but local source is already closed')
+      return
+    }
+
+    this.log.trace('remote close write')
+    this._closeSource()
+  }
+
+  /**
+   * The remote closed for reading so we should not send any more
+   * messages
+   */
+  remoteCloseRead (): void {
+    if (this.writeStatus === 'closing' || this.writeStatus === 'closed') {
+      this.log('received remote close read but local sink is already closed')
+      return
+    }
+
+    this.log.trace('remote close read')
+    this._closeSink()
+  }
+
+  /**
+   * The underlying muxer has closed, no more messages can be sent or will
+   * be received, close immediately to free up resources
+   */
+  destroy (): void {
+    if (this.status === 'closed' || this.status === 'aborted' || this.status === 'reset') {
+      this.log('received destroy but we are already closed')
+      return
+    }
+
+    this.log.trace('muxer destroyed')
+
+    this._closeSinkAndSource()
   }
 
   /**
@@ -339,27 +448,27 @@ export abstract class AbstractStream implements Stream {
    * Send a message to the remote muxer informing them a new stream is being
    * opened
    */
-  abstract sendNewStream (): void | Promise<void>
+  abstract sendNewStream (options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a data message to the remote muxer
    */
-  abstract sendData (buf: Uint8ArrayList): void | Promise<void>
+  abstract sendData (buf: Uint8ArrayList, options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a reset message to the remote muxer
    */
-  abstract sendReset (): void | Promise<void>
+  abstract sendReset (options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a message to the remote muxer, informing them no more data messages
    * will be sent by this end of the stream
    */
-  abstract sendCloseWrite (): void | Promise<void>
+  abstract sendCloseWrite (options?: AbortOptions): void | Promise<void>
 
   /**
    * Send a message to the remote muxer, informing them no more data messages
    * will be read by this end of the stream
    */
-  abstract sendCloseRead (): void | Promise<void>
+  abstract sendCloseRead (options?: AbortOptions): void | Promise<void>
 }

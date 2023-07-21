@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import { nopSink, nopSource } from './util.js'
 import type { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/interface/connection'
 import type { CounterGroup } from '@libp2p/interface/metrics'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 
 const log = logger('libp2p:webrtc:connection')
@@ -72,14 +72,19 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
     }
   }
 
-  async close (err?: Error | undefined): Promise<void> {
-    if (err !== undefined) {
-      log.error('error closing connection', err)
-    }
+  async close (options?: AbortOptions): Promise<void> {
     log.trace('closing connection')
 
-    this.timeline.close = Date.now()
     this.peerConnection.close()
+    this.timeline.close = Date.now()
     this.metrics?.increment({ close: true })
+  }
+
+  abort (err: Error): void {
+    log.error('closing connection due to error', err)
+
+    this.peerConnection.close()
+    this.timeline.close = Date.now()
+    this.metrics?.increment({ abort: true })
   }
 }

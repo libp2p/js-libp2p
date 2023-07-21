@@ -85,7 +85,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       expect(upgradeSpy.callCount).to.equal(1)
       await expect(upgradeSpy.getCall(0).returnValue).to.eventually.equal(conn)
       await conn.close()
-      expect(isValidTick(conn.stat.timeline.close)).to.equal(true)
+      expect(isValidTick(conn.timeline.close)).to.equal(true)
     })
 
     it('to non existent listener', async () => {

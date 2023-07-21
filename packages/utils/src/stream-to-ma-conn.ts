@@ -1,36 +1,12 @@
 import { logger } from '@libp2p/logger'
-import { abortableSource } from 'abortable-iterator'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
+import type { AbortOptions } from '@libp2p/interface'
+import type { MultiaddrConnection, Stream } from '@libp2p/interface/connection'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Duplex, Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:stream:converter')
 
-export interface Timeline {
-  /**
-   * Connection opening timestamp
-   */
-  open: number
-
-  /**
-   * Connection upgraded timestamp
-   */
-  upgraded?: number
-
-  /**
-   * Connection closed timestamp
-   */
-  close?: number
-}
-
-export interface StreamOptions {
-  signal?: AbortSignal
-
-}
-
 export interface StreamProperties {
-  stream: Duplex<AsyncIterable<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>>
+  stream: Stream
   remoteAddr: Multiaddr
   localAddr: Multiaddr
 }
@@ -39,7 +15,7 @@ export interface StreamProperties {
  * Convert a duplex iterable into a MultiaddrConnection.
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export function streamToMaConnection (props: StreamProperties, options: StreamOptions = {}): MultiaddrConnection {
+export function streamToMaConnection (props: StreamProperties): MultiaddrConnection {
   const { stream, remoteAddr } = props
   const { sink, source } = stream
 
@@ -55,13 +31,9 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
 
   const maConn: MultiaddrConnection = {
     async sink (source) {
-      if (options.signal != null) {
-        source = abortableSource(source, options.signal)
-      }
-
       try {
         await sink(source)
-        await close()
+        close()
       } catch (err: any) {
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {
@@ -72,22 +44,23 @@ export function streamToMaConnection (props: StreamProperties, options: StreamOp
         }
       }
     },
-    source: (options.signal != null) ? abortableSource(mapSource, options.signal) : mapSource,
+    source: mapSource,
     remoteAddr,
     timeline: { open: Date.now(), close: undefined },
-    async close () {
-      await sink(async function * () {
-        yield new Uint8Array(0)
-      }())
-      await close()
+    async close (options?: AbortOptions) {
+      close()
+      await stream.close(options)
+    },
+    abort (err: Error): void {
+      close()
+      stream.abort(err)
     }
   }
 
-  async function close (): Promise<void> {
+  function close (): void {
     if (maConn.timeline.close == null) {
       maConn.timeline.close = Date.now()
     }
-    await Promise.resolve()
   }
 
   return maConn
