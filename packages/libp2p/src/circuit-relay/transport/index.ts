@@ -9,7 +9,7 @@ import { pbStream } from 'it-protobuf-stream'
 import { number, object } from 'yup'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import { codes } from '../../errors.js'
-import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { CIRCUIT_PROTO_CODE, DEFAULT_STOP_TIMEOUT, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery, type RelayDiscoveryComponents } from './discovery.js'
 import { createListener } from './listener.js'
@@ -92,7 +92,7 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
    * must finish the initial protocol negotiation within this timeout in ms
    * (default: 30000)
    */
-  stopTimeout: number
+  stopTimeout?: number
 
   /**
    * When creating a reservation it must complete within this number of ms
@@ -113,7 +113,7 @@ class CircuitRelayTransport implements Transport {
   private readonly reservationStore: ReservationStore
   private readonly maxInboundStopStreams?: number
   private readonly maxOutboundStopStreams?: number
-  private readonly stopTimeout: number
+  private readonly stopTimeout?: number
   private started: boolean
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
@@ -256,7 +256,7 @@ class CircuitRelayTransport implements Transport {
     try {
       const pbstr = pbStream(stream)
       const hopstr = pbstr.pb(HopMessage)
-      hopstr.write({
+      await hopstr.write({
         type: HopMessage.Type.CONNECT,
         peer: {
           id: destinationPeer.toBytes(),
@@ -315,7 +315,7 @@ class CircuitRelayTransport implements Transport {
    * An incoming STOP request means a remote peer wants to dial us via a relay
    */
   async onStop ({ connection, stream }: IncomingStreamData): Promise<void> {
-    const signal = AbortSignal.timeout(this.stopTimeout)
+    const signal = AbortSignal.timeout(this.stopTimeout ?? DEFAULT_STOP_TIMEOUT)
     const pbstr = pbStream(stream).pb(StopMessage)
     const request = await pbstr.read({
       signal
@@ -325,7 +325,7 @@ class CircuitRelayTransport implements Transport {
 
     if (request?.type === undefined) {
       log.error('type was missing from circuit v2 stop protocol request from %s', connection.remotePeer)
-      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
       await stream.close()
@@ -335,7 +335,7 @@ class CircuitRelayTransport implements Transport {
     // Validate the STOP request has the required input
     if (request.type !== StopMessage.Type.CONNECT) {
       log.error('invalid stop connect request via peer %p', connection.remotePeer)
-      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
         signal
       })
       await stream.close()
@@ -344,7 +344,7 @@ class CircuitRelayTransport implements Transport {
 
     if (!isValidStop(request)) {
       log.error('invalid stop connect request via peer %p', connection.remotePeer)
-      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
       await stream.close()
@@ -355,7 +355,7 @@ class CircuitRelayTransport implements Transport {
 
     if ((await this.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
       log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)
-      pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
         signal
       })
       await stream.close()
@@ -363,7 +363,7 @@ class CircuitRelayTransport implements Transport {
     }
 
     log.trace('sending success response to %p', connection.remotePeer)
-    pbstr.write({ type: StopMessage.Type.STATUS, status: Status.OK }, {
+    await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.OK }, {
       signal
     })
 
@@ -386,7 +386,7 @@ export function circuitRelayTransport (init?: CircuitRelayTransportInit): (compo
     discoverRelays: number().min(0).integer().default(0),
     maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
     maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
-    stopTimeout: number().min(0).integer().default(30000)
+    stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)
   }).validateSync(init)
 
   return (components) => {

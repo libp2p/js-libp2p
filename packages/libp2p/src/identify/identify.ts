@@ -86,7 +86,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       agentVersion: init.agentVersion ?? AGENT_VERSION
     }
 
-    if (init.runOnConnectionOpen) {
+    if (init.runOnConnectionOpen === true) {
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail

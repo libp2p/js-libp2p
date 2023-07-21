@@ -1,4 +1,4 @@
-import { number, object, string } from 'yup'
+import { boolean, number, object, string } from 'yup'
 import {
   AGENT_VERSION,
   MAX_IDENTIFY_MESSAGE_SIZE,
@@ -93,7 +93,8 @@ export function identifyService (init: IdentifyServiceInit = {}): (components: I
     timeout: number().integer().default(TIMEOUT),
     maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
     maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
+    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+    runOnConnectionOpen: boolean().default(true)
   }).validateSync(init)
 
   return (components) => new DefaultIdentifyService(components, validatedConfig)
