@@ -100,7 +100,7 @@
     "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
-    "@chainsafe/as-sha256": "^0.2.4",
+    "@chainsafe/as-sha256": "^0.4.1",
     "@dapplion/benchmark": "^0.2.4",
     "@libp2p/floodsub": "^7.0.0",
     "@libp2p/interface-compliance-tests": "^3.0.0",
