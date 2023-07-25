@@ -181,7 +181,7 @@ jobs:
 
   multidim-interop:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@v3
       - uses: ipfs/aegir/actions/cache-node-modules@master
@@ -202,6 +202,7 @@ jobs:
           s3-cache-bucket: ${{ vars.S3_LIBP2P_BUILD_CACHE_BUCKET_NAME }}
           s3-access-key-id: ${{ vars.S3_LIBP2P_BUILD_CACHE_AWS_ACCESS_KEY_ID }}
           s3-secret-access-key: ${{ secrets.S3_LIBP2P_BUILD_CACHE_AWS_SECRET_ACCESS_KEY }}
+          worker-count: 16
 
   release:
     runs-on: ubuntu-latest
