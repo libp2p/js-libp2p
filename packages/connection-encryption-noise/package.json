@@ -95,5 +95,6 @@
   "browser": {
     "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js",
     "util": false
-  }
+  },
+  "private": true
 }
