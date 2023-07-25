@@ -109,7 +109,7 @@
     "aegir": "^39.0.13",
     "datastore-core": "^9.1.1",
     "delay": "^6.0.0",
-    "mkdirp": "^1.0.4",
+    "mkdirp": "^3.0.1",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-retry": "^5.1.2",
