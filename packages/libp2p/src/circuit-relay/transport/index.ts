@@ -283,8 +283,10 @@ class CircuitRelayTransport implements Transport {
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`)
       })
 
-      log('new outbound connection %a', maConn.remoteAddr)
-      return await this.upgrader.upgradeOutbound(maConn)
+      log('new outbound transient connection %a', maConn.remoteAddr)
+      return await this.upgrader.upgradeOutbound(maConn, {
+        limited: true
+      })
     } catch (err) {
       log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
       disconnectOnFailure && await connection.close()
@@ -380,8 +382,10 @@ class CircuitRelayTransport implements Transport {
       localAddr
     })
 
-    log('new inbound connection %s', maConn.remoteAddr)
-    await this.upgrader.upgradeInbound(maConn)
+    log('new inbound transient connection %s', maConn.remoteAddr)
+    await this.upgrader.upgradeInbound(maConn, {
+      limited: true
+    })
     log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }
 }

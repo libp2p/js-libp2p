@@ -20,6 +20,13 @@ export interface StreamHandlerOptions {
    * How many outgoing streams can be open for this protocol at the same time on each connection (default: 64)
    */
   maxOutboundStreams?: number
+
+  /**
+   * If true, allow this protocol to run on limited connections (e.g.
+   * connections with data or duration limits such as circuit relay
+   * connections) (default: false)
+   */
+  allowOnLimitedConnection?: boolean
 }
 
 export interface StreamHandlerRecord {

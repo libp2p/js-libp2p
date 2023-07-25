@@ -96,6 +96,12 @@ export interface UpgraderOptions {
   skipEncryption?: boolean
   skipProtection?: boolean
   muxerFactory?: StreamMuxerFactory
+
+  /**
+   * The passed MultiaddrConnection has limits place on duration and/or data
+   * transfer amounts so is not expected to be open for very long.
+   */
+  limited?: boolean
 }
 
 export interface Upgrader {
