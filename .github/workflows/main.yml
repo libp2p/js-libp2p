@@ -184,6 +184,9 @@ jobs:
     runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - name: Build images
         run: (cd interop && make -j 4)
