@@ -49,6 +49,8 @@ export class WebRTCTransport implements Transport, Startable {
   async start (): Promise<void> {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
       this._onProtocol(data).catch(err => { log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
+    }, {
+      runOnTransientConnection: true
     })
     this._started = true
   }
@@ -90,7 +92,10 @@ export class WebRTCTransport implements Transport, Startable {
     }
 
     const connection = await this.components.transportManager.dial(baseAddr, options)
-    const signalingStream = await connection.newStream([SIGNALING_PROTO_ID], options)
+    const signalingStream = await connection.newStream(SIGNALING_PROTO_ID, {
+      ...options,
+      runOnTransientConnection: true
+    })
 
     try {
       const { pc, muxerFactory, remoteAddress } = await initiateConnection({

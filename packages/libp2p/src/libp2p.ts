@@ -30,7 +30,7 @@ import { DefaultUpgrader } from './upgrader.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
 import type { Libp2pEvents, PendingDial, ServiceMap, AbortOptions } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
+import type { Connection, NewStreamOptions, Stream } from '@libp2p/interface/connection'
 import type { KeyChain } from '@libp2p/interface/keychain'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -283,7 +283,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     return this.components.connectionManager.openConnection(peer, options)
   }
 
-  async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: AbortOptions = {}): Promise<Stream> {
+  async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {
     if (protocols == null) {
       throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
     }
