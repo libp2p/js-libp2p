@@ -45,9 +45,9 @@
     ]
   },
   "workspaces": [
-    "packages/*",
-    "interop",
+    "doc",
     "examples/*",
-    "doc"
+    "interop",
+    "packages/*"
   ]
 }
