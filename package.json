@@ -13,7 +13,7 @@
   },
   "private": true,
   "scripts": {
-    "reset": "aegir run clean && aegir clean packages/*/node_modules node_modules package-lock.json packages/*/package-lock.json",
+    "reset": "aegir run clean && aegir clean interop/node_modules examples/*/node_modules packages/*/node_modules node_modules package-lock.json packages/*/package-lock.json examples/*/package-lock.json interop/*/package-lock.json",
     "test": "aegir run test",
     "test:node": "aegir run test:node",
     "test:chrome": "aegir run test:chrome",
@@ -31,12 +31,12 @@
     "lint": "aegir run lint",
     "dep-check": "aegir run dep-check",
     "release": "run-s build npm:release",
-    "npm:release": "aegir exec npm -- publish || true",
+    "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
     "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs"
   },
   "devDependencies": {
-    "aegir": "^39.0.5"
+    "aegir": "^39.0.13"
   },
   "eslintConfig": {
     "extends": "ipfs",
@@ -47,6 +47,7 @@
   "workspaces": [
     "packages/*",
     "interop",
-    "examples/*"
+    "examples/*",
+    "doc/*"
   ]
 }

@@ -8,7 +8,8 @@ import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { pbStream } from 'it-pb-stream'
+import { pipe } from 'it-pipe'
+import { pbStream } from 'it-protobuf-stream'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -19,7 +20,7 @@ import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { discoveredRelayConfig, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
+import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 
@@ -34,6 +35,9 @@ describe('circuit-relay', () => {
       // create 1 node and 3 relays
       [local, relay1, relay2, relay3] = await Promise.all([
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -55,6 +59,9 @@ describe('circuit-relay', () => {
           }
         }),
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -77,6 +84,9 @@ describe('circuit-relay', () => {
           }
         }),
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -99,6 +109,9 @@ describe('circuit-relay', () => {
           }
         }),
         createLibp2p({
+          connectionManager: {
+            minConnections: 0
+          },
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
@@ -258,22 +271,24 @@ describe('circuit-relay', () => {
       // wait for identify for newly dialled peer
       await discoveredRelayConfig(relay1, relay3)
 
-      // disconnect not used listen relay
-      await relay1.hangUp(relay3.peerId)
-
-      // Stub dial
+      // stub dial, make sure we can't reconnect
       // @ts-expect-error private field
       sinon.stub(relay1.components.connectionManager, 'openConnection').callsFake(async () => {
         deferred.resolve()
         return Promise.reject(new Error('failed to dial'))
       })
 
-      // Remove peer used as relay from peerStore and disconnect it
-      await relay1.hangUp(relay2.peerId)
-      await relay1.peerStore.delete(relay2.peerId)
+      await Promise.all([
+        // disconnect not used listen relay
+        relay1.hangUp(relay3.peerId),
+
+        // disconnect from relay
+        relay1.hangUp(relay2.peerId)
+      ])
+
       expect(relay1.getConnections()).to.be.empty()
 
-      // Wait for failed dial
+      // wait for failed dial
       await deferred.promise
     })
 
@@ -316,24 +331,11 @@ describe('circuit-relay', () => {
       // wait for peer added as listen relay
       await usingAsRelay(local, relay1)
 
-      // set up listener for address change
-      const deferred = defer()
-
-      local.addEventListener('self:peer:update', ({ detail }) => {
-        const hasNoCircuitRelayAddress = detail.peer.addresses
-          .map(({ multiaddr }) => multiaddr)
-          .find(ma => Circuit.matches(ma)) == null
-
-        if (hasNoCircuitRelayAddress) {
-          deferred.resolve()
-        }
-      })
-
       // shut down the relay
       await relay1.stop()
 
       // should no longer have a circuit address
-      await deferred.promise
+      await doesNotHaveRelay(local)
     })
   })
 
@@ -550,7 +552,7 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const conns = local.getConnections(relay1.peerId)
       expect(conns).to.have.lengthOf(1)
-      expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
+      expect(conns).to.have.nested.property('[0].status', 'open')
     })
 
     it('dialer should close hop stream on hop failure', async () => {
@@ -566,13 +568,13 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const conns = local.getConnections(relay1.peerId)
       expect(conns).to.have.lengthOf(1)
-      expect(conns).to.have.nested.property('[0].stat.status', 'OPEN')
+      expect(conns).to.have.nested.property('[0].status', 'open')
 
       // we should not have any streams with the hop codec
       const streams = local.getConnections(relay1.peerId)
         .map(conn => conn.streams)
         .flat()
-        .filter(stream => stream.stat.protocol === RELAY_V2_HOP_CODEC)
+        .filter(stream => stream.protocol === RELAY_V2_HOP_CODEC)
 
       expect(streams).to.be.empty()
     })
@@ -591,7 +593,7 @@ describe('circuit-relay', () => {
       // we should still be connected to the relay
       const remoteConns = local.getConnections(relay1.peerId)
       expect(remoteConns).to.have.lengthOf(1)
-      expect(remoteConns).to.have.nested.property('[0].stat.status', 'OPEN')
+      expect(remoteConns).to.have.nested.property('[0].status', 'open')
     })
 
     it('should fail to dial remote over relay over relay', async () => {
@@ -623,11 +625,13 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(relay1)
 
       // open hop stream and try to connect to remote
-      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC)
+      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC, {
+        runOnTransientConnection: true
+      })
 
       const hopStream = pbStream(stream).pb(HopMessage)
 
-      hopStream.write({
+      await hopStream.write({
         type: HopMessage.Type.CONNECT,
         peer: {
           id: remote.peerId.toBytes(),
@@ -669,6 +673,93 @@ describe('circuit-relay', () => {
       // should have closed connections to remote and to relay
       expect(events[0].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
       expect(events[1].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
+    })
+
+    it('should mark a relayed connection as transient', async () => {
+      // discover relay and make reservation
+      const connectionToRelay = await remote.dial(relay1.getMultiaddrs()[0])
+
+      // connection to relay should not be marked transient
+      expect(connectionToRelay).to.have.property('transient', false)
+
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection to remote through relay should be marked transient
+      expect(connection).to.have.property('transient', true)
+    })
+
+    it('should not open streams on a transient connection', async () => {
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection should be marked transient
+      expect(connection).to.have.property('transient', true)
+
+      await expect(connection.newStream('/my-protocol/1.0.0'))
+        .to.eventually.be.rejected.with.property('code', 'ERR_TRANSIENT_CONNECTION')
+    })
+
+    it('should not allow incoming streams on a transient connection', async () => {
+      const protocol = '/my-protocol/1.0.0'
+
+      // remote registers handler, disallow running over transient streams
+      await remote.handle(protocol, ({ stream }) => {
+        void pipe(stream, stream)
+      }, {
+        runOnTransientConnection: false
+      })
+
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection should be marked transient
+      expect(connection).to.have.property('transient', true)
+
+      await expect(connection.newStream('/my-protocol/1.0.0', {
+        runOnTransientConnection: false
+      }))
+        .to.eventually.be.rejected.with.property('code', 'ERR_TRANSIENT_CONNECTION')
+    })
+
+    it('should open streams on a transient connection when told to do so', async () => {
+      const protocol = '/my-protocol/1.0.0'
+
+      // remote registers handler, allow running over transient streams
+      await remote.handle(protocol, ({ stream }) => {
+        void pipe(stream, stream)
+      }, {
+        runOnTransientConnection: true
+      })
+
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection should be marked transient
+      expect(connection).to.have.property('transient', true)
+
+      await expect(connection.newStream('/my-protocol/1.0.0', {
+        runOnTransientConnection: true
+      }))
+        .to.eventually.be.ok()
     })
   })
 
@@ -912,13 +1003,17 @@ describe('circuit-relay', () => {
             }
           } catch {}
         })
+      }, {
+        runOnTransientConnection: true
       })
 
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
 
       try {
-        const stream = await local.dialProtocol(ma, protocol)
+        const stream = await local.dialProtocol(ma, protocol, {
+          runOnTransientConnection: true
+        })
 
         await stream.sink(async function * () {
           while (true) {

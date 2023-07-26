@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^12.0.1",
-    "@chainsafe/libp2p-yamux": "^4.0.2",
+    "@chainsafe/libp2p-yamux": "^4.0.0",
     "@libp2p/kad-dht": "^9.0.0",
     "@libp2p/mplex": "^8.0.0",
     "@libp2p/tcp": "^7.0.0",
@@ -40,7 +40,7 @@
     "multiformats": "^12.0.1"
   },
   "devDependencies": {
-    "aegir": "^39.0.10",
+    "aegir": "^39.0.13",
     "test-ipfs-example": "^1.0.0"
   },
   "private": true

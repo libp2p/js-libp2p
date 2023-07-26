@@ -6,9 +6,12 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
+import { pbStream } from 'it-protobuf-stream'
+import toBuffer from 'it-to-buffer'
 import pDefer from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { Message } from './fixtures/pb/message.js'
 import type { TestSetup } from '../index.js'
 import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
 
@@ -61,9 +64,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       expect(dialer.streams).to.have.lengthOf(expectedStreams)
 
-      // Pause, and then send some data and close the dialer
+      // Pause, and then close the dialer
       await delay(50)
-      await pipe([randomBuffer()], dialer, drain)
+      await pipe([], dialer, drain)
 
       expect(openedStreams).to.have.equal(expectedStreams)
       expect(dialer.streams).to.have.lengthOf(0)
@@ -106,7 +109,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       // Pause, and then close the dialer
       await delay(50)
 
-      dialer.close()
+      await dialer.close()
 
       expect(openedStreams, 'listener - number of opened streams should match number of calls to newStream').to.have.equal(expectedStreams)
       expect(dialer.streams, 'all tracked streams should be deleted after the muxer has called close').to.have.lengthOf(0)
@@ -148,7 +151,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       await delay(50)
 
       // close _with an error_
-      dialer.close(new Error())
+      dialer.abort(new Error('Oh no!'))
 
       const timeoutError = new Error('timeout')
       for (const pipe of streamPipes) {
@@ -173,7 +176,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
 
-      dialer.close()
+      await dialer.close()
 
       try {
         await dialer.newStream()
@@ -246,7 +249,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         onIncomingStream: (stream) => {
           void Promise.resolve().then(async () => {
             // Immediate close for write
-            stream.closeWrite()
+            await stream.closeWrite()
 
             const results = await pipe(stream, async (source) => {
               const data = []
@@ -275,16 +278,16 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       await stream.sink(data)
 
       const err = await deferred.promise
-      expect(err).to.have.property('message').that.matches(/stream closed for writing/)
+      expect(err).to.have.property('code', 'ERR_SINK_INVALID_STATE')
     })
 
     it('can close a stream for reading', async () => {
-      const deferred = pDefer<any>()
-
+      const deferred = pDefer<Uint8ArrayList[]>()
       const p = duplexPair<Uint8Array>()
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
       const data = [randomBuffer(), randomBuffer()].map(d => new Uint8ArrayList(d))
+      const expected = toBuffer(data.map(d => d.subarray()))
 
       const listenerFactory = await common.setup()
       const listener = listenerFactory.createStreamMuxer({
@@ -298,7 +301,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       void pipe(p[1], listener, p[1])
 
       const stream = await dialer.newStream()
-      stream.closeRead()
+      await stream.closeRead()
 
       // Source should be done
       void Promise.resolve().then(async () => {
@@ -307,7 +310,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       })
 
       const results = await deferred.promise
-      expect(results).to.eql(data)
+      expect(toBuffer(results.map(b => b.subarray()))).to.equalBytes(expected)
     })
 
     it('calls onStreamEnd for closed streams not previously written', async () => {
@@ -322,7 +325,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const stream = await dialer.newStream()
 
-      stream.close()
+      await stream.close()
       await deferred.promise
     })
 
@@ -338,9 +341,102 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const stream = await dialer.newStream()
 
-      stream.closeWrite()
-      stream.closeRead()
+      await stream.closeWrite()
+      await stream.closeRead()
       await deferred.promise
     })
+
+    it('should wait for all data to be sent when closing streams', async () => {
+      const deferred = pDefer<Message>()
+
+      const p = duplexPair<Uint8Array>()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          const pb = pbStream(stream)
+
+          void pb.read(Message)
+            .then(async message => {
+              deferred.resolve(message)
+              await pb.unwrap().close()
+            })
+            .catch(err => {
+              deferred.reject(err)
+            })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const message = {
+        message: 'hello world',
+        value: 5,
+        flag: true
+      }
+
+      const stream = await dialer.newStream()
+
+      const pb = pbStream(stream)
+      await pb.write(message, Message)
+      await pb.unwrap().close()
+
+      await expect(deferred.promise).to.eventually.deep.equal(message)
+    })
+    /*
+    it('should abort closing a stream with outstanding data to read', async () => {
+      const deferred = pDefer<Message>()
+
+      const p = duplexPair<Uint8Array>()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          const pb = pbStream(stream)
+
+          void pb.read(Message)
+            .then(async message => {
+              await pb.write(message, Message)
+              await pb.unwrap().close()
+              deferred.resolve(message)
+            })
+            .catch(err => {
+              deferred.reject(err)
+            })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const message = {
+        message: 'hello world',
+        value: 5,
+        flag: true
+      }
+
+      const stream = await dialer.newStream()
+
+      const pb = pbStream(stream)
+      await pb.write(message, Message)
+
+      console.info('await write back')
+      await deferred.promise
+
+      // let message arrive
+      await delay(100)
+
+      // close should time out as message is never read
+      await expect(pb.unwrap().close()).to.eventually.be.rejected
+        .with.property('code', 'ERR_CLOSE_READ_ABORTED')
+    })
+    */
   })
 }

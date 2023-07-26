@@ -4,14 +4,15 @@ import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import { pbStream, type ProtobufStream } from 'it-pb-stream'
+import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
 import pDefer from 'p-defer'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import {
   CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
-  RELAY_SOURCE_TAG
-  , RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC
+  RELAY_SOURCE_TAG,
+  RELAY_V2_HOP_CODEC,
+  RELAY_V2_STOP_CODEC
 } from '../constants.js'
 import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
@@ -172,7 +173,8 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       })
     }, {
       maxInboundStreams: this.maxInboundHopStreams,
-      maxOutboundStreams: this.maxOutboundHopStreams
+      maxOutboundStreams: this.maxOutboundHopStreams,
+      runOnTransientConnection: true
     })
 
     this.reservationStore.start()
@@ -223,7 +225,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       ])
     } catch (err: any) {
       log.error('error while handling hop', err)
-      pbstr.pb(HopMessage).write({
+      await pbstr.pb(HopMessage).write({
         type: HopMessage.Type.STATUS,
         status: Status.MALFORMED_MESSAGE
       })
@@ -240,7 +242,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       case HopMessage.Type.CONNECT: await this.handleConnect({ stream, request, connection }); break
       default: {
         log.error('invalid hop request type %s via peer %p', request.type, connection.remotePeer)
-        stream.pb(HopMessage).write({ type: HopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
+        await stream.pb(HopMessage).write({ type: HopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
       }
     }
   }
@@ -251,20 +253,20 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 
     if (isRelayAddr(connection.remoteAddr)) {
       log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
       return
     }
 
     if ((await this.connectionGater.denyInboundRelayReservation?.(connection.remotePeer)) === true) {
       log.error('reservation for %p denied by connection gater', connection.remotePeer)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
       return
     }
 
     const result = this.reservationStore.reserve(connection.remotePeer, connection.remoteAddr)
 
     if (result.status !== Status.OK) {
-      hopstr.write({ type: HopMessage.Type.STATUS, status: result.status })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: result.status })
       return
     }
 
@@ -280,7 +282,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
         })
       }
 
-      hopstr.write({
+      await hopstr.write({
         type: HopMessage.Type.STATUS,
         status: Status.OK,
         reservation: await this.makeReservation(connection.remotePeer, BigInt(result.expire ?? 0)),
@@ -325,7 +327,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 
     if (isRelayAddr(connection.remoteAddr)) {
       log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
       return
     }
 
@@ -343,19 +345,19 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       dstPeer = peerIdFromBytes(request.peer.id)
     } catch (err) {
       log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
       return
     }
 
     if (!this.reservationStore.hasReservation(dstPeer)) {
       log.error('hop connect denied for destination peer %p not having a reservation for %p with status %s', dstPeer, connection.remotePeer, Status.NO_RESERVATION)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
       return
     }
 
     if ((await this.connectionGater.denyOutboundRelayedConnection?.(connection.remotePeer, dstPeer)) === true) {
       log.error('hop connect for %p to %p denied by connection gater', connection.remotePeer, dstPeer)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
       return
     }
 
@@ -363,7 +365,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 
     if (connections.length === 0) {
       log('hop connect denied for destination peer %p not having a connection for %p as there is no destination connection', dstPeer, connection.remotePeer)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
       return
     }
 
@@ -382,11 +384,11 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 
     if (destinationStream == null) {
       log.error('failed to open stream to destination peer %p', destinationConnection?.remotePeer)
-      hopstr.write({ type: HopMessage.Type.STATUS, status: Status.CONNECTION_FAILED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.CONNECTION_FAILED })
       return
     }
 
-    hopstr.write({ type: HopMessage.Type.STATUS, status: Status.OK })
+    await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.OK })
     const sourceStream = stream.unwrap()
 
     log('connection from %p to %p established - merging streans', connection.remotePeer, dstPeer)
@@ -404,11 +406,12 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   }: StopOptions): Promise<Stream | undefined> {
     log('starting circuit relay v2 stop request to %s', connection.remotePeer)
     const stream = await connection.newStream([RELAY_V2_STOP_CODEC], {
-      maxOutboundStreams: this.maxOutboundStopStreams
+      maxOutboundStreams: this.maxOutboundStopStreams,
+      runOnTransientConnection: true
     })
     const pbstr = pbStream(stream)
     const stopstr = pbstr.pb(StopMessage)
-    stopstr.write(request)
+    await stopstr.write(request)
     let response
 
     try {
@@ -419,7 +422,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
 
     if (response == null) {
       log.error('could not read response from %p', connection.remotePeer)
-      stream.close()
+      await stream.close()
       return
     }
 
@@ -429,7 +432,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     }
 
     log('stop request failed with code %d', response.status)
-    stream.close()
+    await stream.close()
   }
 
   get reservations (): PeerMap<RelayReservation> {

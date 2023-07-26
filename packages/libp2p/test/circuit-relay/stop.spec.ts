@@ -5,12 +5,14 @@ import { isStartable } from '@libp2p/interface/startable'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { duplexPair } from 'it-pair/duplex'
-import { pbStream, type MessageStream } from 'it-pb-stream'
+import { pbStream, type MessageStream } from 'it-protobuf-stream'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { Status, StopMessage } from '../../src/circuit-relay/pb/index.js'
-import type { Connection } from '@libp2p/interface/connection'
+import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -26,6 +28,9 @@ describe('circuit-relay stop protocol', function () {
   let handler: StreamHandler
   let pbstr: MessageStream<StopMessage>
   let sourcePeer: PeerId
+  const stopTimeout = 100
+  let localStream: Stream
+  let remoteStream: Stream
 
   beforeEach(async () => {
     const components = {
@@ -41,7 +46,9 @@ describe('circuit-relay stop protocol', function () {
       events: new EventEmitter()
     }
 
-    transport = circuitRelayTransport({})(components)
+    transport = circuitRelayTransport({
+      stopTimeout
+    })(components)
 
     if (isStartable(transport)) {
       await transport.start()
@@ -51,10 +58,13 @@ describe('circuit-relay stop protocol', function () {
 
     handler = components.registrar.handle.getCall(0).args[1]
 
-    const [localStream, remoteStream] = duplexPair<any>()
+    const [localDuplex, remoteDuplex] = duplexPair<any>()
+
+    localStream = mockStream(localDuplex)
+    remoteStream = mockStream(remoteDuplex)
 
     handler({
-      stream: mockStream(remoteStream),
+      stream: remoteStream,
       connection: stubInterface<Connection>()
     })
 
@@ -68,7 +78,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop - success', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toBytes(),
@@ -80,8 +90,15 @@ describe('circuit-relay stop protocol', function () {
     expect(response.status).to.be.equal(Status.OK)
   })
 
+  it('handle stop error - invalid request - missing type', async function () {
+    await pbstr.write({})
+
+    const response = await pbstr.read()
+    expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
+  })
+
   it('handle stop error - invalid request - wrong type', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.STATUS,
       peer: {
         id: sourcePeer.toBytes(),
@@ -94,7 +111,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop error - invalid request - missing peer', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.CONNECT
     })
 
@@ -103,7 +120,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop error - invalid request - invalid peer addr', async function () {
-    pbstr.write({
+    await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toBytes(),
@@ -115,5 +132,23 @@ describe('circuit-relay stop protocol', function () {
 
     const response = await pbstr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
+  })
+
+  it('handle stop error - timeout', async function () {
+    const abortSpy = Sinon.spy(remoteStream, 'abort')
+
+    await pbstr.write({
+      type: StopMessage.Type.CONNECT,
+      peer: {
+        id: sourcePeer.toBytes(),
+        addrs: []
+      }
+    })
+
+    // take longer than `stopTimeout` to read the response
+    await delay(stopTimeout * 2)
+
+    // should have aborted remote stream
+    expect(abortSpy).to.have.property('called', true)
   })
 })

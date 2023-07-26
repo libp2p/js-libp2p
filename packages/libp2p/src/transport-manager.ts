@@ -177,6 +177,10 @@ export class DefaultTransportManager implements TransportManager, Startable {
    * Starts listeners for each listen Multiaddr
    */
   async listen (addrs: Multiaddr[]): Promise<void> {
+    if (!this.isStarted()) {
+      throw new CodeError('Not started', codes.ERR_NODE_NOT_STARTED)
+    }
+
     if (addrs == null || addrs.length === 0) {
       log('no addresses were provided for listening, this node is dial only')
       return

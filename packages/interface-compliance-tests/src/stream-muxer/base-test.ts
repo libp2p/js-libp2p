@@ -44,12 +44,12 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const conn = await dialer.newStream()
       expect(dialer.streams).to.include(conn)
-      expect(isValidTick(conn.stat.timeline.open)).to.equal(true)
+      expect(isValidTick(conn.timeline.open)).to.equal(true)
 
       void drainAndClose(conn)
 
       const stream = await onStreamPromise.promise
-      expect(isValidTick(stream.stat.timeline.open)).to.equal(true)
+      expect(isValidTick(stream.timeline.open)).to.equal(true)
       // Make sure the stream is being tracked
       expect(listener.streams).to.include(stream)
 
@@ -59,12 +59,12 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const endedStream = await onStreamEndPromise.promise
       expect(listener.streams).to.not.include(endedStream)
 
-      if (endedStream.stat.timeline.close == null) {
+      if (endedStream.timeline.close == null) {
         throw new Error('timeline had no close time')
       }
 
       // Make sure the stream is removed from tracking
-      expect(isValidTick(endedStream.stat.timeline.close)).to.equal(true)
+      expect(isValidTick(endedStream.timeline.close)).to.equal(true)
 
       await drainAndClose(dialer)
       await drainAndClose(listener)
@@ -96,9 +96,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       void drainAndClose(conn)
 
       const stream = await onStreamPromise.promise
-      expect(isValidTick(stream.stat.timeline.open)).to.equal(true)
+      expect(isValidTick(stream.timeline.open)).to.equal(true)
       expect(listener.streams).to.include(conn)
-      expect(isValidTick(conn.stat.timeline.open)).to.equal(true)
+      expect(isValidTick(conn.timeline.open)).to.equal(true)
       void drainAndClose(stream)
 
       await drainAndClose(dialer)

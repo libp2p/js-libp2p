@@ -146,7 +146,6 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     if (options.pubsubRouter === 'floodsub') {
       services.pubsub = floodsub()
     } else {
-      // @ts-expect-error gossipsub needs upgrading
       services.pubsub = gossipsub()
     }
   }

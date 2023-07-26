@@ -1,0 +1,100 @@
+{
+  "name": "@chainsafe/libp2p-noise",
+  "version": "12.0.1",
+  "author": "ChainSafe <info@chainsafe.io>",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ChainSafe/js-libp2p-noise#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChainSafe/js-libp2p-noise.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChainSafe/js-libp2p-noise/issues"
+  },
+  "keywords": [
+    "crypto",
+    "libp2p",
+    "noise"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "rules": {
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/strict-boolean-expressions": "off"
+    },
+    "ignorePatterns": [
+      "src/proto/payload.js",
+      "src/proto/payload.d.ts",
+      "test/fixtures/node-globals.js"
+    ]
+  },
+  "scripts": {
+    "bench": "node benchmarks/benchmark.js",
+    "clean": "aegir clean",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "lint": "aegir lint",
+    "lint:fix": "aegir lint --fix",
+    "test": "aegir test",
+    "test:node": "aegir test -t node",
+    "test:browser": "aegir test -t browser -t webworker",
+    "test:electron-main": "aegir test -t electron-main",
+    "docs": "aegir docs",
+    "proto:gen": "protons ./src/proto/payload.proto",
+    "prepublish": "npm run build"
+  },
+  "dependencies": {
+    "@libp2p/crypto": "^1.0.11",
+    "@libp2p/interface": "~0.0.1",
+    "@libp2p/logger": "^2.1.1",
+    "@libp2p/peer-id": "^2.0.0",
+    "@stablelib/chacha20poly1305": "^1.0.1",
+    "@noble/hashes": "^1.3.0",
+    "@stablelib/x25519": "^1.0.3",
+    "it-length-prefixed": "^9.0.1",
+    "it-length-prefixed-stream": "^1.0.0",
+    "it-byte-stream": "^1.0.0",
+    "it-pair": "^2.0.2",
+    "it-pipe": "^3.0.1",
+    "it-stream-types": "^2.0.1",
+    "protons-runtime": "^5.0.0",
+    "uint8arraylist": "^2.3.2",
+    "uint8arrays": "^4.0.2"
+  },
+  "devDependencies": {
+    "@libp2p/interface-compliance-tests": "^3.0.0",
+    "@libp2p/peer-id-factory": "^2.0.0",
+    "@types/sinon": "^10.0.14",
+    "aegir": "^39.0.5",
+    "iso-random-stream": "^2.0.2",
+    "protons": "^7.0.0",
+    "sinon": "^15.0.0"
+  },
+  "browser": {
+    "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js",
+    "util": false
+  },
+  "private": true
+}

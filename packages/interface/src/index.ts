@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Connection, Stream } from './connection/index.js'
+import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { EventEmitter } from './events.js'
 import type { KeyChain } from './keychain/index.js'
@@ -503,10 +503,14 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol: (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: AbortOptions) => Promise<Stream>
+  dialProtocol: (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions) => Promise<Stream>
 
   /**
-   * Attempts to gracefully close an open connection to the given peer. If the connection is not closed in the grace period, it will be forcefully closed.
+   * Attempts to gracefully close an open connection to the given peer. If the
+   * connection is not closed in the grace period, it will be forcefully closed.
+   *
+   * An AbortSignal can optionally be passed to control when the connection is
+   * forcefully closed.
    *
    * @example
    *
@@ -514,7 +518,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * await libp2p.hangUp(remotePeerId)
    * ```
    */
-  hangUp: (peer: PeerId | Multiaddr) => Promise<void>
+  hangUp: (peer: PeerId | Multiaddr, options?: AbortOptions) => Promise<void>
 
   /**
    * Sets up [multistream-select routing](https://github.com/multiformats/multistream-select) of protocols to their application handlers. Whenever a stream is opened on one of the provided protocols, the handler will be called. `handle` must be called in order to register a handler and support for a given protocol. This also informs other peers of the protocols you support.

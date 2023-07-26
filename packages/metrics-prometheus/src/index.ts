@@ -224,13 +224,13 @@ class PrometheusMetrics implements Metrics {
   }
 
   trackProtocolStream (stream: Stream, connection: Connection): void {
-    if (stream.stat.protocol == null) {
+    if (stream.protocol == null) {
       // protocol not negotiated yet, should not happen as the upgrader
       // calls this handler after protocol negotiation
       return
     }
 
-    this._track(stream, stream.stat.protocol)
+    this._track(stream, stream.protocol)
   }
 
   registerMetric (name: string, opts: PrometheusCalculatedMetricOptions): void

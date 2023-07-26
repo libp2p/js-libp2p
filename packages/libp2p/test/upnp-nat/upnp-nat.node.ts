@@ -32,12 +32,12 @@ describe('UPnP NAT (TCP)', () => {
 
   async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: any, components: Components }> {
     const events = new EventEmitter()
-    const components: any = {
+    const components: any = defaultComponents({
       peerId: await createEd25519PeerId(),
       upgrader: mockUpgrader({ events }),
       events,
       peerStore: stubInterface<PeerStore>()
-    }
+    })
 
     components.peerStore.patch.callsFake(async (peerId: PeerId, details: PeerData) => {
       components.events.safeDispatchEvent('self:peer:update', {
@@ -65,11 +65,13 @@ describe('UPnP NAT (TCP)', () => {
     }
 
     components.transportManager.add(tcp()())
-    await components.transportManager.listen(components.addressManager.getListenAddrs())
+
+    await start(components)
 
     teardown.push(async () => {
       await stop(natManager)
       await components.transportManager.removeAll()
+      await stop(components)
     })
 
     return {

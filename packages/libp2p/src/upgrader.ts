@@ -18,9 +18,9 @@ import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
+import type { Upgrader, UpgraderOptions } from '@libp2p/interface/transport'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { Upgrader, UpgraderOptions } from '@libp2p/interface-internal/upgrader'
 import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:upgrader')
@@ -32,6 +32,7 @@ interface CreateConnectionOptions {
   upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
   remotePeer: PeerId
   muxerFactory?: StreamMuxerFactory
+  transient?: boolean
 }
 
 interface OnStreamOptions {
@@ -89,7 +90,7 @@ function countStreams (protocol: string, direction: 'inbound' | 'outbound', conn
   let streamCount = 0
 
   connection.streams.forEach(stream => {
-    if (stream.stat.direction === direction && stream.stat.protocol === protocol) {
+    if (stream.direction === direction && stream.protocol === protocol) {
       streamCount++
     }
   })
@@ -251,7 +252,8 @@ export class DefaultUpgrader implements Upgrader {
         maConn,
         upgradedConn,
         muxerFactory,
-        remotePeer
+        remotePeer,
+        transient: opts?.transient
       })
     } finally {
       this.components.connectionManager.afterUpgradeInbound()
@@ -348,7 +350,8 @@ export class DefaultUpgrader implements Upgrader {
       maConn,
       upgradedConn,
       muxerFactory,
-      remotePeer
+      remotePeer,
+      transient: opts?.transient
     })
   }
 
@@ -362,7 +365,8 @@ export class DefaultUpgrader implements Upgrader {
       maConn,
       upgradedConn,
       remotePeer,
-      muxerFactory
+      muxerFactory,
+      transient
     } = opts
 
     let muxer: StreamMuxer | undefined
@@ -403,7 +407,7 @@ export class DefaultUpgrader implements Upgrader {
               // the souce/sink
               muxedStream.source = stream.source
               muxedStream.sink = stream.sink
-              muxedStream.stat.protocol = protocol
+              muxedStream.protocol = protocol
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
               // the peerstore should ensure that the peer is registered with that protocol
@@ -416,11 +420,11 @@ export class DefaultUpgrader implements Upgrader {
 
               this._onStream({ connection, stream: muxedStream, protocol })
             })
-            .catch(err => {
+            .catch(async err => {
               log.error(err)
 
-              if (muxedStream.stat.timeline.close == null) {
-                muxedStream.close()
+              if (muxedStream.timeline.close == null) {
+                await muxedStream.close()
               }
             })
         },
@@ -472,7 +476,7 @@ export class DefaultUpgrader implements Upgrader {
           // the souce/sink
           muxedStream.source = stream.source
           muxedStream.sink = stream.sink
-          muxedStream.stat.protocol = protocol
+          muxedStream.protocol = protocol
 
           this.components.metrics?.trackProtocolStream(muxedStream, connection)
 
@@ -480,8 +484,8 @@ export class DefaultUpgrader implements Upgrader {
         } catch (err: any) {
           log.error('could not create new stream', err)
 
-          if (muxedStream.stat.timeline.close == null) {
-            muxedStream.close()
+          if (muxedStream.timeline.close == null) {
+            muxedStream.abort(err)
           }
 
           if (err.code != null) {
@@ -508,7 +512,7 @@ export class DefaultUpgrader implements Upgrader {
           // Wait for close to finish before notifying of the closure
           (async () => {
             try {
-              if (connection.stat.status === 'OPEN') {
+              if (connection.status === 'open') {
                 await connection.close()
               }
             } catch (err: any) {
@@ -536,20 +540,26 @@ export class DefaultUpgrader implements Upgrader {
     connection = createConnection({
       remoteAddr: maConn.remoteAddr,
       remotePeer,
-      stat: {
-        status: 'OPEN',
-        direction,
-        timeline: maConn.timeline,
-        multiplexer: muxer?.protocol,
-        encryption: cryptoProtocol
-      },
+      status: 'open',
+      direction,
+      timeline: maConn.timeline,
+      multiplexer: muxer?.protocol,
+      encryption: cryptoProtocol,
+      transient,
       newStream: newStream ?? errConnectionNotMultiplexed,
-      getStreams: () => { if (muxer != null) { return muxer.streams } else { return errConnectionNotMultiplexed() } },
-      close: async () => {
-        await maConn.close()
-        // Ensure remaining streams are closed
+      getStreams: () => { if (muxer != null) { return muxer.streams } else { return [] } },
+      close: async (options?: AbortOptions) => {
+        await maConn.close(options)
+        // Ensure remaining streams are closed gracefully
         if (muxer != null) {
-          muxer.close()
+          await muxer.close(options)
+        }
+      },
+      abort: (err) => {
+        maConn.abort(err)
+        // Ensure remaining streams are aborted
+        if (muxer != null) {
+          muxer.abort(err)
         }
       }
     })
@@ -566,7 +576,11 @@ export class DefaultUpgrader implements Upgrader {
    */
   _onStream (opts: OnStreamOptions): void {
     const { connection, stream, protocol } = opts
-    const { handler } = this.components.registrar.getHandler(protocol)
+    const { handler, options } = this.components.registrar.getHandler(protocol)
+
+    if (connection.transient && options.runOnTransientConnection !== true) {
+      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
+    }
 
     handler({ connection, stream })
   }

@@ -88,10 +88,7 @@ describe('Network', () => {
 
             return {
               ...stream,
-              stat: {
-                ...stream.stat,
-                protocol
-              }
+              protocol
             }
           }
         }

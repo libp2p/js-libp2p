@@ -113,7 +113,9 @@ export class AutoDial implements Startable {
 
     // Already has enough connections
     if (numConnections >= this.minConnections) {
-      log.trace('have enough connections %d/%d', numConnections, this.minConnections)
+      if (this.minConnections > 0) {
+        log.trace('have enough connections %d/%d', numConnections, this.minConnections)
+      }
       return
     }
 
