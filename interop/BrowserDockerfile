@@ -7,5 +7,7 @@ WORKDIR /app/interop
 RUN npx playwright install
 ARG BROWSER=chromium # Options: chromium, firefox, webkit
 ENV BROWSER=$BROWSER
+# disable colored output and CLI animation from test runners
+ENV CI true
 
 ENTRYPOINT npm run test:interop:multidim -- --build false --types false -t browser -- --browser $BROWSER

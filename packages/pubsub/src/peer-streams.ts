@@ -120,8 +120,11 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
       objectMode: true,
       onEnd: (shouldEmit) => {
         // close writable side of the stream
-        if (this._rawOutboundStream != null && this._rawOutboundStream.reset != null) { // eslint-disable-line @typescript-eslint/prefer-optional-chain
-          this._rawOutboundStream.reset()
+        if (this._rawOutboundStream != null) { // eslint-disable-line @typescript-eslint/prefer-optional-chain
+          this._rawOutboundStream.closeWrite()
+            .catch(err => {
+              log('error closing outbound stream', err)
+            })
         }
 
         this._rawOutboundStream = undefined

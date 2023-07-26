@@ -217,7 +217,7 @@ export class RoutingTable extends EventEmitter<RoutingTableEvents> implements St
               this.log('pinging old contact %p', oldContact.peer)
               const connection = await this.components.connectionManager.openConnection(oldContact.peer, options)
               const stream = await connection.newStream(this.protocol, options)
-              stream.close()
+              await stream.close()
               responded++
             } catch (err: any) {
               if (this.running && this.kb != null) {

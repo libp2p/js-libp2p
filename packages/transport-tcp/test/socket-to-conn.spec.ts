@@ -372,8 +372,6 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket errors
     const serverErrored = defer<Error>()
 
-    let maConnCloseError: Error | undefined
-
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
       socketCloseTimeout: 100
@@ -402,10 +400,7 @@ describe('socket-to-conn', () => {
       serverSocket.write('goodbyeeeeeeeeeeeeee')
     }
 
-    await inboundMaConn.close().catch(err => {
-      // should throw this error
-      maConnCloseError = err
-    })
+    await inboundMaConn.close()
 
     // server socket should no longer be writable
     expect(serverSocket.writable).to.be.false()
@@ -414,10 +409,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // remote didn't read our data
-    await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_SOCKET_CLOSE_TIMEOUT')
-
-    // closing should have thrown
-    expect(maConnCloseError).to.have.property('code', 'ERR_SOCKET_CLOSE_TIMEOUT')
+    await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_SOCKET_READ_TIMEOUT')
 
     // the connection closing was recorded
     expect(inboundMaConn.timeline.close).to.be.a('number')

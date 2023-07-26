@@ -110,7 +110,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
       if (stream != null) {
-        stream.close()
+        await stream.close()
       }
     }
   }
@@ -140,7 +140,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
       if (stream != null) {
-        stream.close()
+        await stream.close()
       }
     }
   }

@@ -150,14 +150,19 @@ describe('mplex', () => {
 
     // collect outgoing mplex messages
     const muxerFinished = pDefer()
-    let messages: Message[] = []
+    const messages: Message[] = []
     void Promise.resolve().then(async () => {
-      messages = await all(decode()(muxer.source))
+      try {
+        // collect as many messages as possible
+        for await (const message of decode()(muxer.source)) {
+          messages.push(message)
+        }
+      } catch {}
       muxerFinished.resolve()
     })
 
     // the muxer processes the messages
-    await muxer.sink(encode(input))
+    void muxer.sink(encode(input))
 
     // source should have errored with appropriate code
     const err = await streamSourceError.promise
@@ -201,7 +206,7 @@ describe('mplex', () => {
       await stream.sink(async function * () {
         yield * input
       }())
-      stream.close()
+      await stream.close()
       streamFinished.resolve()
     })
 

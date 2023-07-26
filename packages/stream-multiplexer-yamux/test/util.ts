@@ -68,19 +68,16 @@ export function pauseableTransform <A> (): { transform: Transform<Source<A>, Asy
   return { transform, pause, unpause }
 }
 
+export interface YamuxFixture extends YamuxMuxer {
+  pauseRead: () => void
+  unpauseRead: () => void
+  pauseWrite: () => void
+  unpauseWrite: () => void
+}
+
 export function testClientServer (conf: YamuxMuxerInit = {}): {
-  client: YamuxMuxer & {
-    pauseRead: () => void
-    unpauseRead: () => void
-    pauseWrite: () => void
-    unpauseWrite: () => void
-  }
-  server: YamuxMuxer & {
-    pauseRead: () => void
-    unpauseRead: () => void
-    pauseWrite: () => void
-    unpauseWrite: () => void
-  }
+  client: YamuxFixture
+  server: YamuxFixture
 } {
   const pair = duplexPair<Uint8Array>()
   const client = testYamuxMuxer('libp2p:yamux:client', true, conf)

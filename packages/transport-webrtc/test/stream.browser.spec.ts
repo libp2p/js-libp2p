@@ -3,11 +3,11 @@ import delay from 'delay'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { bytes } from 'multiformats'
 import { Message } from '../src/pb/message.js'
-import { createStream } from '../src/stream'
+import { createStream, type WebRTCStream } from '../src/stream.js'
 import type { Stream } from '@libp2p/interface/connection'
 const TEST_MESSAGE = 'test_message'
 
-function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: Stream } {
+function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
   const stream = createStream({ channel: dataChannel, direction: 'outbound' })
@@ -25,7 +25,7 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
 }
 
 describe('Stream Stats', () => {
-  let stream: Stream
+  let stream: WebRTCStream
 
   beforeEach(async () => {
     ({ stream } = setup())
@@ -35,30 +35,30 @@ describe('Stream Stats', () => {
     expect(stream.timeline.close).to.not.exist()
   })
 
-  it('close marks it closed', () => {
+  it('close marks it closed', async () => {
     expect(stream.timeline.close).to.not.exist()
-    stream.close()
+    await stream.close()
     expect(stream.timeline.close).to.be.a('number')
   })
 
-  it('closeRead marks it read-closed only', () => {
+  it('closeRead marks it read-closed only', async () => {
     expect(stream.timeline.close).to.not.exist()
-    stream.closeRead()
+    await stream.closeRead()
     expect(stream.timeline.close).to.not.exist()
     expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)
   })
 
-  it('closeWrite marks it write-closed only', () => {
+  it('closeWrite marks it write-closed only', async () => {
     expect(stream.timeline.close).to.not.exist()
-    stream.closeWrite()
+    await stream.closeWrite()
     expect(stream.timeline.close).to.not.exist()
     expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
   })
 
   it('closeWrite AND closeRead = close', async () => {
     expect(stream.timeline.close).to.not.exist()
-    stream.closeWrite()
-    stream.closeRead()
+    await stream.closeWrite()
+    await stream.closeRead()
     expect(stream.timeline.close).to.be.a('number')
     expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
     expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)

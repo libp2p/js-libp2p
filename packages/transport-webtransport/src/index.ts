@@ -2,7 +2,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { type Transport, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { type Multiaddr, protocols } from '@multiformats/multiaddr'
+import { type Multiaddr, protocols, type AbortOptions } from '@multiformats/multiaddr'
 import { bases, digest } from 'multiformats/basics'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
@@ -92,49 +92,86 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
   let sinkSunk = false
   const stream: Stream = {
     id: streamId,
-    abort (_err: Error) {
+    status: 'open',
+    writeStatus: 'ready',
+    readStatus: 'ready',
+    abort (err: Error) {
       if (!writerClosed) {
         writer.abort()
         writerClosed = true
       }
-      stream.closeRead()
+      stream.abort(err)
       readerClosed = true
+
+      this.status = 'aborted'
+      this.writeStatus = 'closed'
+      this.readStatus = 'closed'
+
+      this.timeline.reset =
+        this.timeline.close =
+        this.timeline.closeRead =
+        this.timeline.closeWrite = Date.now()
+
       cleanupStreamFromActiveStreams()
     },
-    close () {
-      stream.closeRead()
-      stream.closeWrite()
+    async close (options?: AbortOptions) {
+      this.status = 'closing'
+
+      await Promise.all([
+        stream.closeRead(options),
+        stream.closeWrite(options)
+      ])
+
       cleanupStreamFromActiveStreams()
+
+      this.status = 'closed'
+      this.timeline.close = Date.now()
     },
 
-    closeRead () {
+    async closeRead (options?: AbortOptions) {
       if (!readerClosed) {
-        reader.cancel().catch((err: any) => {
+        this.readStatus = 'closing'
+
+        try {
+          await reader.cancel()
+        } catch (err: any) {
           if (err.toString().includes('RESET_STREAM') === true) {
             writerClosed = true
           }
-        })
+        }
+
+        this.timeline.closeRead = Date.now()
+        this.readStatus = 'closed'
+
         readerClosed = true
       }
+
       if (writerClosed) {
         cleanupStreamFromActiveStreams()
       }
     },
-    closeWrite () {
+
+    async closeWrite (options?: AbortOptions) {
       if (!writerClosed) {
         writerClosed = true
-        writer.close().catch((err: any) => {
+
+        this.writeStatus = 'closing'
+
+        try {
+          await writer.close()
+        } catch (err: any) {
           if (err.toString().includes('RESET_STREAM') === true) {
             readerClosed = true
           }
-        })
+        }
+
+        this.timeline.closeWrite = Date.now()
+        this.writeStatus = 'closed'
       }
+
       if (readerClosed) {
         cleanupStreamFromActiveStreams()
       }
-    },
-    reset () {
-      stream.close()
     },
     direction,
     timeline: { open: Date.now() },
@@ -159,6 +196,8 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
       }
       sinkSunk = true
       try {
+        this.writeStatus = 'writing'
+
         for await (const chunks of source) {
           if (chunks instanceof Uint8Array) {
             await writer.write(chunks)
@@ -168,8 +207,13 @@ async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string
             }
           }
         }
+
+        this.writeStatus = 'done'
       } finally {
-        stream.closeWrite()
+        this.timeline.closeWrite = Date.now()
+        this.writeStatus = 'closed'
+
+        await stream.closeWrite()
       }
     }
   }
@@ -325,10 +369,12 @@ class WebTransportTransport implements Transport {
     }
 
     const maConn: MultiaddrConnection = {
-      close: async (err?: Error) => {
-        if (err != null) {
-          log('Closing webtransport with err:', err)
-        }
+      close: async (options?: AbortOptions) => {
+        log('Closing webtransport')
+        await wt.close()
+      },
+      abort: (err: Error) => {
+        log('Aborting webtransport with err:', err)
         wt.close()
       },
       remoteAddr: ma,
@@ -462,21 +508,16 @@ class WebTransportTransport implements Transport {
           /**
            * Close or abort all tracked streams and stop the muxer
            */
-          close: (err?: Error) => {
-            if (err != null) {
-              log('Closing webtransport muxer with err:', err)
-            }
+          close: async (options?: AbortOptions) => {
+            log('Closing webtransport muxer')
+            await wt.close()
+          },
+          abort: (err: Error) => {
+            log('Aborting webtransport muxer with err:', err)
             wt.close()
           },
           // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
           ...inertDuplex()
-        }
-
-        try {
-          init?.signal?.throwIfAborted()
-        } catch (e) {
-          wt.close()
-          throw e
         }
 
         return muxer

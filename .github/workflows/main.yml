@@ -181,12 +181,15 @@ jobs:
 
   multidim-interop:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - name: Build images
-        run: (cd interop && make)
+        run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
         uses: actions/upload-artifact@v2
         with:
@@ -197,10 +200,12 @@ jobs:
       - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@master
         with:
           test-filter: js-libp2p-head
+          test-ignore: nim
           extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json
           s3-cache-bucket: ${{ vars.S3_LIBP2P_BUILD_CACHE_BUCKET_NAME }}
           s3-access-key-id: ${{ vars.S3_LIBP2P_BUILD_CACHE_AWS_ACCESS_KEY_ID }}
           s3-secret-access-key: ${{ secrets.S3_LIBP2P_BUILD_CACHE_AWS_SECRET_ACCESS_KEY }}
+          worker-count: 16
 
   release:
     runs-on: ubuntu-latest

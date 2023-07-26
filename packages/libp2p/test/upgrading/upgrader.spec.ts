@@ -50,7 +50,7 @@ describe('Upgrader', () => {
   let localConnectionProtector: StubbedInstance<ConnectionProtector>
   let remoteUpgrader: Upgrader
   let remoteMuxerFactory: StreamMuxerFactory
-  let remotreYamuxerFactory: StreamMuxerFactory
+  let remoteYamuxerFactory: StreamMuxerFactory
   let remoteConnectionEncrypter: ConnectionEncrypter
   let remoteConnectionProtector: StubbedInstance<ConnectionProtector>
   let localPeer: PeerId
@@ -108,7 +108,7 @@ describe('Upgrader', () => {
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
     remoteMuxerFactory = mplex()()
-    remotreYamuxerFactory = yamux()()
+    remoteYamuxerFactory = yamux()()
     remoteConnectionEncrypter = plaintext()()
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
@@ -116,7 +116,7 @@ describe('Upgrader', () => {
       ],
       muxers: [
         remoteMuxerFactory,
-        remotreYamuxerFactory
+        remoteYamuxerFactory
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -294,7 +294,8 @@ describe('Upgrader', () => {
       })()
 
       async sink (): Promise<void> {}
-      close (): void {}
+      async close (): Promise<void> {}
+      abort (): void {}
     }
 
     class OtherMuxerFactory implements StreamMuxerFactory {
@@ -661,10 +662,10 @@ describe('libp2p.upgrader', () => {
     const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteComponents.upgrader as DefaultUpgrader, '_onStream')
 
     const stream = await localConnection.newStream(['/echo/1.0.0'])
-    expect(stream).to.include.keys(['id', 'recvWindowCapacity', 'sendWindowCapacity', 'sourceInput'])
+    expect(stream).to.include.keys(['id', 'sink', 'source'])
 
     const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
-    expect(arg0.stream).to.include.keys(['id', 'recvWindowCapacity', 'sendWindowCapacity', 'sourceInput'])
+    expect(arg0.stream).to.include.keys(['id', 'sink', 'source'])
   })
 
   it('should emit connect and disconnect events', async () => {

@@ -1,6 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { abortableDuplex } from 'abortable-iterator'
-import { pbStream } from 'it-pb-stream'
+import { pbStream } from 'it-protobuf-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { Message } from './pb/message.js'
@@ -28,8 +28,8 @@ export async function handleIncomingStream ({ rtcConfiguration, dataChannelOptio
   // candidate callbacks
   pc.onicecandidate = ({ candidate }) => {
     answerSentPromise.promise.then(
-      () => {
-        stream.write({
+      async () => {
+        await stream.write({
           type: Message.Type.ICE_CANDIDATE,
           data: (candidate != null) ? JSON.stringify(candidate.toJSON()) : ''
         })
@@ -64,7 +64,7 @@ export async function handleIncomingStream ({ rtcConfiguration, dataChannelOptio
     throw new Error('Failed to create answer')
   })
   // write the answer to the remote
-  stream.write({ type: Message.Type.SDP_ANSWER, data: answer.sdp })
+  await stream.write({ type: Message.Type.SDP_ANSWER, data: answer.sdp })
 
   await pc.setLocalDescription(answer).catch(err => {
     log.error('could not execute setLocalDescription', err)
@@ -107,15 +107,18 @@ export async function initiateConnection ({ rtcConfiguration, dataChannelOptions
   // setup callback to write ICE candidates to the remote
   // peer
   pc.onicecandidate = ({ candidate }) => {
-    stream.write({
+    void stream.write({
       type: Message.Type.ICE_CANDIDATE,
       data: (candidate != null) ? JSON.stringify(candidate.toJSON()) : ''
     })
+      .catch(err => {
+        log.error('error sending ICE candidate', err)
+      })
   }
   // create an offer
   const offerSdp = await pc.createOffer()
   // write the offer to the stream
-  stream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp })
+  await stream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp })
   // set offer as local description
   await pc.setLocalDescription(offerSdp).catch(err => {
     log.error('could not execute setLocalDescription', err)
