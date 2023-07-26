@@ -53,7 +53,7 @@
     "yargs-promise": "^1.1.0"
   },
   "devDependencies": {
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "sinon": "^15.1.2"
   },
   "private": true

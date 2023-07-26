@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { EventTypes, type KadDHT } from '@libp2p/kad-dht'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -15,7 +16,6 @@ import { createNode, createPeerId, populateAddressBooks } from '../fixtures/crea
 import { createRoutingOptions } from './utils.js'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { KadDHT } from '@libp2p/kad-dht'
 
 describe('content-routing', () => {
   describe('no routers', () => {
@@ -100,7 +100,7 @@ describe('content-routing', () => {
       sinon.stub(nodes[0].services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: nodes[0].peerId,
-          type: 0,
+          type: EventTypes.PROVIDER,
           name: 'PROVIDER',
           providers: [{
             id: nodes[0].peerId,
@@ -322,7 +322,7 @@ describe('content-routing', () => {
       sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: providerPeerId,
-          type: 0,
+          type: EventTypes.PROVIDER,
           name: 'PROVIDER',
           providers: [
             result
@@ -362,7 +362,7 @@ describe('content-routing', () => {
       sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: providerPeerId,
-          type: 0,
+          type: EventTypes.PROVIDER,
           name: 'PROVIDER',
           providers: [
             result1
@@ -423,7 +423,7 @@ describe('content-routing', () => {
       sinon.stub(node.services.dht, 'findProviders').callsFake(async function * () {
         yield {
           from: providerPeerId,
-          type: 0,
+          type: EventTypes.PROVIDER,
           name: 'PROVIDER',
           providers: [
             results[0]

@@ -68,15 +68,12 @@
   },
   "devDependencies": {
     "@types/varint": "^6.0.0",
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
     "it-map": "^3.0.3",
     "it-pair": "^2.0.6",
     "p-timeout": "^6.0.0",
     "varint": "^6.0.0"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

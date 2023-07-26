@@ -68,10 +68,7 @@
   "devDependencies": {
     "@libp2p/peer-id-factory": "^2.0.0",
     "@types/varint": "^6.0.0",
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "protons": "^7.0.2"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

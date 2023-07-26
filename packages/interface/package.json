@@ -167,11 +167,8 @@
   },
   "devDependencies": {
     "@types/sinon": "^10.0.15",
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "sinon": "^15.1.2",
     "sinon-ts": "^1.0.0"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

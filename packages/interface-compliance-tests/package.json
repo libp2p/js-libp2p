@@ -118,8 +118,8 @@
     "it-map": "^3.0.3",
     "it-ndjson": "^1.0.3",
     "it-pair": "^2.0.6",
-    "it-protobuf-stream": "^1.0.0",
     "it-pipe": "^3.0.1",
+    "it-protobuf-stream": "^1.0.0",
     "it-pushable": "^3.2.0",
     "it-stream-types": "^2.0.1",
     "it-to-buffer": "^4.0.2",
@@ -135,10 +135,7 @@
     "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "protons": "^7.0.2"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

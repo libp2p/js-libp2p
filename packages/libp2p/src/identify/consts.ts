@@ -1,4 +1,3 @@
-
 import { version } from '../version.js'
 
 export const PROTOCOL_VERSION = 'ipfs/0.1.0' // deprecated
