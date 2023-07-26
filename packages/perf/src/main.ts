@@ -25,41 +25,41 @@ export const defaultInit: PerfServiceInit = {
 
 const argv = yargs
     .options({
-        'run-server': {
-            type: 'boolean',
-            demandOption: true,
-	    default: false,
-            description: 'Whether to run as a server',
-        },
-        'server-ip-address': {
-            type: 'string',
-            demandOption: false,
-            description: 'Server IP address',
-	    default: '',
-        },
-	'transport': {
-		type: 'string',
-		demandOption: false,
-		description: 'Transport to use',
-		default: 'tcp'
-	},
-	'upload-bytes': {
-		type: 'number',
-		demandOption: false,
-		description: 'Number of bytes to upload',
-		default: 0
-	},
-	'download-bytes': {
-		type: 'number',
-		demandOption: false,
-		description: 'Number of bytes to download',
-		default: 0
-	},
+      'run-server': {
+          type: 'boolean',
+          demandOption: true,
+          default: false,
+          description: 'Whether to run as a server',
+      },
+      'server-ip-address': {
+          type: 'string',
+          demandOption: false,
+          description: 'Server IP address',
+          default: '',
+      },
+      'transport': {
+        type: 'string',
+        demandOption: false,
+        description: 'Transport to use',
+        default: 'tcp'
+      },
+      'upload-bytes': {
+        type: 'number',
+        demandOption: false,
+        description: 'Number of bytes to upload',
+        default: 0
+      },
+      'download-bytes': {
+        type: 'number',
+        demandOption: false,
+        description: 'Number of bytes to download',
+        default: 0
+      },
     })
     .command('help', 'Print usage information', yargs.help)
     .parseSync()
 
-export async function main(runServer: boolean, serverIpAddress: string, transport: string, uploadBytes: number, downloadBytes: number): void {
+export async function main(runServer: boolean, serverIpAddress: string, transport: string, uploadBytes: number, downloadBytes: number): Promise<void> {
 	const listenAddrs: Multiaddr[] = []
 
 	if (runServer === true) {
@@ -72,10 +72,10 @@ export async function main(runServer: boolean, serverIpAddress: string, transpor
 	const remoteComponents = await createComponents()
 
 	const client = perfService(defaultInit)(localComponents)
-    	const server = perfService(defaultInit)(remoteComponents)
+  const server = perfService(defaultInit)(remoteComponents)
 
-      	await start(client)
-    	await start(server)
+  await start(client)
+  await start(server)
 
 	const startTime = Date.now()
 

@@ -3,7 +3,7 @@
 import { start, stop } from '@libp2p/interface/startable'
 import { connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
-import { type Components } from 'libp2p/components'
+import type { Components } from 'libp2p/components'
 import { perfService  } from '../src/index.js'
 import { createComponents, defaultInit } from '../src/main.js'
 

@@ -143,7 +143,7 @@ export class DefaultPerfService implements Startable, PerfService {
     }
 
     log('performed %s to %p', this.protocol, peer)
-    stream.close()
+    await stream.close()
   }
 
   // measureDownloadBandwidth returns the measured bandwidth in bits per second
