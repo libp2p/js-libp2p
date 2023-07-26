@@ -381,7 +381,7 @@ class CircuitRelayTransport implements Transport {
       localAddr
     })
 
-    log('new inbound limited connection %s', maConn.remoteAddr)
+    log('new inbound limited connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
       limited: true
     })
