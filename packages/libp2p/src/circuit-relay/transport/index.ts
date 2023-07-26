@@ -169,7 +169,8 @@ class CircuitRelayTransport implements Transport {
       })
     }, {
       maxInboundStreams: this.maxInboundStopStreams,
-      maxOutboundStreams: this.maxOutboundStopStreams
+      maxOutboundStreams: this.maxOutboundStopStreams,
+      runOnLimitedConnection: true
     })
 
     this.started = true
@@ -275,15 +276,13 @@ class CircuitRelayTransport implements Transport {
         throw new CodeError(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`, codes.ERR_HOP_REQUEST_FAILED)
       }
 
-      // TODO: do something with limit and transient connection
-
       const maConn = streamToMaConnection({
         stream: pbstr.unwrap(),
         remoteAddr: ma,
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`)
       })
 
-      log('new outbound transient connection %a', maConn.remoteAddr)
+      log('new outbound limited connection %a', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn, {
         limited: true
       })
@@ -382,7 +381,7 @@ class CircuitRelayTransport implements Transport {
       localAddr
     })
 
-    log('new inbound transient connection %s', maConn.remoteAddr)
+    log('new inbound limited connection %s', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
       limited: true
     })

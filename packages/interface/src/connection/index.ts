@@ -183,7 +183,7 @@ export interface NewStreamOptions extends AbortOptions {
    * Opt-in to running over a limited connection - one that has time/data limits
    * placed on it.
    */
-  allowOnLimitedConnection?: boolean
+  runOnLimitedConnection?: boolean
 }
 
 export type ConnectionStatus = 'open' | 'closing' | 'closed'

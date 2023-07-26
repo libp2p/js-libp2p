@@ -625,7 +625,9 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(relay1)
 
       // open hop stream and try to connect to remote
-      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC)
+      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC, {
+        runOnLimitedConnection: true
+      })
 
       const hopStream = pbStream(stream).pb(HopMessage)
 
@@ -703,7 +705,7 @@ describe('circuit-relay', () => {
       expect(connection).to.have.property('limited', true)
 
       await expect(connection.newStream('/my-protocol/1.0.0'))
-        .to.eventually.be.rejected.with.property('code', 'ERR_TRANSIENT_CONNECTION')
+        .to.eventually.be.rejected.with.property('code', 'ERR_LIMITED_CONNECTION')
     })
 
     it('should not allow incoming streams on a limited connection', async () => {
@@ -713,7 +715,7 @@ describe('circuit-relay', () => {
       await remote.handle(protocol, ({ stream }) => {
         void pipe(stream, stream)
       }, {
-        allowOnLimitedConnection: false
+        runOnLimitedConnection: false
       })
 
       // discover relay and make reservation
@@ -728,9 +730,9 @@ describe('circuit-relay', () => {
       expect(connection).to.have.property('limited', true)
 
       await expect(connection.newStream('/my-protocol/1.0.0', {
-        allowOnLimitedConnection: false
+        runOnLimitedConnection: false
       }))
-        .to.eventually.be.rejected.with.property('code', 'ERR_TRANSIENT_CONNECTION')
+        .to.eventually.be.rejected.with.property('code', 'ERR_LIMITED_CONNECTION')
     })
 
     it('should open streams on a limited connection when told to do so', async () => {
@@ -740,7 +742,7 @@ describe('circuit-relay', () => {
       await remote.handle(protocol, ({ stream }) => {
         void pipe(stream, stream)
       }, {
-        allowOnLimitedConnection: true
+        runOnLimitedConnection: true
       })
 
       // discover relay and make reservation
@@ -755,7 +757,7 @@ describe('circuit-relay', () => {
       expect(connection).to.have.property('limited', true)
 
       await expect(connection.newStream('/my-protocol/1.0.0', {
-        allowOnLimitedConnection: true
+        runOnLimitedConnection: true
       }))
         .to.eventually.be.ok()
     })
@@ -1001,13 +1003,17 @@ describe('circuit-relay', () => {
             }
           } catch {}
         })
+      }, {
+        runOnLimitedConnection: true
       })
 
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
 
       try {
-        const stream = await local.dialProtocol(ma, protocol)
+        const stream = await local.dialProtocol(ma, protocol, {
+          runOnLimitedConnection: true
+        })
 
         await stream.sink(async function * () {
           while (true) {

@@ -127,8 +127,8 @@ export class ConnectionImpl implements Connection {
       protocols = [protocols]
     }
 
-    if (this.limited && options?.allowOnLimitedConnection !== true) {
-      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
+    if (this.limited && options?.runOnLimitedConnection !== true) {
+      throw new CodeError('Cannot open protocol stream on limited connection', 'ERR_LIMITED_CONNECTION')
     }
 
     const stream = await this._newStream(protocols, options)
