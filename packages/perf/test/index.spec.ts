@@ -1,51 +1,11 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
-import { connectionPair, mockConnectionGater, mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core'
-import { defaultComponents, type Components } from 'libp2p/components'
-import { DefaultConnectionManager } from 'libp2p/connection-manager'
-import { stubInterface } from 'sinon-ts'
-import { perfService, type PerfServiceInit } from '../src/index.js'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
-
-const defaultInit: PerfServiceInit = {
-  protocolName: '/perf/1.0.0',
-  maxInboundStreams: 1 << 10,
-  maxOutboundStreams: 1 << 10,
-  timeout: 10000,
-  writeBlockSize: BigInt(64 << 10)
-}
-
-async function createComponents (): Promise<Components> {
-  const peerId = await createEd25519PeerId()
-
-  const events = new EventEmitter()
-
-  const components = defaultComponents({
-    peerId,
-    registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
-    datastore: new MemoryDatastore(),
-    transportManager: stubInterface<TransportManager>(),
-    connectionGater: mockConnectionGater(),
-    events
-  })
-
-  components.peerStore = new PersistentPeerStore(components)
-  components.connectionManager = new DefaultConnectionManager(components, {
-    minConnections: 50,
-    maxConnections: 1000,
-    autoDialInterval: 1000,
-    inboundUpgradeTimeout: 1000
-  })
-
-  return components
-}
+import { type Components } from 'libp2p/components'
+import { perfService  } from '../src/index.js'
+import { createComponents, defaultInit } from '../src/main.js'
 
 describe('perf', () => {
   let localComponents: Components
@@ -84,7 +44,7 @@ describe('perf', () => {
     await expect(client.perf(remoteComponents.peerId, 1024n, 1024n)).to.eventually.be.fulfilled()
   })
 
-  it('should output benchmark', async () => {
+  it('should output bandwidth', async () => {
     const client = perfService(defaultInit)(localComponents)
     const server = perfService(defaultInit)(remoteComponents)
 
