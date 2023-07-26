@@ -26,6 +26,7 @@
     }
   },
   "scripts": {
+    "start": "node dist/src/main.js",
     "build": "aegir build",
     "test": "aegir test",
     "clean": "aegir clean",
