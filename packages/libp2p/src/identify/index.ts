@@ -49,7 +49,7 @@ export interface IdentifyServiceInit {
   /**
    * Whether to run on connections with data or duration limits (default: true)
    */
-  runOnLimitedConnection?: boolean
+  runOnTransientConnection?: boolean
 }
 
 export interface IdentifyServiceComponents {

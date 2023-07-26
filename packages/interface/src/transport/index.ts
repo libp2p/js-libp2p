@@ -101,7 +101,7 @@ export interface UpgraderOptions {
    * The passed MultiaddrConnection has limits place on duration and/or data
    * transfer amounts so is not expected to be open for very long.
    */
-  limited?: boolean
+  transient?: boolean
 }
 
 export interface Upgrader {

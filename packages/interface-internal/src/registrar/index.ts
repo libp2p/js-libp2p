@@ -26,7 +26,7 @@ export interface StreamHandlerOptions {
    * connections with data or duration limits such as circuit relay
    * connections) (default: false)
    */
-  runOnLimitedConnection?: boolean
+  runOnTransientConnection?: boolean
 }
 
 export interface StreamHandlerRecord {

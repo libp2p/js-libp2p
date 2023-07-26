@@ -25,7 +25,7 @@ export interface PingServiceInit {
   protocolPrefix?: string
   maxInboundStreams?: number
   maxOutboundStreams?: number
-  runOnLimitedConnection?: boolean
+  runOnTransientConnection?: boolean
 
   /**
    * How long we should wait for a ping response
@@ -45,7 +45,7 @@ class DefaultPingService implements Startable, PingService {
   private readonly timeout: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
-  private readonly runOnLimitedConnection: boolean
+  private readonly runOnTransientConnection: boolean
 
   constructor (components: PingServiceComponents, init: PingServiceInit) {
     this.components = components
@@ -54,14 +54,14 @@ class DefaultPingService implements Startable, PingService {
     this.timeout = init.timeout ?? TIMEOUT
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnLimitedConnection = init.runOnLimitedConnection ?? true
+    this.runOnTransientConnection = init.runOnTransientConnection ?? true
   }
 
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, this.handleMessage, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnLimitedConnection: this.runOnLimitedConnection
+      runOnTransientConnection: this.runOnTransientConnection
     })
     this.started = true
   }
@@ -114,7 +114,7 @@ class DefaultPingService implements Startable, PingService {
     try {
       stream = await connection.newStream(this.protocol, {
         ...options,
-        runOnLimitedConnection: this.runOnLimitedConnection
+        runOnTransientConnection: this.runOnTransientConnection
       })
 
       // make stream abortable

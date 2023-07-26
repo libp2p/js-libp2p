@@ -23,7 +23,7 @@ interface ConnectionInit {
   timeline: ConnectionTimeline
   multiplexer?: string
   encryption?: string
-  limited?: boolean
+  transient?: boolean
 }
 
 /**
@@ -51,7 +51,7 @@ export class ConnectionImpl implements Connection {
   public multiplexer?: string
   public encryption?: string
   public status: ConnectionStatus
-  public limited: boolean
+  public transient: boolean
 
   /**
    * User provided tags
@@ -91,7 +91,7 @@ export class ConnectionImpl implements Connection {
     this.timeline = init.timeline
     this.multiplexer = init.multiplexer
     this.encryption = init.encryption
-    this.limited = init.limited ?? false
+    this.transient = init.transient ?? false
 
     this._newStream = newStream
     this._close = close
@@ -127,8 +127,8 @@ export class ConnectionImpl implements Connection {
       protocols = [protocols]
     }
 
-    if (this.limited && options?.runOnLimitedConnection !== true) {
-      throw new CodeError('Cannot open protocol stream on limited connection', 'ERR_LIMITED_CONNECTION')
+    if (this.transient && options?.runOnTransientConnection !== true) {
+      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
     }
 
     const stream = await this._newStream(protocols, options)

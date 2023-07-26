@@ -32,7 +32,7 @@ interface CreateConnectionOptions {
   upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
   remotePeer: PeerId
   muxerFactory?: StreamMuxerFactory
-  limited?: boolean
+  transient?: boolean
 }
 
 interface OnStreamOptions {
@@ -253,7 +253,7 @@ export class DefaultUpgrader implements Upgrader {
         upgradedConn,
         muxerFactory,
         remotePeer,
-        limited: opts?.limited
+        transient: opts?.transient
       })
     } finally {
       this.components.connectionManager.afterUpgradeInbound()
@@ -351,7 +351,7 @@ export class DefaultUpgrader implements Upgrader {
       upgradedConn,
       muxerFactory,
       remotePeer,
-      limited: opts?.limited
+      transient: opts?.transient
     })
   }
 
@@ -366,7 +366,7 @@ export class DefaultUpgrader implements Upgrader {
       upgradedConn,
       remotePeer,
       muxerFactory,
-      limited
+      transient
     } = opts
 
     let muxer: StreamMuxer | undefined
@@ -545,7 +545,7 @@ export class DefaultUpgrader implements Upgrader {
       timeline: maConn.timeline,
       multiplexer: muxer?.protocol,
       encryption: cryptoProtocol,
-      limited,
+      transient,
       newStream: newStream ?? errConnectionNotMultiplexed,
       getStreams: () => { if (muxer != null) { return muxer.streams } else { return [] } },
       close: async (options?: AbortOptions) => {
@@ -578,8 +578,8 @@ export class DefaultUpgrader implements Upgrader {
     const { connection, stream, protocol } = opts
     const { handler, options } = this.components.registrar.getHandler(protocol)
 
-    if (connection.limited && options.runOnLimitedConnection !== true) {
-      throw new CodeError('Cannot open protocol stream on limited connection', 'ERR_LIMITED_CONNECTION')
+    if (connection.transient && options.runOnTransientConnection !== true) {
+      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
     }
 
     handler({ connection, stream })
