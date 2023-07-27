@@ -57,11 +57,8 @@
   "devDependencies": {
     "@libp2p/peer-id": "^2.0.0",
     "@types/debug": "^4.1.7",
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "sinon": "^15.1.2",
     "uint8arrays": "^4.0.4"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

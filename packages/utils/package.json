@@ -95,13 +95,10 @@
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "it-all": "^3.0.1",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
     "uint8arrays": "^4.0.4"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

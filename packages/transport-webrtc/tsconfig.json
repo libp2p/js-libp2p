@@ -10,6 +10,9 @@
   ],
   "references": [
     {
+      "path": "../connection-encryption-noise"
+    },
+    {
       "path": "../interface"
     },
     {

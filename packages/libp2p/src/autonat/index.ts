@@ -1,3 +1,24 @@
+/**
+ * @packageDocumentation
+ *
+ * Use the `autoNATService` function to add support for the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/)
+ * to libp2p.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { autoNATService } from 'libp2p/autonat'
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   services: {
+ *     autoNAT: autoNATService()
+ *   }
+ * })
+ * ```
+ */
+
 import { setMaxListeners } from 'events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'

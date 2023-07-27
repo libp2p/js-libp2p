@@ -1,0 +1,14 @@
+{
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/connection/index.ts",
+    "./src/connection-encryption/index.ts",
+    "./src/is-valid-tick.ts",
+    "./src/mocks/index.ts",
+    "./src/peer-discovery/index.ts",
+    "./src/peers.ts",
+    "./src/pubsub/index.ts",
+    "./src/stream-muxer/index.ts",
+    "./src/transport/index.ts"
+  ]
+}

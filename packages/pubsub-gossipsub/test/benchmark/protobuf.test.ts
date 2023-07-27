@@ -1,5 +1,5 @@
 import { itBench, setBenchOpts } from '@dapplion/benchmark'
-import { IRPC, RPC } from '../../src/message/rpc.js'
+import { type IRPC, RPC } from '../../src/message/rpc.js'
 
 describe('protobuf', function () {
   this.timeout(0)

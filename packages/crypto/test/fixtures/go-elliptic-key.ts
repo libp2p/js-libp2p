@@ -1,4 +1,3 @@
-
 export default {
   curve: 'P-256',
   bob: {
