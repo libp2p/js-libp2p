@@ -33,10 +33,10 @@
     "release": "run-s build npm:release",
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
-    "docs": "NODE_OPTIONS=--max_old_space_size=4096 aegir docs"
+    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude examples --exclude doc"
   },
   "devDependencies": {
-    "aegir": "^39.0.13"
+    "aegir": "^40.0.1"
   },
   "eslintConfig": {
     "extends": "ipfs",
@@ -45,9 +45,9 @@
     ]
   },
   "workspaces": [
-    "packages/*",
-    "interop",
+    "doc",
     "examples/*",
-    "doc/*"
+    "interop",
+    "packages/*"
   ]
 }

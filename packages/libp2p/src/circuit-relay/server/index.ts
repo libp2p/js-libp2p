@@ -10,8 +10,9 @@ import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import {
   CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
-  RELAY_SOURCE_TAG
-  , RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC
+  RELAY_SOURCE_TAG,
+  RELAY_V2_HOP_CODEC,
+  RELAY_V2_STOP_CODEC
 } from '../constants.js'
 import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
@@ -172,7 +173,8 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
       })
     }, {
       maxInboundStreams: this.maxInboundHopStreams,
-      maxOutboundStreams: this.maxOutboundHopStreams
+      maxOutboundStreams: this.maxOutboundHopStreams,
+      runOnTransientConnection: true
     })
 
     this.reservationStore.start()
@@ -404,7 +406,8 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   }: StopOptions): Promise<Stream | undefined> {
     log('starting circuit relay v2 stop request to %s', connection.remotePeer)
     const stream = await connection.newStream([RELAY_V2_STOP_CODEC], {
-      maxOutboundStreams: this.maxOutboundStopStreams
+      maxOutboundStreams: this.maxOutboundStopStreams,
+      runOnTransientConnection: true
     })
     const pbstr = pbStream(stream)
     const stopstr = pbstr.pb(StopMessage)

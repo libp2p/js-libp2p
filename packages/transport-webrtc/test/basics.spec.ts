@@ -69,6 +69,8 @@ describe('basics', () => {
         stream,
         stream
       )
+    }, {
+      runOnTransientConnection: true
     })
 
     const connection = await localNode.dial(remoteAddr)
@@ -99,7 +101,9 @@ describe('basics', () => {
     const connection = await connectNodes()
 
     // open a stream on the echo protocol
-    const stream = await connection.newStream(echo)
+    const stream = await connection.newStream(echo, {
+      runOnTransientConnection: true
+    })
 
     // send and receive some data
     const input = new Array(5).fill(0).map(() => new Uint8Array(10))
@@ -118,7 +122,9 @@ describe('basics', () => {
     const connection = await connectNodes()
 
     // open a stream on the echo protocol
-    const stream = await connection.newStream(echo)
+    const stream = await connection.newStream(echo, {
+      runOnTransientConnection: true
+    })
 
     // send and receive some data
     const input = new Array(5).fill(0).map(() => new Uint8Array(1024 * 1024))

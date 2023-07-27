@@ -60,10 +60,6 @@
       "types": "./dist/src/registrar/index.d.ts",
       "import": "./dist/src/registrar/index.js"
     },
-    "./transport": {
-      "types": "./dist/src/transport/index.d.ts",
-      "import": "./dist/src/transport/index.js"
-    },
     "./transport-manager": {
       "types": "./dist/src/transport-manager/index.d.ts",
       "import": "./dist/src/transport-manager/index.js"
@@ -88,9 +84,6 @@
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "aegir": "^39.0.13"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
+    "aegir": "^40.0.1"
   }
 }

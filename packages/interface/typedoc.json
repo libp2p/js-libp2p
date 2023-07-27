@@ -1,0 +1,28 @@
+{
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/connection/index.ts",
+    "./src/connection-encrypter/index.ts",
+    "./src/connection-gater/index.ts",
+    "./src/content-routing/index.ts",
+    "./src/errors.ts",
+    "./src/events.ts",
+    "./src/keychain/index.ts",
+    "./src/keys/index.ts",
+    "./src/metrics/index.ts",
+    "./src/metrics/tracked-map.ts",
+    "./src/peer-discovery/index.ts",
+    "./src/peer-id/index.ts",
+    "./src/peer-info/index.ts",
+    "./src/peer-routing/index.ts",
+    "./src/peer-store/index.ts",
+    "./src/peer-store/tags.ts",
+    "./src/pubsub/index.ts",
+    "./src/record/index.ts",
+    "./src/startable.ts",
+    "./src/stream-handler/index.ts",
+    "./src/stream-muxer/index.ts",
+    "./src/stream-muxer/stream.ts",
+    "./src/transport/index.ts"
+  ]
+}

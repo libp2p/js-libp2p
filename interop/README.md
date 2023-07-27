@@ -16,6 +16,8 @@
   - [Build another libp2p implementation](#build-another-libp2p-implementation)
   - [Running Redis](#running-redis)
   - [Start libp2p](#start-libp2p)
+    - [node.js](#nodejs-1)
+    - [Browsers](#browsers-1)
   - [Start another libp2p implementation](#start-another-libp2p-implementation)
 - [License](#license)
 - [Contribution](#contribution)
@@ -67,7 +69,7 @@ $ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
      - When starting the docker container add `-e GOLOG_LOG_LEVEL=debug`
 4. Build the version you want to test against
    ```console
-   $ cd impl/$IMPL/$VERSION
+   $ cd multidim-interop/impl/$IMPL/$VERSION
    $ make
    ...
    ```
@@ -82,14 +84,26 @@ $ docker run --name redis --rm -p 6379:6379 redis:7-alpine
 
 ### Start libp2p
 
+#### node.js
+
 ```console
 $ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=true -e redis_addr=redis:6379 --link redis:redis js-libp2p-node
 ```
 
-### Start another libp2p implementation
+#### Browsers
 
 ```console
-$ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=false -e redis_addr=redis:6379 --link redis:redis nim-v1.0
+$ docker run -e transport=webtransport -e muxer=yamux -e security=noise -e is_dialer=true -e redis_addr=redis:6379 --link redis:redis js-libp2p-browsers
+```
+
+### Start another libp2p implementation
+
+- Change `go-v0.29` to the implementation you wish to use.
+- Ensure one docker run has `is_dialer=false` and the other has `is_dialer=true`
+- Ensure the `transport` option is the same for both implementations
+
+```console
+$ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=false -e redis_addr=redis:6379 --link redis:redis go-v0.29
 ```
 
 ## License

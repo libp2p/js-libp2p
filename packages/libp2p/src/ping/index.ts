@@ -25,6 +25,7 @@ export interface PingServiceInit {
   protocolPrefix?: string
   maxInboundStreams?: number
   maxOutboundStreams?: number
+  runOnTransientConnection?: boolean
 
   /**
    * How long we should wait for a ping response
@@ -44,6 +45,7 @@ class DefaultPingService implements Startable, PingService {
   private readonly timeout: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
+  private readonly runOnTransientConnection: boolean
 
   constructor (components: PingServiceComponents, init: PingServiceInit) {
     this.components = components
@@ -52,12 +54,14 @@ class DefaultPingService implements Startable, PingService {
     this.timeout = init.timeout ?? TIMEOUT
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
+    this.runOnTransientConnection = init.runOnTransientConnection ?? true
   }
 
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, this.handleMessage, {
       maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams
+      maxOutboundStreams: this.maxOutboundStreams,
+      runOnTransientConnection: this.runOnTransientConnection
     })
     this.started = true
   }
@@ -108,7 +112,10 @@ class DefaultPingService implements Startable, PingService {
     options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
     try {
-      stream = await connection.newStream([this.protocol], options)
+      stream = await connection.newStream(this.protocol, {
+        ...options,
+        runOnTransientConnection: this.runOnTransientConnection
+      })
 
       // make stream abortable
       const source = abortableDuplex(stream, options.signal)

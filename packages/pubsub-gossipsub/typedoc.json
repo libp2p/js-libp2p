@@ -1,0 +1,9 @@
+{
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/message/index.ts",
+    "./src/metrics.ts",
+    "./src/score/index.ts",
+    "./src/types.ts"
+  ]
+}

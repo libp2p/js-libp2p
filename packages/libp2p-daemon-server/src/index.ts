@@ -103,7 +103,9 @@ export class Server implements Libp2pServer {
     const { peer, proto } = request.streamOpen
     const peerId = peerIdFromBytes(peer)
     const connection = await this.libp2p.dial(peerId)
-    const stream = await connection.newStream(proto)
+    const stream = await connection.newStream(proto, {
+      runOnTransientConnection: true
+    })
 
     return {
       streamInfo: {
@@ -178,6 +180,8 @@ export class Server implements Libp2pServer {
               })
           }
         })
+    }, {
+      runOnTransientConnection: true
     })
   }
 

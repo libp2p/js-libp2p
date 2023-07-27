@@ -1,4 +1,3 @@
-
 import { CodeError } from '@libp2p/interface/errors'
 import { isMultiaddr } from '@multiformats/multiaddr'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'

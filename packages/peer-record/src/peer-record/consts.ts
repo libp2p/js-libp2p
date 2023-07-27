@@ -1,4 +1,3 @@
-
 // The domain string used for peer records contained in a Envelope.
 export const ENVELOPE_DOMAIN_PEER_RECORD = 'libp2p-peer-record'
 
