@@ -53,7 +53,7 @@
     "libp2p": "^0.45.9"
   },
   "devDependencies": {
-    "aegir": "^39.0.10",
+    "aegir": "^40.0.2",
     "sinon-ts": "1.0.0"
   },
   "typedoc": {
