@@ -11,4 +11,4 @@ ENV BROWSER=$BROWSER
 ENV CI true
 
 # manually specify runner until https://github.com/hugomrdias/playwright-test/issues/572 is resolved
-ENTRYPOINT npm run test:interop:multidim -- --build false --types false -t browser -- --browser $BROWSER --runner mocha
+ENTRYPOINT npm run test:interop:multidim -- --build false --types false -t browser -- --browser $BROWSER
