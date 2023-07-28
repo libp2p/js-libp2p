@@ -8,6 +8,7 @@ import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import { pipe } from 'it-pipe'
 import { pbStream } from 'it-protobuf-stream'
 import defer from 'p-defer'
 import pWaitFor from 'p-wait-for'
@@ -624,7 +625,9 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(relay1)
 
       // open hop stream and try to connect to remote
-      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC)
+      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC, {
+        runOnTransientConnection: true
+      })
 
       const hopStream = pbStream(stream).pb(HopMessage)
 
@@ -670,6 +673,93 @@ describe('circuit-relay', () => {
       // should have closed connections to remote and to relay
       expect(events[0].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
       expect(events[1].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
+    })
+
+    it('should mark a relayed connection as transient', async () => {
+      // discover relay and make reservation
+      const connectionToRelay = await remote.dial(relay1.getMultiaddrs()[0])
+
+      // connection to relay should not be marked transient
+      expect(connectionToRelay).to.have.property('transient', false)
+
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection to remote through relay should be marked transient
+      expect(connection).to.have.property('transient', true)
+    })
+
+    it('should not open streams on a transient connection', async () => {
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection should be marked transient
+      expect(connection).to.have.property('transient', true)
+
+      await expect(connection.newStream('/my-protocol/1.0.0'))
+        .to.eventually.be.rejected.with.property('code', 'ERR_TRANSIENT_CONNECTION')
+    })
+
+    it('should not allow incoming streams on a transient connection', async () => {
+      const protocol = '/my-protocol/1.0.0'
+
+      // remote registers handler, disallow running over transient streams
+      await remote.handle(protocol, ({ stream }) => {
+        void pipe(stream, stream)
+      }, {
+        runOnTransientConnection: false
+      })
+
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection should be marked transient
+      expect(connection).to.have.property('transient', true)
+
+      await expect(connection.newStream('/my-protocol/1.0.0', {
+        runOnTransientConnection: false
+      }))
+        .to.eventually.be.rejected.with.property('code', 'ERR_TRANSIENT_CONNECTION')
+    })
+
+    it('should open streams on a transient connection when told to do so', async () => {
+      const protocol = '/my-protocol/1.0.0'
+
+      // remote registers handler, allow running over transient streams
+      await remote.handle(protocol, ({ stream }) => {
+        void pipe(stream, stream)
+      }, {
+        runOnTransientConnection: true
+      })
+
+      // discover relay and make reservation
+      await remote.dial(relay1.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      const connection = await local.dial(ma)
+
+      // connection should be marked transient
+      expect(connection).to.have.property('transient', true)
+
+      await expect(connection.newStream('/my-protocol/1.0.0', {
+        runOnTransientConnection: true
+      }))
+        .to.eventually.be.ok()
     })
   })
 
@@ -913,13 +1003,17 @@ describe('circuit-relay', () => {
             }
           } catch {}
         })
+      }, {
+        runOnTransientConnection: true
       })
 
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
 
       try {
-        const stream = await local.dialProtocol(ma, protocol)
+        const stream = await local.dialProtocol(ma, protocol, {
+          runOnTransientConnection: true
+        })
 
         await stream.sink(async function * () {
           while (true) {

@@ -1,4 +1,3 @@
-
 export const codes = {
   /**
    * Signature policy is invalid

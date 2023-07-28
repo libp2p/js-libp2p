@@ -10,7 +10,7 @@ import {
   connectAllPubSubNodes,
   connectPubsubNodes,
   createComponentsArray,
-  GossipSubAndComponents
+  type GossipSubAndComponents
 } from './utils/create-pubsub.js'
 import { stop } from '@libp2p/interface/startable'
 import { mockNetwork } from '@libp2p/interface-compliance-tests/mocks'

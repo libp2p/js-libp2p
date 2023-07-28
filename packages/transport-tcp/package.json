@@ -60,14 +60,11 @@
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^3.0.0",
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "it-all": "^3.0.1",
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0",
     "sinon": "^15.1.2",
     "uint8arrays": "^4.0.4"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

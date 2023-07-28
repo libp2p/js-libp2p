@@ -178,6 +178,12 @@ export interface NewStreamOptions extends AbortOptions {
    * for the protocol
    */
   maxOutboundStreams?: number
+
+  /**
+   * Opt-in to running over a transient connection - one that has time/data limits
+   * placed on it.
+   */
+  runOnTransientConnection?: boolean
 }
 
 export type ConnectionStatus = 'open' | 'closing' | 'closed'
@@ -238,6 +244,14 @@ export interface Connection {
    * The current status of the connection
    */
   status: ConnectionStatus
+
+  /**
+   * A transient connection is one that is not expected to be open for very long
+   * or one that cannot transfer very much data, such as one being used as a
+   * circuit relay connection. Protocols need to explicitly opt-in to being run
+   * over transient connections.
+   */
+  transient: boolean
 
   /**
    * Create a new stream on this connection and negotiate one of the passed protocols

@@ -1,4 +1,3 @@
-
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
 import { derivedEmptyPasswordKey } from '../src/ciphers/aes-gcm.browser.js'

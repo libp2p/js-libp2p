@@ -18,9 +18,9 @@ import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
+import type { Upgrader, UpgraderOptions } from '@libp2p/interface/transport'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { Upgrader, UpgraderOptions } from '@libp2p/interface-internal/upgrader'
 import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:upgrader')
@@ -32,6 +32,7 @@ interface CreateConnectionOptions {
   upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
   remotePeer: PeerId
   muxerFactory?: StreamMuxerFactory
+  transient?: boolean
 }
 
 interface OnStreamOptions {
@@ -251,7 +252,8 @@ export class DefaultUpgrader implements Upgrader {
         maConn,
         upgradedConn,
         muxerFactory,
-        remotePeer
+        remotePeer,
+        transient: opts?.transient
       })
     } finally {
       this.components.connectionManager.afterUpgradeInbound()
@@ -348,7 +350,8 @@ export class DefaultUpgrader implements Upgrader {
       maConn,
       upgradedConn,
       muxerFactory,
-      remotePeer
+      remotePeer,
+      transient: opts?.transient
     })
   }
 
@@ -362,7 +365,8 @@ export class DefaultUpgrader implements Upgrader {
       maConn,
       upgradedConn,
       remotePeer,
-      muxerFactory
+      muxerFactory,
+      transient
     } = opts
 
     let muxer: StreamMuxer | undefined
@@ -541,6 +545,7 @@ export class DefaultUpgrader implements Upgrader {
       timeline: maConn.timeline,
       multiplexer: muxer?.protocol,
       encryption: cryptoProtocol,
+      transient,
       newStream: newStream ?? errConnectionNotMultiplexed,
       getStreams: () => { if (muxer != null) { return muxer.streams } else { return [] } },
       close: async (options?: AbortOptions) => {
@@ -571,7 +576,11 @@ export class DefaultUpgrader implements Upgrader {
    */
   _onStream (opts: OnStreamOptions): void {
     const { connection, stream, protocol } = opts
-    const { handler } = this.components.registrar.getHandler(protocol)
+    const { handler, options } = this.components.registrar.getHandler(protocol)
+
+    if (connection.transient && options.runOnTransientConnection !== true) {
+      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
+    }
 
     handler({ connection, stream })
   }

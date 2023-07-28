@@ -59,27 +59,39 @@ Some useful queries are:
 
 #### Data sent/received
 
-    rate(libp2p_data_transfer_bytes_total[30s])
+```
+rate(libp2p_data_transfer_bytes_total[30s])
+```
 
 #### CPU usage
 
-    rate(process_cpu_user_seconds_total[30s]) * 100
+```
+rate(process_cpu_user_seconds_total[30s]) * 100
+```
 
 #### Memory usage
 
-    nodejs_memory_usage_bytes
+```
+nodejs_memory_usage_bytes
+```
 
 #### DHT query time
 
-    libp2p_kad_dht_wan_query_time_seconds
+```
+libp2p_kad_dht_wan_query_time_seconds
+```
 
 or
 
-    libp2p_kad_dht_lan_query_time_seconds
+```
+libp2p_kad_dht_lan_query_time_seconds
+```
 
 #### TCP transport dialer errors
 
-    rate(libp2p_tcp_dialer_errors_total[30s])
+```
+rate(libp2p_tcp_dialer_errors_total[30s])
+```
 
 ## API Docs
 

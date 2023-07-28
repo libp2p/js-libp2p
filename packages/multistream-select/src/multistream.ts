@@ -1,4 +1,3 @@
-
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'

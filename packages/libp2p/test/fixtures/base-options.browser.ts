@@ -1,4 +1,3 @@
-
 import { mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { webSockets } from '@libp2p/websockets'

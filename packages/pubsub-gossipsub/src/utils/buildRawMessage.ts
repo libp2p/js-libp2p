@@ -7,8 +7,8 @@ import type { PublicKey } from '@libp2p/interface/keys'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { RPC } from '../message/rpc.js'
-import { PublishConfig, PublishConfigType, TopicStr, ValidateError } from '../types.js'
-import { StrictSign, StrictNoSign, Message } from '@libp2p/interface/pubsub'
+import { type PublishConfig, PublishConfigType, type TopicStr, ValidateError } from '../types.js'
+import { StrictSign, StrictNoSign, type Message } from '@libp2p/interface/pubsub'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')

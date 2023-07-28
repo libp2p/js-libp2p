@@ -1,0 +1,8 @@
+{
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/aes/index.ts",
+    "./src/hmac/index.ts",
+    "./src/keys/index.ts"
+  ]
+}

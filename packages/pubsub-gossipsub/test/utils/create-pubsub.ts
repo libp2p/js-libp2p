@@ -1,7 +1,7 @@
 import { createRSAPeerId } from '@libp2p/peer-id-factory'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import { MemoryDatastore } from 'datastore-core'
-import { GossipSub, GossipSubComponents, GossipsubOpts } from '../../src/index.js'
+import { GossipSub, type GossipSubComponents, type GossipsubOpts } from '../../src/index.js'
 import type { PubSub } from '@libp2p/interface/pubsub'
 import { setMaxListeners } from 'events'
 import { PersistentPeerStore } from '@libp2p/peer-store'
