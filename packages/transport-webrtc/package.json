@@ -87,7 +87,6 @@
     "sinon-ts": "^1.0.0"
   },
   "browser": {
-    "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js",
-    "node-datachannel": false
+    "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js"
   }
 }
