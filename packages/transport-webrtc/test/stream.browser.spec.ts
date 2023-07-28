@@ -4,6 +4,7 @@ import * as lengthPrefixed from 'it-length-prefixed'
 import { bytes } from 'multiformats'
 import { Message } from '../src/pb/message.js'
 import { createStream, type WebRTCStream } from '../src/stream.js'
+import { RTCPeerConnection } from '../src/webrtc/index.js'
 import type { Stream } from '@libp2p/interface/connection'
 const TEST_MESSAGE = 'test_message'
 
@@ -26,9 +27,16 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
 
 describe('Stream Stats', () => {
   let stream: WebRTCStream
+  let peerConnection: RTCPeerConnection
 
   beforeEach(async () => {
-    ({ stream } = setup())
+    ({ stream, peerConnection } = setup())
+  })
+
+  afterEach(() => {
+    if (peerConnection != null) {
+      peerConnection.close()
+    }
   })
 
   it('can construct', () => {
@@ -86,9 +94,16 @@ describe('Stream Stats', () => {
 describe('Stream Read Stats Transition By Incoming Flag', () => {
   let dataChannel: RTCDataChannel
   let stream: Stream
+  let peerConnection: RTCPeerConnection
 
   beforeEach(async () => {
-    ({ dataChannel, stream } = setup())
+    ({ dataChannel, stream, peerConnection } = setup())
+  })
+
+  afterEach(() => {
+    if (peerConnection != null) {
+      peerConnection.close()
+    }
   })
 
   it('no flag, no transition', () => {
@@ -123,9 +138,16 @@ describe('Stream Read Stats Transition By Incoming Flag', () => {
 describe('Stream Write Stats Transition By Incoming Flag', () => {
   let dataChannel: RTCDataChannel
   let stream: Stream
+  let peerConnection: RTCPeerConnection
 
   beforeEach(async () => {
-    ({ dataChannel, stream } = setup())
+    ({ dataChannel, stream, peerConnection } = setup())
+  })
+
+  afterEach(() => {
+    if (peerConnection != null) {
+      peerConnection.close()
+    }
   })
 
   it('open to write-close by flag:STOP_SENDING', async () => {

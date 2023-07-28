@@ -35,9 +35,11 @@
   "scripts": {
     "generate": "protons src/private-to-private/pb/message.proto src/pb/message.proto",
     "build": "aegir build",
-    "test": "aegir test -t browser",
+    "test": "aegir test -t node -t browser -t electron-main",
+    "test:node": "aegir test -t node --cov",
     "test:chrome": "aegir test -t browser --cov",
     "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:electron-main": "aegir test -t electron-main",
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
@@ -61,6 +63,7 @@
     "it-to-buffer": "^4.0.2",
     "multiformats": "^12.0.1",
     "multihashes": "^4.0.3",
+    "node-datachannel": "^0.4.3",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "protons-runtime": "^5.0.0",
@@ -82,5 +85,8 @@
     "protons": "^7.0.2",
     "sinon": "^15.1.2",
     "sinon-ts": "^1.0.0"
+  },
+  "browser": {
+    "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js"
   }
 }
