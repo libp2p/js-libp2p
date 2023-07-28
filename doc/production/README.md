@@ -8,13 +8,13 @@ This guide aims to guide you from using the public infrastructure into setting u
 
 ## Table of Contents
 
-* [Joining the Network](#joining-the-network)
-* [Connecting to Nodes with connectivity limitations](#connecting-to-nodes-with-connectivity-limitations)
-  * [`webrtc-star` servers](#webrtc-star-servers)
-  * [Circuit Relay](#circuit-relay)
-* [Querying the network from the browser](#querying-the-network-from-the-browser)
-* [Others](#others)
-  * [SSL](#ssl)
+- [Production](#production)
+  - [Table of Contents](#table-of-contents)
+  - [Joining the Network](#joining-the-network)
+  - [Connecting to Nodes with connectivity limitations](#connecting-to-nodes-with-connectivity-limitations)
+  - [Querying the network from the browser](#querying-the-network-from-the-browser)
+  - [Others](#others)
+    - [SSL](#ssl)
 
 ## Joining the Network
 
@@ -22,31 +22,21 @@ Once a libp2p node stars, it will need to connect to a set of peers in order to 
 
 Currently `js-libp2p` is not the best choice for being a bootstrap node. Its DHT needs to be improved, in order to become an effective server to enable other nodes to properly bootstrap their network.
 
-Setting up a fleet of [`go-libp2p`](https://github.com/libp2p/go-libp2p) nodes is the recommended way to proceed here. 
+Setting up a fleet of [`go-libp2p`](https://github.com/libp2p/go-libp2p) nodes is the recommended way to proceed here.
 
 ## Connecting to Nodes with connectivity limitations
 
 While the libp2p core codebase aims to work in multiple environments, there are some limitations that are not possible to overcome at the time of writing. These limitations include browser nodes, nodes behind NAT, reverse proxies, firewalls, or lack of compatible transports.
 
-In the browser, libp2p supports two transports: `websockets` and `webrtc-star`. Nowadays, browsers do not support listening for connections, but only to dial known addresses. `webrtc-star` servers can be used to enable libp2p nodes to discover other nodes running on the browser and to help them establish a connection.
+In the browser, libp2p supports three transports: `WebSockets`, `WebRTC`, and `WebTransport`.
 
-For nodes that cannot be dialed (including browser), circuit relay nodes should be used.
-
-### `webrtc-star` servers
-
-Regarding `webRTC` connections, a set of star servers are needed to act as a rendezvous point, where peers can learn about other peers (`peer-discovery`), as well as exchange their SDP offers (signaling data).
-
-You can read on how to setup your own star servers in [libp2p/js-libp2p-webrtc-star/DEPLOYMENT.md](https://github.com/libp2p/js-libp2p-webrtc-star/blob/master/DEPLOYMENT.md).
-
-It is worth pointing out that with new discovery protocols on the way, as well as support for distributed signaling, the star servers should be deprecated on the long run.
-
-### Circuit Relay
+- [WebSockets](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-websockets) is generally used as a full-duplex communication protocol over a single TCP connection, allowing for real-time data transfer between the client and the server.
+- [WebRTC](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc) is primarly geared towards facilitating browser-to-browser connections. It also enables browsers to connect to public server nodes without those server nodes providing a TLS certificate within the browser's trustchain. This differs from the `WebSockets` transport as the browser requires the remote to have a trusted TLS certificate. Please note that webRTC iss currently not supported by [go-libp2p](https://github.com/libp2p/go-libp2p/issues/2009) but this is in development.
+- [WebTransport](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webtransport) is a way for browsers to establish a stream-multiplexed and bidirectional connection to servers, that uses QUIC to offer an alternative to WebSocket. It exhibits all the advantages of QUIC over TCP, including faster handshakes, no head-of-line blocking, and being future-proof. Browsers cannot listen for WebTransport connections since it is similar to TCP in that it requires opening sockets on the host machine which is forbidden by the browser security model.
 
 Libp2p nodes acting as circuit relay aim to establish connectivity between libp2p nodes (e.g. IPFS nodes) that wouldn't otherwise be able to establish a direct connection to each other.
 
 A relay is needed in situations where nodes are behind NAT, reverse proxies, firewalls and/or simply don't support the same transports (e.g. go-libp2p vs. browser-libp2p). The circuit relay protocol exists to overcome those scenarios. Nodes with the `auto-relay` feature enabled can automatically bind themselves on a relay to listen for connections on their behalf.
-
-You can use [libp2p/js-libp2p-relay-server](https://github.com/libp2p/js-libp2p-relay-server) to setup your own relay server. This also includes an easy to customize Docker setup for a HOP Relay.
 
 ## Querying the network from the browser
 

@@ -1,10 +1,7 @@
-/* eslint-disable no-console */
-
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { bootstrap } from '@libp2p/bootstrap'
 import { kadDHT } from '@libp2p/kad-dht'
-import { mplex } from '@libp2p/mplex'
 import { webRTCDirect, webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { webTransport } from '@libp2p/webtransport'
@@ -28,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       })
     ],
     connectionEncryption: [noise()],
-    streamMuxers: [yamux(), mplex()],
+    streamMuxers: [yamux()],
     peerDiscovery: [
       bootstrap({
         list: [
