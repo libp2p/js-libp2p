@@ -1,4 +1,3 @@
-
 export function debounce (func: () => void, wait: number): () => void {
   let timeout: ReturnType<typeof setTimeout> | undefined
 

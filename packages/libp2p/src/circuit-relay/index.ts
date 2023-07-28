@@ -1,3 +1,39 @@
+/**
+ * @packageDocumentation
+ *
+ * The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+ * addresses.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { circuitRelayTransport } from 'libp2p/circuit-relay'
+ *
+ * const node = await createLibp2p({
+ *   transports: [
+ *     circuitRelayTransport()
+ *   ]
+ * })
+ * ```
+ *
+ * The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+ * server.  This will not work in browsers.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { circuitRelayServer } from 'libp2p/circuit-relay'
+ *
+ * const node = await createLibp2p({
+ *   services: [
+ *     circuitRelay: circuitRelayServer()
+ *   ]
+ * })
+ * ```
+ */
+
 import type { Limit } from './pb/index.js'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerMap } from '@libp2p/peer-collections'

@@ -1,7 +1,7 @@
 import type { Stream } from '@libp2p/interface/connection'
 import { abortableSource } from 'abortable-iterator'
 import { pipe } from 'it-pipe'
-import { pushable, Pushable } from 'it-pushable'
+import { pushable, type Pushable } from 'it-pushable'
 import { encode, decode } from 'it-length-prefixed'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
