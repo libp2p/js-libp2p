@@ -99,18 +99,13 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     components.events.addEventListener('peer:update', evt => {
       // if there was no peer previously in the peer store this is a new peer
       if (evt.detail.previous === null) {
-
-        if(evt.detail.peer.addresses.length === 0) {
-          throw new CodeError('peer must have at least one multiaddr', codes.ERR_INVALID_MULTIADDR)
-        }
-
         const peerInfo: PeerInfo = {
           id: evt.detail.peer.id,
           multiaddrs: evt.detail.peer.addresses.map(a => a.multiaddr),
           protocols: evt.detail.peer.protocols
         }
 
-        this.safeDispatchEvent('peer:discovery', { detail: peerInfo})
+        this.safeDispatchEvent('peer:discovery', { detail: peerInfo })
       }
     })
 
