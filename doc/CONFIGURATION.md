@@ -69,7 +69,7 @@ Bear in mind that a **transport** and **connection encryption** module are **req
 
 Some available transports are:
 
-- [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) (not available in browsers)
+- [@libp2p/tcp](https://github.com/libp2p/tree/master/packages/transport-tcp) (not available in browsers)
 - [@libp2p/webrtc](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc)
 - [@libp2p/websockets](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-websockets)
 - [@libp2p/webtransport](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webtransport)
@@ -87,7 +87,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 Some available stream multiplexers are:
 
-- [@libp2p/mplex](https://github.com/libp2p/js-libp2p-mplex)
+- [@libp2p/mplex](https://github.com/libp2p/js-libp2p/tree/master/packages/stream-multiplexer-mplex)
 - [@chainsafe/libp2p-yamux](https://github.com/chainsafe/js-libp2p-yamux)
 
 Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
@@ -126,9 +126,9 @@ If you want to know more about libp2p connection encryption, you should read the
 
 Some available peer discovery modules are:
 
-- [@libp2p/mdns](https://github.com/libp2p/js-libp2p-mdns)
+- [@libp2p/mdns](https://github.com/libp2p/js-libp2ptree/master/packages/peer-discovery-mdns)
 - [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-bootstrap)
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
 - [@chainsafe/discv5](https://github.com/chainsafe/discv5)
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-discovery).
@@ -143,7 +143,7 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 Some available content routing modules are:
 
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
 - [@libp2p/delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
 - [@libp2p/ipni-content-routing](https://github.com/libp2p/js-ipni-content-routing)
 
@@ -159,7 +159,7 @@ If you want to know more about libp2p content routing, you should read the follo
 
 Some available peer routing modules are:
 
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
 - [@libp2p/delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
 
 If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-routing). **(WIP: This module is not yet implemented)**
@@ -172,7 +172,7 @@ If you want to know more about libp2p peer routing, you should read the followin
 
 > A DHT can provide content and peer routing capabilities in a p2p system, as well as peer discovery capabilities.
 
-The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
+The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
 
 If this DHT implementation does not fulfill your needs and you want to create or use your own implementation, please get in touch with us through a github issue. We plan to work on improving the ability to bring your own DHT in a future release.
 
