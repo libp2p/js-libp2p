@@ -1,4 +1,3 @@
-
 export default {
   16: {
     inputs: [

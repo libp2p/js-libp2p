@@ -45,6 +45,11 @@ export interface IdentifyServiceInit {
    * Whether to automatically dial identify on newly opened connections (default: true)
    */
   runOnConnectionOpen?: boolean
+
+  /**
+   * Whether to run on connections with data or duration limits (default: true)
+   */
+  runOnTransientConnection?: boolean
 }
 
 export interface IdentifyServiceComponents {

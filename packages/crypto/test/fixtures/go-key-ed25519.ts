@@ -1,4 +1,3 @@
-
 export default {
   // Generation code from https://github.com/libp2p/js-libp2p-crypto/issues/175#issuecomment-634467463
   //

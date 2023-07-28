@@ -7,7 +7,7 @@ import {
   connectPubsubNodes,
   createComponents,
   createComponentsArray,
-  GossipSubAndComponents
+  type GossipSubAndComponents
 } from './utils/create-pubsub.js'
 
 describe('signature policy', () => {

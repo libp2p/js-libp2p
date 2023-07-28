@@ -1,4 +1,3 @@
-
 /**
  * Calls the passed map function on every entry of the passed iterable iterator
  */
