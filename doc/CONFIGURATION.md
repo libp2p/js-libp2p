@@ -15,7 +15,6 @@
   - [Examples](#examples)
     - [Basic setup](#basic-setup)
     - [Customizing Peer Discovery](#customizing-peer-discovery)
-    - [Setup webrtc transport and discovery](#setup-webrtc-transport-and-discovery)
     - [Customizing Pubsub](#customizing-pubsub)
     - [Customizing DHT](#customizing-dht)
     - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
@@ -70,10 +69,10 @@ Bear in mind that a **transport** and **connection encryption** module are **req
 
 Some available transports are:
 
-- [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) (not available in browsers)
-- [@libp2p/webrtc](https://github.com/libp2p/js-libp2p-webrtc)
-- [@libp2p/websockets](https://github.com/libp2p/js-libp2p-websockets)
-- [@libp2p/webtransport](https://github.com/libp2p/js-libp2p-webtransport) (Work in Progress)
+- [@libp2p/tcp](https://github.com/libp2p/tree/master/packages/transport-tcp) (not available in browsers)
+- [@libp2p/webrtc](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc)
+- [@libp2p/websockets](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-websockets)
+- [@libp2p/webtransport](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webtransport)
 
 If none of the available transports fulfils your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
 
@@ -88,7 +87,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 Some available stream multiplexers are:
 
-- [@libp2p/mplex](https://github.com/libp2p/js-libp2p-mplex)
+- [@libp2p/mplex](https://github.com/libp2p/js-libp2p/tree/master/packages/stream-multiplexer-mplex)
 - [@chainsafe/libp2p-yamux](https://github.com/chainsafe/js-libp2p-yamux)
 
 Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
@@ -127,13 +126,10 @@ If you want to know more about libp2p connection encryption, you should read the
 
 Some available peer discovery modules are:
 
-- [@libp2p/mdns](https://github.com/libp2p/js-libp2p-mdns)
-- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p-bootstrap)
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
-- [@libp2p/webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star)
+- [@libp2p/mdns](https://github.com/libp2p/js-libp2ptree/master/packages/peer-discovery-mdns)
+- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-bootstrap)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
 - [@chainsafe/discv5](https://github.com/chainsafe/discv5)
-
-**Note**: `peer-discovery` services within transports (such as `js-libp2p-webrtc-star`) are automatically gathered from the `transport`, via it's `discovery` property. As such, they do not need to be added in the discovery modules. However, these transports can also be configured and disabled as the other ones.
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-discovery).
 
@@ -147,7 +143,7 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 Some available content routing modules are:
 
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
 - [@libp2p/delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
 - [@libp2p/ipni-content-routing](https://github.com/libp2p/js-ipni-content-routing)
 
@@ -163,7 +159,7 @@ If you want to know more about libp2p content routing, you should read the follo
 
 Some available peer routing modules are:
 
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
 - [@libp2p/delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
 
 If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-routing). **(WIP: This module is not yet implemented)**
@@ -176,7 +172,7 @@ If you want to know more about libp2p peer routing, you should read the followin
 
 > A DHT can provide content and peer routing capabilities in a p2p system, as well as peer discovery capabilities.
 
-The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p-kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
+The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
 
 If this DHT implementation does not fulfill your needs and you want to create or use your own implementation, please get in touch with us through a github issue. We plan to work on improving the ability to bring your own DHT in a future release.
 
@@ -297,36 +293,6 @@ const node = await createLibp2p({
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
       ]
     )
-  ]
-})
-```
-
-#### Setup webrtc transport and discovery
-
-```js
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import { webRTCStar } from '@libp2p/webrtc-star'
-import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
-
-const webRtc = webRTCStar()
-
-const node = await createLibp2p({
-  transports: [
-    webSockets(),
-    webRtc.transport
-  ],
-  peerDiscovery: [
-    webRtc.discovery
-  ],
-  streamMuxers: [
-    yamux(),
-    mplex()
-  ],
-  connectionEncryption: [
-    noise()
   ]
 })
 ```
@@ -898,30 +864,25 @@ const node = await createLibp2p({
 
 #### Customizing Transports
 
-Some Transports can be passed additional options when they are created. For example, `libp2p-webrtc-star` accepts an optional, custom `wrtc` implementation. In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
+Some Transports can be passed additional options when they are created. For example, [webRTC](../packages/transport-webrtc) accepts optional [DataChannel Options](https://github.com/libp2p/js-libp2p/blob/master/packages/transport-webrtc/src/stream.ts#L13-L17). In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { webRTCStar } from '@libp2p/webrtc-star'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import wrtc from 'wrtc'
+import { webRTC } from '@libp2p/webrtc'
 
-const webRTC = webRTCStar({
-  wrtc
-})
 
 const node = await createLibp2p({
   transports: [
-    webRTC.transport
-  ],
-  peerDiscovery: [
-    webRTC.discovery
+    webRTC({
+      dataChannel: {
+        maxMessageSize: 10
+      }
+    })
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncryption: [
     noise()
@@ -929,35 +890,30 @@ const node = await createLibp2p({
 })
 ```
 
-During Libp2p startup, transport listeners will be created for the configured listen multiaddrs.  Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [libp2p-webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) transport listener supports the configuration of its underlying [simple-peer](https://github.com/feross/simple-peer) ice server(STUN/TURN) config as follows:
+During Libp2p startup, transport listeners will be created for the configured listen multiaddrs.  Some transports support custom listener options and you can set them using the `listenerOptions` in the transport configuration. For example, [webRTC](../packages/transport-webrtc) transport listener supports the configuration of ice servers (STUN/TURN) config as follows:
 
 ```js
-const webRTC = webRTCStar({
-  listenerOptions: {
-    config: {
-      iceServers: [
-        {"urls": ["turn:YOUR.TURN.SERVER:3478"], "username": "YOUR.USER", "credential": "YOUR.PASSWORD"},
-        {"urls": ["stun:YOUR.STUN.SERVER:3478"], "username": "", "credential": ""}]
-    }
-  }
-})
-
 const node = await createLibp2p({
   transports: [
-    webRTC.transport
-  ],
-  peerDiscovery: [
-    webRTC.discovery
+    webRTC({
+      rtcConfiguration: {
+        iceServers:[{
+          urls: [
+            'stun:stun.l.google.com:19302',
+            'stun:global.stun.twilio.com:3478'
+          ]
+        }]
+    }
+})
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncryption: [
     noise()
   ],
   addresses: {
-    listen: ['/dns4/your-wrtc-star.pub/tcp/443/wss/p2p-webrtc-star'] // your webrtc dns multiaddr
+    listen: ['/webrtc'] // your webrtc dns multiaddr
   }
 })
 ```
