@@ -199,7 +199,7 @@ export class PeerConnection extends EventTarget implements RTCPeerConnection {
 
   createDataChannel (label: string, dataChannelDict: RTCDataChannelInit = {}): RTCDataChannel {
     const channel = this.#peerConnection.createDataChannel(label, dataChannelDict)
-    const dataChannel = new DataChannel(channel)
+    const dataChannel = new DataChannel(channel, dataChannelDict)
 
     // ensure we can close all channels when shutting down
     this.#dataChannels.add(dataChannel)

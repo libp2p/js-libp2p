@@ -20,13 +20,11 @@ export class DataChannel extends EventTarget implements RTCDataChannel {
   #bufferedAmountLowThreshold: number
   #readyState: RTCDataChannelState
 
-  constructor (dataChannel: node.DataChannel) {
+  constructor (dataChannel: node.DataChannel, dataChannelDict: RTCDataChannelInit = {}) {
     super()
 
     this.#dataChannel = dataChannel
     this.#readyState = 'connecting'
-
-    // TODO: what is the default?
     this.#bufferedAmountLowThreshold = 0
 
     this.binaryType = 'arraybuffer'
@@ -85,11 +83,10 @@ export class DataChannel extends EventTarget implements RTCDataChannel {
     this.onmessage = null
     this.onopen = null
 
-    // TODO: update these
-    this.maxPacketLifeTime = null
-    this.maxRetransmits = null
-    this.negotiated = false
-    this.ordered = false
+    this.maxPacketLifeTime = dataChannelDict.maxPacketLifeTime ?? null
+    this.maxRetransmits = dataChannelDict.maxRetransmits ?? null
+    this.negotiated = dataChannelDict.negotiated ?? false
+    this.ordered = dataChannelDict.ordered ?? true
   }
 
   get id (): number {
@@ -133,6 +130,7 @@ export class DataChannel extends EventTarget implements RTCDataChannel {
   send (data: ArrayBuffer): void
   send (data: ArrayBufferView): void
   send (data: any): void {
+    // TODO: sending Blobs
     if (typeof data === 'string') {
       this.#dataChannel.sendMessage(data)
     } else {
