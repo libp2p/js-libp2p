@@ -9,6 +9,14 @@ import type { AbortOptions } from '@libp2p/interfaces'
 
 const log = logger('libp2p:perf')
 
+export const defaultInit: PerfServiceInit = {
+  protocolName: '/perf/1.0.0',
+  maxInboundStreams: 1 << 10,
+  maxOutboundStreams: 1 << 10,
+  timeout: 10000,
+  writeBlockSize: BigInt(64 << 10)
+}
+
 export interface PerfService {
   perf: (peer: PeerId, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions) => Promise<void>
   measureDownloadBandwidth: (peer: PeerId, size: bigint) => Promise<number>

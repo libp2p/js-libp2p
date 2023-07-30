@@ -1,26 +1,10 @@
-import { EventEmitter } from '@libp2p/interface/events'
 import { start } from '@libp2p/interface/startable'
-import { mockRegistrar, mockUpgrader, mockConnectionGater, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { multiaddr } from '@multiformats/multiaddr'
-import { MemoryDatastore } from 'datastore-core'
-import { DefaultAddressManager } from 'libp2p/src/address-manager'
-import { type Components, defaultComponents } from 'libp2p/src/components'
-import { DefaultConnectionManager } from 'libp2p/src/connection-manager'
-import { stubInterface } from 'sinon-ts'
 import yargs from 'yargs'
-import { perfService, type PerfServiceInit } from '.'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import { defaultInit, perfService } from '../src/index.js'
+import { createComponents } from '../test/index.spec.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-export const defaultInit: PerfServiceInit = {
-  protocolName: '/perf/1.0.0',
-  maxInboundStreams: 1 << 10,
-  maxOutboundStreams: 1 << 10,
-  timeout: 10000,
-  writeBlockSize: BigInt(64 << 10)
-}
 
 const argv = yargs
   .options({
@@ -100,36 +84,6 @@ function splitHostPort (urlString: string): { host: string, port?: string } {
   } catch (error) {
     throw Error('Invalid server address')
   }
-}
-
-export async function createComponents (listenMaddrs: Multiaddr[] = []): Promise<Components> {
-  const peerId = await createEd25519PeerId()
-
-  const events = new EventEmitter()
-
-  const components = defaultComponents({
-    peerId,
-    registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
-    datastore: new MemoryDatastore(),
-    transportManager: stubInterface<TransportManager>(),
-    connectionGater: mockConnectionGater(),
-    events
-  })
-
-  components.peerStore = new PersistentPeerStore(components)
-  components.connectionManager = new DefaultConnectionManager(components, {
-    minConnections: 50,
-    maxConnections: 1000,
-    autoDialInterval: 1000,
-    inboundUpgradeTimeout: 1000
-  })
-
-  components.addressManager = new DefaultAddressManager(components, {
-    announce: listenMaddrs.map(ma => ma.toString())
-  })
-
-  return components
 }
 
 main(argv['run-server'], argv['server-ip-address'], argv.transport, argv['upload-bytes'], argv['download-bytes']).catch((err) => {
