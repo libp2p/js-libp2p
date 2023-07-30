@@ -99,7 +99,13 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     components.events.addEventListener('peer:update', evt => {
       // if there was no peer previously in the peer store this is a new peer
       if (evt.detail.previous == null) {
-        this.safeDispatchEvent('peer:discovery', { detail: evt.detail.peer })
+        const peerInfo: PeerInfo = {
+          id: evt.detail.peer.id,
+          multiaddrs: evt.detail.peer.addresses.map(a => a.multiaddr),
+          protocols: evt.detail.peer.protocols
+        }
+
+        this.safeDispatchEvent('peer:discovery', { detail: peerInfo })
       }
     })
 
