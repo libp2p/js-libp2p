@@ -17,7 +17,7 @@ a=ice-ufrag:MyUserFragment
 a=ice-pwd:MyUserFragment
 a=fingerprint:SHA-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1
 a=sctp-port:5000
-a=max-message-size:100000
+a=max-message-size:16384
 a=candidate:1467250027 1 UDP 1467250027 0.0.0.0 56093 typ host`
 
 describe('SDP', () => {
@@ -73,7 +73,7 @@ a=ice-ufrag:someotheruserfragmentstring
 a=ice-pwd:someotheruserfragmentstring
 a=fingerprint:SHA-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1
 a=sctp-port:5000
-a=max-message-size:100000
+a=max-message-size:16384
 a=candidate:1467250027 1 UDP 1467250027 0.0.0.0 56093 typ host`
 
     expect(result.sdp).to.equal(expected)
