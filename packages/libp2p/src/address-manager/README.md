@@ -2,7 +2,7 @@
 
 The Address manager is responsible for keeping an updated register of the peer's addresses. It includes 2 different types of Addresses: `Listen Addresses` and `Announce Addresses`.
 
-These Addresses should be specified in your libp2p [configuration](../../doc/CONFIGURATION.md) when you create your node.
+These Addresses should be specified in your libp2p [configuration](../../../../doc/CONFIGURATION.md) when you create your node.
 
 ## Listen Addresses
 
