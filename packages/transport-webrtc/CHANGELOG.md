@@ -5,6 +5,13 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+## [3.1.0](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.0.0...webrtc-v3.1.0) (2023-07-31)
+
+
+### Features
+
+* add node.js/electron support for webrtc transport ([#1905](https://www.github.com/libp2p/js-libp2p/issues/1905)) ([72e81dc](https://www.github.com/libp2p/js-libp2p/commit/72e81dc1ab66fe0bbcafe3261ec20e2a28aaad5f))
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v2.0.10...webrtc-v3.0.0) (2023-07-31)
 
 
