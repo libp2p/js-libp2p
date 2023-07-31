@@ -114,7 +114,7 @@
     "p-event": "^6.0.0",
     "p-retry": "^5.1.2",
     "p-wait-for": "^5.0.2",
-    "prettier": "^2.0.5",
+    "prettier": "^3.0.0",
     "sinon": "^15.1.2",
     "time-cache": "^0.3.0",
     "ts-node": "^10.7.0",
