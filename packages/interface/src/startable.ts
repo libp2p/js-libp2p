@@ -1,4 +1,3 @@
-
 /**
  * Implemented by components that have a lifecycle
  */

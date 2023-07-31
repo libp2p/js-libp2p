@@ -1,4 +1,3 @@
-
 export default [{
   cipher: 'AES-256' as 'AES-256',
   hash: 'SHA256' as 'SHA256',

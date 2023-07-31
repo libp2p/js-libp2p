@@ -1,4 +1,3 @@
-
 export interface PublicKey {
   readonly bytes: Uint8Array
   verify: (data: Uint8Array, sig: Uint8Array) => Promise<boolean>

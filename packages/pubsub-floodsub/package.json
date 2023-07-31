@@ -57,26 +57,23 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "~0.0.1",
-    "@libp2p/logger": "^2.0.0",
+    "@libp2p/interface": "^0.1.0",
+    "@libp2p/logger": "^3.0.0",
     "@libp2p/pubsub": "^7.0.0",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.4"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^3.0.0",
-    "@libp2p/peer-collections": "^3.0.0",
-    "@libp2p/peer-id-factory": "^2.0.0",
+    "@libp2p/interface-compliance-tests": "^4.0.0",
+    "@libp2p/peer-collections": "^4.0.0",
+    "@libp2p/peer-id-factory": "^3.0.0",
     "@multiformats/multiaddr": "^12.1.3",
     "@types/sinon": "^10.0.15",
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "multiformats": "^12.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.0.2",
     "sinon": "^15.1.2"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

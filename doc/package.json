@@ -25,19 +25,16 @@
     }
   },
   "scripts": {
-    "clean": "aegir clean",
-    "lint": "aegir lint",
-    "build": "aegir build",
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
     "@chainsafe/libp2p-yamux": "^4.0.2",
-    "@libp2p/interface-metrics": "^4.0.8",
-    "@libp2p/mplex": "^8.0.4",
-    "@libp2p/prometheus-metrics": "^1.1.5",
-    "@libp2p/tcp": "^7.0.3",
-    "aegir": "^39.0.13",
-    "libp2p": "^0.45.9",
+    "@libp2p/interface": "^0.1.0",
+    "@libp2p/mplex": "^9.0.0",
+    "@libp2p/prometheus-metrics": "^2.0.0",
+    "@libp2p/tcp": "^8.0.0",
+    "aegir": "^40.0.1",
+    "libp2p": "^0.46.0",
     "prom-client": "^14.2.0"
   },
   "private": true

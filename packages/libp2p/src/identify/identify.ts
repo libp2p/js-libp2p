@@ -22,7 +22,8 @@ import {
   MAX_IDENTIFY_MESSAGE_SIZE,
   TIMEOUT,
   MAX_PUSH_OUTGOING_STREAMS,
-  MAX_OBSERVED_ADDRESSES
+  MAX_OBSERVED_ADDRESSES,
+  RUN_ON_TRANSIENT_CONNECTION
 } from './consts.js'
 import { Identify } from './pb/message.js'
 import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
@@ -60,6 +61,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly maxIdentifyMessageSize: number
   private readonly maxObservedAddresses: number
   private readonly events: EventEmitter<Libp2pEvents>
+  private readonly runOnTransientConnection: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
     this.started = false
@@ -79,6 +81,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? MAX_PUSH_OUTGOING_STREAMS
     this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
     this.maxObservedAddresses = init.maxObservedAddresses ?? MAX_OBSERVED_ADDRESSES
+    this.runOnTransientConnection = init.runOnTransientConnection ?? RUN_ON_TRANSIENT_CONNECTION
+
 
     // Store self host metadata
     this.host = {
@@ -131,7 +135,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       })
     }, {
       maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams
+      maxOutboundStreams: this.maxOutboundStreams,
+      runOnTransientConnection: this.runOnTransientConnection
     })
     await this.registrar.handle(this.identifyPushProtocolStr, (data) => {
       void this._handlePush(data).catch(err => {
@@ -139,7 +144,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       })
     }, {
       maxInboundStreams: this.maxPushIncomingStreams,
-      maxOutboundStreams: this.maxPushOutgoingStreams
+      maxOutboundStreams: this.maxPushOutgoingStreams,
+      runOnTransientConnection: this.runOnTransientConnection
     })
 
     this.started = true
@@ -179,7 +185,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
       try {
         stream = await connection.newStream([this.identifyPushProtocolStr], {
-          signal
+          signal,
+          runOnTransientConnection: this.runOnTransientConnection
         })
 
         const pb = pbStream(stream, {
@@ -247,7 +254,10 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
     try {
-      stream = await connection.newStream([this.identifyProtocolStr], options)
+      stream = await connection.newStream([this.identifyProtocolStr], {
+        ...options,
+        runOnTransientConnection: this.runOnTransientConnection
+      })
 
       const pb = pbStream(stream, {
         maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE

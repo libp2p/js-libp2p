@@ -1,4 +1,3 @@
-
 export interface JWKKeyPair {
   privateKey: JsonWebKey
   publicKey: JsonWebKey
@@ -21,7 +20,7 @@ export interface ECDHKey {
 
 export interface JWKEncodedPublicKey { kty: string, crv: 'P-256' | 'P-384' | 'P-521', x: string, y: string, ext: boolean }
 
-export interface JWKEncodedPrivateKey extends JWKEncodedPublicKey { d: string}
+export interface JWKEncodedPrivateKey extends JWKEncodedPublicKey { d: string }
 
 export interface EnhancedKey {
   iv: Uint8Array

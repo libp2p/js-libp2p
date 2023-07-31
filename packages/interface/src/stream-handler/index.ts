@@ -19,6 +19,12 @@ export interface StreamHandlerOptions {
    * How many outgoing streams can be open for this protocol at the same time on each connection (default: 64)
    */
   maxOutboundStreams?: number
+
+  /**
+   * Opt-in to running over a transient connection - one that has time/data limits
+   * placed on it.
+   */
+  runOnTransientConnection?: boolean
 }
 
 export interface StreamHandlerRecord {

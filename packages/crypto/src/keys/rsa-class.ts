@@ -1,4 +1,3 @@
-
 import { CodeError } from '@libp2p/interface/errors'
 import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error types are missing

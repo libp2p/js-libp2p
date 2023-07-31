@@ -43,6 +43,7 @@ class MockConnection implements Connection {
   public status: ConnectionStatus
   public streams: Stream[]
   public tags: string[]
+  public transient: boolean
 
   private readonly muxer: StreamMuxer
   private readonly maConn: MultiaddrConnection
@@ -63,6 +64,7 @@ class MockConnection implements Connection {
     this.tags = []
     this.muxer = muxer
     this.maConn = maConn
+    this.transient = false
   }
 
   async newStream (protocols: string | string[], options?: AbortOptions): Promise<Stream> {

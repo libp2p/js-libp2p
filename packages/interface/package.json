@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The interface implemented by a libp2p node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/interface#readme",
@@ -167,11 +167,8 @@
   },
   "devDependencies": {
     "@types/sinon": "^10.0.15",
-    "aegir": "^39.0.13",
+    "aegir": "^40.0.1",
     "sinon": "^15.1.2",
     "sinon-ts": "^1.0.0"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

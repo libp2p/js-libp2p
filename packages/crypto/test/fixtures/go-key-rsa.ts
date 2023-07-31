@@ -1,4 +1,3 @@
-
 export default {
   private: {
     hash: Uint8Array.from([

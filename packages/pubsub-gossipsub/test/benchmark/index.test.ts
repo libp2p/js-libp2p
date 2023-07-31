@@ -4,7 +4,7 @@ import {
   connectPubsubNodes,
   createComponentsArray,
   denseConnect,
-  GossipSubAndComponents
+  type GossipSubAndComponents
 } from '../utils/create-pubsub.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { awaitEvents, checkReceivedSubscriptions, checkReceivedSubscription } from '../utils/events.js'
