@@ -1,3 +1,4 @@
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { abortableDuplex } from 'abortable-iterator'
 import { pbStream } from 'it-protobuf-stream'
@@ -27,7 +28,9 @@ export async function handleIncomingStream ({ rtcConfiguration, dataChannelOptio
     const connectedPromise: DeferredPromise<void> = pDefer()
     const answerSentPromise: DeferredPromise<void> = pDefer()
 
-    signal.onabort = () => { connectedPromise.reject() }
+    signal.onabort = () => {
+      connectedPromise.reject(new CodeError('Timed out while trying to connect', 'ERR_TIMEOUT'))
+    }
     // candidate callbacks
     pc.onicecandidate = ({ candidate }) => {
       answerSentPromise.promise.then(
@@ -39,6 +42,7 @@ export async function handleIncomingStream ({ rtcConfiguration, dataChannelOptio
         },
         (err) => {
           log.error('cannot set candidate since sending answer failed', err)
+          connectedPromise.reject(err)
         }
       )
     }
