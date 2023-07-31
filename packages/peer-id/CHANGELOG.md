@@ -5,6 +5,30 @@
 
 * update README.md ([#59](https://github.com/libp2p/js-libp2p-peer-id/issues/59)) ([aba6483](https://github.com/libp2p/js-libp2p-peer-id/commit/aba6483dad028ee5c24bfc01135b77568666cfd3))
 
+## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/peer-id-v2.0.3...peer-id-v3.0.0) (2023-07-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* `stream.stat.*` and `conn.stat.*` properties are now accessed via `stream.*` and `conn.*`
+* consolidate interface modules (#1833)
+
+### Features
+
+* merge stat properties into stream/connection objects ([#1856](https://www.github.com/libp2p/js-libp2p/issues/1856)) ([e9cafd3](https://www.github.com/libp2p/js-libp2p/commit/e9cafd3d8ab0f8e0655ff44e04aa41fccc912b51)), closes [#1849](https://www.github.com/libp2p/js-libp2p/issues/1849)
+
+
+### Bug Fixes
+
+* consolidate interface modules ([#1833](https://www.github.com/libp2p/js-libp2p/issues/1833)) ([4255b1e](https://www.github.com/libp2p/js-libp2p/commit/4255b1e2485d31e00c33efa029b6426246ea23e3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ~0.0.1 to ^0.1.0
+
 ## [@libp2p/peer-id-v2.0.2](https://github.com/libp2p/js-libp2p-peer-id/compare/@libp2p/peer-id-v2.0.1...@libp2p/peer-id-v2.0.2) (2023-02-23)
 
 
