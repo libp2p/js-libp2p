@@ -83,7 +83,6 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.maxObservedAddresses = init.maxObservedAddresses ?? MAX_OBSERVED_ADDRESSES
     this.runOnTransientConnection = init.runOnTransientConnection ?? RUN_ON_TRANSIENT_CONNECTION
 
-
     // Store self host metadata
     this.host = {
       protocolVersion: `${init.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
