@@ -1,5 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { isFirefox } from '../util.js'
+import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import type { DeferredPromise } from 'p-defer'
 

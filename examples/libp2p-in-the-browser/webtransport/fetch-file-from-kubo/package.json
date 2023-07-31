@@ -15,7 +15,7 @@
     "@multiformats/multiaddr": "^12.1.2",
     "blockstore-core": "^4.1.0",
     "ipfs-bitswap": "^18.0.1",
-    "libp2p": "^0.45.9",
+    "libp2p": "^0.46.0",
     "multiformats": "^12.0.1"
   },
   "devDependencies": {
