@@ -11,6 +11,7 @@ import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
 import { isFirefox } from '../util.js'
+import { RTCPeerConnection } from '../webrtc/index.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
@@ -134,116 +135,121 @@ export class WebRTCDirectTransport implements Transport {
 
     const peerConnection = new RTCPeerConnection({ certificates: [certificate] })
 
-    // create data channel for running the noise handshake. Once the data channel is opened,
-    // the remote will initiate the noise handshake. This is used to confirm the identity of
-    // the peer.
-    const dataChannelOpenPromise = new Promise<RTCDataChannel>((resolve, reject) => {
-      const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
-      const handshakeTimeout = setTimeout(() => {
-        const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
-        log.error(error)
-        this.metrics?.dialerEvents.increment({ open_error: true })
-        reject(dataChannelError('data', error))
-      }, HANDSHAKE_TIMEOUT_MS)
+    try {
+      // create data channel for running the noise handshake. Once the data channel is opened,
+      // the remote will initiate the noise handshake. This is used to confirm the identity of
+      // the peer.
+      const dataChannelOpenPromise = new Promise<RTCDataChannel>((resolve, reject) => {
+        const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
+        const handshakeTimeout = setTimeout(() => {
+          const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
+          log.error(error)
+          this.metrics?.dialerEvents.increment({ open_error: true })
+          reject(dataChannelError('data', error))
+        }, HANDSHAKE_TIMEOUT_MS)
 
-      handshakeDataChannel.onopen = (_) => {
-        clearTimeout(handshakeTimeout)
-        resolve(handshakeDataChannel)
-      }
-
-      // ref: https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel/error_event
-      handshakeDataChannel.onerror = (event: Event) => {
-        clearTimeout(handshakeTimeout)
-        const errorTarget = event.target?.toString() ?? 'not specified'
-        const error = `Error opening a data channel for handshaking: ${errorTarget}`
-        log.error(error)
-        // NOTE: We use unknown error here but this could potentially be considered a reset by some standards.
-        this.metrics?.dialerEvents.increment({ unknown_error: true })
-        reject(dataChannelError('data', error))
-      }
-    })
-
-    const ufrag = 'libp2p+webrtc+v1/' + genUfrag(32)
-
-    // Create offer and munge sdp with ufrag == pwd. This allows the remote to
-    // respond to STUN messages without performing an actual SDP exchange.
-    // This is because it can infer the passwd field by reading the USERNAME
-    // attribute of the STUN message.
-    const offerSdp = await peerConnection.createOffer()
-    const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
-    await peerConnection.setLocalDescription(mungedOfferSdp)
-
-    // construct answer sdp from multiaddr and ufrag
-    const answerSdp = sdp.fromMultiAddr(ma, ufrag)
-    await peerConnection.setRemoteDescription(answerSdp)
-
-    // wait for peerconnection.onopen to fire, or for the datachannel to open
-    const handshakeDataChannel = await dataChannelOpenPromise
-
-    const myPeerId = this.components.peerId
-
-    // Do noise handshake.
-    // Set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
-    // <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
-    const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, remoteCerthash.code, ma)
-
-    // Since we use the default crypto interface and do not use a static key or early data,
-    // we pass in undefined for these parameters.
-    const noise = Noise({ prologueBytes: fingerprintsPrologue })()
-
-    const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
-    const wrappedDuplex = {
-      ...wrappedChannel,
-      sink: wrappedChannel.sink.bind(wrappedChannel),
-      source: (async function * () {
-        for await (const list of wrappedChannel.source) {
-          for (const buf of list) {
-            yield buf
-          }
+        handshakeDataChannel.onopen = (_) => {
+          clearTimeout(handshakeTimeout)
+          resolve(handshakeDataChannel)
         }
-      }())
-    }
 
-    // Creating the connection before completion of the noise
-    // handshake ensures that the stream opening callback is set up
-    const maConn = new WebRTCMultiaddrConnection({
-      peerConnection,
-      remoteAddr: ma,
-      timeline: {
-        open: Date.now()
-      },
-      metrics: this.metrics?.dialerEvents
-    })
+        // ref: https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel/error_event
+        handshakeDataChannel.onerror = (event: Event) => {
+          clearTimeout(handshakeTimeout)
+          const errorTarget = event.target?.toString() ?? 'not specified'
+          const error = `Error opening a data channel for handshaking: ${errorTarget}`
+          log.error(error)
+          // NOTE: We use unknown error here but this could potentially be considered a reset by some standards.
+          this.metrics?.dialerEvents.increment({ unknown_error: true })
+          reject(dataChannelError('data', error))
+        }
+      })
 
-    const eventListeningName = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
+      const ufrag = 'libp2p+webrtc+v1/' + genUfrag(32)
 
-    peerConnection.addEventListener(eventListeningName, () => {
-      switch (peerConnection.connectionState) {
-        case 'failed':
-        case 'disconnected':
-        case 'closed':
-          maConn.close().catch((err) => {
-            log.error('error closing connection', err)
-          }).finally(() => {
-            // Remove the event listener once the connection is closed
-            controller.abort()
-          })
-          break
-        default:
-          break
+      // Create offer and munge sdp with ufrag == pwd. This allows the remote to
+      // respond to STUN messages without performing an actual SDP exchange.
+      // This is because it can infer the passwd field by reading the USERNAME
+      // attribute of the STUN message.
+      const offerSdp = await peerConnection.createOffer()
+      const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
+      await peerConnection.setLocalDescription(mungedOfferSdp)
+
+      // construct answer sdp from multiaddr and ufrag
+      const answerSdp = sdp.fromMultiAddr(ma, ufrag)
+      await peerConnection.setRemoteDescription(answerSdp)
+
+      // wait for peerconnection.onopen to fire, or for the datachannel to open
+      const handshakeDataChannel = await dataChannelOpenPromise
+
+      const myPeerId = this.components.peerId
+
+      // Do noise handshake.
+      // Set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
+      // <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
+      const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, remoteCerthash.code, ma)
+
+      // Since we use the default crypto interface and do not use a static key or early data,
+      // we pass in undefined for these parameters.
+      const noise = Noise({ prologueBytes: fingerprintsPrologue })()
+
+      const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
+      const wrappedDuplex = {
+        ...wrappedChannel,
+        sink: wrappedChannel.sink.bind(wrappedChannel),
+        source: (async function * () {
+          for await (const list of wrappedChannel.source) {
+            for (const buf of list) {
+              yield buf
+            }
+          }
+        }())
       }
-    }, { signal })
 
-    // Track opened peer connection
-    this.metrics?.dialerEvents.increment({ peer_connection: true })
+      // Creating the connection before completion of the noise
+      // handshake ensures that the stream opening callback is set up
+      const maConn = new WebRTCMultiaddrConnection({
+        peerConnection,
+        remoteAddr: ma,
+        timeline: {
+          open: Date.now()
+        },
+        metrics: this.metrics?.dialerEvents
+      })
 
-    const muxerFactory = new DataChannelMuxerFactory({ peerConnection, metrics: this.metrics?.dialerEvents, dataChannelOptions: this.init.dataChannel })
+      const eventListeningName = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
-    // For outbound connections, the remote is expected to start the noise handshake.
-    // Therefore, we need to secure an inbound noise connection from the remote.
-    await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
+      peerConnection.addEventListener(eventListeningName, () => {
+        switch (peerConnection.connectionState) {
+          case 'failed':
+          case 'disconnected':
+          case 'closed':
+            maConn.close().catch((err) => {
+              log.error('error closing connection', err)
+            }).finally(() => {
+              // Remove the event listener once the connection is closed
+              controller.abort()
+            })
+            break
+          default:
+            break
+        }
+      }, { signal })
 
-    return options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
+      // Track opened peer connection
+      this.metrics?.dialerEvents.increment({ peer_connection: true })
+
+      const muxerFactory = new DataChannelMuxerFactory({ peerConnection, metrics: this.metrics?.dialerEvents, dataChannelOptions: this.init.dataChannel })
+
+      // For outbound connections, the remote is expected to start the noise handshake.
+      // Therefore, we need to secure an inbound noise connection from the remote.
+      await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
+
+      return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
+    } catch (err) {
+      peerConnection.close()
+      throw err
+    }
   }
 
   /**
