@@ -1,7 +1,0 @@
-{
-  "entryPoints": [
-    "./src/index.ts",
-    "./src/stream-handler.ts",
-    "./src/upgrader.ts"
-  ]
-}
