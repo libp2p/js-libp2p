@@ -5,6 +5,15 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.1](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.0...libp2p-v0.46.1) (2023-08-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/floodsub bumped from ^8.0.0 to ^8.0.1
+
 ## [0.46.0](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.9...libp2p-v0.46.0) (2023-07-31)
 
 
