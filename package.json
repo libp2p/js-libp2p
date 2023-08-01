@@ -34,7 +34,7 @@
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude examples --exclude doc",
-    "docs:no-publish": "aegir docs --publish false"
+    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude examples --exclude doc"
   },
   "devDependencies": {
     "aegir": "^40.0.1"
