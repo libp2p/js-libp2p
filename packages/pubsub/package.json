@@ -61,11 +61,7 @@
     "extends": "ipfs",
     "parserOptions": {
       "sourceType": "module"
-    },
-    "ignorePatterns": [
-      "test/message/*.d.ts",
-      "test/message/*.js"
-    ]
+    }
   },
   "scripts": {
     "clean": "aegir clean",
