@@ -37,10 +37,7 @@
     "extends": "ipfs",
     "parserOptions": {
       "sourceType": "module"
-    },
-    "ignorePatterns": [
-      "*.d.ts"
-    ]
+    }
   },
   "scripts": {
     "clean": "aegir clean",
