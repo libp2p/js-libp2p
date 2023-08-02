@@ -1,12 +1,16 @@
-import { start } from '@libp2p/interface/startable'
-import { connectionPair } from '@libp2p/interface-compliance-tests/mocks'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
+import { createLibp2p } from 'libp2p'
+import { plaintext } from 'libp2p/insecure'
 import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 import { defaultInit, perfService } from '../src/index.js'
-import { createComponents } from '../test/index.spec.js'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
-const argv = yargs
+const argv = yargs(hideBin(process.argv))
   .options({
     'run-server': {
       type: 'boolean',
@@ -14,7 +18,7 @@ const argv = yargs
       default: false,
       description: 'Whether to run as a server'
     },
-    'server-ip-address': {
+    'server-address': {
       type: 'string',
       demandOption: false,
       description: 'Server IP address',
@@ -43,50 +47,74 @@ const argv = yargs
   .parseSync()
 
 export async function main (runServer: boolean, serverIpAddress: string, transport: string, uploadBytes: number, downloadBytes: number): Promise<void> {
-  const listenAddrs: Multiaddr[] = []
+  let peerId: PeerId
 
-  if (runServer) {
-    const { host, port } = splitHostPort(serverIpAddress)
-    // #TODO: right now we only support tcp
-    listenAddrs.push(multiaddr(`/ip4/${host}/tcp/${port}`))
+  const listenAddrs: string[] = []
+
+  const { host, port } = splitHostPort(serverIpAddress)
+  // #TODO: right now we only support tcp
+  const tcpMultiaddr = multiaddr(`/ip4/${host}/tcp/${port}`)
+
+  const config = {
+    transports: [tcp()],
+    streamMuxers: [yamux()],
+    connectionEncryption: [
+      plaintext()
+    ],
+    services: {
+      perf: perfService(defaultInit)
+    }
   }
 
-  const localComponents = await createComponents(listenAddrs)
-  const remoteComponents = await createComponents()
+  if (runServer) {
+    peerId = await createEd25519PeerId()
+    listenAddrs.push(`${tcpMultiaddr.toString()}/p2p/${peerId.toString()}`)
 
-  const client = perfService(defaultInit)(localComponents)
-  const server = perfService(defaultInit)(remoteComponents)
+    Object.assign(config, {
+      peerId,
+      addresses: {
+        listen: listenAddrs
+      }
+    })
+  } else {
+    peerId = peerIdFromString('12D3KooWDpJ7As7BWAwRMfu1VU2WCqNjvq387JEYKDBj4kx6nXTN')
+  }
 
-  await start(client)
-  await start(server)
+  const node = await createLibp2p(config)
+
+  await node.start()
 
   const startTime = Date.now()
 
-  const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-  localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
-  remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
+  if (!runServer) {
+    await node.dial(multiaddr(`${tcpMultiaddr.toString()}/p2p/${peerId.toString()}`))
+  }
 
-  await client.perf(remoteComponents.peerId, BigInt(uploadBytes), BigInt(downloadBytes))
+  await node.services.perf.perf(peerId, BigInt(uploadBytes), BigInt(downloadBytes))
 
   const endTime = Date.now()
+
+  await node.stop()
 
   // eslint-disable-next-line no-console
   console.log('latency: ' + JSON.stringify({ latency: endTime - startTime }))
 }
 
-function splitHostPort (urlString: string): { host: string, port?: string } {
+function splitHostPort (address: string): { host: string, port?: string } {
   try {
-    const url = new URL(urlString)
+    const parts = address.split(':')
+    const host = parts[0]
+    const port = parts[1]
     return {
-      host: url.hostname,
-      port: url.port
+      host,
+      port
     }
   } catch (error) {
     throw Error('Invalid server address')
   }
 }
 
-main(argv['run-server'], argv['server-ip-address'], argv.transport, argv['upload-bytes'], argv['download-bytes']).catch((err) => {
+main(argv['run-server'], argv['server-address'], argv.transport, argv['upload-bytes'], argv['download-bytes']).catch((err) => {
   // eslint-disable-next-line no-console
   console.error(err)
   process.exit(1)

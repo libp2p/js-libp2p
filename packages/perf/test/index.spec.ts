@@ -7,7 +7,6 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import { DefaultAddressManager } from 'libp2p/address-manager'
 import { type Components, defaultComponents } from 'libp2p/components'
 import { DefaultConnectionManager } from 'libp2p/connection-manager'
 import { stubInterface } from 'sinon-ts'
@@ -36,10 +35,6 @@ export async function createComponents (listenMaddrs: Multiaddr[] = []): Promise
     maxConnections: 1000,
     autoDialInterval: 1000,
     inboundUpgradeTimeout: 1000
-  })
-
-  components.addressManager = new DefaultAddressManager(components, {
-    announce: listenMaddrs.map(ma => ma.toString())
   })
 
   return components
