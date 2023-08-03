@@ -9,9 +9,6 @@
   ],
   "references": [
     {
-      "path": "../connection-encryption-noise"
-    },
-    {
       "path": "../crypto"
     },
     {
@@ -60,13 +57,7 @@
       "path": "../pubsub-floodsub"
     },
     {
-      "path": "../pubsub-gossipsub"
-    },
-    {
       "path": "../stream-multiplexer-mplex"
-    },
-    {
-      "path": "../stream-multiplexer-yamux"
     },
     {
       "path": "../transport-tcp"
