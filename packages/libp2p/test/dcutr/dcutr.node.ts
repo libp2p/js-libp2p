@@ -11,6 +11,9 @@ import { createLibp2pNode } from '../../src/libp2p.js'
 import { usingAsRelay } from '../circuit-relay/utils.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
+import { logger } from '@libp2p/logger'
+
+const log = logger('libp2p:dcutr:test')
 
 const RELAY_PORT = 47330
 const LOCAL_PORT = 47331
@@ -25,7 +28,10 @@ describe('dcutr', () => {
     await pRetry(async () => {
       const connections = libp2pA.getConnections(libp2pB.peerId)
       const onlyDirect = connections.filter(conn => !conn.transient)
-
+      log(`connections length: ${connections.length}`)
+      log(`connections connection IDs are: ${connections.map(conn => conn.id).join(', ')}`)
+      log(`onlyDirect length: ${onlyDirect.length}`)
+      log(`onlyDirect connection IDs are: ${onlyDirect.map(conn => conn.id).join(', ')}`)
       if (onlyDirect.length === connections.length) {
         // all connections are direct
         return true
@@ -48,6 +54,9 @@ describe('dcutr', () => {
       services: {
         identify: identifyService(),
         relay: circuitRelayServer()
+      },
+      connectionManager: {
+        minConnections: 0, // disable autodial
       }
     }))
 
@@ -71,7 +80,7 @@ describe('dcutr', () => {
         services: {
           identify: identifyService(),
           dcutr: dcutrService()
-        }
+        },
       }))
       libp2pB = await createLibp2pNode(createBaseOptions({
         addresses: {
@@ -119,8 +128,10 @@ describe('dcutr', () => {
   })
 
   // TODO: how to test this?
-  describe.skip('DCUtR connection upgrade', () => {
+  describe('DCUtR connection upgrade for TCP', () => {
     beforeEach(async () => {
+      // based on https://github.com/ipfs/helia/issues/182#issuecomment-1653860165
+      // libp2pA is the gateway
       libp2pA = await createLibp2pNode(createBaseOptions({
         addresses: {
           listen: [`/ip4/0.0.0.0/tcp/${LOCAL_PORT}`]
@@ -128,8 +139,12 @@ describe('dcutr', () => {
         services: {
           identify: identifyService(),
           dcutr: dcutrService()
+        },
+        connectionManager: {
+          minConnections: 0, // disable autodial
         }
       }))
+      // libp2pB is the browser node
       libp2pB = await createLibp2pNode(createBaseOptions({
         addresses: {
           listen: [
@@ -140,11 +155,17 @@ describe('dcutr', () => {
         services: {
           identify: identifyService(),
           dcutr: dcutrService()
+        },
+        connectionManager: {
+          // minConnections: 1, // disable autodial
         }
       }))
 
       await libp2pA.start()
       await libp2pB.start()
+      log('libp2pA.peerId: %s', libp2pA.peerId.toString())
+      log('libp2pB.peerId: %s', libp2pB.peerId.toString())
+      log('relay.peerId: %s', relay.peerId.toString())
 
       // wait for B to have a relay address
       await usingAsRelay(libp2pB, relay)
@@ -164,8 +185,21 @@ describe('dcutr', () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
 
+      log(`initial connection ID: ${connection.id}`)
+
       // connection should be transient
       expect(connection).to.have.property('transient', true)
+
+      // wait for the relayedAddress connection to be closed
+      const closedRelayConnection = async () => await pRetry(async () => {
+        if (connection.status !== 'closed') {
+          throw new Error('relayed connection is still open')
+        }
+        return true
+      }, {
+        retries: 10
+      })
+      expect(closedRelayConnection()).to.eventually.equal(true)
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()
