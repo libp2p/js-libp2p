@@ -1,4 +1,3 @@
-
 /**
  * When this error is thrown it means an operation was aborted,
  * usually in response to the `abort` event being emitted by an

@@ -11,6 +11,35 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-keychain/issues/70)) ([4da4a08](https://github.com/libp2p/js-libp2p-keychain/commit/4da4a08b86f436c36e2fae48ecc48817e9b8066f))
 
+## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/keychain-v2.0.1...keychain-v3.0.0) (2023-07-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* `stream.stat.*` and `conn.stat.*` properties are now accessed via `stream.*` and `conn.*`
+* consolidate interface modules (#1833)
+
+### Features
+
+* merge stat properties into stream/connection objects ([#1856](https://www.github.com/libp2p/js-libp2p/issues/1856)) ([e9cafd3](https://www.github.com/libp2p/js-libp2p/commit/e9cafd3d8ab0f8e0655ff44e04aa41fccc912b51)), closes [#1849](https://www.github.com/libp2p/js-libp2p/issues/1849)
+
+
+### Bug Fixes
+
+* consolidate interface modules ([#1833](https://www.github.com/libp2p/js-libp2p/issues/1833)) ([4255b1e](https://www.github.com/libp2p/js-libp2p/commit/4255b1e2485d31e00c33efa029b6426246ea23e3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^1.0.0 to ^2.0.0
+    * @libp2p/interface bumped from ~0.0.1 to ^0.1.0
+    * @libp2p/logger bumped from ^2.0.0 to ^3.0.0
+    * @libp2p/peer-id bumped from ^2.0.0 to ^3.0.0
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^2.0.0 to ^3.0.0
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p-keychain/compare/v1.0.1...v2.0.0) (2023-03-13)
 
 

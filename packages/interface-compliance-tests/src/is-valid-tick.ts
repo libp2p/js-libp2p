@@ -1,4 +1,3 @@
-
 /**
  * A tick is considered valid if it happened between now
  * and `ms` milliseconds ago

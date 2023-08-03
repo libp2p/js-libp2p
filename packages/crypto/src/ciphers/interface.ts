@@ -1,4 +1,3 @@
-
 export interface CreateOptions {
   algorithm?: string
   nonceLength?: number

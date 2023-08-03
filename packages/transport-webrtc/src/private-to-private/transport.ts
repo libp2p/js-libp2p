@@ -5,6 +5,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
 import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
+import { cleanup } from '../webrtc/index.js'
 import { initiateConnection, handleIncomingStream } from './handler.js'
 import { WebRTCPeerListener } from './listener.js'
 import type { DataChannelOpts } from '../stream.js'
@@ -49,12 +50,15 @@ export class WebRTCTransport implements Transport, Startable {
   async start (): Promise<void> {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
       this._onProtocol(data).catch(err => { log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
+    }, {
+      runOnTransientConnection: true
     })
     this._started = true
   }
 
   async stop (): Promise<void> {
     await this.components.registrar.unhandle(SIGNALING_PROTO_ID)
+    cleanup()
     this._started = false
   }
 
@@ -90,7 +94,10 @@ export class WebRTCTransport implements Transport, Startable {
     }
 
     const connection = await this.components.transportManager.dial(baseAddr, options)
-    const signalingStream = await connection.newStream([SIGNALING_PROTO_ID], options)
+    const signalingStream = await connection.newStream(SIGNALING_PROTO_ID, {
+      ...options,
+      runOnTransientConnection: true
+    })
 
     try {
       const { pc, muxerFactory, remoteAddress } = await initiateConnection({

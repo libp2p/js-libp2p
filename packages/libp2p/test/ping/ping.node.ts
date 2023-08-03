@@ -90,6 +90,8 @@ describe('ping', () => {
         },
         stream
       )
+    }, {
+      runOnTransientConnection: true
     })
 
     const latency = await nodes[0].services.ping.ping(nodes[1].peerId)

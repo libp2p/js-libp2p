@@ -1,8 +1,9 @@
 import { setMaxListeners } from 'events'
-import { type Direction, symbol, type Connection, type Stream, type ConnectionTimeline, type ConnectionStatus } from '@libp2p/interface/connection'
+import { symbol } from '@libp2p/interface/connection'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interface'
+import type { Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -22,6 +23,7 @@ interface ConnectionInit {
   timeline: ConnectionTimeline
   multiplexer?: string
   encryption?: string
+  transient?: boolean
 }
 
 /**
@@ -49,6 +51,7 @@ export class ConnectionImpl implements Connection {
   public multiplexer?: string
   public encryption?: string
   public status: ConnectionStatus
+  public transient: boolean
 
   /**
    * User provided tags
@@ -59,7 +62,7 @@ export class ConnectionImpl implements Connection {
   /**
    * Reference to the new stream function of the multiplexer
    */
-  private readonly _newStream: (protocols: string[], options?: AbortOptions) => Promise<Stream>
+  private readonly _newStream: (protocols: string[], options?: NewStreamOptions) => Promise<Stream>
 
   /**
    * Reference to the close function of the raw connection
@@ -88,6 +91,7 @@ export class ConnectionImpl implements Connection {
     this.timeline = init.timeline
     this.multiplexer = init.multiplexer
     this.encryption = init.encryption
+    this.transient = init.transient ?? false
 
     this._newStream = newStream
     this._close = close
@@ -110,7 +114,7 @@ export class ConnectionImpl implements Connection {
   /**
    * Create a new stream from this connection
    */
-  async newStream (protocols: string | string[], options?: AbortOptions): Promise<Stream> {
+  async newStream (protocols: string | string[], options?: NewStreamOptions): Promise<Stream> {
     if (this.status === 'closing') {
       throw new CodeError('the connection is being closed', 'ERR_CONNECTION_BEING_CLOSED')
     }
@@ -121,6 +125,10 @@ export class ConnectionImpl implements Connection {
 
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
+    }
+
+    if (this.transient && options?.runOnTransientConnection !== true) {
+      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
     }
 
     const stream = await this._newStream(protocols, options)

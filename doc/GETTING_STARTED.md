@@ -197,7 +197,6 @@ For each discovered peer libp2p will emit a `peer:discovery` event which include
 Looking at the [available peer discovery](./CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
 - If you already know the addresses of some other network peers, you should consider using `@libp2p/bootstrap` as this is the easiest way of getting your peer into the network.
 - If it is likely that you will have other peers on your local network, `@libp2p/mdns` is a must if you're node is not running in the browser. It allows peers to discover each other when on the same local network.
-- If your application is browser based you can use the `@libp2p/webrtc-star` Transport, which includes a rendezvous based peer sharing service.
 - A random walk approach can be used via `@libp2p/kad-dht`, to crawl the network and find new peers along the way.
 
 For this guide we will configure `@libp2p/bootstrap` as this is useful for joining the public network.

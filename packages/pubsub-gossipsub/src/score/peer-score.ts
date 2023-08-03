@@ -1,9 +1,9 @@
-import { PeerScoreParams, validatePeerScoreParams } from './peer-score-params.js'
+import { type PeerScoreParams, validatePeerScoreParams } from './peer-score-params.js'
 import type { PeerStats, TopicStats } from './peer-stats.js'
 import { computeScore } from './compute-score.js'
 import { MessageDeliveries, DeliveryRecordStatus } from './message-deliveries.js'
 import { logger } from '@libp2p/logger'
-import { MsgIdStr, PeerIdStr, RejectReason, TopicStr, IPStr } from '../types.js'
+import { type MsgIdStr, type PeerIdStr, RejectReason, type TopicStr, type IPStr } from '../types.js'
 import type { Metrics, ScorePenalty } from '../metrics.js'
 import { MapDef } from '../utils/set.js'
 
