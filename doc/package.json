@@ -28,7 +28,7 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@chainsafe/libp2p-yamux": "^4.0.2",
+    "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/interface": "^0.1.0",
     "@libp2p/mplex": "^9.0.0",
     "@libp2p/prometheus-metrics": "^2.0.0",
