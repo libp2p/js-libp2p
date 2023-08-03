@@ -34,9 +34,6 @@
       "path": "../peer-id-factory"
     },
     {
-      "path": "../stream-multiplexer-yamux"
-    },
-    {
       "path": "../transport-websockets"
     }
   ]

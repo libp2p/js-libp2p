@@ -66,9 +66,6 @@
       "path": "../stream-multiplexer-mplex"
     },
     {
-      "path": "../stream-multiplexer-yamux"
-    },
-    {
       "path": "../transport-tcp"
     },
     {
