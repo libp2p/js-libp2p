@@ -21,11 +21,10 @@ describe('dcutr', () => {
   let libp2pA: Libp2p<{ identify: unknown, dcutr: unknown }>
   let libp2pB: Libp2p<{ identify: unknown, dcutr: unknown }>
 
-  async function waitForOnlyDirectConnections () {
-    // wait for DCUtR unilateral upgrade
+  async function waitForOnlyDirectConnections (): Promise<void> {
     await pRetry(async () => {
       const connections = libp2pA.getConnections(libp2pB.peerId)
-      const onlyDirect = connections.filter(conn => !conn.transient) // eslint-disable-line max-nested-callbacks
+      const onlyDirect = connections.filter(conn => !conn.transient)
 
       if (onlyDirect.length === connections.length) {
         // all connections are direct
