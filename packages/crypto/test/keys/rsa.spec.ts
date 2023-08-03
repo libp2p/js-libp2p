@@ -31,11 +31,11 @@ describe('RSA', function () {
   })
 
   it('Does not unmarshal a big key', async () => {
-    const reset = overrideMaxKeySize(4096-8)
+    const reset = overrideMaxKeySize(4096 - 8)
     try {
       const k = await rsaCrypto.generateKey(4096)
-      const sk =  new RsaPrivateKey(k.privateKey, k.publicKey)
-      const pubk =  new RsaPublicKey(k.publicKey)
+      const sk = new RsaPrivateKey(k.privateKey, k.publicKey)
+      const pubk = new RsaPublicKey(k.publicKey)
       const m = sk.marshal()
       const pubm = pubk.marshal()
       await expect(rsa.unmarshalRsaPrivateKey(m)).to.be.rejectedWith(/too large/)

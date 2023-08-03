@@ -156,7 +156,7 @@ export function decrypt (key: JsonWebKey, msg: Uint8Array): Uint8Array {
   return convertKey(key, false, msg, (msg, key) => key.decrypt(msg))
 }
 
-export function keySize (jwk: JsonWebKey) {
+export function keySize (jwk: JsonWebKey): number {
   if (jwk.kty !== 'RSA') {
     throw new CodeError('invalid key type', 'ERR_INVALID_KEY_TYPE')
   } else if (jwk.n == null) {
@@ -164,8 +164,8 @@ export function keySize (jwk: JsonWebKey) {
   }
   let n = jwk.n
   // Replace base64url characters with base64 characters
-  n = n.replace(/-/g, '+').replace(/_/g, '/');
-  const binString = atob(n);
-  const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0) as number);
-  return bytes.length * 8;
+  n = n.replace(/-/g, '+').replace(/_/g, '/')
+  const binString = atob(n)
+  const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0) as number)
+  return bytes.length * 8
 }

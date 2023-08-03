@@ -10,7 +10,7 @@ import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
 import type { Multibase } from 'multiformats'
 
-var maxKeySize = 8192
+let maxKeySize = 8192
 
 export class RsaPublicKey {
   private readonly _key: JsonWebKey
