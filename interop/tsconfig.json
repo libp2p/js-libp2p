@@ -9,9 +9,6 @@
   ],
   "references": [
     {
-      "path": "../packages/connection-encryption-noise"
-    },
-    {
       "path": "../packages/libp2p"
     },
     {
