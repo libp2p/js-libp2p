@@ -10,6 +10,8 @@ import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
 import type { Multibase } from 'multiformats'
 
+var maxKeySize = 8192
+
 export class RsaPublicKey {
   private readonly _key: JsonWebKey
 
@@ -135,21 +137,43 @@ export class RsaPrivateKey {
 
 export async function unmarshalRsaPrivateKey (bytes: Uint8Array): Promise<RsaPrivateKey> {
   const jwk = crypto.utils.pkcs1ToJwk(bytes)
+  if (crypto.keySize(jwk) > maxKeySize) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
   const keys = await crypto.unmarshalPrivateKey(jwk)
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }
 
 export function unmarshalRsaPublicKey (bytes: Uint8Array): RsaPublicKey {
   const jwk = crypto.utils.pkixToJwk(bytes)
+  if (crypto.keySize(jwk) > maxKeySize) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
   return new RsaPublicKey(jwk)
 }
 
 export async function fromJwk (jwk: JsonWebKey): Promise<RsaPrivateKey> {
   const keys = await crypto.unmarshalPrivateKey(jwk)
+  if (crypto.keySize(jwk) > maxKeySize) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }
 
 export async function generateKeyPair (bits: number): Promise<RsaPrivateKey> {
+  if (bits > maxKeySize) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
   const keys = await crypto.generateKey(bits)
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
+}
+
+// Overrides the maximum key size for RSA keys. Only useful for tests. Returns a
+// function the resets the value.
+export function overrideMaxKeySize (size: number): () => void {
+  const original = maxKeySize
+  maxKeySize = size
+  return () => {
+    maxKeySize = original
+  }
 }

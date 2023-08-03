@@ -67,3 +67,13 @@ export function decrypt (key: JsonWebKey, bytes: Uint8Array): Uint8Array {
   // @ts-expect-error node types are missing jwk as a format
   return crypto.privateDecrypt({ format: 'jwk', key, padding }, bytes)
 }
+
+export function keySize (jwk: JsonWebKey) {
+  if (jwk.kty !== 'RSA') {
+    throw new CodeError('invalid key type', 'ERR_INVALID_KEY_TYPE')
+  } else if (jwk.n == null) {
+    throw new CodeError('invalid key modulus', 'ERR_INVALID_KEY_MODULUS')
+  }
+  const modulus = Buffer.from(jwk.n, 'base64');
+  return modulus.length * 8;
+}
