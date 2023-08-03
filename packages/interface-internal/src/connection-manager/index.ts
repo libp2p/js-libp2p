@@ -4,6 +4,10 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+export interface OpenConnectionOptions extends AbortOptions {
+  priority?: number
+}
+
 export interface ConnectionManager {
   /**
    * Return connections, optionally filtering by a PeerId
@@ -37,7 +41,7 @@ export interface ConnectionManager {
    * const connection = await libp2p.connectionManager.openConnection(peerId)
    * ```
    */
-  openConnection: (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions) => Promise<Connection>
+  openConnection: (peer: PeerId | Multiaddr | Multiaddr[], options?: OpenConnectionOptions) => Promise<Connection>
 
   /**
    * Close our connections to a peer
