@@ -115,7 +115,7 @@ export class DefaultDCUtRService implements Startable {
    *
    * The protocol starts with the completion of a relay connection from A to B.
    */
-  async onConnectAttempt (peerId: PeerId, connection: Connection): Promise<void> {
+  onConnectAttempt (peerId: PeerId, connection: Connection): void {
     log.trace('onConnectAttempt %s %p', connection.direction, peerId)
     if (!connection.transient) {
       // the connection is already direct, no upgrade is required
@@ -144,16 +144,17 @@ export class DefaultDCUtRService implements Startable {
     // If that set includes public addresses, then A may be reachable by a direct
     // connection, in which case B attempts a unilateral connection upgrade by
     // initiating a direct connection to A.
-    if (await this.attemptUnilateralConnectionUpgrade(connection)) {
-      log.trace('unilateral connection upgrade succeeded')
-      return
-    }
-
-    logB('attempting DCUtR upgrade of relayed connection from %p', peerId)
-    await this.initiateDCUtRUpgrade(connection)
-      .catch(err => {
-        logB.error('error during outgoing DCUtR attempt', err)
-      })
+    void this.attemptUnilateralConnectionUpgrade(connection).then(async (success) => {
+      if (success) {
+        log.trace('unilateral connection upgrade succeeded')
+      } else {
+        logB('attempting DCUtR upgrade of relayed connection from %p', peerId)
+        return this.initiateDCUtRUpgrade(connection)
+          .catch(err => {
+            logB.error('error during outgoing DCUtR attempt', err)
+          })
+      }
+    })
   }
 
   /**
@@ -233,11 +234,10 @@ export class DefaultDCUtRService implements Startable {
         await relayedConnection.close(options)
         logB.trace('closed relayed connection')
         // stop the for loop.
-        break;
+        break
       } catch (err: any) {
         logB.error('error during DCUtR attempt', err)
         stream?.abort(err)
-        throw err
       } finally {
         if (stream != null) {
           await stream.close(options)
@@ -444,7 +444,7 @@ export class DefaultDCUtRService implements Startable {
         const ma = multiaddr(addr)
 
         // TODO: find a way to test around this without hardcoding process.env.NODE_ENV checks.
-        if (process.env.NODE_ENV !== 'test' && !this.isPublicAndDialable(ma) ) {
+        if (process.env.NODE_ENV !== 'test' && !this.isPublicAndDialable(ma)) {
           continue
         }
 

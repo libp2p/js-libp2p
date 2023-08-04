@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -11,7 +12,6 @@ import { createLibp2pNode } from '../../src/libp2p.js'
 import { usingAsRelay } from '../circuit-relay/utils.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
-import { logger } from '@libp2p/logger'
 
 const log = logger('libp2p:dcutr:test')
 
@@ -77,7 +77,7 @@ describe('dcutr', () => {
         services: {
           identify: identifyService(),
           dcutr: dcutrService()
-        },
+        }
       }))
       libp2pB = await createLibp2pNode(createBaseOptions({
         addresses: {
@@ -138,7 +138,7 @@ describe('dcutr', () => {
           dcutr: dcutrService()
         },
         connectionManager: {
-          minConnections: 0, // disable autodial
+          minConnections: 0 // disable autodial
         }
       }))
       // libp2pB is the browser node
@@ -185,7 +185,7 @@ describe('dcutr', () => {
       expect(connection).to.have.property('transient', true)
 
       // wait for the relayedAddress connection to be closed
-      const closedRelayConnection = async () => await pRetry(async () => {
+      const closedRelayConnection = async (): Promise<boolean> => pRetry(async () => {
         if (connection.status !== 'closed') {
           throw new Error('relayed connection is still open')
         }
