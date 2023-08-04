@@ -9,6 +9,15 @@
 
 * update @libp2p/interface-peer-discovery to 2.0.0 ([#176](https://github.com/libp2p/js-libp2p-bootstrap/issues/176)) ([1954e75](https://github.com/libp2p/js-libp2p-bootstrap/commit/1954e75fa4b1e6b3b42f885f663f989fd0e422ab))
 
+### [9.0.1](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v9.0.0...bootstrap-v9.0.1) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.0 to ^4.0.1
+
 ## [9.0.0](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v8.0.0...bootstrap-v9.0.0) (2023-07-31)
 
 

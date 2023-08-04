@@ -5,6 +5,13 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.5 ([#320](https://github.com/libp2p/js-libp2p-crypto/issues/320)) ([f0b4c06](https://github.com/libp2p/js-libp2p-crypto/commit/f0b4c068a23d78b1376865c6adf6cce21ab91196))
 
+### [2.0.1](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.0...crypto-v2.0.1) (2023-08-04)
+
+
+### Bug Fixes
+
+* **crypto:** limit RSA key size to <= 8192 bits ([#1931](https://www.github.com/libp2p/js-libp2p/issues/1931)) ([58421e1](https://www.github.com/libp2p/js-libp2p/commit/58421e112e7217b36dea27e995f5cfe804387187))
+
 ## [2.0.0](https://www.github.com/libp2p/js-libp2p/compare/crypto-v1.0.17...crypto-v2.0.0) (2023-07-31)
 
 
