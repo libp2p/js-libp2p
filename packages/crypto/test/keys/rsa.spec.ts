@@ -3,14 +3,12 @@
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as crypto from '../../src/index.js'
-import { RsaPrivateKey, RsaPublicKey, overrideMaxKeySize } from '../../src/keys/rsa-class.js'
-import * as rsaCrypto from '../../src/keys/rsa.js'
+import { MAX_KEY_SIZE, RsaPrivateKey, RsaPublicKey } from '../../src/keys/rsa-class.js'
 import fixtures from '../fixtures/go-key-rsa.js'
+import { RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 
 const rsa = crypto.keys.supportedKeys.rsa
-
-/** @typedef {import('libp2p-crypto').keys.supportedKeys.rsa.RsaPrivateKey} RsaPrivateKey */
 
 describe('RSA', function () {
   this.timeout(20 * 1000)
@@ -26,24 +24,20 @@ describe('RSA', function () {
     expect(digest).to.have.length(34)
   })
 
-  it('Does not generate a big key', async () => {
-    await expect(rsa.generateKeyPair(8193)).to.be.rejected()
+  it('does not generate a big key', async () => {
+    await expect(rsa.generateKeyPair(MAX_KEY_SIZE + 1)).to.be.rejected()
   })
 
-  it('Does not unmarshal a big key', async () => {
-    const reset = overrideMaxKeySize(4096 - 8)
-    try {
-      const k = await rsaCrypto.generateKey(4096)
-      const sk = new RsaPrivateKey(k.privateKey, k.publicKey)
-      const pubk = new RsaPublicKey(k.publicKey)
-      const m = sk.marshal()
-      const pubm = pubk.marshal()
-      await expect(rsa.unmarshalRsaPrivateKey(m)).to.be.rejectedWith(/too large/)
-      expect(() => rsa.unmarshalRsaPublicKey(pubm)).to.throw(/too large/)
-      await expect(rsa.fromJwk(k.privateKey)).to.be.rejectedWith(/too large/)
-    } finally {
-      reset()
-    }
+  it('does not unmarshal a big key', async () => {
+    const k = RSA_KEY_8200_BITS
+    const sk = new RsaPrivateKey(k.privateKey, k.publicKey)
+    const pubk = new RsaPublicKey(k.publicKey)
+    const m = sk.marshal()
+    const pubm = pubk.marshal()
+
+    await expect(rsa.unmarshalRsaPrivateKey(m)).to.eventually.be.rejectedWith(/too large/)
+    expect(() => rsa.unmarshalRsaPublicKey(pubm)).to.throw(/too large/)
+    await expect(rsa.fromJwk(k.privateKey)).to.eventually.be.rejectedWith(/too large/)
   })
 
   it('signs', async () => {

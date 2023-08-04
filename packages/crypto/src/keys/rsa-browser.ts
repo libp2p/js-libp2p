@@ -162,10 +162,6 @@ export function keySize (jwk: JsonWebKey): number {
   } else if (jwk.n == null) {
     throw new CodeError('invalid key modulus', 'ERR_INVALID_KEY_MODULUS')
   }
-  let n = jwk.n
-  // Replace base64url characters with base64 characters
-  n = n.replace(/-/g, '+').replace(/_/g, '/')
-  const binString = atob(n)
-  const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0) as number)
+  const bytes = uint8ArrayFromString(jwk.n, 'base64url')
   return bytes.length * 8
 }
