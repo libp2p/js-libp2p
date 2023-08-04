@@ -12,13 +12,13 @@ import {
 } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Connection, Stream } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/src/transport-manager/index.js'
-import type { PeerId } from '@libp2p/interface/src/peer-id'
 
 const log = logger('libp2p:dcutr')
 const logA = logger('libp2p:dcutr:A')
@@ -234,25 +234,7 @@ export class DefaultDCUtRService implements Startable {
           observedAddresses: []
         }, options)
 
-        logB('waiting for half RTT')
-        // ..and starts a timer for half the RTT measured from the time between
-        // sending the initial Connect and receiving the response
-        // TODO: Find a way to simulate network latency for tests, because rtt is always <= 4ms
-        await delay(rtt / 2)
-
-        // TODO: when we have a QUIC transport, the dial step is different - for
-        // now we only have tcp support
-        // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
-
-        logB('dialing', multiaddrs)
-        // Upon expiry of the timer (await delay above), B dials the address to A.
-        const newDirectConnection = await this.connectionManager.openConnection(multiaddrs, {
-          signal: options.signal,
-          priority: DCUTR_DIAL_PRIORITY
-        })
-        logB('dialing succeeded. connection ID =', newDirectConnection.id)
-
-        logB('DCUtR to %p succeeded, A SHOULD close relayed connection', relayedConnection.remotePeer)
+        await this.handleSimultaneousConnect(relayedConnection, multiaddrs, rtt, options.signal)
 
         // Once a single connection has been established, A SHOULD cancel all outstanding connection attempts.
         await relayedConnection.close(options)
@@ -269,6 +251,62 @@ export class DefaultDCUtRService implements Startable {
         }
       }
     }
+  }
+
+  /**
+   * This function encapsulates the Simultaneous Connect step (#5) of the [DCUtR protocol](https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol)
+   * @param relayedConnection
+   * @param multiaddrs
+   * @param signal
+   */
+  async handleSimultaneousConnect (relayedConnection: Connection, multiaddrs: Multiaddr[], rtt: number, signal: AbortSignal): Promise<void> {
+    logB('waiting for half RTT')
+    // ..and starts a timer for half the RTT measured from the time between
+    // sending the initial Connect and receiving the response
+    // TODO: Find a way to simulate network latency for tests, because rtt is always <= 4ms
+    await delay(rtt / 2)
+
+    const tcpMultiaddrs = multiaddrs.filter(ma => ma.protoNames().includes('tcp'))
+    const quicMultiaddrs = multiaddrs.filter(ma => ma.protoNames().includes('quic'))
+
+    logB('dialing', multiaddrs)
+    const connectAttempts = []
+    if (tcpMultiaddrs.length > 0) {
+      connectAttempts.push(this.simultaneousConnectTCP(tcpMultiaddrs, signal))
+    }
+    if (quicMultiaddrs.length > 0) {
+      connectAttempts.push(this.simultaneousConnectQuic(quicMultiaddrs, signal))
+    }
+    await Promise.any(connectAttempts)
+
+    logB('DCUtR to %p succeeded, A SHOULD close relayed connection', relayedConnection.remotePeer)
+  }
+
+  /**
+   * TCP Simultaneous Connect
+   * Upon expiry of the timer (await delay in {@link handleSimultaneousConnect}), B dials the address to A.
+   * @param relayedConnection
+   * @param multiaddrs
+   * @param signal
+   */
+  async simultaneousConnectTCP (multiaddrs: Multiaddr[], signal: AbortSignal): Promise<void> {
+    const newDirectConnection = await this.connectionManager.openConnection(multiaddrs, {
+      signal,
+      priority: DCUTR_DIAL_PRIORITY
+    })
+    logB('dialing succeeded. connection ID =', newDirectConnection.id)
+  }
+
+  /**
+   * QUIC Simultaneous Connect
+   * Upon expiry of the timer (await delay in {@link handleSimultaneousConnect}), B starts to send UDP packets filled
+   * with random bytes to A's address. Packets should be sent repeatedly in random intervals between 10 and 200 ms.
+   * @param relayedConnection
+   * @param multiaddrs
+   * @param signal
+   */
+  async simultaneousConnectQuic (multiaddrs: Multiaddr[], signal: AbortSignal): Promise<void> {
+    throw new Error('Simultaneous Connect over QUIC is not implemented yet. See https://github.com/libp2p/js-libp2p/issues/1459')
   }
 
   /**
