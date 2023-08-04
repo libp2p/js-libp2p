@@ -271,13 +271,19 @@ export class DefaultDCUtRService implements Startable {
 
     logB('dialing', multiaddrs)
     const connectAttempts = []
+    const simulConnectAbortController = new AbortController()
+    signal.addEventListener('abort', () => {
+      // abort connection attempts if the root signal times out or is aborted.
+      simulConnectAbortController.abort()
+    })
     if (tcpMultiaddrs.length > 0) {
-      connectAttempts.push(this.simultaneousConnectTCP(tcpMultiaddrs, signal))
+      connectAttempts.push(this.simultaneousConnectTCP(tcpMultiaddrs, simulConnectAbortController.signal))
     }
     if (quicMultiaddrs.length > 0) {
-      connectAttempts.push(this.simultaneousConnectQuic(quicMultiaddrs, signal))
+      connectAttempts.push(this.simultaneousConnectQuic(quicMultiaddrs, simulConnectAbortController.signal))
     }
     await Promise.any(connectAttempts)
+    simulConnectAbortController.abort() // abort any remaining connect attempts
 
     logB('DCUtR to %p succeeded, A SHOULD close relayed connection', relayedConnection.remotePeer)
   }
