@@ -4,8 +4,8 @@ import { MAX_INBOUND_STREAMS, PROTOCOL_NAME, TIMEOUT, WRITE_BLOCK_SIZE } from '.
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
-import type { PeerId } from '@libp2p/interface-peer-id'
 import type { AbortOptions } from '@libp2p/interfaces'
+import type { Connection } from '@libp2p/interface/src/connection/index.js'
 
 const log = logger('libp2p:perf')
 
@@ -18,9 +18,9 @@ export const defaultInit: PerfServiceInit = {
 }
 
 export interface PerfService {
-  perf: (peer: PeerId, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions) => Promise<void>
-  measureDownloadBandwidth: (peer: PeerId, size: bigint) => Promise<number>
-  measureUploadBandwidth: (peer: PeerId, size: bigint) => Promise<number>
+  perf: (connection: Connection, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions) => Promise<void>
+  // measureDownloadBandwidth: (peer: PeerId, size: bigint) => Promise<number>
+  // measureUploadBandwidth: (peer: PeerId, size: bigint) => Promise<number>
 }
 
 export interface PerfServiceInit {
@@ -106,14 +106,12 @@ export class DefaultPerfService implements Startable, PerfService {
     }())
   }
 
-  async perf (peer: PeerId, sendBytes: bigint, recvBytes: bigint, options: AbortOptions = {}): Promise<void> {
-    log('opening stream on protocol %s to %p', this.protocol, peer)
+  async perf (connection: Connection, sendBytes: bigint, recvBytes: bigint, options: AbortOptions = {}): Promise<void> {
+    log('opening stream on protocol %s to %p', this.protocol, connection.remotePeer)
 
     const uint8Buf = new Uint8Array(this.databuf)
 
     const writeBlockSize = this.writeBlockSize
-
-    const connection = await this.components.connectionManager.openConnection(peer, options)
 
     const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
     const stream = await connection.newStream([this.protocol], {
@@ -124,7 +122,7 @@ export class DefaultPerfService implements Startable, PerfService {
     const view = new DataView(this.databuf)
     view.setBigInt64(0, recvBytes, false)
 
-    log('sending %i bytes to %p', sendBytes, peer)
+    log('sending %i bytes to %p', sendBytes, connection.remotePeer)
 
     await stream.sink((async function * () {
       // Send the number of bytes to receive
@@ -150,23 +148,23 @@ export class DefaultPerfService implements Startable, PerfService {
       throw new Error(`Expected to receive ${recvBytes} bytes, but received ${actualRecvdBytes}`)
     }
 
-    log('performed %s to %p', this.protocol, peer)
+    log('performed %s to %p', this.protocol, connection.remotePeer)
     await stream.close()
   }
 
   // measureDownloadBandwidth returns the measured bandwidth in bits per second
-  async measureDownloadBandwidth (peer: PeerId, size: bigint): Promise<number> {
-    const now = Date.now()
-    await this.perf(peer, 0n, size)
-    return Number((8000n * size) / BigInt(Date.now() - now))
-  }
+  // async measureDownloadBandwidth (peer: PeerId, size: bigint): Promise<number> {
+  //   const now = Date.now()
+  //   await this.perf(connection, 0n, size)
+  //   return Number((8000n * size) / BigInt(Date.now() - now))
+  // }
 
-  // measureUploadBandwidth returns the measured bandwidth in bit per second
-  async measureUploadBandwidth (peer: PeerId, size: bigint): Promise<number> {
-    const now = Date.now()
-    await this.perf(peer, size, 0n)
-    return Number((8000n * size) / BigInt(Date.now() - now))
-  }
+  // // measureUploadBandwidth returns the measured bandwidth in bit per second
+  // async measureUploadBandwidth (peer: PeerId, size: bigint): Promise<number> {
+  //   const now = Date.now()
+  //   await this.perf(peer, size, 0n)
+  //   return Number((8000n * size) / BigInt(Date.now() - now))
+  // }
 }
 
 export function perfService (init: PerfServiceInit = {}): (components: PerfServiceComponents) => PerfService {
