@@ -1,0 +1,233 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@libp2p/peer-record | Documentation - v1.0.0</title><meta name="description" content="Documentation for Documentation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container">
+<div class="table-cell" id="tsd-search" data-base="..">
+<div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field">
+<div id="tsd-toolbar-links"></div></div>
+<ul class="results">
+<li class="state loading">Preparing search index...</li>
+<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Documentation - v1.0.0</a></div>
+<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb">
+<li><a href="../index.html">Documentation</a></li>
+<li><a href="_libp2p_peer_record.html">@libp2p/peer-record</a></li></ul>
+<h1>Module @libp2p/peer-record</h1></div>
+<section class="tsd-panel tsd-typography"><a id="md:libp2ppeer-record-" class="tsd-anchor"></a><h1><a href="#md:libp2ppeer-record-">@libp2p/peer-record <!-- omit in toc --></a></h1><p><a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" alt="libp2p.io"></a>
+<a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square" alt="Discuss"></a>
+<a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square" alt="codecov"></a>
+<a href="https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master&style=flat-square" alt="CI"></a></p>
+<blockquote>
+<p>Used to transfer signed peer data across the network</p>
+</blockquote>
+<a id="md:table-of-contents-" class="tsd-anchor"></a><h2><a href="#md:table-of-contents-">Table of contents <!-- omit in toc --></a></h2><ul>
+<li><a href="#install">Install</a><ul>
+<li><a href="#browser-script-tag">Browser <code>&lt;script&gt;</code> tag</a></li>
+</ul>
+</li>
+<li><a href="#description">Description</a><ul>
+<li><a href="#envelope">Envelope</a></li>
+</ul>
+</li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#peer-record">Peer Record</a><ul>
+<li><a href="#usage-1">Usage</a></li>
+<li><a href="#libp2p-flows">Libp2p Flows</a><ul>
+<li><a href="#self-record">Self Record</a></li>
+<li><a href="#self-record-updates">Self record Updates</a></li>
+<li><a href="#subsystem-receiving-a-record">Subsystem receiving a record</a></li>
+<li><a href="#subsystem-providing-a-record">Subsystem providing a record</a></li>
+</ul>
+</li>
+<li><a href="#future-work">Future Work</a></li>
+</ul>
+</li>
+<li><a href="#api-docs">API Docs</a></li>
+<li><a href="#license">License</a></li>
+<li><a href="#contribution">Contribution</a></li>
+</ul>
+<a id="md:install" class="tsd-anchor"></a><h2><a href="#md:install">Install</a></h2><pre><code class="language-console"><span class="hl-0">$</span><span class="hl-1"> </span><span class="hl-2">npm</span><span class="hl-1"> </span><span class="hl-2">i</span><span class="hl-1"> </span><span class="hl-2">@libp2p/peer-record</span>
+</code><button>Copy</button></pre>
+<a id="md:browser-ltscriptgt-tag" class="tsd-anchor"></a><h3><a href="#md:browser-ltscriptgt-tag">Browser <code>&lt;script&gt;</code> tag</a></h3><p>Loading this module through a script tag will make it&#39;s exports available as <code>Libp2pPeerRecord</code> in the global namespace.</p>
+<pre><code class="language-html"><span class="hl-12">&lt;</span><span class="hl-13">script</span><span class="hl-8"> </span><span class="hl-14">src</span><span class="hl-8">=</span><span class="hl-15">&quot;https://unpkg.com/@libp2p/peer-record/dist/index.min.js&quot;</span><span class="hl-12">&gt;&lt;/</span><span class="hl-13">script</span><span class="hl-12">&gt;</span>
+</code><button>Copy</button></pre>
+<a id="md:description" class="tsd-anchor"></a><h2><a href="#md:description">Description</a></h2><p>Libp2p nodes need to store data in a public location (e.g. a DHT), or rely on potentially untrustworthy intermediaries to relay information over its lifetime. Accordingly, libp2p nodes need to be able to verify that the data came from a specific peer and that it hasn&#39;t been tampered with.</p>
+<a id="md:envelope" class="tsd-anchor"></a><h3><a href="#md:envelope">Envelope</a></h3><p>Libp2p provides an all-purpose data container called <strong>envelope</strong>. It was created to enable the distribution of verifiable records, which we can prove originated from the addressed peer itself. The envelope includes a signature of the data, so that its authenticity is verified.</p>
+<p>This envelope stores a marshaled record implementing the <a href="https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record">interface-record</a>. These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.</p>
+<p>You can read further about the envelope in <a href="https://github.com/libp2p/specs/pull/217">libp2p/specs#217</a>.</p>
+<a id="md:usage" class="tsd-anchor"></a><h2><a href="#md:usage">Usage</a></h2><ul>
+<li>create an envelope with an instance of an <a href="https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record">interface-record</a> implementation and prepare it for being exchanged:</li>
+</ul>
+<pre><code class="language-js"><span class="hl-3">// interface-record implementation example with the &quot;libp2p-example&quot; namespace</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">PeerRecord</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@libp2p/peer-record&#39;</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">fromString</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;uint8arrays/from-string&#39;</span><br/><br/><span class="hl-6">class</span><span class="hl-1"> </span><span class="hl-10">ExampleRecord</span><span class="hl-1"> </span><span class="hl-6">extends</span><span class="hl-1"> </span><span class="hl-10">PeerRecord</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-6">constructor</span><span class="hl-1"> () {</span><br/><span class="hl-1">    </span><span class="hl-6">super</span><span class="hl-1"> (</span><span class="hl-2">&#39;libp2p-example&#39;</span><span class="hl-1">, </span><span class="hl-0">fromString</span><span class="hl-1">(</span><span class="hl-2">&#39;0302&#39;</span><span class="hl-1">, </span><span class="hl-2">&#39;hex&#39;</span><span class="hl-1">))</span><br/><span class="hl-1">  }</span><br/><br/><span class="hl-1">  </span><span class="hl-0">marshal</span><span class="hl-1"> () {}</span><br/><br/><span class="hl-1">  </span><span class="hl-0">equals</span><span class="hl-1"> (</span><span class="hl-5">other</span><span class="hl-1">) {}</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-5">ExampleRecord</span><span class="hl-1">.</span><span class="hl-0">createFromProtobuf</span><span class="hl-1"> = () </span><span class="hl-6">=&gt;</span><span class="hl-1"> {}</span>
+</code><button>Copy</button></pre>
+<pre><code class="language-js"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">PeerEnvelope</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@libp2p/peer-record&#39;</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">ExampleRecord</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./example-record.js&#39;</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">rec</span><span class="hl-1"> = </span><span class="hl-6">new</span><span class="hl-1"> </span><span class="hl-0">ExampleRecord</span><span class="hl-1">()</span><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">e</span><span class="hl-1"> = </span><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-5">PeerEnvelope</span><span class="hl-1">.</span><span class="hl-0">seal</span><span class="hl-1">(</span><span class="hl-5">rec</span><span class="hl-1">, </span><span class="hl-5">peerId</span><span class="hl-1">)</span><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">wireData</span><span class="hl-1"> = </span><span class="hl-5">e</span><span class="hl-1">.</span><span class="hl-0">marshal</span><span class="hl-1">()</span>
+</code><button>Copy</button></pre>
+<ul>
+<li>consume a received envelope (<code>wireData</code>) and transform it back to a record:</li>
+</ul>
+<pre><code class="language-js"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">PeerEnvelope</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@libp2p/peer-record&#39;</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">ExampleRecord</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./example-record.js&#39;</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">domain</span><span class="hl-1"> = </span><span class="hl-2">&#39;libp2p-example&#39;</span><br/><span class="hl-6">let</span><span class="hl-1"> </span><span class="hl-5">e</span><br/><br/><span class="hl-4">try</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-5">e</span><span class="hl-1"> = </span><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-5">PeerEnvelope</span><span class="hl-1">.</span><span class="hl-0">openAndCertify</span><span class="hl-1">(</span><span class="hl-5">wireData</span><span class="hl-1">, </span><span class="hl-5">domain</span><span class="hl-1">)</span><br/><span class="hl-1">} </span><span class="hl-4">catch</span><span class="hl-1"> (</span><span class="hl-5">err</span><span class="hl-1">) {}</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">rec</span><span class="hl-1"> = </span><span class="hl-5">ExampleRecord</span><span class="hl-1">.</span><span class="hl-0">createFromProtobuf</span><span class="hl-1">(</span><span class="hl-5">e</span><span class="hl-1">.</span><span class="hl-5">payload</span><span class="hl-1">)</span>
+</code><button>Copy</button></pre>
+<a id="md:peer-record" class="tsd-anchor"></a><h2><a href="#md:peer-record">Peer Record</a></h2><p>All libp2p nodes keep a <code>PeerStore</code>, that among other information stores a set of known addresses for each peer, which can come from a variety of sources.</p>
+<p>Libp2p peer records were created to enable the distribution of verifiable address records, which we can prove originated from the addressed peer itself. With such guarantees, libp2p is able to prioritize addresses based on their authenticity, with the most strict strategy being to only dial certified addresses (no strategies have been implemented at the time of writing).</p>
+<p>A peer record contains the peers&#39; publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a <code>seqNumber</code> field, a timestamp per the spec, so that we can verify the most recent record.</p>
+<p>You can read further about the Peer Record in <a href="https://github.com/libp2p/specs/pull/217">libp2p/specs#217</a>.</p>
+<a id="md:usage-1" class="tsd-anchor"></a><h3><a href="#md:usage-1">Usage</a></h3><ul>
+<li>create a new Peer Record</li>
+</ul>
+<pre><code class="language-js"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">PeerRecord</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@libp2p/peer-record&#39;</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">pr</span><span class="hl-1"> = </span><span class="hl-6">new</span><span class="hl-1"> </span><span class="hl-0">PeerRecord</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-5">peerId:</span><span class="hl-1"> </span><span class="hl-5">node</span><span class="hl-1">.</span><span class="hl-5">peerId</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">multiaddrs:</span><span class="hl-1"> </span><span class="hl-5">node</span><span class="hl-1">.</span><span class="hl-5">multiaddrs</span><br/><span class="hl-1">})</span>
+</code><button>Copy</button></pre>
+<ul>
+<li>create a Peer Record from a protobuf</li>
+</ul>
+<pre><code class="language-js"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">PeerRecord</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@libp2p/peer-record&#39;</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">pr</span><span class="hl-1"> = </span><span class="hl-5">PeerRecord</span><span class="hl-1">.</span><span class="hl-0">createFromProtobuf</span><span class="hl-1">(</span><span class="hl-5">data</span><span class="hl-1">)</span>
+</code><button>Copy</button></pre>
+<a id="md:libp2p-flows" class="tsd-anchor"></a><h3><a href="#md:libp2p-flows">Libp2p Flows</a></h3><a id="md:self-record" class="tsd-anchor"></a><h4><a href="#md:self-record">Self Record</a></h4><p>Once a libp2p node has started and is listening on a set of multiaddrs, its own peer record can be created.</p>
+<p>The identify service is responsible for creating the self record when the identify protocol kicks in for the first time. This record will be stored for future needs of the identify protocol when connecting with other peers.</p>
+<a id="md:self-record-updates" class="tsd-anchor"></a><h4><a href="#md:self-record-updates">Self record Updates</a></h4><p><em><strong>NOT_YET_IMPLEMENTED</strong></em></p>
+<p>While creating peer records is fairly trivial, addresses are not static and might be modified at arbitrary times. This can happen via an Address Manager API, or even through AutoRelay/AutoNAT.</p>
+<p>When a libp2p node changes its listen addresses, the identify service will be informed. Once that happens, the identify service creates a new self record and stores it. With the new record, the identify push/delta protocol will be used to communicate this change to the connected peers.</p>
+<a id="md:subsystem-receiving-a-record" class="tsd-anchor"></a><h4><a href="#md:subsystem-receiving-a-record">Subsystem receiving a record</a></h4><p>Considering that a node can discover other peers&#39; addresses from a variety of sources, Libp2p Peerstore can differentiate the addresses that were obtained through a signed peer record.</p>
+<p>Once a record is received and its signature properly validated, its envelope is stored in the AddressBook in its byte representation. The <code>seqNumber</code> remains unmarshalled so that we can quickly compare it against incoming records to determine the most recent record.</p>
+<p>The AddressBook Addresses will be updated with the content of the envelope with a certified property. This allows other subsystems to identify the known certified addresses of a peer.</p>
+<a id="md:subsystem-providing-a-record" class="tsd-anchor"></a><h4><a href="#md:subsystem-providing-a-record">Subsystem providing a record</a></h4><p>Libp2p subsystems that exchange other peers information will provide the envelope that they received by those peers. As a result, other peers can verify if the envelope was really created by the addressed peer.</p>
+<p>When a subsystem wants to provide a record, it will get it from the AddressBook, if it exists. Other subsystems are also able to provide the self record, since it is also stored in the AddressBook.</p>
+<a id="md:future-work" class="tsd-anchor"></a><h3><a href="#md:future-work">Future Work</a></h3><ul>
+<li>Persistence only considering certified addresses?</li>
+<li>Peers may not know their own addresses. It&#39;s often impossible to automatically infer one&#39;s own public address, and peers may need to rely on third party peers to inform them of their observed public addresses.</li>
+<li>A peer may inadvertently or maliciously sign an address that they do not control. In other words, a signature isn&#39;t a guarantee that a given address is valid.</li>
+<li>Some addresses may be ambiguous. For example, addresses on a private subnet are valid within that subnet but are useless on the public internet.</li>
+<li>Once all these pieces are in place, we will also need a way to prioritize addresses based on their authenticity, that is, the dialer can prioritize self-certified addresses over addresses from an unknown origin.<ul>
+<li>Modular dialer? (taken from go PR notes)<ul>
+<li>With the modular dialer, users should easily be able to configure precedence. With dialer v1, anything we do to prioritise dials is gonna be spaghetti and adhoc. With the modular dialer, you’d be able to specify the order of dials when instantiating the pipeline.</li>
+<li>Multiple parallel dials. We already have the issue where new addresses aren&#39;t added to existing dials.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<a id="md:api-docs" class="tsd-anchor"></a><h2><a href="#md:api-docs">API Docs</a></h2><ul>
+<li><a href="https://libp2p.github.io/js-libp2p/modules/_libp2p_peer_record.html">https://libp2p.github.io/js-libp2p/modules/_libp2p_peer_record.html</a></li>
+</ul>
+<a id="md:license" class="tsd-anchor"></a><h2><a href="#md:license">License</a></h2><p>Licensed under either of</p>
+<ul>
+<li>Apache 2.0, (<a href="LICENSE-APACHE">LICENSE-APACHE</a> / <a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>)</li>
+<li>MIT (<a href="LICENSE-MIT">LICENSE-MIT</a> / <a href="http://opensource.org/licenses/MIT">http://opensource.org/licenses/MIT</a>)</li>
+</ul>
+<a id="md:contribution" class="tsd-anchor"></a><h2><a href="#md:contribution">Contribution</a></h2><p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.</p>
+</section>
+<section class="tsd-panel-group tsd-index-group">
+<section class="tsd-panel tsd-index-panel">
+<h3 class="tsd-index-heading uppercase">Index</h3>
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading">Modules</h3>
+<div class="tsd-index-list"><a href="_libp2p_peer_record.unknown.html" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>unknown</span></a>
+</div></section>
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading">Classes</h3>
+<div class="tsd-index-list"><a href="../classes/_libp2p_peer_record.PeerRecord.html" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-128"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)"></path></g></svg><span>Peer<wbr/>Record</span></a>
+<a href="../classes/_libp2p_peer_record.RecordEnvelope.html" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Record<wbr/>Envelope</span></a>
+</div></section>
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading">Interfaces</h3>
+<div class="tsd-index-list"><a href="../interfaces/_libp2p_peer_record.PeerRecordInit.html" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-256"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)"></path></g></svg><span>Peer<wbr/>Record<wbr/>Init</span></a>
+<a href="../interfaces/_libp2p_peer_record.RecordEnvelopeInit.html" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Record<wbr/>Envelope<wbr/>Init</span></a>
+</div></section></section></section></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)" id="icon-chevronDown"></path></svg>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility">
+<h4 class="uppercase">Member Visibility</h4><form>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-private" name="private"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Private</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></form></div>
+<div class="tsd-theme-toggle">
+<h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-index-accordion tsd-page-navigation"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="#icon-chevronDown"></use></svg>On This Page</h3></summary>
+<div class="tsd-accordion-details">
+<ul>
+<li>
+<ul>
+<li><a href="#md:libp2ppeer-record-"><span>@libp2p/peer-<wbr/>record </span></a></li>
+<li>
+<ul>
+<li><a href="#md:table-of-contents-"><span>Table of contents </span></a></li>
+<li><a href="#md:install"><span>Install</span></a></li>
+<li>
+<ul>
+<li><a href="#md:browser-ltscriptgt-tag"><span>Browser &lt;script&gt; tag</span></a></li></ul></li>
+<li><a href="#md:description"><span>Description</span></a></li>
+<li>
+<ul>
+<li><a href="#md:envelope"><span>Envelope</span></a></li></ul></li>
+<li><a href="#md:usage"><span>Usage</span></a></li>
+<li><a href="#md:peer-record"><span>Peer <wbr/>Record</span></a></li>
+<li>
+<ul>
+<li><a href="#md:usage-1"><span>Usage</span></a></li>
+<li><a href="#md:libp2p-flows"><span>Libp2p <wbr/>Flows</span></a></li>
+<li>
+<ul>
+<li><a href="#md:self-record"><span>Self <wbr/>Record</span></a></li>
+<li><a href="#md:self-record-updates"><span>Self record <wbr/>Updates</span></a></li>
+<li><a href="#md:subsystem-receiving-a-record"><span>Subsystem receiving a record</span></a></li>
+<li><a href="#md:subsystem-providing-a-record"><span>Subsystem providing a record</span></a></li></ul></li>
+<li><a href="#md:future-work"><span>Future <wbr/>Work</span></a></li></ul></li>
+<li><a href="#md:api-docs"><span>API <wbr/>Docs</span></a></li>
+<li><a href="#md:license"><span>License</span></a></li>
+<li><a href="#md:contribution"><span>Contribution</span></a></li></ul></li></ul></li></ul></div></details></div>
+<div class="site-menu">
+<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>Documentation -<wbr/> v1.0.0</span></a>
+<ul class="tsd-small-nested-navigation">
+<li><a href="_libp2p_example_auto_relay.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>auto-<wbr/>relay</span></a></li>
+<li><a href="_libp2p_example_chat.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>chat</span></a></li>
+<li><a href="_libp2p_example_connection_encryption.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>connection-<wbr/>encryption</span></a></li>
+<li><a href="_libp2p_example_delegated_routing_example.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>delegated-<wbr/>routing-<wbr/>example</span></a></li>
+<li><a href="_libp2p_example_discovery_mechanisms.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>discovery-<wbr/>mechanisms</span></a></li>
+<li><a href="_libp2p_example_echo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>echo</span></a></li>
+<li><a href="_libp2p_example_peer_and_content_routing.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>peer-<wbr/>and-<wbr/>content-<wbr/>routing</span></a></li>
+<li><a href="_libp2p_example_pnet.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>pnet</span></a></li>
+<li><a href="_libp2p_example_protocol_and_stream_muxing.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>protocol-<wbr/>and-<wbr/>stream-<wbr/>muxing</span></a></li>
+<li><a href="_libp2p_example_pubsub.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>pubsub</span></a></li>
+<li><a href="_libp2p_example_transports.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>transports</span></a></li>
+<li><a href="_libp2p_crypto.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/crypto</span></a></li>
+<li><a href="_libp2p_interface.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/interface</span></a></li>
+<li><a href="_libp2p_interface_compliance_tests.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/interface-<wbr/>compliance-<wbr/>tests</span></a></li>
+<li><a href="_libp2p_interface_internal.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/interface-<wbr/>internal</span></a></li>
+<li><a href="_libp2p_kad_dht.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/kad-<wbr/>dht</span></a></li>
+<li><a href="_libp2p_keychain.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/keychain</span></a></li>
+<li><a href="libp2p.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>libp2p</span></a></li>
+<li><a href="_libp2p_logger.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/logger</span></a></li>
+<li><a href="_libp2p_prometheus_metrics.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/prometheus-<wbr/>metrics</span></a></li>
+<li><a href="_libp2p_multistream_select.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/multistream-<wbr/>select</span></a></li>
+<li><a href="_libp2p_peer_collections.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>collections</span></a></li>
+<li><a href="_libp2p_bootstrap.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/bootstrap</span></a></li>
+<li><a href="_libp2p_mdns.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/mdns</span></a></li>
+<li><a href="_libp2p_peer_id.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>id</span></a></li>
+<li><a href="_libp2p_peer_id_factory.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>id-<wbr/>factory</span></a></li>
+<li>
+<details class="tsd-index-accordion" open data-key="@libp2p/peer-record"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="#icon-chevronDown"></use></svg><a href="_libp2p_peer_record.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>record</span></a></summary>
+<div class="tsd-accordion-details">
+<ul class="tsd-nested-navigation">
+<li><a href="_libp2p_peer_record.unknown.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>unknown</span></a></li>
+<li><a href="../classes/_libp2p_peer_record.PeerRecord.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Peer<wbr/>Record</span></a></li>
+<li><a href="../classes/_libp2p_peer_record.RecordEnvelope.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Record<wbr/>Envelope</span></a></li>
+<li><a href="../interfaces/_libp2p_peer_record.PeerRecordInit.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Peer<wbr/>Record<wbr/>Init</span></a></li>
+<li><a href="../interfaces/_libp2p_peer_record.RecordEnvelopeInit.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Record<wbr/>Envelope<wbr/>Init</span></a></li></ul></div></details></li>
+<li><a href="_libp2p_peer_store.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>store</span></a></li>
+<li><a href="_libp2p_pubsub.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/pubsub</span></a></li>
+<li><a href="_libp2p_floodsub.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/floodsub</span></a></li>
+<li><a href="_libp2p_mplex.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/mplex</span></a></li>
+<li><a href="_libp2p_tcp.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/tcp</span></a></li>
+<li><a href="_libp2p_webrtc.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/webrtc</span></a></li>
+<li><a href="_libp2p_websockets.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/websockets</span></a></li>
+<li><a href="_libp2p_webtransport.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/webtransport</span></a></li>
+<li><a href="_libp2p_utils.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/utils</span></a></li></ul></nav></div></div></div>
+<div class="overlay"></div></body></html>
