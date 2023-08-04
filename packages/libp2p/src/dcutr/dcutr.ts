@@ -23,7 +23,6 @@ import type { TransportManager } from '@libp2p/interface-internal/src/transport-
 const log = logger('libp2p:dcutr')
 const logA = logger('libp2p:dcutr:A')
 const logB = logger('libp2p:dcutr:B')
-const debugLog = logger('libp2p:dcutr:debug')
 
 // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#rpc-messages
 const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
@@ -74,14 +73,14 @@ export class DefaultDCUtRService implements Startable {
     if (this.started) {
       return
     }
-    debugLog('starting DCUtR service', process.env.NODE_ENV)
+    log.trace('starting DCUtR service', process.env.NODE_ENV)
 
     // register for notifications of when peers that support DCUtR connect
     // nb. requires the identify service to be enabled
     this.topologyId = await this.registrar.register(multicodec, {
       onConnect: this.onConnectAttempt.bind(this),
       onDisconnect: (peerId: PeerId) => {
-        debugLog('peer %p disconnected', multicodec, peerId)
+        log.trace('peer %p disconnected on %a', peerId, multicodec)
       }
     })
 
@@ -123,10 +122,10 @@ export class DefaultDCUtRService implements Startable {
    * @returns
    */
   async onConnectAttempt (peerId: PeerId, connection: Connection): Promise<void> {
-    debugLog(`onConnectAttempt ${connection.direction === 'inbound' ? 'from' : 'to'} ${peerId}`)
+    log.trace('onConnectAttempt %s %p', connection.direction, peerId)
     if (!connection.transient) {
       // the connection is already direct, no upgrade is required
-      debugLog('connection to %p is already direct, not attempting DCUtR', peerId)
+      log.trace('connection to %p is already direct, not attempting DCUtR', peerId)
       return
     }
 
@@ -141,7 +140,7 @@ export class DefaultDCUtRService implements Startable {
       .find(conn => !conn.transient)
 
     if (existingDirectConnection != null) {
-      debugLog('already have a direct connection to %p, not attempting DCUtR', peerId)
+      log.trace('already have a direct connection to %p, not attempting DCUtR', peerId)
       return
     }
 
@@ -152,7 +151,7 @@ export class DefaultDCUtRService implements Startable {
     // connection, in which case B attempts a unilateral connection upgrade by
     // initiating a direct connection to A.
     if (await this.attemptUnilateralConnectionUpgrade(connection)) {
-      debugLog('unilateral connection upgrade succeeded')
+      log.trace('unilateral connection upgrade succeeded')
       return
     }
 
@@ -174,7 +173,7 @@ export class DefaultDCUtRService implements Startable {
    * @see https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
    */
   async initiateDCUtRUpgrade (relayedConnection: Connection): Promise<void> {
-    debugLog('initiateDCUtRUpgrade connection ID =', relayedConnection.id)
+    log.trace('initiateDCUtRUpgrade connection ID =', relayedConnection.id)
     /**
      * If the unilateral connection upgrade attempt fails or if A is itself a NATed peer that doesn't advertise public
      * address, then B initiates the direct connection upgrade protocol as follows:
@@ -335,7 +334,7 @@ export class DefaultDCUtRService implements Startable {
       .map(address => address.multiaddr)
 
     if (publicAddresses.length > 0) {
-      debugLog('peer %p has public addresses, attempting unilateral connection upgrade', relayedConnection.remotePeer)
+      logB.trace('peer %p has public addresses, attempting unilateral connection upgrade', relayedConnection.remotePeer)
       const signal = AbortSignal.timeout(this.timeout)
 
       try {
@@ -372,7 +371,7 @@ export class DefaultDCUtRService implements Startable {
    * @see https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
    */
   async handleIncomingUpgrade (stream: Stream, relayedConnection: Connection): Promise<void> {
-    debugLog('handleIncomingUpgrade connection ID =', relayedConnection.id)
+    log.trace('handleIncomingUpgrade connection ID =', relayedConnection.id)
     const options = {
       signal: AbortSignal.timeout(this.timeout)
     }
@@ -382,7 +381,7 @@ export class DefaultDCUtRService implements Startable {
         maxDataLength: MAX_DCUTR_MESSAGE_SIZE
       }).pb(HolePunch)
 
-      logA(`waiting for CONNECT from B`)
+      logA('waiting for CONNECT from B')
       // 3. Upon receiving the Connect, A responds back with a Connect message
       // containing its observed (and possibly predicted) addresses.
       const connect = await pb.read(options)
@@ -475,26 +474,26 @@ export class DefaultDCUtRService implements Startable {
   isPublicAndDialable (ma: Multiaddr): boolean {
     // ignore circuit relay
     if (Circuit.matches(ma)) {
-      debugLog('ignoring circuit relay address', ma)
+      log.trace('ignoring circuit relay address', ma)
       return false
     }
 
     // dns addresses are probably public?
     if (DNS.matches(ma)) {
-      debugLog('ignoring dns address', ma)
+      log.trace('ignoring dns address', ma)
       return true
     }
 
     // ensure we have only IPv4/IPv6 addresses
     if (!IP.matches(ma)) {
-      debugLog('ignoring non-ip address', ma)
+      log.trace('ignoring non-ip address', ma)
       return false
     }
 
     const transport = this.transportManager.transportForMultiaddr(ma)
 
     if (transport == null) {
-      debugLog('ignoring address with no transport', ma)
+      log.trace('ignoring address with no transport', ma)
       return false
     }
 
