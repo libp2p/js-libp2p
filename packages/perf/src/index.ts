@@ -1,11 +1,11 @@
 import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import { MAX_INBOUND_STREAMS, PROTOCOL_NAME, TIMEOUT, WRITE_BLOCK_SIZE } from './constants.js'
+import type { Connection } from '@libp2p/interface/src/connection/index.js'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 import type { AbortOptions } from '@libp2p/interfaces'
-import type { Connection } from '@libp2p/interface/src/connection/index.js'
 
 const log = logger('libp2p:perf')
 
@@ -19,8 +19,8 @@ export const defaultInit: PerfServiceInit = {
 
 export interface PerfService {
   perf: (connection: Connection, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions) => Promise<void>
-  // measureDownloadBandwidth: (peer: PeerId, size: bigint) => Promise<number>
-  // measureUploadBandwidth: (peer: PeerId, size: bigint) => Promise<number>
+  measureDownloadBandwidth: (connection: Connection, size: bigint) => Promise<number>
+  measureUploadBandwidth: (connection: Connection, size: bigint) => Promise<number>
 }
 
 export interface PerfServiceInit {
@@ -153,18 +153,18 @@ export class DefaultPerfService implements Startable, PerfService {
   }
 
   // measureDownloadBandwidth returns the measured bandwidth in bits per second
-  // async measureDownloadBandwidth (peer: PeerId, size: bigint): Promise<number> {
-  //   const now = Date.now()
-  //   await this.perf(connection, 0n, size)
-  //   return Number((8000n * size) / BigInt(Date.now() - now))
-  // }
+  async measureDownloadBandwidth (connection: Connection, size: bigint): Promise<number> {
+    const now = Date.now()
+    await this.perf(connection, 0n, size)
+    return Number((8000n * size) / BigInt(Date.now() - now))
+  }
 
-  // // measureUploadBandwidth returns the measured bandwidth in bit per second
-  // async measureUploadBandwidth (peer: PeerId, size: bigint): Promise<number> {
-  //   const now = Date.now()
-  //   await this.perf(peer, size, 0n)
-  //   return Number((8000n * size) / BigInt(Date.now() - now))
-  // }
+  // measureUploadBandwidth returns the measured bandwidth in bit per second
+  async measureUploadBandwidth (connection: Connection, size: bigint): Promise<number> {
+    const now = Date.now()
+    await this.perf(connection, size, 0n)
+    return Number((8000n * size) / BigInt(Date.now() - now))
+  }
 }
 
 export function perfService (init: PerfServiceInit = {}): (components: PerfServiceComponents) => PerfService {

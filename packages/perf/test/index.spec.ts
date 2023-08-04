@@ -5,6 +5,7 @@ import { start, stop } from '@libp2p/interface/startable'
 import { connectionPair, mockConnectionGater, mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { type Components, defaultComponents } from 'libp2p/components'
 import { DefaultConnectionManager } from 'libp2p/connection-manager'
@@ -72,7 +73,7 @@ describe('perf', () => {
     remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
     // Run Perf
-    // await expect(client.perf(remoteComponents.peerId, 1024n, 1024n)).to.eventually.be.fulfilled()
+    await expect(client.perf(localToRemote, 1024n, 1024n)).to.eventually.be.fulfilled()
   })
 
   it('should output bandwidth', async () => {
@@ -90,10 +91,10 @@ describe('perf', () => {
     let downloadBandwidth = 0
     let uploadBandwidth = 0
 
-    for (let i = 1; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
       // Run Perf
-      // downloadBandwidth += await client.measureDownloadBandwidth(remoteComponents.peerId, 10485760n)
-      // uploadBandwidth += await client.measureUploadBandwidth(remoteComponents.peerId, 10485760n)
+      downloadBandwidth += await client.measureDownloadBandwidth(localToRemote, 10485760n)
+      uploadBandwidth += await client.measureUploadBandwidth(localToRemote, 10485760n)
     }
 
     // eslint-disable-next-line no-console

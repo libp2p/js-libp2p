@@ -1,17 +1,16 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
 import { plaintext } from 'libp2p/insecure'
+import pWaitFor from 'p-wait-for'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { defaultInit, perfService } from '../src/index.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import type { Connection } from '@libp2p/interface/connection'
-import pWaitFor from 'p-wait-for'
-
 
 const argv = yargs(hideBin(process.argv))
   .options({
@@ -73,7 +72,7 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
   const peerId = await createFromPrivKey(privateKey)
   const tcpMultiaddrAddress = `${tcpMultiaddr.toString()}/p2p/${peerId.toString()}`
 
-  if (runServer === true) {
+  if (runServer) {
     listenAddrs.push(tcpMultiaddrAddress)
 
     Object.assign(config, {
@@ -92,12 +91,12 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   let connection: any = null
 
-  if (runServer === true) {
+  if (runServer) {
     node.addEventListener('connection:open', (eventInfo) => {
       connection = eventInfo.detail
     })
   } else {
-      connection = await node.dial(multiaddr(tcpMultiaddrAddress))
+    connection = await node.dial(multiaddr(tcpMultiaddrAddress))
   }
 
   await pWaitFor(() => connection != null)
