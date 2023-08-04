@@ -8,8 +8,9 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import delay from 'delay'
 import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
+import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { defaultComponents, type Components } from '../../src/components.js'
@@ -18,7 +19,7 @@ import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { uPnPNATService } from '../../src/upnp-nat/index.js'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
 import type { PeerUpdate } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerData, PeerStore } from '@libp2p/interface/peer-store'
 
 const DEFAULT_ADDRESSES = [
@@ -26,17 +27,18 @@ const DEFAULT_ADDRESSES = [
   '/ip4/0.0.0.0/tcp/0'
 ]
 
-describe('UPnP NAT (TCP)', () => {
+describe.only('UPnP NAT (TCP)', () => {
   const teardown: Array<() => Promise<void>> = []
   let client: StubbedInstance<NatAPI>
 
   async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: any, components: Components }> {
     const events = new EventEmitter()
+    const peerStore: StubbedInstance<PeerStore> = stubInterface<PeerStore>()
     const components: any = defaultComponents({
       peerId: await createEd25519PeerId(),
       upgrader: mockUpgrader({ events }),
       events,
-      peerStore: stubInterface<PeerStore>()
+      peerStore
     })
 
     components.peerStore.patch.callsFake(async (peerId: PeerId, details: PeerData) => {
@@ -59,6 +61,7 @@ describe('UPnP NAT (TCP)', () => {
     })(components)
 
     client = stubInterface<NatAPI>()
+    client.openPorts = []
 
     natManager._getClient = () => {
       return client
@@ -67,11 +70,11 @@ describe('UPnP NAT (TCP)', () => {
     components.transportManager.add(tcp()())
 
     await start(components)
+    await components.transportManager.listen(components.addressManager.getListenAddrs())
 
     teardown.push(async () => {
       await stop(natManager)
       await components.transportManager.removeAll()
-      await stop(components)
     })
 
     return {
@@ -95,7 +98,17 @@ describe('UPnP NAT (TCP)', () => {
 
     await start(natManager)
 
-    await delay(100)
+    const addObservedAddr = sinon.spy(components.addressManager, 'addObservedAddr')
+
+    components.events.safeDispatchEvent('self:peer:update', {
+      detail: {
+        peer: {}
+      }
+    })
+
+    await pWaitFor(() => addObservedAddr.called, {
+      interval: 100
+    })
 
     observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.not.be.empty()
@@ -107,6 +120,8 @@ describe('UPnP NAT (TCP)', () => {
       .map(({ port }) => port)
 
     expect(client.map.called).to.be.true()
+
+    console.info('internalPorts', internalPorts)
 
     internalPorts.forEach(port => {
       expect(client.map.getCall(0).args[0]).to.include({
@@ -135,7 +150,7 @@ describe('UPnP NAT (TCP)', () => {
     let observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()
 
-    await expect(natManager._start()).to.eventually.be.rejectedWith(/double NAT/)
+    await expect(natManager.mapAddresses()).to.eventually.be.rejectedWith(/double NAT/)
 
     observed = components.addressManager.getObservedAddrs().map(ma => ma.toString())
     expect(observed).to.be.empty()

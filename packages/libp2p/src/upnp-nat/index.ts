@@ -7,10 +7,12 @@ import isPrivateIp from 'private-ip'
 import { isBrowser } from 'wherearewe'
 import { codes } from '../errors.js'
 import * as pkg from '../version.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { Libp2pEvents } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { EventEmitter } from '@libp2p/interface/events'
+import type { Startable } from '@libp2p/interface/startable'
 
 const log = logger('libp2p:upnp-nat')
 const DEFAULT_TTL = 7200
@@ -62,6 +64,7 @@ export interface UPnPNATComponents {
   peerId: PeerId
   transportManager: TransportManager
   addressManager: AddressManager
+  events: EventEmitter<Libp2pEvents>
 }
 
 class UPnPNAT implements Startable {
@@ -89,6 +92,14 @@ class UPnPNAT implements Startable {
     if (this.ttl < DEFAULT_TTL) {
       throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, codes.ERR_INVALID_PARAMETERS)
     }
+
+    // try to map external ports when our address list changes
+    this.components.events.addEventListener('self:peer:update', () => {
+      this.mapAddresses()
+        .catch(err => {
+          log.error('error mapping external addresses', err)
+        })
+    })
   }
 
   isStarted (): boolean {
@@ -96,7 +107,11 @@ class UPnPNAT implements Startable {
   }
 
   start (): void {
-    // #TODO: is there a way to remove this? Seems like a hack
+    if (isBrowser || this.started) {
+      return
+    }
+
+    this.started = true
   }
 
   /**
@@ -104,21 +119,7 @@ class UPnPNAT implements Startable {
    *
    * Run after start to ensure the transport manager has all addresses configured.
    */
-  afterStart (): void {
-    if (isBrowser || this.started) {
-      return
-    }
-
-    this.started = true
-
-    // done async to not slow down startup
-    void this._start().catch((err) => {
-      // hole punching errors are non-fatal
-      log.error(err)
-    })
-  }
-
-  async _start (): Promise<void> {
+  async mapAddresses (): Promise<void> {
     const addrs = this.components.transportManager.getAddrs()
 
     for (const addr of addrs) {
@@ -128,21 +129,31 @@ class UPnPNAT implements Startable {
       if (!addr.isThinWaistAddress() || transport !== 'tcp') {
         // only bare tcp addresses
         // eslint-disable-next-line no-continue
+        log.trace('skipping %a as it is not a think waist address', addr)
         continue
       }
 
       if (isLoopback(addr)) {
         // eslint-disable-next-line no-continue
+        log.trace('skipping %a as it is a loopback address', addr)
         continue
       }
 
       if (family !== 4) {
         // ignore ipv6
         // eslint-disable-next-line no-continue
+        log.trace('skipping %a as it is not an ip4 address', addr)
         continue
       }
 
       const client = this._getClient()
+
+      if (client.openPorts.map(p => p.localPort).includes(port)) {
+        // skip ports we have already mapped
+        log.trace('skipping %a as it is already mapped', addr)
+        continue
+      }
+
       const publicIp = this.externalAddress ?? await client.externalIp()
       const isPrivate = isPrivateIp(publicIp)
 
@@ -152,6 +163,10 @@ class UPnPNAT implements Startable {
 
       if (isPrivate == null) {
         throw new Error(`${publicIp} is not an IP address`)
+      }
+
+      if (!this.isStarted()) {
+        return
       }
 
       const publicPort = highPort()
@@ -165,11 +180,15 @@ class UPnPNAT implements Startable {
         protocol: transport.toUpperCase() === 'TCP' ? 'TCP' : 'UDP'
       })
 
-      this.components.addressManager.addObservedAddr(fromNodeAddress({
+      const externalAddress = fromNodeAddress({
         family: 4,
         address: publicIp,
         port: publicPort
-      }, transport))
+      }, transport)
+
+      log('mapped external uPnP address %a', externalAddress)
+
+      this.components.addressManager.addObservedAddr(externalAddress)
     }
   }
 
