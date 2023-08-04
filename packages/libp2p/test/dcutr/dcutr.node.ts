@@ -193,7 +193,7 @@ describe('dcutr', () => {
       }, {
         retries: 10
       })
-      expect(closedRelayConnection()).to.eventually.equal(true)
+      await expect(closedRelayConnection()).to.eventually.equal(true)
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()
