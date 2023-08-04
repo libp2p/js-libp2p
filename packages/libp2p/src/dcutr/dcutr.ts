@@ -1,7 +1,7 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import { Circuit, IP, DNS } from '@multiformats/multiaddr-matcher'
+import { Circuit, IP, DNS, QUIC, QUICV1, TCP } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
 import isPrivate from 'private-ip'
@@ -266,8 +266,8 @@ export class DefaultDCUtRService implements Startable {
     // TODO: Find a way to simulate network latency for tests, because rtt is always <= 4ms
     await delay(rtt / 2)
 
-    const tcpMultiaddrs = multiaddrs.filter(ma => ma.protoNames().includes('tcp'))
-    const quicMultiaddrs = multiaddrs.filter(ma => ma.protoNames().includes('quic'))
+    const tcpMultiaddrs = multiaddrs.filter(TCP.matches)
+    const quicMultiaddrs = multiaddrs.filter(ma => QUIC.matches(ma) || QUICV1.matches(ma))
 
     logB('dialing', multiaddrs)
     const connectAttempts = []
