@@ -54,9 +54,6 @@ describe('dcutr', () => {
       services: {
         identify: identifyService(),
         relay: circuitRelayServer()
-      },
-      connectionManager: {
-        minConnections: 0, // disable autodial
       }
     }))
 
@@ -155,9 +152,6 @@ describe('dcutr', () => {
         services: {
           identify: identifyService(),
           dcutr: dcutrService()
-        },
-        connectionManager: {
-          // minConnections: 1, // disable autodial
         }
       }))
 
