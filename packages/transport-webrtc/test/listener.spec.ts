@@ -2,7 +2,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { WebRTCPeerListener } from '../src/private-to-private/listener'
+import { WebRTCPeerListener } from '../src/private-to-private/listener.js'
 import type { Listener } from '@libp2p/interface/transport'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 

@@ -9,16 +9,10 @@
   ],
   "references": [
     {
-      "path": "../packages/connection-encryption-noise"
-    },
-    {
       "path": "../packages/libp2p"
     },
     {
       "path": "../packages/stream-multiplexer-mplex"
-    },
-    {
-      "path": "../packages/stream-multiplexer-yamux"
     },
     {
       "path": "../packages/transport-tcp"

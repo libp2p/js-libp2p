@@ -5,6 +5,65 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.1](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.0...libp2p-v0.46.1) (2023-08-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/floodsub bumped from ^8.0.0 to ^8.0.1
+
+## [0.46.0](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.9...libp2p-v0.46.0) (2023-07-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.close`, `closeRead` and `closeWrite` methods on the `Stream` interface are now asynchronous
+* `stream.stat.*` and `conn.stat.*` properties are now accessed via `stream.*` and `conn.*`
+* consolidate interface modules (#1833)
+
+### Features
+
+* enable manual identify ([#1784](https://www.github.com/libp2p/js-libp2p/issues/1784)) ([06f4901](https://www.github.com/libp2p/js-libp2p/commit/06f4901a367ef8e6b9f74bc9b896cdb091c31b12))
+* mark connections with limits as transient ([#1890](https://www.github.com/libp2p/js-libp2p/issues/1890)) ([a1ec46b](https://www.github.com/libp2p/js-libp2p/commit/a1ec46b5f5606b7bdf3e5b085013fb88e26439f9))
+* merge stat properties into stream/connection objects ([#1856](https://www.github.com/libp2p/js-libp2p/issues/1856)) ([e9cafd3](https://www.github.com/libp2p/js-libp2p/commit/e9cafd3d8ab0f8e0655ff44e04aa41fccc912b51)), closes [#1849](https://www.github.com/libp2p/js-libp2p/issues/1849)
+
+
+### Bug Fixes
+
+* close streams gracefully ([#1864](https://www.github.com/libp2p/js-libp2p/issues/1864)) ([b36ec7f](https://www.github.com/libp2p/js-libp2p/commit/b36ec7f24e477af21cec31effc086a6c611bf271)), closes [#1793](https://www.github.com/libp2p/js-libp2p/issues/1793) [#656](https://www.github.com/libp2p/js-libp2p/issues/656)
+* consolidate interface modules ([#1833](https://www.github.com/libp2p/js-libp2p/issues/1833)) ([4255b1e](https://www.github.com/libp2p/js-libp2p/commit/4255b1e2485d31e00c33efa029b6426246ea23e3))
+* ignore peers with invalid multiaddrs ([#1902](https://www.github.com/libp2p/js-libp2p/issues/1902)) ([a41d25d](https://www.github.com/libp2p/js-libp2p/commit/a41d25d49696febd7fd903bbdcc95ebaeb5d4b35))
+* remove redundant nat-api override ([#1906](https://www.github.com/libp2p/js-libp2p/issues/1906)) ([1f7e18b](https://www.github.com/libp2p/js-libp2p/commit/1f7e18b07094046f10df89a1c6eab505d4c13225))
+* updated multiaddr logging ([#1797](https://www.github.com/libp2p/js-libp2p/issues/1797)) ([f427cfc](https://www.github.com/libp2p/js-libp2p/commit/f427cfc923a4bf9fd328386897a0e7181969c854))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^1.0.0 to ^2.0.0
+    * @libp2p/interface bumped from ~0.0.1 to ^0.1.0
+    * @libp2p/interface-internal bumped from ~0.0.1 to ^0.1.0
+    * @libp2p/keychain bumped from ^2.0.0 to ^3.0.0
+    * @libp2p/logger bumped from ^2.0.0 to ^3.0.0
+    * @libp2p/multistream-select bumped from ^3.0.0 to ^4.0.0
+    * @libp2p/peer-collections bumped from ^3.0.0 to ^4.0.0
+    * @libp2p/peer-id bumped from ^2.0.0 to ^3.0.0
+    * @libp2p/peer-id-factory bumped from ^2.0.0 to ^3.0.0
+    * @libp2p/peer-record bumped from ^5.0.0 to ^6.0.0
+    * @libp2p/peer-store bumped from ^8.0.0 to ^9.0.0
+    * @libp2p/utils bumped from ^3.0.0 to ^4.0.0
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^8.0.0 to ^9.0.0
+    * @libp2p/interface-compliance-tests bumped from ^3.0.0 to ^4.0.0
+    * @libp2p/kad-dht bumped from ^9.0.0 to ^10.0.0
+    * @libp2p/mdns bumped from ^8.0.0 to ^9.0.0
+    * @libp2p/mplex bumped from ^8.0.0 to ^9.0.0
+    * @libp2p/tcp bumped from ^7.0.0 to ^8.0.0
+    * @libp2p/websockets bumped from ^6.0.0 to ^7.0.0
+
 ### [0.45.8](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.7...libp2p-v0.45.8) (2023-06-14)
 
 

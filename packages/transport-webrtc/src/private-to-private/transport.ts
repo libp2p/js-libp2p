@@ -5,6 +5,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
 import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
+import { cleanup } from '../webrtc/index.js'
 import { initiateConnection, handleIncomingStream } from './handler.js'
 import { WebRTCPeerListener } from './listener.js'
 import type { DataChannelOpts } from '../stream.js'
@@ -57,6 +58,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   async stop (): Promise<void> {
     await this.components.registrar.unhandle(SIGNALING_PROTO_ID)
+    cleanup()
     this._started = false
   }
 

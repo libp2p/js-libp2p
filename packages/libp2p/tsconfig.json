@@ -9,9 +9,6 @@
   ],
   "references": [
     {
-      "path": "../connection-encryption-noise"
-    },
-    {
       "path": "../crypto"
     },
     {
@@ -28,12 +25,6 @@
     },
     {
       "path": "../keychain"
-    },
-    {
-      "path": "../libp2p-daemon-client"
-    },
-    {
-      "path": "../libp2p-daemon-server"
     },
     {
       "path": "../logger"
@@ -66,13 +57,7 @@
       "path": "../pubsub-floodsub"
     },
     {
-      "path": "../pubsub-gossipsub"
-    },
-    {
       "path": "../stream-multiplexer-mplex"
-    },
-    {
-      "path": "../stream-multiplexer-yamux"
     },
     {
       "path": "../transport-tcp"

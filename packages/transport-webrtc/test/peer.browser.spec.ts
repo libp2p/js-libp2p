@@ -7,14 +7,16 @@ import { pair } from 'it-pair'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import Sinon from 'sinon'
-import { initiateConnection, handleIncomingStream } from '../src/private-to-private/handler'
+import { initiateConnection, handleIncomingStream } from '../src/private-to-private/handler.js'
 import { Message } from '../src/private-to-private/pb/message.js'
-import { WebRTCTransport, splitAddr } from '../src/private-to-private/transport'
+import { WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
+import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
 
 const browser = detect()
 
 describe('webrtc basic', () => {
   const isFirefox = ((browser != null) && browser.name === 'firefox')
+
   it('should connect', async () => {
     const [receiver, initiator] = duplexPair<any>()
     const dstPeerId = await createEd25519PeerId()
@@ -34,6 +36,9 @@ describe('webrtc basic', () => {
     }
     expect(pc0.connectionState).eq('connected')
     expect(pc1.connectionState).eq('connected')
+
+    pc0.close()
+    pc1.close()
   })
 })
 
@@ -59,10 +64,8 @@ describe('webrtc dialer', () => {
     const initiatorPeerConnectionPromise = initiateConnection({ signal: controller.signal, stream: mockStream(initiator) })
     const stream = pbStream(receiver).pb(Message)
 
-    {
-      const offerMessage = await stream.read()
-      expect(offerMessage.type).to.eq(Message.Type.SDP_OFFER)
-    }
+    const offerMessage = await stream.read()
+    expect(offerMessage.type).to.eq(Message.Type.SDP_OFFER)
 
     await stream.write({ type: Message.Type.SDP_ANSWER, data: 'bad' })
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
@@ -78,17 +81,18 @@ describe('webrtc dialer', () => {
     pc.onicecandidate = ({ candidate }) => {
       void stream.write({ type: Message.Type.ICE_CANDIDATE, data: JSON.stringify(candidate?.toJSON()) })
     }
-    {
-      const offerMessage = await stream.read()
-      expect(offerMessage.type).to.eq(Message.Type.SDP_OFFER)
-      const offer = new RTCSessionDescription({ type: 'offer', sdp: offerMessage.data })
-      await pc.setRemoteDescription(offer)
 
-      const answer = await pc.createAnswer()
-      await pc.setLocalDescription(answer)
-    }
+    const offerMessage = await stream.read()
+    expect(offerMessage.type).to.eq(Message.Type.SDP_OFFER)
+    const offer = new RTCSessionDescription({ type: 'offer', sdp: offerMessage.data })
+    await pc.setRemoteDescription(offer)
+
+    const answer = await pc.createAnswer()
+    await pc.setLocalDescription(answer)
 
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/remote should send an SDP answer/)
+
+    pc.close()
   })
 })
 
@@ -128,5 +132,3 @@ describe('webrtc splitAddr', () => {
     expect(peerId.toString()).to.eq('12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
   })
 })
-
-export { }

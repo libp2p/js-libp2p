@@ -30,10 +30,11 @@
     "clean": "aegir run clean",
     "lint": "aegir run lint",
     "dep-check": "aegir run dep-check",
-    "release": "run-s build npm:release",
+    "release": "run-s build docs:no-publish npm:release docs",
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
-    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude examples --exclude doc"
+    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude examples --exclude doc",
+    "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude interop --exclude examples --exclude doc"
   },
   "devDependencies": {
     "aegir": "^40.0.1"

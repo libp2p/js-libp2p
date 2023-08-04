@@ -4,6 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubObject } from 'sinon-ts'
 import { WebRTCMultiaddrConnection } from '../src/maconn.js'
+import { RTCPeerConnection } from '../src/webrtc/index.js'
 import type { CounterGroup } from '@libp2p/interface/metrics'
 
 describe('Multiaddr Connection', () => {

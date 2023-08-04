@@ -133,7 +133,7 @@ a=ice-ufrag:${ufrag}
 a=ice-pwd:${ufrag}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
-a=max-message-size:100000
+a=max-message-size:16384
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r\n`
 }
 
