@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-id-factory",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Create PeerId instances",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-id-factory#readme",
@@ -52,9 +52,9 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^2.0.1",
-    "@libp2p/interface": "^0.1.0",
-    "@libp2p/peer-id": "^3.0.0",
+    "@libp2p/crypto": "^2.0.2",
+    "@libp2p/interface": "^0.1.1",
+    "@libp2p/peer-id": "^3.0.1",
     "multiformats": "^12.0.1",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
