@@ -48,21 +48,15 @@
     "@libp2p/interfaces": "3.3.2",
     "@libp2p/logger": "^3.0.0",
     "@libp2p/peer-id-factory": "3.0.0",
-    "@libp2p/peer-store": "9.0.0",
     "@libp2p/tcp": "^8.0.0",
     "@multiformats/multiaddr": "^12.1.5",
     "any-signal": "^4.1.1",
-    "datastore-core": "9.2.2",
     "libp2p": "^0.46.1",
     "p-wait-for": "^5.0.2",
     "uint8arrays": "^4.0.6",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "aegir": "^40.0.8",
-    "sinon-ts": "1.0.0"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
+    "aegir": "^40.0.8"
   }
 }

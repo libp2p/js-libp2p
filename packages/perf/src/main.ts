@@ -101,14 +101,12 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   await pWaitFor(() => connection != null)
 
-  await node.services.perf.perf(connection as Connection, BigInt(uploadBytes), BigInt(downloadBytes))
-
-  const endTime = Date.now()
+  const duration = await node.services.perf.measurePerformance(startTime, connection as Connection, BigInt(uploadBytes), BigInt(downloadBytes))
 
   await node.stop()
 
   // eslint-disable-next-line no-console
-  console.log('latency: ' + JSON.stringify({ latency: endTime - startTime }))
+  console.log('latency: ' + JSON.stringify({ latency: duration }))
 }
 
 function splitHostPort (address: string): { host: string, port?: string } {

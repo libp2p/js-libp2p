@@ -52,21 +52,9 @@
       "types": "./dist/src/autonat/index.d.ts",
       "import": "./dist/src/autonat/index.js"
     },
-    "./address-manager": {
-      "types": "./dist/src/address-manager/index.d.ts",
-      "import": "./dist/src/address-manager/index.js"
-    },
     "./circuit-relay": {
       "types": "./dist/src/circuit-relay/index.d.ts",
       "import": "./dist/src/circuit-relay/index.js"
-    },
-    "./components": {
-      "types": "./dist/src/components.d.ts",
-      "import": "./dist/src/components.js"
-    },
-    "./connection-manager": {
-      "types": "./dist/src/connection-manager/index.d.ts",
-      "import": "./dist/src/connection-manager/index.js"
     },
     "./fetch": {
       "types": "./dist/src/fetch/index.d.ts",

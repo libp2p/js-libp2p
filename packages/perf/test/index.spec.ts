@@ -2,46 +2,27 @@
 
 import { EventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
-import { connectionPair, mockConnectionGater, mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { connectionPair, mockRegistrar, type MockNetworkComponents, mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core'
-import { type Components, defaultComponents } from 'libp2p/components'
-import { DefaultConnectionManager } from 'libp2p/connection-manager'
-import { stubInterface } from 'sinon-ts'
-import { defaultInit, perfService } from '../src/index.js'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import { defaultInit, perfService, type PerfService } from '../src/index.js'
+import type { Connection } from '@libp2p/interface/connection'
 
-export async function createComponents (): Promise<Components> {
-  const peerId = await createEd25519PeerId()
-
-  const events = new EventEmitter()
-
-  const components = defaultComponents({
-    peerId,
+export async function createComponents (): Promise<MockNetworkComponents> {
+  const components: any = {
+    peerId: await createEd25519PeerId(),
     registrar: mockRegistrar(),
-    upgrader: mockUpgrader(),
-    datastore: new MemoryDatastore(),
-    transportManager: stubInterface<TransportManager>(),
-    connectionGater: mockConnectionGater(),
-    events
-  })
+    events: new EventEmitter()
+  }
 
-  components.peerStore = new PersistentPeerStore(components)
-  components.connectionManager = new DefaultConnectionManager(components, {
-    minConnections: 50,
-    maxConnections: 1000,
-    autoDialInterval: 1000,
-    inboundUpgradeTimeout: 1000
-  })
+  components.connectionManager = mockConnectionManager(components)
 
-  return components
+  return components as MockNetworkComponents
 }
 
 describe('perf', () => {
-  let localComponents: Components
-  let remoteComponents: Components
+  let localComponents: MockNetworkComponents
+  let remoteComponents: MockNetworkComponents
 
   beforeEach(async () => {
     localComponents = await createComponents()
@@ -72,8 +53,10 @@ describe('perf', () => {
     localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
     remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
+    const startTime = Date.now()
+
     // Run Perf
-    await expect(client.perf(localToRemote, 1024n, 1024n)).to.eventually.be.fulfilled()
+    await expect(client.measurePerformance(startTime, localToRemote, 1024n, 1024n)).to.eventually.be.fulfilled()
   })
 
   it('should output bandwidth', async () => {
@@ -93,8 +76,8 @@ describe('perf', () => {
 
     for (let i = 0; i < 5; i++) {
       // Run Perf
-      downloadBandwidth += await client.measureDownloadBandwidth(localToRemote, 10485760n)
-      uploadBandwidth += await client.measureUploadBandwidth(localToRemote, 10485760n)
+      downloadBandwidth += await measureDownloadBandwidth(localToRemote, 10485760n, client)
+      uploadBandwidth += await measureUploadBandwidth(localToRemote, 10485760n, client)
     }
 
     // eslint-disable-next-line no-console
@@ -102,5 +85,22 @@ describe('perf', () => {
 
     // eslint-disable-next-line no-console
     console.log('Download bandwidth:', Math.floor(uploadBandwidth / 5), 'B/s')
+
+    expect(downloadBandwidth).to.be.greaterThan(0)
+    expect(uploadBandwidth).to.be.greaterThan(0)
   })
+
+  // measureDownloadBandwidth returns the measured bandwidth in bytes per second B/s
+  async function measureDownloadBandwidth (connection: Connection, size: bigint, client: PerfService): Promise<number> {
+    const startTime = Date.now()
+    const duration = await client.measurePerformance(startTime, connection, 0n, size)
+    return Number((8000n * size) / BigInt(duration))
+  }
+
+  // measureUploadBandwidth returns the measured bandwidth in bytes per second B/s
+  async function measureUploadBandwidth (connection: Connection, size: bigint, client: PerfService): Promise<number> {
+    const startTime = Date.now()
+    const duration = await client.measurePerformance(startTime, connection, size, 0n)
+    return Number((8000n * size) / BigInt(duration))
+  }
 })

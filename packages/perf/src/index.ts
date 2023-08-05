@@ -1,6 +1,47 @@
+/**
+ * @packageDocumentation
+ *
+ * The `performanceService` implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which is used to measure performance within and across libp2p implementations
+ * addresses.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { circuitRelayTransport } from 'libp2p/circuit-relay'
+ *
+ * const node = await createLibp2p({
+ *   service: [
+ *     perfService()
+ *   ]
+ * })
+ * ```
+ *
+ * The `measurePerformance` function can be used to measure the latency and throughput of a connection.
+ * server.  This will not work in browsers.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { circuitRelayServer } from 'libp2p/circuit-relay'
+ *
+ * const node = await createLibp2p({
+ *   services: [
+ *     perf: perfService()
+ *   ]
+ * })
+ *
+ * const connection = await node.dial(multiaddr(multiaddrAddress))
+ *
+ * await node.services.perf.measurePerformance(connection, BigInt(uploadBytes), BigInt(downloadBytes))
+ *
+ * ```
+ */
+
 import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
-import { MAX_INBOUND_STREAMS, PROTOCOL_NAME, TIMEOUT, WRITE_BLOCK_SIZE } from './constants.js'
+import { MAX_INBOUND_STREAMS, PROTOCOL_NAME, WRITE_BLOCK_SIZE } from './constants.js'
 import type { Connection } from '@libp2p/interface/src/connection/index.js'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
@@ -18,9 +59,7 @@ export const defaultInit: PerfServiceInit = {
 }
 
 export interface PerfService {
-  perf: (connection: Connection, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions) => Promise<void>
-  measureDownloadBandwidth: (connection: Connection, size: bigint) => Promise<number>
-  measureUploadBandwidth: (connection: Connection, size: bigint) => Promise<number>
+  measurePerformance: (startTime: number, connection: Connection, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions) => Promise<number>
 }
 
 export interface PerfServiceInit {
@@ -36,29 +75,31 @@ export interface PerfServiceComponents {
   connectionManager: ConnectionManager
 }
 
-export class DefaultPerfService implements Startable, PerfService {
+class DefaultPerfService implements Startable, PerfService {
   public readonly protocol: string
   private readonly components: PerfServiceComponents
   private started: boolean
   private readonly databuf: ArrayBuffer
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
-  private readonly timeout: number
   private readonly writeBlockSize: bigint
 
   constructor (components: PerfServiceComponents, init: PerfServiceInit) {
     this.components = components
     this.started = false
     this.protocol = init.protocolName ?? PROTOCOL_NAME
-    this.databuf = new ArrayBuffer(Number(init.writeBlockSize ?? WRITE_BLOCK_SIZE))
+    this.writeBlockSize = init.writeBlockSize ?? WRITE_BLOCK_SIZE
+    this.databuf = new ArrayBuffer(Number(init.writeBlockSize))
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_INBOUND_STREAMS
-    this.timeout = init.timeout ?? TIMEOUT
-    this.writeBlockSize = init.writeBlockSize ?? WRITE_BLOCK_SIZE
   }
 
   async start (): Promise<void> {
-    await this.components.registrar.handle(this.protocol, (data: IncomingStreamData) => { void this.handleMessage(data) }, {
+    await this.components.registrar.handle(this.protocol, (data: IncomingStreamData) => {
+      void this.handleMessage(data).catch((err) => {
+        log.error('error handling perf protocol message', err)
+      })
+    }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams
     })
@@ -91,7 +132,7 @@ export class DefaultPerfService implements Startable, PerfService {
     const uint8Buf = new Uint8Array(this.databuf)
 
     if (bytesToSendBack === null) {
-      throw new Error('bytesToSendBack was null')
+      throw new Error('bytesToSendBack was not set')
     }
 
     await stream.sink(async function * () {
@@ -106,14 +147,15 @@ export class DefaultPerfService implements Startable, PerfService {
     }())
   }
 
-  async perf (connection: Connection, sendBytes: bigint, recvBytes: bigint, options: AbortOptions = {}): Promise<void> {
+  async measurePerformance (startTime: number, connection: Connection, sendBytes: bigint, recvBytes: bigint, options: AbortOptions = {}): Promise<number> {
     log('opening stream on protocol %s to %p', this.protocol, connection.remotePeer)
 
     const uint8Buf = new Uint8Array(this.databuf)
 
     const writeBlockSize = this.writeBlockSize
 
-    const signal = anySignal([AbortSignal.timeout(this.timeout), options?.signal])
+    const signal = anySignal([options?.signal])
+
     const stream = await connection.newStream([this.protocol], {
       signal
     })
@@ -123,47 +165,41 @@ export class DefaultPerfService implements Startable, PerfService {
     view.setBigInt64(0, recvBytes, false)
 
     log('sending %i bytes to %p', sendBytes, connection.remotePeer)
-
-    await stream.sink((async function * () {
-      // Send the number of bytes to receive
-      yield uint8Buf.subarray(0, 8)
-      // Send the number of bytes to send
-      while (sendBytes > 0n) {
-        let toSend: bigint = writeBlockSize
-        if (toSend > sendBytes) {
-          toSend = sendBytes
+    try {
+      await stream.sink((async function * () {
+        // Send the number of bytes to receive
+        yield uint8Buf.subarray(0, 8)
+        // Send the number of bytes to send
+        while (sendBytes > 0n) {
+          let toSend: bigint = writeBlockSize
+          if (toSend > sendBytes) {
+            toSend = sendBytes
+          }
+          sendBytes = sendBytes - toSend
+          yield uint8Buf.subarray(0, Number(toSend))
         }
-        sendBytes = sendBytes - toSend
-        yield uint8Buf.subarray(0, Number(toSend))
+      })())
+
+      // Read the received bytes
+      let actualRecvdBytes = BigInt(0)
+      for await (const buf of stream.source) {
+        actualRecvdBytes += BigInt(buf.length)
       }
-    })())
 
-    // Read the received bytes
-    let actualRecvdBytes = BigInt(0)
-    for await (const buf of stream.source) {
-      actualRecvdBytes += BigInt(buf.length)
+      if (actualRecvdBytes !== recvBytes) {
+        throw new Error(`Expected to receive ${recvBytes} bytes, but received ${actualRecvdBytes}`)
+      }
+    } catch (err) {
+      log('error sending %i bytes to %p: %s', sendBytes, connection.remotePeer, err)
+      throw err
+    } finally {
+      log('performed %s to %p', this.protocol, connection.remotePeer)
+      signal.clear()
+      await stream.close()
     }
 
-    if (actualRecvdBytes !== recvBytes) {
-      throw new Error(`Expected to receive ${recvBytes} bytes, but received ${actualRecvdBytes}`)
-    }
-
-    log('performed %s to %p', this.protocol, connection.remotePeer)
-    await stream.close()
-  }
-
-  // measureDownloadBandwidth returns the measured bandwidth in bits per second
-  async measureDownloadBandwidth (connection: Connection, size: bigint): Promise<number> {
-    const now = Date.now()
-    await this.perf(connection, 0n, size)
-    return Number((8000n * size) / BigInt(Date.now() - now))
-  }
-
-  // measureUploadBandwidth returns the measured bandwidth in bit per second
-  async measureUploadBandwidth (connection: Connection, size: bigint): Promise<number> {
-    const now = Date.now()
-    await this.perf(connection, size, 0n)
-    return Number((8000n * size) / BigInt(Date.now() - now))
+    // Return the latency
+    return Date.now() - startTime
   }
 }
 
