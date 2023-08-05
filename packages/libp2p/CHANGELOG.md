@@ -5,6 +5,59 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.3](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.2...libp2p-v0.46.3) (2023-08-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/interface bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/interface-internal bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/keychain bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/logger bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/multistream-select bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/peer-collections bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-id bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-id-factory bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/peer-record bumped from ^6.0.1 to ^6.0.2
+    * @libp2p/peer-store bumped from ^9.0.1 to ^9.0.2
+    * @libp2p/utils bumped from ^4.0.0 to ^4.0.1
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.1 to ^9.0.2
+    * @libp2p/floodsub bumped from ^8.0.2 to ^8.0.3
+    * @libp2p/interface-compliance-tests bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/kad-dht bumped from ^10.0.1 to ^10.0.2
+    * @libp2p/mdns bumped from ^9.0.1 to ^9.0.2
+    * @libp2p/mplex bumped from ^9.0.1 to ^9.0.2
+    * @libp2p/tcp bumped from ^8.0.1 to ^8.0.2
+    * @libp2p/websockets bumped from ^7.0.1 to ^7.0.2
+
+### [0.46.2](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.1...libp2p-v0.46.2) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.0 to ^2.0.1
+    * @libp2p/interface-internal bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/keychain bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-collections bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/peer-id-factory bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-record bumped from ^6.0.0 to ^6.0.1
+    * @libp2p/peer-store bumped from ^9.0.0 to ^9.0.1
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.0 to ^9.0.1
+    * @libp2p/floodsub bumped from ^8.0.1 to ^8.0.2
+    * @libp2p/interface-compliance-tests bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/kad-dht bumped from ^10.0.0 to ^10.0.1
+    * @libp2p/mdns bumped from ^9.0.0 to ^9.0.1
+    * @libp2p/mplex bumped from ^9.0.0 to ^9.0.1
+    * @libp2p/tcp bumped from ^8.0.0 to ^8.0.1
+    * @libp2p/websockets bumped from ^7.0.0 to ^7.0.1
+
 ### [0.46.1](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.0...libp2p-v0.46.1) (2023-08-01)
 
 
