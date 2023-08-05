@@ -271,7 +271,7 @@ export abstract class AbstractStream implements Stream {
       this.streamSource.end()
     }
 
-    if (this.status !== 'reset' && this.status !== 'aborted') {
+    if (this.status !== 'reset' && this.status !== 'aborted' && this.timeline.closeRead == null) {
       this.log.trace('send close read to remote')
       await this.sendCloseRead(options)
     }
@@ -308,7 +308,7 @@ export abstract class AbstractStream implements Stream {
       })
     }
 
-    if (this.status !== 'reset' && this.status !== 'aborted') {
+    if (this.status !== 'reset' && this.status !== 'aborted' && this.timeline.closeWrite == null) {
       this.log.trace('send close write to remote')
       await this.sendCloseWrite(options)
     }
