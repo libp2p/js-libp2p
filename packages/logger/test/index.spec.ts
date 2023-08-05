@@ -1,17 +1,19 @@
-import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { logger } from '../src/index.js'
 import debug from 'debug'
-import { Key } from 'interface-datastore'
-import { base32 } from 'multiformats/bases/base32'
-import { base58btc } from 'multiformats/bases/base58'
-import { base64 } from 'multiformats/bases/base64'
-import sinon from 'sinon'
+import { multiaddr } from '@multiformats/multiaddr'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as unint8ArrayToString } from 'uint8arrays/to-string'
-import { logger } from '../src/index.js'
+import { base58btc } from 'multiformats/bases/base58'
+import { base32 } from 'multiformats/bases/base32'
+import { base64 } from 'multiformats/bases/base64'
+import { Key } from 'interface-datastore'
+import sinon from 'sinon'
 
 describe('logger', () => {
+  const debugSpy = sinon.spy(debug, 'log')
+
   it('creates a logger', () => {
     const log = logger('hello')
 
@@ -80,11 +82,20 @@ describe('logger', () => {
 
     const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
 
-    const debugSpy = sinon.spy(debug, 'log')
-
     log('multiaddr %a', ma)
 
     expect(debugSpy.firstCall.args[0], 'Multiaddr formatting not included').to.include(`multiaddr ${ma.toString()}`)
+  })
+
+  it('test printf style formatting for big int', () => {
+    const log = logger('printf-style')
+    debug.enable('printf-style')
+
+    const bi = BigInt(12345678901234567168)
+
+    log('big int %i', bi)
+
+    expect(debugSpy.secondCall.args[0], 'Big int formatting not included').to.include(`big int ${bi.toLocaleString()}`)
   })
 
   it('test ma formatter', () => {
