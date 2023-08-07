@@ -1,5 +1,6 @@
-import * as ed from '@noble/ed25519'
 import type { Uint8ArrayKeyPair } from './interface'
+import { ed25519 as ed } from '@noble/curves/ed25519'
+
 
 const PUBLIC_KEY_BYTE_LENGTH = 32
 const PRIVATE_KEY_BYTE_LENGTH = 64 // private key is actually 32 bytes but for historical reasons we concat private and public keys
@@ -11,7 +12,7 @@ export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 export async function generateKey (): Promise<Uint8ArrayKeyPair> {
   // the actual private key (32 bytes)
   const privateKeyRaw = ed.utils.randomPrivateKey()
-  const publicKey = await ed.getPublicKey(privateKeyRaw)
+  const publicKey = ed.getPublicKey(privateKeyRaw)
 
   // concatenated the public key to the private key
   const privateKey = concatKeys(privateKeyRaw, publicKey)

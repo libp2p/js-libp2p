@@ -6,6 +6,7 @@ import { exporter } from './exporter.js'
 import * as keysProtobuf from './keys.js'
 import * as crypto from './secp256k1.js'
 import type { Multibase } from 'multiformats'
+import type { RecoveredSignatureType } from '@noble/curves/abstract/weierstrass.js'
 
 export class Secp256k1PublicKey {
   private readonly _key: Uint8Array
@@ -15,7 +16,7 @@ export class Secp256k1PublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
+  async verify (data: Uint8Array, sig: RecoveredSignatureType): Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -52,7 +53,7 @@ export class Secp256k1PrivateKey {
     crypto.validatePublicKey(this._publicKey)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> {
+  async sign (message: Uint8Array): Promise<RecoveredSignatureType> {
     return crypto.hashAndSign(this._key, message)
   }
 
