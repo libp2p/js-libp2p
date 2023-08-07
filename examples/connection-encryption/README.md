@@ -33,7 +33,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 const createNode = async () => {
   return await createLibp2p({
     transports: [ tcp() ],
-    streamMuxers: [ mplex(, yamux() ],
+    streamMuxers: [ mplex(), yamux() ],
     // Attach noise as the crypto channel to use
     conectionEncrypters: [ noise() ]
   })
