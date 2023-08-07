@@ -1,8 +1,7 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { stubInterface } from 'ts-sinon'
 import type { TestSetup } from '../index.js'
-import type { Connection, Stream } from '@libp2p/interface/connection'
+import type { Connection } from '@libp2p/interface/connection'
 
 export default (test: TestSetup<Connection>): void => {
   describe('connection', () => {
@@ -122,13 +121,6 @@ export default (test: TestSetup<Connection>): void => {
         const protocol = '/echo/0.0.1'
         const stream = await connection.newStream(protocol)
         expect(stream).to.have.property('direction', 'outbound')
-      })
-
-      it.skip('should track inbound streams', async () => {
-        // Add an remotely opened stream
-        const stream = stubInterface<Stream>()
-        connection.addStream(stream)
-        expect(stream).to.have.property('direction', 'inbound')
       })
 
       it('should support a proxy on the timeline', async () => {
