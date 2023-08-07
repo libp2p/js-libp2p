@@ -1,7 +1,6 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { sha256 } from 'multiformats/hashes/sha2'
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
-import type { RecoveredSignatureType } from '@noble/curves/abstract/weierstrass'
+import { sha256 } from 'multiformats/hashes/sha2'
 
 const PRIVATE_KEY_BYTE_LENGTH = 32
 
@@ -14,10 +13,11 @@ export function generateKey (): Uint8Array {
 /**
  * Hash and sign message with private key
  */
-export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<RecoveredSignatureType> {
+export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Uint8Array> {
   const { digest } = await sha256.digest(msg)
   try {
-    return secp.sign(digest, key)
+    const signature = secp.sign(digest, key)
+    return signature.toCompactRawBytes()
   } catch (err) {
     throw new CodeError(String(err), 'ERR_INVALID_INPUT')
   }
@@ -26,7 +26,7 @@ export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Re
 /**
  * Hash message and verify signature with public key
  */
-export async function hashAndVerify (key: Uint8Array, sig: RecoveredSignatureType, msg: Uint8Array): Promise<boolean> {
+export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
   try {
     const { digest } = await sha256.digest(msg)
     return secp.verify(sig, digest, key)
