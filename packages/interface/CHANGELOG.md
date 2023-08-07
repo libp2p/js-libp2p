@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+### [0.1.1](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.0...interface-v0.1.1) (2023-08-05)
+
+
+### Bug Fixes
+
+* do not send duplicate close read/write ([#1935](https://www.github.com/libp2p/js-libp2p/issues/1935)) ([446fff8](https://www.github.com/libp2p/js-libp2p/commit/446fff878477c771634578f0a8e84737aad3d4d3))
+
 ## [0.1.0](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.0.1...interface-v0.1.0) (2023-07-31)
 
 

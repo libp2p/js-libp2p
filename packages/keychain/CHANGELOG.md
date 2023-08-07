@@ -11,6 +11,31 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-keychain/issues/70)) ([4da4a08](https://github.com/libp2p/js-libp2p-keychain/commit/4da4a08b86f436c36e2fae48ecc48817e9b8066f))
 
+### [3.0.2](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.1...keychain-v3.0.2) (2023-08-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/interface bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/logger bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-id bumped from ^3.0.0 to ^3.0.1
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.1 to ^3.0.2
+
+### [3.0.1](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.0...keychain-v3.0.1) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.0 to ^2.0.1
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.0 to ^3.0.1
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/keychain-v2.0.1...keychain-v3.0.0) (2023-07-31)
 
 

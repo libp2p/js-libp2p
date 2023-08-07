@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/crypto#readme",
@@ -85,7 +85,7 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.0",
+    "@libp2p/interface": "^0.1.1",
     "@noble/ed25519": "^1.6.0",
     "@noble/secp256k1": "^1.5.4",
     "multiformats": "^12.0.1",

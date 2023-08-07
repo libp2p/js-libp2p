@@ -155,3 +155,13 @@ export function encrypt (key: JsonWebKey, msg: Uint8Array): Uint8Array {
 export function decrypt (key: JsonWebKey, msg: Uint8Array): Uint8Array {
   return convertKey(key, false, msg, (msg, key) => key.decrypt(msg))
 }
+
+export function keySize (jwk: JsonWebKey): number {
+  if (jwk.kty !== 'RSA') {
+    throw new CodeError('invalid key type', 'ERR_INVALID_KEY_TYPE')
+  } else if (jwk.n == null) {
+    throw new CodeError('invalid key modulus', 'ERR_INVALID_KEY_MODULUS')
+  }
+  const bytes = uint8ArrayFromString(jwk.n, 'base64url')
+  return bytes.length * 8
+}
