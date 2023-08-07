@@ -153,14 +153,14 @@ export class DefaultDCUtRService implements Startable {
         // 2. B sends to A a Connect message containing its observed (and
         // possibly predicted) addresses from identify and starts a timer
         // to measure RTT of the relay connection.
-        log('B sending connect')
+        log('B sending connect to %p', relayedConnection.remotePeer)
         const connectTimer = Date.now()
         await pb.write({
           type: HolePunch.Type.CONNECT,
           observedAddresses: this.addressManager.getAddresses().map(ma => ma.bytes)
         }, options)
 
-        log('B receiving connect')
+        log('B receiving connect from %p', relayedConnection.remotePeer)
         // 4. Upon receiving the Connect, B sends a Sync message
         const connect = await pb.read(options)
 
@@ -230,25 +230,33 @@ export class DefaultDCUtRService implements Startable {
       return this.isPublicAndDialable(address.multiaddr)
     })
       .map(address => address.multiaddr)
+      .map(ma => {
+        // ensure all multiaddrs have a peer id
+        if (ma.getPeerId() == null) {
+          return ma.encapsulate(`/p2p/${relayedConnection.remotePeer}`)
+        }
+
+        return ma
+      })
 
     if (publicAddresses.length > 0) {
       const signal = AbortSignal.timeout(this.timeout)
 
       try {
-        log('attempting unilateral connection upgrade to', publicAddresses)
+        log('attempting unilateral connection upgrade to %a', publicAddresses)
 
         // dial the multiaddr(s), otherwise `connectionManager.openConnection`
         // will return the existing relayed connection
-        await this.connectionManager.openConnection(publicAddresses, {
+        const connection = await this.connectionManager.openConnection(publicAddresses, {
           signal
         })
 
-        log('unilateral connection upgrade to %p succeeded, closing relayed connection', relayedConnection.remotePeer)
+        log('unilateral connection upgrade to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
         await relayedConnection.close()
 
         return true
       } catch (err) {
-        log.error('Could not unilaterally upgrade connection to advertised public address(es)', publicAddresses, err)
+        log.error('unilateral connection upgrade to %p on addresses %a failed', relayedConnection.remotePeer, publicAddresses, err)
       }
     } else {
       log('peer %p has no public addresses, not attempting unilateral connection upgrade', relayedConnection.remotePeer)
