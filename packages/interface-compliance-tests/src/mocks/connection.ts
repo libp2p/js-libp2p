@@ -94,14 +94,6 @@ class MockConnection implements Connection {
     return stream
   }
 
-  addStream (stream: Stream): void {
-    this.streams.push(stream)
-  }
-
-  removeStream (id: string): void {
-    this.streams = this.streams.filter(stream => stream.id !== id)
-  }
-
   async close (options?: AbortOptions): Promise<void> {
     this.status = 'closing'
     await Promise.all(
@@ -147,7 +139,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
             muxedStream.sink = stream.sink
             muxedStream.source = stream.source
 
-            connection.addStream(muxedStream)
+            connection.streams.push(muxedStream)
             const { handler } = registrar.getHandler(protocol)
 
             handler({ connection, stream: muxedStream })
@@ -159,7 +151,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
       }
     },
     onStreamEnd: (muxedStream) => {
-      connection.removeStream(muxedStream.id)
+      connection.streams = connection.streams.filter(stream => stream.id !== muxedStream.id)
     }
   })
 

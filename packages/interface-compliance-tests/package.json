@@ -130,7 +130,6 @@
     "p-wait-for": "^5.0.2",
     "protons-runtime": "^5.0.0",
     "sinon": "^15.1.2",
-    "ts-sinon": "^2.0.2",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.4"
   },
