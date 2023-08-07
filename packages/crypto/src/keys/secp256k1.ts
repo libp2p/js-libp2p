@@ -17,7 +17,7 @@ export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Ui
   const { digest } = await sha256.digest(msg)
   try {
     const signature = secp.sign(digest, key)
-    return signature.toCompactRawBytes()
+    return signature.toDERRawBytes()
   } catch (err) {
     throw new CodeError(String(err), 'ERR_INVALID_INPUT')
   }

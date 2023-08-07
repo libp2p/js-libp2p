@@ -205,7 +205,7 @@ describe('go interop', () => {
     expect(key.bytes).to.eql(fixtures.publicKey)
   })
 
-  it.skip('generates the same signature as go-libp2p-crypto', async () => {
+  it('generates the same signature as go-libp2p-crypto', async () => {
     const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
     expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
 
