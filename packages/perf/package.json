@@ -50,7 +50,6 @@
     "@libp2p/peer-id-factory": "3.0.0",
     "@libp2p/tcp": "^8.0.0",
     "@multiformats/multiaddr": "^12.1.5",
-    "any-signal": "^4.1.1",
     "libp2p": "^0.46.1",
     "p-wait-for": "^5.0.2",
     "uint8arrays": "^4.0.6",

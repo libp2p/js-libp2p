@@ -40,9 +40,8 @@
  */
 
 import { logger } from '@libp2p/logger'
-import { anySignal } from 'any-signal'
-import { MAX_INBOUND_STREAMS, PROTOCOL_NAME, WRITE_BLOCK_SIZE } from './constants.js'
-import type { Connection } from '@libp2p/interface/src/connection/index.js'
+import { PROTOCOL_NAME, WRITE_BLOCK_SIZE } from './constants.js'
+import type { Connection } from '@libp2p/interface/connection'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
@@ -52,9 +51,6 @@ const log = logger('libp2p:perf')
 
 export const defaultInit: PerfServiceInit = {
   protocolName: '/perf/1.0.0',
-  maxInboundStreams: 1 << 10,
-  maxOutboundStreams: 1 << 10,
-  timeout: 10000,
   writeBlockSize: BigInt(64 << 10)
 }
 
@@ -80,8 +76,6 @@ class DefaultPerfService implements Startable, PerfService {
   private readonly components: PerfServiceComponents
   private started: boolean
   private readonly databuf: ArrayBuffer
-  private readonly maxInboundStreams: number
-  private readonly maxOutboundStreams: number
   private readonly writeBlockSize: bigint
 
   constructor (components: PerfServiceComponents, init: PerfServiceInit) {
@@ -90,8 +84,6 @@ class DefaultPerfService implements Startable, PerfService {
     this.protocol = init.protocolName ?? PROTOCOL_NAME
     this.writeBlockSize = init.writeBlockSize ?? WRITE_BLOCK_SIZE
     this.databuf = new ArrayBuffer(Number(init.writeBlockSize))
-    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_INBOUND_STREAMS
   }
 
   async start (): Promise<void> {
@@ -99,9 +91,6 @@ class DefaultPerfService implements Startable, PerfService {
       void this.handleMessage(data).catch((err) => {
         log.error('error handling perf protocol message', err)
       })
-    }, {
-      maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams
     })
     this.started = true
   }
@@ -154,11 +143,7 @@ class DefaultPerfService implements Startable, PerfService {
 
     const writeBlockSize = this.writeBlockSize
 
-    const signal = anySignal([options?.signal])
-
-    const stream = await connection.newStream([this.protocol], {
-      signal
-    })
+    const stream = await connection.newStream([this.protocol])
 
     // Convert sendBytes to uint64 big endian buffer
     const view = new DataView(this.databuf)
@@ -194,7 +179,6 @@ class DefaultPerfService implements Startable, PerfService {
       throw err
     } finally {
       log('performed %s to %p', this.protocol, connection.remotePeer)
-      signal.clear()
       await stream.close()
     }
 
