@@ -67,6 +67,12 @@ export interface ConnectionManagerInit {
   autoDialMaxQueueLength?: number
 
   /**
+   * When we've failed to dial a peer, do not autodial them again within this
+   * number of ms. (default: 10 minutes)
+   */
+  autoDialPeerRetryThreshold?: number
+
+  /**
    * Sort the known addresses of a peer before trying to dial, By default public
    * addresses will be dialled before private (e.g. loopback or LAN) addresses.
    */

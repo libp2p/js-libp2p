@@ -7,13 +7,15 @@ import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { type ClearableSignal, anySignal } from 'any-signal'
 import pDefer from 'p-defer'
 import PQueue from 'p-queue'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS_PER_PEER,
   MAX_PARALLEL_DIALS,
-  MAX_PEER_ADDRS_TO_DIAL
+  MAX_PEER_ADDRS_TO_DIAL,
+  LAST_DIAL_FAILURE_KEY
 } from './constants.js'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
 import type { AddressSorter, AbortOptions, PendingDial } from '@libp2p/interface'
@@ -230,8 +232,21 @@ export class DialQueue {
         // clean up abort signals/controllers
         signal.clear()
       })
-      .catch(err => {
+      .catch(async err => {
         log.error('dial failed to %s', pendingDial.multiaddrs.map(ma => ma.toString()).join(', '), err)
+
+        if (peerId != null) {
+          // record the last failed dial
+          try {
+            await this.peerStore.patch(peerId, {
+              metadata: {
+                [LAST_DIAL_FAILURE_KEY]: uint8ArrayFromString(Date.now().toString())
+              }
+            })
+          } catch (err: any) {
+            log.error('could not update last dial failure key for %p', peerId, err)
+          }
+        }
 
         // Error is a timeout
         if (signal.aborted) {
