@@ -195,12 +195,12 @@ export class DefaultDCUtRService implements Startable {
 
         log('B dialing', multiaddrs)
         // Upon expiry of the timer, B dials the address to A.
-        await this.connectionManager.openConnection(multiaddrs, {
+        const conn = await this.connectionManager.openConnection(multiaddrs, {
           signal: options.signal,
           priority: DCUTR_DIAL_PRIORITY
         })
 
-        log('DCUtR to %p succeeded, closing relayed connection', relayedConnection.remotePeer)
+        log('DCUtR to %p succeeded to address %a, closing relayed connection', relayedConnection.remotePeer, conn.remoteAddr)
         await relayedConnection.close(options)
       } catch (err: any) {
         log.error('error while reading identify message', err)
@@ -231,7 +231,7 @@ export class DefaultDCUtRService implements Startable {
     })
       .map(address => address.multiaddr)
       .map(ma => {
-        // ensure all multiaddrs have a peer id
+        // ensure all multiaddrs have the a peer id
         if (ma.getPeerId() == null) {
           return ma.encapsulate(`/p2p/${relayedConnection.remotePeer}`)
         }
@@ -245,11 +245,16 @@ export class DefaultDCUtRService implements Startable {
       try {
         log('attempting unilateral connection upgrade to %a', publicAddresses)
 
-        // dial the multiaddr(s), otherwise `connectionManager.openConnection`
+        // force-dial the multiaddr(s), otherwise `connectionManager.openConnection`
         // will return the existing relayed connection
         const connection = await this.connectionManager.openConnection(publicAddresses, {
-          signal
+          signal,
+          force: true
         })
+
+        if (connection.transient) {
+          throw new Error('Connection was still transient')
+        }
 
         log('unilateral connection upgrade to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
         await relayedConnection.close()
@@ -322,12 +327,13 @@ export class DefaultDCUtRService implements Startable {
 
       // Upon receiving the Sync, A immediately dials the address to B
       log('A dialing', multiaddrs)
-      await this.connectionManager.openConnection(multiaddrs, {
+      const connection = await this.connectionManager.openConnection(multiaddrs, {
         signal: options.signal,
-        priority: DCUTR_DIAL_PRIORITY
+        priority: DCUTR_DIAL_PRIORITY,
+        force: true
       })
 
-      log('DCUtR to %p succeeded, closing relayed connection', relayedConnection.remotePeer)
+      log('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
       await relayedConnection.close(options)
     } catch (err: any) {
       stream.abort(err)

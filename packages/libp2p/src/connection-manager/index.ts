@@ -488,7 +488,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId != null) {
+    if (peerId != null && options.force !== true) {
       log('dial %p', peerId)
       const existingConnections = this.getConnections(peerId)
 
