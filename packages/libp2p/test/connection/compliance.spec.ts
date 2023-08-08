@@ -35,7 +35,6 @@ describe('connection compliance', () => {
             ...pair(),
             close: async () => {
               void stream.sink(async function * () {}())
-              connection.removeStream(stream.id)
               openStreams = openStreams.filter(s => s.id !== id)
             },
             closeRead: async () => {},
