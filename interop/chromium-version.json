@@ -3,14 +3,6 @@
   "containerImageID": "chromium-js-libp2p-head",
   "transports": [
     {
-      "name": "webtransport",
-      "onlyDial": true
-    },
-    {
-      "name": "wss",
-      "onlyDial": true
-    },
-    {
       "name": "webrtc-direct",
       "onlyDial": true
     }
