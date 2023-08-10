@@ -1,12 +1,7 @@
 {
   "id": "node-js-libp2p-head",
   "containerImageID": "node-js-libp2p-head",
-  "transports": [
-    {
-      "name": "webrtc-direct",
-      "onlyDial": true
-    }
-  ],
+  "transports": ["tcp"],
   "secureChannels": ["noise"],
   "muxers": ["mplex", "yamux"]
 }
