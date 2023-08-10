@@ -1,4 +1,4 @@
-import { AbortError } from '@libp2p/interface/errors'
+import { AbortError, CodeError } from '@libp2p/interface/errors'
 import { type Transport, type MultiaddrFilter, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
@@ -55,19 +55,15 @@ class WebSockets implements Transport {
     log('dialing %s:%s', cOpts.host, cOpts.port)
 
     const errorPromise = pDefer()
-    const errfn = (err: any): void => {
-      log.error('connection error:', err)
-
-      errorPromise.reject(err)
-    }
-
     const rawSocket = connect(toUri(ma), this.init)
-
-    if (rawSocket.socket.on != null) {
-      rawSocket.socket.on('error', errfn)
-    } else {
-      rawSocket.socket.onerror = errfn
-    }
+    rawSocket.socket.addEventListener('error', () => {
+      // the WebSocket.ErrorEvent type doesn't actually give us any useful
+      // information about what happened
+      // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
+      const err = new CodeError(`Could not connect to ${ma.toString()}`, 'ERR_CONNECTION_FAILED')
+      log.error('connection error:', err)
+      errorPromise.reject(err)
+    })
 
     if (options.signal == null) {
       await Promise.race([rawSocket.connected(), errorPromise.promise])
