@@ -226,17 +226,19 @@ export class DefaultDCUtRService implements Startable {
     // If that set includes public addresses, then A may be reachable by a direct
     // connection, in which case B attempts a unilateral connection upgrade by
     // initiating a direct connection to A.
-    const publicAddresses = peerInfo.addresses.filter((address) => {
-      return this.isPublicAndDialable(address.multiaddr)
-    })
-      .map(address => address.multiaddr)
-      .map(ma => {
-        // ensure all multiaddrs have the a peer id
+    const publicAddresses = peerInfo.addresses
+      .map(address => {
+        const ma = address.multiaddr
+
+        // ensure all multiaddrs have the peer id
         if (ma.getPeerId() == null) {
           return ma.encapsulate(`/p2p/${relayedConnection.remotePeer}`)
         }
 
         return ma
+      })
+      .filter(ma => {
+        return this.isPublicAndDialable(ma)
       })
 
     if (publicAddresses.length > 0) {
