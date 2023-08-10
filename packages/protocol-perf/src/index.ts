@@ -8,7 +8,7 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { circuitRelayTransport } from 'libp2p/circuit-relay'
+ * import { perfService } from '@libp2p/perf'
  *
  * const node = await createLibp2p({
  *   service: [
@@ -24,7 +24,7 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { circuitRelayServer } from 'libp2p/circuit-relay'
+ * import { perfService } from 'libp2p/perf'
  *
  * const node = await createLibp2p({
  *   services: [
@@ -34,7 +34,9 @@
  *
  * const connection = await node.dial(multiaddr(multiaddrAddress))
  *
- * await node.services.perf.measurePerformance(connection, BigInt(uploadBytes), BigInt(downloadBytes))
+ * const startTime = Date.now()
+ *
+ * await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
  *
  * ```
  */
