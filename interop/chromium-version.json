@@ -9,6 +9,10 @@
     {
       "name": "wss",
       "onlyDial": true
+    },
+    {
+      "name": "webrtc-direct",
+      "onlyDial": true
     }
   ],
   "secureChannels": ["noise"],
