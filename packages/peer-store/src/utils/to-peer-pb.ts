@@ -1,6 +1,7 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
 import { codes } from '../errors.js'
+import { addressToFqMultiaddr } from './address-to-fqmultiaddr.js'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
 import type { AddressFilter } from '../index.js'
 import type { Tag, Peer as PeerPB } from '../pb/peer.js'
@@ -133,7 +134,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
   }
 
   const output: PeerPB = {
-    addresses: await dedupeFilterAndSortAddresses(peerId, options.addressFilter ?? (async () => true), addresses),
+    addresses: await dedupeFilterAndSortAddresses(peerId, options.addressFilter ?? (async () => true), addressToFqMultiaddr(peerId, addresses)),
     protocols: [...protocols.values()].sort((a, b) => {
       return a.localeCompare(b)
     }),

@@ -67,12 +67,13 @@ describe('save', () => {
     expect(peer.addresses).to.deep.equal(
       supportedMultiaddrs.map((multiaddr) => ({
         isCertified: false,
-        multiaddr
+        multiaddr: multiaddr.encapsulate(`/p2p/${otherPeerId.toString()}`)
       }))
     )
     expect(previous).to.be.undefined()
   })
 
+  // todo: this test needs fixed: it's not testing what it says it is; or it's passing when it shouldn't
   it('emits on set if not storing the exact same content', async () => {
     const defer = pDefer()
 
@@ -99,7 +100,7 @@ describe('save', () => {
 
     const peer = await peerStore.get(otherPeerId)
     const multiaddrs = peer.addresses.map((mi) => mi.multiaddr)
-    expect(multiaddrs).to.have.deep.members(supportedMultiaddrsB)
+    expect(multiaddrs).to.have.deep.members(supportedMultiaddrsB.map((ma) => ma.encapsulate(`/p2p/${otherPeerId.toString()}`)))
 
     await defer.promise
   })
@@ -230,10 +231,10 @@ describe('save', () => {
     const saved = await peerStore.save(otherPeerId, peer)
 
     expect(saved).to.have.property('addresses').that.deep.equals([{
-      multiaddr: addr1,
+      multiaddr: addr1.encapsulate(`/p2p/${otherPeerId.toString()}`),
       isCertified: false
     }, {
-      multiaddr: addr2,
+      multiaddr: addr2.encapsulate(`/p2p/${otherPeerId.toString()}`),
       isCertified: false
     }])
     expect(saved).to.have.property('metadata').that.deep.equals(

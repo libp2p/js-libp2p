@@ -76,7 +76,7 @@ describe('patch', () => {
 
     // upated field
     expect(updated).to.have.property('addresses').that.deep.equals([{
-      multiaddr: addr3,
+      multiaddr: addr3.encapsulate(`/p2p/${otherPeerId.toString()}`),
       isCertified: false
     }])
 

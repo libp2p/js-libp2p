@@ -75,13 +75,13 @@ describe('merge', () => {
     })
 
     expect(updated).to.have.property('addresses').that.deep.equals([{
-      multiaddr: addr1,
+      multiaddr: addr1.encapsulate(`/p2p/${otherPeerId.toString()}`),
       isCertified: false
     }, {
-      multiaddr: addr3,
+      multiaddr: addr3.encapsulate(`/p2p/${otherPeerId.toString()}`),
       isCertified: false
     }, {
-      multiaddr: addr2,
+      multiaddr: addr2.encapsulate(`/p2p/${otherPeerId.toString()}`),
       isCertified: false
     }])
 
