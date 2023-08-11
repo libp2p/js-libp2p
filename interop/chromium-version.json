@@ -6,6 +6,10 @@
       "name": "webrtc-direct",
       "onlyDial": true
     },
+    {
+      "name": "webtransport",
+      "onlyDial": true
+    },
     "webrtc"
   ],
   "secureChannels": ["noise"],
