@@ -5,6 +5,10 @@
     {
       "name": "webrtc-direct",
       "onlyDial": true
+    },
+    {
+      "name": "webrtc",
+      "onlyDial": true
     }
   ],
   "secureChannels": ["noise"],
