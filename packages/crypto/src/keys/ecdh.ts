@@ -11,7 +11,7 @@ const curves = {
 const curveTypes = Object.keys(curves)
 const names = curveTypes.join(' / ')
 
-export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> { // eslint-disable-line require-await
+export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
     throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
   }
@@ -22,7 +22,7 @@ export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> 
   return {
     key: ecdh.getPublicKey() as Uint8Array,
 
-    async genSharedKey (theirPub: Uint8Array, forcePrivate?: ECDHKeyPair): Promise<Uint8Array> { // eslint-disable-line require-await
+    async genSharedKey (theirPub: Uint8Array, forcePrivate?: ECDHKeyPair): Promise<Uint8Array> {
       if (forcePrivate != null) {
         ecdh.setPrivateKey(forcePrivate.private)
       }

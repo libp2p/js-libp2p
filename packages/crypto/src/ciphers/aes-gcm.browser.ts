@@ -32,7 +32,7 @@ export function create (opts?: CreateOptions): AESCipher {
    * Uses the provided password to derive a pbkdf2 key. The key
    * will then be used to encrypt the data.
    */
-  async function encrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async function encrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> {
     const salt = crypto.getRandomValues(new Uint8Array(saltLength))
     const nonce = crypto.getRandomValues(new Uint8Array(nonceLength))
     const aesGcm = { name: algorithm, iv: nonce }
