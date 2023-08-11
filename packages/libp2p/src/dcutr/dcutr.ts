@@ -7,9 +7,7 @@ import { pbStream } from 'it-protobuf-stream'
 import isPrivate from 'private-ip'
 import { codes } from '../errors.js'
 import { HolePunch } from './pb/message.js'
-import {
-  multicodec
-} from './index.js'
+import { multicodec } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -202,6 +200,8 @@ export class DefaultDCUtRService implements Startable {
 
         log('DCUtR to %p succeeded to address %a, closing relayed connection', relayedConnection.remotePeer, conn.remoteAddr)
         await relayedConnection.close(options)
+
+        break
       } catch (err: any) {
         log.error('error while reading identify message', err)
         stream?.abort(err)
