@@ -1,4 +1,4 @@
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
@@ -57,7 +57,7 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   const config = {
     transports: [tcp()],
-    streamMuxers: [yamux()],
+    streamMuxers: [mplex()],
     connectionEncryption: [
       plaintext()
     ],
@@ -99,16 +99,14 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
     connection = await node.dial(multiaddr(tcpMultiaddrAddress))
   }
 
-  await pWaitFor(() => connection != null && connection.status !== 'closed')
+  await pWaitFor(() => connection != null)
 
   const duration = await node.services.perf.measurePerformance(startTime, connection as Connection, BigInt(uploadBytes), BigInt(downloadBytes))
 
   // eslint-disable-next-line no-console
   console.log(JSON.stringify({ latency: duration }))
 
-  if (!runServer){
-      await node.stop()
-  }
+  await node.stop()
 }
 
 function splitHostPort (address: string): { host: string, port?: string } {
