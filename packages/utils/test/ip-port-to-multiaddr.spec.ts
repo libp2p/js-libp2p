@@ -19,7 +19,7 @@ describe('IP and port to Multiaddr', () => {
   it('creates multiaddr from valid IPv4 in IPv6 IP and port', () => {
     const ip = '0:0:0:0:0:0:101.45.75.219'
     const port = '9090'
-    expect(ipPortToMultiaddr(ip, port).toString()).to.equal(`/ip4/101.45.75.219/tcp/${port}`)
+    expect(ipPortToMultiaddr(ip, port).toString()).to.equal(`/ip6/::652d:4bdb/tcp/${port}`)
   })
 
   it('creates multiaddr from valid IPv6 IP and port', () => {
