@@ -99,12 +99,14 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
     connection = await node.dial(multiaddr(tcpMultiaddrAddress))
   }
 
-  await pWaitFor(() => connection != null)
+  await pWaitFor(() => connection != null && connection.status !== 'closed')
 
   const duration = await node.services.perf.measurePerformance(startTime, connection as Connection, BigInt(uploadBytes), BigInt(downloadBytes))
 
   // eslint-disable-next-line no-console
-  console.log('latency: ' + JSON.stringify({ latency: duration }))
+  console.log(JSON.stringify({ latency: duration }))
+
+  await node.stop()
 }
 
 function splitHostPort (address: string): { host: string, port?: string } {
