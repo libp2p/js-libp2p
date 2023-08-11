@@ -255,7 +255,7 @@ export class DefaultDCUtRService implements Startable {
         })
 
         if (connection.transient) {
-          throw new Error('Connection was still transient')
+          throw new Error('Could not open a new, non-transient, connection')
         }
 
         log('unilateral connection upgrade to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
