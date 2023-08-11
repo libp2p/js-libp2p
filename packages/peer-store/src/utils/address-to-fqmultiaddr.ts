@@ -5,8 +5,8 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Address } from '@libp2p/interface/peer-store'
 
 /**
- * Converts addresses for a Peer that may not contain the peerId to addresses
- * that do contain the peerId.
+ * Converts {@link Address}[] for a peer that may not contain the {@link PeerId} to {@link Address}[]
+ * that do contain the {@link PeerId}.
  */
 export function addressToFqMultiaddr (peerId: PeerId, addresses: Address[]): Address[] {
   return addresses.map(({ multiaddr, isCertified }) => {

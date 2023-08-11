@@ -73,7 +73,6 @@ describe('save', () => {
     expect(previous).to.be.undefined()
   })
 
-  // todo: this test needs fixed: it's not testing what it says it is; or it's passing when it shouldn't
   it('emits on set if not storing the exact same content', async () => {
     const defer = pDefer()
 
