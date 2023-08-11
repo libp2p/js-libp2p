@@ -6,10 +6,7 @@
       "name": "webrtc-direct",
       "onlyDial": true
     },
-    {
-      "name": "webrtc",
-      "onlyDial": true
-    }
+    "webrtc"
   ],
   "secureChannels": ["noise"],
   "muxers": ["mplex", "yamux"]
