@@ -1,5 +1,5 @@
-import { mplex } from '@libp2p/mplex'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { mplex } from '@libp2p/mplex'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
