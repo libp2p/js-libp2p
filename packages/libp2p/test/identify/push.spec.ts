@@ -160,7 +160,7 @@ describe('identify (push)', () => {
         isCertified: a.isCertified
       }
     })).to.deep.equal([{
-      multiaddr: updatedAddress.toString(),
+      multiaddr: updatedAddress.encapsulate(`/p2p/${localComponents.peerId.toString()}`).toString(),
       isCertified: true
     }])
 

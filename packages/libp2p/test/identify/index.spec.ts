@@ -400,7 +400,7 @@ describe('identify', () => {
     // number will be less than the one above
     const peer = await localComponents.peerStore.get(remoteComponents.peerId)
     expect(peer.addresses.map(({ multiaddr }) => multiaddr.toString())).to.deep.equal([
-      '/ip4/127.0.0.1/tcp/1234'
+      `/ip4/127.0.0.1/tcp/1234/p2p/${remoteComponents.peerId.toString()}`
     ])
     expect(peer).to.have.property('peerRecordEnvelope').that.equalBytes(peerRecordEnvelope)
   })
@@ -445,7 +445,7 @@ describe('identify', () => {
     expect(peer.protocols).to.deep.equal(message.protocols)
     expect(peer.addresses).to.deep.equal([{
       isCertified: false,
-      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
+      multiaddr: multiaddr(`/ip4/127.0.0.1/tcp/1234/p2p/${remoteComponents.peerId.toString()}`)
     }])
     expect(peer.id.publicKey).to.equalBytes(remoteComponents.peerId.publicKey)
   })
@@ -500,7 +500,7 @@ describe('identify', () => {
     expect(peer.protocols).to.deep.equal(message.protocols)
     expect(peer.addresses).to.deep.equal([{
       isCertified: true,
-      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
+      multiaddr: multiaddr(`/ip4/127.0.0.1/tcp/5678/p2p/${remoteComponents.peerId.toString()}`)
     }])
     expect(peer.id.publicKey).to.equalBytes(remoteComponents.peerId.publicKey)
   })
