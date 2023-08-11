@@ -103,10 +103,10 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   const duration = await node.services.perf.measurePerformance(startTime, connection as Connection, BigInt(uploadBytes), BigInt(downloadBytes))
 
-  await node.stop()
-
   // eslint-disable-next-line no-console
   console.log('latency: ' + JSON.stringify({ latency: duration }))
+
+  await node.stop()
 }
 
 function splitHostPort (address: string): { host: string, port?: string } {
