@@ -53,6 +53,6 @@
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^3.0.2",
-    "aegir": "^40.0.1"
+    "aegir": "^40.0.8"
   }
 }

@@ -80,10 +80,10 @@
   "dependencies": {
     "@libp2p/interface": "^0.1.1",
     "@libp2p/peer-collections": "^4.0.2",
-    "@multiformats/multiaddr": "^12.1.3",
+    "@multiformats/multiaddr": "^12.1.5",
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "aegir": "^40.0.1"
+    "aegir": "^40.0.8"
   }
 }

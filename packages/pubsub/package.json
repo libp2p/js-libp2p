@@ -91,12 +91,12 @@
     "multiformats": "^12.0.1",
     "p-queue": "^7.3.4",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.4"
+    "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^3.0.2",
     "@types/sinon": "^10.0.15",
-    "aegir": "^40.0.1",
+    "aegir": "^40.0.8",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",
