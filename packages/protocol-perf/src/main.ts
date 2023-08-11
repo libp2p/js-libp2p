@@ -105,8 +105,6 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   // eslint-disable-next-line no-console
   console.log('latency: ' + JSON.stringify({ latency: duration }))
-
-  await node.stop()
 }
 
 function splitHostPort (address: string): { host: string, port?: string } {
