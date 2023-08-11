@@ -65,13 +65,13 @@
     "it-stream-types": "^2.0.1",
     "rate-limiter-flexible": "^2.3.11",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.4",
+    "uint8arrays": "^4.0.6",
     "varint": "^6.0.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.0.2",
     "@types/varint": "^6.0.0",
-    "aegir": "^40.0.1",
+    "aegir": "^40.0.8",
     "cborg": "^2.0.1",
     "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",

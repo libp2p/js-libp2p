@@ -35,10 +35,10 @@
     "@libp2p/mplex": "^9.0.0",
     "@libp2p/tcp": "^8.0.0",
     "libp2p": "^0.46.0",
-    "uint8arrays": "^4.0.4"
+    "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "aegir": "^40.0.1",
+    "aegir": "^40.0.8",
     "execa": "^7.1.1",
     "p-defer": "^4.0.0"
   },

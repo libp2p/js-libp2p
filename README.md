@@ -31,13 +31,13 @@
 
 ## Structure
 
+- [`/doc`](./doc) Docs for libp2p
 - [`/examples/auto-relay`](./examples/auto-relay) Shows how to configure relayed connections
 - [`/examples/chat`](./examples/chat) An example chat app using libp2p
 - [`/examples/connection-encryption`](./examples/connection-encryption) An example of how to configure connection encrypters
 - [`/examples/delegated-routing`](./examples/delegated-routing) How to configure libp2p delegated routers
 - [`/examples/discovery-mechanisms`](./examples/discovery-mechanisms) How to configure peer discovery mechanisms
 - [`/examples/echo`](./examples/echo) An example echo app
-- [`/examples/libp2p-in-the-browser`](./examples/libp2p-in-the-browser) A libp2p node running in the browser
 - [`/examples/peer-and-content-routing`](./examples/peer-and-content-routing) How to use peer and content routing
 - [`/examples/pnet`](./examples/pnet) How to configure a libp2p private network
 - [`/examples/protocol-and-stream-muxing`](./examples/protocol-and-stream-muxing) How to use multiplex protocols streams
@@ -61,6 +61,7 @@
 - [`/packages/peer-id-factory`](./packages/peer-id-factory) Create PeerId instances
 - [`/packages/peer-record`](./packages/peer-record) Used to transfer signed peer data across the network
 - [`/packages/peer-store`](./packages/peer-store) Stores information about peers libp2p knows on the network
+- [`/packages/protocol-perf`](./packages/protocol-perf) Implementation of Perf Protocol
 - [`/packages/pubsub`](./packages/pubsub) libp2p pubsub base class
 - [`/packages/pubsub-floodsub`](./packages/pubsub-floodsub) libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
 - [`/packages/stream-multiplexer-mplex`](./packages/stream-multiplexer-mplex) JavaScript implementation of <https://github.com/libp2p/mplex>
