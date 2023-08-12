@@ -6,7 +6,7 @@ export interface AESCipher {
   decrypt: (data: Uint8Array) => Promise<Uint8Array>
 }
 
-export async function create (key: Uint8Array, iv: Uint8Array): Promise<AESCipher> {
+export function create (key: Uint8Array, iv: Uint8Array): AESCipher {
   const mode = cipherMode(key)
   const cipher = ciphers.createCipheriv(mode, key, iv)
   const decipher = ciphers.createDecipheriv(mode, key, iv)
