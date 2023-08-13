@@ -203,9 +203,12 @@ export class DefaultDCUtRService implements Startable {
 
         break
       } catch (err: any) {
-        log.error('error while reading identify message', err)
+        log.error('error while reading identify message on attempt %d of %d', i + 1, this.retries, err)
         stream?.abort(err)
-        throw err
+
+        if (i === this.retries) {
+          throw err
+        }
       } finally {
         if (stream != null) {
           await stream.close(options)
