@@ -203,7 +203,7 @@ export class DefaultDCUtRService implements Startable {
 
         break
       } catch (err: any) {
-        log.error('error while reading identify message on attempt %d of %d', i + 1, this.retries, err)
+        log.error('error while attempting DCUtR on attempt %d of %d', i + 1, this.retries, err)
         stream?.abort(err)
 
         if (i === this.retries) {
@@ -341,6 +341,7 @@ export class DefaultDCUtRService implements Startable {
       log('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
       await relayedConnection.close(options)
     } catch (err: any) {
+      log.error('incoming DCUtR from %p failed', relayedConnection.remotePeer, err)
       stream.abort(err)
     } finally {
       await stream.close(options)
