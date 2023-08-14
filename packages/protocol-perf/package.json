@@ -58,7 +58,6 @@
     "@libp2p/tcp": "^8.0.3",
     "@multiformats/multiaddr": "^12.1.5",
     "libp2p": "^0.46.4",
-    "p-wait-for": "^5.0.2",
     "uint8arrays": "^4.0.6",
     "yargs": "^17.7.2"
   },
