@@ -91,7 +91,7 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
     const connection = await node.dial(multiaddr(tcpMultiaddrAddress))
     const duration = await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
     // eslint-disable-next-line no-console
-    console.log(JSON.stringify({ latency: duration/1000 }))
+    console.log(JSON.stringify({ latency: duration / 1000 }))
     await node.stop()
   }
 }
