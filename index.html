@@ -49,13 +49,13 @@
 <li><a href="#contribution">Contribution</a></li>
 </ul>
 <a id="md:structure" class="tsd-anchor"></a><h2><a href="#md:structure">Structure</a></h2><ul>
+<li><a href="./doc"><code>/doc</code></a> Docs for libp2p</li>
 <li><a href="./examples/auto-relay"><code>/examples/auto-relay</code></a> Shows how to configure relayed connections</li>
 <li><a href="./examples/chat"><code>/examples/chat</code></a> An example chat app using libp2p</li>
 <li><a href="./examples/connection-encryption"><code>/examples/connection-encryption</code></a> An example of how to configure connection encrypters</li>
 <li><a href="./examples/delegated-routing"><code>/examples/delegated-routing</code></a> How to configure libp2p delegated routers</li>
 <li><a href="./examples/discovery-mechanisms"><code>/examples/discovery-mechanisms</code></a> How to configure peer discovery mechanisms</li>
 <li><a href="./examples/echo"><code>/examples/echo</code></a> An example echo app</li>
-<li><a href="./examples/libp2p-in-the-browser"><code>/examples/libp2p-in-the-browser</code></a> A libp2p node running in the browser</li>
 <li><a href="./examples/peer-and-content-routing"><code>/examples/peer-and-content-routing</code></a> How to use peer and content routing</li>
 <li><a href="./examples/pnet"><code>/examples/pnet</code></a> How to configure a libp2p private network</li>
 <li><a href="./examples/protocol-and-stream-muxing"><code>/examples/protocol-and-stream-muxing</code></a> How to use multiplex protocols streams</li>
@@ -79,6 +79,7 @@
 <li><a href="./packages/peer-id-factory"><code>/packages/peer-id-factory</code></a> Create PeerId instances</li>
 <li><a href="./packages/peer-record"><code>/packages/peer-record</code></a> Used to transfer signed peer data across the network</li>
 <li><a href="./packages/peer-store"><code>/packages/peer-store</code></a> Stores information about peers libp2p knows on the network</li>
+<li><a href="./packages/protocol-perf"><code>/packages/protocol-perf</code></a> Implementation of Perf Protocol</li>
 <li><a href="./packages/pubsub"><code>/packages/pubsub</code></a> libp2p pubsub base class</li>
 <li><a href="./packages/pubsub-floodsub"><code>/packages/pubsub-floodsub</code></a> libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).</li>
 <li><a href="./packages/stream-multiplexer-mplex"><code>/packages/stream-multiplexer-mplex</code></a> JavaScript implementation of <a href="https://github.com/libp2p/mplex">https://github.com/libp2p/mplex</a></li>
@@ -300,11 +301,11 @@ If you are looking for the documentation of the latest release, you can view the
 <td></td>
 </tr>
 <tr>
-<td><a href="//github.com/libp2p/js-reframe-content-routing"><code>@libp2p/reframe-content-routing</code></a></td>
-<td><a href="//github.com/libp2p/js-reframe-content-routing/releases"><img src="https://img.shields.io/npm/v/%40libp2p%2Freframe-content-routing.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
-<td><a href="//libraries.io/npm/%40libp2p%2Freframe-content-routing"><img src="https://img.shields.io/librariesio/release/npm/%40libp2p%2Freframe-content-routing?logo=Libraries.io&logoColor=white&style=flat-square" alt="Deps"></a></td>
-<td><a href="//github.com/libp2p/js-reframe-content-routing/actions?query=branch%3Amain+workflow%3Aci+"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-reframe-content-routing/js-test-and-release.yml?branch=main&label=ci&style=flat-square" alt="GitHub CI"></a></td>
-<td><a href="https://codecov.io/gh/libp2p/js-reframe-content-routing"><img src="https://codecov.io/gh/libp2p/js-reframe-content-routing/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
+<td><a href="//github.com/libp2p/js-http-v1-content-routing"><code>@libp2p/http-v1-content-routing</code></a></td>
+<td><a href="//github.com/libp2p/js-http-v1-content-routing/releases"><img src="https://img.shields.io/npm/v/%40libp2p%2Fhttp-v1-content-routing.svg?maxAge=86400&style=flat-square" alt="npm"></a></td>
+<td><a href="//libraries.io/npm/%40libp2p%2Fhttp-v1-content-routing"><img src="https://img.shields.io/librariesio/release/npm/%40libp2p%2Fhttp-v1-content-routing?logo=Libraries.io&logoColor=white&style=flat-square" alt="Deps"></a></td>
+<td><a href="//github.com/libp2p/js-http-v1-content-routing/actions?query=branch%3Amain+workflow%3Aci+"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-http-v1-content-routing/js-test-and-release.yml?branch=main&label=ci&style=flat-square" alt="GitHub CI"></a></td>
+<td><a href="https://codecov.io/gh/libp2p/js-http-v1-content-routing"><img src="https://codecov.io/gh/libp2p/js-http-v1-content-routing/branch/master/graph/badge.svg?style=flat-square" alt="codecov"></a></td>
 </tr>
 <tr>
 <td><a href="//github.com/libp2p/js-ipni-content-routing"><code>@libp2p/ipni-content-routing</code></a></td>
@@ -520,6 +521,7 @@ If you are looking for the documentation of the latest release, you can view the
 <li><a href="modules/_libp2p_peer_id_factory.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>id-<wbr/>factory</span></a></li>
 <li><a href="modules/_libp2p_peer_record.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>record</span></a></li>
 <li><a href="modules/_libp2p_peer_store.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/peer-<wbr/>store</span></a></li>
+<li><a href="modules/_libp2p_perf.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/perf</span></a></li>
 <li><a href="modules/_libp2p_pubsub.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/pubsub</span></a></li>
 <li><a href="modules/_libp2p_floodsub.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/floodsub</span></a></li>
 <li><a href="modules/_libp2p_mplex.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/mplex</span></a></li>
