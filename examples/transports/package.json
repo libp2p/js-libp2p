@@ -37,10 +37,10 @@
     "it-pipe": "^3.0.1",
     "it-to-buffer": "^4.0.2",
     "libp2p": "^0.46.0",
-    "uint8arrays": "^4.0.4"
+    "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "aegir": "^40.0.1",
+    "aegir": "^40.0.8",
     "test-ipfs-example": "^1.0.0"
   },
   "private": true

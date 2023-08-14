@@ -5,6 +5,14 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+### [0.1.2](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.1...interface-v0.1.2) (2023-08-14)
+
+
+### Bug Fixes
+
+* remove stream add/remove methods from connection interface ([#1912](https://www.github.com/libp2p/js-libp2p/issues/1912)) ([e26848b](https://www.github.com/libp2p/js-libp2p/commit/e26848b06e77bfcff4063139c9ed816f37f05cb6))
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
 ### [0.1.1](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.0...interface-v0.1.1) (2023-08-05)
 
 

@@ -2,5 +2,22 @@
   "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
     "outDir": "dist"
-  }
+  },
+  "references": [
+    {
+      "path": "../packages/interface"
+    },
+    {
+      "path": "../packages/libp2p"
+    },
+    {
+      "path": "../packages/metrics-prometheus"
+    },
+    {
+      "path": "../packages/stream-multiplexer-mplex"
+    },
+    {
+      "path": "../packages/transport-tcp"
+    }
+  ]
 }

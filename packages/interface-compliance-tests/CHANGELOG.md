@@ -5,6 +5,27 @@
 
 * bump aegir from 38.1.8 to 39.0.5 ([#393](https://github.com/libp2p/js-libp2p-interfaces/issues/393)) ([31f3797](https://github.com/libp2p/js-libp2p-interfaces/commit/31f3797b24f7c23f3f16e9db3a230bd5f7cd5175))
 
+### [4.0.3](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.2...interface-compliance-tests-v4.0.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* remove stream add/remove methods from connection interface ([#1912](https://www.github.com/libp2p/js-libp2p/issues/1912)) ([e26848b](https://www.github.com/libp2p/js-libp2p/commit/e26848b06e77bfcff4063139c9ed816f37f05cb6))
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/interface-internal bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/multistream-select bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-collections bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/peer-id-factory bumped from ^3.0.2 to ^3.0.3
+
 ### [4.0.2](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.1...interface-compliance-tests-v4.0.2) (2023-08-05)
 
 
