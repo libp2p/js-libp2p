@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.1](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.0...perf-v1.1.1) (2023-08-14)
+
+
+### Bug Fixes
+
+* **@libp2p/protocol-perf:** ensure only client calls measure performance ([#1960](https://www.github.com/libp2p/js-libp2p/issues/1960)) ([8716555](https://www.github.com/libp2p/js-libp2p/commit/871655515cc89af3eacad855db475d3f1ada2005))
+
 ## [1.1.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.0.0...perf-v1.1.0) (2023-08-14)
 
 

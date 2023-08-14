@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/perf",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Implementation of Perf Protocol",
   "author": "@maschad / @marcopolo",
   "license": "Apache-2.0 OR MIT",
