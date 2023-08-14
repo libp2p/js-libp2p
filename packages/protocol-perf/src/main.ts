@@ -1,5 +1,4 @@
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import { mplex } from '@libp2p/mplex'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -9,6 +8,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { defaultInit, perfService } from '../src/index.js'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const argv = yargs(hideBin(process.argv))
   .options({
@@ -55,7 +55,7 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   const config = {
     transports: [tcp()],
-    streamMuxers: [mplex()],
+    streamMuxers: [yamux()],
     connectionEncryption: [
       plaintext()
     ],
@@ -91,6 +91,7 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
     const connection = await node.dial(multiaddr(tcpMultiaddrAddress))
     const duration = await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
     // eslint-disable-next-line no-console
+    // Output latency in seconds
     console.log(JSON.stringify({ latency: duration / 1000 }))
     await node.stop()
   }
