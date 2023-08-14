@@ -15,7 +15,7 @@ export class Ed25519PublicKey {
     this._key = ensureKey(key, crypto.publicKeyLength)
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> { // eslint-disable-line require-await
+  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -52,7 +52,7 @@ export class Ed25519PrivateKey {
     this._publicKey = ensureKey(publicKey, crypto.publicKeyLength)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async sign (message: Uint8Array): Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
