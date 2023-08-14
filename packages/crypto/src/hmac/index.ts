@@ -8,7 +8,7 @@ export interface HMAC {
 
 export async function create (hash: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array): Promise<HMAC> {
   const res = {
-    async digest (data: Uint8Array) { // eslint-disable-line require-await
+    async digest (data: Uint8Array) {
       const hmac = crypto.createHmac(hash.toLowerCase(), secret)
       hmac.update(data)
       return hmac.digest()
