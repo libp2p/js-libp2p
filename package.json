@@ -50,8 +50,5 @@
     "examples/*",
     "interop",
     "packages/*"
-  ],
-  "dependencies": {
-    "@chainsafe/libp2p-yamux": "^5.0.0"
-  }
+  ]
 }
