@@ -264,18 +264,31 @@ describe('auto-dial', () => {
       events
     }, {
       minConnections: 10,
-      autoDialInterval: 10000
+      autoDialPeerRetryThreshold: 2000
     })
     autoDialler.start()
+
     void autoDialler.autoDial()
 
     await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 1
     })
-    await delay(1000)
 
     expect(connectionManager.openConnection.callCount).to.equal(1)
     expect(connectionManager.openConnection.calledWith(matchPeerId(peerWithAddress.id))).to.be.true()
     expect(connectionManager.openConnection.calledWith(matchPeerId(undialablePeer.id))).to.be.false()
+
+    // pass the retry threshold
+    await delay(2000)
+
+    // autodial again
+    void autoDialler.autoDial()
+
+    await pWaitFor(() => {
+      return connectionManager.openConnection.callCount === 3
+    })
+
+    // should have retried the unreachable peer
+    expect(connectionManager.openConnection.calledWith(matchPeerId(undialablePeer.id))).to.be.true()
   })
 })
