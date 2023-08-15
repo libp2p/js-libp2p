@@ -4,7 +4,7 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { createLibp2p } from 'libp2p'
+import { createLibp2p, type Libp2p } from 'libp2p'
 import { webTransport } from '../src/index.js'
 
 declare global {
@@ -14,6 +14,27 @@ declare global {
 }
 
 describe('libp2p-webtransport', () => {
+  let node: Libp2p
+
+  beforeEach(async () => {
+    node = await createLibp2p({
+      transports: [webTransport()],
+      connectionEncryption: [noise()],
+      connectionGater: {
+        denyDialMultiaddr: async () => false
+      }
+    })
+  })
+
+  afterEach(async () => {
+    if (node != null) {
+      await node.stop()
+
+      const conns = node.getConnections()
+      expect(conns.length).to.equal(0)
+    }
+  })
+
   it('webtransport connects to go-libp2p', async () => {
     if (process.env.serverAddr == null) {
       throw new Error('serverAddr not found')
@@ -21,15 +42,6 @@ describe('libp2p-webtransport', () => {
 
     const maStr: string = process.env.serverAddr
     const ma = multiaddr(maStr)
-    const node = await createLibp2p({
-      transports: [webTransport()],
-      connectionEncryption: [noise()],
-      connectionGater: {
-        denyDialMultiaddr: async () => false
-      }
-    })
-
-    await node.start()
 
     // Ping many times
     for (let index = 0; index < 100; index++) {
@@ -70,10 +82,6 @@ describe('libp2p-webtransport', () => {
 
       expect(res).to.be.greaterThan(-1)
     }
-
-    await node.stop()
-    const conns = node.getConnections()
-    expect(conns.length).to.equal(0)
   })
 
   it('fails to connect without certhashes', async () => {
@@ -86,19 +94,25 @@ describe('libp2p-webtransport', () => {
     const maStrP2p = maStr.split('/p2p/')[1]
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
 
-    const node = await createLibp2p({
-      transports: [webTransport()],
-      connectionEncryption: [noise()],
-      connectionGater: {
-        denyDialMultiaddr: async () => false
-      }
-    })
-    await node.start()
-
     const err = await expect(node.dial(ma)).to.eventually.be.rejected()
     expect(err.toString()).to.contain('Expected multiaddr to contain certhashes')
+  })
 
-    await node.stop()
+  it('fails to connect due to an aborted signal', async () => {
+    if (process.env.serverAddr == null) {
+      throw new Error('serverAddr not found')
+    }
+
+    const maStr: string = process.env.serverAddr
+    const ma = multiaddr(maStr)
+
+    const controller = new AbortController()
+    controller.abort()
+
+    const err = await expect(node.dial(ma, {
+      signal: controller.signal
+    })).to.eventually.be.rejected()
+    expect(err.toString()).to.contain('aborted')
   })
 
   it('connects to ipv6 addresses', async () => {
@@ -107,21 +121,10 @@ describe('libp2p-webtransport', () => {
     }
 
     const ma = multiaddr(process.env.serverAddr6)
-    const node = await createLibp2p({
-      transports: [webTransport()],
-      connectionEncryption: [noise()],
-      connectionGater: {
-        denyDialMultiaddr: async () => false
-      }
-    })
-
-    await node.start()
 
     // the address is unreachable but we can parse it correctly
     const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
     await stream.close()
-
-    await node.stop()
   })
 
   it('closes writes of streams after they have sunk a source', async () => {
@@ -132,13 +135,6 @@ describe('libp2p-webtransport', () => {
 
     const maStr: string = process.env.serverAddr
     const ma = multiaddr(maStr)
-    const node = await createLibp2p({
-      transports: [webTransport()],
-      connectionEncryption: [noise()],
-      connectionGater: {
-        denyDialMultiaddr: async () => false
-      }
-    })
 
     async function * gen (): AsyncGenerator<Uint8Array, void, unknown> {
       yield new Uint8Array([0])
@@ -148,7 +144,6 @@ describe('libp2p-webtransport', () => {
       yield new Uint8Array([12, 13, 14, 15])
     }
 
-    await node.start()
     const stream = await node.dialProtocol(ma, 'echo')
 
     await stream.sink(gen())
@@ -165,7 +160,5 @@ describe('libp2p-webtransport', () => {
     await stream.closeRead()
 
     expect(stream.timeline.close).to.be.greaterThan(0)
-
-    await node.stop()
   })
 })
