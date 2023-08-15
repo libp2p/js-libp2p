@@ -1,7 +1,7 @@
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { CodeError } from '@libp2p/interface/errors'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import * as unsigned from 'uint8-varint';
+import * as unsigned from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
