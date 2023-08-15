@@ -50,8 +50,8 @@ export const MAX_INCOMING_PENDING_CONNECTIONS = 10
 
 /**
  * Store as part of the peer store metadata for a given peer, the value for this
- * key is a stringified number representing the timestamp of the last time a
- * dial attempted failed with the relevant peer.
+ * key is a timestamp of the last time a dial attempted failed with the relevant
+ * peer stored as a string.
  *
  * Used to insure we do not endlessly try to auto dial peers we have recently
  * failed to dial.

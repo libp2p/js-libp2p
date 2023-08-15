@@ -219,14 +219,14 @@ export class AutoDial implements Startable {
         return true
       }
 
-      const when = parseInt(uint8ArrayToString(lastDialFailure))
+      const lastDialFailureTimestamp = parseInt(uint8ArrayToString(lastDialFailure))
 
-      if (isNaN(when)) {
+      if (isNaN(lastDialFailureTimestamp)) {
         return true
       }
 
       // only dial if the time since the last failure is above the retry threshold
-      return Date.now() - when > this.autoDialPeerRetryThresholdMs
+      return Date.now() - lastDialFailureTimestamp > this.autoDialPeerRetryThresholdMs
     })
 
     log('selected %d/%d peers to dial', peersThatHaveNotFailed.length, peers.length)
