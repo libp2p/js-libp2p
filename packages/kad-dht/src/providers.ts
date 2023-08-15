@@ -53,7 +53,7 @@ export class Providers implements Startable {
   private readonly provideValidity: number
   private readonly syncQueue: Queue
   private started: boolean
-  private cleaner?: NodeJS.Timer
+  private cleaner?: ReturnType<typeof setInterval>
 
   constructor (components: ProvidersComponents, init: ProvidersInit = {}) {
     const { cacheSize, cleanupInterval, provideValidity } = init

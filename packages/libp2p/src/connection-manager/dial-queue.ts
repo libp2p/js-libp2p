@@ -324,8 +324,22 @@ export class DialQueue {
     ))
       .flat()
 
-    // filter out any multiaddrs that we do not have transports for
-    const filteredAddrs = resolvedAddresses.filter(addr => Boolean(this.transportManager.transportForMultiaddr(addr.multiaddr)))
+    const filteredAddrs = resolvedAddresses.filter(addr => {
+      // filter out any multiaddrs that we do not have transports for
+      if (this.transportManager.transportForMultiaddr(addr.multiaddr) == null) {
+        return false
+      }
+
+      // if the resolved multiaddr has a PeerID but it's the wrong one, ignore it
+      // - this can happen with addresses like bootstrap.libp2p.io that resolve
+      // to multiple different peers
+      const addrPeerId = addr.multiaddr.getPeerId()
+      if (peerId != null && addrPeerId != null) {
+        return peerId.equals(addrPeerId)
+      }
+
+      return true
+    })
 
     // deduplicate addresses
     const dedupedAddrs = new Map<string, Address>()

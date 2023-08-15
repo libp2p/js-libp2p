@@ -178,7 +178,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.patch(remotePeerId, {
-      multiaddrs: Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`))
+      multiaddrs: Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/${remotePeerId.toString()}`))
     })
 
     await expect(connectionManager.openConnection(remotePeerId))

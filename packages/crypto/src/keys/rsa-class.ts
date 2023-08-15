@@ -19,7 +19,7 @@ export class RsaPublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> { // eslint-disable-line require-await
+  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -62,7 +62,7 @@ export class RsaPrivateKey {
     return crypto.getRandomValues(16)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async sign (message: Uint8Array): Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -114,7 +114,7 @@ export class RsaPrivateKey {
   /**
    * Exports the key into a password protected PEM format
    */
-  async export (password: string, format = 'pkcs-8'): Promise<Multibase<'m'>> { // eslint-disable-line require-await
+  async export (password: string, format = 'pkcs-8'): Promise<Multibase<'m'>> {
     if (format === 'pkcs-8') {
       const buffer = new forge.util.ByteBuffer(this.marshal())
       const asn1 = forge.asn1.fromDer(buffer)
