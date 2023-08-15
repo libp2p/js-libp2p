@@ -68,7 +68,7 @@ export interface ConnectionManagerInit {
 
   /**
    * When we've failed to dial a peer, do not autodial them again within this
-   * number of ms. (default: 10 minutes)
+   * number of ms. (default: 1 minute)
    */
   autoDialPeerRetryThreshold?: number
 
