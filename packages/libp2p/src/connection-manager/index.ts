@@ -20,7 +20,7 @@ import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Peer, PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { ConnectionManager, OpenConnectionOptions } from '@libp2p/interface-internal/connection-manager'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const log = logger('libp2p:connection-manager')
@@ -152,10 +152,6 @@ export interface DefaultConnectionManagerComponents {
   transportManager: TransportManager
   connectionGater: ConnectionGater
   events: EventEmitter<Libp2pEvents>
-}
-
-export interface OpenConnectionOptions extends AbortOptions {
-  priority?: number
 }
 
 /**
@@ -492,7 +488,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId != null) {
+    if (peerId != null && options.force !== true) {
       log('dial %p', peerId)
       const existingConnections = this.getConnections(peerId)
 

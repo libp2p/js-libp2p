@@ -222,7 +222,6 @@ export class AutoDial implements Startable {
 
         log('connecting to a peerStore stored peer %p', peer.id)
         await this.connectionManager.openConnection(peer.id, {
-          // @ts-expect-error needs adding to the ConnectionManager interface
           priority: this.autoDialPriority
         })
       }, {
