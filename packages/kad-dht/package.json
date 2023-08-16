@@ -83,9 +83,9 @@
     "private-ip": "^3.0.0",
     "progress-events": "^1.0.0",
     "protons-runtime": "^5.0.0",
+    "uint8-varint": "^2.0.0",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6",
-    "varint": "^6.0.0"
+    "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.0.4",
@@ -93,7 +93,6 @@
     "@libp2p/peer-store": "^9.0.3",
     "@types/lodash.random": "^3.2.6",
     "@types/lodash.range": "^3.2.6",
-    "@types/varint": "^6.0.0",
     "@types/which": "^3.0.0",
     "aegir": "^40.0.8",
     "datastore-level": "^10.0.0",

@@ -63,17 +63,16 @@
     "it-pushable": "^3.2.0",
     "it-reader": "^6.0.1",
     "it-stream-types": "^2.0.1",
+    "uint8-varint": "^2.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@types/varint": "^6.0.0",
     "aegir": "^40.0.8",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
     "it-map": "^3.0.3",
     "it-pair": "^2.0.6",
-    "p-timeout": "^6.0.0",
-    "varint": "^6.0.0"
+    "p-timeout": "^6.0.0"
   }
 }
