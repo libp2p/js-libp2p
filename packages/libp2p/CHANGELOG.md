@@ -5,6 +5,13 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.6](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.5...libp2p-v0.46.6) (2023-08-16)
+
+
+### Bug Fixes
+
+* **libp2p:** move delay dep to production dependencies ([#1977](https://www.github.com/libp2p/js-libp2p/issues/1977)) ([725f5df](https://www.github.com/libp2p/js-libp2p/commit/725f5df1782a200cf1d12e6d03a164d028a7cc3e))
+
 ### [0.46.5](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.4...libp2p-v0.46.5) (2023-08-16)
 
 
