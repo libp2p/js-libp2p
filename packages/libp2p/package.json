@@ -180,7 +180,6 @@
     "@libp2p/mplex": "^9.0.3",
     "@libp2p/tcp": "^8.0.3",
     "@libp2p/websockets": "^7.0.3",
-    "@types/varint": "^6.0.0",
     "@types/xsalsa20": "^1.1.0",
     "aegir": "^40.0.8",
     "delay": "^6.0.0",

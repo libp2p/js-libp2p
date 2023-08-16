@@ -67,7 +67,6 @@
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^3.0.3",
-    "@types/varint": "^6.0.0",
     "aegir": "^40.0.8",
     "protons": "^7.0.2"
   }

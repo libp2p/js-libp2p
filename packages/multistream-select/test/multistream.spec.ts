@@ -5,10 +5,10 @@ import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { pushable } from 'it-pushable'
 import { reader } from 'it-reader'
+import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as Varint from 'varint'
 import * as Multistream from '../src/multistream.js'
 
 describe('Multistream', () => {
@@ -18,7 +18,7 @@ describe('Multistream', () => {
       const output = Multistream.encode(input)
 
       const expected = uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length + 1)), // +1 to include newline
+        varint.encode(input.length + 1), // +1 to include newline
         input,
         uint8ArrayFromString('\n')
       ])
@@ -31,7 +31,7 @@ describe('Multistream', () => {
       const output = Multistream.encode(input.slice())
 
       const expected = uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length + 1)), // +1 to include newline
+        varint.encode(input.length + 1), // +1 to include newline
         input.slice(),
         uint8ArrayFromString('\n')
       ])
@@ -48,7 +48,7 @@ describe('Multistream', () => {
       Multistream.write(writer, input)
 
       const expected = uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length + 1)), // +1 to include newline
+        varint.encode(input.length + 1), // +1 to include newline
         input,
         uint8ArrayFromString('\n')
       ])
@@ -66,7 +66,7 @@ describe('Multistream', () => {
       const input = uint8ArrayFromString(`TEST${Date.now()}`)
 
       const source = reader([uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length + 1)), // +1 to include newline
+        varint.encode(input.length + 1), // +1 to include newline
         input,
         uint8ArrayFromString('\n')
       ])])
@@ -79,7 +79,7 @@ describe('Multistream', () => {
       const input = uint8ArrayFromString(`TEST${Date.now()}`)
 
       const source = reader([uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length)),
+        varint.encode(input.length),
         input
       ])])
 
@@ -92,7 +92,7 @@ describe('Multistream', () => {
       input[input.length - 1] = '\n'.charCodeAt(0)
 
       const source = reader([uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length)),
+        varint.encode(input.length),
         input
       ])])
 
@@ -104,7 +104,7 @@ describe('Multistream', () => {
       const input = new Uint8Array(0)
 
       const source = reader([uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length)),
+        varint.encode(input.length),
         input
       ])])
 
@@ -116,7 +116,7 @@ describe('Multistream', () => {
       const input = uint8ArrayFromString(`TEST${Date.now()}`)
 
       const source = reader([uint8ArrayConcat([
-        Uint8Array.from(Varint.encode(input.length + 1)), // +1 to include newline
+        varint.encode(input.length + 1), // +1 to include newline
         input,
         uint8ArrayFromString('\n')
       ])])

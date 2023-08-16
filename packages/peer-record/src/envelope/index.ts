@@ -1,7 +1,7 @@
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { CodeError } from '@libp2p/interface/errors'
 import { peerIdFromKeys } from '@libp2p/peer-id'
-import * as unsigned from 'uint8-varint'
+import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
@@ -147,9 +147,9 @@ const formatSignaturePayload = (domain: string, payloadType: Uint8Array, payload
   // - The value of the payload field
 
   const domainUint8Array = uint8arraysFromString(domain)
-  const domainLength = unsigned.encode(domainUint8Array.byteLength)
-  const payloadTypeLength = unsigned.encode(payloadType.length)
-  const payloadLength = unsigned.encode(payload.length)
+  const domainLength = varint.encode(domainUint8Array.byteLength)
+  const payloadTypeLength = varint.encode(payloadType.length)
+  const payloadLength = varint.encode(payload.length)
 
   return new Uint8ArrayList(
     domainLength,
