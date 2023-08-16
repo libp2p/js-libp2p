@@ -5,6 +5,15 @@
 
 * bump aegir from 38.1.8 to 39.0.5 ([#393](https://github.com/libp2p/js-libp2p-interfaces/issues/393)) ([31f3797](https://github.com/libp2p/js-libp2p-interfaces/commit/31f3797b24f7c23f3f16e9db3a230bd5f7cd5175))
 
+### [4.0.4](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.3...interface-compliance-tests-v4.0.4) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.3 to ^0.1.4
+
 ### [4.0.3](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.2...interface-compliance-tests-v4.0.3) (2023-08-14)
 
 

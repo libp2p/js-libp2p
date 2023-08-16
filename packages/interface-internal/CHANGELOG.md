@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.1.4](https://www.github.com/libp2p/js-libp2p/compare/interface-internal-v0.1.3...interface-internal-v0.1.4) (2023-08-16)
+
+
+### Features
+
+* **libp2p:** direct connection through relay protocol (DCUtR) ([#1928](https://www.github.com/libp2p/js-libp2p/issues/1928)) ([87dc7e9](https://www.github.com/libp2p/js-libp2p/commit/87dc7e9fc17becc4b5c3ce4f3febd28cf9f25c6e))
+
 ### [0.1.3](https://www.github.com/libp2p/js-libp2p/compare/interface-internal-v0.1.2...interface-internal-v0.1.3) (2023-08-14)
 
 

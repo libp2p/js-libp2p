@@ -5,6 +5,35 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.5](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.4...libp2p-v0.46.5) (2023-08-16)
+
+
+### Features
+
+* **libp2p:** add autodial retry threshold config option ([#1943](https://www.github.com/libp2p/js-libp2p/issues/1943)) ([4ef9c79](https://www.github.com/libp2p/js-libp2p/commit/4ef9c79cd1705f25170467d9268b89ba18d7e2a0))
+* **libp2p:** direct connection through relay protocol (DCUtR) ([#1928](https://www.github.com/libp2p/js-libp2p/issues/1928)) ([87dc7e9](https://www.github.com/libp2p/js-libp2p/commit/87dc7e9fc17becc4b5c3ce4f3febd28cf9f25c6e))
+
+
+### Bug Fixes
+
+* **libp2p:** reduce dialer activity in browsers ([#1970](https://www.github.com/libp2p/js-libp2p/issues/1970)) ([d30f09f](https://www.github.com/libp2p/js-libp2p/commit/d30f09f29bcf34a0f1d7c7c984dad6dc34bb669a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.3 to ^0.1.4
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.3 to ^9.0.4
+    * @libp2p/floodsub bumped from ^8.0.4 to ^8.0.5
+    * @libp2p/interface-compliance-tests bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/kad-dht bumped from ^10.0.3 to ^10.0.4
+    * @libp2p/mdns bumped from ^9.0.3 to ^9.0.4
+    * @libp2p/mplex bumped from ^9.0.3 to ^9.0.4
+    * @libp2p/tcp bumped from ^8.0.3 to ^8.0.4
+    * @libp2p/websockets bumped from ^7.0.3 to ^7.0.4
+
 ### [0.46.4](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.3...libp2p-v0.46.4) (2023-08-14)
 
 

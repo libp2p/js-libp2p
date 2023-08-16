@@ -11,6 +11,17 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#233](https://github.com/libp2p/js-libp2p-floodsub/issues/233)) ([e073298](https://github.com/libp2p/js-libp2p-floodsub/commit/e073298f324a89656b0ca6d9a629e60eaedc7873))
 
+### [8.0.5](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.4...floodsub-v8.0.5) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^8.0.4 to ^8.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.3 to ^4.0.4
+
 ### [8.0.4](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.3...floodsub-v8.0.4) (2023-08-14)
 
 
