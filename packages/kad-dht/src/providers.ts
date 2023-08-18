@@ -3,8 +3,8 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import cache from 'hashlru'
 import { Key } from 'interface-datastore/key'
 import Queue from 'p-queue'
+import * as varint from 'uint8-varint'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import varint from 'varint'
 import {
   PROVIDERS_CLEANUP_INTERVAL,
   PROVIDERS_VALIDITY,
@@ -245,7 +245,7 @@ async function writeProviderEntry (store: Datastore, cid: CID, peer: PeerId, tim
   ].join('')
 
   const key = new Key(dsKey)
-  const buffer = Uint8Array.from(varint.encode(time.getTime()))
+  const buffer = varint.encode(time.getTime())
 
   await store.put(key, buffer)
 }

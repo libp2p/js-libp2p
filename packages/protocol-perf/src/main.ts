@@ -5,12 +5,10 @@ import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
 import { plaintext } from 'libp2p/insecure'
-import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { defaultInit, perfService } from '../src/index.js'
-import type { Connection } from '@libp2p/interface/connection'
 
 const argv = yargs(hideBin(process.argv))
   .options({
@@ -89,24 +87,14 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   const startTime = Date.now()
 
-  let connection: any = null
-
-  if (runServer) {
-    node.addEventListener('connection:open', (eventInfo) => {
-      connection = eventInfo.detail
-    })
-  } else {
-    connection = await node.dial(multiaddr(tcpMultiaddrAddress))
+  if (!runServer) {
+    const connection = await node.dial(multiaddr(tcpMultiaddrAddress))
+    const duration = await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
+    // Output latency to stdout in seconds
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify({ latency: duration / 1000 }))
+    await node.stop()
   }
-
-  await pWaitFor(() => connection != null)
-
-  const duration = await node.services.perf.measurePerformance(startTime, connection as Connection, BigInt(uploadBytes), BigInt(downloadBytes))
-
-  await node.stop()
-
-  // eslint-disable-next-line no-console
-  console.log('latency: ' + JSON.stringify({ latency: duration }))
 }
 
 function splitHostPort (address: string): { host: string, port?: string } {
