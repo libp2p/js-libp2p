@@ -396,7 +396,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.OK })
     const sourceStream = stream.unwrap()
 
-    log('connection from %p to %p established - merging streans', connection.remotePeer, dstPeer)
+    log('connection from %p to %p established - merging streams', connection.remotePeer, dstPeer)
     const limit = this.reservationStore.get(dstPeer)?.limit
     // Short circuit the two streams to create the relayed connection
     createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, limit)
