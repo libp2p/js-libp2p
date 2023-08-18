@@ -12,6 +12,32 @@
 * **dev:** bump cborg from 1.10.2 to 2.0.1 ([#282](https://github.com/libp2p/js-libp2p-mplex/issues/282)) ([4dbc590](https://github.com/libp2p/js-libp2p-mplex/commit/4dbc590d1ac92581fe2e937757567eef3854acf4))
 * **dev:** bump delay from 5.0.0 to 6.0.0 ([#281](https://github.com/libp2p/js-libp2p-mplex/issues/281)) ([1e03e75](https://github.com/libp2p/js-libp2p-mplex/commit/1e03e75369722be9872f747cd83f555bc08d49fe))
 
+### [9.0.4](https://www.github.com/libp2p/js-libp2p/compare/mplex-v9.0.3...mplex-v9.0.4) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.3 to ^4.0.4
+
+### [9.0.3](https://www.github.com/libp2p/js-libp2p/compare/mplex-v9.0.2...mplex-v9.0.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.2 to ^4.0.3
+
 ### [9.0.2](https://www.github.com/libp2p/js-libp2p/compare/mplex-v9.0.1...mplex-v9.0.2) (2023-08-05)
 
 

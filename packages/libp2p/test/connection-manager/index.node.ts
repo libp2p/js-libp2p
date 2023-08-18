@@ -365,6 +365,32 @@ describe('libp2p.connections', () => {
 
       await remoteLibp2p.stop()
     })
+
+    it('should open multiple connections when forced', async () => {
+      libp2p = await createNode({
+        config: createBaseOptions({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          }
+        })
+      })
+
+      // connect once, should have one connection
+      await libp2p.components.connectionManager.openConnection(nodes[0].getMultiaddrs())
+      expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(1)
+
+      // connect twice, should still only have one connection
+      await libp2p.components.connectionManager.openConnection(nodes[0].getMultiaddrs(), {
+        force: false
+      })
+      expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(1)
+
+      // force connection, should have two connections now
+      await libp2p.components.connectionManager.openConnection(nodes[0].getMultiaddrs(), {
+        force: true
+      })
+      expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(2)
+    })
   })
 
   describe('connection gater', () => {

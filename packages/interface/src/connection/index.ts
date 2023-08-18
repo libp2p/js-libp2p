@@ -259,16 +259,6 @@ export interface Connection {
   newStream: (protocols: string | string[], options?: NewStreamOptions) => Promise<Stream>
 
   /**
-   * Add a stream to this connection
-   */
-  addStream: (stream: Stream) => void
-
-  /**
-   * Remove a stream from this connection
-   */
-  removeStream: (id: string) => void
-
-  /**
    * Gracefully close the connection. All queued data will be written to the
    * underlying transport.
    */

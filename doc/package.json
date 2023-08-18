@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Docs for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/interface-internal#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/doc#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -16,12 +16,6 @@
     "extends": "ipfs",
     "parserOptions": {
       "sourceType": "module"
-    }
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
     }
   },
   "scripts": {

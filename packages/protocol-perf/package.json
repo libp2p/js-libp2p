@@ -1,0 +1,67 @@
+{
+  "name": "@libp2p/perf",
+  "version": "1.1.3",
+  "description": "Implementation of Perf Protocol",
+  "author": "@maschad / @marcopolo",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/protocol-perf#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "start": "node dist/src/main.js",
+    "build": "aegir build",
+    "test": "aegir test",
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "dep-check": "aegir dep-check",
+    "renderResults": "node dist/src/renderResults.js"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-yamux": "^5.0.0",
+    "@libp2p/crypto": "^2.0.3",
+    "@libp2p/interface": "^0.1.2",
+    "@libp2p/interface-compliance-tests": "^4.0.4",
+    "@libp2p/interface-internal": "^0.1.4",
+    "@libp2p/interfaces": "3.3.2",
+    "@libp2p/logger": "^3.0.2",
+    "@libp2p/peer-id-factory": "^3.0.3",
+    "@libp2p/tcp": "^8.0.4",
+    "@multiformats/multiaddr": "^12.1.5",
+    "libp2p": "^0.46.6",
+    "uint8arrays": "^4.0.6",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "aegir": "^40.0.8"
+  }
+}

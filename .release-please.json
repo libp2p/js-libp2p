@@ -21,6 +21,7 @@
     "packages/peer-id-factory": {},
     "packages/peer-record": {},
     "packages/peer-store": {},
+    "packages/protocol-perf": {},
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},
     "packages/stream-multiplexer-mplex": {},

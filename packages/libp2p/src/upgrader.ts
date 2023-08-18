@@ -415,7 +415,6 @@ export class DefaultUpgrader implements Upgrader {
                 protocols: [protocol]
               })
 
-              connection.addStream(muxedStream)
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
 
               this._onStream({ connection, stream: muxedStream, protocol })
@@ -427,10 +426,6 @@ export class DefaultUpgrader implements Upgrader {
                 await muxedStream.close()
               }
             })
-        },
-        // Run anytime a stream closes
-        onStreamEnd: muxedStream => {
-          connection?.removeStream(muxedStream.id)
         }
       })
 
