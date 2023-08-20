@@ -13,7 +13,8 @@ export const MAX_PUSH_INCOMING_STREAMS = 1
 export const MAX_PUSH_OUTGOING_STREAMS = 1
 export const MAX_OBSERVED_ADDRESSES = 10
 
-export const RUN_ON_TRANSIENT_CONNECTION = false
+export const RUN_ON_TRANSIENT_CONNECTION = true
+export const RUN_ON_CONNECTION_OPEN = true
 
 export const IDENTIFY_PROTOCOL_VERSION = '0.1.0'
 export const MULTICODEC_IDENTIFY_PROTOCOL_NAME = 'id'

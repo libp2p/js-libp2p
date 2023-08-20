@@ -7,6 +7,8 @@ import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH,
   PROTOCOL_PREFIX,
+  RUN_ON_CONNECTION_OPEN,
+  RUN_ON_TRANSIENT_CONNECTION,
   TIMEOUT
 } from './consts.js'
 import { DefaultIdentifyService } from './identify.js'
@@ -99,7 +101,8 @@ export function identifyService (init: IdentifyServiceInit = {}): (components: I
     maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
     maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
     maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
-    runOnConnectionOpen: boolean().default(true)
+    runOnConnectionOpen: boolean().default(RUN_ON_CONNECTION_OPEN),
+    runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
   }).validateSync(init)
 
   return (components) => new DefaultIdentifyService(components, validatedConfig)

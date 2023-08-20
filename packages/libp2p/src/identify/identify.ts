@@ -22,8 +22,7 @@ import {
   MAX_IDENTIFY_MESSAGE_SIZE,
   TIMEOUT,
   MAX_PUSH_OUTGOING_STREAMS,
-  MAX_OBSERVED_ADDRESSES,
-  RUN_ON_TRANSIENT_CONNECTION
+  MAX_OBSERVED_ADDRESSES
 } from './consts.js'
 import { Identify } from './pb/message.js'
 import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
@@ -61,7 +60,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly maxIdentifyMessageSize: number
   private readonly maxObservedAddresses: number
   private readonly events: EventEmitter<Libp2pEvents>
-  private readonly runOnTransientConnection: boolean
+  private readonly runOnTransientConnection?: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
     this.started = false
@@ -81,7 +80,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? MAX_PUSH_OUTGOING_STREAMS
     this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
     this.maxObservedAddresses = init.maxObservedAddresses ?? MAX_OBSERVED_ADDRESSES
-    this.runOnTransientConnection = init.runOnTransientConnection ?? RUN_ON_TRANSIENT_CONNECTION
+    this.runOnTransientConnection = init.runOnTransientConnection
 
     // Store self host metadata
     this.host = {
