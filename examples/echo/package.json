@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "aegir": "^40.0.8",
-    "execa": "^7.1.1",
+    "execa": "^8.0.1",
     "p-defer": "^4.0.0"
   },
   "private": true

@@ -97,7 +97,7 @@
     "aegir": "^40.0.8",
     "datastore-level": "^10.0.0",
     "delay": "^6.0.0",
-    "execa": "^7.1.1",
+    "execa": "^8.0.1",
     "it-filter": "^3.0.1",
     "it-last": "^3.0.1",
     "lodash.random": "^3.2.0",
