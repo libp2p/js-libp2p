@@ -5,7 +5,7 @@ import { abortableDuplex } from 'abortable-iterator'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { number, object, string } from 'yup'
+import { boolean, number, object, string } from 'yup'
 import { codes } from '../errors.js'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { AbortOptions } from '@libp2p/interface'
@@ -51,11 +51,20 @@ class DefaultPingService implements Startable, PingService {
   constructor (components: PingServiceComponents, init: PingServiceInit) {
     this.components = components
     this.started = false
-    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-    this.timeout = init.timeout ?? TIMEOUT
-    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnTransientConnection = init.runOnTransientConnection ?? true
+
+    const validatedConfig = object({
+      protocolPrefix: string().default(PROTOCOL_PREFIX),
+      timeout: number().integer().default(TIMEOUT),
+      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+      runOnTransientConnection: boolean().default(true)
+    }).validateSync(init)
+
+    this.protocol = `/${validatedConfig.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = validatedConfig.timeout
+    this.maxInboundStreams = validatedConfig.maxInboundStreams
+    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
+    this.runOnTransientConnection = validatedConfig.runOnTransientConnection
   }
 
   async start (): Promise<void> {
@@ -155,12 +164,5 @@ class DefaultPingService implements Startable, PingService {
 }
 
 export function pingService (init: PingServiceInit = {}): (components: PingServiceComponents) => PingService {
-  const validatedConfig = object({
-    protocolPrefix: string().default(PROTOCOL_PREFIX),
-    timeout: number().integer().default(TIMEOUT),
-    maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
-  }).validateSync(init)
-
-  return (components) => new DefaultPingService(components, validatedConfig)
+  return (components) => new DefaultPingService(components, init)
 }

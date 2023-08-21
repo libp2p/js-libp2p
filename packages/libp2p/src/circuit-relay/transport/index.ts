@@ -117,6 +117,13 @@ class CircuitRelayTransport implements Transport {
   private started: boolean
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
+    const validatedConfig = object({
+      discoverRelays: number().min(0).integer().default(0),
+      maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+      maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+      stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)
+    }).validateSync(init)
+
     this.registrar = components.registrar
     this.peerStore = components.peerStore
     this.connectionManager = components.connectionManager
@@ -124,11 +131,11 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.maxInboundStopStreams = init.maxInboundStopStreams
-    this.maxOutboundStopStreams = init.maxOutboundStopStreams
-    this.stopTimeout = init.stopTimeout
+    this.maxInboundStopStreams = validatedConfig.maxInboundStopStreams
+    this.maxOutboundStopStreams = validatedConfig.maxOutboundStopStreams
+    this.stopTimeout = validatedConfig.stopTimeout
 
-    if (init.discoverRelays != null && init.discoverRelays > 0) {
+    if (validatedConfig.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
       this.discovery.addEventListener('relay:discover', (evt) => {
         this.reservationStore.addRelay(evt.detail, 'discovered')
@@ -384,15 +391,8 @@ class CircuitRelayTransport implements Transport {
   }
 }
 
-export function circuitRelayTransport (init?: CircuitRelayTransportInit): (components: CircuitRelayTransportComponents) => Transport {
-  const validatedConfig = object({
-    discoverRelays: number().min(0).integer().default(0),
-    maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
-    maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
-    stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)
-  }).validateSync(init)
-
+export function circuitRelayTransport (init: CircuitRelayTransportInit = {}): (components: CircuitRelayTransportComponents) => Transport {
   return (components) => {
-    return new CircuitRelayTransport(components, validatedConfig)
+    return new CircuitRelayTransport(components, init)
   }
 }

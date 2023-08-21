@@ -1,16 +1,4 @@
-import { boolean, number, object, string } from 'yup'
-import {
-  AGENT_VERSION,
-  MAX_IDENTIFY_MESSAGE_SIZE,
-  MAX_INBOUND_STREAMS,
-  MAX_OUTBOUND_STREAMS,
-  MULTICODEC_IDENTIFY,
-  MULTICODEC_IDENTIFY_PUSH,
-  PROTOCOL_PREFIX,
-  RUN_ON_CONNECTION_OPEN,
-  RUN_ON_TRANSIENT_CONNECTION,
-  TIMEOUT
-} from './consts.js'
+import { MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH } from './consts.js'
 import { DefaultIdentifyService } from './identify.js'
 import { Identify } from './pb/message.js'
 import type { AbortOptions, IdentifyResult, Libp2pEvents } from '@libp2p/interface'
@@ -94,16 +82,5 @@ export interface IdentifyService {
 }
 
 export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => IdentifyService {
-  const validatedConfig = object({
-    protocolPrefix: string().default(PROTOCOL_PREFIX),
-    agentVersion: string().default(AGENT_VERSION),
-    timeout: number().integer().default(TIMEOUT),
-    maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
-    maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
-    runOnConnectionOpen: boolean().default(RUN_ON_CONNECTION_OPEN),
-    runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
-  }).validateSync(init)
-
-  return (components) => new DefaultIdentifyService(components, validatedConfig)
+  return (components) => new DefaultIdentifyService(components, init)
 }

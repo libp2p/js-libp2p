@@ -20,8 +20,6 @@ import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/r
 
 const log = logger('libp2p:fetch')
 
-const DEFAULT_TIMEOUT = 10000
-
 export interface FetchServiceInit {
   protocolPrefix?: string
   maxInboundStreams?: number
@@ -96,15 +94,27 @@ class DefaultFetchService implements Startable, FetchService {
   private readonly components: FetchServiceComponents
   private readonly lookupFunctions: Map<string, LookupFunction>
   private started: boolean
-  private readonly init: FetchServiceInit
+  private readonly timeout: number
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
 
   constructor (components: FetchServiceComponents, init: FetchServiceInit) {
+    const validatedConfig = object({
+      protocolPrefix: string().default('libp2p'),
+      timeout: number().integer().default(TIMEOUT),
+      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
+    }).validateSync(init)
+
     this.started = false
     this.components = components
-    this.protocol = `/${init.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.protocol = `/${validatedConfig.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = validatedConfig.timeout
+    this.maxInboundStreams = validatedConfig.maxInboundStreams
+    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
+
     this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)
-    this.init = init
   }
 
   async start (): Promise<void> {
@@ -117,8 +127,8 @@ class DefaultFetchService implements Startable, FetchService {
           log.error(err)
         })
     }, {
-      maxInboundStreams: this.init.maxInboundStreams,
-      maxOutboundStreams: this.init.maxOutboundStreams
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
     })
     this.started = true
   }
@@ -144,8 +154,8 @@ class DefaultFetchService implements Startable, FetchService {
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      log('using default timeout of %d ms', this.init.timeout)
-      signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
+      log('using default timeout of %d ms', this.timeout)
+      signal = AbortSignal.timeout(this.timeout)
 
       try {
         // fails on node < 15.4
@@ -310,12 +320,5 @@ class DefaultFetchService implements Startable, FetchService {
 }
 
 export function fetchService (init: FetchServiceInit = {}): (components: FetchServiceComponents) => FetchService {
-  const validatedConfig = object({
-    protocolPrefix: string().default('libp2p'),
-    timeout: number().integer().default(TIMEOUT),
-    maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-    maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
-  }).validateSync(init)
-
-  return (components) => new DefaultFetchService(components, validatedConfig)
+  return (components) => new DefaultFetchService(components, init)
 }

@@ -78,14 +78,25 @@ class UPnPNAT implements Startable {
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
     this.components = components
-
     this.started = false
-    this.externalAddress = init.externalAddress
-    this.localAddress = init.localAddress
-    this.description = init.description ?? `${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`
-    this.ttl = init.ttl ?? DEFAULT_TTL
-    this.keepAlive = init.keepAlive
-    this.gateway = init.gateway
+
+    const validIPRegex = /^(?:(?:^|\.)(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){4}$/
+
+    const validatedConfig = object({
+      externalAddress: string().matches(validIPRegex, 'Invalid IP address'),
+      localAddress: string().matches(validIPRegex, 'Invalid IP address'),
+      description: string().default(`${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`),
+      ttl: number().integer().default(DEFAULT_TTL),
+      keepAlive: boolean().default(true),
+      gateway: string().optional()
+    }).validateSync(init)
+
+    this.externalAddress = validatedConfig.externalAddress
+    this.localAddress = validatedConfig.localAddress
+    this.description = validatedConfig.description
+    this.ttl = validatedConfig.ttl
+    this.keepAlive = validatedConfig.keepAlive
+    this.gateway = validatedConfig.gateway
 
     if (this.ttl < DEFAULT_TTL) {
       throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, codes.ERR_INVALID_PARAMETERS)
@@ -206,19 +217,8 @@ class UPnPNAT implements Startable {
   }
 }
 
-export function uPnPNATService (init?: UPnPNATInit): (components: UPnPNATComponents) => UPnPNAT {
-  const validIPRegex = /^(?:(?:^|\.)(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){4}$/
-
-  const validatedConfig = object({
-    externalAddress: string().matches(validIPRegex, 'Invalid IP address'),
-    localAddress: string().matches(validIPRegex, 'Invalid IP address'),
-    description: string().optional(),
-    ttl: number().integer().default(DEFAULT_TTL),
-    keepAlive: boolean().default(true),
-    gateway: string().optional()
-  }).validateSync(init)
-
+export function uPnPNATService (init: UPnPNATInit = {}): (components: UPnPNATComponents) => UPnPNAT {
   return (components: UPnPNATComponents) => {
-    return new UPnPNAT(components, validatedConfig)
+    return new UPnPNAT(components, init)
   }
 }

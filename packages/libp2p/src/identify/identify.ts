@@ -8,6 +8,7 @@ import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
+import { boolean, number, object, string } from 'yup'
 import { codes } from '../errors.js'
 import {
   AGENT_VERSION,
@@ -18,9 +19,12 @@ import {
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
-  MAX_PUSH_INCOMING_STREAMS,
   MAX_IDENTIFY_MESSAGE_SIZE,
   TIMEOUT,
+  RUN_ON_CONNECTION_OPEN,
+  PROTOCOL_PREFIX,
+  RUN_ON_TRANSIENT_CONNECTION,
+  MAX_PUSH_INCOMING_STREAMS,
   MAX_PUSH_OUTGOING_STREAMS,
   MAX_OBSERVED_ADDRESSES
 } from './consts.js'
@@ -60,9 +64,24 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly maxIdentifyMessageSize: number
   private readonly maxObservedAddresses: number
   private readonly events: EventEmitter<Libp2pEvents>
-  private readonly runOnTransientConnection?: boolean
+  private readonly runOnTransientConnection: boolean
+  private readonly runOnConnectionOpen: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
+    const validatedConfig = object({
+      protocolPrefix: string().default(PROTOCOL_PREFIX),
+      agentVersion: string().default(AGENT_VERSION),
+      timeout: number().integer().default(TIMEOUT),
+      maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
+      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+      maxPushIncomingStreams: number().integer().min(0).default(MAX_PUSH_INCOMING_STREAMS),
+      maxPushOutgoingStreams: number().integer().min(0).default(MAX_PUSH_OUTGOING_STREAMS),
+      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+      maxObservedAddresses: number().integer().min(0).default(MAX_OBSERVED_ADDRESSES),
+      runOnConnectionOpen: boolean().default(RUN_ON_CONNECTION_OPEN),
+      runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
+    }).validateSync(init)
+
     this.started = false
     this.peerId = components.peerId
     this.peerStore = components.peerStore
@@ -71,24 +90,25 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.connectionManager = components.connectionManager
     this.events = components.events
 
-    this.identifyProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
-    this.identifyPushProtocolStr = `/${init.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
-    this.timeout = init.timeout ?? TIMEOUT
-    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.maxPushIncomingStreams = init.maxPushIncomingStreams ?? MAX_PUSH_INCOMING_STREAMS
-    this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? MAX_PUSH_OUTGOING_STREAMS
-    this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
-    this.maxObservedAddresses = init.maxObservedAddresses ?? MAX_OBSERVED_ADDRESSES
-    this.runOnTransientConnection = init.runOnTransientConnection
+    this.identifyProtocolStr = `/${validatedConfig.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
+    this.identifyPushProtocolStr = `/${validatedConfig.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    this.timeout = validatedConfig.timeout
+    this.maxInboundStreams = validatedConfig.maxInboundStreams
+    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
+    this.maxPushIncomingStreams = validatedConfig.maxPushIncomingStreams
+    this.maxPushOutgoingStreams = validatedConfig.maxPushOutgoingStreams
+    this.maxIdentifyMessageSize = validatedConfig.maxIdentifyMessageSize
+    this.maxObservedAddresses = validatedConfig.maxObservedAddresses
+    this.runOnTransientConnection = validatedConfig.runOnTransientConnection
+    this.runOnConnectionOpen = validatedConfig.runOnConnectionOpen
 
     // Store self host metadata
     this.host = {
-      protocolVersion: `${init.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: init.agentVersion ?? AGENT_VERSION
+      protocolVersion: `${validatedConfig.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
+      agentVersion: validatedConfig.agentVersion
     }
 
-    if (init.runOnConnectionOpen === true) {
+    if (this.runOnConnectionOpen) {
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
