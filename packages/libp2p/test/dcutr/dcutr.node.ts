@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import { logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -12,8 +11,6 @@ import { createLibp2pNode } from '../../src/libp2p.js'
 import { usingAsRelay } from '../circuit-relay/utils.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
-
-const log = logger('libp2p:dcutr:test')
 
 const RELAY_PORT = 47330
 const LOCAL_PORT = 47331
@@ -28,10 +25,6 @@ describe('dcutr', () => {
     await pRetry(async () => {
       const connections = libp2pA.getConnections(libp2pB.peerId)
       const onlyDirect = connections.filter(conn => !conn.transient)
-      log(`connections length: ${connections.length}`)
-      log(`connections connection IDs are: ${connections.map(conn => conn.id).join(', ')}`)
-      log(`onlyDirect length: ${onlyDirect.length}`)
-      log(`onlyDirect connection IDs are: ${onlyDirect.map(conn => conn.id).join(', ')}`)
       if (onlyDirect.length === connections.length) {
         // all connections are direct
         return true
@@ -157,9 +150,6 @@ describe('dcutr', () => {
 
       await libp2pA.start()
       await libp2pB.start()
-      log('libp2pA.peerId: %s', libp2pA.peerId.toString())
-      log('libp2pB.peerId: %s', libp2pB.peerId.toString())
-      log('relay.peerId: %s', relay.peerId.toString())
 
       // wait for B to have a relay address
       await usingAsRelay(libp2pB, relay)
@@ -178,8 +168,6 @@ describe('dcutr', () => {
     it('should perform connection upgrade', async () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
-
-      log(`initial connection ID: ${connection.id}`)
 
       // connection should be transient
       expect(connection).to.have.property('transient', true)

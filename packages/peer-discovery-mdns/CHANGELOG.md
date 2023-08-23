@@ -9,6 +9,63 @@
 
 * update @libp2p/interface-peer-discovery to 2.0.0 ([#197](https://github.com/libp2p/js-libp2p-mdns/issues/197)) ([e8172af](https://github.com/libp2p/js-libp2p-mdns/commit/e8172af8b9856a934327195238b00e5fbba436a4))
 
+### [9.0.4](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.3...mdns-v9.0.4) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/interface-internal bumped from ^0.1.3 to ^0.1.4
+
+### [9.0.3](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.2...mdns-v9.0.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* **@libp2p/kad-dht:** update timeout ref type ([02b8932](https://www.github.com/libp2p/js-libp2p/commit/02b89323130f6d70a0f804f7f1a6adba81ea4d0a))
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/peer-id bumped from ^3.0.1 to ^3.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/interface-internal bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/peer-id-factory bumped from ^3.0.2 to ^3.0.3
+
+### [9.0.2](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.1...mdns-v9.0.2) (2023-08-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/logger bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-id bumped from ^3.0.0 to ^3.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/interface-internal bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/peer-id-factory bumped from ^3.0.1 to ^3.0.2
+
+### [9.0.1](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.0...mdns-v9.0.1) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/interface-internal bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/peer-id-factory bumped from ^3.0.0 to ^3.0.1
+
 ## [9.0.0](https://www.github.com/libp2p/js-libp2p/compare/mdns-v8.0.0...mdns-v9.0.0) (2023-07-31)
 
 

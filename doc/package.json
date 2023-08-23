@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Docs for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/interface-internal#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/doc#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -18,17 +18,11 @@
       "sourceType": "module"
     }
   },
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
-    }
-  },
   "scripts": {
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@chainsafe/libp2p-yamux": "^4.0.2",
+    "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/interface": "^0.1.0",
     "@libp2p/mplex": "^9.0.0",
     "@libp2p/prometheus-metrics": "^2.0.0",

@@ -67,6 +67,12 @@ export interface ConnectionManagerInit {
   autoDialMaxQueueLength?: number
 
   /**
+   * When we've failed to dial a peer, do not autodial them again within this
+   * number of ms. (default: 1 minute)
+   */
+  autoDialPeerRetryThreshold?: number
+
+  /**
    * Sort the known addresses of a peer before trying to dial, By default public
    * addresses will be dialled before private (e.g. loopback or LAN) addresses.
    */
@@ -488,7 +494,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId != null) {
+    if (peerId != null && options.force !== true) {
       log('dial %p', peerId)
       const existingConnections = this.getConnections(peerId)
 

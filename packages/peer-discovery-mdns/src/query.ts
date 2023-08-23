@@ -7,7 +7,7 @@ import type { MulticastDNS, QueryPacket, ResponsePacket } from 'multicast-dns'
 
 const log = logger('libp2p:mdns:query')
 
-export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: number): NodeJS.Timer {
+export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: number): ReturnType<typeof setInterval> {
   const query = (): void => {
     log('query', serviceTag)
 

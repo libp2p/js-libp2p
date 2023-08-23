@@ -5,6 +5,42 @@
 
 * update README.md ([#59](https://github.com/libp2p/js-libp2p-peer-id/issues/59)) ([aba6483](https://github.com/libp2p/js-libp2p-peer-id/commit/aba6483dad028ee5c24bfc01135b77568666cfd3))
 
+### [3.0.3](https://www.github.com/libp2p/js-libp2p/compare/peer-id-factory-v3.0.2...peer-id-factory-v3.0.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.2 to ^2.0.3
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/peer-id bumped from ^3.0.1 to ^3.0.2
+
+### [3.0.2](https://www.github.com/libp2p/js-libp2p/compare/peer-id-factory-v3.0.1...peer-id-factory-v3.0.2) (2023-08-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/interface bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/peer-id bumped from ^3.0.0 to ^3.0.1
+
+### [3.0.1](https://www.github.com/libp2p/js-libp2p/compare/peer-id-factory-v3.0.0...peer-id-factory-v3.0.1) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.0 to ^2.0.1
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/peer-id-factory-v2.0.3...peer-id-factory-v3.0.0) (2023-07-31)
 
 

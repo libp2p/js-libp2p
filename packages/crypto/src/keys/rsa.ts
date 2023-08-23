@@ -9,7 +9,7 @@ const keypair = promisify(crypto.generateKeyPair)
 
 export { utils }
 
-export async function generateKey (bits: number): Promise<JWKKeyPair> { // eslint-disable-line require-await
+export async function generateKey (bits: number): Promise<JWKKeyPair> {
   // @ts-expect-error node types are missing jwk as a format
   const key = await keypair('rsa', {
     modulusLength: bits,
@@ -26,7 +26,7 @@ export async function generateKey (bits: number): Promise<JWKKeyPair> { // eslin
 }
 
 // Takes a jwk key
-export async function unmarshalPrivateKey (key: JsonWebKey): Promise<JWKKeyPair> { // eslint-disable-line require-await
+export async function unmarshalPrivateKey (key: JsonWebKey): Promise<JWKKeyPair> {
   if (key == null) {
     throw new CodeError('Missing key parameter', 'ERR_MISSING_KEY')
   }
@@ -49,7 +49,7 @@ export async function hashAndSign (key: JsonWebKey, msg: Uint8Array): Promise<Ui
     .sign({ format: 'jwk', key })
 }
 
-export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint8Array): Promise<boolean> { // eslint-disable-line require-await
+export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
   return crypto.createVerify('RSA-SHA256')
     .update(msg)
     // @ts-expect-error node types are missing jwk as a format
@@ -66,4 +66,14 @@ export function encrypt (key: JsonWebKey, bytes: Uint8Array): Uint8Array {
 export function decrypt (key: JsonWebKey, bytes: Uint8Array): Uint8Array {
   // @ts-expect-error node types are missing jwk as a format
   return crypto.privateDecrypt({ format: 'jwk', key, padding }, bytes)
+}
+
+export function keySize (jwk: JsonWebKey): number {
+  if (jwk.kty !== 'RSA') {
+    throw new CodeError('invalid key type', 'ERR_INVALID_KEY_TYPE')
+  } else if (jwk.n == null) {
+    throw new CodeError('invalid key modulus', 'ERR_INVALID_KEY_MODULUS')
+  }
+  const modulus = Buffer.from(jwk.n, 'base64')
+  return modulus.length * 8
 }

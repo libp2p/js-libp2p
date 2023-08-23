@@ -30,8 +30,8 @@
     "test:example": "node test.js"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^12.0.0",
-    "@chainsafe/libp2p-yamux": "^4.0.0",
+    "@chainsafe/libp2p-noise": "^13.0.0",
+    "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/bootstrap": "^9.0.0",
     "@libp2p/floodsub": "^8.0.0",
     "@libp2p/mdns": "^9.0.0",
@@ -41,8 +41,8 @@
     "libp2p": "^0.46.0"
   },
   "devDependencies": {
-    "aegir": "^40.0.1",
-    "execa": "^7.1.1",
+    "aegir": "^40.0.8",
+    "execa": "^8.0.1",
     "p-wait-for": "^5.0.2",
     "uint8arrays": "^4.0.4"
   },

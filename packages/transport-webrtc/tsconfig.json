@@ -10,9 +10,6 @@
   ],
   "references": [
     {
-      "path": "../connection-encryption-noise"
-    },
-    {
       "path": "../interface"
     },
     {
@@ -32,9 +29,6 @@
     },
     {
       "path": "../peer-id-factory"
-    },
-    {
-      "path": "../stream-multiplexer-yamux"
     },
     {
       "path": "../transport-websockets"

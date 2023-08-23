@@ -5,7 +5,18 @@ import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface OpenConnectionOptions extends AbortOptions {
+  /**
+   * Connection requests with a higher priority will be executed before those
+   * with a lower priority. (default: 50)
+   */
   priority?: number
+
+  /**
+   * When opening a connection to a remote peer, if a connection already exists
+   * it will be returned instead of creating a new connection. Pass true here
+   * to override that and dial a new connection anyway. (default: false)
+   */
+  force?: boolean
 }
 
 export interface ConnectionManager {
