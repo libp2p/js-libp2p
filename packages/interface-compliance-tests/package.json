@@ -111,6 +111,7 @@
     "@libp2p/peer-id-factory": "^3.0.3",
     "@multiformats/multiaddr": "^12.1.5",
     "abortable-iterator": "^5.0.1",
+    "aegir": "^40.0.8",
     "delay": "^6.0.0",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.2",
@@ -134,7 +135,6 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "aegir": "^40.0.8",
     "protons": "^7.0.2"
   }
 }
