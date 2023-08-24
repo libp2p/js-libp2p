@@ -25,7 +25,6 @@ import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { abortableDuplex } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
@@ -154,7 +153,7 @@ class DefaultAutoNATService implements Startable {
    * Handle an incoming AutoNAT request
    */
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
-    const signal = anySignal([AbortSignal.timeout(this.timeout)])
+    const signal = AbortSignal.timeout(this.timeout)
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
@@ -386,8 +385,6 @@ class DefaultAutoNATService implements Startable {
       )
     } catch (err) {
       log.error('error handling incoming autonat stream', err)
-    } finally {
-      signal.clear()
     }
   }
 
