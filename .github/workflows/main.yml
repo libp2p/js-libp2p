@@ -237,7 +237,8 @@ jobs:
               { "type": "fix", "section": "Bug Fixes", "hidden": false },
               { "type": "chore", "section": "Trivial Changes", "hidden": false },
               { "type": "docs", "section": "Documentation", "hidden": false },
-              { "type": "deps", "section": "Dependencies", "hidden": false }
+              { "type": "deps", "section": "Dependencies", "hidden": false },
+              { "type": "refactor", "section": "Refactors", "hidden": false }
             ]
       - uses: actions/checkout@v3
         with:
