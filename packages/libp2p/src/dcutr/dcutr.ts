@@ -10,13 +10,13 @@ import { HolePunch } from './pb/message.js'
 import { multicodec } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Connection, Stream } from '@libp2p/interface/connection'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/src/transport-manager/index.js'
-import type { PeerId } from '@libp2p/interface/src/peer-id'
 
 const log = logger('libp2p:dcutr')
 const logA = logger('libp2p:dcutr:A')
