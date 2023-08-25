@@ -10,7 +10,6 @@ import { HolePunch } from './pb/message.js'
 import { multicodec } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
@@ -99,7 +98,7 @@ export class DefaultDCUtRService implements Startable {
           return
         }
 
-        void this.upgradeInbound(connection, peerId)
+        void this.upgradeInbound(connection)
           .catch(err => {
             log.error('error during outgoing DCUtR attempt', err)
           })
@@ -135,7 +134,7 @@ export class DefaultDCUtRService implements Startable {
    *
    * @see https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
    */
-  async upgradeInbound (relayedConnection: Connection, peerId: PeerId): Promise<void> {
+  async upgradeInbound (relayedConnection: Connection): Promise<void> {
     // Upon observing the new connection, the inbound peer (here B) checks the
     // addresses advertised by A via identify.
     //
