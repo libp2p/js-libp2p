@@ -1,10 +1,10 @@
+import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
-import { plaintext } from 'libp2p/insecure'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -57,7 +57,7 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
     transports: [tcp()],
     streamMuxers: [yamux()],
     connectionEncryption: [
-      plaintext()
+      noise()
     ],
     services: {
       perf: perfService(defaultInit)

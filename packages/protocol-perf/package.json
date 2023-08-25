@@ -47,6 +47,7 @@
     "renderResults": "node dist/src/renderResults.js"
   },
   "dependencies": {
+    "@chainsafe/libp2p-noise": "^13.0.0",
     "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/crypto": "^2.0.3",
     "@libp2p/interface": "^0.1.2",
