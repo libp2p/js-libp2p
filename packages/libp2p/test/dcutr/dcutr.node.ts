@@ -69,7 +69,7 @@ describe('dcutr', () => {
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
         }
       }))
       libp2pB = await createLibp2pNode(createBaseOptions({
@@ -81,7 +81,7 @@ describe('dcutr', () => {
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
         }
       }))
 
@@ -127,7 +127,7 @@ describe('dcutr', () => {
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
         },
         connectionManager: {
           minConnections: 0 // disable autodial
@@ -143,7 +143,7 @@ describe('dcutr', () => {
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
         }
       }))
 

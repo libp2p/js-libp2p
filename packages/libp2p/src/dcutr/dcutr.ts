@@ -26,13 +26,14 @@ const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
 // ensure the dial has a high priority to jump to the head of the dial queue
 const DCUTR_DIAL_PRIORITY = 100
 
-const defaultValues = {
+const defaultValues: Required<DCUtRServiceInit> = {
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
   timeout: 5000,
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
   retries: 3,
   maxInboundStreams: 1,
-  maxOutboundStreams: 1
+  maxOutboundStreams: 1,
+  allowPrivateUpgrade: false
 }
 
 export class DefaultDCUtRService implements Startable {
@@ -41,6 +42,7 @@ export class DefaultDCUtRService implements Startable {
   private readonly retries: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
+  private readonly allowPrivateUpgrade: boolean
   private readonly peerStore: PeerStore
   private readonly registrar: Registrar
   private readonly connectionManager: ConnectionManager
@@ -60,6 +62,7 @@ export class DefaultDCUtRService implements Startable {
     this.retries = init.retries ?? defaultValues.retries
     this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
+    this.allowPrivateUpgrade = init.allowPrivateUpgrade ?? defaultValues.allowPrivateUpgrade
   }
 
   isStarted (): boolean {
@@ -385,8 +388,7 @@ export class DefaultDCUtRService implements Startable {
       try {
         const ma = multiaddr(addr)
 
-        // TODO: find a way to test around this without hardcoding process.env.NODE_ENV checks.
-        if (process.env.NODE_ENV !== 'test' && !this.isPublicAndDialable(ma)) {
+        if (!this.isPublicAndDialable(ma)) {
           continue
         }
 
@@ -427,13 +429,8 @@ export class DefaultDCUtRService implements Startable {
       return false
     }
 
-    // TODO: find a way to test around this without hardcoding process.env.NODE_ENV checks.
-    if (process.env.NODE_ENV === 'test') {
-      return true
-    }
-
     const options = ma.toOptions()
-    if (isPrivate(options.host) === true) {
+    if (!this.allowPrivateUpgrade && isPrivate(options.host) === true) {
       log.trace('ignoring private address %a', ma)
       return false
     }
