@@ -200,7 +200,7 @@ export class DefaultDCUtRService implements Startable {
           observedAddresses: []
         }, options)
 
-        logB('A waiting for half RTT')
+        logB.trace('waiting for half RTT')
         // ..and starts a timer for half the RTT measured from the time between
         // sending the initial Connect and receiving the response
         await delay(rtt / 2)
@@ -209,7 +209,7 @@ export class DefaultDCUtRService implements Startable {
         // now we only have tcp support
         // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
 
-        logB('B dialing', multiaddrs)
+        logB.trace('dialing', multiaddrs)
         // Upon expiry of the timer, B dials the address to A.
         const conn = await this.connectionManager.openConnection(multiaddrs, {
           signal: options.signal,
@@ -218,6 +218,7 @@ export class DefaultDCUtRService implements Startable {
 
         logB('DCUtR to %p succeeded to address %a, closing relayed connection', relayedConnection.remotePeer, conn.remoteAddr)
         await relayedConnection.close(options)
+        logB.trace('closed relayed connection')
 
         break
       } catch (err: any) {
@@ -360,7 +361,7 @@ export class DefaultDCUtRService implements Startable {
         force: true
       })
 
-      logA.trace('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
+      logA('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
       await relayedConnection.close(options)
       logA.trace('closed relayed connection')
     } catch (err: any) {
