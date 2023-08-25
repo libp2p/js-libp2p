@@ -5,6 +5,22 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.7](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.6...libp2p-v0.46.7) (2023-08-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.4 to ^9.0.5
+    * @libp2p/floodsub bumped from ^8.0.5 to ^8.0.6
+    * @libp2p/interface-compliance-tests bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/kad-dht bumped from ^10.0.4 to ^10.0.5
+    * @libp2p/mdns bumped from ^9.0.4 to ^9.0.5
+    * @libp2p/mplex bumped from ^9.0.4 to ^9.0.5
+    * @libp2p/tcp bumped from ^8.0.4 to ^8.0.5
+    * @libp2p/websockets bumped from ^7.0.4 to ^7.0.5
+
 ### [0.46.6](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.5...libp2p-v0.46.6) (2023-08-16)
 
 

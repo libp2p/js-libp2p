@@ -1,5 +1,21 @@
 # Changelog
 
+### [1.1.4](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.3...perf-v1.1.4) (2023-08-25)
+
+
+### Bug Fixes
+
+* **@libp2p/protocol-perf:** use noise for encryption ([#1992](https://www.github.com/libp2p/js-libp2p/issues/1992)) ([24c1c24](https://www.github.com/libp2p/js-libp2p/commit/24c1c2489cd58397c4691d382d6260d56791dbce)), closes [#1991](https://www.github.com/libp2p/js-libp2p/issues/1991)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/tcp bumped from ^8.0.4 to ^8.0.5
+    * libp2p bumped from ^0.46.6 to ^0.46.7
+
 ### [1.1.3](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.2...perf-v1.1.3) (2023-08-16)
 
 
