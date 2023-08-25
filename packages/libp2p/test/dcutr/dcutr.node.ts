@@ -117,7 +117,6 @@ describe('dcutr', () => {
     })
   })
 
-  // TODO: how to test this?
   describe('DCUtR connection upgrade for TCP', () => {
     beforeEach(async () => {
       // based on https://github.com/ipfs/helia/issues/182#issuecomment-1653860165

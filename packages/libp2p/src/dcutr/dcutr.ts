@@ -71,7 +71,7 @@ export class DefaultDCUtRService implements Startable {
     if (this.started) {
       return
     }
-    log.trace('starting DCUtR service', process.env.NODE_ENV)
+    log.trace('starting DCUtR service')
 
     // register for notifications of when peers that support DCUtR connect
     // nb. requires the identify service to be enabled
@@ -146,9 +146,7 @@ export class DefaultDCUtRService implements Startable {
     // connection, in which case B attempts a unilateral connection upgrade by
     // initiating a direct connection to A.
     void this.attemptUnilateralConnectionUpgrade(relayedConnection).then(async (success) => {
-      if (success) {
-        logB.trace('unilateral connection upgrade succeeded')
-      } else {
+      if (!success) {
         logB.trace('unilateral connection upgrade failed')
         logB('attempting DCUtR upgrade of relayed connection with %p', peerId)
         return this.initiateDCUtRUpgrade(relayedConnection)
@@ -503,12 +501,12 @@ export class DefaultDCUtRService implements Startable {
       return false
     }
 
-    const options = ma.toOptions()
     // TODO: find a way to test around this without hardcoding process.env.NODE_ENV checks.
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV === 'test') {
       return true
     }
 
+    const options = ma.toOptions()
     if (isPrivate(options.host) === true) {
       log.trace('ignoring private address %a', ma)
       return false
