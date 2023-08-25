@@ -4,7 +4,6 @@ import { logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { abortableDuplex } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
@@ -164,7 +163,7 @@ export class DefaultUpgrader implements Upgrader {
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
-    const signal = anySignal([AbortSignal.timeout(this.inboundUpgradeTimeout)])
+    const signal = AbortSignal.timeout(this.inboundUpgradeTimeout)
 
     try {
       // fails on node < 15.4
@@ -257,7 +256,6 @@ export class DefaultUpgrader implements Upgrader {
       })
     } finally {
       this.components.connectionManager.afterUpgradeInbound()
-      signal.clear()
     }
   }
 

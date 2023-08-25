@@ -2,7 +2,7 @@
 
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -279,5 +279,53 @@ describe('dial queue', () => {
     expect(signals['/ip4/127.0.0.1/tcp/1232']).to.have.property('aborted', false)
     // Dial attempt finished without connection
     expect(signals['/ip4/127.0.0.1/tcp/1233']).to.have.property('aborted', true)
+  })
+
+  it('should ignore DNS addresses for other peers', async () => {
+    const remotePeer = await createEd25519PeerId()
+    const otherRemotePeer = await createEd25519PeerId()
+    const ma = multiaddr(`/dnsaddr/example.com/p2p/${remotePeer}`)
+    const maStr = `/ip4/123.123.123.123/tcp/2348/p2p/${remotePeer}`
+    const resolvedAddresses = [
+      `/ip4/234.234.234.234/tcp/4213/p2p/${otherRemotePeer}`,
+      maStr
+    ]
+
+    let resolvedDNSAddrs = false
+    let dialedBadAddress = false
+
+    // simulate a DNSAddr that resolves to multiple different peers like
+    // bootstrap.libp2p.io
+    resolvers.set('dnsaddr', async (addr) => {
+      if (addr.equals(ma)) {
+        resolvedDNSAddrs = true
+        return resolvedAddresses
+      }
+
+      return []
+    })
+
+    dialer = new DialQueue(components, {
+      maxParallelDials: 50
+    })
+    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
+
+    components.transportManager.dial.callsFake(async (ma, opts = {}) => {
+      if (ma.toString() === maStr) {
+        await delay(100)
+        return connection
+      }
+
+      dialedBadAddress = true
+      throw new Error('Could not dial address')
+    })
+
+    await expect(dialer.dial(ma)).to.eventually.equal(connection)
+    expect(resolvedDNSAddrs).to.be.true('Did not resolve DNSAddrs')
+    expect(dialedBadAddress).to.be.false('Dialed address with wrong peer id')
+
+    resolvers.delete('dnsaddr')
   })
 })

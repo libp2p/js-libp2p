@@ -35,7 +35,7 @@ export class RoutingTableRefresh {
   private readonly refreshInterval: number
   private readonly refreshQueryTimeout: number
   private readonly commonPrefixLengthRefreshedAt: Date[]
-  private refreshTimeoutId?: NodeJS.Timer
+  private refreshTimeoutId?: ReturnType<typeof setTimeout>
 
   constructor (init: RoutingTableRefreshInit) {
     const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = init

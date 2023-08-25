@@ -27,7 +27,7 @@ export async function create (hashType: 'SHA1' | 'SHA256' | 'SHA512', secret: Ui
   )
 
   return {
-    async digest (data: Uint8Array) { // eslint-disable-line require-await
+    async digest (data: Uint8Array) {
       return sign(key, data)
     },
     length: lengths[hashType]

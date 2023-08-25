@@ -5,6 +5,42 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#279](https://github.com/libp2p/js-libp2p-tcp/issues/279)) ([3ed1235](https://github.com/libp2p/js-libp2p-tcp/commit/3ed12353aa48b5a933f80042846a8f1c2337fa47))
 
+### [8.0.5](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.4...tcp-v8.0.5) (2023-08-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.4 to ^4.0.5
+
+### [8.0.4](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.3...tcp-v8.0.4) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.3 to ^4.0.4
+
+### [8.0.3](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.2...tcp-v8.0.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/utils bumped from ^4.0.1 to ^4.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.2 to ^4.0.3
+
 ### [8.0.2](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.1...tcp-v8.0.2) (2023-08-05)
 
 

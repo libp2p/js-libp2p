@@ -41,7 +41,7 @@ export class QuerySelf implements Startable {
   private readonly initialInterval: number
   private readonly queryTimeout: number
   private started: boolean
-  private timeoutId?: NodeJS.Timer
+  private timeoutId?: ReturnType<typeof setTimeout>
   private controller?: AbortController
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private querySelfPromise?: DeferredPromise<void>
