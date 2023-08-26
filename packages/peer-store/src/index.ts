@@ -6,6 +6,7 @@ import type { Libp2pEvents } from '@libp2p/interface'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore, Peer, PeerData, PeerQuery } from '@libp2p/interface/peer-store'
+import type { PeerInfo } from '@libp2p/interface/src/peer-info'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
 
@@ -103,6 +104,19 @@ export class PersistentPeerStore implements PeerStore {
 
     try {
       return await this.store.load(peerId)
+    } finally {
+      log.trace('get release read lock')
+      release()
+    }
+  }
+
+  async getInfo (peerId: PeerId): Promise<PeerInfo> {
+    log.trace('get await read lock')
+    const release = await this.store.lock.readLock()
+    log.trace('get got read lock')
+
+    try {
+      return await this.store.loadPeerInfo(peerId)
     } finally {
       log.trace('get release read lock')
       release()
