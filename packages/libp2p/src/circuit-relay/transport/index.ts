@@ -1,3 +1,4 @@
+import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
 import { symbol, type Transport, type CreateListenerOptions, type Listener, type Upgrader } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
@@ -116,6 +117,7 @@ class CircuitRelayTransport implements Transport {
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
+  private readonly shutdownController: AbortController
   private readonly maxInboundStopStreams: number
   private readonly maxOutboundStopStreams?: number
   private readonly stopTimeout: number
@@ -132,6 +134,13 @@ class CircuitRelayTransport implements Transport {
     this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
     this.stopTimeout = init.stopTimeout ?? defaults.stopTimeout
+
+    this.shutdownController = new AbortController()
+
+     try {
+      // fails on node < 15.4
+      setMaxListeners?.(Infinity, this.shutdownController.signal)
+    } catch { }
 
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
