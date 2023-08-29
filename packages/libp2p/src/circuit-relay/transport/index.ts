@@ -137,7 +137,7 @@ class CircuitRelayTransport implements Transport {
 
     this.shutdownController = new AbortController()
 
-     try {
+    try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, this.shutdownController.signal)
     } catch { }
