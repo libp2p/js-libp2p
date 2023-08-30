@@ -133,7 +133,6 @@ class CircuitRelayTransport implements Transport {
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
     this.stopTimeout = init.stopTimeout ?? defaults.stopTimeout
 
-
     if (init.discoverRelays != null && init.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
       this.discovery.addEventListener('relay:discover', (evt) => {
