@@ -89,7 +89,8 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
   }
 
   async close (): Promise<void> {
-
+    // remove event listener
+    this.relayStore.removeEventListener('relay:removed')
   }
 
   #removeRelayPeer (peerId: PeerId): void {
