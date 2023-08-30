@@ -11,7 +11,9 @@ import delay from 'delay'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
+import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
 import type { Libp2pEvents } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
@@ -223,5 +225,70 @@ describe('auto-dial', () => {
 
     // should only have queried peer store once
     expect(peerStoreAllSpy.callCount).to.equal(1)
+  })
+
+  it('should not re-dial peers we have recently failed to dial', async () => {
+    const peerWithAddress: Peer = {
+      id: await createEd25519PeerId(),
+      protocols: [],
+      addresses: [{
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
+        isCertified: true
+      }],
+      metadata: new Map(),
+      tags: new Map()
+    }
+    const undialablePeer: Peer = {
+      id: await createEd25519PeerId(),
+      protocols: [],
+      addresses: [{
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
+        isCertified: true
+      }],
+      // we failed to dial them recently
+      metadata: new Map([[LAST_DIAL_FAILURE_KEY, uint8ArrayFromString(`${Date.now() - 10}`)]]),
+      tags: new Map()
+    }
+
+    await peerStore.save(peerWithAddress.id, peerWithAddress)
+    await peerStore.save(undialablePeer.id, undialablePeer)
+
+    const connectionManager = stubInterface<ConnectionManager>({
+      getConnectionsMap: new PeerMap(),
+      getDialQueue: []
+    })
+
+    autoDialler = new AutoDial({
+      peerStore,
+      connectionManager,
+      events
+    }, {
+      minConnections: 10,
+      autoDialPeerRetryThreshold: 2000
+    })
+    autoDialler.start()
+
+    void autoDialler.autoDial()
+
+    await pWaitFor(() => {
+      return connectionManager.openConnection.callCount === 1
+    })
+
+    expect(connectionManager.openConnection.callCount).to.equal(1)
+    expect(connectionManager.openConnection.calledWith(matchPeerId(peerWithAddress.id))).to.be.true()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(undialablePeer.id))).to.be.false()
+
+    // pass the retry threshold
+    await delay(2000)
+
+    // autodial again
+    void autoDialler.autoDial()
+
+    await pWaitFor(() => {
+      return connectionManager.openConnection.callCount === 3
+    })
+
+    // should have retried the unreachable peer
+    expect(connectionManager.openConnection.calledWith(matchPeerId(undialablePeer.id))).to.be.true()
   })
 })

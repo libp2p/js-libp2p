@@ -11,6 +11,22 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#100](https://github.com/libp2p/js-libp2p-utils/issues/100)) ([da6547c](https://github.com/libp2p/js-libp2p-utils/commit/da6547cdd073ba1a4225be5a419c6776c4ebe6f1))
 
+### [4.0.2](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.1...utils-v4.0.2) (2023-08-14)
+
+
+### Bug Fixes
+
+* **@libp2p/utils:** switch to @chainsafe/is-ip ([#1957](https://www.github.com/libp2p/js-libp2p/issues/1957)) ([18567b7](https://www.github.com/libp2p/js-libp2p/commit/18567b7cfcca605b2d586cef9275554099959bc8)), closes [#1926](https://www.github.com/libp2p/js-libp2p/issues/1926)
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+
 ### [4.0.1](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.0...utils-v4.0.1) (2023-08-05)
 
 

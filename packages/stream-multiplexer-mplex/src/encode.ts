@@ -1,6 +1,6 @@
 import batchedBytes from 'it-batched-bytes'
+import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
-import varint from 'varint'
 import { allocUnsafe } from './alloc-unsafe.js'
 import { type Message, MessageTypes } from './message-types.js'
 import type { Source } from 'it-stream-types'
@@ -24,15 +24,15 @@ class Encoder {
     let offset = this._poolOffset
 
     varint.encode(msg.id << 3 | msg.type, pool, offset)
-    offset += varint.encode.bytes ?? 0
+    offset += varint.encodingLength(msg.id << 3 | msg.type)
 
     if ((msg.type === MessageTypes.NEW_STREAM || msg.type === MessageTypes.MESSAGE_INITIATOR || msg.type === MessageTypes.MESSAGE_RECEIVER) && msg.data != null) {
       varint.encode(msg.data.length, pool, offset)
+      offset += varint.encodingLength(msg.data.length)
     } else {
       varint.encode(0, pool, offset)
+      offset += varint.encodingLength(0)
     }
-
-    offset += varint.encode.bytes ?? 0
 
     const header = pool.subarray(this._poolOffset, offset)
 
