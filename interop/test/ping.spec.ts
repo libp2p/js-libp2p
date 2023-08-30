@@ -6,13 +6,10 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
-import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import { webTransport } from '@libp2p/webtransport'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import { type IdentifyService, identifyService } from 'libp2p/identify'
 import { pingService, type PingService } from 'libp2p/ping'
 
@@ -67,32 +64,34 @@ describe('ping test', function () {
           throw new Error('WebTransport is not supported as a listener')
         }
         break
-      case 'webrtc-direct':
-        options.transports = [webRTCDirect()]
-        options.addresses = {
-          listen: isDialer ? [] : [`/ip4/${IP}/udp/0/webrtc-direct`]
-        }
-        break
-      case 'webrtc':
-        options.transports = [webRTC(),
-          webSockets({ filter: filters.all }), // ws needed to connect to relay
-          circuitRelayTransport({
-            discoverRelays: 1
-          }) // needed to use the relay
-        ]
-        options.addresses = {
-          listen: isDialer ? [] : ['/webrtc']
-        }
-        options.connectionGater = {
-          denyDialMultiaddr: () => {
-            // by default we refuse to dial local addresses from the browser since they
-            // are usually sent by remote peers broadcasting undialable multiaddrs but
-            // here we are explicitly connecting to a local node so do not deny dialing
-            // any discovered address
-            return false
-          }
-        }
-        break
+      //
+      // #TODO: We can re-introduce this once https://github.com/libp2p/js-libp2p/issues/1846 is resolved
+      //   case 'webrtc-direct':
+      //   options.transports = [webRTCDirect()]
+      //   options.addresses = {
+      //     listen: isDialer ? [] : [`/ip4/${IP}/udp/0/webrtc-direct`]
+      //   }
+      //   break
+      // case 'webrtc':
+      //   options.transports = [webRTC(),
+      //     webSockets({ filter: filters.all }), // ws needed to connect to relay
+      //     circuitRelayTransport({
+      //       discoverRelays: 1
+      //     }) // needed to use the relay
+      //   ]
+      //   options.addresses = {
+      //     listen: isDialer ? [] : ['/webrtc']
+      //   }
+      //   options.connectionGater = {
+      //     denyDialMultiaddr: () => {
+      //       // by default we refuse to dial local addresses from the browser since they
+      //       // are usually sent by remote peers broadcasting undialable multiaddrs but
+      //       // here we are explicitly connecting to a local node so do not deny dialing
+      //       // any discovered address
+      //       return false
+      //     }
+      //   }
+      //  break
       case 'ws':
         options.transports = [webSockets()]
         options.addresses = {
@@ -114,17 +113,18 @@ describe('ping test', function () {
     let skipMuxer = false
     switch (TRANSPORT) {
       case 'webtransport':
-      case 'webrtc-direct':
-        skipSecureChannel = true
-        skipMuxer = true
-        break
-      case 'webrtc':
-        skipSecureChannel = true
-        skipMuxer = true
-        // Setup yamux and noise to connect to the relay node
-        options.streamMuxers = [yamux()]
-        options.connectionEncryption = [noise()]
-        break
+      // #TODO: We can re-introduce this once https://github.com/libp2p/js-libp2p/issues/1846 is resolved
+      // case 'webrtc-direct':
+      //   skipSecureChannel = true
+      //   skipMuxer = true
+      //   break
+      // case 'webrtc':
+      //   skipSecureChannel = true
+      //   skipMuxer = true
+      //   // Setup yamux and noise to connect to the relay node
+      //   options.streamMuxers = [yamux()]
+      //   options.connectionEncryption = [noise()]
+      //   break
       default:
         // Do nothing
     }

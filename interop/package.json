@@ -43,7 +43,6 @@
     "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/mplex": "^9.0.0",
     "@libp2p/tcp": "^8.0.0",
-    "@libp2p/webrtc": "^3.0.0",
     "@libp2p/websockets": "^7.0.0",
     "@libp2p/webtransport": "^3.0.0",
     "@multiformats/mafmt": "^12.1.2",
