@@ -160,7 +160,7 @@
     "p-retry": "^5.0.0",
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
-    "rate-limiter-flexible": "^2.3.11",
+    "rate-limiter-flexible": "^3.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6",
     "wherearewe": "^2.0.1",

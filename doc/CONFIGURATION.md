@@ -126,7 +126,7 @@ If you want to know more about libp2p connection encryption, you should read the
 
 Some available peer discovery modules are:
 
-- [@libp2p/mdns](https://github.com/libp2p/js-libp2ptree/master/packages/peer-discovery-mdns)
+- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-mdns)
 - [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-bootstrap)
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
 - [@chainsafe/discv5](https://github.com/chainsafe/discv5)
