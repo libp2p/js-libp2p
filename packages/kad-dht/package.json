@@ -107,7 +107,7 @@
     "protons": "^7.0.2",
     "sinon": "^15.1.2",
     "ts-sinon": "^2.0.2",
-    "which": "^3.0.0"
+    "which": "^4.0.0"
   },
   "browser": {
     "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"
