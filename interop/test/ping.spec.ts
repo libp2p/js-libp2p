@@ -115,9 +115,9 @@ describe('ping test', function () {
       case 'webtransport':
       // #TODO: We can re-introduce this once https://github.com/libp2p/js-libp2p/issues/1846 is resolved
       // case 'webrtc-direct':
-      //   skipSecureChannel = true
-      //   skipMuxer = true
-      //   break
+        skipSecureChannel = true
+        skipMuxer = true
+        break
       // case 'webrtc':
       //   skipSecureChannel = true
       //   skipMuxer = true
