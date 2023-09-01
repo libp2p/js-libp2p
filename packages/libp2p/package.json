@@ -135,7 +135,6 @@
     "@multiformats/mafmt": "^12.1.2",
     "@multiformats/multiaddr": "^12.1.5",
     "@multiformats/multiaddr-matcher": "^1.0.0",
-    "abortable-iterator": "^5.0.1",
     "any-signal": "^4.1.1",
     "datastore-core": "^9.0.1",
     "delay": "^6.0.0",

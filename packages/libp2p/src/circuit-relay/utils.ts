@@ -1,8 +1,9 @@
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { abortableSource } from 'abortable-iterator'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { codes } from '../errors.js'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 import type { Limit } from './pb/index.js'
 import type { Stream } from '@libp2p/interface/connection'
@@ -58,9 +59,10 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
   }
 
   queueMicrotask(() => {
-    void dst.sink(countStreamBytes(abortableSource(src.source, signal, {
-      abortMessage: 'duration limit exceeded'
-    }), dataLimit))
+    signal.addEventListener('abort', () => {
+      src.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
+    }, { once: true })
+    void dst.sink(countStreamBytes(src.source, dataLimit))
       .catch(err => {
         log.error('error while relaying streams src -> dst', err)
         abortStreams(err)
@@ -76,9 +78,10 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
   })
 
   queueMicrotask(() => {
-    void src.sink(countStreamBytes(abortableSource(dst.source, signal, {
-      abortMessage: 'duration limit exceeded'
-    }), dataLimit))
+    signal.addEventListener('abort', () => {
+      dst.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
+    }, { once: true })
+    void src.sink(countStreamBytes(dst.source, dataLimit))
       .catch(err => {
         log.error('error while relaying streams dst -> src', err)
         abortStreams(err)
