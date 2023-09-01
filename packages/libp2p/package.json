@@ -157,7 +157,7 @@
     "multiformats": "^12.0.1",
     "p-defer": "^4.0.0",
     "p-queue": "^7.3.4",
-    "p-retry": "^5.0.0",
+    "p-retry": "^6.0.0",
     "private-ip": "^3.0.0",
     "protons-runtime": "^5.0.0",
     "rate-limiter-flexible": "^3.0.0",
