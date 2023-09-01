@@ -38,25 +38,25 @@ describe('MulticastDNS', () => {
     ])
 
     aMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/20001'),
+      multiaddr('/ip4/192.168.1.142/tcp/20001'),
       multiaddr('/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star'),
       multiaddr('/dns4/discovery.libp2p.io/tcp/8443')
     ]
 
     bMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/20002'),
-      multiaddr('/ip6/::1/tcp/20002'),
+      multiaddr('/ip4/192.168.1.143/tcp/20002'),
+      multiaddr('/ip6/2604:1380:4602:5c00::3/tcp/20002'),
       multiaddr('/dnsaddr/discovery.libp2p.io')
     ]
 
     cMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/20003'),
-      multiaddr('/ip4/127.0.0.1/tcp/30003/ws'),
+      multiaddr('/ip4/192.168.1.144/tcp/20003'),
+      multiaddr('/ip4/192.168.1.144/tcp/30003/ws'),
       multiaddr('/dns4/discovery.libp2p.io')
     ]
 
     dMultiaddrs = [
-      multiaddr('/ip4/127.0.0.1/tcp/30003/ws')
+      multiaddr('/ip4/192.168.1.145/tcp/30003/ws')
     ]
   })
 
@@ -110,7 +110,8 @@ describe('MulticastDNS', () => {
     await pWaitFor(() => peers.has(expectedPeer))
     mdnsA.removeEventListener('peer', foundPeer)
 
-    expect(peers.get(expectedPeer).multiaddrs.length).to.equal(3)
+    // everything except loopback
+    expect(peers.get(expectedPeer).multiaddrs.length).to.equal(2)
 
     await stop(mdnsA, mdnsB, mdnsD)
   })
@@ -139,15 +140,6 @@ describe('MulticastDNS', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 5000))
     await stop(mdnsC)
-  })
-
-  it('should start and stop with go-libp2p-mdns compat', async () => {
-    const mdnsA = mdns({
-      port: 50004
-    })(getComponents(pA, aMultiaddrs))
-
-    await start(mdnsA)
-    await stop(mdnsA)
   })
 
   it('should not emit undefined peer ids', async () => {
@@ -216,6 +208,79 @@ describe('MulticastDNS', () => {
     })
 
     expect(pB.toString()).to.eql(id.toString())
+
+    await stop(mdnsA, mdnsB)
+  })
+
+  it('only includes link-local addresses', async function () {
+    this.timeout(40 * 1000)
+
+    // these are not link-local addresses
+    const publicAddress = '/ip4/48.52.76.32/tcp/1234'
+    const relayDnsAddress = `/dnsaddr/example.org/tcp/1234/p2p/${pD.toString()}/p2p-circuit`
+    const dnsAddress = '/dns4/example.org/tcp/1234'
+    const loopbackAddress = '/ip4/127.0.0.1/tcp/1234'
+    const loopbackAddress6 = '/ip6/::1/tcp/1234'
+
+    // this address is too long to fit in a TXT record
+    const longAddress = `/ip4/192.168.1.142/udp/4001/quic-v1/webtransport/certhash/uEiDils3hWFJmsWOJIoMPxAcpzlyFNxTDZpklIoB8643ddw/certhash/uEiAM4BGr4OMK3O9cFGwfbNc4J7XYnsKE5wNPKKaTLa4fkw/p2p/${pD.toString()}/p2p-circuit`
+
+    // these are link-local addresses
+    const relayAddress = `/ip4/192.168.1.142/tcp/1234/p2p/${pD.toString()}/p2p-circuit`
+    const localAddress = '/ip4/192.168.1.123/tcp/1234'
+    const localWsAddress = '/ip4/192.168.1.123/tcp/1234/ws'
+
+    const mdnsA = mdns({
+      broadcast: false, // do not talk to ourself
+      port: 50005,
+      ip: '224.0.0.252'
+    })(getComponents(pA, aMultiaddrs))
+
+    const mdnsB = mdns({
+      port: 50005, // port must be the same
+      ip: '224.0.0.252' // ip must be the same
+    })(getComponents(pB, [
+      multiaddr(publicAddress),
+      multiaddr(relayAddress),
+      multiaddr(relayDnsAddress),
+      multiaddr(localAddress),
+      multiaddr(loopbackAddress),
+      multiaddr(loopbackAddress6),
+      multiaddr(dnsAddress),
+      multiaddr(longAddress),
+      multiaddr(localWsAddress)
+    ]))
+
+    await start(mdnsA, mdnsB)
+
+    const { detail: { id, multiaddrs } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => {
+      mdnsA.addEventListener('peer', resolve, {
+        once: true
+      })
+    })
+
+    expect(pB.toString()).to.eql(id.toString())
+
+    ;[
+      publicAddress,
+      relayDnsAddress,
+      dnsAddress,
+      longAddress,
+      loopbackAddress,
+      loopbackAddress6
+    ].forEach(addr => {
+      expect(multiaddrs.map(ma => ma.toString()))
+        .to.not.include(addr)
+    })
+
+    ;[
+      relayAddress,
+      localAddress,
+      localWsAddress
+    ].forEach(addr => {
+      expect(multiaddrs.map(ma => ma.toString()))
+        .to.include(addr)
+    })
 
     await stop(mdnsA, mdnsB)
   })

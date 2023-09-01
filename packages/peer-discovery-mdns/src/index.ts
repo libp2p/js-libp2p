@@ -6,6 +6,7 @@ import * as query from './query.js'
 import { stringGen } from './utils.js'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { Startable } from '@libp2p/interface/src/startable.js'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 
 const log = logger('libp2p:mdns')
@@ -23,7 +24,7 @@ export interface MulticastDNSComponents {
   addressManager: AddressManager
 }
 
-class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
+class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   public mdns?: multicastDNS.MulticastDNS
 
   private readonly broadcast: boolean
@@ -50,9 +51,10 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     this.port = init.port ?? 5353
     this.components = components
     this._queryInterval = null
-    this._onPeer = this._onPeer.bind(this)
     this._onMdnsQuery = this._onMdnsQuery.bind(this)
     this._onMdnsResponse = this._onMdnsResponse.bind(this)
+    this._onMdnsWarning = this._onMdnsWarning.bind(this)
+    this._onMdnsError = this._onMdnsError.bind(this)
   }
 
   readonly [peerDiscovery] = this
@@ -76,6 +78,8 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     this.mdns = multicastDNS({ port: this.port, ip: this.ip })
     this.mdns.on('query', this._onMdnsQuery)
     this.mdns.on('response', this._onMdnsResponse)
+    this.mdns.on('warning', this._onMdnsWarning)
+    this.mdns.on('error', this._onMdnsError)
 
     this._queryInterval = query.queryLAN(this.mdns, this.serviceTag, this.interval)
   }
@@ -113,14 +117,12 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
     }
   }
 
-  _onPeer (evt: CustomEvent<PeerInfo>): void {
-    if (this.mdns == null) {
-      return
-    }
+  _onMdnsWarning (err: Error): void {
+    log.error('mdns warning', err)
+  }
 
-    this.dispatchEvent(new CustomEvent<PeerInfo>('peer', {
-      detail: evt.detail
-    }))
+  _onMdnsError (err: Error): void {
+    log.error('mdns error', err)
   }
 
   /**
@@ -135,6 +137,8 @@ class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDisc
 
     this.mdns.removeListener('query', this._onMdnsQuery)
     this.mdns.removeListener('response', this._onMdnsResponse)
+    this.mdns.removeListener('warning', this._onMdnsWarning)
+    this.mdns.removeListener('error', this._onMdnsError)
 
     if (this._queryInterval != null) {
       clearInterval(this._queryInterval)
