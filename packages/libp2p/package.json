@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.46.7",
+  "version": "0.46.8",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/libp2p#readme",
@@ -177,7 +177,7 @@
     "@libp2p/interface-compliance-tests": "^4.0.5",
     "@libp2p/interop": "^9.0.0",
     "@libp2p/kad-dht": "^10.0.5",
-    "@libp2p/mdns": "^9.0.5",
+    "@libp2p/mdns": "^9.0.6",
     "@libp2p/mplex": "^9.0.5",
     "@libp2p/tcp": "^8.0.5",
     "@libp2p/websockets": "^7.0.5",

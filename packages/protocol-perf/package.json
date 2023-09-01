@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/perf",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Implementation of Perf Protocol",
   "author": "@maschad / @marcopolo",
   "license": "Apache-2.0 OR MIT",
@@ -58,7 +58,7 @@
     "@libp2p/peer-id-factory": "^3.0.3",
     "@libp2p/tcp": "^8.0.5",
     "@multiformats/multiaddr": "^12.1.5",
-    "libp2p": "^0.46.7",
+    "libp2p": "^0.46.8",
     "uint8arrays": "^4.0.6",
     "yargs": "^17.7.2"
   },
