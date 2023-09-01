@@ -42,10 +42,6 @@
     ".": {
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./filters": {
-      "types": "./dist/src/filters.d.ts",
-      "import": "./dist/src/filters.js"
     }
   },
   "eslintConfig": {
