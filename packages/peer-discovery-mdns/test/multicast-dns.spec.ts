@@ -219,8 +219,6 @@ describe('MulticastDNS', () => {
     const publicAddress = '/ip4/48.52.76.32/tcp/1234'
     const relayDnsAddress = `/dnsaddr/example.org/tcp/1234/p2p/${pD.toString()}/p2p-circuit`
     const dnsAddress = '/dns4/example.org/tcp/1234'
-    const loopbackAddress = '/ip4/127.0.0.1/tcp/1234'
-    const loopbackAddress6 = '/ip6/::1/tcp/1234'
 
     // this address is too long to fit in a TXT record
     const longAddress = `/ip4/192.168.1.142/udp/4001/quic-v1/webtransport/certhash/uEiDils3hWFJmsWOJIoMPxAcpzlyFNxTDZpklIoB8643ddw/certhash/uEiAM4BGr4OMK3O9cFGwfbNc4J7XYnsKE5wNPKKaTLa4fkw/p2p/${pD.toString()}/p2p-circuit`
@@ -229,6 +227,11 @@ describe('MulticastDNS', () => {
     const relayAddress = `/ip4/192.168.1.142/tcp/1234/p2p/${pD.toString()}/p2p-circuit`
     const localAddress = '/ip4/192.168.1.123/tcp/1234'
     const localWsAddress = '/ip4/192.168.1.123/tcp/1234/ws'
+
+    // these are not link-local but go-libp2p advertises loopback addresses even
+    // though you shouldn't for mDNS
+    const loopbackAddress = '/ip4/127.0.0.1/tcp/1234'
+    const loopbackAddress6 = '/ip6/::1/tcp/1234'
 
     const mdnsA = mdns({
       broadcast: false, // do not talk to ourself
@@ -265,9 +268,7 @@ describe('MulticastDNS', () => {
       publicAddress,
       relayDnsAddress,
       dnsAddress,
-      longAddress,
-      loopbackAddress,
-      loopbackAddress6
+      longAddress
     ].forEach(addr => {
       expect(multiaddrs.map(ma => ma.toString()))
         .to.not.include(addr)
@@ -276,7 +277,9 @@ describe('MulticastDNS', () => {
     ;[
       relayAddress,
       localAddress,
-      localWsAddress
+      localWsAddress,
+      loopbackAddress,
+      loopbackAddress6
     ].forEach(addr => {
       expect(multiaddrs.map(ma => ma.toString()))
         .to.include(addr)

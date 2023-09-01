@@ -1,6 +1,5 @@
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
@@ -139,13 +138,7 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string
 }
 
 function isLinkLocal (ma: Multiaddr): boolean {
-  // loopback addresses should not be sent
-  // https://github.com/libp2p/specs/blob/master/discovery/mdns.md#issues
-  if (isLoopback(ma)) {
-    return false
-  }
-
-  // match private ip4/ip6 addresses
+  // match private ip4/ip6 & loopback addresses
   if (isPrivate(ma)) {
     return true
   }
