@@ -47,6 +47,7 @@
     "@libp2p/interface": "^0.1.2",
     "@libp2p/logger": "^3.0.2",
     "@libp2p/peer-id": "^3.0.2",
+    "@libp2p/utils": "^4.0.2",
     "@multiformats/multiaddr": "^12.1.5",
     "@types/multicast-dns": "^7.2.1",
     "dns-packet": "^5.4.0",
