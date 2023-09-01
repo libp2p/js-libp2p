@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>PeerList | Documentation - v1.0.0</title><meta name="description" content="Documentation for Documentation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>PeerList | libp2p - v1.0.0</title><meta name="description" content="Documentation for libp2p"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -6,13 +6,13 @@
 <div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
-<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Documentation - v1.0.0</a></div>
+<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">libp2p - v1.0.0</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-content">
 <div class="tsd-page-title">
 <ul class="tsd-breadcrumb">
-<li><a href="../index.html">Documentation</a></li>
+<li><a href="../index.html">libp2p</a></li>
 <li><a href="../modules/_libp2p_peer_collections.html">@libp2p/peer-collections</a></li>
 <li><a href="_libp2p_peer_collections.PeerList.html">PeerList</a></li></ul>
 <h1>Class PeerList</h1></div>
@@ -24,7 +24,7 @@ a map that stringifies the PeerIds before storing them.</p>
 should be a cheap operation.</p>
 </div>
 <div class="tsd-comment tsd-typography">
-<h4>Example</h4><pre><code class="language-JavaScript"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">peerList</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@libp2p/peer-collections&#39;</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">list</span><span class="hl-1"> = </span><span class="hl-0">peerList</span><span class="hl-1">()</span><br/><span class="hl-5">list</span><span class="hl-1">.</span><span class="hl-0">push</span><span class="hl-1">(</span><span class="hl-5">peerId</span><span class="hl-1">)</span>
+<h4>Example</h4><pre><code class="language-JavaScript"><span class="hl-13">import</span><span class="hl-1"> { </span><span class="hl-11">peerList</span><span class="hl-1"> } </span><span class="hl-13">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@libp2p/peer-collections&#39;</span><br/><br/><span class="hl-9">const</span><span class="hl-1"> </span><span class="hl-10">list</span><span class="hl-1"> = </span><span class="hl-0">peerList</span><span class="hl-1">()</span><br/><span class="hl-11">list</span><span class="hl-1">.</span><span class="hl-0">push</span><span class="hl-1">(</span><span class="hl-11">peerId</span><span class="hl-1">)</span>
 </code><button>Copy</button></pre>
 </div></section>
 <section class="tsd-panel tsd-hierarchy">
@@ -32,7 +32,7 @@ should be a cheap operation.</p>
 <ul class="tsd-hierarchy">
 <li><span class="target">PeerList</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L22">packages/peer-collections/src/list.ts:22</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L22">packages/peer-collections/src/list.ts:22</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -81,14 +81,14 @@ should be a cheap operation.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">list</span>: <a href="../interfaces/_libp2p_peer_collections.unknown.Iterable.html" class="tsd-signature-type tsd-kind-interface">Iterable</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="_libp2p_peer_collections.PeerList.html" class="tsd-signature-type tsd-kind-class">PeerList</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_peer_collections.PeerList.html" class="tsd-signature-type tsd-kind-class">PeerList</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L25">packages/peer-collections/src/list.ts:25</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L25">packages/peer-collections/src/list.ts:25</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="list" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>list</span><a href="#list" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">list</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L23">packages/peer-collections/src/list.ts:23</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L23">packages/peer-collections/src/list.ts:23</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member"><a id="length" class="tsd-anchor"></a>
@@ -98,7 +98,7 @@ should be a cheap operation.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L151">packages/peer-collections/src/list.ts:151</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L151">packages/peer-collections/src/list.ts:151</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="_iterator_" class="tsd-anchor"></a>
@@ -108,7 +108,7 @@ should be a cheap operation.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/_libp2p_peer_collections.unknown.IterableIterator.html" class="tsd-signature-type tsd-kind-interface">IterableIterator</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L35">packages/peer-collections/src/list.ts:35</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L35">packages/peer-collections/src/list.ts:35</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="concat" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>concat</span><a href="#concat" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -121,7 +121,7 @@ should be a cheap operation.</p>
 <h5><span class="tsd-kind-parameter">list</span>: <a href="_libp2p_peer_collections.PeerList.html" class="tsd-signature-type tsd-kind-class">PeerList</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_peer_collections.PeerList.html" class="tsd-signature-type tsd-kind-class">PeerList</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L44">packages/peer-collections/src/list.ts:44</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L44">packages/peer-collections/src/list.ts:44</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="entries" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>entries</span><a href="#entries" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -129,7 +129,7 @@ should be a cheap operation.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/_libp2p_peer_collections.unknown.IterableIterator.html" class="tsd-signature-type tsd-kind-interface">IterableIterator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L54">packages/peer-collections/src/list.ts:54</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L54">packages/peer-collections/src/list.ts:54</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="every" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>every</span><a href="#every" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -157,7 +157,7 @@ should be a cheap operation.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L63">packages/peer-collections/src/list.ts:63</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L63">packages/peer-collections/src/list.ts:63</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="filter" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>filter</span><a href="#filter" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -185,7 +185,7 @@ should be a cheap operation.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_peer_collections.PeerList.html" class="tsd-signature-type tsd-kind-class">PeerList</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L69">packages/peer-collections/src/list.ts:69</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L69">packages/peer-collections/src/list.ts:69</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="find" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>find</span><a href="#find" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -213,7 +213,7 @@ should be a cheap operation.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L83">packages/peer-collections/src/list.ts:83</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L83">packages/peer-collections/src/list.ts:83</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="findIndex" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>find<wbr/>Index</span><a href="#findIndex" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -241,7 +241,7 @@ should be a cheap operation.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L95">packages/peer-collections/src/list.ts:95</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L95">packages/peer-collections/src/list.ts:95</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="forEach" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>for<wbr/>Each</span><a href="#forEach" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -269,7 +269,7 @@ should be a cheap operation.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L101">packages/peer-collections/src/list.ts:101</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L101">packages/peer-collections/src/list.ts:101</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="includes" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>includes</span><a href="#includes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -282,7 +282,7 @@ should be a cheap operation.</p>
 <h5><span class="tsd-kind-parameter">peerId</span>: <a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L107">packages/peer-collections/src/list.ts:107</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L107">packages/peer-collections/src/list.ts:107</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="indexOf" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>index<wbr/>Of</span><a href="#indexOf" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -295,7 +295,7 @@ should be a cheap operation.</p>
 <h5><span class="tsd-kind-parameter">peerId</span>: <a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L111">packages/peer-collections/src/list.ts:111</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L111">packages/peer-collections/src/list.ts:111</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="pop" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>pop</span><a href="#pop" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -303,7 +303,7 @@ should be a cheap operation.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L115">packages/peer-collections/src/list.ts:115</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L115">packages/peer-collections/src/list.ts:115</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="push" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>push</span><a href="#push" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -316,7 +316,7 @@ should be a cheap operation.</p>
 <h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">peerIds</span>: <a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L125">packages/peer-collections/src/list.ts:125</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L125">packages/peer-collections/src/list.ts:125</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="shift" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>shift</span><a href="#shift" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -324,7 +324,7 @@ should be a cheap operation.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L131">packages/peer-collections/src/list.ts:131</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L131">packages/peer-collections/src/list.ts:131</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="unshift" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>unshift</span><a href="#unshift" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -337,7 +337,7 @@ should be a cheap operation.</p>
 <h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">peerIds</span>: <a href="../types/_libp2p_peer_collections.unknown.PeerId.html" class="tsd-signature-type tsd-kind-type-alias">PeerId</a><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/15111057/packages/peer-collections/src/list.ts#L141">packages/peer-collections/src/list.ts:141</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/ac8a1cac/packages/peer-collections/src/list.ts#L141">packages/peer-collections/src/list.ts:141</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -375,19 +375,8 @@ should be a cheap operation.</p>
 <li><a href="#shift" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>shift</span></a></li>
 <li><a href="#unshift" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>unshift</span></a></li></ul></div></details></div>
 <div class="site-menu">
-<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>Documentation -<wbr/> v1.0.0</span></a>
+<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>libp2p -<wbr/> v1.0.0</span></a>
 <ul class="tsd-small-nested-navigation">
-<li><a href="../modules/_libp2p_example_auto_relay.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>auto-<wbr/>relay</span></a></li>
-<li><a href="../modules/_libp2p_example_chat.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>chat</span></a></li>
-<li><a href="../modules/_libp2p_example_connection_encryption.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>connection-<wbr/>encryption</span></a></li>
-<li><a href="../modules/_libp2p_example_delegated_routing_example.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>delegated-<wbr/>routing-<wbr/>example</span></a></li>
-<li><a href="../modules/_libp2p_example_discovery_mechanisms.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>discovery-<wbr/>mechanisms</span></a></li>
-<li><a href="../modules/_libp2p_example_echo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>echo</span></a></li>
-<li><a href="../modules/_libp2p_example_peer_and_content_routing.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>peer-<wbr/>and-<wbr/>content-<wbr/>routing</span></a></li>
-<li><a href="../modules/_libp2p_example_pnet.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>pnet</span></a></li>
-<li><a href="../modules/_libp2p_example_protocol_and_stream_muxing.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>protocol-<wbr/>and-<wbr/>stream-<wbr/>muxing</span></a></li>
-<li><a href="../modules/_libp2p_example_pubsub.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>pubsub</span></a></li>
-<li><a href="../modules/_libp2p_example_transports.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/example-<wbr/>transports</span></a></li>
 <li><a href="../modules/_libp2p_crypto.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/crypto</span></a></li>
 <li><a href="../modules/_libp2p_interface.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/interface</span></a></li>
 <li><a href="../modules/_libp2p_interface_compliance_tests.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>@libp2p/interface-<wbr/>compliance-<wbr/>tests</span></a></li>
