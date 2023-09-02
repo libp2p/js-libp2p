@@ -77,6 +77,15 @@ export class AutoDial implements Startable {
           log.error(err)
         })
     })
+
+    // when new peers are discovered, dial them if we don't have
+    // enough connections
+    components.events.addEventListener('peer:discovery', () => {
+      this.autoDial()
+        .catch(err => {
+          log.error(err)
+        })
+    })
   }
 
   isStarted (): boolean {
