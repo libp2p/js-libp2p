@@ -8,7 +8,7 @@ const KEYS_BYTE_LENGTH = 32
 export { PUBLIC_KEY_BYTE_LENGTH as publicKeyLength }
 export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 
-export async function generateKey (): Promise<Uint8ArrayKeyPair> {
+export function generateKey (): Uint8ArrayKeyPair {
   // the actual private key (32 bytes)
   const privateKeyRaw = ed.utils.randomPrivateKey()
   const publicKey = ed.getPublicKey(privateKeyRaw)
@@ -25,7 +25,7 @@ export async function generateKey (): Promise<Uint8ArrayKeyPair> {
 /**
  * Generate keypair from a 32 byte uint8array
  */
-export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8ArrayKeyPair> {
+export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
   if (seed.length !== KEYS_BYTE_LENGTH) {
     throw new TypeError('"seed" must be 32 bytes in length.')
   } else if (!(seed instanceof Uint8Array)) {
@@ -44,13 +44,13 @@ export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8Array
   }
 }
 
-export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array): Promise<Uint8Array> {
+export function hashAndSign (privateKey: Uint8Array, msg: Uint8Array): Uint8Array {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
 
   return ed.sign(msg, privateKeyRaw)
 }
 
-export async function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
+export function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array): boolean {
   return ed.verify(sig, msg, publicKey)
 }
 

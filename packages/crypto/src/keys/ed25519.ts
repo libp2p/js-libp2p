@@ -1,10 +1,9 @@
 import crypto from 'crypto'
-import { promisify } from 'util'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import type { Uint8ArrayKeyPair } from './interface.js'
 
-const keypair = promisify(crypto.generateKeyPair)
+const keypair = crypto.generateKeyPairSync
 
 const PUBLIC_KEY_BYTE_LENGTH = 32
 const PRIVATE_KEY_BYTE_LENGTH = 64 // private key is actually 32 bytes but for historical reasons we concat private and public keys
@@ -35,8 +34,8 @@ function derivePublicKey (privateKey: Uint8Array): Uint8Array {
   return uint8arrayFromString(jwk.x, 'base64url')
 }
 
-export async function generateKey (): Promise<Uint8ArrayKeyPair> {
-  const key = await keypair('ed25519', {
+export function generateKey (): Uint8ArrayKeyPair {
+  const key = keypair('ed25519', {
     publicKeyEncoding: { type: 'spki', format: 'jwk' },
     privateKeyEncoding: { type: 'pkcs8', format: 'jwk' }
   })
@@ -55,7 +54,7 @@ export async function generateKey (): Promise<Uint8ArrayKeyPair> {
 /**
  * Generate keypair from a 32 byte uint8array
  */
-export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8ArrayKeyPair> {
+export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
   if (seed.length !== KEYS_BYTE_LENGTH) {
     throw new TypeError('"seed" must be 32 bytes in length.')
   } else if (!(seed instanceof Uint8Array)) {
@@ -71,7 +70,7 @@ export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8Array
   }
 }
 
-export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Buffer> {
+export function hashAndSign (key: Uint8Array, msg: Uint8Array): Buffer {
   if (!(key instanceof Uint8Array)) {
     throw new TypeError('"key" must be a node.js Buffer, or Uint8Array.')
   }
@@ -102,7 +101,7 @@ export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Bu
   return crypto.sign(null, msg, obj)
 }
 
-export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
+export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array): boolean {
   if (key.byteLength !== PUBLIC_KEY_BYTE_LENGTH) {
     throw new TypeError('"key" must be 32 bytes in length.')
   } else if (!(key instanceof Uint8Array)) {
