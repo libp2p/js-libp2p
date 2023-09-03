@@ -39,6 +39,11 @@ export const AUTO_DIAL_MAX_QUEUE_LENGTH = 100
 export const AUTO_DIAL_PEER_RETRY_THRESHOLD = 1000 * 60
 
 /**
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.unknown.ConnectionManagerInit.html#autoDialDiscoveredPeersDebounce
+ */
+export const AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE = 10
+
+/**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#inboundConnectionThreshold
  */
 export const INBOUND_CONNECTION_THRESHOLD = 5

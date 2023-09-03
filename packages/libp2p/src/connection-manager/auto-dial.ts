@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { PeerJobQueue } from '../utils/peer-job-queue.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
 import type { Libp2pEvents } from '@libp2p/interface'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -18,6 +18,7 @@ interface AutoDialInit {
   autoDialPriority?: number
   autoDialInterval?: number
   autoDialPeerRetryThreshold?: number
+  autoDialDiscoveredPeersDebounce?: number
 }
 
 interface AutoDialComponents {
@@ -32,7 +33,8 @@ const defaultOptions = {
   autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
   autoDialPriority: AUTO_DIAL_PRIORITY,
   autoDialInterval: AUTO_DIAL_INTERVAL,
-  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD
+  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD,
+  autoDialDiscoveredPeersDebounce: AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE
 }
 
 export class AutoDial implements Startable {
@@ -44,6 +46,7 @@ export class AutoDial implements Startable {
   private readonly autoDialIntervalMs: number
   private readonly autoDialMaxQueueLength: number
   private readonly autoDialPeerRetryThresholdMs: number
+  private readonly autoDialDiscoveredPeersDebounce: number
   private autoDialInterval?: ReturnType<typeof setInterval>
   private started: boolean
   private running: boolean
@@ -61,6 +64,7 @@ export class AutoDial implements Startable {
     this.autoDialIntervalMs = init.autoDialInterval ?? defaultOptions.autoDialInterval
     this.autoDialMaxQueueLength = init.maxQueueLength ?? defaultOptions.maxQueueLength
     this.autoDialPeerRetryThresholdMs = init.autoDialPeerRetryThreshold ?? defaultOptions.autoDialPeerRetryThreshold
+    this.autoDialDiscoveredPeersDebounce = init.autoDialDiscoveredPeersDebounce ?? defaultOptions.autoDialDiscoveredPeersDebounce
     this.started = false
     this.running = false
     this.queue = new PeerJobQueue({
@@ -78,13 +82,20 @@ export class AutoDial implements Startable {
         })
     })
 
+    // sometimes peers are discovered in quick succession so add a small
+    // debounce to ensure all eligible peers are autodialed
+    let debounce: ReturnType<typeof setTimeout>
+
     // when new peers are discovered, dial them if we don't have
     // enough connections
     components.events.addEventListener('peer:discovery', () => {
-      this.autoDial()
-        .catch(err => {
-          log.error(err)
-        })
+      clearTimeout(debounce)
+      debounce = setTimeout(() => {
+        this.autoDial()
+          .catch(err => {
+            log.error(err)
+          })
+      }, this.autoDialDiscoveredPeersDebounce)
     })
   }
 
