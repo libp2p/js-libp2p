@@ -102,12 +102,12 @@
     "it-last": "^3.0.1",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "p-retry": "^5.1.2",
+    "p-retry": "^6.0.0",
     "p-wait-for": "^5.0.2",
     "protons": "^7.0.2",
     "sinon": "^15.1.2",
     "ts-sinon": "^2.0.2",
-    "which": "^3.0.0"
+    "which": "^4.0.0"
   },
   "browser": {
     "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"

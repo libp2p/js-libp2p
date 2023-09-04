@@ -1,7 +1,7 @@
 {
-  "name": "multidim-interop",
+  "name": "@libp2p/multidim-interop",
   "version": "1.0.0",
-  "description": "Multidimension Interop Test",
+  "description": "Multidimensional interop tests",
   "author": "Glen De Cauwsemaecker <glen@littlebearlabs.io> / @marcopolo",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/interop#readme",
@@ -16,8 +16,18 @@
   "types": "./dist/src/index.d.ts",
   "files": [
     "src",
+    "test",
     "dist",
-    "!dist/test",
+    ".aegir.js",
+    "BrowserDockerfile",
+    "chromium-version.json",
+    "Dockerfile",
+    "firefox-version.json",
+    "Makefile",
+    "node-version.json",
+    "relay.js",
+    "tsconfig.json",
+    "webkit-version.json",
     "!**/*.tsbuildinfo"
   ],
   "exports": {
@@ -56,6 +66,5 @@
   },
   "browser": {
     "@libp2p/tcp": false
-  },
-  "private": true
+  }
 }
