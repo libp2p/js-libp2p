@@ -105,7 +105,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
           protocols: evt.detail.peer.protocols
         }
 
-        this.safeDispatchEvent('peer:discovery', { detail: peerInfo })
+        components.events.safeDispatchEvent('peer:discovery', { detail: peerInfo })
       }
     })
 

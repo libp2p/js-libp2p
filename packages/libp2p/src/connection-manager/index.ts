@@ -73,6 +73,14 @@ export interface ConnectionManagerInit {
   autoDialPeerRetryThreshold?: number
 
   /**
+   * Newly discovered peers may be auto-dialed to increase the number of open
+   * connections, but they can be discovered in quick succession so add a small
+   * delay before attempting to dial them in case more peers have been
+   * discovered. (default: 10ms)
+   */
+  autoDialDiscoveredPeersDebounce?: number
+
+  /**
    * Sort the known addresses of a peer before trying to dial, By default public
    * addresses will be dialled before private (e.g. loopback or LAN) addresses.
    */
