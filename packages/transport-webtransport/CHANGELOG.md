@@ -11,6 +11,29 @@
 
 * bump @chainsafe/libp2p-noise from 11.0.4 to 12.0.1 ([#80](https://github.com/libp2p/js-libp2p-webtransport/issues/80)) ([599dab1](https://github.com/libp2p/js-libp2p-webtransport/commit/599dab1b4f6ae816b0c0feefc926c1b38d24b676))
 
+### [3.0.8](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.7...webtransport-v3.0.8) (2023-09-01)
+
+
+### Bug Fixes
+
+* **@libp2p/webtransport:** remove filters export ([#2018](https://www.github.com/libp2p/js-libp2p/issues/2018)) ([3282563](https://www.github.com/libp2p/js-libp2p/commit/328256339b1539bb048f41cd22542234b2b7a44f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.7 to ^0.46.8
+
+### [3.0.7](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.6...webtransport-v3.0.7) (2023-08-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.6 to ^0.46.7
+
 ### [3.0.6](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.5...webtransport-v3.0.6) (2023-08-16)
 
 

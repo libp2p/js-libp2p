@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/floodsub",
-  "version": "8.0.5",
+  "version": "8.0.6",
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/pubsub-floodsub#readme",
@@ -62,7 +62,7 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^4.0.4",
+    "@libp2p/interface-compliance-tests": "^4.0.5",
     "@libp2p/peer-collections": "^4.0.3",
     "@libp2p/peer-id-factory": "^3.0.3",
     "@multiformats/multiaddr": "^12.1.3",

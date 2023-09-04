@@ -5,6 +5,13 @@
 
 * bump aegir from 38.1.8 to 39.0.5 ([#393](https://github.com/libp2p/js-libp2p-interfaces/issues/393)) ([31f3797](https://github.com/libp2p/js-libp2p-interfaces/commit/31f3797b24f7c23f3f16e9db3a230bd5f7cd5175))
 
+### [4.0.5](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.4...interface-compliance-tests-v4.0.5) (2023-08-25)
+
+
+### Bug Fixes
+
+* **@libp2p/interface-compliance-tests:** add aegir to deps ([#1983](https://www.github.com/libp2p/js-libp2p/issues/1983)) ([8977862](https://www.github.com/libp2p/js-libp2p/commit/89778624908a536e3253ee4fe1a0d287e1aad2e9)), closes [#1974](https://www.github.com/libp2p/js-libp2p/issues/1974)
+
 ### [4.0.4](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.3...interface-compliance-tests-v4.0.4) (2023-08-16)
 
 

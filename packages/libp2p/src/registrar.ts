@@ -109,7 +109,7 @@ export class DefaultRegistrar implements Registrar {
 
     // Update self protocols in the peer store
     await this.components.peerStore.patch(this.components.peerId, {
-      protocols: protocolList
+      protocols: this.getProtocols()
     })
   }
 
