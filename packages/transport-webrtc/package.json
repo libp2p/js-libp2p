@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "3.1.8",
+  "version": "3.1.9",
   "description": "A libp2p transport using WebRTC connections",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc#readme",
@@ -79,7 +79,7 @@
     "it-length": "^3.0.2",
     "it-map": "^3.0.3",
     "it-pair": "^2.0.6",
-    "libp2p": "^0.46.8",
+    "libp2p": "^0.46.9",
     "protons": "^7.0.2",
     "sinon": "^15.1.2",
     "sinon-ts": "^1.0.0"

@@ -5,6 +5,20 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+### [3.1.9](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.8...webrtc-v3.1.9) (2023-09-05)
+
+
+### Bug Fixes
+
+* **@libp2p/webrtc:** close data-channel on muxer stream end ([#1976](https://www.github.com/libp2p/js-libp2p/issues/1976)) ([7517082](https://www.github.com/libp2p/js-libp2p/commit/7517082d0ae5dcd8f3f2d13aee2a13067836a2be))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.8 to ^0.46.9
+
 ### [3.1.8](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.7...webrtc-v3.1.8) (2023-09-01)
 
 
