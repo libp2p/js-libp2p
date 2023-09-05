@@ -155,8 +155,9 @@ class DefaultAutoNATService implements Startable {
    */
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
+
     signal.addEventListener('abort', () => {
-      data.stream.abort(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT))
+      data.stream.source.throw(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT))
     }, { once: true })
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning

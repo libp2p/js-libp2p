@@ -60,8 +60,9 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
 
   queueMicrotask(() => {
     signal.addEventListener('abort', () => {
-      src.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
+      dst.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
     }, { once: true })
+
     void dst.sink(countStreamBytes(src.source, dataLimit))
       .catch(err => {
         log.error('error while relaying streams src -> dst', err)
@@ -78,9 +79,11 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
   })
 
   queueMicrotask(() => {
+
     signal.addEventListener('abort', () => {
-      dst.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
+      src.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
     }, { once: true })
+
     void src.sink(countStreamBytes(dst.source, dataLimit))
       .catch(err => {
         log.error('error while relaying streams dst -> src', err)
