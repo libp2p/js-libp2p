@@ -58,11 +58,9 @@
     "@libp2p/webtransport": "^3.0.0",
     "@multiformats/mafmt": "^12.1.2",
     "@multiformats/multiaddr": "^12.1.5",
+    "aegir": "^40.0.12",
     "libp2p": "^0.46.0",
     "redis": "^4.5.1"
-  },
-  "devDependencies": {
-    "aegir": "^40.0.8"
   },
   "browser": {
     "@libp2p/tcp": false
