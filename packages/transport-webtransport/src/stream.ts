@@ -6,7 +6,7 @@ import type { Source } from 'it-stream-types'
 
 const log = logger('libp2p:webtransport:stream')
 
-export async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
+export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
   const writer = bidiStream.writable.getWriter()
   const reader = bidiStream.readable.getReader()
   await writer.ready
@@ -60,6 +60,9 @@ export async function webtransportBiDiStreamToStream (bidiStream: any, streamId:
     abort (err: Error) {
       if (!writerClosed) {
         writer.abort(err)
+          .catch(err => {
+            log.error('could not abort stream', err)
+          })
         writerClosed = true
       }
       readerClosed = true
@@ -140,7 +143,7 @@ export async function webtransportBiDiStreamToStream (bidiStream: any, streamId:
     source: (async function * () {
       while (true) {
         const val = await reader.read()
-        if (val.done === true) {
+        if (val.done) {
           readerClosed = true
           if (writerClosed) {
             cleanupStreamFromActiveStreams()
