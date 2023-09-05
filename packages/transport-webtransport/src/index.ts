@@ -12,16 +12,6 @@ import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/i
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
-declare global {
-  var WebTransport: any
-}
-
-// https://www.w3.org/TR/webtransport/#web-transport-close-info
-interface WebTransportCloseInfo {
-  closeCode: number
-  reason: string
-}
-
 interface WebTransportSessionCleanup {
   (closeInfo?: WebTransportCloseInfo): void
 }
