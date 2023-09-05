@@ -157,7 +157,7 @@ class DefaultAutoNATService implements Startable {
     const signal = AbortSignal.timeout(this.timeout)
 
     const onAbort = (): void => {
-      data.stream.source.throw(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT)).catch(() => {})
+      data.stream.abort(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
