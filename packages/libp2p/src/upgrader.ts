@@ -163,9 +163,12 @@ export class DefaultUpgrader implements Upgrader {
     let cryptoProtocol
 
     const signal = AbortSignal.timeout(this.inboundUpgradeTimeout)
-    signal.addEventListener('abort', () => {
+
+    const onAbort = (): void => {
       maConn.abort(new CodeError('inbound upgrade timeout', codes.ERR_TIMEOUT))
-    }, { once: true })
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
 
     try {
       // fails on node < 15.4
@@ -253,6 +256,8 @@ export class DefaultUpgrader implements Upgrader {
         transient: opts?.transient
       })
     } finally {
+      signal.removeEventListener('abort', onAbort)
+
       this.components.connectionManager.afterUpgradeInbound()
     }
   }

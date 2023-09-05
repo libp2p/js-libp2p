@@ -156,9 +156,11 @@ class DefaultAutoNATService implements Startable {
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
 
-    signal.addEventListener('abort', () => {
-      data.stream.source.throw(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT))
-    }, { once: true })
+    const onAbort = (): void => {
+      data.stream.source.throw(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT)).catch(() => {})
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
@@ -387,6 +389,8 @@ class DefaultAutoNATService implements Startable {
       )
     } catch (err) {
       log.error('error handling incoming autonat stream', err)
+    } finally {
+      signal.removeEventListener('abort', onAbort)
     }
   }
 
@@ -455,6 +459,8 @@ class DefaultAutoNATService implements Startable {
       const networkSegments: string[] = []
 
       const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
+        let onAbort = (): void => {}
+
         try {
           log('asking %p to verify multiaddr', peer.id)
 
@@ -465,7 +471,10 @@ class DefaultAutoNATService implements Startable {
           const stream = await connection.newStream(this.protocol, {
             signal
           })
-          signal.addEventListener('abort', () => { stream.abort(new CodeError('verifyAddress timeout', codes.ERR_TIMEOUT)) }, { once: true })
+
+          onAbort = () => { stream.abort(new CodeError('verifyAddress timeout', codes.ERR_TIMEOUT)) }
+
+          signal.addEventListener('abort', onAbort, { once: true })
 
           const buf = await pipe(
             [request],
@@ -512,6 +521,8 @@ class DefaultAutoNATService implements Startable {
           return response.dialResponse
         } catch (err) {
           log.error('error asking remote to verify multiaddr', err)
+        } finally {
+          signal.removeEventListener('abort', onAbort)
         }
       }
 

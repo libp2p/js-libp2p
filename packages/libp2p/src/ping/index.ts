@@ -107,6 +107,7 @@ class DefaultPingService implements Startable, PingService {
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let stream: Stream | undefined
+    let onAbort = (): void => {}
 
     options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
@@ -116,10 +117,12 @@ class DefaultPingService implements Startable, PingService {
         runOnTransientConnection: this.runOnTransientConnection
       })
 
-      // make stream abortable
-      options.signal.addEventListener('abort', () => {
+      onAbort = () => {
         stream?.abort(new CodeError('ping timeout', codes.ERR_TIMEOUT))
-      }, { once: true })
+      }
+
+      // make stream abortable
+      options.signal.addEventListener('abort', onAbort, { once: true })
 
       const result = await pipe(
         [data],
@@ -147,6 +150,7 @@ class DefaultPingService implements Startable, PingService {
 
       throw err
     } finally {
+      options.signal.removeEventListener('abort', onAbort)
       if (stream != null) {
         await stream.close()
       }

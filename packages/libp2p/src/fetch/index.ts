@@ -139,6 +139,7 @@ class DefaultFetchService implements Startable, FetchService {
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let signal = options.signal
     let stream: Stream | undefined
+    let onAbort = (): void => {}
 
     // create a timeout if no abort signal passed
     if (signal == null) {
@@ -156,10 +157,12 @@ class DefaultFetchService implements Startable, FetchService {
         signal
       })
 
-      // make stream abortable
-      signal.addEventListener('abort', () => {
+      onAbort = () => {
         stream?.abort(new CodeError('fetch timeout', codes.ERR_TIMEOUT))
-      }, { once: true })
+      }
+
+      // make stream abortable
+      signal.addEventListener('abort', onAbort, { once: true })
 
       log('fetch %s', key)
 
@@ -201,6 +204,7 @@ class DefaultFetchService implements Startable, FetchService {
 
       return result ?? null
     } finally {
+      signal.removeEventListener('abort', onAbort)
       if (stream != null) {
         await stream.close()
       }

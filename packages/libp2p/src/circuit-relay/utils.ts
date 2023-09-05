@@ -59,9 +59,11 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
   }
 
   queueMicrotask(() => {
-    signal.addEventListener('abort', () => {
+    const onAbort = (): void => {
       dst.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
-    }, { once: true })
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
 
     void dst.sink(countStreamBytes(src.source, dataLimit))
       .catch(err => {
@@ -72,6 +74,7 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
         srcDstFinished = true
 
         if (dstSrcFinished) {
+          signal.removeEventListener('abort', onAbort)
           signal.clear()
           clearTimeout(timeout)
         }
@@ -79,10 +82,11 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
   })
 
   queueMicrotask(() => {
-
-    signal.addEventListener('abort', () => {
+    const onAbort = (): void => {
       src.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
-    }, { once: true })
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
 
     void src.sink(countStreamBytes(dst.source, dataLimit))
       .catch(err => {
@@ -93,6 +97,7 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
         dstSrcFinished = true
 
         if (srcDstFinished) {
+          signal.removeEventListener('abort', onAbort)
           signal.clear()
           clearTimeout(timeout)
         }
