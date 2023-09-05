@@ -7,12 +7,6 @@ import { expect } from 'aegir/chai'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import { webTransport } from '../src/index.js'
 
-declare global {
-  interface Window {
-    WebTransport: any
-  }
-}
-
 describe('libp2p-webtransport', () => {
   let node: Libp2p
 

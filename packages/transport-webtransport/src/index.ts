@@ -12,16 +12,6 @@ import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/i
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
-declare global {
-  var WebTransport: any
-}
-
-// https://www.w3.org/TR/webtransport/#web-transport-close-info
-interface WebTransportCloseInfo {
-  closeCode: number
-  reason: string
-}
-
 interface WebTransportSessionCleanup {
   (closeInfo?: WebTransportCloseInfo): void
 }
@@ -197,7 +187,7 @@ class WebTransportTransport implements Transport {
             yield val.value
           }
 
-          if (val.done === true) {
+          if (val.done) {
             break
           }
         }
@@ -230,7 +220,7 @@ class WebTransportTransport implements Transport {
     return true
   }
 
-  webtransportMuxer (wt: InstanceType<typeof WebTransport>, cleanUpWTSession: WebTransportSessionCleanup): StreamMuxerFactory {
+  webtransportMuxer (wt: WebTransport, cleanUpWTSession: WebTransportSessionCleanup): StreamMuxerFactory {
     let streamIDCounter = 0
     const config = this.config
     return {
@@ -252,7 +242,7 @@ class WebTransportTransport implements Transport {
           while (true) {
             const { done, value: wtStream } = await reader.read()
 
-            if (done === true) {
+            if (done) {
               break
             }
 
