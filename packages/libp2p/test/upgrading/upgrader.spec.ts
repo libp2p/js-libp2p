@@ -279,6 +279,44 @@ describe('Upgrader', () => {
     })
   })
 
+  it('should clear timeout if upgrade is successful', async () => {
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+
+    localUpgrader = new DefaultUpgrader(localComponents, {
+      connectionEncryption: [
+        plaintext()()
+      ],
+      muxers: [
+        yamux()()
+      ],
+      inboundUpgradeTimeout: 1000
+    })
+    remoteUpgrader = new DefaultUpgrader(remoteComponents, {
+      connectionEncryption: [
+        plaintext()()
+      ],
+      muxers: [
+        yamux()()
+      ],
+      inboundUpgradeTimeout: 1000
+    })
+
+    const connections = await Promise.all([
+      localUpgrader.upgradeOutbound(outbound),
+      remoteUpgrader.upgradeInbound(inbound)
+    ])
+
+    await delay(2000)
+
+    expect(connections).to.have.length(2)
+
+    connections.forEach(conn => {
+      conn.close().catch(() => {
+        throw new Error('Failed to close connection')
+      })
+    })
+  })
+
   it('should fail if muxers do not match', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 

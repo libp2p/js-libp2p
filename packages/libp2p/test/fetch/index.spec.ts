@@ -135,7 +135,7 @@ describe('fetch', () => {
     await expect(localFetch.fetch(remoteComponents.peerId, key, {
       signal
     }))
-      .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
+      .to.eventually.be.rejected.with.property('code', 'ERR_TIMEOUT')
 
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)

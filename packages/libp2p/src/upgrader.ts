@@ -3,7 +3,6 @@ import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { abortableDuplex } from 'abortable-iterator'
 import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
@@ -165,16 +164,18 @@ export class DefaultUpgrader implements Upgrader {
 
     const signal = AbortSignal.timeout(this.inboundUpgradeTimeout)
 
+    const onAbort = (): void => {
+      maConn.abort(new CodeError('inbound upgrade timeout', codes.ERR_TIMEOUT))
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
+
     try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, signal)
     } catch { }
 
     try {
-      const abortableStream = abortableDuplex(maConn, signal)
-      maConn.source = abortableStream.source
-      maConn.sink = abortableStream.sink
-
       if ((await this.components.connectionGater.denyInboundConnection?.(maConn)) === true) {
         throw new CodeError('The multiaddr connection is blocked by gater.acceptConnection', codes.ERR_CONNECTION_INTERCEPTED)
       }
@@ -255,6 +256,8 @@ export class DefaultUpgrader implements Upgrader {
         transient: opts?.transient
       })
     } finally {
+      signal.removeEventListener('abort', onAbort)
+
       this.components.connectionManager.afterUpgradeInbound()
     }
   }
