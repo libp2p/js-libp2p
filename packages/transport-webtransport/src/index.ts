@@ -187,7 +187,7 @@ class WebTransportTransport implements Transport {
             yield val.value
           }
 
-          if (val.done === true) {
+          if (val.done) {
             break
           }
         }
@@ -220,7 +220,7 @@ class WebTransportTransport implements Transport {
     return true
   }
 
-  webtransportMuxer (wt: InstanceType<typeof WebTransport>, cleanUpWTSession: WebTransportSessionCleanup): StreamMuxerFactory {
+  webtransportMuxer (wt: WebTransport, cleanUpWTSession: WebTransportSessionCleanup): StreamMuxerFactory {
     let streamIDCounter = 0
     const config = this.config
     return {
@@ -242,7 +242,7 @@ class WebTransportTransport implements Transport {
           while (true) {
             const { done, value: wtStream } = await reader.read()
 
-            if (done === true) {
+            if (done) {
               break
             }
 
