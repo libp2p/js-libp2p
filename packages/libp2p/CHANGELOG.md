@@ -5,6 +5,13 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.9](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.8...libp2p-v0.46.9) (2023-09-05)
+
+
+### Bug Fixes
+
+* **libp2p:** emit peer:discovered event on internal event bus ([#2019](https://www.github.com/libp2p/js-libp2p/issues/2019)) ([a6be8f0](https://www.github.com/libp2p/js-libp2p/commit/a6be8f0f4bbd81826c2ca5d48ea6175b1fdf3ab9))
+
 ### [0.46.8](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.7...libp2p-v0.46.8) (2023-09-01)
 
 
