@@ -1,7 +1,6 @@
 import { randomBytes } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { abortableDuplex } from 'abortable-iterator'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -108,6 +107,7 @@ class DefaultPingService implements Startable, PingService {
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let stream: Stream | undefined
+    let onAbort = (): void => {}
 
     options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 
@@ -117,12 +117,16 @@ class DefaultPingService implements Startable, PingService {
         runOnTransientConnection: this.runOnTransientConnection
       })
 
+      onAbort = () => {
+        stream?.abort(new CodeError('ping timeout', codes.ERR_TIMEOUT))
+      }
+
       // make stream abortable
-      const source = abortableDuplex(stream, options.signal)
+      options.signal.addEventListener('abort', onAbort, { once: true })
 
       const result = await pipe(
         [data],
-        source,
+        stream,
         async (source) => first(source)
       )
 
@@ -146,6 +150,7 @@ class DefaultPingService implements Startable, PingService {
 
       throw err
     } finally {
+      options.signal.removeEventListener('abort', onAbort)
       if (stream != null) {
         await stream.close()
       }

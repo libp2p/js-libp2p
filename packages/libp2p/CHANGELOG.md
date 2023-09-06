@@ -5,6 +5,27 @@
 
 * allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
+### [0.46.9](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.8...libp2p-v0.46.9) (2023-09-05)
+
+
+### Bug Fixes
+
+* **libp2p:** emit peer:discovered event on internal event bus ([#2019](https://www.github.com/libp2p/js-libp2p/issues/2019)) ([a6be8f0](https://www.github.com/libp2p/js-libp2p/commit/a6be8f0f4bbd81826c2ca5d48ea6175b1fdf3ab9))
+
+### [0.46.8](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.7...libp2p-v0.46.8) (2023-09-01)
+
+
+### Bug Fixes
+
+* **libp2p:** update peer store with supported protocols after unhandle ([#2013](https://www.github.com/libp2p/js-libp2p/issues/2013)) ([63041af](https://www.github.com/libp2p/js-libp2p/commit/63041afefbefd246ee1d6d6a4958b1999076dc17))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/mdns bumped from ^9.0.5 to ^9.0.6
+
 ### [0.46.7](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.6...libp2p-v0.46.7) (2023-08-25)
 
 

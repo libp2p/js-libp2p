@@ -145,7 +145,7 @@ class DefaultPerfService implements Startable, PerfService {
 
     const writeBlockSize = this.writeBlockSize
 
-    const stream = await connection.newStream([this.protocol])
+    const stream = await connection.newStream([this.protocol], options)
 
     // Convert sendBytes to uint64 big endian buffer
     const view = new DataView(this.databuf)

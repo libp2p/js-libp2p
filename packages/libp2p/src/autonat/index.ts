@@ -20,17 +20,18 @@
  */
 
 import { setMaxListeners } from 'events'
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { abortableDuplex } from 'abortable-iterator'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
+import { codes } from '../errors.js'
 import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
@@ -155,6 +156,12 @@ class DefaultAutoNATService implements Startable {
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
 
+    const onAbort = (): void => {
+      data.stream.abort(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT))
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
+
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
     try {
@@ -166,11 +173,10 @@ class DefaultAutoNATService implements Startable {
       .map(ma => ma.toOptions().host)
 
     try {
-      const source = abortableDuplex(data.stream, signal)
       const self = this
 
       await pipe(
-        source,
+        data.stream,
         (source) => lp.decode(source),
         async function * (stream) {
           const buf = await first(stream)
@@ -379,12 +385,12 @@ class DefaultAutoNATService implements Startable {
           })
         },
         (source) => lp.encode(source),
-        // pipe to the stream, not the abortable source other wise we
-        // can't tell the remote when a dial timed out..
         data.stream
       )
     } catch (err) {
       log.error('error handling incoming autonat stream', err)
+    } finally {
+      signal.removeEventListener('abort', onAbort)
     }
   }
 
@@ -453,6 +459,8 @@ class DefaultAutoNATService implements Startable {
       const networkSegments: string[] = []
 
       const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
+        let onAbort = (): void => {}
+
         try {
           log('asking %p to verify multiaddr', peer.id)
 
@@ -463,12 +471,15 @@ class DefaultAutoNATService implements Startable {
           const stream = await connection.newStream(this.protocol, {
             signal
           })
-          const source = abortableDuplex(stream, signal)
+
+          onAbort = () => { stream.abort(new CodeError('verifyAddress timeout', codes.ERR_TIMEOUT)) }
+
+          signal.addEventListener('abort', onAbort, { once: true })
 
           const buf = await pipe(
             [request],
             (source) => lp.encode(source),
-            source,
+            stream,
             (source) => lp.decode(source),
             async (stream) => first(stream)
           )
@@ -510,6 +521,8 @@ class DefaultAutoNATService implements Startable {
           return response.dialResponse
         } catch (err) {
           log.error('error asking remote to verify multiaddr', err)
+        } finally {
+          signal.removeEventListener('abort', onAbort)
         }
       }
 
