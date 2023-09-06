@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { CustomEvent } from '@libp2p/interface/events'
+import { isStartable } from '@libp2p/interface/startable'
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -32,16 +33,21 @@ describe('compliance tests', () => {
       })
 
       // Trigger discovery
-      const maStr = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/p2p/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooo2d'
+      const maStr = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star'
 
-      // @ts-expect-error not a PeerDiscovery field
-      intervalId = setInterval(() => discovery._onPeer(new CustomEvent('peer', {
-        detail: {
-          id: peerId2,
-          multiaddrs: [multiaddr(maStr)],
-          protocols: []
+      intervalId = setInterval(() => {
+        if (isStartable(discovery) && !discovery.isStarted()) {
+          return
         }
-      })), 1000)
+
+        discovery.dispatchEvent(new CustomEvent('peer', {
+          detail: {
+            id: peerId2,
+            multiaddrs: [multiaddr(maStr)],
+            protocols: []
+          }
+        }))
+      }, 1000)
 
       return discovery
     },

@@ -201,7 +201,7 @@ describe('circuit-relay utils', () => {
 
     createLimitedRelay(localStream, remoteStream, controller.signal, limit)
 
-    expect(await toBuffer(received)).to.have.property('byteLength', 8)
+    expect(await toBuffer(received)).to.have.property('byteLength', 12)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })

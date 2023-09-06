@@ -261,7 +261,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     options.signal?.throwIfAborted()
 
     log('requesting reservation from %p', connection.remotePeer)
-    const stream = await connection.newStream(RELAY_V2_HOP_CODEC)
+    const stream = await connection.newStream(RELAY_V2_HOP_CODEC, options)
     const pbstr = pbStream(stream)
     const hopstr = pbstr.pb(HopMessage)
     await hopstr.write({ type: HopMessage.Type.RESERVE }, options)

@@ -436,6 +436,9 @@ describe('autonat', () => {
           }
 
           sink.end()
+        },
+        abort: (err) => {
+          void stream.source.throw(err)
         }
       }
       const connection = {

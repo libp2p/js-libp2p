@@ -9,6 +9,22 @@
 
 * update @libp2p/interface-peer-discovery to 2.0.0 ([#197](https://github.com/libp2p/js-libp2p-mdns/issues/197)) ([e8172af](https://github.com/libp2p/js-libp2p-mdns/commit/e8172af8b9856a934327195238b00e5fbba436a4))
 
+### [9.0.6](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.5...mdns-v9.0.6) (2023-09-01)
+
+
+### Bug Fixes
+
+* **@libp2p/mdns:** do not send TXT records that are too long ([#2014](https://www.github.com/libp2p/js-libp2p/issues/2014)) ([4f19234](https://www.github.com/libp2p/js-libp2p/commit/4f19234ecd7701795543715dbadf537f5c2f1ccb)), closes [#2012](https://www.github.com/libp2p/js-libp2p/issues/2012)
+
+### [9.0.5](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.4...mdns-v9.0.5) (2023-08-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.4 to ^4.0.5
+
 ### [9.0.4](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.3...mdns-v9.0.4) (2023-08-16)
 
 
