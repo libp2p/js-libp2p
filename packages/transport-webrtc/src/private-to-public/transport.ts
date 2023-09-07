@@ -6,7 +6,7 @@ import { protocols } from '@multiformats/multiaddr'
 import * as multihashes from 'multihashes'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from '../error.js'
+import { dataChannelError, inappropriateMultiaddr, invalidArgument } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
@@ -20,6 +20,7 @@ import type { Connection } from '@libp2p/interface/connection'
 import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import { WebRTCDirectListener } from './listener.js'
 
 const log = logger('libp2p:webrtc:transport')
 
@@ -33,7 +34,7 @@ const HANDSHAKE_TIMEOUT_MS = 10_000
  *
  * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
  */
-export const WEBRTC_CODE: number = protocols('webrtc-direct').code
+export const WEBRTC_DIRECT_CODE: number = protocols('webrtc-direct').code
 
 /**
  * Created by converting the hexadecimal protocol code to an integer.
@@ -88,7 +89,7 @@ export class WebRTCDirectTransport implements Transport {
    * Create transport listeners no supported by browsers
    */
   createListener (options: CreateListenerOptions): Listener {
-    throw unimplemented('WebRTCTransport.createListener')
+    return new WebRTCDirectListener(options)
   }
 
   /**
@@ -130,8 +131,10 @@ export class WebRTCDirectTransport implements Transport {
     const certificate = await RTCPeerConnection.generateCertificate({
       name: 'ECDSA',
       namedCurve: 'P-256',
+
+      // TODO: this isn't part of the spec for ECDSA keys, only RSA - probably doesn't need to be here
       hash: sdp.toSupportedHashFunction(remoteCerthash.name)
-    } as any)
+    })
 
     const peerConnection = new RTCPeerConnection({ certificates: [certificate] })
 
@@ -277,10 +280,10 @@ export class WebRTCDirectTransport implements Transport {
 }
 
 /**
- * Determine if a given multiaddr contains a WebRTC Code (280),
+ * Determine if a given multiaddr contains a WebRTCDirect Code (280),
  * a Certhash Code (466) and a PeerId
  */
 function validMa (ma: Multiaddr): boolean {
   const codes = ma.protoCodes()
-  return codes.includes(WEBRTC_CODE) && codes.includes(CERTHASH_CODE) && ma.getPeerId() != null && !codes.includes(protocols('p2p-circuit').code)
+  return codes.includes(WEBRTC_DIRECT_CODE)
 }

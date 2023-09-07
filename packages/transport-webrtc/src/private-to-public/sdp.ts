@@ -118,7 +118,7 @@ export function toSupportedHashFunction (name: multihashes.HashName): string {
 function ma2sdp (ma: Multiaddr, ufrag: string): string {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
-  const [CERTFP] = ma2Fingerprint(ma)
+  const [fingerPrint] = ma2Fingerprint(ma)
 
   return `v=0
 o=- 0 0 IN ${ipVersion} ${host}
@@ -131,7 +131,7 @@ a=mid:0
 a=setup:passive
 a=ice-ufrag:${ufrag}
 a=ice-pwd:${ufrag}
-a=fingerprint:${CERTFP}
+a=fingerprint:${fingerPrint}
 a=sctp-port:5000
 a=max-message-size:16384
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r\n`
@@ -158,5 +158,6 @@ export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessi
   desc.sdp = desc.sdp
     .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n')
     .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n')
+    .replace(/\na=max-message-size:\d+\r\n/, '\na=max-message-size:16384\r\n')
   return desc
 }
