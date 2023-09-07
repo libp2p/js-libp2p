@@ -36,8 +36,8 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.relayStore.addEventListener('relay:removed', this._onRemoveRelayPeer)
   }
 
-  _onRemoveRelayPeer = (evt: CustomEvent<PeerId>) => {
-      this.#removeRelayPeer(evt.detail)
+  _onRemoveRelayPeer = (evt: CustomEvent<PeerId>): void => {
+    this.#removeRelayPeer(evt.detail)
   }
 
   async listen (addr: Multiaddr): Promise<void> {

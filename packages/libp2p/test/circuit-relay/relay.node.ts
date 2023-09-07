@@ -681,7 +681,7 @@ describe('circuit-relay', () => {
       await remote.dial(relay1.getMultiaddrs()[0])
       await usingAsRelay(remote, relay1)
 
-     // dial the remote through the relay to create two listeners
+      // dial the remote through the relay to create two listeners
       const ma = getRelayAddress(remote)
       await local.dial(ma)
 
