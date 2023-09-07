@@ -11,6 +11,116 @@
 
 * bump @chainsafe/libp2p-noise from 11.0.4 to 12.0.1 ([#80](https://github.com/libp2p/js-libp2p-webtransport/issues/80)) ([599dab1](https://github.com/libp2p/js-libp2p-webtransport/commit/599dab1b4f6ae816b0c0feefc926c1b38d24b676))
 
+### [3.0.9](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.8...webtransport-v3.0.9) (2023-09-05)
+
+
+### Bug Fixes
+
+* **@libp2p/webtransport:** remove custom WebTransport types ([#2022](https://www.github.com/libp2p/js-libp2p/issues/2022)) ([0634e3b](https://www.github.com/libp2p/js-libp2p/commit/0634e3b704e98892bd55dfd1506963d31ad4fd0b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.8 to ^0.46.9
+
+### [3.0.8](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.7...webtransport-v3.0.8) (2023-09-01)
+
+
+### Bug Fixes
+
+* **@libp2p/webtransport:** remove filters export ([#2018](https://www.github.com/libp2p/js-libp2p/issues/2018)) ([3282563](https://www.github.com/libp2p/js-libp2p/commit/328256339b1539bb048f41cd22542234b2b7a44f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.7 to ^0.46.8
+
+### [3.0.7](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.6...webtransport-v3.0.7) (2023-08-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.6 to ^0.46.7
+
+### [3.0.6](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.5...webtransport-v3.0.6) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.5 to ^0.46.6
+
+### [3.0.5](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.4...webtransport-v3.0.5) (2023-08-16)
+
+
+### Bug Fixes
+
+* **@libp2p/webtransport:** be more thorough about closing sessions ([#1969](https://www.github.com/libp2p/js-libp2p/issues/1969)) ([90e793e](https://www.github.com/libp2p/js-libp2p/commit/90e793eb2ec2c18bbca9416df92d824b5ebbccb4)), closes [#1896](https://www.github.com/libp2p/js-libp2p/issues/1896)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.4 to ^0.46.5
+
+### [3.0.4](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.3...webtransport-v3.0.4) (2023-08-14)
+
+
+### Bug Fixes
+
+* **@libp2p/webtransport:** maximum call stack size exceeded on abort ([#1947](https://www.github.com/libp2p/js-libp2p/issues/1947)) ([5e85154](https://www.github.com/libp2p/js-libp2p/commit/5e85154b2953867e77e31a4fb823b20cb0620092))
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/peer-id bumped from ^3.0.1 to ^3.0.2
+  * devDependencies
+    * libp2p bumped from ^0.46.3 to ^0.46.4
+
+### [3.0.3](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.2...webtransport-v3.0.3) (2023-08-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/logger bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-id bumped from ^3.0.0 to ^3.0.1
+  * devDependencies
+    * libp2p bumped from ^0.46.2 to ^0.46.3
+
+### [3.0.2](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.1...webtransport-v3.0.2) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.1 to ^0.46.2
+
+### [3.0.1](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.0...webtransport-v3.0.1) (2023-08-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.0 to ^0.46.1
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v2.0.2...webtransport-v3.0.0) (2023-07-31)
 
 

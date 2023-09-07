@@ -139,20 +139,6 @@ export class ConnectionImpl implements Connection {
   }
 
   /**
-   * Add a stream when it is opened to the registry
-   */
-  addStream (stream: Stream): void {
-    stream.direction = 'inbound'
-  }
-
-  /**
-   * Remove stream registry after it is closed
-   */
-  removeStream (id: string): void {
-
-  }
-
-  /**
    * Close the connection
    */
   async close (options: AbortOptions = {}): Promise<void> {

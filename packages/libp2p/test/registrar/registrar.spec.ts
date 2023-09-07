@@ -297,6 +297,10 @@ describe('registrar', () => {
       await libp2p.unhandle(['/echo/1.0.0'])
       expect(registrar.getProtocols()).to.not.have.any.keys(['/echo/1.0.0'])
       expect(registrar.getHandler('/echo/1.0.1')).to.have.property('handler', echoHandler)
+
+      await expect(libp2p.peerStore.get(libp2p.peerId)).to.eventually.have.deep.property('protocols', [
+        '/echo/1.0.1'
+      ])
     })
   })
 })

@@ -20,6 +20,7 @@ import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
+import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { type IdentifyService, identifyService } from '../../src/identify/index.js'
@@ -104,6 +105,18 @@ describe('dialing (direct, WebSockets)', () => {
       .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
 
+  it('should mark a peer as having recently failed to connect', async () => {
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
+
+    await expect(connectionManager.openConnection(multiaddr(`/ip4/127.0.0.1/tcp/12984/ws/p2p/${remoteComponents.peerId.toString()}`)))
+      .to.eventually.be.rejected()
+
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+
+    expect(peer.metadata.has(LAST_DIAL_FAILURE_KEY)).to.be.true()
+  })
+
   it('should be able to connect to a given peer', async () => {
     connectionManager = new DefaultConnectionManager(localComponents)
     await connectionManager.start()
@@ -165,7 +178,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
     await localComponents.peerStore.patch(remotePeerId, {
-      multiaddrs: Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/12D3KooWHFKTMzwerBtsVmtz4ZZEQy2heafxzWw6wNn5PPYkBxJ5`))
+      multiaddrs: Array.from({ length: 11 }, (_, i) => multiaddr(`/ip4/127.0.0.1/tcp/1500${i}/ws/p2p/${remotePeerId.toString()}`))
     })
 
     await expect(connectionManager.openConnection(remotePeerId))

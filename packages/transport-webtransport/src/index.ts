@@ -1,315 +1,22 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { type Transport, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { type Multiaddr, protocols, type AbortOptions } from '@multiformats/multiaddr'
-import { bases, digest } from 'multiformats/basics'
-import { Uint8ArrayList } from 'uint8arraylist'
-import type { Connection, Direction, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
+import { type Multiaddr, type AbortOptions } from '@multiformats/multiaddr'
+import { webtransportBiDiStreamToStream } from './stream.js'
+import { inertDuplex } from './utils/inert-duplex.js'
+import { isSubset } from './utils/is-subset.js'
+import { parseMultiaddr } from './utils/parse-multiaddr.js'
+import type { Connection, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
-import type { Duplex, Source } from 'it-stream-types'
+import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
-declare global {
-  var WebTransport: any
+interface WebTransportSessionCleanup {
+  (closeInfo?: WebTransportCloseInfo): void
 }
 
 const log = logger('libp2p:webtransport')
-
-// @ts-expect-error - Not easy to combine these types.
-const multibaseDecoder = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
-
-function decodeCerthashStr (s: string): MultihashDigest {
-  return digest.decode(multibaseDecoder.decode(s))
-}
-
-// Duplex that does nothing. Needed to fulfill the interface
-function inertDuplex (): Duplex<any, any, any> {
-  return {
-    source: {
-      [Symbol.asyncIterator] () {
-        return {
-          async next () {
-            // This will never resolve
-            return new Promise(() => { })
-          }
-        }
-      }
-    },
-    sink: async (source: Source<any>) => {
-      // This will never resolve
-      return new Promise(() => { })
-    }
-  }
-}
-
-async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
-  const writer = bidiStream.writable.getWriter()
-  const reader = bidiStream.readable.getReader()
-  await writer.ready
-
-  function cleanupStreamFromActiveStreams (): void {
-    const index = activeStreams.findIndex(s => s === stream)
-    if (index !== -1) {
-      activeStreams.splice(index, 1)
-      stream.timeline.close = Date.now()
-      onStreamEnd?.(stream)
-    }
-  }
-
-  let writerClosed = false
-  let readerClosed = false;
-  (async function () {
-    const err: Error | undefined = await writer.closed.catch((err: Error) => err)
-    if (err != null) {
-      const msg = err.message
-      if (!(msg.includes('aborted by the remote server') || msg.includes('STOP_SENDING'))) {
-        log.error(`WebTransport writer closed unexpectedly: streamId=${streamId} err=${err.message}`)
-      }
-    }
-    writerClosed = true
-    if (writerClosed && readerClosed) {
-      cleanupStreamFromActiveStreams()
-    }
-  })().catch(() => {
-    log.error('WebTransport failed to cleanup closed stream')
-  });
-
-  (async function () {
-    const err: Error | undefined = await reader.closed.catch((err: Error) => err)
-    if (err != null) {
-      log.error(`WebTransport reader closed unexpectedly: streamId=${streamId} err=${err.message}`)
-    }
-    readerClosed = true
-    if (writerClosed && readerClosed) {
-      cleanupStreamFromActiveStreams()
-    }
-  })().catch(() => {
-    log.error('WebTransport failed to cleanup closed stream')
-  })
-
-  let sinkSunk = false
-  const stream: Stream = {
-    id: streamId,
-    status: 'open',
-    writeStatus: 'ready',
-    readStatus: 'ready',
-    abort (err: Error) {
-      if (!writerClosed) {
-        writer.abort()
-        writerClosed = true
-      }
-      stream.abort(err)
-      readerClosed = true
-
-      this.status = 'aborted'
-      this.writeStatus = 'closed'
-      this.readStatus = 'closed'
-
-      this.timeline.reset =
-        this.timeline.close =
-        this.timeline.closeRead =
-        this.timeline.closeWrite = Date.now()
-
-      cleanupStreamFromActiveStreams()
-    },
-    async close (options?: AbortOptions) {
-      this.status = 'closing'
-
-      await Promise.all([
-        stream.closeRead(options),
-        stream.closeWrite(options)
-      ])
-
-      cleanupStreamFromActiveStreams()
-
-      this.status = 'closed'
-      this.timeline.close = Date.now()
-    },
-
-    async closeRead (options?: AbortOptions) {
-      if (!readerClosed) {
-        this.readStatus = 'closing'
-
-        try {
-          await reader.cancel()
-        } catch (err: any) {
-          if (err.toString().includes('RESET_STREAM') === true) {
-            writerClosed = true
-          }
-        }
-
-        this.timeline.closeRead = Date.now()
-        this.readStatus = 'closed'
-
-        readerClosed = true
-      }
-
-      if (writerClosed) {
-        cleanupStreamFromActiveStreams()
-      }
-    },
-
-    async closeWrite (options?: AbortOptions) {
-      if (!writerClosed) {
-        writerClosed = true
-
-        this.writeStatus = 'closing'
-
-        try {
-          await writer.close()
-        } catch (err: any) {
-          if (err.toString().includes('RESET_STREAM') === true) {
-            readerClosed = true
-          }
-        }
-
-        this.timeline.closeWrite = Date.now()
-        this.writeStatus = 'closed'
-      }
-
-      if (readerClosed) {
-        cleanupStreamFromActiveStreams()
-      }
-    },
-    direction,
-    timeline: { open: Date.now() },
-    metadata: {},
-    source: (async function * () {
-      while (true) {
-        const val = await reader.read()
-        if (val.done === true) {
-          readerClosed = true
-          if (writerClosed) {
-            cleanupStreamFromActiveStreams()
-          }
-          return
-        }
-
-        yield new Uint8ArrayList(val.value)
-      }
-    })(),
-    sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
-      if (sinkSunk) {
-        throw new Error('sink already called on stream')
-      }
-      sinkSunk = true
-      try {
-        this.writeStatus = 'writing'
-
-        for await (const chunks of source) {
-          if (chunks instanceof Uint8Array) {
-            await writer.write(chunks)
-          } else {
-            for (const buf of chunks) {
-              await writer.write(buf)
-            }
-          }
-        }
-
-        this.writeStatus = 'done'
-      } finally {
-        this.timeline.closeWrite = Date.now()
-        this.writeStatus = 'closed'
-
-        await stream.closeWrite()
-      }
-    }
-  }
-
-  return stream
-}
-
-function parseMultiaddr (ma: Multiaddr): { url: string, certhashes: MultihashDigest[], remotePeer?: PeerId } {
-  const parts = ma.stringTuples()
-
-  // This is simpler to have inline than extract into a separate function
-  // eslint-disable-next-line complexity
-  const { url, certhashes, remotePeer } = parts.reduce((state: { url: string, certhashes: MultihashDigest[], seenHost: boolean, seenPort: boolean, remotePeer?: PeerId }, [proto, value]) => {
-    switch (proto) {
-      case protocols('ip6').code:
-      // @ts-expect-error - ts error on switch fallthrough
-      case protocols('dns6').code:
-        if (value?.includes(':') === true) {
-          /**
-           * This resolves cases where `new globalThis.WebTransport` fails to construct because of an invalid URL being passed.
-           *
-           * `new URL('https://::1:4001/blah')` will throw a `TypeError: Failed to construct 'URL': Invalid URL`
-           * `new URL('https://[::1]:4001/blah')` is valid and will not.
-           *
-           * @see https://datatracker.ietf.org/doc/html/rfc3986#section-3.2.2
-           */
-          value = `[${value}]`
-        }
-      // eslint-disable-next-line no-fallthrough
-      case protocols('ip4').code:
-      case protocols('dns4').code:
-        if (state.seenHost || state.seenPort) {
-          throw new Error('Invalid multiaddr, saw host and already saw the host or port')
-        }
-        return {
-          ...state,
-          url: `${state.url}${value ?? ''}`,
-          seenHost: true
-        }
-      case protocols('quic').code:
-      case protocols('quic-v1').code:
-      case protocols('webtransport').code:
-        if (!state.seenHost || !state.seenPort) {
-          throw new Error("Invalid multiaddr, Didn't see host and port, but saw quic/webtransport")
-        }
-        return state
-      case protocols('udp').code:
-        if (state.seenPort) {
-          throw new Error('Invalid multiaddr, saw port but already saw the port')
-        }
-        return {
-          ...state,
-          url: `${state.url}:${value ?? ''}`,
-          seenPort: true
-        }
-      case protocols('certhash').code:
-        if (!state.seenHost || !state.seenPort) {
-          throw new Error('Invalid multiaddr, saw the certhash before seeing the host and port')
-        }
-        return {
-          ...state,
-          certhashes: state.certhashes.concat([decodeCerthashStr(value ?? '')])
-        }
-      case protocols('p2p').code:
-        return {
-          ...state,
-          remotePeer: peerIdFromString(value ?? '')
-        }
-      default:
-        throw new Error(`unexpected component in multiaddr: ${proto} ${protocols(proto).name} ${value ?? ''} `)
-    }
-  },
-  // All webtransport urls are https
-  { url: 'https://', seenHost: false, seenPort: false, certhashes: [] })
-
-  return { url, certhashes, remotePeer }
-}
-
-// Determines if `maybeSubset` is a subset of `set`. This means that all byte arrays in `maybeSubset` are present in `set`.
-export function isSubset (set: Uint8Array[], maybeSubset: Uint8Array[]): boolean {
-  const intersection = maybeSubset.filter(byteArray => {
-    return Boolean(set.find((otherByteArray: Uint8Array) => {
-      if (byteArray.length !== otherByteArray.length) {
-        return false
-      }
-
-      for (let index = 0; index < byteArray.length; index++) {
-        if (otherByteArray[index] !== byteArray[index]) {
-          return false
-        }
-      }
-      return true
-    }))
-  })
-  return (intersection.length === maybeSubset.length)
-}
 
 export interface WebTransportInit {
   maxInboundStreams?: number
@@ -335,6 +42,8 @@ class WebTransportTransport implements Transport {
   readonly [symbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+    options?.signal?.throwIfAborted()
+
     log('dialing %s', ma)
     const localPeer = this.components.peerId
     if (localPeer === undefined) {
@@ -345,60 +54,122 @@ class WebTransportTransport implements Transport {
 
     const { url, certhashes, remotePeer } = parseMultiaddr(ma)
 
-    if (certhashes.length === 0) {
-      throw new Error('Expected multiaddr to contain certhashes')
-    }
-
-    const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
-      serverCertificateHashes: certhashes.map(certhash => ({
-        algorithm: 'sha-256',
-        value: certhash.digest
-      }))
-    })
-    wt.closed.catch((error: Error) => {
-      log.error('WebTransport transport closed due to:', error)
-    })
-    await wt.ready
-
     if (remotePeer == null) {
       throw new Error('Need a target peerid')
     }
 
-    if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)) {
-      throw new Error('Failed to authenticate webtransport')
+    if (certhashes.length === 0) {
+      throw new Error('Expected multiaddr to contain certhashes')
     }
 
-    const maConn: MultiaddrConnection = {
-      close: async (options?: AbortOptions) => {
-        log('Closing webtransport')
-        await wt.close()
-      },
-      abort: (err: Error) => {
-        log('Aborting webtransport with err:', err)
-        wt.close()
-      },
-      remoteAddr: ma,
-      timeline: {
-        open: Date.now()
-      },
-      // This connection is never used directly since webtransport supports native streams.
-      ...inertDuplex()
-    }
+    let abortListener: (() => void) | undefined
+    let maConn: MultiaddrConnection | undefined
 
-    wt.closed.catch((err: Error) => {
-      log.error('WebTransport connection closed:', err)
-      // This is how we specify the connection is closed and shouldn't be used.
-      maConn.timeline.close = Date.now()
-    })
+    let cleanUpWTSession: (closeInfo?: WebTransportCloseInfo) => void = () => {}
 
     try {
-      options?.signal?.throwIfAborted()
-    } catch (e) {
-      wt.close()
-      throw e
-    }
+      let closed = false
+      const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
+        serverCertificateHashes: certhashes.map(certhash => ({
+          algorithm: 'sha-256',
+          value: certhash.digest
+        }))
+      })
 
-    return options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
+      cleanUpWTSession = (closeInfo?: WebTransportCloseInfo) => {
+        try {
+          if (maConn != null) {
+            if (maConn.timeline.close != null) {
+              // already closed session
+              return
+            }
+
+            // This is how we specify the connection is closed and shouldn't be used.
+            maConn.timeline.close = Date.now()
+          }
+
+          if (closed) {
+            // already closed session
+            return
+          }
+
+          wt.close(closeInfo)
+        } catch (err) {
+          log.error('error closing wt session', err)
+        } finally {
+          closed = true
+        }
+      }
+
+      // this promise resolves/throws when the session is closed or failed to init
+      wt.closed
+        .then(async () => {
+          await maConn?.close()
+        })
+        .catch((err: Error) => {
+          log.error('error on remote wt session close', err)
+          maConn?.abort(err)
+        })
+        .finally(() => {
+          // if we never got as far as creating the maConn, just clean up the session
+          if (maConn == null) {
+            cleanUpWTSession()
+          }
+        })
+
+      // if the dial is aborted before we are ready, close the WebTransport session
+      abortListener = () => {
+        if (abortListener != null) {
+          options.signal?.removeEventListener('abort', abortListener)
+        }
+
+        cleanUpWTSession()
+      }
+      options.signal?.addEventListener('abort', abortListener)
+
+      await wt.ready
+
+      if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)) {
+        throw new Error('Failed to authenticate webtransport')
+      }
+
+      maConn = {
+        close: async (options?: AbortOptions) => {
+          log('Closing webtransport')
+          cleanUpWTSession()
+        },
+        abort: (err: Error) => {
+          log('aborting webtransport due to passed err', err)
+          cleanUpWTSession({
+            closeCode: 0,
+            reason: err.message
+          })
+        },
+        remoteAddr: ma,
+        timeline: {
+          open: Date.now()
+        },
+        // This connection is never used directly since webtransport supports native streams.
+        ...inertDuplex()
+      }
+
+      options?.signal?.throwIfAborted()
+
+      return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt, cleanUpWTSession), skipProtection: true })
+    } catch (err: any) {
+      log.error('caught wt session err', err)
+
+      cleanUpWTSession({
+        closeCode: 0,
+        reason: err.message
+      })
+
+      throw err
+    } finally {
+      if (abortListener != null) {
+        options.signal?.removeEventListener('abort', abortListener)
+      }
+    }
   }
 
   async authenticateWebTransport (wt: InstanceType<typeof WebTransport>, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
@@ -416,7 +187,7 @@ class WebTransportTransport implements Transport {
             yield val.value
           }
 
-          if (val.done === true) {
+          if (val.done) {
             break
           }
         }
@@ -449,7 +220,7 @@ class WebTransportTransport implements Transport {
     return true
   }
 
-  webtransportMuxer (wt: InstanceType<typeof WebTransport>): StreamMuxerFactory {
+  webtransportMuxer (wt: WebTransport, cleanUpWTSession: WebTransportSessionCleanup): StreamMuxerFactory {
     let streamIDCounter = 0
     const config = this.config
     return {
@@ -471,7 +242,7 @@ class WebTransportTransport implements Transport {
           while (true) {
             const { done, value: wtStream } = await reader.read()
 
-            if (done === true) {
+            if (done) {
               break
             }
 
@@ -510,11 +281,14 @@ class WebTransportTransport implements Transport {
            */
           close: async (options?: AbortOptions) => {
             log('Closing webtransport muxer')
-            await wt.close()
+            cleanUpWTSession()
           },
           abort: (err: Error) => {
             log('Aborting webtransport muxer with err:', err)
-            wt.close()
+            cleanUpWTSession({
+              closeCode: 0,
+              reason: err.message
+            })
           },
           // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
           ...inertDuplex()

@@ -33,8 +33,8 @@
     "release": "run-s build docs:no-publish npm:release docs",
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
-    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude examples --exclude doc",
-    "docs:no-publish": "npm run docs -- --publish false"
+    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude examples/auto-relay --exclude examples/chat --exclude examples/connection-encryption --exclude examples/delegated-routing --exclude examples/discovery-mechanisms --exclude examples/echo --exclude examples/peer-and-content-routing --exclude examples/pnet --exclude examples/protocol-and-stream-muxing --exclude examples/pubsub --exclude examples/transports --exclude doc",
+    "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude interop --exclude examples/auto-relay --exclude examples/chat --exclude examples/connection-encryption --exclude examples/delegated-routing --exclude examples/discovery-mechanisms --exclude examples/echo --exclude examples/peer-and-content-routing --exclude examples/pnet --exclude examples/protocol-and-stream-muxing --exclude examples/pubsub --exclude examples/transports --exclude doc"
   },
   "devDependencies": {
     "aegir": "^40.0.1"

@@ -3,8 +3,6 @@ import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { abortableDuplex } from 'abortable-iterator'
-import { anySignal } from 'any-signal'
 import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
@@ -164,7 +162,13 @@ export class DefaultUpgrader implements Upgrader {
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
-    const signal = anySignal([AbortSignal.timeout(this.inboundUpgradeTimeout)])
+    const signal = AbortSignal.timeout(this.inboundUpgradeTimeout)
+
+    const onAbort = (): void => {
+      maConn.abort(new CodeError('inbound upgrade timeout', codes.ERR_TIMEOUT))
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
 
     try {
       // fails on node < 15.4
@@ -172,10 +176,6 @@ export class DefaultUpgrader implements Upgrader {
     } catch { }
 
     try {
-      const abortableStream = abortableDuplex(maConn, signal)
-      maConn.source = abortableStream.source
-      maConn.sink = abortableStream.sink
-
       if ((await this.components.connectionGater.denyInboundConnection?.(maConn)) === true) {
         throw new CodeError('The multiaddr connection is blocked by gater.acceptConnection', codes.ERR_CONNECTION_INTERCEPTED)
       }
@@ -256,8 +256,9 @@ export class DefaultUpgrader implements Upgrader {
         transient: opts?.transient
       })
     } finally {
+      signal.removeEventListener('abort', onAbort)
+
       this.components.connectionManager.afterUpgradeInbound()
-      signal.clear()
     }
   }
 
@@ -415,7 +416,6 @@ export class DefaultUpgrader implements Upgrader {
                 protocols: [protocol]
               })
 
-              connection.addStream(muxedStream)
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
 
               this._onStream({ connection, stream: muxedStream, protocol })
@@ -427,10 +427,6 @@ export class DefaultUpgrader implements Upgrader {
                 await muxedStream.close()
               }
             })
-        },
-        // Run anytime a stream closes
-        onStreamEnd: muxedStream => {
-          connection?.removeStream(muxedStream.id)
         }
       })
 

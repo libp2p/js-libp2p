@@ -29,21 +29,21 @@
     "test:example": "node test.js"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^12.0.0",
-    "@chainsafe/libp2p-yamux": "^4.0.0",
+    "@chainsafe/libp2p-noise": "^13.0.0",
+    "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/mplex": "^9.0.0",
     "@libp2p/peer-id-factory": "^3.0.0",
     "@libp2p/tcp": "^8.0.0",
     "@libp2p/websockets": "^7.0.0",
-    "@multiformats/multiaddr": "^12.1.3",
+    "@multiformats/multiaddr": "^12.1.5",
     "@nodeutils/defaults-deep": "^1.1.0",
     "it-pipe": "^3.0.1",
     "libp2p": "^0.46.0",
-    "uint8arrays": "^4.0.4"
+    "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "aegir": "^40.0.1",
-    "execa": "^7.1.1",
+    "aegir": "^40.0.8",
+    "execa": "^8.0.1",
     "p-defer": "^4.0.0"
   },
   "private": true

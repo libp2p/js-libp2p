@@ -6,17 +6,17 @@ export interface AESCipher {
   decrypt: (data: Uint8Array) => Promise<Uint8Array>
 }
 
-export async function create (key: Uint8Array, iv: Uint8Array): Promise<AESCipher> { // eslint-disable-line require-await
+export async function create (key: Uint8Array, iv: Uint8Array): Promise<AESCipher> {
   const mode = cipherMode(key)
   const cipher = ciphers.createCipheriv(mode, key, iv)
   const decipher = ciphers.createDecipheriv(mode, key, iv)
 
   const res: AESCipher = {
-    async encrypt (data) { // eslint-disable-line require-await
+    async encrypt (data) {
       return cipher.update(data)
     },
 
-    async decrypt (data) { // eslint-disable-line require-await
+    async decrypt (data) {
       return decipher.update(data)
     }
   }

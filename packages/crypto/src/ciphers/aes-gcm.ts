@@ -14,7 +14,7 @@ export function create (opts?: CreateOptions): AESCipher {
   const iterations = opts?.iterations ?? 32767
   const algorithmTagLength = opts?.algorithmTagLength ?? 16
 
-  async function encryptWithKey (data: Uint8Array, key: Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async function encryptWithKey (data: Uint8Array, key: Uint8Array): Promise<Uint8Array> {
     const nonce = crypto.randomBytes(nonceLength)
 
     // Create the cipher instance.
@@ -31,7 +31,7 @@ export function create (opts?: CreateOptions): AESCipher {
    * Uses the provided password to derive a pbkdf2 key. The key
    * will then be used to encrypt the data.
    */
-  async function encrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async function encrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> {
     // Generate a 128-bit salt using a CSPRNG.
     const salt = crypto.randomBytes(saltLength)
 
@@ -53,7 +53,7 @@ export function create (opts?: CreateOptions): AESCipher {
    * this decryption cipher must be the same as those used to create
    * the encryption cipher.
    */
-  async function decryptWithKey (ciphertextAndNonce: Uint8Array, key: Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async function decryptWithKey (ciphertextAndNonce: Uint8Array, key: Uint8Array): Promise<Uint8Array> {
     // Create Uint8Arrays of nonce, ciphertext and tag.
     const nonce = ciphertextAndNonce.subarray(0, nonceLength)
     const ciphertext = ciphertextAndNonce.subarray(nonceLength, ciphertextAndNonce.length - algorithmTagLength)
@@ -77,7 +77,7 @@ export function create (opts?: CreateOptions): AESCipher {
    * @param {Uint8Array} data - The data to decrypt
    * @param {string|Uint8Array} password - A plain password
    */
-  async function decrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async function decrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> {
     // Create Uint8Arrays of salt and ciphertextAndNonce.
     const salt = data.subarray(0, saltLength)
     const ciphertextAndNonce = data.subarray(saltLength)

@@ -1,4 +1,4 @@
-import { Address4, Address6 } from '@achingbrain/ip-address'
+import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
@@ -27,21 +27,15 @@ export function ipPortToMultiaddr (ip: string, port: number | string): Multiaddr
     throw new CodeError(`invalid port provided: ${port}`, Errors.ERR_INVALID_PORT_PARAMETER)
   }
 
-  try {
-    // Test valid IPv4
-    new Address4(ip) // eslint-disable-line no-new
+  if (isIPv4(ip)) {
     return multiaddr(`/ip4/${ip}/tcp/${port}`)
-  } catch {}
-
-  try {
-    // Test valid IPv6
-    const ip6 = new Address6(ip)
-    return ip6.is4()
-      ? multiaddr(`/ip4/${ip6.to4().correctForm()}/tcp/${port}`)
-      : multiaddr(`/ip6/${ip}/tcp/${port}`)
-  } catch (err) {
-    const errMsg = `invalid ip:port for creating a multiaddr: ${ip}:${port}`
-    log.error(errMsg)
-    throw new CodeError(errMsg, Errors.ERR_INVALID_IP)
   }
+
+  if (isIPv6(ip)) {
+    return multiaddr(`/ip6/${ip}/tcp/${port}`)
+  }
+
+  const errMsg = `invalid ip:port for creating a multiaddr: ${ip}:${port}`
+  log.error(errMsg)
+  throw new CodeError(errMsg, Errors.ERR_INVALID_IP)
 }

@@ -10,6 +10,8 @@ import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
 import type { Multibase } from 'multiformats'
 
+export const MAX_KEY_SIZE = 8192
+
 export class RsaPublicKey {
   private readonly _key: JsonWebKey
 
@@ -17,7 +19,7 @@ export class RsaPublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> { // eslint-disable-line require-await
+  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -60,7 +62,7 @@ export class RsaPrivateKey {
     return crypto.getRandomValues(16)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> { // eslint-disable-line require-await
+  async sign (message: Uint8Array): Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -112,7 +114,7 @@ export class RsaPrivateKey {
   /**
    * Exports the key into a password protected PEM format
    */
-  async export (password: string, format = 'pkcs-8'): Promise<Multibase<'m'>> { // eslint-disable-line require-await
+  async export (password: string, format = 'pkcs-8'): Promise<Multibase<'m'>> {
     if (format === 'pkcs-8') {
       const buffer = new forge.util.ByteBuffer(this.marshal())
       const asn1 = forge.asn1.fromDer(buffer)
@@ -135,21 +137,42 @@ export class RsaPrivateKey {
 
 export async function unmarshalRsaPrivateKey (bytes: Uint8Array): Promise<RsaPrivateKey> {
   const jwk = crypto.utils.pkcs1ToJwk(bytes)
+
+  if (crypto.keySize(jwk) > MAX_KEY_SIZE) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
+
   const keys = await crypto.unmarshalPrivateKey(jwk)
+
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }
 
 export function unmarshalRsaPublicKey (bytes: Uint8Array): RsaPublicKey {
   const jwk = crypto.utils.pkixToJwk(bytes)
+
+  if (crypto.keySize(jwk) > MAX_KEY_SIZE) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
+
   return new RsaPublicKey(jwk)
 }
 
 export async function fromJwk (jwk: JsonWebKey): Promise<RsaPrivateKey> {
+  if (crypto.keySize(jwk) > MAX_KEY_SIZE) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
+
   const keys = await crypto.unmarshalPrivateKey(jwk)
+
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }
 
 export async function generateKeyPair (bits: number): Promise<RsaPrivateKey> {
+  if (bits > MAX_KEY_SIZE) {
+    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+  }
+
   const keys = await crypto.generateKey(bits)
+
   return new RsaPrivateKey(keys.privateKey, keys.publicKey)
 }

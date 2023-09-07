@@ -11,6 +11,88 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#233](https://github.com/libp2p/js-libp2p-floodsub/issues/233)) ([e073298](https://github.com/libp2p/js-libp2p-floodsub/commit/e073298f324a89656b0ca6d9a629e60eaedc7873))
 
+### [8.0.6](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.5...floodsub-v8.0.6) (2023-08-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.4 to ^4.0.5
+
+### [8.0.5](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.4...floodsub-v8.0.5) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^8.0.4 to ^8.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.3 to ^4.0.4
+
+### [8.0.4](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.3...floodsub-v8.0.4) (2023-08-14)
+
+
+### Bug Fixes
+
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/pubsub bumped from ^8.0.3 to ^8.0.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-collections bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^3.0.2 to ^3.0.3
+
+### [8.0.3](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.2...floodsub-v8.0.3) (2023-08-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/logger bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/pubsub bumped from ^8.0.2 to ^8.0.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-collections bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-id-factory bumped from ^3.0.1 to ^3.0.2
+
+### [8.0.2](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.1...floodsub-v8.0.2) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^8.0.1 to ^8.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/peer-collections bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/peer-id-factory bumped from ^3.0.0 to ^3.0.1
+
+### [8.0.1](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.0...floodsub-v8.0.1) (2023-08-01)
+
+
+### Bug Fixes
+
+* update package config ([#1919](https://www.github.com/libp2p/js-libp2p/issues/1919)) ([8d49602](https://www.github.com/libp2p/js-libp2p/commit/8d49602fb6f0c906f1920d397ff28705bb0bc845))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^8.0.0 to ^8.0.1
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p-floodsub/compare/v7.0.0...v7.0.1) (2023-04-18)
 
 

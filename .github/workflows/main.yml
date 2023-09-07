@@ -237,7 +237,8 @@ jobs:
               { "type": "fix", "section": "Bug Fixes", "hidden": false },
               { "type": "chore", "section": "Trivial Changes", "hidden": false },
               { "type": "docs", "section": "Documentation", "hidden": false },
-              { "type": "deps", "section": "Dependencies", "hidden": false }
+              { "type": "deps", "section": "Dependencies", "hidden": false },
+              { "type": "refactor", "section": "Refactors", "hidden": false }
             ]
       - uses: actions/checkout@v3
         with:
@@ -257,6 +258,7 @@ jobs:
           git update-index --assume-unchanged packages/libp2p/src/version.ts
           npm run --if-present release
         env:
+          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - if: ${{ !steps.release.outputs.releases_created }}
         name: Run release rc
@@ -264,4 +266,5 @@ jobs:
             git update-index --assume-unchanged packages/libp2p/src/version.ts
             npm run --if-present release:rc
         env:
+          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

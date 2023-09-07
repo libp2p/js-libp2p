@@ -27,6 +27,7 @@ export default {
       })
       const serverAddr = defer()
       const serverAddr6 = defer()
+      const disableIp6 = process.env.DISABLE_IPV6 != null
 
       server.stdout.on('data', (buf) => {
         const data = buf.toString()
@@ -47,7 +48,8 @@ export default {
         server,
         env: {
           serverAddr: await serverAddr.promise,
-          serverAddr6: await serverAddr6.promise
+          serverAddr6: disableIp6 === false ? await serverAddr6.promise : 'skipping',
+          disableIp6
         }
       }
     },

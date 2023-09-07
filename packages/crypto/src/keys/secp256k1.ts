@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import * as secp from '@noble/secp256k1'
+import { secp256k1 as secp } from '@noble/curves/secp256k1'
 import { sha256 } from 'multiformats/hashes/sha2'
 
 const PRIVATE_KEY_BYTE_LENGTH = 32
@@ -16,7 +16,8 @@ export function generateKey (): Uint8Array {
 export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Uint8Array> {
   const { digest } = await sha256.digest(msg)
   try {
-    return await secp.sign(digest, key)
+    const signature = secp.sign(digest, key)
+    return signature.toDERRawBytes()
   } catch (err) {
     throw new CodeError(String(err), 'ERR_INVALID_INPUT')
   }
@@ -35,12 +36,12 @@ export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint
 }
 
 export function compressPublicKey (key: Uint8Array): Uint8Array {
-  const point = secp.Point.fromHex(key).toRawBytes(true)
+  const point = secp.ProjectivePoint.fromHex(key).toRawBytes(true)
   return point
 }
 
 export function decompressPublicKey (key: Uint8Array): Uint8Array {
-  const point = secp.Point.fromHex(key).toRawBytes(false)
+  const point = secp.ProjectivePoint.fromHex(key).toRawBytes(false)
   return point
 }
 
@@ -54,7 +55,7 @@ export function validatePrivateKey (key: Uint8Array): void {
 
 export function validatePublicKey (key: Uint8Array): void {
   try {
-    secp.Point.fromHex(key)
+    secp.ProjectivePoint.fromHex(key)
   } catch (err) {
     throw new CodeError(String(err), 'ERR_INVALID_PUBLIC_KEY')
   }

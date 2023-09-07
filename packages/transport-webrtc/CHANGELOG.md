@@ -5,6 +5,136 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+### [3.1.9](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.8...webrtc-v3.1.9) (2023-09-05)
+
+
+### Bug Fixes
+
+* **@libp2p/webrtc:** close data-channel on muxer stream end ([#1976](https://www.github.com/libp2p/js-libp2p/issues/1976)) ([7517082](https://www.github.com/libp2p/js-libp2p/commit/7517082d0ae5dcd8f3f2d13aee2a13067836a2be))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.8 to ^0.46.9
+
+### [3.1.8](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.7...webrtc-v3.1.8) (2023-09-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.7 to ^0.46.8
+
+### [3.1.7](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.6...webrtc-v3.1.7) (2023-08-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/websockets bumped from ^7.0.4 to ^7.0.5
+    * libp2p bumped from ^0.46.6 to ^0.46.7
+
+### [3.1.6](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.5...webrtc-v3.1.6) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.5 to ^0.46.6
+
+### [3.1.5](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.4...webrtc-v3.1.5) (2023-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.3 to ^0.1.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/websockets bumped from ^7.0.3 to ^7.0.4
+    * libp2p bumped from ^0.46.4 to ^0.46.5
+
+### [3.1.4](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.3...webrtc-v3.1.4) (2023-08-14)
+
+
+### Bug Fixes
+
+* update project config ([9c0353c](https://www.github.com/libp2p/js-libp2p/commit/9c0353cf5a1e13196ca0e7764f87e36478518f69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/interface-internal bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/peer-id bumped from ^3.0.1 to ^3.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/websockets bumped from ^7.0.2 to ^7.0.3
+    * libp2p bumped from ^0.46.3 to ^0.46.4
+
+### [3.1.3](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.2...webrtc-v3.1.3) (2023-08-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.0 to ^0.1.1
+    * @libp2p/interface-internal bumped from ^0.1.1 to ^0.1.2
+    * @libp2p/logger bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-id bumped from ^3.0.0 to ^3.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-id-factory bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/websockets bumped from ^7.0.1 to ^7.0.2
+    * libp2p bumped from ^0.46.2 to ^0.46.3
+
+### [3.1.2](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.1...webrtc-v3.1.2) (2023-08-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.0 to ^0.1.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/peer-id-factory bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/websockets bumped from ^7.0.0 to ^7.0.1
+    * libp2p bumped from ^0.46.1 to ^0.46.2
+
+### [3.1.1](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.0...webrtc-v3.1.1) (2023-08-01)
+
+
+### Bug Fixes
+
+* update package config ([#1919](https://www.github.com/libp2p/js-libp2p/issues/1919)) ([8d49602](https://www.github.com/libp2p/js-libp2p/commit/8d49602fb6f0c906f1920d397ff28705bb0bc845))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.0 to ^0.46.1
+
+## [3.1.0](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.0.0...webrtc-v3.1.0) (2023-07-31)
+
+
+### Features
+
+* add node.js/electron support for webrtc transport ([#1905](https://www.github.com/libp2p/js-libp2p/issues/1905)) ([72e81dc](https://www.github.com/libp2p/js-libp2p/commit/72e81dc1ab66fe0bbcafe3261ec20e2a28aaad5f))
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v2.0.10...webrtc-v3.0.0) (2023-07-31)
 
 
