@@ -32,10 +32,14 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
 
     if (existingAddr != null) {
       addr.isCertified = existingAddr.isCertified || isCertified
+      addr.lastFailure = existingAddr.lastFailure != null ? BigInt(existingAddr.lastFailure) : undefined
+      addr.lastSuccess = existingAddr.lastSuccess != null ? BigInt(existingAddr.lastSuccess) : undefined
     } else {
       addressMap.set(maStr, {
         multiaddr: addr.multiaddr,
-        isCertified
+        isCertified,
+        lastFailure: addr.lastFailure != null ? Number(addr.lastFailure) : undefined,
+        lastSuccess: addr.lastSuccess != null ? Number(addr.lastSuccess) : undefined
       })
     }
   }
@@ -44,8 +48,10 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     .sort((a, b) => {
       return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
     })
-    .map(({ isCertified, multiaddr }) => ({
+    .map(({ isCertified, multiaddr, lastFailure, lastSuccess }) => ({
       isCertified,
-      multiaddr: multiaddr.bytes
+      multiaddr: multiaddr.bytes,
+      lastFailure: lastFailure != null ? BigInt(lastFailure) : undefined,
+      lastSuccess: lastSuccess != null ? BigInt(lastSuccess) : undefined
     }))
 }

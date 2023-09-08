@@ -264,6 +264,8 @@ export namespace Peer {
 export interface Address {
   multiaddr: Uint8Array
   isCertified?: boolean
+  lastSuccess?: bigint
+  lastFailure?: bigint
 }
 
 export namespace Address {
@@ -286,6 +288,16 @@ export namespace Address {
           w.bool(obj.isCertified)
         }
 
+        if (obj.lastSuccess != null) {
+          w.uint32(24)
+          w.uint64(obj.lastSuccess)
+        }
+
+        if (obj.lastFailure != null) {
+          w.uint32(32)
+          w.uint64(obj.lastFailure)
+        }
+
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
@@ -305,6 +317,12 @@ export namespace Address {
               break
             case 2:
               obj.isCertified = reader.bool()
+              break
+            case 3:
+              obj.lastSuccess = reader.uint64()
+              break
+            case 4:
+              obj.lastFailure = reader.uint64()
               break
             default:
               reader.skipType(tag & 7)

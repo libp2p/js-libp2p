@@ -26,6 +26,12 @@ message Address {
 
   // Flag to indicate if the address comes from a certified source
   optional bool isCertified = 2;
+
+  // ms timestamp when we last succesfully dialed this address
+  optional uint64 lastSuccess = 3;
+
+  // ms timestamp when we last failed to dial this address
+  optional uint64 lastFailure = 4;
 }
 
 message Tag {

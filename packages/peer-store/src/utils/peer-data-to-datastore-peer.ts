@@ -36,9 +36,11 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
       .sort((a, b) => {
         return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
       })
-      .map(({ multiaddr, isCertified }) => ({
+      .map(({ multiaddr, isCertified, lastFailure, lastSuccess }) => ({
         multiaddr: multiaddr.bytes,
-        isCertified
+        isCertified,
+        lastFailure: lastFailure != null ? BigInt(lastFailure) : undefined,
+        lastSuccess: lastSuccess != null ? BigInt(lastSuccess) : undefined
       })),
     protocols: (data.protocols ?? []).sort(),
     metadata: new Map(),

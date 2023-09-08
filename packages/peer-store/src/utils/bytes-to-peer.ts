@@ -30,10 +30,12 @@ export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
   return {
     ...peer,
     id: peerId,
-    addresses: peer.addresses.map(({ multiaddr: ma, isCertified }) => {
+    addresses: peer.addresses.map(({ multiaddr: ma, isCertified, lastFailure, lastSuccess }) => {
       return {
         multiaddr: multiaddr(ma),
-        isCertified: isCertified ?? false
+        isCertified: isCertified ?? false,
+        lastFailure: lastFailure != null ? Number(lastFailure) : undefined,
+        lastSuccess: lastSuccess != null ? Number(lastSuccess) : undefined
       }
     }),
     metadata: peer.metadata,

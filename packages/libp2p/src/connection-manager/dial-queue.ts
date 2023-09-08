@@ -464,10 +464,54 @@ export class DialQueue {
               // update dial status
               pendingDial.status = 'active'
 
-              const conn = await this.transportManager.dial(addr, {
-                ...options,
-                signal
-              })
+              let conn: Connection
+
+              try {
+                conn = await this.transportManager.dial(addr, {
+                  ...options,
+                  signal
+                })
+
+                const peerData = await this.peerStore.get(conn.remotePeer)
+                const addresses = peerData.addresses.map((address) => {
+                  if (address.multiaddr.equals(addr)) {
+                    return {
+                      ...address,
+                      lastSuccess: Date.now()
+                    }
+                  }
+
+                  return address
+                })
+
+                // mark multiaddr dial as successful
+                await this.peerStore.merge(conn.remotePeer, {
+                  addresses
+                })
+              } catch (err: any) {
+                if (pendingDial.peerId != null) {
+                  // mark multiaddr dial as failure
+                  const peerData = await this.peerStore.get(pendingDial.peerId)
+                  const addresses = peerData.addresses.map((address) => {
+                    if (address.multiaddr.equals(addr)) {
+                      return {
+                        ...address,
+                        lastFailure: Date.now()
+                      }
+                    }
+
+                    return address
+                  })
+
+                  // mark multiaddr dial as failed
+                  await this.peerStore.merge(pendingDial.peerId, {
+                    addresses
+                  })
+                }
+
+                // rethrow error
+                throw err
+              }
 
               if (controller.signal.aborted) {
                 // another dial succeeded faster than this one
