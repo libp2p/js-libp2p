@@ -2,7 +2,7 @@ import { CodeError } from '@libp2p/interface/errors'
 import { KEEP_ALIVE } from '@libp2p/interface/peer-store/tags'
 import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
@@ -254,7 +254,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       transportManager: components.transportManager,
       connectionGater: components.connectionGater
     }, {
-      addressSorter: init.addressSorter ?? publicAddressesFirst,
+      addressSorter: init.addressSorter ?? defaultAddressSort,
       maxParallelDials: init.maxParallelDials ?? MAX_PARALLEL_DIALS,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,
       maxParallelDialsPerPeer: init.maxParallelDialsPerPeer ?? MAX_PARALLEL_DIALS_PER_PEER,

@@ -8,7 +8,7 @@ import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -193,11 +193,11 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddr('/ip4/30.0.0.1/tcp/15001/ws')
     ]
 
-    const publicAddressesFirstSpy = sinon.spy(publicAddressesFirst)
+    const addressesSorttSpy = sinon.spy(defaultAddressSort)
     const localTMDialStub = sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
     connectionManager = new DefaultConnectionManager(localComponents, {
-      addressSorter: publicAddressesFirstSpy,
+      addressSorter: addressesSorttSpy,
       maxParallelDials: 3,
       maxParallelDialsPerPeer: 3
     })
@@ -213,7 +213,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     const sortedAddresses = peerMultiaddrs
       .map((m) => ({ multiaddr: m, isCertified: false }))
-      .sort(publicAddressesFirst)
+      .sort(defaultAddressSort)
 
     expect(localTMDialStub.getCall(0).args[0].equals(sortedAddresses[0].multiaddr))
     expect(localTMDialStub.getCall(1).args[0].equals(sortedAddresses[1].multiaddr))
