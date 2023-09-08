@@ -292,8 +292,7 @@ describe('auto-dial', () => {
     expect(connectionManager.openConnection.calledWith(matchPeerId(undialablePeer.id))).to.be.true()
   })
 
-  // #TODO This test should pass once https://github.com/libp2p/js-libp2p/pull/2028 is merged given we will only dial one peer at time
-  it.skip('should prioritize peers which have been successfully connected', async () => {
+  it('should prioritize peers which have been successfully connected', async () => {
     const recentlyConnectedPeer: Peer = {
       id: await createEd25519PeerId(),
       protocols: [],
@@ -301,7 +300,7 @@ describe('auto-dial', () => {
         multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
         isCertified: true
       }],
-      metadata: new Map([[LAST_CONNECTED_TIMESTAMP, uint8ArrayFromString(`${Date.now() - 10}`)]]),
+      metadata: new Map([[LAST_CONNECTED_TIMESTAMP, uint8ArrayFromString(`${Date.now()}`)]]),
       tags: new Map()
     }
 
@@ -329,8 +328,7 @@ describe('auto-dial', () => {
       connectionManager,
       events
     }, {
-      minConnections: 10,
-      autoDialPeerRetryThreshold: 2000
+      minConnections: 10
     })
 
     autoDialler.start()
@@ -338,20 +336,10 @@ describe('auto-dial', () => {
     void autoDialler.autoDial()
 
     await pWaitFor(() => {
-      return connectionManager.openConnection.callCount === 1
-    })
-
-    expect(connectionManager.openConnection.callCount).to.equal(1)
-    expect(connectionManager.openConnection.calledWith(matchPeerId(recentlyConnectedPeer.id))).to.be.true()
-    expect(connectionManager.openConnection.calledWith(matchPeerId(neverConnectedPeer.id))).to.be.false()
-
-    // autodial again
-    void autoDialler.autoDial()
-
-    await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 2
     })
 
-    expect(connectionManager.openConnection.calledWith(matchPeerId(neverConnectedPeer.id))).to.be.true()
+    expect(connectionManager.openConnection.getCall(0).args[0].toString()).to.equal(recentlyConnectedPeer.id.toString())
+    expect(connectionManager.openConnection.getCall(1).args[0].toString()).to.equal(neverConnectedPeer.id.toString())
   })
 })

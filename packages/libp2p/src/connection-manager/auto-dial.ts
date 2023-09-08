@@ -249,17 +249,28 @@ export class AutoDial implements Startable {
       return Date.now() - lastDialFailureTimestamp > this.autoDialPeerRetryThresholdMs
     })
 
+    // sort peers that have been connected recently to the front of the queue
     const peersToDial = peersThatHaveNotFailed.sort((a, b) => {
-      // sort peers that have been connected recently to the front of the queue
-      const lastDialTimestampA = a.metadata.get(LAST_CONNECTED_TIMESTAMP) ?? 0
-      const lastDialTimestampB = b.metadata.get(LAST_CONNECTED_TIMESTAMP) ?? 0
+      let lastDialTimestampA = 0
+      let lastDialTimestampB = 0
+
+      const peerAMetadata = a.metadata.get(LAST_CONNECTED_TIMESTAMP)
+      const peerBMetadata = b.metadata.get(LAST_CONNECTED_TIMESTAMP)
+
+      if (peerAMetadata !== undefined) {
+        lastDialTimestampA = parseInt(uint8ArrayToString(peerAMetadata))
+      }
+
+      if (peerBMetadata !== undefined) {
+        lastDialTimestampB = parseInt(uint8ArrayToString(peerBMetadata))
+      }
 
       if (lastDialTimestampA > lastDialTimestampB) {
-        return 1
+        return -1
       }
 
       if (lastDialTimestampB > lastDialTimestampA) {
-        return -1
+        return 1
       }
 
       return 0
