@@ -230,7 +230,8 @@ describe('dialing (direct, TCP)', () => {
     ]
 
     const dialer = new DialQueue(localComponents, {
-      maxParallelDials: 2
+      maxParallelDials: 2,
+      maxParallelDialsPerPeer: 10
     })
 
     const deferredDial = pDefer<Connection>()
@@ -268,7 +269,9 @@ describe('dialing (direct, TCP)', () => {
       multiaddrs: addrs
     })
 
-    const dialer = new DialQueue(localComponents)
+    const dialer = new DialQueue(localComponents, {
+      maxParallelDialsPerPeer: 10
+    })
 
     const transportManagerDialStub = sinon.stub(localTM, 'dial')
     transportManagerDialStub.callsFake(async (ma) => {

@@ -10,7 +10,7 @@ import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PARALLEL_DIALS_PER_PEER, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
@@ -30,14 +30,14 @@ const DEFAULT_DIAL_PRIORITY = 50
 export interface ConnectionManagerInit {
   /**
    * The maximum number of connections libp2p is willing to have before it starts
-   * pruning connections to reduce resource usage. (default: 300)
+   * pruning connections to reduce resource usage. (default: 300, 100 in browsers)
    */
   maxConnections?: number
 
   /**
    * The minimum number of connections below which libp2p will start to dial peers
    * from the peer book. Setting this to 0 effectively disables this behaviour.
-   * (default: 50)
+   * (default: 50, 5 in browsers)
    */
   minConnections?: number
 
@@ -68,7 +68,7 @@ export interface ConnectionManagerInit {
 
   /**
    * When we've failed to dial a peer, do not autodial them again within this
-   * number of ms. (default: 1 minute)
+   * number of ms. (default: 1 minute, 7 minutes in browsers)
    */
   autoDialPeerRetryThreshold?: number
 
@@ -88,7 +88,7 @@ export interface ConnectionManagerInit {
 
   /**
    * The maximum number of dials across all peers to execute in parallel.
-   * (default: 100)
+   * (default: 100, 50 in browsers)
    */
   maxParallelDials?: number
 
@@ -96,7 +96,7 @@ export interface ConnectionManagerInit {
    * To prevent individual peers with large amounts of multiaddrs swamping the
    * dial queue, this value controls how many addresses to dial in parallel per
    * peer. So for example if two peers have 10 addresses and this value is set
-   * at 5, we will dial 5 addresses from each at a time. (default: 10)
+   * at 5, we will dial 5 addresses from each at a time. (default: 1)
    */
   maxParallelDialsPerPeer?: number
 
@@ -257,6 +257,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       addressSorter: init.addressSorter ?? defaultAddressSort,
       maxParallelDials: init.maxParallelDials ?? MAX_PARALLEL_DIALS,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,
+      maxParallelDialsPerPeer: init.maxParallelDialsPerPeer ?? MAX_PARALLEL_DIALS_PER_PEER,
       dialTimeout: init.dialTimeout ?? DIAL_TIMEOUT,
       resolvers: init.resolvers ?? {
         dnsaddr: dnsaddrResolver

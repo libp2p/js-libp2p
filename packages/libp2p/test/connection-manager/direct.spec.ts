@@ -198,7 +198,8 @@ describe('dialing (direct, WebSockets)', () => {
 
     connectionManager = new DefaultConnectionManager(localComponents, {
       addressSorter: addressesSorttSpy,
-      maxParallelDials: 3
+      maxParallelDials: 3,
+      maxParallelDialsPerPeer: 3
     })
     await connectionManager.start()
 
@@ -272,7 +273,9 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddrs: addrs
     })
 
-    connectionManager = new DefaultConnectionManager(localComponents)
+    connectionManager = new DefaultConnectionManager(localComponents, {
+      maxParallelDialsPerPeer: 10
+    })
     await connectionManager.start()
 
     const transactionManagerDialStub = sinon.stub(localTM, 'dial')
