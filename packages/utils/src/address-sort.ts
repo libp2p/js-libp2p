@@ -20,8 +20,8 @@
  * ```
  */
 
-import { isPrivate } from './multiaddr/is-private.js'
 import { Circuit } from '@multiformats/multiaddr-matcher'
+import { isPrivate } from './multiaddr/is-private.js'
 import type { Address } from '@libp2p/interface/peer-store'
 
 /**
