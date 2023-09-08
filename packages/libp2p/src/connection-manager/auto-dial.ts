@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { PeerJobQueue } from '../utils/peer-job-queue.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_CONNECTED_TIMESTAMP, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
 import type { Libp2pEvents } from '@libp2p/interface'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -249,9 +249,25 @@ export class AutoDial implements Startable {
       return Date.now() - lastDialFailureTimestamp > this.autoDialPeerRetryThresholdMs
     })
 
-    log('selected %d/%d peers to dial', peersThatHaveNotFailed.length, peers.length)
+    const peersToDial = peersThatHaveNotFailed.sort((a, b) => {
+      // sort peers that have been connected recently to the front of the queue
+      const lastDialTimestampA = a.metadata.get(LAST_CONNECTED_TIMESTAMP) ?? 0
+      const lastDialTimestampB = b.metadata.get(LAST_CONNECTED_TIMESTAMP) ?? 0
 
-    for (const peer of peersThatHaveNotFailed) {
+      if (lastDialTimestampA > lastDialTimestampB) {
+        return 1
+      }
+
+      if (lastDialTimestampB > lastDialTimestampA) {
+        return -1
+      }
+
+      return 0
+    })
+
+    log('selected %d/%d peers to dial', peersToDial.length, peers.length)
+
+    for (const peer of peersToDial) {
       this.queue.add(async () => {
         const numConnections = this.connectionManager.getConnectionsMap().size
 

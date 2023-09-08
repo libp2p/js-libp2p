@@ -62,3 +62,5 @@ export const MAX_INCOMING_PENDING_CONNECTIONS = 10
  * failed to dial.
  */
 export const LAST_DIAL_FAILURE_KEY = 'last-dial-failure'
+
+export const LAST_CONNECTED_TIMESTAMP = 'last-connected-timestamp'

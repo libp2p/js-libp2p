@@ -10,7 +10,8 @@ import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, LAST_CONNECTED_TIMESTAMP, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
@@ -537,6 +538,17 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     if (!trackedConnection) {
       peerConnections.push(connection)
+    }
+
+    // Set connected peers as recently dialled
+    try {
+      await this.peerStore.patch(connection.remotePeer, {
+        metadata: {
+          [LAST_CONNECTED_TIMESTAMP]: uint8ArrayFromString(Date.now().toString())
+        }
+      })
+    } catch (err: any) {
+      log.error('could not update last connected timestamp for peer %p', connection.remotePeer, err)
     }
 
     return connection

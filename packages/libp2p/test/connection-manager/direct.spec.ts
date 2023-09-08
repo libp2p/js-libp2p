@@ -20,7 +20,7 @@ import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
-import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
+import { LAST_CONNECTED_TIMESTAMP, LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { type IdentifyService, identifyService } from '../../src/identify/index.js'
@@ -115,6 +115,23 @@ describe('dialing (direct, WebSockets)', () => {
     const peer = await localComponents.peerStore.get(remoteComponents.peerId)
 
     expect(peer.metadata.has(LAST_DIAL_FAILURE_KEY)).to.be.true()
+  })
+
+  it('should mark a peer as having recently connected', async () => {
+    connectionManager = new DefaultConnectionManager(localComponents)
+    await connectionManager.start()
+
+    const remotePeerId = peerIdFromString(remoteAddr.getPeerId() ?? '')
+    await localComponents.peerStore.patch(remotePeerId, {
+      multiaddrs: [remoteAddr]
+    })
+
+    const connection = await connectionManager.openConnection(remotePeerId)
+    expect(connection).to.exist()
+
+    const peer = await localComponents.peerStore.get(remoteComponents.peerId)
+
+    expect(peer.metadata.has(LAST_CONNECTED_TIMESTAMP)).to.be.true()
   })
 
   it('should be able to connect to a given peer', async () => {
@@ -409,7 +426,8 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     expect(identifySpy.callCount).to.equal(1)
     await identifySpy.firstCall.returnValue
 
-    expect(peerStorePatchSpy.callCount).to.equal(1)
+    // Account for the peer store being patched by recently dialed peer
+    expect(peerStorePatchSpy.callCount).to.equal(2)
 
     await libp2p.stop()
   })

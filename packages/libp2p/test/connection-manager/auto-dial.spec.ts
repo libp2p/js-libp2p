@@ -13,7 +13,7 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
-import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
+import { LAST_CONNECTED_TIMESTAMP, LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
 import type { Libp2pEvents } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
@@ -291,4 +291,68 @@ describe('auto-dial', () => {
     // should have retried the unreachable peer
     expect(connectionManager.openConnection.calledWith(matchPeerId(undialablePeer.id))).to.be.true()
   })
+
+  // #TODO This test should pass once https://github.com/libp2p/js-libp2p/pull/2028 is merged given we will only dial one peer at time
+  it.skip('should prioritize peers which have been successfully connected', async () => {
+     const recentlyConnectedPeer: Peer = {
+      id: await createEd25519PeerId(),
+        protocols: [],
+        addresses: [{
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
+          isCertified: true
+        }],
+        metadata: new Map([[LAST_CONNECTED_TIMESTAMP, uint8ArrayFromString(`${Date.now() - 10}`)]]),
+        tags: new Map()
+    }
+
+    const neverConnectedPeer: Peer = {
+      id: await createEd25519PeerId(),
+      protocols: [],
+      addresses: [{
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
+        isCertified: true
+      }],
+      metadata: new Map(),
+      tags: new Map()
+    }
+
+    await peerStore.save(neverConnectedPeer.id, neverConnectedPeer)
+    await peerStore.save(recentlyConnectedPeer.id, recentlyConnectedPeer)
+
+    const connectionManager = stubInterface<ConnectionManager>({
+      getConnectionsMap: new PeerMap(),
+      getDialQueue: []
+    })
+
+    autoDialler = new AutoDial({
+      peerStore,
+      connectionManager,
+      events
+    }, {
+      minConnections: 10,
+      autoDialPeerRetryThreshold: 2000
+    })
+
+    autoDialler.start()
+
+    void autoDialler.autoDial()
+
+    await pWaitFor(() => {
+      return connectionManager.openConnection.callCount === 1
+    })
+
+    expect(connectionManager.openConnection.callCount).to.equal(1)
+    expect(connectionManager.openConnection.calledWith(matchPeerId(recentlyConnectedPeer.id))).to.be.true()
+    expect(connectionManager.openConnection.calledWith(matchPeerId(neverConnectedPeer.id))).to.be.false()
+
+     // autodial again
+    void autoDialler.autoDial()
+
+    await pWaitFor(() => {
+      return connectionManager.openConnection.callCount === 2
+    })
+
+    expect(connectionManager.openConnection.calledWith(matchPeerId(neverConnectedPeer.id))).to.be.true()
+  })
+
 })
