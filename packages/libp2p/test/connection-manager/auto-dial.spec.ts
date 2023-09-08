@@ -294,15 +294,15 @@ describe('auto-dial', () => {
 
   // #TODO This test should pass once https://github.com/libp2p/js-libp2p/pull/2028 is merged given we will only dial one peer at time
   it.skip('should prioritize peers which have been successfully connected', async () => {
-     const recentlyConnectedPeer: Peer = {
+    const recentlyConnectedPeer: Peer = {
       id: await createEd25519PeerId(),
-        protocols: [],
-        addresses: [{
-          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
-          isCertified: true
-        }],
-        metadata: new Map([[LAST_CONNECTED_TIMESTAMP, uint8ArrayFromString(`${Date.now() - 10}`)]]),
-        tags: new Map()
+      protocols: [],
+      addresses: [{
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
+        isCertified: true
+      }],
+      metadata: new Map([[LAST_CONNECTED_TIMESTAMP, uint8ArrayFromString(`${Date.now() - 10}`)]]),
+      tags: new Map()
     }
 
     const neverConnectedPeer: Peer = {
@@ -345,7 +345,7 @@ describe('auto-dial', () => {
     expect(connectionManager.openConnection.calledWith(matchPeerId(recentlyConnectedPeer.id))).to.be.true()
     expect(connectionManager.openConnection.calledWith(matchPeerId(neverConnectedPeer.id))).to.be.false()
 
-     // autodial again
+    // autodial again
     void autoDialler.autoDial()
 
     await pWaitFor(() => {
@@ -354,5 +354,4 @@ describe('auto-dial', () => {
 
     expect(connectionManager.openConnection.calledWith(matchPeerId(neverConnectedPeer.id))).to.be.true()
   })
-
 })
