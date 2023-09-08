@@ -199,7 +199,8 @@ describe('dial queue', () => {
     const controller = new AbortController()
 
     dialer = new DialQueue(components, {
-      maxParallelDials: 2
+      maxParallelDials: 2,
+      maxParallelDialsPerPeer: 10
     })
 
     components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
@@ -268,7 +269,8 @@ describe('dial queue', () => {
     })
 
     dialer = new DialQueue(components, {
-      maxParallelDials: 50
+      maxParallelDials: 50,
+      maxParallelDialsPerPeer: 10
     })
 
     await expect(dialer.dial(Object.keys(actions).map(str => multiaddr(str)))).to.eventually.equal(connection2)
