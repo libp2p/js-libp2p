@@ -281,6 +281,6 @@ export function createStream (options: WebRTCStreamOptions): WebRTCStream {
     dataChannelOptions,
     onEnd,
     channel,
-    log: logger(`libp2p:mplex:stream:${direction}:${channel.id}`)
+    log: logger(`libp2p:webrtc:stream:${direction}:${channel.id}`)
   })
 }
