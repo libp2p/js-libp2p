@@ -156,7 +156,7 @@ describe('address-sort', () => {
         isCertified: false
       }
       const webRTCOverRelay = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm/webrtc'),
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/webrtc/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm'),
         isCertified: false
       }
 
