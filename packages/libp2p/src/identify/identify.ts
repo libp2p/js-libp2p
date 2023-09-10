@@ -430,7 +430,6 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     const peer = {
       addresses: message.listenAddrs.map(buf => ({
-        isCertified: false,
         multiaddr: multiaddr(buf)
       })),
       protocols: message.protocols,

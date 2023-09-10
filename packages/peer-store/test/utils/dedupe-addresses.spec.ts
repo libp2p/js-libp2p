@@ -18,39 +18,29 @@ describe('dedupe-addresses', () => {
 
   it('should dedupe addresses', async () => {
     expect(await dedupeFilterAndSortAddresses(peerId, async () => true, [{
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }, {
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }, {
-      multiaddr: addr2,
-      isCertified: false
+      multiaddr: addr2
     }])).to.deep.equal([{
-      multiaddr: addr1.bytes,
-      isCertified: false
+      multiaddr: addr1.bytes
     }, {
-      multiaddr: addr2.bytes,
-      isCertified: false
+      multiaddr: addr2.bytes
     }])
   })
 
   it('should sort addresses', async () => {
     expect(await dedupeFilterAndSortAddresses(peerId, async () => true, [{
-      multiaddr: addr2,
-      isCertified: false
+      multiaddr: addr2
     }, {
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }, {
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }])).to.deep.equal([{
-      multiaddr: addr1.bytes,
-      isCertified: false
+      multiaddr: addr1.bytes
     }, {
-      multiaddr: addr2.bytes,
-      isCertified: false
+      multiaddr: addr2.bytes
     }])
   })
 
@@ -59,8 +49,7 @@ describe('dedupe-addresses', () => {
       multiaddr: addr1,
       isCertified: true
     }, {
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }])).to.deep.equal([{
       multiaddr: addr1.bytes,
       isCertified: true
@@ -72,8 +61,7 @@ describe('dedupe-addresses', () => {
       multiaddr: addr1,
       isCertified: true
     }, {
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }])).to.deep.equal([])
   })
 })

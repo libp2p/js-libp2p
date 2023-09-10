@@ -66,7 +66,6 @@ describe('save', () => {
 
     expect(peer.addresses).to.deep.equal(
       supportedMultiaddrs.map((multiaddr) => ({
-        isCertified: false,
         multiaddr
       }))
     )
@@ -230,11 +229,9 @@ describe('save', () => {
     const saved = await peerStore.save(otherPeerId, peer)
 
     expect(saved).to.have.property('addresses').that.deep.equals([{
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }, {
-      multiaddr: addr2,
-      isCertified: false
+      multiaddr: addr2
     }])
     expect(saved).to.have.property('metadata').that.deep.equals(
       new Map([

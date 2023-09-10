@@ -8,12 +8,10 @@ describe('address-sort', () => {
   describe('public addresses first', () => {
     it('should sort public addresses first', () => {
       const publicAddress = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000')
       }
       const privateAddress = {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000')
       }
 
       const addresses = [
@@ -36,16 +34,13 @@ describe('address-sort', () => {
         isCertified: true
       }
       const publicAddress = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000')
       }
       const certifiedPrivateAddress = {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
-        isCertified: true
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001')
       }
       const privateAddress = {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000')
       }
 
       const addresses = [
@@ -68,12 +63,10 @@ describe('address-sort', () => {
   describe('circuit relay addresses last', () => {
     it('should sort circuit relay addresses last', () => {
       const publicAddress = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000')
       }
       const publicRelay = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
       }
 
       const addresses = [
@@ -96,32 +89,28 @@ describe('address-sort', () => {
         isCertified: true
       }
       const publicAddress = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000')
       }
       const certifiedPublicRelay = {
         multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4001/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm'),
         isCertified: true
       }
       const publicRelay = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
       }
       const certifiedPrivateAddress = {
         multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
         isCertified: true
       }
       const privateAddress = {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000')
       }
       const certifiedPrivateRelay = {
         multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm'),
         isCertified: true
       }
       const privateRelay = {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
       }
 
       const addresses = [
@@ -152,12 +141,10 @@ describe('address-sort', () => {
 
     it('should sort WebRTC over relay addresses before relay addresses', () => {
       const publicRelay = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
       }
       const webRTCOverRelay = {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm/webrtc'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm/webrtc')
       }
 
       const addresses = [

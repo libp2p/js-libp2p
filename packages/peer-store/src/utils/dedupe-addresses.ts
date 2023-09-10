@@ -26,21 +26,27 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
       continue
     }
 
-    const isCertified = addr.isCertified ?? false
     const maStr = addr.multiaddr.toString()
-    const existingAddr = addressMap.get(maStr)
+    let existingAddr = addressMap.get(maStr)
 
-    if (existingAddr != null) {
-      addr.isCertified = existingAddr.isCertified || isCertified
-      addr.lastFailure = existingAddr.lastFailure != null ? BigInt(existingAddr.lastFailure) : undefined
-      addr.lastSuccess = existingAddr.lastSuccess != null ? BigInt(existingAddr.lastSuccess) : undefined
-    } else {
-      addressMap.set(maStr, {
-        multiaddr: addr.multiaddr,
-        isCertified,
-        lastFailure: addr.lastFailure != null ? Number(addr.lastFailure) : undefined,
-        lastSuccess: addr.lastSuccess != null ? Number(addr.lastSuccess) : undefined
-      })
+    if (existingAddr == null) {
+      existingAddr = {
+        multiaddr: addr.multiaddr
+      }
+
+      addressMap.set(maStr, existingAddr)
+    }
+
+    if (addr.isCertified) {
+      existingAddr.isCertified = true
+    }
+
+    if (addr.lastFailure != null) {
+      existingAddr.lastFailure = Number(addr.lastFailure)
+    }
+
+    if (addr.lastSuccess != null) {
+      existingAddr.lastSuccess = Number(addr.lastSuccess)
     }
   }
 
@@ -48,10 +54,23 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     .sort((a, b) => {
       return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
     })
-    .map(({ isCertified, multiaddr, lastFailure, lastSuccess }) => ({
-      isCertified,
-      multiaddr: multiaddr.bytes,
-      lastFailure: lastFailure != null ? BigInt(lastFailure) : undefined,
-      lastSuccess: lastSuccess != null ? BigInt(lastSuccess) : undefined
-    }))
+    .map(({ isCertified, multiaddr, lastFailure, lastSuccess }) => {
+      const addr: AddressPB = {
+        multiaddr: multiaddr.bytes,
+      }
+
+      if (isCertified) {
+        addr.isCertified = true
+      }
+
+      if (lastFailure != null) {
+        addr.lastFailure = BigInt(lastFailure)
+      }
+
+      if (lastSuccess != null) {
+        addr.lastSuccess = BigInt(lastSuccess)
+      }
+
+      return addr
+    })
 }
