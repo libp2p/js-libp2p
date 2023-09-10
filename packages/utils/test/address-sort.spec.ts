@@ -37,7 +37,8 @@ describe('address-sort', () => {
         multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000')
       }
       const certifiedPrivateAddress = {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001')
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
+        isCertified: true
       }
       const privateAddress = {
         multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000')

@@ -35,7 +35,7 @@ export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
         multiaddr: multiaddr(ma)
       }
 
-      if (isCertified) {
+      if (isCertified === true) {
         addr.isCertified = true
       }
 

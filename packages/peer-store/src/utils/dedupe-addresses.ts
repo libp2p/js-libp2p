@@ -37,7 +37,7 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
       addressMap.set(maStr, existingAddr)
     }
 
-    if (addr.isCertified) {
+    if (addr.isCertified === true) {
       existingAddr.isCertified = true
     }
 
@@ -56,7 +56,7 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     })
     .map(({ isCertified, multiaddr, lastFailure, lastSuccess }) => {
       const addr: AddressPB = {
-        multiaddr: multiaddr.bytes,
+        multiaddr: multiaddr.bytes
       }
 
       if (isCertified) {
