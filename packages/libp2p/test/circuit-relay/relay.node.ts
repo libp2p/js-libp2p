@@ -470,17 +470,11 @@ describe('circuit-relay', () => {
 
     it('should not add listener to a already relayed connection', async () => {
       // Relay 1 discovers Relay 3 and connect
-      await relay1.peerStore.merge(relay3.peerId, {
-        multiaddrs: relay3.getMultiaddrs()
-      })
-      await relay1.dial(relay3.peerId)
+      await relay1.dial(relay3.getMultiaddrs())
       await usingAsRelay(relay1, relay3)
 
       // Relay 2 discovers Relay 3 and connect
-      await relay2.peerStore.merge(relay3.peerId, {
-        multiaddrs: relay3.getMultiaddrs()
-      })
-      await relay2.dial(relay3.peerId)
+      await relay2.dial(relay3.getMultiaddrs())
       await usingAsRelay(relay2, relay3)
 
       // Relay 1 discovers Relay 2 relayed multiaddr via Relay 3
