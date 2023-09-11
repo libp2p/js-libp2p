@@ -5,6 +5,15 @@
 
 * skip self-query if not running ([#479](https://github.com/libp2p/js-libp2p-kad-dht/issues/479)) ([7095290](https://github.com/libp2p/js-libp2p-kad-dht/commit/70952907a27fd8778773172059879656b4f08855))
 
+### [10.0.6](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.5...kad-dht-v10.0.6) (2023-09-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-store bumped from ^9.0.3 to ^9.0.4
+
 ### [10.0.5](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.4...kad-dht-v10.0.5) (2023-08-25)
 
 
