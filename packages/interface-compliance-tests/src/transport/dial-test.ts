@@ -19,6 +19,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     let upgrader: Upgrader
     let registrar: Registrar
     let addrs: Multiaddr[]
+    let listeningAddrs: Multiaddr[]
     let transport: Transport
     let connector: Connector
     let listener: Listener
@@ -30,7 +31,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         events: new EventEmitter()
       });
 
-      ({ addrs, transport, connector } = await common.setup())
+      ({ addrs, transport, connector, listeningAddrs = [] } = await common.setup())
     })
 
     after(async () => {
@@ -41,7 +42,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       listener = transport.createListener({
         upgrader
       })
-      await listener.listen(addrs[0])
+      listeningAddrs.length > 0 ? await listener.listen(listeningAddrs[0]) : await listener.listen(addrs[0])
     })
 
     afterEach(async () => {
