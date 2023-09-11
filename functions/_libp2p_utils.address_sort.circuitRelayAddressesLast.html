@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>dnsWsOrWss | libp2p - v1.0.0</title><meta name="description" content="Documentation for libp2p"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>circuitRelayAddressesLast | libp2p - v1.0.0</title><meta name="description" content="Documentation for libp2p"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -13,22 +13,28 @@
 <div class="tsd-page-title">
 <ul class="tsd-breadcrumb">
 <li><a href="../index.html">libp2p</a></li>
-<li><a href="../modules/_libp2p_websockets.html">@libp2p/websockets</a></li>
-<li><a href="../modules/_libp2p_websockets.filters.html">filters</a></li>
-<li><a href="_libp2p_websockets.filters.dnsWsOrWss.html">dnsWsOrWss</a></li></ul>
-<h1>Function dnsWsOrWss</h1></div>
+<li><a href="../modules/_libp2p_utils.html">@libp2p/utils</a></li>
+<li><a href="../modules/_libp2p_utils.address_sort.html">address-sort</a></li>
+<li><a href="_libp2p_utils.address_sort.circuitRelayAddressesLast.html">circuitRelayAddressesLast</a></li></ul>
+<h1>Function circuitRelayAddressesLast</h1></div>
 <section class="tsd-panel">
 <ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="dnsWsOrWss"><span class="tsd-kind-call-signature">dns<wbr/>Ws<wbr/>Or<wbr/>Wss</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">multiaddrs</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="https://multiformats.github.io/js-multiaddr/interfaces/index.Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span><a href="#dnsWsOrWss" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="circuitRelayAddressesLast"><span class="tsd-kind-call-signature">circuit<wbr/>Relay<wbr/>Addresses<wbr/>Last</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">a</span>, <span class="tsd-kind-parameter">b</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">-1</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">0</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">1</span><a href="#circuitRelayAddressesLast" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Compare function for array.sort() that moves circuit relay addresses to the
+start of the array.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5><span class="tsd-kind-parameter">multiaddrs</span>: <a href="https://multiformats.github.io/js-multiaddr/interfaces/index.Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="https://multiformats.github.io/js-multiaddr/interfaces/index.Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
+<h5><span class="tsd-kind-parameter">a</span>: <a href="../interfaces/_libp2p_interface.peer_store.Address.html" class="tsd-signature-type tsd-kind-interface">Address</a></h5></li>
+<li>
+<h5><span class="tsd-kind-parameter">b</span>: <a href="../interfaces/_libp2p_interface.peer_store.Address.html" class="tsd-signature-type tsd-kind-interface">Address</a></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">-1</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">0</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">1</span></h4>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf13a5b3/packages/transport-websockets/src/filters.ts#L49">packages/transport-websockets/src/filters.ts:49</a></li></ul></aside></li></ul></section></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf13a5b3/packages/utils/src/address-sort.ts#L62">address-sort.ts:62</a></li></ul></aside></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
