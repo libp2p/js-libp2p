@@ -120,9 +120,12 @@ export class DataChannel extends EventTarget implements RTCDataChannel {
 
   close (): void {
     this.#readyState = 'closing'
-    this.dispatchEvent(new Event('closing'))
 
-    this.#dataChannel.close()
+    // temporary workaround for https://github.com/murat-dogan/node-datachannel/issues/188
+    setTimeout(() => {
+      this.dispatchEvent(new Event('closing'))
+      this.#dataChannel.close()
+    }, 1000)
   }
 
   send (data: string): void
