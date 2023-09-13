@@ -38,7 +38,10 @@ const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
 const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 // protobuf field definition overhead
-const PROTOBUF_OVERHEAD = 3
+const PROTOBUF_OVERHEAD = 5
+
+// Length of varint, in bytes.
+const VARINT_LENGTH = 2
 
 export class WebRTCStream extends AbstractStream {
   /**
@@ -58,6 +61,10 @@ export class WebRTCStream extends AbstractStream {
   private readonly incomingData: Pushable<Uint8Array>
 
   private messageQueue?: Uint8ArrayList
+
+  /**
+   * The maximum size of a message in bytes
+   */
   private readonly maxDataSize: number
 
   constructor (init: WebRTCStreamInit) {
@@ -70,7 +77,7 @@ export class WebRTCStream extends AbstractStream {
     this.dataChannelOptions = {
       bufferedAmountLowEventTimeout: init.dataChannelOptions?.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT,
       maxBufferedAmount: init.dataChannelOptions?.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT,
-      maxMessageSize: init.dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE
+      maxMessageSize: init.dataChannelOptions?.maxMessageSize ?? init.maxDataSize
     }
     this.maxDataSize = init.maxDataSize
 
@@ -275,7 +282,7 @@ export function createStream (options: WebRTCStreamOptions): WebRTCStream {
   return new WebRTCStream({
     id: direction === 'inbound' ? (`i${channel.id}`) : `r${channel.id}`,
     direction,
-    maxDataSize: (dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD,
+    maxDataSize: (dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH,
     dataChannelOptions,
     onEnd,
     channel,
