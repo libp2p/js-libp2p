@@ -1,10 +1,3 @@
-### [0.45.9](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.8...libp2p-v0.45.9) (2023-06-14)
-
-
-### Bug Fixes
-
-* allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
-
 ### [0.46.10](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.9...libp2p-v0.46.10) (2023-09-10)
 
 
@@ -247,6 +240,13 @@
     * @libp2p/mplex bumped from ^8.0.0 to ^9.0.0
     * @libp2p/tcp bumped from ^7.0.0 to ^8.0.0
     * @libp2p/websockets bumped from ^6.0.0 to ^7.0.0
+
+### [0.45.9](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.8...libp2p-v0.45.9) (2023-06-14)
+
+
+### Bug Fixes
+
+* allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
 ### [0.45.8](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.7...libp2p-v0.45.8) (2023-06-14)
 
