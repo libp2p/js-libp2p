@@ -14,6 +14,7 @@ export interface DataChannelOpts {
   maxMessageSize: number
   maxBufferedAmount: number
   bufferedAmountLowEventTimeout: number
+  closeDelay?: number
 }
 
 export interface WebRTCStreamInit extends AbstractStreamInit {

@@ -85,7 +85,7 @@ export class WebRTCTransport implements Transport, Startable {
    * <relay address>/p2p/<relay-peer>/p2p-circuit/webrtc/p2p/<destination-peer>
   */
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
-    log.trace('dialing address: ', ma)
+    log.trace('dialing address: %a', ma)
     const { baseAddr, peerId } = splitAddr(ma)
 
     if (options.signal == null) {

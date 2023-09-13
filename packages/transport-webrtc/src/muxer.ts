@@ -1,5 +1,5 @@
 import { createStream } from './stream.js'
-import { nopSink, nopSource } from './util.js'
+import { drainAndClose, nopSink, nopSource } from './util.js'
 import type { DataChannelOpts } from './stream.js'
 import type { Stream } from '@libp2p/interface/connection'
 import type { CounterGroup } from '@libp2p/interface/metrics'
@@ -9,6 +9,7 @@ import type { Source, Sink } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const PROTOCOL = '/webrtc'
+const DEFAULT_CHANNEL_CLOSE_DELAY = 30000
 
 export interface DataChannelMuxerFactoryInit {
   /**
@@ -131,6 +132,7 @@ export class DataChannelMuxer implements StreamMuxer {
         direction: 'inbound',
         dataChannelOptions: this.dataChannelOptions,
         onEnd: () => {
+          drainAndClose(channel, this.dataChannelOptions?.closeDelay ?? DEFAULT_CHANNEL_CLOSE_DELAY)
           this.streams = this.streams.filter(s => s.id !== stream.id)
           this.metrics?.increment({ stream_end: true })
           init?.onStreamEnd?.(stream)
@@ -158,7 +160,7 @@ export class DataChannelMuxer implements StreamMuxer {
       direction: 'outbound',
       dataChannelOptions: this.dataChannelOptions,
       onEnd: () => {
-        channel.close() // Stream initiator is responsible for closing the channel
+        drainAndClose(channel, this.dataChannelOptions?.closeDelay ?? DEFAULT_CHANNEL_CLOSE_DELAY)
         this.streams = this.streams.filter(s => s.id !== stream.id)
         this.metrics?.increment({ stream_end: true })
         this.init?.onStreamEnd?.(stream)

@@ -56,6 +56,7 @@ export interface WebRTCMetrics {
 
 export interface WebRTCTransportDirectInit {
   dataChannel?: Partial<DataChannelOpts>
+  dataChannelCloseDelay?: number
 }
 
 export class WebRTCDirectTransport implements Transport {
@@ -80,7 +81,7 @@ export class WebRTCDirectTransport implements Transport {
    */
   async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options)
-    log(`dialing address - ${ma.toString()}`)
+    log.trace('dialing address: %a', ma)
     return rawConn
   }
 
