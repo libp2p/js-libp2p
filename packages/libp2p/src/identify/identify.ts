@@ -328,7 +328,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       listenAddrs: message.listenAddrs.map(buf => multiaddr(buf)),
       observedAddr: message.observedAddr == null ? undefined : multiaddr(message.observedAddr),
       protocols: message.protocols,
-      signedPeerRecord
+      signedPeerRecord,
+      connection
     }
 
     this.events.safeDispatchEvent('peer:identify', { detail: result })

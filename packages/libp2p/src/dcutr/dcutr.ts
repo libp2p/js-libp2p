@@ -72,6 +72,7 @@ export class DefaultDCUtRService implements Startable {
     // register for notifications of when peers that support DCUtR connect
     // nb. requires the identify service to be enabled
     this.topologyId = await this.registrar.register(multicodec, {
+      notifyOnTransient: true,
       onConnect: (peerId, connection) => {
         if (!connection.transient) {
           // the connection is already direct, no upgrade is required

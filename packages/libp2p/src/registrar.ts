@@ -2,7 +2,7 @@ import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
 import { codes } from './errors.js'
-import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, PeerUpdate } from '@libp2p/interface'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -37,10 +37,10 @@ export class DefaultRegistrar implements Registrar {
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onPeerUpdate = this._onPeerUpdate.bind(this)
-    this._onConnect = this._onConnect.bind(this)
+    this._onIdentify = this._onIdentify.bind(this)
 
     this.components.events.addEventListener('peer:disconnect', this._onDisconnect)
-    this.components.events.addEventListener('peer:connect', this._onConnect)
+    this.components.events.addEventListener('peer:identify', this._onIdentify)
     this.components.events.addEventListener('peer:update', this._onPeerUpdate)
   }
 
@@ -183,43 +183,28 @@ export class DefaultRegistrar implements Registrar {
   }
 
   /**
-   * On peer connected if we already have their protocols. Usually used for reconnects
-   * as change:protocols event won't be emitted due to identical protocols.
+   * When identify runs over a new connection, notify any topologies interested
+   * in the protocols the peer supports
    */
-  _onConnect (evt: CustomEvent<PeerId>): void {
-    const remotePeer = evt.detail
+  _onIdentify (evt: CustomEvent<IdentifyResult>): void {
+    const result = evt.detail
 
-    void this.components.peerStore.get(remotePeer)
-      .then(peer => {
-        const connection = this.components.connectionManager.getConnections(peer.id)[0]
+    for (const protocol of result.protocols) {
+      const topologies = this.topologies.get(protocol)
 
-        if (connection == null) {
-          log('peer %p connected but the connection manager did not have a connection', peer)
-          // peer disconnected while we were loading their details from the peer store
-          return
+      if (topologies == null) {
+        // no topologies are interested in this protocol
+        continue
+      }
+
+      for (const topology of topologies.values()) {
+        if (result.connection.transient && topology.notifyOnTransient !== true) {
+          continue
         }
 
-        for (const protocol of peer.protocols) {
-          const topologies = this.topologies.get(protocol)
-
-          if (topologies == null) {
-            // no topologies are interested in this protocol
-            continue
-          }
-
-          for (const topology of topologies.values()) {
-            topology.onConnect?.(remotePeer, connection)
-          }
-        }
-      })
-      .catch(err => {
-        if (err.code === codes.ERR_NOT_FOUND) {
-          // peer has not completed identify so they are not in the peer store
-          return
-        }
-
-        log.error('could not inform topologies of connecting peer %p', remotePeer, err)
-      })
+        topology.onConnect?.(result.peerId, result.connection)
+      }
+    }
   }
 
   /**
