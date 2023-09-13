@@ -8,8 +8,6 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { Direction } from '@libp2p/interface/connection'
 
-const log = logger('libp2p:webrtc:stream')
-
 export interface DataChannelOpts {
   maxMessageSize: number
   maxBufferedAmount: number
@@ -92,7 +90,7 @@ export class WebRTCStream extends AbstractStream {
         break
 
       default:
-        log.error('unknown datachannel state %s', this.channel.readyState)
+        this.log.error('unknown datachannel state %s', this.channel.readyState)
         throw new CodeError('Unknown datachannel state', 'ERR_INVALID_STATE')
     }
 
@@ -112,7 +110,7 @@ export class WebRTCStream extends AbstractStream {
 
     this.channel.onclose = (_evt) => {
       void this.close().catch(err => {
-        log.error('error closing stream after channel closed', err)
+        this.log.error('error closing stream after channel closed', err)
       })
     }
 
@@ -145,7 +143,7 @@ export class WebRTCStream extends AbstractStream {
       }
     })
       .catch(err => {
-        log.error('error processing incoming data channel messages', err)
+        this.log.error('error processing incoming data channel messages', err)
       })
   }
 
@@ -183,7 +181,7 @@ export class WebRTCStream extends AbstractStream {
 
       this.messageQueue.append(data)
     } else {
-      log.error('unknown datachannel state %s', this.channel.readyState)
+      this.log.error('unknown datachannel state %s', this.channel.readyState)
       throw new CodeError('Unknown datachannel state', 'ERR_INVALID_STATE')
     }
   }
@@ -242,7 +240,7 @@ export class WebRTCStream extends AbstractStream {
   }
 
   private async _sendFlag (flag: Message.Flag): Promise<void> {
-    log.trace('Sending flag: %s', flag.toString())
+    this.log.trace('Sending flag: %s', flag.toString())
     const msgbuf = Message.encode({ flag })
     const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
 
