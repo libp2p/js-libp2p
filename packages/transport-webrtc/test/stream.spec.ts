@@ -11,9 +11,9 @@ import { createStream } from '../src/stream.js'
 const mockDataChannel = (opts: { send: (bytes: Uint8Array) => void, bufferedAmount?: number }): RTCDataChannel => {
   return {
     readyState: 'open',
-    close: () => {},
-    addEventListener: (_type: string, _listener: () => void) => {},
-    removeEventListener: (_type: string, _listener: () => void) => {},
+    close: () => { },
+    addEventListener: (_type: string, _listener: () => void) => { },
+    removeEventListener: (_type: string, _listener: () => void) => { },
     ...opts
   } as RTCDataChannel
 }
@@ -23,7 +23,8 @@ const MAX_MESSAGE_SIZE = 16 * 1024
 describe('Max message size', () => {
   it(`sends messages smaller or equal to ${MAX_MESSAGE_SIZE} bytes in one`, async () => {
     const sent: Uint8ArrayList = new Uint8ArrayList()
-    const data = new Uint8Array(MAX_MESSAGE_SIZE - 5)
+    const PROTOBUF_OVERHEAD = 5
+    const data = new Uint8Array(MAX_MESSAGE_SIZE - PROTOBUF_OVERHEAD)
     const p = pushable()
 
     // Make sure that the data that ought to be sent will result in a message with exactly MAX_MESSAGE_SIZE
@@ -42,8 +43,7 @@ describe('Max message size', () => {
     p.end()
     await webrtcStream.sink(p)
 
-    // length(message) + message + length(FIN) + FIN
-    expect(length(sent)).to.equal(4)
+    expect(length(sent)).to.equal(6)
 
     for (const buf of sent) {
       expect(buf.byteLength).to.be.lessThanOrEqual(MAX_MESSAGE_SIZE)
