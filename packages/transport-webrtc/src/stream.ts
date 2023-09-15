@@ -29,19 +29,19 @@ export interface WebRTCStreamInit extends AbstractStreamInit {
 }
 
 // Max message size that can be sent to the DataChannel
-const MAX_MESSAGE_SIZE = 16 * 1024
+export const MAX_MESSAGE_SIZE = 16 * 1024
 
 // How much can be buffered to the DataChannel at once
-const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
+export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
 
 // How long time we wait for the 'bufferedamountlow' event to be emitted
-const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
+export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 // protobuf field definition overhead
-const PROTOBUF_OVERHEAD = 5
+export const PROTOBUF_OVERHEAD = 5
 
 // Length of varint, in bytes.
-const VARINT_LENGTH = 2
+export const VARINT_LENGTH = 2
 
 export class WebRTCStream extends AbstractStream {
   /**
