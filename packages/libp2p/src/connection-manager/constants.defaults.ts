@@ -16,12 +16,17 @@ export const MAX_PEER_ADDRS_TO_DIAL = 25
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxParallelDialsPerPeer
  */
-export const MAX_PARALLEL_DIALS_PER_PEER = 10
+export const MAX_PARALLEL_DIALS_PER_PEER = 1
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#autoDialInterval
  */
 export const AUTO_DIAL_INTERVAL = 5000
+
+/**
+ * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#autoDialConcurrency
+ */
+export const AUTO_DIAL_CONCURRENCY = 25
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#autoDialPriority
@@ -32,11 +37,6 @@ export const AUTO_DIAL_PRIORITY = 0
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#autoDialMaxQueueLength
  */
 export const AUTO_DIAL_MAX_QUEUE_LENGTH = 100
-
-/**
- * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.unknown.ConnectionManagerInit.html#autoDialPeerRetryThreshold
- */
-export const AUTO_DIAL_PEER_RETRY_THRESHOLD = 1000 * 60
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.unknown.ConnectionManagerInit.html#autoDialDiscoveredPeersDebounce
