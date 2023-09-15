@@ -6,24 +6,22 @@ import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from '../src/pb/message.js'
-import { createStream } from '../src/stream.js'
+import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD, createStream } from '../src/stream.js'
 
 const mockDataChannel = (opts: { send: (bytes: Uint8Array) => void, bufferedAmount?: number }): RTCDataChannel => {
   return {
     readyState: 'open',
-    close: () => {},
-    addEventListener: (_type: string, _listener: () => void) => {},
-    removeEventListener: (_type: string, _listener: () => void) => {},
+    close: () => { },
+    addEventListener: (_type: string, _listener: () => void) => { },
+    removeEventListener: (_type: string, _listener: () => void) => { },
     ...opts
   } as RTCDataChannel
 }
 
-const MAX_MESSAGE_SIZE = 16 * 1024
-
 describe('Max message size', () => {
   it(`sends messages smaller or equal to ${MAX_MESSAGE_SIZE} bytes in one`, async () => {
     const sent: Uint8ArrayList = new Uint8ArrayList()
-    const data = new Uint8Array(MAX_MESSAGE_SIZE - 5)
+    const data = new Uint8Array(MAX_MESSAGE_SIZE - PROTOBUF_OVERHEAD)
     const p = pushable()
 
     // Make sure that the data that ought to be sent will result in a message with exactly MAX_MESSAGE_SIZE
@@ -42,8 +40,7 @@ describe('Max message size', () => {
     p.end()
     await webrtcStream.sink(p)
 
-    // length(message) + message + length(FIN) + FIN
-    expect(length(sent)).to.equal(4)
+    expect(length(sent)).to.equal(6)
 
     for (const buf of sent) {
       expect(buf.byteLength).to.be.lessThanOrEqual(MAX_MESSAGE_SIZE)
@@ -80,7 +77,6 @@ describe('Max message size', () => {
   })
 
   it('closes the stream if bufferamountlow timeout', async () => {
-    const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024 + 1
     const timeout = 100
     let closed = false
     const webrtcStream = createStream({
@@ -91,7 +87,7 @@ describe('Max message size', () => {
         send: () => {
           throw new Error('Expected to not send')
         },
-        bufferedAmount: MAX_BUFFERED_AMOUNT
+        bufferedAmount: MAX_BUFFERED_AMOUNT + 1
       }),
       direction: 'outbound',
       onEnd: () => {
