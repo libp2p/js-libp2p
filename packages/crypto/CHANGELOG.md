@@ -5,6 +5,13 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.5 ([#320](https://github.com/libp2p/js-libp2p-crypto/issues/320)) ([f0b4c06](https://github.com/libp2p/js-libp2p-crypto/commit/f0b4c068a23d78b1376865c6adf6cce21ab91196))
 
+### [2.0.4](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.3...crypto-v2.0.4) (2023-09-15)
+
+
+### Bug Fixes
+
+* **@libp2p/crypto:** improve unsupported key type message ([#2051](https://www.github.com/libp2p/js-libp2p/issues/2051)) ([d9159dd](https://www.github.com/libp2p/js-libp2p/commit/d9159dd5985241160f791acda164bb2e6408dd90))
+
 ### [2.0.3](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.2...crypto-v2.0.3) (2023-08-14)
 
 
