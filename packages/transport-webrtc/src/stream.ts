@@ -29,16 +29,19 @@ export interface WebRTCStreamInit extends AbstractStreamInit {
 }
 
 // Max message size that can be sent to the DataChannel
-const MAX_MESSAGE_SIZE = 16 * 1024
+export const MAX_MESSAGE_SIZE = 16 * 1024
 
 // How much can be buffered to the DataChannel at once
-const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
+export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
 
 // How long time we wait for the 'bufferedamountlow' event to be emitted
-const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
+export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 // protobuf field definition overhead
-const PROTOBUF_OVERHEAD = 3
+export const PROTOBUF_OVERHEAD = 5
+
+// Length of varint, in bytes.
+export const VARINT_LENGTH = 2
 
 export class WebRTCStream extends AbstractStream {
   /**
@@ -58,6 +61,10 @@ export class WebRTCStream extends AbstractStream {
   private readonly incomingData: Pushable<Uint8Array>
 
   private messageQueue?: Uint8ArrayList
+
+  /**
+   * The maximum size of a message in bytes
+   */
   private readonly maxDataSize: number
 
   constructor (init: WebRTCStreamInit) {
@@ -70,7 +77,7 @@ export class WebRTCStream extends AbstractStream {
     this.dataChannelOptions = {
       bufferedAmountLowEventTimeout: init.dataChannelOptions?.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT,
       maxBufferedAmount: init.dataChannelOptions?.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT,
-      maxMessageSize: init.dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE
+      maxMessageSize: init.dataChannelOptions?.maxMessageSize ?? init.maxDataSize
     }
     this.maxDataSize = init.maxDataSize
 
@@ -275,7 +282,7 @@ export function createStream (options: WebRTCStreamOptions): WebRTCStream {
   return new WebRTCStream({
     id: direction === 'inbound' ? (`i${channel.id}`) : `r${channel.id}`,
     direction,
-    maxDataSize: (dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD,
+    maxDataSize: (dataChannelOptions?.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH,
     dataChannelOptions,
     onEnd,
     channel,
