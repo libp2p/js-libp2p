@@ -15,6 +15,7 @@ export interface TransportTestFixtures {
   listeningAddrs?: Multiaddr[]
   transport: Transport
   connector: Connector
+  hasListener?: boolean
 }
 
 export default (common: TestSetup<TransportTestFixtures>): void => {

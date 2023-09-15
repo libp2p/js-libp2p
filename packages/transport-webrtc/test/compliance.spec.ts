@@ -24,6 +24,8 @@ describe('interface-transport compliance', () => {
 
       components.transportManager = mockTransportManager({ ...components, events })
 
+      components.transportManager.add(webRTC()(components))
+
       const wrtc = webRTC()(components)
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
@@ -33,7 +35,7 @@ describe('interface-transport compliance', () => {
       ]
 
       const listeningAddrs = [
-        multiaddr(`/ip4/127.0.0.1/tcp/9091/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/webrtc/p2p/${components.peerId.toString()}`),
+        multiaddr('/ip4/127.0.0.1/tcp/57708/ws/p2p/12D3KooWRqAUEzPwKMoGstpfJVqr3aoinwKVPu4DLo9nQncbnuLk/p2p-circuit/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9/p2p-circuit/webrtc/p2p/12D3KooWBZyVLJfQkofqLK4op9TPkHuUumCZt1ybQrPvNm7TVQV9'),
       ]
 
       // Used by the dial tests to simulate a delayed connect
