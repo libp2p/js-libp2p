@@ -318,23 +318,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
 
-    const signedPeerRecord = await this.#consumeIdentifyMessage(connection.remotePeer, message)
-
-    const result: IdentifyResult = {
-      peerId: id,
-      protocolVersion: message.protocolVersion,
-      agentVersion: message.agentVersion,
-      publicKey: message.publicKey,
-      listenAddrs: message.listenAddrs.map(buf => multiaddr(buf)),
-      observedAddr: message.observedAddr == null ? undefined : multiaddr(message.observedAddr),
-      protocols: message.protocols,
-      signedPeerRecord,
-      connection
-    }
-
-    this.events.safeDispatchEvent('peer:identify', { detail: result })
-
-    return result
+    return this.#consumeIdentifyMessage(connection, message)
   }
 
   /**
@@ -412,7 +396,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       const message = await pb.read(options)
       await stream.close(options)
 
-      await this.#consumeIdentifyMessage(connection.remotePeer, message)
+      await this.#consumeIdentifyMessage(connection, message)
     } catch (err: any) {
       log.error('received invalid message', err)
       stream.abort(err)
@@ -422,8 +406,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     log('handled push from %p', connection.remotePeer)
   }
 
-  async #consumeIdentifyMessage (remotePeer: PeerId, message: Identify): Promise<SignedPeerRecord | undefined> {
-    log('received identify from %p', remotePeer)
+  async #consumeIdentifyMessage (connection: Connection, message: Identify): Promise<IdentifyResult> {
+    log('received identify from %p', connection.remotePeer)
 
     if (message == null) {
       throw new Error('Message was null or undefined')
@@ -443,7 +427,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     // if the peer record has been sent, prefer the addresses in the record as they are signed by the remote peer
     if (message.signedPeerRecord != null) {
-      log('received signedPeerRecord in push from %p', remotePeer)
+      log('received signedPeerRecord in push from %p', connection.remotePeer)
 
       let peerRecordEnvelope = message.signedPeerRecord
       const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
@@ -455,7 +439,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       }
 
       // Make sure remote peer is the one sending the record
-      if (!remotePeer.equals(peerRecord.peerId)) {
+      if (!connection.remotePeer.equals(peerRecord.peerId)) {
         throw new Error('signing key does not match remote PeerId')
       }
 
@@ -501,7 +485,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         addresses: peerRecord.multiaddrs
       }
     } else {
-      log('%p did not send a signed peer record', remotePeer)
+      log('%p did not send a signed peer record', connection.remotePeer)
     }
 
     if (message.agentVersion != null) {
@@ -512,9 +496,23 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       peer.metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
     }
 
-    await this.peerStore.patch(remotePeer, peer)
+    await this.peerStore.patch(connection.remotePeer, peer)
 
-    return output
+    const result: IdentifyResult = {
+      peerId: connection.remotePeer,
+      protocolVersion: message.protocolVersion,
+      agentVersion: message.agentVersion,
+      publicKey: message.publicKey,
+      listenAddrs: message.listenAddrs.map(buf => multiaddr(buf)),
+      observedAddr: message.observedAddr == null ? undefined : multiaddr(message.observedAddr),
+      protocols: message.protocols,
+      signedPeerRecord: output,
+      connection
+    }
+
+    this.events.safeDispatchEvent('peer:identify', { detail: result })
+
+    return result
   }
 }
 

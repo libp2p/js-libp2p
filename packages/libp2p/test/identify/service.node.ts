@@ -65,13 +65,15 @@ describe('identify', () => {
     expect(connection).to.exist()
 
     // wait for identify to run on the new connection
-    await eventPromise
+    const identifyResult = await eventPromise
+
+    // should have run on the new connection
+    expect(identifyResult).to.have.nested.property('detail.connection', connection)
 
     // assert we have received certified announce addresses
-    const peer = await libp2p.peerStore.get(remoteLibp2p.peerId)
-    expect(peer.addresses).to.have.lengthOf(1)
-    expect(peer.addresses[0].isCertified).to.be.true('did not receive certified address via identify')
-    expect(peer.addresses[0].multiaddr.toString()).to.startWith('/dns4/localhost/', 'did not receive announce address via identify')
+    expect(identifyResult).to.have.deep.nested.property('detail.signedPeerRecord.addresses', [
+      multiaddr(`/dns4/localhost/tcp/${REMOTE_PORT}`)
+    ], 'did not receive announce address via identify')
   })
 
   it('should run identify automatically for inbound connections', async () => {
@@ -88,14 +90,16 @@ describe('identify', () => {
     const connection = await remoteLibp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/${LOCAL_PORT}/p2p/${libp2p.peerId.toString()}`))
     expect(connection).to.exist()
 
-    // wait for identify to run on the new connection
-    await eventPromise
+    // wait for identify to run
+    const identifyResult = await eventPromise
+
+    // should have run on the new connection
+    expect(identifyResult).to.have.nested.property('detail.connection', connection)
 
     // assert we have received certified announce addresses
-    const peer = await libp2p.peerStore.get(remoteLibp2p.peerId)
-    expect(peer.addresses).to.have.lengthOf(1)
-    expect(peer.addresses[0].isCertified).to.be.true('did not receive certified address via identify')
-    expect(peer.addresses[0].multiaddr.toString()).to.startWith('/dns4/localhost/', 'did not receive announce address via identify')
+    expect(identifyResult).to.have.deep.nested.property('detail.signedPeerRecord.addresses', [
+      multiaddr(`/dns4/localhost/tcp/${LOCAL_PORT}`)
+    ], 'did not receive announce address via identify')
   })
 
   it('should identify connection on dial and get proper announce addresses', async () => {

@@ -138,6 +138,9 @@ describe('registrar', () => {
       const remotePeerId = await createEd25519PeerId()
       const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
+
       const topology: Topology = {
         onConnect: (peerId, connection) => {
           expect(peerId.equals(remotePeerId)).to.be.true()
@@ -165,11 +168,12 @@ describe('registrar', () => {
       })
 
       // remote peer connects
-      events.safeDispatchEvent('peer:identify', {
+      events.safeDispatchEvent('peer:update', {
         detail: {
-          peerId: remotePeerId,
-          protocols: [protocol],
-          connection: conn
+          peer: {
+            id: remotePeerId,
+            protocols: [protocol]
+          }
         }
       })
       await onConnectDefer.promise
@@ -206,11 +210,12 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // remote peer connects
-      events.safeDispatchEvent('peer:identify', {
+      events.safeDispatchEvent('peer:update', {
         detail: {
-          peerId: remotePeerId,
-          protocols: [protocol],
-          connection: conn
+          peer: {
+            id: remotePeerId,
+            protocols: [protocol]
+          }
         }
       })
 
@@ -288,11 +293,12 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // remote peer connects
-      events.safeDispatchEvent('peer:identify', {
+      events.safeDispatchEvent('peer:update', {
         detail: {
-          peerId: remotePeerId,
-          protocols: [protocol],
-          connection: conn
+          peer: {
+            id: remotePeerId,
+            protocols: [protocol]
+          }
         }
       })
 
@@ -331,11 +337,12 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // remote peer connects
-      events.safeDispatchEvent('peer:identify', {
+      events.safeDispatchEvent('peer:update', {
         detail: {
-          peerId: remotePeerId,
-          protocols: [protocol],
-          connection: conn
+          peer: {
+            id: remotePeerId,
+            protocols: [protocol]
+          }
         }
       })
 

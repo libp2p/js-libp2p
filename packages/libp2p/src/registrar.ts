@@ -2,7 +2,7 @@ import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
 import { codes } from './errors.js'
-import type { IdentifyResult, Libp2pEvents, PeerUpdate } from '@libp2p/interface'
+import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -37,10 +37,8 @@ export class DefaultRegistrar implements Registrar {
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onPeerUpdate = this._onPeerUpdate.bind(this)
-    this._onIdentify = this._onIdentify.bind(this)
 
     this.components.events.addEventListener('peer:disconnect', this._onDisconnect)
-    this.components.events.addEventListener('peer:identify', this._onIdentify)
     this.components.events.addEventListener('peer:update', this._onPeerUpdate)
   }
 
@@ -183,32 +181,7 @@ export class DefaultRegistrar implements Registrar {
   }
 
   /**
-   * When identify runs over a new connection, notify any topologies interested
-   * in the protocols the peer supports
-   */
-  _onIdentify (evt: CustomEvent<IdentifyResult>): void {
-    const result = evt.detail
-
-    for (const protocol of result.protocols) {
-      const topologies = this.topologies.get(protocol)
-
-      if (topologies == null) {
-        // no topologies are interested in this protocol
-        continue
-      }
-
-      for (const topology of topologies.values()) {
-        if (result.connection.transient && topology.notifyOnTransient !== true) {
-          continue
-        }
-
-        topology.onConnect?.(result.peerId, result.connection)
-      }
-    }
-  }
-
-  /**
-   * Check if a new peer support the multicodecs for this topology
+   * Check if a new peer supports the multicodecs for this topology
    */
   _onPeerUpdate (evt: CustomEvent<PeerUpdate>): void {
     const { peer, previous } = evt.detail
@@ -236,13 +209,14 @@ export class DefaultRegistrar implements Registrar {
         continue
       }
 
-      for (const topology of topologies.values()) {
-        const connection = this.components.connectionManager.getConnections(peer.id)[0]
+      for (const connection of this.components.connectionManager.getConnections(peer.id)) {
+        for (const topology of topologies.values()) {
+          if (connection.transient && topology.notifyOnTransient !== true) {
+            continue
+          }
 
-        if (connection == null) {
-          continue
+          topology.onConnect?.(peer.id, connection)
         }
-        topology.onConnect?.(peer.id, connection)
       }
     }
   }
