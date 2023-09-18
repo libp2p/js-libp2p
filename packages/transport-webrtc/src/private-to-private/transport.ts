@@ -17,10 +17,10 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 
 const log = logger('libp2p:webrtc:peer')
 
-const WEBRTC_TRANSPORT = '/webrtc'
-const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
-const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
-const WEBRTC_CODE = protocols('webrtc').code
+export const WEBRTC_TRANSPORT = '/webrtc'
+export const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
+export const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
+export const WEBRTC_CODE = protocols('webrtc').code
 
 export interface WebRTCTransportInit {
   rtcConfiguration?: RTCConfiguration

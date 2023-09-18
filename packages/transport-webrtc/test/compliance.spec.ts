@@ -3,30 +3,61 @@
 import tests from '@libp2p/interface-compliance-tests/transport'
 import { multiaddr } from '@multiformats/multiaddr'
 import { webRTC } from '../src/index.js'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { connectionPair, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
-import { mockTransportManager } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { EventEmitter } from '@libp2p/interface/events'
-import type { Libp2pEvents } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import { stubInterface } from 'sinon-ts'
+import type { Connection } from '@libp2p/interface/connection'
+import { SIGNALING_PROTO_ID } from '../src/private-to-private/transport.js'
+import { pipe } from 'it-pipe'
+import drain from 'it-drain'
+
+
+
 
 describe('interface-transport compliance', () => {
   tests({
     async setup() {
 
-      const events = new EventEmitter<Libp2pEvents>()
+      const peerId = await createEd25519PeerId()
 
-      const components: any = {
-        peerId: await createEd25519PeerId(),
-        registrar: mockRegistrar(),
-        upgrader: mockUpgrader()
+      const fakeDial = async (): Promise<Connection> => {
+        // const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerId))
+        // const newStreamStub = sinon.stub().withArgs(SIGNALING_PROTO_ID).resolves({ close: sinon.stub(), abort: sinon.stub() })
+
+        // connection.newStream = newStreamStub
+
+        const peerA = {
+          peerId: await createEd25519PeerId(),
+          registrar: mockRegistrar()
+        }
+
+        const peerB = {
+          peerId: await createEd25519PeerId(),
+          registrar: mockRegistrar()
+        }
+
+        await peerB.registrar.handle(SIGNALING_PROTO_ID, ({ stream }) => {
+          void pipe(stream, drain)
+        })
+
+        const [connectionA] = connectionPair(peerA, peerB)
+
+        return connectionA
       }
 
-      components.transportManager = mockTransportManager({ ...components, events })
-
-      components.transportManager.add(webRTC()(components))
+      const components: any = {
+        peerId,
+        registrar: mockRegistrar(),
+        upgrader: mockUpgrader(),
+        transportManager: stubInterface<TransportManager>({
+          dial: fakeDial(),
+        }),
+      }
 
       const wrtc = webRTC()(components)
+
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
         multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
