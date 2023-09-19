@@ -11,10 +11,10 @@ import { WebRTCPeerListener } from './listener.js'
 import type { DataChannelOpts } from '../stream.js'
 import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
+import type { CounterGroup, Metrics } from '@libp2p/interface/src/metrics/index.js'
 import type { Startable } from '@libp2p/interface/startable'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
-import type { CounterGroup, Metrics } from '@libp2p/interface/src/metrics/index.js'
 
 const log = logger('libp2p:webrtc:peer')
 

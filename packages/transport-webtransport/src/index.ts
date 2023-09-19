@@ -7,11 +7,11 @@ import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
 import type { Connection, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
+import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 
 interface WebTransportSessionCleanup {
   (closeInfo?: WebTransportCloseInfo): void
