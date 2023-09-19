@@ -11,6 +11,7 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
+import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 
 interface WebTransportSessionCleanup {
   (closeInfo?: WebTransportCloseInfo): void
@@ -24,16 +25,31 @@ export interface WebTransportInit {
 
 export interface WebTransportComponents {
   peerId: PeerId
+  metrics?: Metrics
+}
+
+export interface WebTransportMetrics {
+  dialerEvents: CounterGroup
 }
 
 class WebTransportTransport implements Transport {
   private readonly components: WebTransportComponents
   private readonly config: Required<WebTransportInit>
+  private readonly metrics?: WebTransportMetrics
 
   constructor (components: WebTransportComponents, init: WebTransportInit = {}) {
     this.components = components
     this.config = {
       maxInboundStreams: init.maxInboundStreams ?? 1000
+    }
+
+    if (components.metrics != null) {
+      this.metrics = {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_webtransport_dialer_events_total', {
+          label: 'event',
+          help: 'Total count of WebTransport dialer events by type'
+        })
+      }
     }
   }
 
@@ -65,10 +81,11 @@ class WebTransportTransport implements Transport {
     let abortListener: (() => void) | undefined
     let maConn: MultiaddrConnection | undefined
 
-    let cleanUpWTSession: (closeInfo?: WebTransportCloseInfo) => void = () => {}
+    let cleanUpWTSession: () => void = () => {}
 
     try {
       let closed = false
+      this.metrics?.dialerEvents.increment({ open: true })
       const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
@@ -76,7 +93,7 @@ class WebTransportTransport implements Transport {
         }))
       })
 
-      cleanUpWTSession = (closeInfo?: WebTransportCloseInfo) => {
+      cleanUpWTSession = () => {
         try {
           if (maConn != null) {
             if (maConn.timeline.close != null) {
@@ -93,7 +110,8 @@ class WebTransportTransport implements Transport {
             return
           }
 
-          wt.close(closeInfo)
+          this.metrics?.dialerEvents.increment({ close: true })
+          wt.close()
         } catch (err) {
           log.error('error closing wt session', err)
         } finally {
@@ -101,7 +119,23 @@ class WebTransportTransport implements Transport {
         }
       }
 
-      // this promise resolves/throws when the session is closed or failed to init
+      // if the dial is aborted before we are ready, close the WebTransport session
+      abortListener = () => {
+        this.metrics?.dialerEvents.increment({ abort: true })
+        cleanUpWTSession()
+      }
+      options.signal?.addEventListener('abort', abortListener, {
+        once: true
+      })
+
+      await Promise.race([
+        wt.closed,
+        wt.ready
+      ])
+
+      this.metrics?.dialerEvents.increment({ ready: true })
+
+      // this promise resolves/throws when the session is closed
       wt.closed
         .then(async () => {
           await maConn?.close()
@@ -111,39 +145,21 @@ class WebTransportTransport implements Transport {
           maConn?.abort(err)
         })
         .finally(() => {
-          // if we never got as far as creating the maConn, just clean up the session
-          if (maConn == null) {
-            cleanUpWTSession()
-          }
+          cleanUpWTSession()
         })
 
-      // if the dial is aborted before we are ready, close the WebTransport session
-      abortListener = () => {
-        if (abortListener != null) {
-          options.signal?.removeEventListener('abort', abortListener)
-        }
-
-        cleanUpWTSession()
-      }
-      options.signal?.addEventListener('abort', abortListener)
-
-      await wt.ready
-
-      if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)) {
+      if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes, options)) {
         throw new Error('Failed to authenticate webtransport')
       }
 
       maConn = {
-        close: async (options?: AbortOptions) => {
+        close: async () => {
           log('Closing webtransport')
           cleanUpWTSession()
         },
         abort: (err: Error) => {
           log('aborting webtransport due to passed err', err)
-          cleanUpWTSession({
-            closeCode: 0,
-            reason: err.message
-          })
+          cleanUpWTSession()
         },
         remoteAddr: ma,
         timeline: {
@@ -159,10 +175,8 @@ class WebTransportTransport implements Transport {
     } catch (err: any) {
       log.error('caught wt session err', err)
 
-      cleanUpWTSession({
-        closeCode: 0,
-        reason: err.message
-      })
+      this.metrics?.dialerEvents.increment({ error: true })
+      cleanUpWTSession()
 
       throw err
     } finally {
@@ -172,7 +186,7 @@ class WebTransportTransport implements Transport {
     }
   }
 
-  async authenticateWebTransport (wt: InstanceType<typeof WebTransport>, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
+  async authenticateWebTransport (wt: InstanceType<typeof WebTransport>, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>, options: DialOptions): Promise<boolean> {
     const stream = await wt.createBidirectionalStream()
     const writer = stream.writable.getWriter()
     const reader = stream.readable.getReader()

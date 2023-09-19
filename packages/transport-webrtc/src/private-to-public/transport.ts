@@ -67,9 +67,9 @@ export class WebRTCDirectTransport implements Transport {
     this.init = init
     if (components.metrics != null) {
       this.metrics = {
-        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_dialer_events_total', {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc-direct_dialer_events_total', {
           label: 'event',
-          help: 'Total count of WebRTC dial events by type'
+          help: 'Total count of WebRTC-direct dial events by type'
         })
       }
     }
