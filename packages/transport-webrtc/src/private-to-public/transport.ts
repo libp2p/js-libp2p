@@ -3,6 +3,7 @@ import { type CreateListenerOptions, symbol, type Transport, type Listener } fro
 import { logger } from '@libp2p/logger'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
+import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import * as multihashes from 'multihashes'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
@@ -95,7 +96,7 @@ export class WebRTCDirectTransport implements Transport {
    * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
    */
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(validMa)
+    return multiaddrs.filter(WebRTCDirect.exactMatch)
   }
 
   /**
@@ -274,13 +275,4 @@ export class WebRTCDirectTransport implements Transport {
 
     return concat([prefix, local, remote])
   }
-}
-
-/**
- * Determine if a given multiaddr contains a WebRTC Code (280),
- * a Certhash Code (466) and a PeerId
- */
-function validMa (ma: Multiaddr): boolean {
-  const codes = ma.protoCodes()
-  return codes.includes(WEBRTC_CODE) && codes.includes(CERTHASH_CODE) && ma.getPeerId() != null && !codes.includes(protocols('p2p-circuit').code)
 }
