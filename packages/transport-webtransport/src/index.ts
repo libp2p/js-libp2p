@@ -83,11 +83,12 @@ class WebTransportTransport implements Transport {
 
     let cleanUpWTSession: WebTransportSessionCleanup = () => {}
 
+    let closed = false
+    let ready = false
+    let authenticated = false
+
     try {
       this.metrics?.dialerEvents.increment({ pending: true })
-
-      let closed = false
-      let ready = false
 
       const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
         serverCertificateHashes: certhashes.map(certhash => ({
@@ -168,11 +169,19 @@ class WebTransportTransport implements Transport {
         ...inertDuplex()
       }
 
+      authenticated = true
+
       return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
     } catch (err: any) {
       log.error('caught wt session err', err)
 
-      cleanUpWTSession('error')
+      if (authenticated) {
+        cleanUpWTSession('upgrade_error')
+      } else if (ready) {
+        cleanUpWTSession('noise_error')
+      } else {
+        cleanUpWTSession('ready_error')
+      }
 
       throw err
     } finally {
