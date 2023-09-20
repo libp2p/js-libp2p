@@ -11,6 +11,7 @@ import { WebRTCPeerListener } from './listener.js'
 import type { DataChannelOpts } from '../stream.js'
 import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
+import type { CounterGroup, Metrics } from '@libp2p/interface/src/metrics/index.js'
 import type { Startable } from '@libp2p/interface/startable'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
@@ -32,15 +33,34 @@ export interface WebRTCTransportComponents {
   registrar: Registrar
   upgrader: Upgrader
   transportManager: TransportManager
+  metrics?: Metrics
+}
+
+export interface WebRTCTransportMetrics {
+  dialerEvents: CounterGroup
+  listenerEvents: CounterGroup
 }
 
 export class WebRTCTransport implements Transport, Startable {
   private _started = false
+  private readonly metrics?: WebRTCTransportMetrics
 
   constructor (
     private readonly components: WebRTCTransportComponents,
     private readonly init: WebRTCTransportInit = {}
   ) {
+    if (components.metrics != null) {
+      this.metrics = {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_dialer_events_total', {
+          label: 'event',
+          help: 'Total count of WebRTC dialer events by type'
+        }),
+        listenerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_listener_events_total', {
+          label: 'event',
+          help: 'Total count of WebRTC listener events by type'
+        })
+      }
+    }
   }
 
   isStarted (): boolean {
@@ -93,6 +113,7 @@ export class WebRTCTransport implements Transport, Startable {
       options.signal = controller.signal
     }
 
+    this.metrics?.dialerEvents.increment({ open: true })
     const connection = await this.components.transportManager.dial(baseAddr, options)
     const signalingStream = await connection.newStream(SIGNALING_PROTO_ID, {
       ...options,
@@ -111,7 +132,8 @@ export class WebRTCTransport implements Transport, Startable {
         new WebRTCMultiaddrConnection({
           peerConnection: pc,
           timeline: { open: Date.now() },
-          remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${peerId.toString()}`)
+          remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${peerId.toString()}`),
+          metrics: this.metrics?.dialerEvents
         }),
         {
           skipProtection: true,
@@ -124,6 +146,7 @@ export class WebRTCTransport implements Transport, Startable {
       await signalingStream.close()
       return result
     } catch (err: any) {
+      this.metrics?.dialerEvents.increment({ error: true })
       // reset the stream in case of any error
       signalingStream.abort(err)
       throw err
@@ -145,7 +168,8 @@ export class WebRTCTransport implements Transport, Startable {
       await this.components.upgrader.upgradeInbound(new WebRTCMultiaddrConnection({
         peerConnection: pc,
         timeline: { open: (new Date()).getTime() },
-        remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${connection.remotePeer.toString()}`)
+        remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${connection.remotePeer.toString()}`),
+        metrics: this.metrics?.listenerEvents
       }), {
         skipEncryption: true,
         skipProtection: true,
