@@ -41,6 +41,7 @@
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "release": "aegir release",
     "dep-check": "aegir dep-check -i events"
   },
   "dependencies": {
