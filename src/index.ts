@@ -158,7 +158,7 @@ class SimpleMetrics implements Metrics, Startable {
         }
       }
 
-      this.onMetrics(output)
+      this.onMetrics(JSON.parse(JSON.stringify(output)))
     })
       .catch(err => {
         log.error('could not invoke onMetrics callback', err)
