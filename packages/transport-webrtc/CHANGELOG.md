@@ -5,6 +5,13 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+## [3.2.0](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.11...webrtc-v3.2.0) (2023-09-20)
+
+
+### Features
+
+* collect dial/listen metrics in webrtc and webtransport ([#2061](https://www.github.com/libp2p/js-libp2p/issues/2061)) ([6cb80f7](https://www.github.com/libp2p/js-libp2p/commit/6cb80f7d3b308aff955f4de247680a3c9c26993b))
+
 ### [3.1.11](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.10...webrtc-v3.1.11) (2023-09-15)
 
 
