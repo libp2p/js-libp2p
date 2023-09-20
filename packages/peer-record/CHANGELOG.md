@@ -11,6 +11,17 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#64](https://github.com/libp2p/js-libp2p-peer-record/issues/64)) ([ba3ac38](https://github.com/libp2p/js-libp2p-peer-record/commit/ba3ac38c79e9449a75c0a54fefe289ee9e2c78fb))
 
+### [6.0.5](https://www.github.com/libp2p/js-libp2p/compare/peer-record-v6.0.4...peer-record-v6.0.5) (2023-09-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.3 to ^2.0.4
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.3 to ^3.0.4
+
 ### [6.0.4](https://www.github.com/libp2p/js-libp2p/compare/peer-record-v6.0.3...peer-record-v6.0.4) (2023-09-10)
 
 
