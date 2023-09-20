@@ -11,6 +11,13 @@
 
 * bump @chainsafe/libp2p-noise from 11.0.4 to 12.0.1 ([#80](https://github.com/libp2p/js-libp2p-webtransport/issues/80)) ([599dab1](https://github.com/libp2p/js-libp2p-webtransport/commit/599dab1b4f6ae816b0c0feefc926c1b38d24b676))
 
+## [3.1.0](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.11...webtransport-v3.1.0) (2023-09-20)
+
+
+### Features
+
+* collect dial/listen metrics in webrtc and webtransport ([#2061](https://www.github.com/libp2p/js-libp2p/issues/2061)) ([6cb80f7](https://www.github.com/libp2p/js-libp2p/commit/6cb80f7d3b308aff955f4de247680a3c9c26993b))
+
 ### [3.0.11](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.10...webtransport-v3.0.11) (2023-09-15)
 
 
