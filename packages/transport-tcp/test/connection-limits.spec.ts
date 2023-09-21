@@ -7,11 +7,11 @@ import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
 import type { TCPListener } from '../src/listener.js'
 
-const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise<any> | any>) => {
-  function createSocket(i: number): net.Socket  {
+const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise<any> | any>): { assertConnectedSocket: (i: number) => Promise<net.Socket>, assertRefusedSocket: (i: number) => Promise<net.Socket> } => {
+  function createSocket (i: number): net.Socket {
     const socket = net.connect({ host: '127.0.0.1', port })
-  
-    closeCallbacks.unshift(async function closeHandler(): Promise<void>{
+
+    closeCallbacks.unshift(async function closeHandler (): Promise<void> {
       if (!socket.destroyed) {
         socket.destroy()
         await new Promise((resolve) => socket.on('close', resolve))
@@ -20,7 +20,7 @@ const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise
     return socket
   }
 
-  async function assertConnectedSocket(i: number) : Promise<net.Socket> {
+  async function assertConnectedSocket (i: number): Promise<net.Socket> {
     const socket = createSocket(i)
 
     await new Promise<void>((resolve, reject) => {
@@ -59,7 +59,6 @@ const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise
   return { assertConnectedSocket, assertRefusedSocket }
 }
 
-
 async function assertServerConnections (listener: TCPListener, connections: number): Promise<void> {
   // Expect server connections but allow time for sockets to connect or disconnect
   for (let i = 0; i < 100; i++) {
@@ -95,7 +94,7 @@ describe('closeAbove/listenBelow', () => {
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
-    const {assertConnectedSocket, assertRefusedSocket} = buildSocketAssertions(port, afterEachCallbacks)
+    const { assertConnectedSocket, assertRefusedSocket } = buildSocketAssertions(port, afterEachCallbacks)
 
     await assertConnectedSocket(1)
     await assertConnectedSocket(2)
@@ -103,8 +102,8 @@ describe('closeAbove/listenBelow', () => {
     await assertServerConnections(listener, 3)
 
     // Limit reached, server should be closed here
-    await assertRefusedSocket(4);
-    await assertRefusedSocket(5);
+    await assertRefusedSocket(4)
+    await assertRefusedSocket(5)
     await assertServerConnections(listener, 3)
   })
 
@@ -122,7 +121,7 @@ describe('closeAbove/listenBelow', () => {
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
-    const {assertConnectedSocket} = buildSocketAssertions(port, afterEachCallbacks)
+    const { assertConnectedSocket } = buildSocketAssertions(port, afterEachCallbacks)
 
     const socket1 = await assertConnectedSocket(1)
     const socket2 = await assertConnectedSocket(2)
@@ -136,8 +135,8 @@ describe('closeAbove/listenBelow', () => {
     await assertServerConnections(listener, 1)
 
     // Now it should be able to accept new connections
-    await assertConnectedSocket(4);
-    await assertConnectedSocket(5);
+    await assertConnectedSocket(4)
+    await assertConnectedSocket(5)
 
     // 2 connections dropped and 2 new connections accepted
     await assertServerConnections(listener, 3)
@@ -157,15 +156,14 @@ describe('closeAbove/listenBelow', () => {
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())
 
-    let closeEventCallCount = 0;
+    let closeEventCallCount = 0
     listener.addEventListener('close', () => {
       closeEventCallCount += 1
     })
 
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
-    const {assertConnectedSocket} = buildSocketAssertions(port, afterEachCallbacks)
+    const { assertConnectedSocket } = buildSocketAssertions(port, afterEachCallbacks)
 
-    
     await assertConnectedSocket(1)
     await assertConnectedSocket(2)
     await assertConnectedSocket(3)
@@ -189,13 +187,13 @@ describe('closeAbove/listenBelow', () => {
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     afterEachCallbacks.push(() => listener.close())
 
-    let listeningEventCallCount = 0;
+    let listeningEventCallCount = 0
     listener.addEventListener('listening', () => {
       listeningEventCallCount += 1
     })
 
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
-    const {assertConnectedSocket} = buildSocketAssertions(port, afterEachCallbacks)
+    const { assertConnectedSocket } = buildSocketAssertions(port, afterEachCallbacks)
 
     // Server should be listening now
     expect(listeningEventCallCount).equals(1)

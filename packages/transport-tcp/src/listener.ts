@@ -53,8 +53,8 @@ export interface TCPListenerMetrics {
 }
 
 enum TCPListenerStatusCode {
-  /** 
-   * When server object is initialized but we don't know the listening address yet or 
+  /**
+   * When server object is initialized but we don't know the listening address yet or
    * the server object is stopped manually, can be resumed only by calling listen()
    **/
   DOWN = 0,
@@ -159,14 +159,14 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
         // If this event is emitted, the transport manager will remove the listener from it's cache
         // in the meanwhile if the connections are dropped then listener will start listening again
         // and the transport manager will not be able to close the server
-        if(this.status.code !== TCPListenerStatusCode.PAUSED){
+        if (this.status.code !== TCPListenerStatusCode.PAUSED) {
           this.dispatchEvent(new CustomEvent('close'))
         }
       })
   }
 
   private onSocket (socket: net.Socket): void {
-    if(this.status.code === TCPListenerStatusCode.DOWN) {
+    if (this.status.code === TCPListenerStatusCode.DOWN) {
       throw new Error('Server is is not listening yet')
     }
     // Avoid uncaught errors caused by unstable connections
@@ -178,7 +178,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     let maConn: MultiaddrConnection
     try {
       maConn = toMultiaddrConnection(socket, {
-        listeningAddr: this.status.code ? this.status.listeningAddr : undefined,
+        listeningAddr: this.status.code === TCPListenerStatusCode.UP || this.status.code === TCPListenerStatusCode.PAUSED ? this.status.listeningAddr : undefined,
         socketInactivityTimeout: this.context.socketInactivityTimeout,
         socketCloseTimeout: this.context.socketCloseTimeout,
         metrics: this.metrics?.events,
@@ -283,7 +283,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   async listen (ma: Multiaddr): Promise<void> {
-    if (this.status.code === TCPListenerStatusCode.UP || this.status.code === TCPListenerStatusCode.PAUSED ) {
+    if (this.status.code === TCPListenerStatusCode.UP || this.status.code === TCPListenerStatusCode.PAUSED) {
       throw Error('server is already listening')
     }
 
@@ -298,10 +298,10 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
         peerId,
         netConfig: multiaddrToNetConfig(listeningAddr, { backlog })
       }
-  
+
       await this.resume()
-    } catch(err) {
-      this.status = {code: TCPListenerStatusCode.DOWN}
+    } catch (err) {
+      this.status = { code: TCPListenerStatusCode.DOWN }
       throw err
     }
   }
@@ -335,12 +335,12 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   private async pause (permanent: boolean): Promise<void> {
-    if(!this.server.listening && this.status.code === TCPListenerStatusCode.PAUSED && permanent) {
+    if (!this.server.listening && this.status.code === TCPListenerStatusCode.PAUSED && permanent) {
       this.status = { code: TCPListenerStatusCode.DOWN }
-      return 
+      return
     }
 
-    if (!this.server.listening || this.status.code !== TCPListenerStatusCode.UP){
+    if (!this.server.listening || this.status.code !== TCPListenerStatusCode.UP) {
       return
     }
 
@@ -358,12 +358,12 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     // Stops the server from accepting new connections and keeps existing connections.
     // 'close' event is emitted only emitted when all connections are ended.
     // The optional callback will be called once the 'close' event occurs.
-    
+
     // We need to set this status before closing server, so other procedures are aware
     // during the time the server is closing
     this.status = permanent ? { code: TCPListenerStatusCode.DOWN } : { ...this.status, code: TCPListenerStatusCode.PAUSED }
     await new Promise<void>((resolve, reject) => {
-      this.server.close( err => { err ? reject(err) : resolve() })
+      this.server.close(err => { (err != null) ? reject(err) : resolve() })
     })
   }
 }
