@@ -52,9 +52,7 @@ describe('perf', () => {
     localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
     remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
 
-    const startTime = Date.now()
-
     // Run Perf
-    await expect(client.measurePerformance(startTime, localToRemote, 1024n, 1024n)).to.eventually.be.fulfilled()
+    await expect(client.measurePerformance(localToRemote, 1024n, 1024n)).to.eventually.be.fulfilled()
   })
 })
