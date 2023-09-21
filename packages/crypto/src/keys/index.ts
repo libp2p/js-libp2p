@@ -69,7 +69,7 @@ export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
     case keysPBM.KeyType.Secp256k1:
       return supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(data)
     default:
-      throw unsupportedKey(decoded.Type ?? 'RSA')
+      throw unsupportedKey(decoded.Type ?? 'unknown')
   }
 }
 

@@ -7,13 +7,14 @@ import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
 import type { Connection, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
+import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 interface WebTransportSessionCleanup {
-  (closeInfo?: WebTransportCloseInfo): void
+  (metric: string): void
 }
 
 const log = logger('libp2p:webtransport')
@@ -24,16 +25,31 @@ export interface WebTransportInit {
 
 export interface WebTransportComponents {
   peerId: PeerId
+  metrics?: Metrics
+}
+
+export interface WebTransportMetrics {
+  dialerEvents: CounterGroup
 }
 
 class WebTransportTransport implements Transport {
   private readonly components: WebTransportComponents
   private readonly config: Required<WebTransportInit>
+  private readonly metrics?: WebTransportMetrics
 
   constructor (components: WebTransportComponents, init: WebTransportInit = {}) {
     this.components = components
     this.config = {
       maxInboundStreams: init.maxInboundStreams ?? 1000
+    }
+
+    if (components.metrics != null) {
+      this.metrics = {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_webtransport_dialer_events_total', {
+          label: 'event',
+          help: 'Total count of WebTransport dialer events by type'
+        })
+      }
     }
   }
 
@@ -65,10 +81,15 @@ class WebTransportTransport implements Transport {
     let abortListener: (() => void) | undefined
     let maConn: MultiaddrConnection | undefined
 
-    let cleanUpWTSession: (closeInfo?: WebTransportCloseInfo) => void = () => {}
+    let cleanUpWTSession: WebTransportSessionCleanup = () => {}
+
+    let closed = false
+    let ready = false
+    let authenticated = false
 
     try {
-      let closed = false
+      this.metrics?.dialerEvents.increment({ pending: true })
+
       const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
@@ -76,74 +97,69 @@ class WebTransportTransport implements Transport {
         }))
       })
 
-      cleanUpWTSession = (closeInfo?: WebTransportCloseInfo) => {
+      cleanUpWTSession = (metric: string) => {
+        if (closed) {
+          // already closed session
+          return
+        }
+
         try {
-          if (maConn != null) {
-            if (maConn.timeline.close != null) {
-              // already closed session
-              return
-            }
-
-            // This is how we specify the connection is closed and shouldn't be used.
-            maConn.timeline.close = Date.now()
-          }
-
-          if (closed) {
-            // already closed session
-            return
-          }
-
-          wt.close(closeInfo)
+          this.metrics?.dialerEvents.increment({ [metric]: true })
+          wt.close()
         } catch (err) {
           log.error('error closing wt session', err)
         } finally {
+          // This is how we specify the connection is closed and shouldn't be used.
+          if (maConn != null) {
+            maConn.timeline.close = Date.now()
+          }
+
           closed = true
         }
       }
 
-      // this promise resolves/throws when the session is closed or failed to init
-      wt.closed
-        .then(async () => {
-          await maConn?.close()
-        })
-        .catch((err: Error) => {
-          log.error('error on remote wt session close', err)
-          maConn?.abort(err)
-        })
-        .finally(() => {
-          // if we never got as far as creating the maConn, just clean up the session
-          if (maConn == null) {
-            cleanUpWTSession()
-          }
-        })
-
       // if the dial is aborted before we are ready, close the WebTransport session
       abortListener = () => {
-        if (abortListener != null) {
-          options.signal?.removeEventListener('abort', abortListener)
+        if (ready) {
+          cleanUpWTSession('noise_timeout')
+        } else {
+          cleanUpWTSession('ready_timeout')
         }
-
-        cleanUpWTSession()
       }
-      options.signal?.addEventListener('abort', abortListener)
+      options.signal?.addEventListener('abort', abortListener, {
+        once: true
+      })
 
-      await wt.ready
+      await Promise.race([
+        wt.closed,
+        wt.ready
+      ])
+
+      ready = true
+      this.metrics?.dialerEvents.increment({ ready: true })
+
+      // this promise resolves/throws when the session is closed
+      wt.closed.catch((err: Error) => {
+        log.error('error on remote wt session close', err)
+      })
+        .finally(() => {
+          cleanUpWTSession('remote_close')
+        })
 
       if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)) {
         throw new Error('Failed to authenticate webtransport')
       }
 
+      this.metrics?.dialerEvents.increment({ open: true })
+
       maConn = {
-        close: async (options?: AbortOptions) => {
+        close: async () => {
           log('Closing webtransport')
-          cleanUpWTSession()
+          cleanUpWTSession('close')
         },
         abort: (err: Error) => {
           log('aborting webtransport due to passed err', err)
-          cleanUpWTSession({
-            closeCode: 0,
-            reason: err.message
-          })
+          cleanUpWTSession('abort')
         },
         remoteAddr: ma,
         timeline: {
@@ -153,16 +169,19 @@ class WebTransportTransport implements Transport {
         ...inertDuplex()
       }
 
-      options?.signal?.throwIfAborted()
+      authenticated = true
 
-      return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt, cleanUpWTSession), skipProtection: true })
+      return await options.upgrader.upgradeOutbound(maConn, { skipEncryption: true, muxerFactory: this.webtransportMuxer(wt), skipProtection: true })
     } catch (err: any) {
       log.error('caught wt session err', err)
 
-      cleanUpWTSession({
-        closeCode: 0,
-        reason: err.message
-      })
+      if (authenticated) {
+        cleanUpWTSession('upgrade_error')
+      } else if (ready) {
+        cleanUpWTSession('noise_error')
+      } else {
+        cleanUpWTSession('ready_error')
+      }
 
       throw err
     } finally {
@@ -220,7 +239,7 @@ class WebTransportTransport implements Transport {
     return true
   }
 
-  webtransportMuxer (wt: WebTransport, cleanUpWTSession: WebTransportSessionCleanup): StreamMuxerFactory {
+  webtransportMuxer (wt: WebTransport): StreamMuxerFactory {
     let streamIDCounter = 0
     const config = this.config
     return {
@@ -281,14 +300,17 @@ class WebTransportTransport implements Transport {
            */
           close: async (options?: AbortOptions) => {
             log('Closing webtransport muxer')
-            cleanUpWTSession()
+
+            await Promise.all(
+              activeStreams.map(async s => s.close(options))
+            )
           },
           abort: (err: Error) => {
             log('Aborting webtransport muxer with err:', err)
-            cleanUpWTSession({
-              closeCode: 0,
-              reason: err.message
-            })
+
+            for (const stream of activeStreams) {
+              stream.abort(err)
+            }
           },
           // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
           ...inertDuplex()
