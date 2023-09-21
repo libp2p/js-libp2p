@@ -135,11 +135,11 @@ class DefaultPerfService implements Startable, PerfService {
 
     let lastAmountOfBytesSent = BigInt(0)
     let lastReportedTime = Date.now()
-    let initialStartTime = Date.now()
     let totalBytesSent = BigInt(0)
 
-    await stream.sink(async function * () {
+    const initialStartTime = Date.now()
 
+    await stream.sink(async function * () {
       while (bytesToSendBack > 0n) {
         let toSend: bigint = writeBlockSize
         if (toSend > bytesToSendBack) {
@@ -157,6 +157,7 @@ class DefaultPerfService implements Startable, PerfService {
             downloadBytes: lastAmountOfBytesSent.toString()
           }
 
+          // eslint-disable-next-line no-console
           console.log(JSON.stringify(output))
 
           lastReportedTime = Date.now()
@@ -175,6 +176,7 @@ class DefaultPerfService implements Startable, PerfService {
       downloadBytes: totalBytesSent.toString()
     }
 
+    // eslint-disable-next-line no-console
     console.log(JSON.stringify(finalOutput))
   }
 
@@ -190,7 +192,8 @@ class DefaultPerfService implements Startable, PerfService {
     let lastAmountOfBytesSent = BigInt(0)
     let lastReportedTime = Date.now()
     let totalBytesSent = BigInt(0)
-    let initialStartTime = Date.now()
+
+    const initialStartTime = Date.now()
 
     // Convert sendBytes to uint64 big endian buffer
     const view = new DataView(this.databuf)
@@ -199,7 +202,6 @@ class DefaultPerfService implements Startable, PerfService {
     log('sending %i bytes to %p', sendBytes, connection.remotePeer)
 
     try {
-
       await stream.sink((async function * () {
         // Send the number of bytes to receive
         yield uint8Buf.subarray(0, 8)
@@ -223,13 +225,13 @@ class DefaultPerfService implements Startable, PerfService {
             lastReportedTime = Date.now()
             lastAmountOfBytesSent = BigInt(0)
 
+            // eslint-disable-next-line no-console
             console.log(JSON.stringify(output))
           }
 
           lastAmountOfBytesSent += toSend
           totalBytesSent += toSend
         }
-
       })())
 
       // Read the received bytes
