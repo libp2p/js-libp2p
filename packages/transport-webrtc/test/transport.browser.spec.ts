@@ -38,7 +38,7 @@ describe('WebRTC Transport', () => {
     const options = ignoredDialOption()
 
     // don't await as this isn't an e2e test
-    transport.dial(ma, options)
+    void transport.dial(ma, options)
   })
 
   it('createListner throws', () => {
@@ -77,7 +77,7 @@ describe('WebRTC Transport', () => {
 
     assert.isNotNull(result)
     expect(result.constructor.name).to.equal('Array')
-    expect(result).to.have.length(1)
+    expect(result).to.have.length(2)
     expect(result[0].equals(expected)).to.be.true()
   })
 

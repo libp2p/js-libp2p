@@ -4,10 +4,44 @@ import { DataChannel } from './rtc-data-channel.js'
 import { DataChannelEvent, PeerConnectionIceEvent } from './rtc-events.js'
 import { IceCandidate } from './rtc-ice-candidate.js'
 import { SessionDescription } from './rtc-session-description.js'
+import { generateTLSCertificate } from '../private-to-public/utils/generate-certificates.js'
+
+export interface Algorithm {
+  name: string,
+  namedCurve?: string,
+  hash?: string
+}
 
 export class PeerConnection extends EventTarget implements RTCPeerConnection {
-  static async generateCertificate (keygenAlgorithm: AlgorithmIdentifier): Promise<RTCCertificate> {
-    throw new Error('Not implemented')
+  static async generateCertificate (keygenAlgorithm: Algorithm | string): Promise<RTCCertificate> {
+    if (typeof keygenAlgorithm === 'string' || keygenAlgorithm.name != 'ECDSA' || keygenAlgorithm.namedCurve != 'P-256') {
+      throw new Error('Not implemented')
+    }
+
+    const days = 364
+
+    // generate a TLS certificate
+    const cert = await generateTLSCertificate([
+      { shortName: 'C', value: 'N/a' },
+      { shortName: 'ST', value: 'N/a' },
+      { shortName: 'L', value: 'N/a' },
+      { shortName: 'O', value: 'WebRTC Direct Dialer' },
+      { shortName: 'CN', value: '0.0.0.0' }
+    ], {
+      // 365 days is the max value allowed
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/generateCertificate_static#certificate_expiration_time
+      days
+    })
+
+    return {
+      expires: Date.now() + (86400000 * days),
+      getFingerprints () {
+        return [{
+          algorithm: 'sha-256',
+          value: cert.fingerprint
+        }]
+      }
+    }
   }
 
   canTrickleIceCandidates: boolean | null
@@ -273,8 +307,12 @@ export class PeerConnection extends EventTarget implements RTCPeerConnection {
       throw new Error('Remote SDP must be set')
     }
 
-    // @ts-expect-error types are wrong
-    this.#peerConnection.setRemoteDescription(description.sdp, description.type)
+    this.#peerConnection.setRemoteDescription(
+      // https://github.com/paullouisageneau/libdatachannel/issues/968
+      description.sdp.replaceAll('a=fingerprint:SHA-256', 'a=fingerprint:sha-256'),
+      // @ts-expect-error types are wrong
+      description.type
+    )
   }
 }
 
