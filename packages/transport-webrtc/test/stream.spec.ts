@@ -33,7 +33,8 @@ describe('Max message size', () => {
           sent.append(bytes)
         }
       }),
-      direction: 'outbound'
+      direction: 'outbound',
+      closeTimeout: 1
     })
 
     p.push(data)
@@ -80,9 +81,7 @@ describe('Max message size', () => {
     const timeout = 100
     let closed = false
     const webrtcStream = createStream({
-      dataChannelOptions: {
-        bufferedAmountLowEventTimeout: timeout
-      },
+      bufferedAmountLowEventTimeout: timeout,
       channel: mockDataChannel({
         send: () => {
           throw new Error('Expected to not send')

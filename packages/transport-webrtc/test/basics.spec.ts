@@ -12,10 +12,10 @@ import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
 import { createLibp2p } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p/identify'
 import { webRTC } from '../src/index.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
+import type { StreamHandler } from '@libp2p/interface/stream-handler'
 
 async function createNode (): Promise<Libp2p> {
   return createLibp2p({
@@ -38,9 +38,6 @@ async function createNode (): Promise<Libp2p> {
     streamMuxers: [
       yamux()
     ],
-    services: {
-      identify: identifyService()
-    },
     connectionGater: {
       denyDialMultiaddr: () => false
     },
@@ -55,6 +52,7 @@ describe('basics', () => {
 
   let localNode: Libp2p
   let remoteNode: Libp2p
+  let streamHandler: StreamHandler
 
   async function connectNodes (): Promise<Connection> {
     const remoteAddr = remoteNode.getMultiaddrs()
@@ -64,11 +62,8 @@ describe('basics', () => {
       throw new Error('Remote peer could not listen on relay')
     }
 
-    await remoteNode.handle(echo, ({ stream }) => {
-      void pipe(
-        stream,
-        stream
-      )
+    await remoteNode.handle(echo, (info) => {
+      streamHandler(info)
     }, {
       runOnTransientConnection: true
     })
@@ -83,6 +78,13 @@ describe('basics', () => {
   }
 
   beforeEach(async () => {
+    streamHandler = ({ stream }) => {
+      void pipe(
+        stream,
+        stream
+      )
+    }
+
     localNode = await createNode()
     remoteNode = await createNode()
   })
@@ -101,9 +103,7 @@ describe('basics', () => {
     const connection = await connectNodes()
 
     // open a stream on the echo protocol
-    const stream = await connection.newStream(echo, {
-      runOnTransientConnection: true
-    })
+    const stream = await connection.newStream(echo)
 
     // send and receive some data
     const input = new Array(5).fill(0).map(() => new Uint8Array(10))

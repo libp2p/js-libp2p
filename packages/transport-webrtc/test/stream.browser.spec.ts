@@ -11,7 +11,7 @@ const TEST_MESSAGE = 'test_message'
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const stream = createStream({ channel: dataChannel, direction: 'outbound' })
+  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1 })
 
   return { peerConnection, dataChannel, stream }
 }
@@ -45,7 +45,9 @@ describe('Stream Stats', () => {
 
   it('close marks it closed', async () => {
     expect(stream.timeline.close).to.not.exist()
+
     await stream.close()
+
     expect(stream.timeline.close).to.be.a('number')
   })
 
