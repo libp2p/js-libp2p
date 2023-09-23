@@ -513,7 +513,6 @@ export class DefaultUpgrader implements Upgrader {
               }
             } catch (err: any) {
               log.error(err)
-              connection.abort(err)
             } finally {
               this.events.safeDispatchEvent('connection:close', {
                 detail: connection
