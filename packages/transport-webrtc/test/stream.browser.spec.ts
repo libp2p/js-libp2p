@@ -28,9 +28,10 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
 describe('Stream Stats', () => {
   let stream: WebRTCStream
   let peerConnection: RTCPeerConnection
+  let dataChannel: RTCDataChannel
 
   beforeEach(async () => {
-    ({ stream, peerConnection } = setup())
+    ({ stream, peerConnection, dataChannel } = setup())
   })
 
   afterEach(() => {
@@ -46,7 +47,12 @@ describe('Stream Stats', () => {
   it('close marks it closed', async () => {
     expect(stream.timeline.close).to.not.exist()
 
-    await stream.close()
+    const msgbuf = Message.encode({ flag: Message.Flag.FIN_ACK })
+    const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
+
+    const p = stream.close()
+    dataChannel.dispatchEvent(new MessageEvent('message', { data: prefixedBuf }))
+    await p
 
     expect(stream.timeline.close).to.be.a('number')
   })

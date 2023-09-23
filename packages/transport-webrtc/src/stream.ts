@@ -3,12 +3,16 @@ import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/strea
 import { logger } from '@libp2p/logger'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
+import pDefer from 'p-defer'
 import { pEvent, TimeoutError } from 'p-event'
+import pTimeout from 'p-timeout'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
+import { abortPromise } from './util.js'
 import type { DataChannelOptions } from './index.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Direction } from '@libp2p/interface/connection'
+import type { DeferredPromise } from 'p-defer'
 
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {
   /**
@@ -45,6 +49,13 @@ export const VARINT_LENGTH = 2
  */
 export const MAX_MESSAGE_SIZE = 16 * 1024
 
+/**
+ * When closing streams we send a FIN then wait for the remote to
+ * reply with a FIN_ACK. If that does not happen within this timeout
+ * we close the stream anyway.
+ */
+export const FIN_ACK_TIMEOUT = 5000
+
 export class WebRTCStream extends AbstractStream {
   /**
    * The data channel used to send and receive data
@@ -68,6 +79,13 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly maxMessageSize: number
 
+  /**
+   * When this promise is resolved, the remote has sent us a FIN flag
+   */
+  private readonly receivedFinAck: DeferredPromise<void>
+
+  private readonly finAckTimeout: number
+
   constructor (init: WebRTCStreamInit) {
     super(init)
 
@@ -78,6 +96,8 @@ export class WebRTCStream extends AbstractStream {
     this.bufferedAmountLowEventTimeout = init.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
+    this.receivedFinAck = pDefer()
+    this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -222,6 +242,29 @@ export class WebRTCStream extends AbstractStream {
 
     this.log.trace('send FIN')
     await this._sendFlag(Message.Flag.FIN)
+
+    this.log.trace('wait for FIN_ACK')
+    const abortP = abortPromise({ signal: options.signal, message: 'FIN_ACK not received' })
+
+    try {
+      await Promise.race([
+        this.receivedFinAck.promise,
+        abortP.promise,
+        pTimeout(this.receivedFinAck.promise, {
+          milliseconds: this.finAckTimeout
+        })
+      ])
+    } catch (err) {
+      this.log.error('error while waiting for remote FIN_ACK', err)
+
+      if (options.signal?.aborted === true) {
+        throw err
+      }
+    } finally {
+      abortP.cleanup()
+    }
+
+    this.log.trace('waited for FIN_ACK')
   }
 
   async sendCloseRead (): Promise<void> {
@@ -239,6 +282,16 @@ export class WebRTCStream extends AbstractStream {
         // We should expect no more data from the remote, stop reading
         this.incomingData.end()
         this.remoteCloseWrite()
+
+        if (this.channel.readyState === 'open') {
+          this.log.trace('received FIN, sending FIN_ACK')
+          this._sendFlag(Message.Flag.FIN_ACK)
+            .catch(err => {
+              this.log.error('error sending FIN_ACK', err)
+            })
+        } else {
+          this.log.trace('received FIN, not sending FIN_ACK because we are "%s" and not "open"', this.channel.readyState)
+        }
       }
 
       if (message.flag === Message.Flag.RESET) {
@@ -249,6 +302,11 @@ export class WebRTCStream extends AbstractStream {
       if (message.flag === Message.Flag.STOP_SENDING) {
         // The remote has stopped reading
         this.remoteCloseRead()
+      }
+
+      if (message.flag === Message.Flag.FIN_ACK) {
+        this.log.trace('received FIN_ACK')
+        this.receivedFinAck.resolve()
       }
     }
 
