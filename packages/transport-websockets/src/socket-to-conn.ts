@@ -56,6 +56,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
       try {
         await stream.close()
       } catch (err: any) {
+        log.error('error closing WebSocket gracefully', err)
         this.abort(err)
       } finally {
         options.signal.removeEventListener('abort', listener)
