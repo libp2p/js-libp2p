@@ -1,4 +1,5 @@
 import net from 'net'
+import { CodeError } from '@libp2p/interface/errors'
 import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { CODE_P2P } from './constants.js'
@@ -57,14 +58,14 @@ enum TCPListenerStatusCode {
    * When server object is initialized but we don't know the listening address yet or
    * the server object is stopped manually, can be resumed only by calling listen()
    **/
-  DOWN = 0,
-  UP = 1,
+  INACTIVE = 0,
+  ACTIVE = 1,
   /* During the connection limits */
   PAUSED = 2,
 }
 
-type Status = { code: TCPListenerStatusCode.DOWN } | {
-  code: Exclude<TCPListenerStatusCode, TCPListenerStatusCode.DOWN>
+type Status = { code: TCPListenerStatusCode.INACTIVE } | {
+  code: Exclude<TCPListenerStatusCode, TCPListenerStatusCode.INACTIVE>
   listeningAddr: Multiaddr
   peerId: string | null
   netConfig: NetConfig
@@ -74,7 +75,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   private readonly server: net.Server
   /** Keep track of open connections to destroy in case of timeout */
   private readonly connections = new Set<MultiaddrConnection>()
-  private status: Status = { code: TCPListenerStatusCode.DOWN }
+  private status: Status = { code: TCPListenerStatusCode.INACTIVE }
   private metrics?: TCPListenerMetrics
   private addr: string
 
@@ -96,7 +97,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     if (context.closeServerOnMaxConnections != null) {
       // Sanity check options
       if (context.closeServerOnMaxConnections.closeAbove < context.closeServerOnMaxConnections.listenBelow) {
-        throw Error('closeAbove must be >= listenBelow')
+        throw new CodeError('closeAbove must be >= listenBelow', 'ERROR_CONNECTION_LIMITS')
       }
     }
 
@@ -141,7 +142,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
           }
 
           this.metrics?.status.update({
-            [this.addr]: TCPListenerStatusCode.UP
+            [this.addr]: TCPListenerStatusCode.ACTIVE
           })
         }
 
@@ -166,8 +167,8 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   private onSocket (socket: net.Socket): void {
-    if (this.status.code === TCPListenerStatusCode.DOWN) {
-      throw new Error('Server is is not listening yet')
+    if (this.status.code === TCPListenerStatusCode.INACTIVE) {
+      throw new CodeError('Server is is not listening yet', 'ERR_SERVER_NOT_RUNNING')
     }
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
@@ -178,7 +179,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     let maConn: MultiaddrConnection
     try {
       maConn = toMultiaddrConnection(socket, {
-        listeningAddr: this.status.code === TCPListenerStatusCode.UP || this.status.code === TCPListenerStatusCode.PAUSED ? this.status.listeningAddr : undefined,
+        listeningAddr: this.status.code === TCPListenerStatusCode.ACTIVE || this.status.code === TCPListenerStatusCode.PAUSED ? this.status.listeningAddr : undefined,
         socketInactivityTimeout: this.context.socketInactivityTimeout,
         socketCloseTimeout: this.context.socketCloseTimeout,
         metrics: this.metrics?.events,
@@ -206,7 +207,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
             ) {
               // The most likely case of error is if the port taken by this application is binded by
               // another process during the time the server if closed. In that case there's not much
-              // we can do. netListen() will be called again every time a connection is dropped, which
+              // we can do. resume() will be called again every time a connection is dropped, which
               // acts as an eventual retry mechanism. onListenError allows the consumer act on this.
               this.resume().catch(e => {
                 log.error('error attempting to listen server once connection count under limit', e)
@@ -251,7 +252,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   getAddrs (): Multiaddr[] {
-    if (this.status.code === TCPListenerStatusCode.DOWN) {
+    if (this.status.code === TCPListenerStatusCode.INACTIVE) {
       return []
     }
 
@@ -283,8 +284,8 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   async listen (ma: Multiaddr): Promise<void> {
-    if (this.status.code === TCPListenerStatusCode.UP || this.status.code === TCPListenerStatusCode.PAUSED) {
-      throw Error('server is already listening')
+    if (this.status.code === TCPListenerStatusCode.ACTIVE || this.status.code === TCPListenerStatusCode.PAUSED) {
+      throw new CodeError('server is already listening', 'ERR_SERVER_ALREADY_LISTENING')
     }
 
     const peerId = ma.getPeerId()
@@ -293,7 +294,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
 
     try {
       this.status = {
-        code: TCPListenerStatusCode.UP,
+        code: TCPListenerStatusCode.ACTIVE,
         listeningAddr,
         peerId,
         netConfig: multiaddrToNetConfig(listeningAddr, { backlog })
@@ -301,7 +302,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
 
       await this.resume()
     } catch (err) {
-      this.status = { code: TCPListenerStatusCode.DOWN }
+      this.status = { code: TCPListenerStatusCode.INACTIVE }
       throw err
     }
   }
@@ -311,14 +312,16 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
       Array.from(this.connections.values()).map(async maConn => { await attemptClose(maConn) })
     )
 
-    await this.pause(true)
+    await this.pause(true).catch(e => {
+      log.error('error attempting to close server once connection count over limit', e)
+    })
   }
 
   /**
    * Can resume a stopped or start an inert server
    */
   private async resume (): Promise<void> {
-    if (this.server.listening || this.status.code === TCPListenerStatusCode.DOWN) {
+    if (this.server.listening || this.status.code === TCPListenerStatusCode.INACTIVE) {
       return
     }
 
@@ -330,17 +333,17 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
       this.server.listen(netConfig, resolve)
     })
 
-    this.status = { ...this.status, code: TCPListenerStatusCode.UP }
+    this.status = { ...this.status, code: TCPListenerStatusCode.ACTIVE }
     log('Listening on %s', this.server.address())
   }
 
   private async pause (permanent: boolean): Promise<void> {
     if (!this.server.listening && this.status.code === TCPListenerStatusCode.PAUSED && permanent) {
-      this.status = { code: TCPListenerStatusCode.DOWN }
+      this.status = { code: TCPListenerStatusCode.INACTIVE }
       return
     }
 
-    if (!this.server.listening || this.status.code !== TCPListenerStatusCode.UP) {
+    if (!this.server.listening || this.status.code !== TCPListenerStatusCode.ACTIVE) {
       return
     }
 
@@ -361,7 +364,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
 
     // We need to set this status before closing server, so other procedures are aware
     // during the time the server is closing
-    this.status = permanent ? { code: TCPListenerStatusCode.DOWN } : { ...this.status, code: TCPListenerStatusCode.PAUSED }
+    this.status = permanent ? { code: TCPListenerStatusCode.INACTIVE } : { ...this.status, code: TCPListenerStatusCode.PAUSED }
     await new Promise<void>((resolve, reject) => {
       this.server.close(err => { (err != null) ? reject(err) : resolve() })
     })

@@ -70,7 +70,7 @@ async function assertServerConnections (listener: TCPListener, connections: numb
     }
   }
   // eslint-disable-next-line @typescript-eslint/dot-notation
-  expect(listener['connections'].size).equals(connections, 'Wrong server connections')
+  expect(listener['connections'].size).equals(connections, 'invalid amount of server connections')
 }
 
 describe('closeAbove/listenBelow', () => {
@@ -173,7 +173,7 @@ describe('closeAbove/listenBelow', () => {
     expect(closeEventCallCount).equals(0)
   })
 
-  it('should not emit "listening" event when server is resumed due to "listenBelow" limit', async () => {
+  it('should emit "listening" event when server is resumed due to "listenBelow" limit', async () => {
     const listenBelow = 2
     const closeAbove = 3
     const port = 9900
