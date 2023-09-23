@@ -174,10 +174,14 @@ export abstract class AbstractStream implements Stream {
       }
 
       this.log.trace('sink finished reading from source')
-      this.writeStatus = 'done'
 
-      this.log.trace('sink calling closeWrite')
-      await this.closeWrite(options)
+      if (this.writeStatus === 'writing') {
+        this.writeStatus = 'done'
+
+        this.log.trace('sink calling closeWrite')
+        await this.closeWrite(options)
+      }
+
       this.onSinkEnd()
     } catch (err: any) {
       this.log.trace('sink ended with error, calling abort with error', err)
