@@ -67,7 +67,8 @@
     "p-timeout": "^6.1.2",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "uint8arrays": "^4.0.6",
+    "wherearewe": "^2.0.1"
   },
   "devDependencies": {
     "@chainsafe/libp2p-yamux": "^5.0.0",
