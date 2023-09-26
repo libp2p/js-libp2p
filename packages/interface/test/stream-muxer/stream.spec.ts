@@ -5,8 +5,8 @@ import drain from 'it-drain'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { AbstractStream } from '../../src/stream-muxer/stream.js'
-import type { AbortOptions } from '../../src/index.js'
 import { logger } from '../fixtures/logger.js'
+import type { AbortOptions } from '../../src/index.js'
 
 class TestStream extends AbstractStream {
   async sendNewStream (options?: AbortOptions): Promise<void> {

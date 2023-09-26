@@ -1,4 +1,3 @@
-
 interface Logger {
   (): void
   error: () => void
@@ -7,9 +6,9 @@ interface Logger {
 }
 
 export function logger (): Logger {
-  const output = () => {}
-  output.trace = () => {}
-  output.error = () => {}
+  const output = (): void => {}
+  output.trace = (): void => {}
+  output.error = (): void => {}
   output.enabled = false
 
   return output
