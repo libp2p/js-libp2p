@@ -14,7 +14,7 @@ describe('simple-metrics', () => {
   })
 
   it('should invoke the onMetrics callback', async () => {
-    const deferred = pDefer()
+    const deferred = pDefer<Record<string, any>>()
 
     s = simpleMetrics({
       onMetrics: (metrics) => {
@@ -27,5 +27,32 @@ describe('simple-metrics', () => {
 
     const metrics = await deferred.promise
     expect(metrics).to.be.ok()
+  })
+
+  it('should not allow altering internal state', async () => {
+    const deferred = pDefer()
+    const list: Array<Record<string, any>> = []
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        list.push(metrics)
+
+        if (list.length === 2) {
+          deferred.resolve()
+        }
+      },
+      intervalMs: 10
+    })({})
+
+    const group = s.registerMetricGroup('foo')
+    group.update({ bar: 5 })
+
+    await start(s)
+
+    await deferred.promise
+
+    list[0].foo.baz = 'qux'
+
+    expect(list).to.not.have.nested.property('[1].foo.baz')
   })
 })

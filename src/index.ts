@@ -24,9 +24,11 @@
  */
 
 import { logger } from '@libp2p/logger'
+import each from 'it-foreach'
 import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface/connection'
 import type { Startable } from '@libp2p/interface/dist/src/startable'
 import type { Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric } from '@libp2p/interface/metrics'
+import type { Duplex, Source } from 'it-stream-types'
 
 const log = logger('libp2p:simple-metrics')
 
@@ -114,6 +116,7 @@ export interface SimpleMetricsInit {
 
 class SimpleMetrics implements Metrics, Startable {
   public metrics = new Map<string, DefaultMetric | DefaultGroupMetric | CalculateMetric>()
+  private readonly transferStats: Map<string, number>
   private started: boolean
   private interval?: ReturnType<typeof setInterval>
   private readonly intervalMs: number
@@ -126,6 +129,9 @@ class SimpleMetrics implements Metrics, Startable {
 
     this.intervalMs = init.intervalMs ?? 1000
     this.onMetrics = init.onMetrics
+
+    // holds global and per-protocol sent/received stats
+    this.transferStats = new Map()
   }
 
   isStarted (): boolean {
@@ -158,19 +164,55 @@ class SimpleMetrics implements Metrics, Startable {
         }
       }
 
-      this.onMetrics(JSON.parse(JSON.stringify(output)))
+      this.onMetrics(structuredClone(output))
     })
       .catch(err => {
         log.error('could not invoke onMetrics callback', err)
       })
   }
 
-  trackMultiaddrConnection (maConn: MultiaddrConnection): void {
+  /**
+   * Increment the transfer stat for the passed key, making sure
+   * it exists first
+   */
+  _incrementValue (key: string, value: number): void {
+    const existing = this.transferStats.get(key) ?? 0
 
+    this.transferStats.set(key, existing + value)
+  }
+
+  /**
+   * Override the sink/source of the stream to count the bytes
+   * in and out
+   */
+  _track (stream: Duplex<Source<any>>, name: string): void {
+    const self = this
+
+    const sink = stream.sink
+    stream.sink = async function trackedSink (source) {
+      await sink(each(source, buf => {
+        self._incrementValue(`${name} sent`, buf.byteLength)
+      }))
+    }
+
+    const source = stream.source
+    stream.source = each(source, buf => {
+      self._incrementValue(`${name} received`, buf.byteLength)
+    })
+  }
+
+  trackMultiaddrConnection (maConn: MultiaddrConnection): void {
+    this._track(maConn, 'global')
   }
 
   trackProtocolStream (stream: Stream, connection: Connection): void {
+    if (stream.protocol == null) {
+      // protocol not negotiated yet, should not happen as the upgrader
+      // calls this handler after protocol negotiation
+      return
+    }
 
+    this._track(stream, stream.protocol)
   }
 
   registerMetric (name: string, opts: CalculatedMetricOptions): void
