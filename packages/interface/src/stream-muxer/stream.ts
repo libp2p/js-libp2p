@@ -8,6 +8,7 @@ import type { Direction, ReadStatus, Stream, StreamStatus, StreamTimeline, Write
 import type { AbortOptions } from '../index.js'
 import type { Source } from 'it-stream-types'
 
+// copied from @libp2p/logger to break a circular dependency
 interface Logger {
   (formatter: any, ...args: any[]): void
   error: (formatter: any, ...args: any[]) => void

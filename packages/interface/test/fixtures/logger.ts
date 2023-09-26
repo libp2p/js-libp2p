@@ -1,3 +1,4 @@
+// copied from @libp2p/logger to break a circular dependency
 interface Logger {
   (): void
   error: () => void
