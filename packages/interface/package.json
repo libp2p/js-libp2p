@@ -169,6 +169,9 @@
   "devDependencies": {
     "@types/sinon": "^10.0.15",
     "aegir": "^40.0.8",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.3",
+    "it-drain": "^3.0.3",
     "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"
   }
