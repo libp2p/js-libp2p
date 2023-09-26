@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/libp2p/js-libp2p-simple-metrics/compare/v1.0.0...v1.0.1) (2023-09-26)
+
+
+### Bug Fixes
+
+* track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
+
 ## 1.0.0 (2023-09-20)
 
 
