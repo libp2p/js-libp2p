@@ -61,7 +61,7 @@
     "it-to-buffer": "^4.0.2",
     "multiformats": "^12.0.1",
     "multihashes": "^4.0.3",
-    "node-datachannel": "^0.4.3",
+    "node-datachannel": "^0.5.0-dev",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-timeout": "^6.1.2",
