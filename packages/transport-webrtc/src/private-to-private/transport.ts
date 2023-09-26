@@ -2,7 +2,8 @@ import { CodeError } from '@libp2p/interface/errors'
 import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener, type Upgrader } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { cleanup } from '../webrtc/index.js'
@@ -21,7 +22,6 @@ const log = logger('libp2p:webrtc:peer')
 const WEBRTC_TRANSPORT = '/webrtc'
 const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
 const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
-const WEBRTC_CODE = protocols('webrtc').code
 
 export interface WebRTCTransportInit {
   rtcConfiguration?: RTCConfiguration
@@ -91,10 +91,7 @@ export class WebRTCTransport implements Transport, Startable {
   readonly [symbol] = true
 
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter((ma) => {
-      const codes = ma.protoCodes()
-      return codes.includes(WEBRTC_CODE)
-    })
+    return multiaddrs.filter(WebRTC.exactMatch)
   }
 
   /*

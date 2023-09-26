@@ -2,6 +2,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { type Transport, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
 import { type Multiaddr, type AbortOptions } from '@multiformats/multiaddr'
+import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { webtransportBiDiStreamToStream } from './stream.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
@@ -329,7 +330,7 @@ class WebTransportTransport implements Transport {
    * Takes a list of `Multiaddr`s and returns only valid webtransport addresses.
    */
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(ma => ma.protoNames().includes('webtransport'))
+    return multiaddrs.filter(WebTransportMatcher.exactMatch)
   }
 }
 
