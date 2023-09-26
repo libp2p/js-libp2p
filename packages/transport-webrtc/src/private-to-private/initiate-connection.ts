@@ -4,7 +4,6 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
-import { isNode, isElectronMain } from 'wherearewe'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { SIGNALING_PROTO_ID, splitAddr, type WebRTCTransportMetrics } from './transport.js'
@@ -152,13 +151,8 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
         signal
       })
 
-      // TODO: workaround for https://github.com/murat-dogan/node-datachannel/issues/196
-      if (!isNode && !isElectronMain) {
-        log.trace('initiator connected, closing init channel')
-
-        // close init channel as we are connected now
-        channel.close()
-      }
+      log.trace('initiator connected, closing init channel')
+      channel.close()
 
       const remoteAddress = parseRemoteAddress(peerConnection.currentRemoteDescription?.sdp ?? '')
 

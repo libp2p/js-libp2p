@@ -82,7 +82,7 @@ export type ReadStatus = 'ready' | 'closing' | 'closed'
  * closing - the writable end is closing
  * closed - the writable end has closed
  */
-export type WriteStatus = 'ready' | 'writing' | 'done' | 'closing' | 'closed'
+export type WriteStatus = 'ready' | 'writing' | 'closing' | 'closed'
 
 /**
  * A Stream is a data channel between two peers that

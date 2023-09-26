@@ -1,6 +1,6 @@
 import { logger } from '@libp2p/logger'
 import { detect } from 'detect-browser'
-import pDefer, { type DeferredPromise } from 'p-defer'
+import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 
 const log = logger('libp2p:webrtc:utils')
@@ -65,27 +65,4 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
 export interface AbortPromiseOptions {
   signal?: AbortSignal
   message?: string
-}
-
-export function abortPromise (opts: AbortPromiseOptions = {}): { promise: Promise<void>, cleanup: () => void } {
-  const deferred: DeferredPromise<void> = pDefer()
-
-  const listener = (): void => {
-    deferred.reject(new Error(opts.message ?? 'aborted'))
-  }
-
-  if (opts.signal?.aborted === true) {
-    listener()
-  }
-
-  opts.signal?.addEventListener('abort', listener, {
-    once: true
-  })
-
-  return {
-    promise: deferred.promise,
-    cleanup: () => {
-      opts.signal?.removeEventListener('abort', listener)
-    }
-  }
 }

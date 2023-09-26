@@ -4,6 +4,7 @@ import { expect } from 'aegir/chai'
 import length from 'it-length'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
+import pDefer from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from '../src/pb/message.js'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD, createStream } from '../src/stream.js'
@@ -79,9 +80,10 @@ describe('Max message size', () => {
 
   it('closes the stream if bufferamountlow timeout', async () => {
     const timeout = 100
-    let closed = false
+    const closed = pDefer()
     const webrtcStream = createStream({
       bufferedAmountLowEventTimeout: timeout,
+      closeTimeout: 1,
       channel: mockDataChannel({
         send: () => {
           throw new Error('Expected to not send')
@@ -90,7 +92,7 @@ describe('Max message size', () => {
       }),
       direction: 'outbound',
       onEnd: () => {
-        closed = true
+        closed.resolve()
       }
     })
 
@@ -101,7 +103,7 @@ describe('Max message size', () => {
     const t1 = Date.now()
     expect(t1 - t0).greaterThan(timeout)
     expect(t1 - t0).lessThan(timeout + 1000) // Some upper bound
-    expect(closed).true()
+    await closed.promise
     expect(webrtcStream.timeline.close).to.be.greaterThan(webrtcStream.timeline.open)
     expect(webrtcStream.timeline.abort).to.be.greaterThan(webrtcStream.timeline.open)
   })
