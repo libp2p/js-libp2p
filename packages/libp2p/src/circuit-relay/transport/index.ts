@@ -241,7 +241,7 @@ class CircuitRelayTransport implements Transport {
         disconnectOnFailure
       })
     } catch (err: any) {
-      log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${relayPeer.toString()} failed`, err)
+      log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
 
       if (stream != null) {
         stream.abort(err)
