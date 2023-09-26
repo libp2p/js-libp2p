@@ -194,7 +194,7 @@ export class WebRTCStream extends AbstractStream {
     }
 
     if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
-      throw new CodeError('Invalid datachannel state - closed or closing', 'ERR_INVALID_STATE')
+      throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
     }
 
     if (this.channel.readyState === 'open') {

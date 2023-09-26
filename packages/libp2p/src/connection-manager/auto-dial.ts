@@ -172,25 +172,25 @@ export class AutoDial implements Startable {
         (peer) => {
           // Remove peers without addresses
           if (peer.addresses.length === 0) {
-            log.trace('not autodialing %p because they have no addresses')
+            log.trace('not autodialing %p because they have no addresses', peer.id)
             return false
           }
 
           // remove peers we are already connected to
           if (connections.has(peer.id)) {
-            log.trace('not autodialing %p because they are already connected')
+            log.trace('not autodialing %p because they are already connected', peer.id)
             return false
           }
 
           // remove peers we are already dialling
           if (dialQueue.has(peer.id)) {
-            log.trace('not autodialing %p because they are already being dialed')
+            log.trace('not autodialing %p because they are already being dialed', peer.id)
             return false
           }
 
           // remove peers already in the autodial queue
           if (this.queue.hasJob(peer.id)) {
-            log.trace('not autodialing %p because they are already being autodialed')
+            log.trace('not autodialing %p because they are already being autodialed', peer.id)
             return false
           }
 

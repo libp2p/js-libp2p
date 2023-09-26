@@ -38,15 +38,6 @@ export default {
         connectionManager: {
           minConnections: 0,
           inboundConnectionThreshold: Infinity
-        },
-        connectionGater: {
-          denyDialMultiaddr: (ma) => {
-            if (ma.toOptions().family === 6) {
-              return true
-            }
-
-            return false
-          }
         }
       })
 

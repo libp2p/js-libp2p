@@ -158,16 +158,22 @@ export class ConnectionImpl implements Connection {
     } catch { }
 
     try {
+      log.trace('closing all streams')
+
       // close all streams gracefully - this can throw if we're not multiplexed
       await Promise.all(
         this.streams.map(async s => s.close(options))
       )
 
-      // Close raw connection
+      log.trace('closing underlying transport')
+
+      // close raw connection
       await this._close(options)
 
-      this.timeline.close = Date.now()
+      log.trace('updating timeline with close time')
+
       this.status = 'closed'
+      this.timeline.close = Date.now()
     } catch (err: any) {
       log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
       this.abort(err)

@@ -332,6 +332,10 @@ describe('dial', () => {
         return !isLoopbackAddr(address)
       })
 
+      if (addrs.length === 0) {
+        return
+      }
+
       // Dial first no loopback address
       const conn = await ws.dial(addrs[0], { upgrader })
       const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
