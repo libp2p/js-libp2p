@@ -101,7 +101,7 @@
 
 ### Project status
 
-We've come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..
+This project has been used in production for years in Ethereum, IPFS, and more.  It is actively maintained by multiple organizations and continues to be improved!  The API might change, but we strictly follow semver.
 
 The documentation in the master branch may contain changes from a pre-release.
 If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
@@ -235,7 +235,7 @@ List of packages currently in existence for libp2p
   <p align="middle">
     <a href="https://lodestar.chainsafe.io/"><img width="300" src="https://github.com/ChainSafe/lodestar/blob/unstable/assets/lodestar_icon_text_black_stroke.png?raw=true"></a>
     <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo">
-    <a href="https://js.ipfs.io/"><img src="https://ipfs.io/ipfs/Qme6KJdKcp85TYbLxuLV7oQzMiLremD7HMoXLZEmgo6Rnh/js-ipfs-sticker.png" alt="IPFS in JavaScript logo" width="150" /></a>
+    <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia (IPFS in JavaScript) logo" width="150" /></a>
   </p>
 </div>
 
@@ -243,11 +243,7 @@ And [many others...](https://github.com/libp2p/js-libp2p/network/dependents)
 
 ## Contribute
 
-The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
-
-- Go through the modules and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
-- **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
-- **Add tests**. There can never be enough tests.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## API Docs
 
@@ -259,7 +255,3 @@ Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
-
-## Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
