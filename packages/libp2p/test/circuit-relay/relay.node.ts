@@ -20,7 +20,7 @@ import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, usingAsRelay } from './utils.js'
+import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, notUsingAsRelay, usingAsRelay, usingAsRelayCount } from './utils.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 
@@ -355,7 +355,7 @@ describe('circuit-relay', () => {
           transports: [
             tcp(),
             circuitRelayTransport({
-              discoverRelays: 1
+              discoverRelays: 2
             })
           ],
           streamMuxers: [
@@ -408,7 +408,11 @@ describe('circuit-relay', () => {
             plaintext()
           ],
           services: {
-            relay: circuitRelayServer(),
+            relay: circuitRelayServer({
+              reservations: {
+                reservationTtl: 1000
+              }
+            }),
             identify: identifyService()
           }
         }),
@@ -670,23 +674,39 @@ describe('circuit-relay', () => {
     })
 
     // Not sure why this test isn't passing
-    it.skip('should remove the relay event listener when the relay stops', async () => {
+    it('should remove the relay event listener when the relay stops', async () => {
       // discover relay and make reservation
-      await remote.dial(relay1.getMultiaddrs()[0])
-      await usingAsRelay(remote, relay1)
+      await local.dial(relay1.getMultiaddrs()[0])
+      await local.dial(relay2.getMultiaddrs()[0])
 
-      // dial the remote through the relay to create two listeners
-      const ma = getRelayAddress(remote)
-      await local.dial(ma)
+      console.log('local peer id', local.peerId.toString())
+      console.log('relay1 peer id', relay1.peerId.toString())
+      console.log('relay2 peer id', relay2.peerId.toString())
+
+      await usingAsRelayCount(local, [relay1, relay2], 2)
 
       // expect 2 listeners
-      expect(relay1.services.relay.listenerCount('relay:removed')).to.equal(2)
+      //@ts-expect-error
+      const listeners = local['components']['transportManager'].getListeners()
+
+      //@ts-expect-error
+      const circuitListener = listeners.filter(listener => {
+        //@ts-expect-error
+        const circuitMultiaddrs = listener.getAddrs().filter(ma => Circuit.matches(ma))
+        return circuitMultiaddrs.length > 0
+      })
+
+      expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(2)
 
       // remove one listener
-      await local.hangUp(relay1.getMultiaddrs()[0])
+      await relay1.stop()
+
+      await notUsingAsRelay(local, relay1)
+
+      await delay(2000)
 
       // expect 1 listener
-      expect(relay1.services.relay.listenerCount('relay:removed')).to.equal(1)
+      expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(1)
     })
 
     it('should mark a relayed connection as transient', async () => {

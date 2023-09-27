@@ -112,6 +112,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     // remove the reservation and multiaddr and maybe trigger search
     // for new relays
     this.events.addEventListener('peer:disconnect', (evt) => {
+      console.log('peer:disconnect event listener', evt.detail)
       this.#removeRelay(evt.detail)
     })
   }
@@ -303,6 +304,8 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     this.reservations.delete(peerId)
 
     this.safeDispatchEvent('relay:removed', { detail: peerId })
+
+    console.log('removing listener for relay peer %s', peerId)
 
     if (this.reservations.size < this.maxDiscoveredRelays) {
       log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)

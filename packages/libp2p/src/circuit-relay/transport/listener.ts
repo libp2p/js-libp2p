@@ -30,10 +30,9 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.relayStore = components.relayStore
     this.listeningAddrs = new PeerMap()
 
-    this._onRemoveRelayPeer = this._onRemoveRelayPeer.bind(this)
-
     // remove listening addrs when a relay is removed
     this.relayStore.addEventListener('relay:removed', this._onRemoveRelayPeer)
+    console.log('added event listener:', this.relayStore.listenerCount('relay:removed'))
   }
 
   _onRemoveRelayPeer = (evt: CustomEvent<PeerId>): void => {
@@ -94,8 +93,10 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
 
   async close (): Promise<void> {
     // remove event listener
-    log.trace('removing relay event listener for peer %s', Array.from(this.listeningAddrs.keys()).join(', '))
+    console.log('removing relay event listener for peer %s', Array.from(this.listeningAddrs.keys()).join(', '))
+    log('removing relay event listener for peer %s', Array.from(this.listeningAddrs.keys()).join(', '))
     this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
+    console.log('removing count:', this.relayStore.listenerCount('relay:removed'))
   }
 
   #removeRelayPeer (peerId: PeerId): void {
