@@ -22,7 +22,7 @@ import type { PeerStore, Peer } from '@libp2p/interface/peer-store'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 
 describe('auto-dial', () => {
-  let autoDialler: AutoDial
+  let autoDial: AutoDial
   let events: EventEmitter<Libp2pEvents>
   let peerStore: PeerStore
   let peerId: PeerId
@@ -38,8 +38,8 @@ describe('auto-dial', () => {
   })
 
   afterEach(() => {
-    if (autoDialler != null) {
-      autoDialler.stop()
+    if (autoDial != null) {
+      autoDial.stop()
     }
   })
 
@@ -73,7 +73,7 @@ describe('auto-dial', () => {
       getDialQueue: []
     })
 
-    autoDialler = new AutoDial({
+    autoDial = new AutoDial({
       peerStore,
       connectionManager,
       events
@@ -81,8 +81,8 @@ describe('auto-dial', () => {
       minConnections: 10,
       autoDialInterval: 10000
     })
-    autoDialler.start()
-    void autoDialler.autoDial()
+    autoDial.start()
+    void autoDial.autoDial()
 
     await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 1
@@ -127,15 +127,15 @@ describe('auto-dial', () => {
       getDialQueue: []
     })
 
-    autoDialler = new AutoDial({
+    autoDial = new AutoDial({
       peerStore,
       connectionManager,
       events
     }, {
       minConnections: 10
     })
-    autoDialler.start()
-    await autoDialler.autoDial()
+    autoDial.start()
+    await autoDial.autoDial()
 
     await pWaitFor(() => connectionManager.openConnection.callCount === 1)
     await delay(1000)
@@ -181,15 +181,15 @@ describe('auto-dial', () => {
       }]
     })
 
-    autoDialler = new AutoDial({
+    autoDial = new AutoDial({
       peerStore,
       connectionManager,
       events
     }, {
       minConnections: 10
     })
-    autoDialler.start()
-    await autoDialler.autoDial()
+    autoDial.start()
+    await autoDial.autoDial()
 
     await pWaitFor(() => connectionManager.openConnection.callCount === 1)
     await delay(1000)
@@ -207,7 +207,7 @@ describe('auto-dial', () => {
       getDialQueue: []
     })
 
-    autoDialler = new AutoDial({
+    autoDial = new AutoDial({
       peerStore,
       connectionManager,
       events
@@ -215,12 +215,12 @@ describe('auto-dial', () => {
       minConnections: 10,
       autoDialInterval: 10000
     })
-    autoDialler.start()
+    autoDial.start()
 
     // call autodial twice
     await Promise.all([
-      autoDialler.autoDial(),
-      autoDialler.autoDial()
+      autoDial.autoDial(),
+      autoDial.autoDial()
     ])
 
     // should only have queried peer store once
@@ -258,7 +258,7 @@ describe('auto-dial', () => {
       getDialQueue: []
     })
 
-    autoDialler = new AutoDial({
+    autoDial = new AutoDial({
       peerStore,
       connectionManager,
       events
@@ -266,9 +266,9 @@ describe('auto-dial', () => {
       minConnections: 10,
       autoDialPeerRetryThreshold: 2000
     })
-    autoDialler.start()
+    autoDial.start()
 
-    void autoDialler.autoDial()
+    void autoDial.autoDial()
 
     await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 1
@@ -282,7 +282,7 @@ describe('auto-dial', () => {
     await delay(2000)
 
     // autodial again
-    void autoDialler.autoDial()
+    void autoDial.autoDial()
 
     await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 3
