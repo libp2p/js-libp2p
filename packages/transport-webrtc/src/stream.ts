@@ -82,7 +82,6 @@ export class WebRTCStream extends AbstractStream {
    * When this promise is resolved, the remote has sent us a FIN flag
    */
   private readonly receiveFinAck: DeferredPromise<void>
-  private receivedFinAck: boolean
   private readonly finAckTimeout: number
 
   constructor (init: WebRTCStreamInit) {
@@ -95,8 +94,6 @@ export class WebRTCStream extends AbstractStream {
           this.log.error('error sending FIN_ACK', err)
         })
         .then(async () => {
-          this.receivedFinAck.toString()
-
           await pTimeout(this.receiveFinAck.promise, {
             milliseconds: this.finAckTimeout
           })
@@ -119,7 +116,6 @@ export class WebRTCStream extends AbstractStream {
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
     this.receiveFinAck = pDefer()
-    this.receivedFinAck = false
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
 
     // set up initial state
@@ -298,7 +294,6 @@ export class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.FIN_ACK) {
         this.log.trace('received FIN_ACK')
-        this.receivedFinAck = true
         this.receiveFinAck.resolve()
       }
     }
