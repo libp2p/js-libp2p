@@ -29,7 +29,8 @@ export interface DefaultTransportManagerComponents {
 export class DefaultTransportManager implements TransportManager, Startable {
   private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
-  private readonly listeners: Map<string, Listener[]>
+  /** Map<TransportKey, Map<MultiaddrStr, Listener>> */
+  private readonly listeners: Map<string, Map<string, Listener>>
   private readonly faultTolerance: FaultTolerance
   private started: boolean
 
@@ -63,7 +64,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     this.transports.set(tag, transport)
 
     if (!this.listeners.has(tag)) {
-      this.listeners.set(tag, [])
+      this.listeners.set(tag, new Map())
     }
   }
 
@@ -89,23 +90,18 @@ export class DefaultTransportManager implements TransportManager, Startable {
     const tasks = []
     for (const [key, listeners] of this.listeners) {
       log('closing listeners for %s', key)
-      while (listeners.length > 0) {
-        const listener = listeners.pop()
-
+      for (const listener of listeners.values()) {
         if (listener == null) {
           continue
         }
 
         tasks.push(listener.close())
       }
+      listeners.clear()
     }
 
     await Promise.all(tasks)
     log('all listeners closed')
-    for (const key of this.listeners.keys()) {
-      this.listeners.set(key, [])
-    }
-
     this.started = false
   }
 
@@ -139,7 +135,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
   getAddrs (): Multiaddr[] {
     let addrs: Multiaddr[] = []
     for (const listeners of this.listeners.values()) {
-      for (const listener of listeners) {
+      for (const listener of listeners.values()) {
         addrs = [...addrs, ...listener.getAddrs()]
       }
     }
@@ -157,7 +153,11 @@ export class DefaultTransportManager implements TransportManager, Startable {
    * Returns all the listener instances
    */
   getListeners (): Listener[] {
-    return Array.of(...this.listeners.values()).flat()
+    const out = []
+    for (const listeners of this.listeners.values()) {
+      out.push(...listeners.values())
+    }
+    return out
   }
 
   /**
@@ -199,14 +199,11 @@ export class DefaultTransportManager implements TransportManager, Startable {
           upgrader: this.components.upgrader
         })
 
-        let listeners: Listener[] = this.listeners.get(key) ?? []
+        let listeners: Map<string, Listener> = this.listeners.get(key) ?? new Map()
 
-        if (listeners == null) {
-          listeners = []
-          this.listeners.set(key, listeners)
-        }
+        this.listeners.set(key, listeners)
 
-        listeners.push(listener)
+        listeners.set(addr.toString(), listener)
 
         // Track listen/close events
         listener.addEventListener('listening', () => {
@@ -215,10 +212,8 @@ export class DefaultTransportManager implements TransportManager, Startable {
           })
         })
         listener.addEventListener('close', () => {
-          const index = listeners.findIndex(l => l === listener)
-
           // remove the listener
-          listeners.splice(index, 1)
+          listeners.delete(addr.toString())
 
           this.components.events.safeDispatchEvent('transport:close', {
             detail: listener
@@ -265,12 +260,24 @@ export class DefaultTransportManager implements TransportManager, Startable {
     log('removing %s', key)
 
     // Close any running listeners
-    for (const listener of this.listeners.get(key) ?? []) {
+    for (const listener of this.listeners.get(key)?.values() ?? []) {
       await listener.close()
     }
 
     this.transports.delete(key)
     this.listeners.delete(key)
+  }
+
+  async removeListener (ma: Multiaddr): Promise<void> {
+    log('removing listener for %a', ma)
+
+    for (const listeners of this.listeners.values()) {
+      const listener = listeners.get(ma.toString())
+      if (listener != null) {
+        await listener.close()
+        listeners.delete(ma.toString())
+      }
+    }
   }
 
   /**
