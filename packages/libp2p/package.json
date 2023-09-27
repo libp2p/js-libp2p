@@ -123,7 +123,6 @@
     "@libp2p/crypto": "^2.0.4",
     "@libp2p/interface": "^0.1.2",
     "@libp2p/interface-internal": "^0.1.5",
-    "@libp2p/keychain": "^3.0.4",
     "@libp2p/logger": "^3.0.2",
     "@libp2p/multistream-select": "^4.0.2",
     "@libp2p/peer-collections": "^4.0.4",
