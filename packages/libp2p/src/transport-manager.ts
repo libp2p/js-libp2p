@@ -262,12 +262,22 @@ export class DefaultTransportManager implements TransportManager, Startable {
    * If a transport has any running listeners, they will be closed.
    */
   async remove (key: string): Promise<void> {
-    log('removing %s', key)
+    const listeners = this.listeners.get(key) ?? []
+    log('removing transport %s', key)
 
     // Close any running listeners
-    for (const listener of this.listeners.get(key) ?? []) {
-      await listener.close()
+    const tasks = []
+    log('closing listeners for %s', key)
+    while (listeners.length > 0) {
+      const listener = listeners.pop()
+
+      if (listener == null) {
+        continue
+      }
+
+      tasks.push(listener.close())
     }
+    await Promise.all(tasks)
 
     this.transports.delete(key)
     this.listeners.delete(key)
