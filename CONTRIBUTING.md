@@ -1,9 +1,11 @@
 # Contributing guidelines
 
-libp2p as a project, including js-libp2p and all of its modules, follows the [standard IPFS Community contributing guidelines](https://github.com/ipfs/community/blob/master/CONTRIBUTING.md).
+👋 Contributions are welcome!   
 
-We also adhere to the [IPFS JavaScript Community contributing guidelines](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) which provide additional information of how to collaborate and contribute in the JavaScript implementation of libp2p.
+👉 Please see the [IPFS JavaScript Community contributing guidelines](https://github.com/ipfs/community/blob/master/CONTRIBUTING_JS.md) for how to collaborate and contribute to js-libp2p.
 
-We appreciate your time and attention for going over these. Please open an issue on [ipfs/community](https://github.com/ipfs/community) if you have any question.
+💪 The [core maintainers](./CODEOWNERS) hang out in #libp2p-implementers in ipfs.io Matrix, FIL Slack, and IPFS Discord. They perform weekly triage of issues and PRs per https://lu.ma/js-libp2p
 
-Thank you.
+🤲 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed in [README.md](./README.md), without any additional terms or conditions.
+
+🙏 Thank you!
