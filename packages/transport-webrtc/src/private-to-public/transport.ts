@@ -16,7 +16,7 @@ import { RTCPeerConnection } from '../webrtc/index.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
-import type { DataChannelOpts } from '../stream.js'
+import type { DataChannelOptions } from '../index.js'
 import type { Connection } from '@libp2p/interface/connection'
 import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -56,7 +56,7 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
-  dataChannel?: Partial<DataChannelOpts>
+  dataChannel?: DataChannelOptions
 }
 
 export class WebRTCDirectTransport implements Transport {
@@ -81,7 +81,7 @@ export class WebRTCDirectTransport implements Transport {
    */
   async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options)
-    log(`dialing address - ${ma.toString()}`)
+    log('dialing address: %a', ma)
     return rawConn
   }
 
@@ -194,7 +194,7 @@ export class WebRTCDirectTransport implements Transport {
       // we pass in undefined for these parameters.
       const noise = Noise({ prologueBytes: fingerprintsPrologue })()
 
-      const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
+      const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', ...(this.init.dataChannel ?? {}) })
       const wrappedDuplex = {
         ...wrappedChannel,
         sink: wrappedChannel.sink.bind(wrappedChannel),

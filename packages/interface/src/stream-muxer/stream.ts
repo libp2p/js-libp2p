@@ -1,12 +1,14 @@
 import { abortableSource } from 'abortable-iterator'
 import { type Pushable, pushable } from 'it-pushable'
 import defer, { type DeferredPromise } from 'p-defer'
+import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { CodeError } from '../errors.js'
 import type { Direction, ReadStatus, Stream, StreamStatus, StreamTimeline, WriteStatus } from '../connection/index.js'
 import type { AbortOptions } from '../index.js'
 import type { Source } from 'it-stream-types'
 
+// copied from @libp2p/logger to break a circular dependency
 interface Logger {
   (formatter: any, ...args: any[]): void
   error: (formatter: any, ...args: any[]) => void
@@ -128,7 +130,6 @@ export abstract class AbstractStream implements Stream {
           this.log.trace('source ended')
         }
 
-        this.readStatus = 'closed'
         this.onSourceEnd(err)
       }
     })
@@ -173,11 +174,17 @@ export abstract class AbstractStream implements Stream {
         }
       }
 
-      this.log.trace('sink finished reading from source')
-      this.writeStatus = 'done'
+      this.log.trace('sink finished reading from source, write status is "%s"', this.writeStatus)
 
-      this.log.trace('sink calling closeWrite')
-      await this.closeWrite(options)
+      if (this.writeStatus === 'writing') {
+        this.writeStatus = 'closing'
+
+        this.log.trace('send close write to remote')
+        await this.sendCloseWrite(options)
+
+        this.writeStatus = 'closed'
+      }
+
       this.onSinkEnd()
     } catch (err: any) {
       this.log.trace('sink ended with error, calling abort with error', err)
@@ -196,6 +203,7 @@ export abstract class AbstractStream implements Stream {
     }
 
     this.timeline.closeRead = Date.now()
+    this.readStatus = 'closed'
 
     if (err != null && this.endErr == null) {
       this.endErr = err
@@ -221,6 +229,7 @@ export abstract class AbstractStream implements Stream {
     }
 
     this.timeline.closeWrite = Date.now()
+    this.writeStatus = 'closed'
 
     if (err != null && this.endErr == null) {
       this.endErr = err
@@ -266,14 +275,14 @@ export abstract class AbstractStream implements Stream {
     const readStatus = this.readStatus
     this.readStatus = 'closing'
 
-    if (readStatus === 'ready') {
-      this.log.trace('ending internal source queue')
-      this.streamSource.end()
-    }
-
     if (this.status !== 'reset' && this.status !== 'aborted' && this.timeline.closeRead == null) {
       this.log.trace('send close read to remote')
       await this.sendCloseRead(options)
+    }
+
+    if (readStatus === 'ready') {
+      this.log.trace('ending internal source queue')
+      this.streamSource.end()
     }
 
     this.log.trace('closed readable end of stream')
@@ -286,16 +295,13 @@ export abstract class AbstractStream implements Stream {
 
     this.log.trace('closing writable end of stream with starting write status "%s"', this.writeStatus)
 
-    const writeStatus = this.writeStatus
-
     if (this.writeStatus === 'ready') {
       this.log.trace('sink was never sunk, sink an empty array')
-      await this.sink([])
+
+      await raceSignal(this.sink([]), options.signal)
     }
 
-    this.writeStatus = 'closing'
-
-    if (writeStatus === 'writing') {
+    if (this.writeStatus === 'writing') {
       // stop reading from the source passed to `.sink` in the microtask queue
       // - this lets any data queued by the user in the current tick get read
       // before we exit
@@ -303,14 +309,10 @@ export abstract class AbstractStream implements Stream {
         queueMicrotask(() => {
           this.log.trace('aborting source passed to .sink')
           this.sinkController.abort()
-          this.sinkEnd.promise.then(resolve, reject)
+          raceSignal(this.sinkEnd.promise, options.signal)
+            .then(resolve, reject)
         })
       })
-    }
-
-    if (this.status !== 'reset' && this.status !== 'aborted' && this.timeline.closeWrite == null) {
-      this.log.trace('send close write to remote')
-      await this.sendCloseWrite(options)
     }
 
     this.writeStatus = 'closed'
@@ -357,6 +359,7 @@ export abstract class AbstractStream implements Stream {
     const err = new CodeError('stream reset', ERR_STREAM_RESET)
 
     this.status = 'reset'
+    this.timeline.reset = Date.now()
     this._closeSinkAndSource(err)
     this.onReset?.()
   }
@@ -423,7 +426,7 @@ export abstract class AbstractStream implements Stream {
       return
     }
 
-    this.log.trace('muxer destroyed')
+    this.log.trace('stream destroyed')
 
     this._closeSinkAndSource()
   }
