@@ -352,10 +352,13 @@ describe('circuit-relay', () => {
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
+          connectionManager: {
+            minConnections: 0
+          },
           transports: [
             tcp(),
             circuitRelayTransport({
-              discoverRelays: 2
+              discoverRelays: 3
             })
           ],
           streamMuxers: [
@@ -393,6 +396,9 @@ describe('circuit-relay', () => {
         createLibp2p({
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          connectionManager: {
+            minConnections: 0
           },
           transports: [
             tcp(),
@@ -420,6 +426,9 @@ describe('circuit-relay', () => {
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
           },
+          connectionManager: {
+            minConnections: 0
+          },
           transports: [
             tcp(),
             circuitRelayTransport({
@@ -441,6 +450,9 @@ describe('circuit-relay', () => {
         createLibp2p({
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0']
+          },
+          connectionManager: {
+            minConnections: 0
           },
           transports: [
             tcp(),
@@ -678,12 +690,13 @@ describe('circuit-relay', () => {
       // discover relay and make reservation
       await local.dial(relay1.getMultiaddrs()[0])
       await local.dial(relay2.getMultiaddrs()[0])
+      await local.dial(relay3.getMultiaddrs()[0])
 
       console.log('local peer id', local.peerId.toString())
       console.log('relay1 peer id', relay1.peerId.toString())
       console.log('relay2 peer id', relay2.peerId.toString())
 
-      await usingAsRelayCount(local, [relay1, relay2], 2)
+      await usingAsRelayCount(local, [relay1, relay2, relay3], 3)
 
       // expect 2 listeners
       //@ts-expect-error
@@ -700,10 +713,9 @@ describe('circuit-relay', () => {
 
       // remove one listener
       await relay1.stop()
+      await relay2.stop()
 
       await notUsingAsRelay(local, relay1)
-
-      await delay(2000)
 
       // expect 1 listener
       expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(1)
