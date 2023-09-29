@@ -10,7 +10,6 @@ import { stubInterface } from 'sinon-ts'
 import type { Connection } from '@libp2p/interface/connection'
 import { SIGNALING_PROTO_ID, WebRTCTransport } from '../src/private-to-private/transport.js'
 import { pipe } from 'it-pipe'
-import drain from 'it-drain'
 
 describe('interface-transport compliance', () => {
   tests({
@@ -27,7 +26,7 @@ describe('interface-transport compliance', () => {
         }
 
         await peerB.registrar.handle(SIGNALING_PROTO_ID, ({ stream }) => {
-          void pipe(stream, drain)
+          void pipe(stream, stream)
         })
 
         const [_, connectionToB] = connectionPair(peerA, peerB)
@@ -36,7 +35,7 @@ describe('interface-transport compliance', () => {
       }
 
       const peerA: any = {
-        peerAId,
+        peerId: peerAId,
         registrar: mockRegistrar(),
         upgrader: mockUpgrader(),
       }
