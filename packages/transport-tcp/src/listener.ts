@@ -308,13 +308,15 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   async close (): Promise<void> {
-    await Promise.all(
-      Array.from(this.connections.values()).map(async maConn => { await attemptClose(maConn) })
-    )
-
+    // First close the server so we don't accept new connections
     await this.pause(true).catch(e => {
       log.error('error attempting to close server once connection count over limit', e)
     })
+
+    // Then close all existing connections
+    await Promise.all(
+      Array.from(this.connections.values()).map(async maConn => { await attemptClose(maConn) })
+    )
   }
 
   /**
