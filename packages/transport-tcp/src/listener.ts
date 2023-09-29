@@ -167,7 +167,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   private onSocket (socket: net.Socket): void {
-    if (this.status.code === TCPListenerStatusCode.INACTIVE) {
+    if (this.status.code !== TCPListenerStatusCode.ACTIVE) {
       throw new CodeError('Server is is not listening yet', 'ERR_SERVER_NOT_RUNNING')
     }
     // Avoid uncaught errors caused by unstable connections
@@ -179,7 +179,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     let maConn: MultiaddrConnection
     try {
       maConn = toMultiaddrConnection(socket, {
-        listeningAddr: this.status.code === TCPListenerStatusCode.ACTIVE || this.status.code === TCPListenerStatusCode.PAUSED ? this.status.listeningAddr : undefined,
+        listeningAddr: this.status.listeningAddr,
         socketInactivityTimeout: this.context.socketInactivityTimeout,
         socketCloseTimeout: this.context.socketCloseTimeout,
         metrics: this.metrics?.events,
@@ -308,15 +308,13 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   }
 
   async close (): Promise<void> {
-    // First close the server so we don't accept new connections
-    await this.pause(true).catch(e => {
-      log.error('error attempting to close server once connection count over limit', e)
-    })
-
-    // Then close all existing connections
-    await Promise.all(
-      Array.from(this.connections.values()).map(async maConn => { await attemptClose(maConn) })
-    )
+    // Close connections and server the same time to avoid any race condition
+    await Promise.all([
+      Promise.all(Array.from(this.connections.values()).map(async maConn => attemptClose(maConn))),
+      this.pause(true).catch(e => {
+        log.error('error attempting to close server once connection count over limit', e)
+      })
+    ])
   }
 
   /**
