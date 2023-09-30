@@ -267,7 +267,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
     // Close any running listeners
     const tasks = []
-    log('closing listeners for %s', key)
+    log.trace('closing listeners for %s', key)
     while (listeners.length > 0) {
       const listener = listeners.pop()
 
