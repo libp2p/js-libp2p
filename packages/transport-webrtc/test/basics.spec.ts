@@ -18,7 +18,7 @@ import type { Libp2p } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { StreamHandler } from '@libp2p/interface/stream-handler'
 
-async function createNode (): Promise<Libp2p> {
+export async function createRelayNode (): Promise<Libp2p> {
   return createLibp2p({
     addresses: {
       listen: [
@@ -86,8 +86,8 @@ describe('basics', () => {
       )
     }
 
-    localNode = await createNode()
-    remoteNode = await createNode()
+    localNode = await createRelayNode()
+    remoteNode = await createRelayNode()
   })
 
   afterEach(async () => {
