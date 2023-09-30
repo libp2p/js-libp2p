@@ -263,7 +263,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
    */
   async remove (key: string): Promise<void> {
     const listeners = this.listeners.get(key) ?? []
-    log('removing transport %s', key)
+    log.trace('removing transport %s', key)
 
     // Close any running listeners
     const tasks = []
