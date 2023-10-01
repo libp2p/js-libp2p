@@ -6,6 +6,20 @@
 * **dev:** bump @libp2p/interface-mocks from 11.0.3 to 12.0.1 ([#241](https://github.com/libp2p/js-libp2p-websockets/issues/241)) ([f956836](https://github.com/libp2p/js-libp2p-websockets/commit/f95683641bda2f9b250768768451e0c121afc2a0))
 * **dev:** bump aegir from 38.1.8 to 39.0.9 ([#245](https://github.com/libp2p/js-libp2p-websockets/issues/245)) ([4a35f6b](https://github.com/libp2p/js-libp2p-websockets/commit/4a35f6b39a918fb7ef779292553cb452a543afb0))
 
+### [7.0.8](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.7...websockets-v7.0.8) (2023-10-01)
+
+
+### Bug Fixes
+
+* log websocket error on graceful close failure ([#2072](https://www.github.com/libp2p/js-libp2p/issues/2072)) ([72319fe](https://www.github.com/libp2p/js-libp2p/commit/72319fe6d3b6402a92788c4c4e52eb7e0e477b3d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.6 to ^4.1.0
+
 ### [7.0.7](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.6...websockets-v7.0.7) (2023-09-15)
 
 
