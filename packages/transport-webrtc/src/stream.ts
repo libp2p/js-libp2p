@@ -6,6 +6,7 @@ import { type Pushable, pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import { pEvent, TimeoutError } from 'p-event'
 import pTimeout from 'p-timeout'
+import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { DataChannelOptions } from './index.js'
@@ -83,26 +84,46 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
+  private sentFinAck: boolean
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
     const originalOnEnd = init.onEnd
     init.onEnd = (err?: Error): void => {
-      this.log.trace('received FIN, sending FIN_ACK', this.status)
-      this._sendFlag(Message.Flag.FIN_ACK)
-        .catch(err => {
-          this.log.error('error sending FIN_ACK', err)
-        })
-        .then(async () => {
+      this.log.trace('readable and writeable ends closed', this.status)
+
+      void Promise.resolve(async () => {
+        if (this.timeline.abort != null || this.timeline.reset !== null) {
+          return
+        }
+
+        // send FIN_ACK if we haven't already
+        if (!this.sentFinAck) {
+          try {
+            await this._sendFlag(Message.Flag.FIN_ACK)
+          } catch (err) {
+            this.log.error('error sending FIN_ACK', err)
+          }
+        }
+
+        // wait for FIN_ACK if we haven't received it already
+        try {
           await pTimeout(this.receiveFinAck.promise, {
             milliseconds: this.finAckTimeout
           })
+        } catch (err) {
+          this.log.error('error receiving FIN_ACK', err)
+        }
+      })
+        .then(() => {
+        // stop processing incoming messages
+          this.incomingData.end()
+
+          // final cleanup
+          originalOnEnd?.(err)
         })
         .catch(err => {
-          this.log.error('error receiving FIN_ACK', err)
-        })
-        .finally(() => {
-          originalOnEnd?.(err)
+          this.log.error('error ending stream', err)
         })
     }
 
@@ -117,6 +138,7 @@ export class WebRTCStream extends AbstractStream {
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
+    this.sentFinAck = false
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -183,7 +205,7 @@ export class WebRTCStream extends AbstractStream {
     // surface data from the `Message.message` field through a source.
     Promise.resolve().then(async () => {
       for await (const buf of lengthPrefixed.decode(this.incomingData)) {
-        const message = self.processIncomingProtobuf(buf.subarray())
+        const message = self.processIncomingProtobuf(buf)
 
         if (message != null) {
           self.sourcePush(new Uint8ArrayList(message))
@@ -259,8 +281,13 @@ export class WebRTCStream extends AbstractStream {
       return
     }
 
-    this.log.trace('send FIN')
     await this._sendFlag(Message.Flag.FIN)
+
+    this.log.trace('awaiting FIN_ACK')
+    await raceSignal(this.receiveFinAck.promise, options?.signal, {
+      errorMessage: 'sending close-write was aborted before FIN_ACK was received',
+      errorCode: 'ERR_FIN_ACK_NOT_RECEIVED'
+    })
   }
 
   async sendCloseRead (): Promise<void> {
@@ -270,16 +297,23 @@ export class WebRTCStream extends AbstractStream {
   /**
    * Handle incoming
    */
-  private processIncomingProtobuf (buffer: Uint8Array): Uint8Array | undefined {
+  private processIncomingProtobuf (buffer: Uint8ArrayList): Uint8Array | undefined {
     const message = Message.decode(buffer)
 
     if (message.flag !== undefined) {
-      this.log.trace('incoming flag', message.flag)
+      this.log.trace('incoming flag %s, write status "%s", read status "%s"', message.flag, this.writeStatus, this.readStatus)
 
       if (message.flag === Message.Flag.FIN) {
         // We should expect no more data from the remote, stop reading
-        this.incomingData.end()
         this.remoteCloseWrite()
+
+        if (this.writeStatus === 'closed' || this.writeStatus === 'closing') {
+          this.log.trace('sending FIN_ACK immediately because write end was previously closed')
+          void this._sendFlag(Message.Flag.FIN_ACK)
+            .catch(err => {
+              this.log.error('error sending FIN_ACK immediately', err)
+            })
+        }
       }
 
       if (message.flag === Message.Flag.RESET) {
@@ -298,15 +332,22 @@ export class WebRTCStream extends AbstractStream {
       }
     }
 
-    return message.message
+    // ignore data messages if we've closed the readable end already
+    if (this.readStatus === 'ready') {
+      return message.message
+    }
   }
 
   private async _sendFlag (flag: Message.Flag): Promise<void> {
-    this.log.trace('sending flag: %s', flag.toString())
+    this.log.trace('sending flag %s', flag.toString())
     const msgbuf = Message.encode({ flag })
     const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
 
     await this._sendMessage(prefixedBuf, false)
+
+    if (flag === Message.Flag.FIN_ACK) {
+      this.sentFinAck = true
+    }
   }
 }
 

@@ -18,6 +18,7 @@ interface Logger {
 
 const ERR_STREAM_RESET = 'ERR_STREAM_RESET'
 const ERR_SINK_INVALID_STATE = 'ERR_SINK_INVALID_STATE'
+const DEFAULT_SEND_CLOSE_WRITE_TIMEOUT = 5000
 
 export interface AbstractStreamInit {
   /**
@@ -70,6 +71,12 @@ export interface AbstractStreamInit {
    * connection when closing the writable end of the stream. (default: 500)
    */
   closeTimeout?: number
+
+  /**
+   * After the stream sink has closed, a limit on how long it takes to send
+   * a close-write message to the remote peer.
+   */
+  sendCloseWriteTimeout?: number
 }
 
 function isPromise (res?: any): res is Promise<void> {
@@ -96,6 +103,7 @@ export abstract class AbstractStream implements Stream {
   private readonly onCloseWrite?: () => void
   private readonly onReset?: () => void
   private readonly onAbort?: (err: Error) => void
+  private readonly sendCloseWriteTimeout: number
 
   protected readonly log: Logger
 
@@ -115,6 +123,7 @@ export abstract class AbstractStream implements Stream {
     this.timeline = {
       open: Date.now()
     }
+    this.sendCloseWriteTimeout = init.sendCloseWriteTimeout ?? DEFAULT_SEND_CLOSE_WRITE_TIMEOUT
 
     this.onEnd = init.onEnd
     this.onCloseRead = init?.onCloseRead
@@ -180,7 +189,9 @@ export abstract class AbstractStream implements Stream {
         this.writeStatus = 'closing'
 
         this.log.trace('send close write to remote')
-        await this.sendCloseWrite(options)
+        await this.sendCloseWrite({
+          signal: AbortSignal.timeout(this.sendCloseWriteTimeout)
+        })
 
         this.writeStatus = 'closed'
       }
@@ -214,6 +225,7 @@ export abstract class AbstractStream implements Stream {
     if (this.timeline.closeWrite != null) {
       this.log.trace('source and sink ended')
       this.timeline.close = Date.now()
+      this.status = 'closed'
 
       if (this.onEnd != null) {
         this.onEnd(this.endErr)
@@ -240,6 +252,7 @@ export abstract class AbstractStream implements Stream {
     if (this.timeline.closeRead != null) {
       this.log.trace('sink and source ended')
       this.timeline.close = Date.now()
+      this.status = 'closed'
 
       if (this.onEnd != null) {
         this.onEnd(this.endErr)

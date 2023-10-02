@@ -5,6 +5,7 @@ import { bytes } from 'multiformats'
 import { Message } from '../src/pb/message.js'
 import { createStream, type WebRTCStream } from '../src/stream.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
+import { receiveFinAck } from './util.js'
 import type { Stream } from '@libp2p/interface/connection'
 const TEST_MESSAGE = 'test_message'
 
@@ -47,12 +48,8 @@ describe('Stream Stats', () => {
   it('close marks it closed', async () => {
     expect(stream.timeline.close).to.not.exist()
 
-    const msgbuf = Message.encode({ flag: Message.Flag.FIN_ACK })
-    const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
-
-    const p = stream.close()
-    dataChannel.dispatchEvent(new MessageEvent('message', { data: prefixedBuf }))
-    await p
+    receiveFinAck(dataChannel)
+    await stream.close()
 
     expect(stream.timeline.close).to.be.a('number')
   })
@@ -66,15 +63,23 @@ describe('Stream Stats', () => {
 
   it('closeWrite marks it write-closed only', async () => {
     expect(stream.timeline.close).to.not.exist()
+
+    receiveFinAck(dataChannel)
     await stream.closeWrite()
+
     expect(stream.timeline.close).to.not.exist()
     expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
   })
 
   it('closeWrite AND closeRead = close', async () => {
     expect(stream.timeline.close).to.not.exist()
-    await stream.closeWrite()
-    await stream.closeRead()
+
+    receiveFinAck(dataChannel)
+    await Promise.all([
+      stream.closeRead(),
+      stream.closeWrite()
+    ])
+
     expect(stream.timeline.close).to.be.a('number')
     expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
     expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)

@@ -66,6 +66,7 @@
     "p-event": "^6.0.0",
     "p-timeout": "^6.1.2",
     "protons-runtime": "^5.0.0",
+    "race-signal": "^1.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6"
   },
@@ -77,10 +78,12 @@
     "@types/sinon": "^10.0.15",
     "aegir": "^40.0.8",
     "delay": "^6.0.0",
+    "it-drain": "^3.0.3",
     "it-length": "^3.0.2",
     "it-map": "^3.0.3",
     "it-pair": "^2.0.6",
     "libp2p": "^0.46.11",
+    "p-retry": "^6.1.0",
     "protons": "^7.0.2",
     "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"

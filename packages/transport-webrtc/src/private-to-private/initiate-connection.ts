@@ -154,16 +154,14 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       log.trace('initiator connected, closing init channel')
       channel.close()
 
-      const remoteAddress = parseRemoteAddress(peerConnection.currentRemoteDescription?.sdp ?? '')
-
-      log.trace('initiator connected to remote address %s', remoteAddress)
-
-      // close the signalling stream
+      log.trace('initiator closing signalling stream')
       await messageStream.unwrap().unwrap().close({
         signal
       })
 
-      log.trace('initiator closed signalling stream')
+      const remoteAddress = parseRemoteAddress(peerConnection.currentRemoteDescription?.sdp ?? '')
+
+      log.trace('initiator connected to remote address %s', remoteAddress)
 
       return {
         remoteAddress: multiaddr(remoteAddress).encapsulate(`/p2p/${peerId.toString()}`)
