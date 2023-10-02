@@ -5,6 +5,22 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+### [3.2.1](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.0...webrtc-v3.2.1) (2023-10-01)
+
+
+### Bug Fixes
+
+* **transports:** filter circuit addresses ([#2060](https://www.github.com/libp2p/js-libp2p/issues/2060)) ([972b10a](https://www.github.com/libp2p/js-libp2p/commit/972b10a967653f60666a061bddfa46c0decfcc70))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.6 to ^4.1.0
+    * @libp2p/websockets bumped from ^7.0.7 to ^7.0.8
+    * libp2p bumped from ^0.46.11 to ^0.46.12
+
 ## [3.2.0](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.1.11...webrtc-v3.2.0) (2023-09-20)
 
 
