@@ -262,7 +262,10 @@ export class DefaultDCUtRService implements Startable {
         }
 
         log('unilateral connection upgrade to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
-        await relayedConnection.close()
+
+        await relayedConnection.close({
+          signal
+        })
 
         return true
       } catch (err) {

@@ -545,11 +545,16 @@ export class DefaultUpgrader implements Upgrader {
       newStream: newStream ?? errConnectionNotMultiplexed,
       getStreams: () => { if (muxer != null) { return muxer.streams } else { return [] } },
       close: async (options?: AbortOptions) => {
-        await maConn.close(options)
         // Ensure remaining streams are closed gracefully
         if (muxer != null) {
+          log.trace('close muxer')
           await muxer.close(options)
         }
+
+        log.trace('close maconn')
+        // close the underlying transport
+        await maConn.close(options)
+        log.trace('closed maconn')
       },
       abort: (err) => {
         maConn.abort(err)

@@ -20,6 +20,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
   describe('listen', () => {
     let upgrader: Upgrader
     let addrs: Multiaddr[]
+    let listeningAddrs: Multiaddr[]
     let transport: Transport
     let registrar: Registrar
 
@@ -30,7 +31,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         events: new EventEmitter()
       });
 
-      ({ transport, addrs } = await common.setup())
+      ({ transport, addrs, listeningAddrs = [] } = await common.setup())
     })
 
     after(async () => {
@@ -45,7 +46,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const listener = transport.createListener({
         upgrader
       })
-      await listener.listen(addrs[0])
+      listeningAddrs.length > 0 ? await listener.listen(listeningAddrs[0]) : await listener.listen(addrs[0])
       await listener.close()
     })
 
@@ -66,7 +67,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // Listen
-      await listener.listen(addrs[0])
+      listeningAddrs.length > 0 ? await listener.listen(listeningAddrs[0]) : await listener.listen(addrs[0])
 
       // Create two connections to the listener
       const [conn1] = await Promise.all([
@@ -113,7 +114,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // Listen
-      await listener.listen(addrs[0])
+      listeningAddrs.length > 0 ? await listener.listen(listeningAddrs[0]) : await listener.listen(addrs[0])
 
       // Create a connection to the listener
       const conn = await transport.dial(addrs[0], {
@@ -139,7 +140,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         })
 
         void (async () => {
-          await listener.listen(addrs[0])
+          listeningAddrs.length > 0 ? await listener.listen(listeningAddrs[0]) : await listener.listen(addrs[0])
           await transport.dial(addrs[0], {
             upgrader
           })
@@ -159,7 +160,8 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         listener.addEventListener('listening', () => {
           listener.close().then(done, done)
         })
-        void listener.listen(addrs[0])
+        const addrToListenOn = listeningAddrs.length > 0 ? listeningAddrs[0] : addrs[0]
+        void listener.listen(addrToListenOn)
       })
 
       it('error', (done) => {
@@ -182,7 +184,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         listener.addEventListener('close', () => { done() })
 
         void (async () => {
-          await listener.listen(addrs[0])
+          listeningAddrs.length > 0 ? await listener.listen(listeningAddrs[0]) : await listener.listen(addrs[0])
           await listener.close()
         })()
       })

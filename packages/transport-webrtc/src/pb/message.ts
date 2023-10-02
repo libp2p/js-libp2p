@@ -17,13 +17,15 @@ export namespace Message {
   export enum Flag {
     FIN = 'FIN',
     STOP_SENDING = 'STOP_SENDING',
-    RESET = 'RESET'
+    RESET = 'RESET',
+    FIN_ACK = 'FIN_ACK'
   }
 
   enum __FlagValues {
     FIN = 0,
     STOP_SENDING = 1,
-    RESET = 2
+    RESET = 2,
+    FIN_ACK = 3
   }
 
   export namespace Flag {

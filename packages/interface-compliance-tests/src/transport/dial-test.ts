@@ -19,9 +19,11 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     let upgrader: Upgrader
     let registrar: Registrar
     let addrs: Multiaddr[]
+    let listeningAddrs: Multiaddr[]
     let transport: Transport
     let connector: Connector
     let listener: Listener
+    let hasListener: boolean
 
     before(async () => {
       registrar = mockRegistrar()
@@ -30,7 +32,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         events: new EventEmitter()
       });
 
-      ({ addrs, transport, connector } = await common.setup())
+      ({ addrs, transport, connector, listeningAddrs =[], hasListener = true } = await common.setup())
     })
 
     after(async () => {
@@ -38,16 +40,19 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     beforeEach(async () => {
-      listener = transport.createListener({
-        upgrader
-      })
-      await listener.listen(addrs[0])
+      if (hasListener) {
+        listener = transport.createListener({
+          upgrader
+        })
+        listeningAddrs.length > 0 ? await listener.listen(listeningAddrs[0]) : await listener.listen(addrs[0])
+      }
     })
 
     afterEach(async () => {
       sinon.restore()
       connector.restore()
-      await listener.close()
+      if (hasListener)
+        await listener.close()
     })
 
     it('simple', async () => {
@@ -56,13 +61,13 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         void pipe([
           uint8ArrayFromString('hey')
         ],
-        data.stream,
-        drain
+          data.stream,
+          drain
         )
       })
 
       const upgradeSpy = sinon.spy(upgrader, 'upgradeOutbound')
-      const conn = await transport.dial(addrs[0], {
+      const conn = await transport.dial(listeningAddrs[0], {
         upgrader
       })
 

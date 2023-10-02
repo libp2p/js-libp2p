@@ -5,20 +5,27 @@ import type { ListenerEvents, Listener } from '@libp2p/interface/transport'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-export interface ListenerOptions {
+export interface WebRTCPeerListenerComponents {
   peerId: PeerId
   transportManager: TransportManager
+}
+
+export interface WebRTCPeerListenerInit {
+  shutdownController: AbortController
 }
 
 export class WebRTCPeerListener extends EventEmitter<ListenerEvents> implements Listener {
   private readonly peerId: PeerId
   private readonly transportManager: TransportManager
+  private readonly shutdownController: AbortController
 
-  constructor (opts: ListenerOptions) {
+  constructor (components: WebRTCPeerListenerComponents, init: WebRTCPeerListenerInit) {
     super()
 
-    this.peerId = opts.peerId
-    this.transportManager = opts.transportManager
+    this.peerId = components.peerId
+    this.transportManager = components.transportManager
+
+    this.shutdownController = init.shutdownController
   }
 
   async listen (): Promise<void> {
@@ -39,6 +46,7 @@ export class WebRTCPeerListener extends EventEmitter<ListenerEvents> implements 
   }
 
   async close (): Promise<void> {
+    this.shutdownController.abort()
     this.safeDispatchEvent('close', {})
   }
 }

@@ -11,7 +11,7 @@ const TEST_MESSAGE = 'test_message'
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const stream = createStream({ channel: dataChannel, direction: 'outbound' })
+  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1 })
 
   return { peerConnection, dataChannel, stream }
 }
@@ -28,9 +28,10 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
 describe('Stream Stats', () => {
   let stream: WebRTCStream
   let peerConnection: RTCPeerConnection
+  let dataChannel: RTCDataChannel
 
   beforeEach(async () => {
-    ({ stream, peerConnection } = setup())
+    ({ stream, peerConnection, dataChannel } = setup())
   })
 
   afterEach(() => {
@@ -45,7 +46,14 @@ describe('Stream Stats', () => {
 
   it('close marks it closed', async () => {
     expect(stream.timeline.close).to.not.exist()
-    await stream.close()
+
+    const msgbuf = Message.encode({ flag: Message.Flag.FIN_ACK })
+    const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
+
+    const p = stream.close()
+    dataChannel.dispatchEvent(new MessageEvent('message', { data: prefixedBuf }))
+    await p
+
     expect(stream.timeline.close).to.be.a('number')
   })
 
