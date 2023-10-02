@@ -226,7 +226,7 @@ export abstract class AbstractStream implements Stream {
       this.log.trace('source and sink ended')
       this.timeline.close = Date.now()
 
-      if (this.status != 'aborted' && this.status != 'reset') {
+      if (this.status !== 'aborted' && this.status !== 'reset') {
         this.status = 'closed'
       }
 
@@ -256,7 +256,7 @@ export abstract class AbstractStream implements Stream {
       this.log.trace('sink and source ended')
       this.timeline.close = Date.now()
 
-      if (this.status != 'aborted' && this.status != 'reset') {
+      if (this.status !== 'aborted' && this.status !== 'reset') {
         this.status = 'closed'
       }
 
