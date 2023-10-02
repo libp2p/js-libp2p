@@ -225,7 +225,10 @@ export abstract class AbstractStream implements Stream {
     if (this.timeline.closeWrite != null) {
       this.log.trace('source and sink ended')
       this.timeline.close = Date.now()
-      this.status = 'closed'
+
+      if (this.status != 'aborted' && this.status != 'reset') {
+        this.status = 'closed'
+      }
 
       if (this.onEnd != null) {
         this.onEnd(this.endErr)
@@ -252,7 +255,10 @@ export abstract class AbstractStream implements Stream {
     if (this.timeline.closeRead != null) {
       this.log.trace('sink and source ended')
       this.timeline.close = Date.now()
-      this.status = 'closed'
+
+      if (this.status != 'aborted' && this.status != 'reset') {
+        this.status = 'closed'
+      }
 
       if (this.onEnd != null) {
         this.onEnd(this.endErr)
