@@ -146,7 +146,7 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
   timeline: StreamTimeline
 
   /**
-   * The protocol that was negotiated for this stream
+   * The protocol negotiated for this stream
    */
   protocol?: string
 
@@ -231,12 +231,12 @@ export interface Connection {
   timeline: ConnectionTimeline
 
   /**
-   * The multiplexer that was used to negotiate this connection
+   * The multiplexer negotiated for this connection
    */
   multiplexer?: string
 
   /**
-   * The encryption protocol that was used to negotiate this connection
+   * The encryption protocol negotiated for this connection
    */
   encryption?: string
 
