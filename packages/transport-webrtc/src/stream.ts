@@ -84,7 +84,7 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
-  private sentFinAck: boolean
+  //  private sentFinAck: boolean
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
@@ -96,7 +96,7 @@ export class WebRTCStream extends AbstractStream {
         if (this.timeline.abort != null || this.timeline.reset !== null) {
           return
         }
-
+        /*
         // send FIN_ACK if we haven't already
         if (!this.sentFinAck) {
           try {
@@ -105,7 +105,7 @@ export class WebRTCStream extends AbstractStream {
             this.log.error('error sending FIN_ACK', err)
           }
         }
-
+*/
         // wait for FIN_ACK if we haven't received it already
         try {
           await pTimeout(this.receiveFinAck.promise, {
@@ -138,7 +138,7 @@ export class WebRTCStream extends AbstractStream {
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
-    this.sentFinAck = false
+    // this.sentFinAck = false
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -307,13 +307,11 @@ export class WebRTCStream extends AbstractStream {
         // We should expect no more data from the remote, stop reading
         this.remoteCloseWrite()
 
-        if (this.writeStatus === 'closed' || this.writeStatus === 'closing') {
-          this.log.trace('sending FIN_ACK immediately because write end was previously closed')
-          void this._sendFlag(Message.Flag.FIN_ACK)
-            .catch(err => {
-              this.log.error('error sending FIN_ACK immediately', err)
-            })
-        }
+        this.log.trace('sending FIN_ACK')
+        void this._sendFlag(Message.Flag.FIN_ACK)
+          .catch(err => {
+            this.log.error('error sending FIN_ACK immediately', err)
+          })
       }
 
       if (message.flag === Message.Flag.RESET) {
@@ -344,10 +342,6 @@ export class WebRTCStream extends AbstractStream {
     const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
 
     await this._sendMessage(prefixedBuf, false)
-
-    if (flag === Message.Flag.FIN_ACK) {
-      this.sentFinAck = true
-    }
   }
 }
 
