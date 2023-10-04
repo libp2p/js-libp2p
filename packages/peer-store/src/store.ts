@@ -78,7 +78,7 @@ export class PersistentStore {
   }
 
   async delete (peerId: PeerId): Promise<void> {
-    if (this.peerId.equals(peerId)) {
+    if (this.peerId.equals(peerId) === true) {
       throw new CodeError('Cannot delete self peer', codes.ERR_INVALID_PARAMETERS)
     }
 
@@ -138,7 +138,7 @@ export class PersistentStore {
     for await (const { key, value } of this.datastore.query(mapQuery(query ?? {}, peerCache))) {
       const peer = decodePeer(key, value, peerCache)
 
-      if (peer.id.equals(this.peerId)) {
+      if (peer.id.equals(this.peerId) === true) {
         // Skip self peer if present
         continue
       }

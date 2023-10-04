@@ -179,6 +179,7 @@ class DefaultAutoNATService implements Startable {
         data.stream,
         (source) => lp.decode(source),
         async function * (stream) {
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           const buf = await first(stream)
 
           if (buf == null) {
@@ -264,7 +265,7 @@ class DefaultAutoNATService implements Startable {
           log('incoming request from %p', peerId)
 
           // reject any dial requests that arrive via relays
-          if (!data.connection.remotePeer.equals(peerId)) {
+          if (data.connection.remotePeer.equals(peerId) !== true) {
             log('target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
 
             yield Message.encode({
@@ -298,6 +299,7 @@ class DefaultAutoNATService implements Startable {
             })
             .filter(ma => {
               const host = ma.toOptions().host
+              // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
               const isNotOurHost = !ourHosts.includes(host)
 
               log.trace('host %s was not our host %s', host, isNotOurHost)
@@ -349,7 +351,7 @@ class DefaultAutoNATService implements Startable {
                 signal
               })
 
-              if (!connection.remoteAddr.equals(multiaddr)) {
+              if (connection.remoteAddr.equals(multiaddr) !== true) {
                 log.error('tried to dial %a but dialed %a', multiaddr, connection.remoteAddr)
                 throw new Error('Unexpected remote address')
               }
@@ -556,7 +558,7 @@ class DefaultAutoNATService implements Startable {
             continue
           }
 
-          if (!multiaddrs.some(ma => ma.equals(addr))) {
+          if (multiaddrs.some(ma => ma.equals(addr)) !== true) {
             log('peer reported %a as %s but it was not in our observed address list', addr, dialResponse.status)
             continue
           }

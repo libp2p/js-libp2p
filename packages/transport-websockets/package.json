@@ -83,7 +83,7 @@
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.1.0",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "is-loopback-addr": "^2.0.1",
     "it-all": "^3.0.1",
     "it-drain": "^3.0.2",

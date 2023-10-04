@@ -210,7 +210,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     }
 
     const send = async (msg: Message): Promise<void> => {
-      if (log.enabled) {
+      if (log.enabled === true) {
         log.trace('%s stream %s send', type, id, printMessage(msg))
       }
 
@@ -263,7 +263,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   async _handleIncoming (message: Message): Promise<void> {
     const { id, type } = message
 
-    if (log.enabled) {
+    if (log.enabled === true) {
       log.trace('incoming message', printMessage(message))
     }
 

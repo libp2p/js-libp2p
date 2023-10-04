@@ -46,9 +46,9 @@ export function publicAddressesFirst (a: Address, b: Address): -1 | 0 | 1 {
  * of the array.
  */
 export function certifiedAddressesFirst (a: Address, b: Address): -1 | 0 | 1 {
-  if (a.isCertified && !b.isCertified) {
+  if (a.isCertified === true && b.isCertified !== true) {
     return -1
-  } else if (!a.isCertified && b.isCertified) {
+  } else if (a.isCertified !== true && b.isCertified === true) {
     return 1
   }
 

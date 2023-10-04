@@ -140,7 +140,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
    * on the remote peer
    */
   async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
-    if (this.peerId.equals(peerId)) {
+    if (this.peerId.equals(peerId) === true) {
       log('not trying to use self as relay')
       return
     }
@@ -189,7 +189,7 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
           signal
         })
 
-        if (connection.remoteAddr.protoNames().includes('p2p-circuit')) {
+        if (connection.remoteAddr.protoNames().includes('p2p-circuit') === true) {
           log('not creating reservation over relayed connection')
           return
         }

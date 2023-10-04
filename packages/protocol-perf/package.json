@@ -63,6 +63,6 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "aegir": "^40.0.8"
+    "aegir": "^41.0.0"
   }
 }

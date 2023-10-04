@@ -57,7 +57,7 @@
     "@libp2p/interface-compliance-tests": "^4.1.0",
     "@libp2p/interface-internal": "^0.1.5",
     "@libp2p/peer-id-factory": "^3.0.4",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "p-wait-for": "^5.0.2",
     "ts-sinon": "^2.0.2"
   }

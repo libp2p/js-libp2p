@@ -180,9 +180,9 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
 
         this.getMode()
           .then(async mode => {
-            if (hasPublicAddress && mode === 'client') {
+            if (hasPublicAddress === true && mode === 'client') {
               await this.setMode('server')
-            } else if (mode === 'server' && !hasPublicAddress) {
+            } else if (mode === 'server' && hasPublicAddress !== true) {
               await this.setMode('client')
             }
           })

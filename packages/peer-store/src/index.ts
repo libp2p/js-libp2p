@@ -206,7 +206,7 @@ export class PersistentPeerStore implements PeerStore {
       return
     }
 
-    if (this.peerId.equals(id)) {
+    if (this.peerId.equals(id) === true) {
       this.events.safeDispatchEvent('self:peer:update', { detail: result })
     } else {
       this.events.safeDispatchEvent('peer:update', { detail: result })

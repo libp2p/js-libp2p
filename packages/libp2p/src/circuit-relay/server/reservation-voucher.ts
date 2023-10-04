@@ -34,11 +34,11 @@ export class ReservationVoucherRecord implements Record {
     if (!(other instanceof ReservationVoucherRecord)) {
       return false
     }
-    if (!this.peer.equals(other.peer)) {
+    if (this.peer.equals(other.peer) !== true) {
       return false
     }
 
-    if (!this.relay.equals(other.relay)) {
+    if (this.relay.equals(other.relay) !== true) {
       return false
     }
 

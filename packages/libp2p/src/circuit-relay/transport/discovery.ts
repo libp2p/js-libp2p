@@ -114,7 +114,7 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
       let found = 0
 
       for await (const provider of this.contentRouting.findProviders(cid)) {
-        if (provider.multiaddrs.length > 0 && !provider.id.equals(this.peerId)) {
+        if (provider.multiaddrs.length > 0 && provider.id.equals(this.peerId) !== true) {
           const peerId = provider.id
 
           found++

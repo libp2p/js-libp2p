@@ -67,7 +67,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         new CustomEvent(evt.type, { detail: evt.detail })
       )
 
-      return internalResult || externalResult
+      return Boolean(internalResult) || externalResult
     }
 
     try {

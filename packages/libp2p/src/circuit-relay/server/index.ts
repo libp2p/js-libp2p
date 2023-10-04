@@ -302,7 +302,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     const addrs = []
 
     for (const relayAddr of this.addressManager.getAddresses()) {
-      if (relayAddr.toString().includes('/p2p-circuit')) {
+      if (relayAddr.toString().includes('/p2p-circuit') === true) {
         continue
       }
 

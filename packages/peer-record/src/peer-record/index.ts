@@ -85,7 +85,7 @@ export class PeerRecord {
     }
 
     // Validate PeerId
-    if (!this.peerId.equals(other.peerId)) {
+    if (this.peerId.equals(other.peerId) !== true) {
       return false
     }
 
@@ -95,7 +95,7 @@ export class PeerRecord {
     }
 
     // Validate multiaddrs
-    if (!arrayEquals(this.multiaddrs, other.multiaddrs)) {
+    if (arrayEquals(this.multiaddrs, other.multiaddrs) !== true) {
       return false
     }
 

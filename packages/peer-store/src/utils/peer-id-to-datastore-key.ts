@@ -6,7 +6,7 @@ import { codes } from '../errors.js'
 export const NAMESPACE_COMMON = '/peers/'
 
 export function peerIdToDatastoreKey (peerId: PeerId): Key {
-  if (!isPeerId(peerId) || peerId.type == null) {
+  if (isPeerId(peerId) !== true || peerId.type == null) {
     throw new CodeError('Invalid PeerId', codes.ERR_INVALID_PARAMETERS)
   }
 

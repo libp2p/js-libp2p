@@ -95,7 +95,7 @@ export class ContentFetching {
       }
 
       // correct ourself
-      if (this.components.peerId.equals(from)) {
+      if (this.components.peerId.equals(from) === true) {
         try {
           const dsKey = bufferToRecordKey(key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)

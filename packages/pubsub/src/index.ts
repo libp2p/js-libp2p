@@ -416,7 +416,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    * Handles a message from a peer
    */
   async processMessage (from: PeerId, msg: Message): Promise<void> {
-    if (this.components.peerId.equals(from) && !this.emitSelf) {
+    if (this.components.peerId.equals(from) === true && this.emitSelf) {
       return
     }
 
@@ -431,7 +431,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     if (this.subscriptions.has(msg.topic)) {
       const isFromSelf = this.components.peerId.equals(from)
 
-      if (!isFromSelf || this.emitSelf) {
+      if (isFromSelf !== true || this.emitSelf) {
         super.dispatchEvent(new CustomEvent<Message>('message', {
           detail: msg
         }))
@@ -513,7 +513,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   sendRpc (peer: PeerId, rpc: PubSubRPC): void {
     const peerStreams = this.peers.get(peer)
 
-    if (peerStreams == null || !peerStreams.isWritable) {
+    if (peerStreams == null || peerStreams.isWritable !== true) {
       log.error('Cannot send RPC to %p as there is no open stream to it available', peer)
 
       return

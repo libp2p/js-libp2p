@@ -140,6 +140,7 @@ export class DefaultUpgrader implements Upgrader {
     const connectionGater = this.components.connectionGater[connectionType]
 
     if (connectionGater !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (await connectionGater(remotePeer, maConn)) {
         throw new CodeError(`The multiaddr connection is blocked by gater.${connectionType}`, codes.ERR_CONNECTION_INTERCEPTED)
       }
@@ -152,7 +153,7 @@ export class DefaultUpgrader implements Upgrader {
   async upgradeInbound (maConn: MultiaddrConnection, opts?: UpgraderOptions): Promise<Connection> {
     const accept = await this.components.connectionManager.acceptIncomingConnection(maConn)
 
-    if (!accept) {
+    if (accept !== true) {
       throw new CodeError('connection denied', codes.ERR_CONNECTION_DENIED)
     }
 
@@ -574,7 +575,7 @@ export class DefaultUpgrader implements Upgrader {
     const { connection, stream, protocol } = opts
     const { handler, options } = this.components.registrar.getHandler(protocol)
 
-    if (connection.transient && options.runOnTransientConnection !== true) {
+    if (connection.transient === true && options.runOnTransientConnection !== true) {
       throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { CodeError } from '@libp2p/interface/errors'
 import { isMultiaddr } from '@multiformats/multiaddr'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
@@ -80,7 +81,11 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
         continue
       }
 
-      const tag = {
+      const tag: {
+        name: any
+        ttl: number | undefined
+        value: number
+      } = {
         name: key,
         ttl: value.ttl,
         value: value.value ?? 0

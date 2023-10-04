@@ -130,12 +130,12 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           // if there are closer peers and the query has not completed, continue the query
           if (event.name === 'PEER_RESPONSE') {
             for (const closerPeer of event.closer) {
-              if (peersSeen.has(closerPeer.id)) { // eslint-disable-line max-depth
+              if (peersSeen.has(closerPeer.id) === true) { // eslint-disable-line max-depth
                 log('already seen %p in query', closerPeer.id)
                 continue
               }
 
-              if (ourPeerId.equals(closerPeer.id)) { // eslint-disable-line max-depth
+              if (ourPeerId.equals(closerPeer.id) === true) { // eslint-disable-line max-depth
                 log('not querying ourselves')
                 continue
               }

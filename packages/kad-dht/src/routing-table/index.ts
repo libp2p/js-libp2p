@@ -266,7 +266,7 @@ export class RoutingTable extends EventEmitter<RoutingTableEvents> implements St
     const key = await utils.convertPeerId(peer)
     const closest = this.closestPeer(key)
 
-    if (closest != null && peer.equals(closest)) {
+    if (closest != null && peer.equals(closest) === true) {
       return closest
     }
 

@@ -18,7 +18,7 @@ export interface PeerAddress {
  * Extracts a PeerId and/or multiaddr from the passed PeerId or Multiaddr or an array of Multiaddrs
  */
 export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAddress {
-  if (isPeerId(peer)) {
+  if (isPeerId(peer) === true) {
     return { peerId: peer, multiaddrs: [] }
   }
 
@@ -48,7 +48,7 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAdd
       } else {
         const maPeerId = peerIdFromString(maPeerIdStr)
 
-        if (peerId == null || !peerId.equals(maPeerId)) {
+        if (peerId == null || peerId.equals(maPeerId) !== true) {
           throw new CodeError('Multiaddrs must all have the same peer id or have no peer id', codes.ERR_INVALID_PARAMETERS)
         }
       }

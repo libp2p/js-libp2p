@@ -161,7 +161,7 @@ export class RoutingTableRefresh {
     }
 
     const randomData = randomBytes(2)
-    const randomUint16 = (randomData[1] << 8) + randomData[0]
+    const randomUint16 = (randomData[1] << 8) + Number(randomData[0])
 
     const key = await this._makePeerId(this.routingTable.kb.localNodeId, randomUint16, targetCommonPrefixLength)
 

@@ -72,7 +72,7 @@ export class ConnectionPruner {
     for (const connection of connections) {
       const remotePeer = connection.remotePeer
 
-      if (peerValues.has(remotePeer)) {
+      if (peerValues.has(remotePeer) === true) {
         continue
       }
 
@@ -83,7 +83,7 @@ export class ConnectionPruner {
 
         // sum all tag values
         peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
-          return acc + curr.value
+          return Number(acc) + Number(curr.value)
         }, 0))
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {

@@ -96,7 +96,7 @@ async function encrypt (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>
 
     peerId = await peerIdFromKeys(id.pubkey.Data)
 
-    if (!peerId.equals(peerIdFromBytes(id.id))) {
+    if (peerId.equals(peerIdFromBytes(id.id)) !== true) {
       throw new Error('Public key did not match id')
     }
   } catch (err: any) {
@@ -104,7 +104,7 @@ async function encrypt (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>
     throw new InvalidCryptoExchangeError('Remote did not provide its public key')
   }
 
-  if (remoteId != null && !peerId.equals(remoteId)) {
+  if (remoteId != null && peerId.equals(remoteId) !== true) {
     throw new UnexpectedPeerError()
   }
 

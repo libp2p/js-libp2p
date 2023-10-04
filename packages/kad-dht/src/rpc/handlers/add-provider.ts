@@ -42,7 +42,7 @@ export class AddProviderHandler implements DHTMessageHandler {
     await Promise.all(
       msg.providerPeers.map(async (pi) => {
         // Ignore providers not from the originator
-        if (!pi.id.equals(peerId)) {
+        if (pi.id.equals(peerId) !== true) {
           log('invalid provider peer %p from %p', pi.id, peerId)
           return
         }

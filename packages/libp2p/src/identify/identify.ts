@@ -241,7 +241,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         try {
           const peer = await this.peerStore.get(conn.remotePeer)
 
-          if (!peer.protocols.includes(this.identifyPushProtocolStr)) {
+          if (peer.protocols.includes(this.identifyPushProtocolStr) !== true) {
             return
           }
 
@@ -298,11 +298,11 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     const id = await peerIdFromKeys(publicKey)
 
-    if (!connection.remotePeer.equals(id)) {
+    if (connection.remotePeer.equals(id) !== true) {
       throw new CodeError('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
     }
 
-    if (this.peerId.equals(id)) {
+    if (this.peerId.equals(id) === true) {
       throw new CodeError('identified peer is our own peer id?', codes.ERR_INVALID_PEER)
     }
 
@@ -396,7 +396,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     const { connection, stream } = data
 
     try {
-      if (this.peerId.equals(connection.remotePeer)) {
+      if (this.peerId.equals(connection.remotePeer) === true) {
         throw new Error('received push from ourselves?')
       }
 
@@ -449,12 +449,12 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
 
       // Verify peerId
-      if (!peerRecord.peerId.equals(envelope.peerId)) {
+      if (peerRecord.peerId.equals(envelope.peerId) !== true) {
         throw new Error('signing key does not match PeerId in the PeerRecord')
       }
 
       // Make sure remote peer is the one sending the record
-      if (!remotePeer.equals(peerRecord.peerId)) {
+      if (remotePeer.equals(peerRecord.peerId) !== true) {
         throw new Error('signing key does not match remote PeerId')
       }
 

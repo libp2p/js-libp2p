@@ -181,7 +181,7 @@
     "@libp2p/tcp": "^8.0.8",
     "@libp2p/websockets": "^7.0.8",
     "@types/xsalsa20": "^1.1.0",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "execa": "^8.0.1",
     "go-libp2p": "^1.1.1",
     "it-pushable": "^3.2.0",

@@ -67,6 +67,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       const stream = await conn.newStream([protocol])
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       const result = await all(stream.source)
 
       expect(upgradeSpy.callCount).to.equal(1)

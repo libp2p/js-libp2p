@@ -111,7 +111,7 @@
     "@libp2p/peer-id-factory": "^3.0.4",
     "@multiformats/multiaddr": "^12.1.5",
     "abortable-iterator": "^5.0.1",
-    "aegir": "^40.0.11",
+    "aegir": "^41.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.2",

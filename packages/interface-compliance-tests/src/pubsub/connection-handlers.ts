@@ -383,7 +383,7 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
 
         // Wait for subscriptions to occur
         await pWaitFor(() => {
-          return psA.getSubscribers(topic).map(p => p.toString()).includes(componentsB.peerId.toString()) &&
+          return psA.getSubscribers(topic).map(p => p.toString()).includes(componentsB.peerId.toString()) === true &&
             psB.getSubscribers(topic).map(p => p.toString()).includes(componentsA.peerId.toString())
         })
 

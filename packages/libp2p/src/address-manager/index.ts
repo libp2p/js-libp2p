@@ -66,7 +66,7 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
     const observedPeerId = peerIdFromString(observedPeerIdStr)
 
     // use same encoding for comparison
-    if (observedPeerId.equals(peerId)) {
+    if (observedPeerId.equals(peerId) === true) {
       ma = ma.decapsulate(multiaddr(`/p2p/${peerId.toString()}`))
     }
   }

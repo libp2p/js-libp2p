@@ -99,7 +99,7 @@ describe('circuit-relay hop protocol', function () {
       connectionGater
     })
 
-    if (isStartable(service)) {
+    if (isStartable(service) === true) {
       await service.start()
     }
 

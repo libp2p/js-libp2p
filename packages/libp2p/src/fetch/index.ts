@@ -172,6 +172,7 @@ class DefaultFetchService implements Startable, FetchService {
         stream,
         (source) => lp.decode(source),
         async function (source) {
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           const buf = await first(source)
 
           if (buf == null) {
@@ -224,6 +225,7 @@ class DefaultFetchService implements Startable, FetchService {
       stream,
       (source) => lp.decode(source),
       async function * (source) {
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const buf = await first(source)
 
         if (buf == null) {

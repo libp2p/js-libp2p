@@ -256,6 +256,7 @@ describe('dial', () => {
       const conn = await ws.dial(ma, { upgrader })
       const stream = await conn.newStream([protocol])
 
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
       await conn.close()
     })
@@ -265,6 +266,7 @@ describe('dial', () => {
       const conn = await ws.dial(ma, { upgrader })
       const stream = await conn.newStream([protocol])
 
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
       await conn.close()
     })

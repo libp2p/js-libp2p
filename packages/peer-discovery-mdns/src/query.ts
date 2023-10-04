@@ -139,7 +139,7 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string
 
 function isLinkLocal (ma: Multiaddr): boolean {
   // match private ip4/ip6 & loopback addresses
-  if (isPrivate(ma)) {
+  if (isPrivate(ma) === true) {
     return true
   }
 

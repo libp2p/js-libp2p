@@ -21,7 +21,7 @@ export class PrometheusMetric implements Metric {
 
       collect = async function () {
         const values = await Promise.all(self.calculators.map(async calculate => calculate()))
-        const sum = values.reduce((acc, curr) => acc + curr, 0)
+        const sum = values.reduce((acc, curr) => Number(acc) + Number(curr), 0)
 
         this.set(sum)
       }

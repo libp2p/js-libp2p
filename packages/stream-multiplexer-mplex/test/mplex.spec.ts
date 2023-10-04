@@ -194,6 +194,7 @@ describe('mplex', () => {
     const muxerFinished = pDefer()
     let output: Uint8Array[] = []
     void Promise.resolve().then(async () => {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       output = await all(muxer.source)
       muxerFinished.resolve()
     })

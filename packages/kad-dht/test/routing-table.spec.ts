@@ -285,7 +285,7 @@ describe('Routing Table', () => {
           for await (const peer of source) {
             const peerData = await components.peerStore.get(peer.id)
 
-            if (peerData.tags.has(KAD_CLOSE_TAG_NAME)) {
+            if (peerData.tags.has(KAD_CLOSE_TAG_NAME) === true) {
               yield peer.id
             }
           }

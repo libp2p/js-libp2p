@@ -73,7 +73,7 @@ export class DefaultDCUtRService implements Startable {
     // nb. requires the identify service to be enabled
     this.topologyId = await this.registrar.register(multicodec, {
       onConnect: (peerId, connection) => {
-        if (!connection.transient) {
+        if (connection.transient !== true) {
           // the connection is already direct, no upgrade is required
           return
         }
@@ -257,7 +257,7 @@ export class DefaultDCUtRService implements Startable {
           force: true
         })
 
-        if (connection.transient) {
+        if (connection.transient === true) {
           throw new Error('Could not open a new, non-transient, connection')
         }
 

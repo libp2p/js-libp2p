@@ -85,7 +85,7 @@ export class ReservationStore implements Startable {
   }
 
   reserve (peer: PeerId, addr: Multiaddr, limit?: Limit): { status: ReservationStatus, expire?: number } {
-    if (this.reservations.size >= this.maxReservations && !this.reservations.has(peer)) {
+    if (this.reservations.size >= this.maxReservations && this.reservations.has(peer) !== true) {
       return { status: Status.RESERVATION_REFUSED }
     }
 

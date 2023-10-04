@@ -68,7 +68,7 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.1",
     "it-map": "^3.0.3",

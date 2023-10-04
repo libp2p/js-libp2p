@@ -194,7 +194,7 @@ export class DialQueue {
     // pending dials in progress for this peer or set of multiaddrs
     const existingDial = this.pendingDials.find(dial => {
       // is the dial for the same peer id?
-      if (dial.peerId != null && peerId != null && dial.peerId.equals(peerId)) {
+      if (dial.peerId != null && peerId != null && dial.peerId.equals(peerId) === true) {
         return true
       }
 
@@ -284,7 +284,7 @@ export class DialQueue {
   private async calculateMultiaddrs (peerId?: PeerId, addrs: Address[] = [], options: DialOptions = {}): Promise<Address[]> {
     // if a peer id or multiaddr(s) with a peer id, make sure it isn't our peer id and that we are allowed to dial it
     if (peerId != null) {
-      if (this.peerId.equals(peerId)) {
+      if (this.peerId.equals(peerId) === true) {
         throw new CodeError('Tried to dial self', codes.ERR_DIALED_SELF)
       }
 
@@ -349,7 +349,7 @@ export class DialQueue {
       const existing = dedupedAddrs.get(maStr)
 
       if (existing != null) {
-        existing.isCertified = existing.isCertified || addr.isCertified || false
+        existing.isCertified = Boolean(existing.isCertified) || Boolean(addr.isCertified) || false
         continue
       }
 
@@ -400,7 +400,7 @@ export class DialQueue {
     const gatedAdrs: Address[] = []
 
     for (const addr of dedupedMultiaddrs) {
-      if (this.connectionGater.denyDialMultiaddr != null && await this.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
+      if (this.connectionGater.denyDialMultiaddr != null && (Boolean((await this.connectionGater.denyDialMultiaddr(addr.multiaddr))))) {
         continue
       }
 

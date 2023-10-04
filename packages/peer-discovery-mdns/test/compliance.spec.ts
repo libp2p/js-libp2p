@@ -36,7 +36,7 @@ describe('compliance tests', () => {
       const maStr = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star'
 
       intervalId = setInterval(() => {
-        if (isStartable(discovery) && !discovery.isStarted()) {
+        if (isStartable(discovery) === true && discovery.isStarted() !== true) {
           return
         }
 

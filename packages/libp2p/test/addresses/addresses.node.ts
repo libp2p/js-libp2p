@@ -108,6 +108,7 @@ describe('libp2p.addressManager', () => {
         ...AddressesOptions,
         addresses: {
           listen: listenAddresses,
+          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
           announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.filter(m => !isLoopback(m))
         }
       }
@@ -137,6 +138,7 @@ describe('libp2p.addressManager', () => {
         addresses: {
           listen: listenAddresses,
           announce: announceAddreses,
+          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
           announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.filter(m => !isLoopback(m))
         }
       }

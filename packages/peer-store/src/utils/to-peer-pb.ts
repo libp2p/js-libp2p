@@ -23,7 +23,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
 
   const existingPeer = options.existingPeer
 
-  if (existingPeer != null && !peerId.equals(existingPeer.id)) {
+  if (existingPeer != null && peerId.equals(existingPeer.id) !== true) {
     throw new CodeError('peer id did not match existing peer id', codes.ERR_INVALID_PARAMETERS)
   }
 

@@ -283,7 +283,7 @@ class CircuitRelayTransport implements Transport {
       })
 
       log('new outbound transient connection %a', maConn.remoteAddr)
-      return await this.upgrader.upgradeOutbound(maConn, {
+      return this.upgrader.upgradeOutbound(maConn, {
         transient: true
       })
     } catch (err) {

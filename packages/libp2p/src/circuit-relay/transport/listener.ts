@@ -71,7 +71,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
       throw new CodeError('Did not have reservation after making reservation', 'ERR_NO_RESERVATION')
     }
 
-    if (this.listeningAddrs.has(relayConn.remotePeer)) {
+    if (this.listeningAddrs.has(relayConn.remotePeer) === true) {
       log('already listening on relay %p', relayConn.remotePeer)
       return
     }
@@ -99,7 +99,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
 
     this.listeningAddrs.delete(peerId)
 
-    if (had) {
+    if (had === true) {
       // Announce listen addresses change
       this.safeDispatchEvent('close', {})
     }

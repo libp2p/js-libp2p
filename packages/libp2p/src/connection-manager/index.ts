@@ -585,7 +585,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       return false
     }
 
-    if (maConn.remoteAddr.isThinWaistAddress()) {
+    if (maConn.remoteAddr.isThinWaistAddress() === true) {
       const host = maConn.remoteAddr.nodeAddress().address
 
       try {

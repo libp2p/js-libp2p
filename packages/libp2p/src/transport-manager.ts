@@ -120,7 +120,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     }
 
     try {
-      return await transport.dial(ma, {
+      return transport.dial(ma, {
         ...options,
         upgrader: this.components.upgrader
       })

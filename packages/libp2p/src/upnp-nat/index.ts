@@ -125,13 +125,13 @@ class UPnPNAT implements Startable {
       // try to open uPnP ports for each thin waist address
       const { family, host, port, transport } = addr.toOptions()
 
-      if (!addr.isThinWaistAddress() || transport !== 'tcp') {
+      if (addr.isThinWaistAddress() !== true || transport !== 'tcp') {
         // only bare tcp addresses
         // eslint-disable-next-line no-continue
         continue
       }
 
-      if (isLoopback(addr)) {
+      if (isLoopback(addr) !== true) {
         // eslint-disable-next-line no-continue
         continue
       }

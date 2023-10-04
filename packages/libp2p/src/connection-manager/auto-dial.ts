@@ -177,13 +177,13 @@ export class AutoDial implements Startable {
           }
 
           // remove peers we are already connected to
-          if (connections.has(peer.id)) {
+          if (connections.has(peer.id) === true) {
             log.trace('not autodialing %p because they are already connected', peer.id)
             return false
           }
 
           // remove peers we are already dialling
-          if (dialQueue.has(peer.id)) {
+          if (dialQueue.has(peer.id) === true) {
             log.trace('not autodialing %p because they are already being dialed', peer.id)
             return false
           }
@@ -206,13 +206,13 @@ export class AutoDial implements Startable {
     // Sort shuffled peers by tag value
     const peerValues = new PeerMap<number>()
     for (const peer of shuffledPeers) {
-      if (peerValues.has(peer.id)) {
+      if (peerValues.has(peer.id) === true) {
         continue
       }
 
       // sum all tag values
       peerValues.set(peer.id, [...peer.tags.values()].reduce((acc, curr) => {
-        return acc + curr.value
+        return Number(acc) + Number(curr.value)
       }, 0))
     }
 

@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.1.0",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "cborg": "^4.0.3",
     "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",

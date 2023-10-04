@@ -114,7 +114,7 @@ export class PeerRouting {
         const recPeer = await peerIdFromKeys(keys.marshalPublicKey({ bytes: event.record.value }))
 
         // compare hashes of the pub key
-        if (!recPeer.equals(peer)) {
+        if (recPeer.equals(peer) !== true) {
           throw new CodeError('public key does not match id', 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
         }
 
@@ -287,7 +287,7 @@ export class PeerRouting {
     const output: PeerInfo[] = []
 
     for (const peerId of ids) {
-      if (peerId.equals(closerThan)) {
+      if (peerId.equals(closerThan) === true) {
         continue
       }
 

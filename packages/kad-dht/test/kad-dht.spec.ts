@@ -379,12 +379,12 @@ describe('KadDHT', () => {
       let foundPutValue = false
 
       for (const call of dhtASpy.getCalls()) {
-        if (call.args[0].equals(dhtB.components.peerId) && call.args[1].type === 'GET_VALUE') {
+        if (call.args[0].equals(dhtB.components.peerId) === true && call.args[1].type === 'GET_VALUE') {
           // query B
           foundGetValue = true
         }
 
-        if (call.args[0].equals(dhtB.components.peerId) && call.args[1].type === 'PUT_VALUE') {
+        if (call.args[0].equals(dhtB.components.peerId) === true && call.args[1].type === 'PUT_VALUE') {
           // update B
           foundPutValue = true
         }

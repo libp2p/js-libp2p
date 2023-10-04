@@ -227,8 +227,8 @@ export class DefaultRegistrar implements Registrar {
    */
   _onPeerUpdate (evt: CustomEvent<PeerUpdate>): void {
     const { peer, previous } = evt.detail
-    const removed = (previous?.protocols ?? []).filter(protocol => !peer.protocols.includes(protocol))
-    const added = peer.protocols.filter(protocol => !(previous?.protocols ?? []).includes(protocol))
+    const removed = (previous?.protocols ?? []).filter(protocol => peer.protocols.includes(protocol) !== true)
+    const added = peer.protocols.filter(protocol => (previous?.protocols ?? []).includes(protocol) !== true)
 
     for (const protocol of removed) {
       const topologies = this.topologies.get(protocol)

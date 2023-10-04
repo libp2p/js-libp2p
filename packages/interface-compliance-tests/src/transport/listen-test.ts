@@ -55,6 +55,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const protocol = '/test/protocol'
       void registrar.handle(protocol, (data) => {
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
         void drain(data.stream.source)
       })
 

@@ -89,7 +89,7 @@ export class TestDHT {
     dht.addEventListener('peer', (evt) => {
       const peerData = evt.detail
 
-      if (components.peerId.equals(peerData.id)) {
+      if (components.peerId.equals(peerData.id) === true) {
         return
       }
 

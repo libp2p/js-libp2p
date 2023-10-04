@@ -30,9 +30,9 @@ class MockNetwork {
   getNode (peerId: PeerId | Multiaddr []): MockNetworkComponents {
     if (Array.isArray(peerId) && peerId.length > 0) {
       peerId = peerIdFromString(peerId[0].getPeerId() ?? '')
-    } else if (isPeerId(peerId)) {
+    } else if (isPeerId(peerId) === true) {
       for (const components of this.components) {
-        if (peerId.equals(components.peerId)) {
+        if ((peerId as PeerId).equals(components.peerId) === true) {
           return components
         }
       }
@@ -114,8 +114,8 @@ class MockConnectionManager implements ConnectionManager, Startable {
 
     if (Array.isArray(peerId) && peerId.length > 0) {
       existingConnections = this.getConnections(peerIdFromString(peerId[0].getPeerId() ?? ''))
-    } else if (isPeerId(peerId)) {
-      existingConnections = this.getConnections(peerId)
+    } else if (isPeerId(peerId) === true) {
+      existingConnections = this.getConnections(peerId as PeerId)
     }
 
     if (existingConnections.length > 0) {
@@ -180,9 +180,9 @@ class MockConnectionManager implements ConnectionManager, Startable {
       await conn.close()
     }
 
-    this.connections = this.connections.filter(c => !c.remotePeer.equals(peerId))
+    this.connections = this.connections.filter(c => c.remotePeer.equals(peerId) !== true)
 
-    if (this.connections.filter(c => !c.remotePeer.equals(peerId)).length === 0) {
+    if (this.connections.filter(c => c.remotePeer.equals(peerId) !== true).length === 0) {
       componentsB.events.safeDispatchEvent('peer:disconnect', { detail: peerId })
     }
 
