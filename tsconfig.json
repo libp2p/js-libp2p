@@ -1,6 +1,0 @@
-// This root tsconfig allows the linter to work properly in vscode
-// It is not used to build subpackages
-{
-  "extends": "aegir/src/config/tsconfig.aegir.json",
-  "include": ["packages/**/*.ts"]
-}
