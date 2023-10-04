@@ -7,10 +7,20 @@
 
 > JavaScript implementation of libp2p, a modular peer to peer network stack
 
+
+### Project status
+
+This project has been used in production for years in Ethereum, IPFS, and more.  It is actively maintained by multiple organizations and continues to be improved!  The API might change, but we strictly follow semver.
+
+The documentation in the master branch may contain changes from a pre-release.
+If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
+
+**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples folder](/examples).
+
+**Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
+
 ## Table of contents <!-- omit in toc -->
 
-- [Structure](#structure)
-  - [Project status](#project-status)
 - [Background](#background)
 - [Roadmap](#roadmap)
 - [Install](#install)
@@ -19,6 +29,7 @@
   - [Limits](#limits)
   - [Getting started](#getting-started)
   - [Tutorials and Examples](#tutorials-and-examples)
+- [Structure](#structure)
 - [Development](#development)
   - [Tests](#tests)
     - [Run unit tests](#run-unit-tests)
@@ -27,7 +38,55 @@
 - [Contribute](#contribute)
 - [API Docs](#api-docs)
 - [License](#license)
-- [Contribution](#contribution)
+
+## Background
+
+libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.
+
+We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:
+
+- [libp2p.io](https://libp2p.io)
+- [docs.libp2p.io](https://docs.libp2p.io)
+- [Specification (WIP)](https://github.com/libp2p/specs)
+- [Discussion Forums](https://discuss.libp2p.io)
+- Talks
+  - [`libp2p <3 ethereum` at DEVCON2](https://archive.devcon.org/archive/watch/2/libp2p-devp2p-ipfs-and-ethereum-networking/)
+- Articles
+  - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
+
+To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
+
+## Roadmap
+
+The js-libp2p roadmap can be found here: <https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md>
+
+It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.
+
+It is complementary to the overarching libp2p project roadmap: <https://github.com/libp2p/specs/blob/master/ROADMAP.md>
+
+## Install
+
+```sh
+npm install libp2p
+```
+
+## Usage
+
+### Configuration
+
+For all the information on how you can configure libp2p see [CONFIGURATION.md](./doc/CONFIGURATION.md).
+
+### Limits
+
+For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
+
+### Getting started
+
+If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide.
+
+### Tutorials and Examples
+
+You can find multiple examples on the [examples folder](./examples) that will guide you through using libp2p for several scenarios.
 
 ## Structure
 
@@ -98,66 +157,6 @@
   <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
   <br>
 </p>
-
-### Project status
-
-This project has been used in production for years in Ethereum, IPFS, and more.  It is actively maintained by multiple organizations and continues to be improved!  The API might change, but we strictly follow semver.
-
-The documentation in the master branch may contain changes from a pre-release.
-If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
-
-**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples folder](/examples).
-
-**Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
-
-## Background
-
-libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.
-
-We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:
-
-- [libp2p.io](https://libp2p.io)
-- [docs.libp2p.io](https://docs.libp2p.io)
-- [Specification (WIP)](https://github.com/libp2p/specs)
-- [Discussion Forums](https://discuss.libp2p.io)
-- Talks
-  - [`libp2p <3 ethereum` at DEVCON2](https://archive.devcon.org/archive/watch/2/libp2p-devp2p-ipfs-and-ethereum-networking/)
-- Articles
-  - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
-
-To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
-
-## Roadmap
-
-The js-libp2p roadmap can be found here: <https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md>
-
-It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.
-
-It is complementary to the overarching libp2p project roadmap: <https://github.com/libp2p/specs/blob/master/ROADMAP.md>
-
-## Install
-
-```sh
-npm install libp2p
-```
-
-## Usage
-
-### Configuration
-
-For all the information on how you can configure libp2p see [CONFIGURATION.md](./doc/CONFIGURATION.md).
-
-### Limits
-
-For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
-
-### Getting started
-
-If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide.
-
-### Tutorials and Examples
-
-You can find multiple examples on the [examples folder](./examples) that will guide you through using libp2p for several scenarios.
 
 ## Development
 
