@@ -126,7 +126,7 @@ Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multipl
 You can install `@libp2p/mplex` and add it to your libp2p node as follows in the next example.
 
 ```sh
-npm install @libp2p/mplex
+npm install @libp2p/mplex @chainsafe/libp2p-yamux
 ```
 
 ```js
