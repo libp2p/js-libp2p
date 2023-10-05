@@ -70,3 +70,8 @@ export const DEFAULT_HOP_TIMEOUT = 30 * second
  * How long to wait before starting to advertise the relay service
  */
 export const DEFAULT_ADVERT_BOOT_DELAY = 30 * second
+
+/**
+ * The default timeout for Incoming STOP requests from the relay
+ */
+export const DEFAULT_STOP_TIMEOUT = 30 * second
