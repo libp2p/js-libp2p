@@ -172,7 +172,6 @@ export class DataChannelMuxer implements StreamMuxer {
       onEnd: () => {
         log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
         drainAndClose(channel, `outbound ${stream.id} ${stream.protocol}`, this.dataChannelOptions.drainTimeout)
-        channel.close() // Stream initiator is responsible for closing the channel
         this.streams = this.streams.filter(s => s.id !== stream.id)
         this.metrics?.increment({ stream_end: true })
         this.init?.onStreamEnd?.(stream)

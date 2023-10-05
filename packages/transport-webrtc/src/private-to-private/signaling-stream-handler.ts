@@ -106,7 +106,6 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     })
 
     log.trace('recipient connected, closing signaling stream')
-
     await messageStream.unwrap().unwrap().close({
       signal
     })

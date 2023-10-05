@@ -7,14 +7,18 @@ import * as filter from '@libp2p/websockets/filters'
 import { WebRTC } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import drain from 'it-drain'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
 import toBuffer from 'it-to-buffer'
 import { createLibp2p } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import pDefer from 'p-defer'
+import pRetry from 'p-retry'
 import { webRTC } from '../src/index.js'
 import type { Libp2p } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
+import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { StreamHandler } from '@libp2p/interface/stream-handler'
 
 async function createNode (): Promise<Libp2p> {
@@ -138,4 +142,204 @@ describe('basics', () => {
     // asset that we got the right data
     expect(output).to.equalBytes(toBuffer(input))
   })
+
+  it('can close local stream for reading but send a large file', async () => {
+    let output: Uint8Array = new Uint8Array(0)
+    const streamClosed = pDefer()
+
+    streamHandler = ({ stream }) => {
+      void Promise.resolve().then(async () => {
+        output = await toBuffer(map(stream.source, (buf) => buf.subarray()))
+        await stream.close()
+        streamClosed.resolve()
+      })
+    }
+
+    const connection = await connectNodes()
+
+    // open a stream on the echo protocol
+    const stream = await connection.newStream(echo, {
+      runOnTransientConnection: true
+    })
+
+    // close for reading
+    await stream.closeRead()
+
+    // send some data
+    const input = new Array(5).fill(0).map(() => new Uint8Array(1024 * 1024))
+
+    await stream.sink(input)
+    await stream.close()
+
+    // wait for remote to receive all data
+    await streamClosed.promise
+
+    // asset that we got the right data
+    expect(output).to.equalBytes(toBuffer(input))
+  })
+
+  it('can close local stream for writing but receive a large file', async () => {
+    const input = new Array(5).fill(0).map(() => new Uint8Array(1024 * 1024))
+
+    streamHandler = ({ stream }) => {
+      void Promise.resolve().then(async () => {
+        // send some data
+        await stream.sink(input)
+        await stream.close()
+      })
+    }
+
+    const connection = await connectNodes()
+
+    // open a stream on the echo protocol
+    const stream = await connection.newStream(echo, {
+      runOnTransientConnection: true
+    })
+
+    // close for reading
+    await stream.closeWrite()
+
+    // receive some data
+    const output = await toBuffer(map(stream.source, (buf) => buf.subarray()))
+
+    await stream.close()
+
+    // asset that we got the right data
+    expect(output).to.equalBytes(toBuffer(input))
+  })
+
+  it('can close local stream for writing and reading while a remote stream is writing', async () => {
+    /**
+     * NodeA             NodeB
+     * |   <--- STOP_SENDING |
+     * | FIN --->            |
+     * |            <--- FIN |
+     * | FIN_ACK --->        |
+     * |        <--- FIN_ACK |
+     */
+
+    const getRemoteStream = pDefer<Stream>()
+
+    streamHandler = ({ stream }) => {
+      void Promise.resolve().then(async () => {
+        getRemoteStream.resolve(stream)
+      })
+    }
+
+    const connection = await connectNodes()
+
+    // open a stream on the echo protocol
+    const stream = await connection.newStream(echo, {
+      runOnTransientConnection: true
+    })
+
+    const remoteStream = await getRemoteStream.promise
+    // close the readable end of the remote stream
+    await remoteStream.closeRead()
+
+    // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
+    const remoteInputStream = pushable()
+    void remoteStream.sink(remoteInputStream)
+
+    const p = stream.closeWrite()
+
+    // wait for remote to receive local close-write
+    await pRetry(() => {
+      if (remoteStream.readStatus !== 'closed') {
+        throw new Error('Remote stream read status ' + remoteStream.readStatus)
+      }
+    }, {
+      minTimeout: 100
+    })
+
+    // remote closes write
+    remoteInputStream.end()
+
+    // wait to receive FIN_ACK
+    await p
+
+    // wait for remote to notice closure
+    await pRetry(() => {
+      if (remoteStream.status !== 'closed') {
+        throw new Error('Remote stream not closed')
+      }
+    })
+
+    assertStreamClosed(stream)
+    assertStreamClosed(remoteStream)
+  })
+
+  it('can close local stream for writing and reading while a remote stream is writing using source/sink', async () => {
+    /**
+     * NodeA             NodeB
+     * | FIN --->            |
+     * |            <--- FIN |
+     * | FIN_ACK --->        |
+     * |        <--- FIN_ACK |
+     */
+
+    const getRemoteStream = pDefer<Stream>()
+
+    streamHandler = ({ stream }) => {
+      void Promise.resolve().then(async () => {
+        getRemoteStream.resolve(stream)
+      })
+    }
+
+    const connection = await connectNodes()
+
+    // open a stream on the echo protocol
+    const stream = await connection.newStream(echo, {
+      runOnTransientConnection: true
+    })
+
+    const remoteStream = await getRemoteStream.promise
+    // close the readable end of the remote stream
+    await remoteStream.closeRead()
+    // readable end should finish
+    await drain(remoteStream.source)
+
+    // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
+    const p = stream.sink([])
+
+    // wait for remote to receive local close-write
+    await pRetry(() => {
+      if (remoteStream.readStatus !== 'closed') {
+        throw new Error('Remote stream read status ' + remoteStream.readStatus)
+      }
+    }, {
+      minTimeout: 100
+    })
+
+    // remote closes write
+    await remoteStream.sink([])
+
+    // wait to receive FIN_ACK
+    await p
+
+    // close read end of stream
+    await stream.closeRead()
+    // readable end should finish
+    await drain(stream.source)
+
+    // wait for remote to notice closure
+    await pRetry(() => {
+      if (remoteStream.status !== 'closed') {
+        throw new Error('Remote stream not closed')
+      }
+    })
+
+    assertStreamClosed(stream)
+    assertStreamClosed(remoteStream)
+  })
 })
+
+function assertStreamClosed (stream: Stream): void {
+  expect(stream.status).to.equal('closed')
+  expect(stream.readStatus).to.equal('closed')
+  expect(stream.writeStatus).to.equal('closed')
+
+  expect(stream.timeline.close).to.be.a('number')
+  expect(stream.timeline.closeRead).to.be.a('number')
+  expect(stream.timeline.closeWrite).to.be.a('number')
+}

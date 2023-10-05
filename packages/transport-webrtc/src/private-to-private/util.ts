@@ -1,4 +1,5 @@
 import { logger } from '@libp2p/logger'
+import { raceSignal } from 'race-signal'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
@@ -12,40 +13,56 @@ export interface ReadCandidatesOptions extends AbortOptions {
 }
 
 export const readCandidatesUntilConnected = async (connectedPromise: DeferredPromise<void>, pc: RTCPeerConnection, stream: MessageStream<Message>, options: ReadCandidatesOptions): Promise<void> => {
-  while (true) {
-    const readResult = await Promise.race([
-      connectedPromise.promise,
-      stream.read(options)
-    ])
+  try {
+    while (true) {
+      const readResult = await Promise.race([
+        connectedPromise.promise,
+        stream.read(options)
+      ])
 
-    if (readResult == null) {
-      // connected promise resolved
-      break
+      if (readResult == null) {
+        // connected promise resolved
+        break
+      }
+
+      const message = readResult
+
+      if (message.type !== Message.Type.ICE_CANDIDATE) {
+        throw new Error('ICE candidate message expected')
+      }
+
+      // end of candidates has been signalled
+      if (message.data == null || message.data === '') {
+        log.trace('%s received end-of-candidates', options.direction)
+        break
+      }
+
+      log.trace('%s received new ICE candidate: %s', options.direction, message.data)
+
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(message.data)))
+      } catch (err) {
+        log.error('%s bad candidate received:', options.direction, err)
+        throw new Error('bad candidate received')
+      }
     }
-
-    const message = readResult
-
-    if (message.type !== Message.Type.ICE_CANDIDATE) {
-      throw new Error('expected only ice candidates')
-    }
-
-    // end of candidates has been signalled
-    if (message.data == null || message.data === '') {
-      log.trace('%s received end-of-candidates', options.direction)
-      break
-    }
-
-    log.trace('%s received new ICE candidate: %s', options.direction, message.data)
-
-    try {
-      await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(message.data)))
-    } catch (err) {
-      log.error('%s bad candidate received:', options.direction, err)
-      throw new Error('bad candidate received')
+  } catch (err: any) {
+    // this happens when the remote PeerConnection's state has changed to
+    // connected before the final ICE candidate is sent and so they close
+    // the signalling stream while we are still reading from it - ignore
+    // the error and race the passed signal for our own connection state
+    // to change
+    if (err.code !== 'ERR_UNEXPECTED_EOF') {
+      log.error('error while reading ICE candidates', err)
+      throw err
     }
   }
 
-  await connectedPromise.promise
+  // read all available ICE candidates, wait for connection state change
+  await raceSignal(connectedPromise.promise, options.signal, {
+    errorMessage: 'Aborted before connected',
+    errorCode: 'ERR_ABORTED_BEFORE_CONNECTED'
+  })
 }
 
 export function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
