@@ -88,6 +88,8 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
 
       // setup callback to write ICE candidates to the remote peer
       peerConnection.onicecandidate = ({ candidate }) => {
+        // a null candidate means end-of-candidates
+        // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
         const data = JSON.stringify(candidate?.toJSON() ?? null)
 
         log.trace('initiator sending ICE candidate %s', data)

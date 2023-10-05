@@ -96,16 +96,7 @@ export class WebRTCStream extends AbstractStream {
         if (this.timeline.abort != null || this.timeline.reset !== null) {
           return
         }
-        /*
-        // send FIN_ACK if we haven't already
-        if (!this.sentFinAck) {
-          try {
-            await this._sendFlag(Message.Flag.FIN_ACK)
-          } catch (err) {
-            this.log.error('error sending FIN_ACK', err)
-          }
-        }
-*/
+
         // wait for FIN_ACK if we haven't received it already
         try {
           await pTimeout(this.receiveFinAck.promise, {
@@ -227,7 +218,7 @@ export class WebRTCStream extends AbstractStream {
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.bufferedAmountLowEventTimeout })
       } catch (err: any) {
         if (err instanceof TimeoutError) {
-          throw new CodeError('Timed out waiting for DataChannel buffer to clear', 'ERR_BUFFER_CLEAR_TIMEOUT')
+          throw new CodeError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`, 'ERR_BUFFER_CLEAR_TIMEOUT')
         }
 
         throw err
