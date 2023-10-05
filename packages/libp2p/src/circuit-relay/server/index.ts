@@ -6,10 +6,16 @@ import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
 import pDefer from 'p-defer'
+import { object, number, boolean } from 'yup'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
+import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from '../../registrar.js'
 import {
   CIRCUIT_PROTO_CODE,
+  DEFAULT_DURATION_LIMIT,
   DEFAULT_HOP_TIMEOUT,
+  DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL,
+  DEFAULT_MAX_RESERVATION_STORE_SIZE,
+  DEFAULT_MAX_RESERVATION_TTL,
   RELAY_SOURCE_TAG,
   RELAY_V2_HOP_CODEC,
   RELAY_V2_STOP_CODEC
@@ -95,10 +101,6 @@ export interface RelayServerEvents {
   'relay:advert:error': CustomEvent<Error>
 }
 
-const defaults = {
-  maxOutboundStopStreams: MAX_CONNECTIONS
-}
-
 class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
   private readonly registrar: Registrar
   private readonly peerStore: PeerStore
@@ -121,6 +123,20 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   constructor (components: CircuitRelayServerComponents, init: CircuitRelayServerInit = {}) {
     super()
 
+    const validatedConfig = object({
+      hopTimeout: number().min(0).integer().default(DEFAULT_HOP_TIMEOUT),
+      reservations: object({
+        maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
+        reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
+        applyDefaultLimit: boolean().default(true),
+        reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
+        defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT).max(init?.reservations?.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL, `default duration limit must be less than reservation TTL: ${init?.reservations?.reservationTtl}`)
+      }),
+      maxInboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
+      maxOutboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS),
+      maxOutboundStopStreams: number().integer().min(0).default(MAX_CONNECTIONS)
+    }).validateSync(init)
+
     this.registrar = components.registrar
     this.peerStore = components.peerStore
     this.addressManager = components.addressManager
@@ -128,11 +144,11 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     this.connectionManager = components.connectionManager
     this.connectionGater = components.connectionGater
     this.started = false
-    this.hopTimeout = init?.hopTimeout ?? DEFAULT_HOP_TIMEOUT
+    this.hopTimeout = validatedConfig.hopTimeout
     this.shutdownController = new AbortController()
-    this.maxInboundHopStreams = init.maxInboundHopStreams
-    this.maxOutboundHopStreams = init.maxOutboundHopStreams
-    this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
+    this.maxInboundHopStreams = validatedConfig.maxInboundHopStreams
+    this.maxOutboundHopStreams = validatedConfig.maxOutboundHopStreams
+    this.maxOutboundStopStreams = validatedConfig.maxOutboundStopStreams
 
     try {
       // fails on node < 15.4

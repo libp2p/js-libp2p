@@ -14,6 +14,7 @@ import sinon from 'sinon'
 import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
+import { identifyService } from '../../src/identify/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -93,7 +94,8 @@ describe('dialing (resolvable addresses)', () => {
           plaintext()
         ],
         services: {
-          relay: circuitRelayServer()
+          relay: circuitRelayServer(),
+          identify: identifyService()
         },
         connectionGater: mockConnectionGater()
       })

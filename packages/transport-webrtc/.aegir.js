@@ -1,4 +1,3 @@
-
 /** @type {import('aegir').PartialOptions} */
 export default {
   build: {
@@ -32,7 +31,7 @@ export default {
         services: {
           relay: circuitRelayServer({
             reservations: {
-              maxReservations: Infinity
+              maxReservations: 10000
             }
           }),
           identify: identifyService()
