@@ -227,7 +227,7 @@ export class WebRTCStream extends AbstractStream {
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.bufferedAmountLowEventTimeout })
       } catch (err: any) {
         if (err instanceof TimeoutError) {
-          throw new Error('Timed out waiting for DataChannel buffer to clear')
+          throw new CodeError('Timed out waiting for DataChannel buffer to clear', 'ERR_BUFFER_CLEAR_TIMEOUT')
         }
 
         throw err

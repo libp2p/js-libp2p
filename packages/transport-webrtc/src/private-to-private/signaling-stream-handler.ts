@@ -31,12 +31,11 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     peerConnection.onicecandidate = ({ candidate }) => {
       answerSentPromise.promise.then(
         async () => {
-          let data = ''
+          // a null candidate means end-of-candidates
+          // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+          const data = JSON.stringify(candidate?.toJSON() ?? null)
 
-          if (candidate != null) {
-            data = JSON.stringify(candidate.toJSON())
-            log.trace('recipient send ICE candidate %s', data)
-          }
+          log.trace('recipient sending ICE candidate %s', data)
 
           await messageStream.write({
             type: Message.Type.ICE_CANDIDATE,
@@ -60,7 +59,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     })
 
     if (pbOffer.type !== Message.Type.SDP_OFFER) {
-      throw new Error(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `)
+      throw new CodeError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `, 'ERR_SDP_HANDSHAKE_FAILED')
     }
 
     log.trace('recipient receive SDP offer %s', pbOffer.data)
@@ -72,14 +71,14 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
 
     await peerConnection.setRemoteDescription(offer).catch(err => {
       log.error('could not execute setRemoteDescription', err)
-      throw new Error('Failed to set remoteDescription')
+      throw new CodeError('Failed to set remoteDescription', 'ERR_SDP_HANDSHAKE_FAILED')
     })
 
     // create and write an SDP answer
     const answer = await peerConnection.createAnswer().catch(err => {
       log.error('could not execute createAnswer', err)
       answerSentPromise.reject(err)
-      throw new Error('Failed to create answer')
+      throw new CodeError('Failed to create answer', 'ERR_SDP_HANDSHAKE_FAILED')
     })
 
     log.trace('recipient send SDP answer %s', answer.sdp)
@@ -92,7 +91,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     await peerConnection.setLocalDescription(answer).catch(err => {
       log.error('could not execute setLocalDescription', err)
       answerSentPromise.reject(err)
-      throw new Error('Failed to set localDescription')
+      throw new CodeError('Failed to set localDescription', 'ERR_SDP_HANDSHAKE_FAILED')
     })
 
     answerSentPromise.resolve()

@@ -88,12 +88,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
 
       // setup callback to write ICE candidates to the remote peer
       peerConnection.onicecandidate = ({ candidate }) => {
-        let data = ''
-
-        if (candidate != null) {
-          data = JSON.stringify(candidate.toJSON())
-          log.trace('initiator send ICE candidate %s', data)
-        }
+        const data = JSON.stringify(candidate?.toJSON() ?? null)
 
         log.trace('initiator sending ICE candidate %s', data)
 
@@ -124,7 +119,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       // set offer as local description
       await peerConnection.setLocalDescription(offerSdp).catch(err => {
         log.error('could not execute setLocalDescription', err)
-        throw new Error('Failed to set localDescription')
+        throw new CodeError('Failed to set localDescription', 'ERR_SDP_HANDSHAKE_FAILED')
       })
 
       // read answer
@@ -133,7 +128,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       })
 
       if (answerMessage.type !== Message.Type.SDP_ANSWER) {
-        throw new Error('remote should send an SDP answer')
+        throw new CodeError('remote should send an SDP answer', 'ERR_SDP_HANDSHAKE_FAILED')
       }
 
       log.trace('initiator receive SDP answer %s', answerMessage.data)
@@ -141,7 +136,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       const answerSdp = new RTCSessionDescription({ type: 'answer', sdp: answerMessage.data })
       await peerConnection.setRemoteDescription(answerSdp).catch(err => {
         log.error('could not execute setRemoteDescription', err)
-        throw new Error('Failed to set remoteDescription')
+        throw new CodeError('Failed to set remoteDescription', 'ERR_SDP_HANDSHAKE_FAILED')
       })
 
       log.trace('initiator read candidates until connected')

@@ -70,10 +70,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
     this.peerConnection.onconnectionstatechange = () => {
       log.trace('peer connection state change', this.peerConnection.connectionState, 'initial state', initialState)
 
-      if (this.peerConnection.connectionState === 'disconnected') {
-        // attempt to reconnect
-        this.peerConnection.restartIce()
-      } else if (this.peerConnection.connectionState === 'closed') {
+      if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
         // nothing else to do but close the connection
         this.timeline.close = Date.now()
       }

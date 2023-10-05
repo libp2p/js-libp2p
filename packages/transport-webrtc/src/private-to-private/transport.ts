@@ -148,34 +148,6 @@ export class WebRTCTransport implements Transport, Startable {
       muxerFactory
     })
 
-    peerConnection.onnegotiationneeded = () => {
-      log('initiator renegotiating connection')
-
-      this.metrics?.dialerEvents.increment({ renegotiate: true })
-
-      let signal = options.signal
-
-      if (signal?.aborted === true) {
-        signal = undefined
-      }
-
-      void initiateConnection({
-        peerConnection,
-        multiaddr: ma,
-        dataChannelOptions: this.init.dataChannel,
-        signal: options.signal,
-        connectionManager: this.components.connectionManager,
-        transportManager: this.components.transportManager
-      })
-        .then(({ remoteAddress }) => {
-          webRTCConn.remoteAddr = multiaddr(remoteAddress)
-        })
-        .catch(err => {
-          log.error('initiator errored while renegotiating connection')
-          connection.abort(err)
-        })
-    }
-
     // close the connection on shut down
     this._closeOnShutdown(peerConnection, webRTCConn)
 

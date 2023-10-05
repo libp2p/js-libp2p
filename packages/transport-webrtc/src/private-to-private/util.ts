@@ -1,8 +1,13 @@
+import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { raceSignal } from 'race-signal'
+import { abortableSource } from 'abortable-iterator'
+import { anySignal } from 'any-signal'
+import * as lp from 'it-length-prefixed'
+import { AbortError, raceSignal } from 'race-signal'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
+import type { Stream } from '@libp2p/interface/connection'
 import type { AbortOptions, MessageStream } from 'it-protobuf-stream'
 import type { DeferredPromise } from 'p-defer'
 
@@ -12,50 +17,54 @@ export interface ReadCandidatesOptions extends AbortOptions {
   direction: string
 }
 
-export const readCandidatesUntilConnected = async (connectedPromise: DeferredPromise<void>, pc: RTCPeerConnection, stream: MessageStream<Message>, options: ReadCandidatesOptions): Promise<void> => {
+export const readCandidatesUntilConnected = async (connectedPromise: DeferredPromise<void>, pc: RTCPeerConnection, stream: MessageStream<Message, Stream>, options: ReadCandidatesOptions): Promise<void> => {
+  // if we connect, stop trying to read from the stream
+  const controller = new AbortController()
+  connectedPromise.promise.then(() => {
+    controller.abort()
+  }, () => {
+    controller.abort()
+  })
+
+  const signal = anySignal([
+    controller.signal,
+    options.signal
+  ])
+
+  const source = abortableSource(stream.unwrap().unwrap().source, signal, {
+    returnOnAbort: true
+  })
+
   try {
-    while (true) {
-      const readResult = await Promise.race([
-        connectedPromise.promise,
-        stream.read(options)
-      ])
-
-      if (readResult == null) {
-        // connected promise resolved
-        break
-      }
-
-      const message = readResult
+    // read candidates until we are connected or we reach the end of the stream
+    for await (const buf of lp.decode(source)) {
+      const message = Message.decode(buf)
 
       if (message.type !== Message.Type.ICE_CANDIDATE) {
-        throw new Error('ICE candidate message expected')
+        throw new CodeError('ICE candidate message expected', 'ERR_NOT_ICE_CANDIDATE')
       }
 
-      // end of candidates has been signalled
-      if (message.data == null || message.data === '') {
-        log.trace('%s received end-of-candidates', options.direction)
-        break
-      }
+      // a null candidate means end-of-candidates
+      // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      const candidate = new RTCIceCandidate(JSON.parse(message.data ?? 'null'))
 
-      log.trace('%s received new ICE candidate: %s', options.direction, message.data)
+      log.trace('%s received new ICE candidate', options.direction, candidate)
 
       try {
-        await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(message.data)))
+        await pc.addIceCandidate(candidate)
       } catch (err) {
-        log.error('%s bad candidate received:', options.direction, err)
-        throw new Error('bad candidate received')
+        log.error('%s bad candidate received', options.direction, err)
+        throw new CodeError('bad candidate received', 'ERR_BAD_ICE_CANDIDATE')
       }
     }
-  } catch (err: any) {
-    // this happens when the remote PeerConnection's state has changed to
-    // connected before the final ICE candidate is sent and so they close
-    // the signalling stream while we are still reading from it - ignore
-    // the error and race the passed signal for our own connection state
-    // to change
-    if (err.code !== 'ERR_UNEXPECTED_EOF') {
-      log.error('error while reading ICE candidates', err)
-      throw err
-    }
+  } catch (err) {
+    log.error('%s error parsing ICE candidate', options.direction, err)
+  } finally {
+    signal.clear()
+  }
+
+  if (options.signal?.aborted === true) {
+    throw new AbortError('Aborted while reading ICE candidates', 'ERR_ICE_CANDIDATES_READ_ABORTED')
   }
 
   // read all available ICE candidates, wait for connection state change
@@ -75,7 +84,7 @@ export function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredProm
       case 'failed':
       case 'disconnected':
       case 'closed':
-        promise.reject(new Error('RTCPeerConnection was closed'))
+        promise.reject(new CodeError('RTCPeerConnection was closed', 'ERR_CONNECTION_CLOSED_BEFORE_CONNECTED'))
         break
       default:
         break
