@@ -5,6 +5,13 @@
 
 * bump aegir from 38.1.8 to 39.0.5 ([#393](https://github.com/libp2p/js-libp2p-interfaces/issues/393)) ([31f3797](https://github.com/libp2p/js-libp2p-interfaces/commit/31f3797b24f7c23f3f16e9db3a230bd5f7cd5175))
 
+## [4.1.0](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.6...interface-compliance-tests-v4.1.0) (2023-10-01)
+
+
+### Features
+
+* add mock stream pair ([#2069](https://www.github.com/libp2p/js-libp2p/issues/2069)) ([e3ab192](https://www.github.com/libp2p/js-libp2p/commit/e3ab1929b505df6d50b5a6ddc50cd2669f54b894))
+
 ### [4.0.6](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.5...interface-compliance-tests-v4.0.6) (2023-09-15)
 
 

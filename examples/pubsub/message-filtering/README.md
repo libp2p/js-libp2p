@@ -8,7 +8,7 @@ First, let's update our libp2p configuration with a pubsub implementation.
 
 ```JavaScript
 import { createLibp2p } from 'libp2p'
-import { GossipSub } from '@chainsafe/libp2p-gossipsub'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
@@ -23,7 +23,9 @@ const createNode = async () => {
     streamMuxers: [yamux(), mplex()],
     connectionEncryption: [noise()],
 	  // we add the Pubsub module we want
-	  pubsub: gossipsub({ allowPublishToZeroPeers: true })
+    services: {
+      pubsub: gossipsub({ allowPublishToZeroPeers: true })
+    }
   })
 
   return node
@@ -88,13 +90,17 @@ await node3.services.pubsub.subscribe(topic)
 Finally, let's define the additional filter in the fruit topic.
 
 ```JavaScript
+import { TopicValidatorResult } from '@libp2p/interface/pubsub'
+
 const validateFruit = (msgTopic, msg) => {
   const fruit = uint8ArrayToString(msg.data)
   const validFruit = ['banana', 'apple', 'orange']
 
+  // car is not a fruit !
   if (!validFruit.includes(fruit)) {
     throw new Error('no valid fruit received')
   }
+  return TopicValidatorResult.Accept
 }
 
 node1.services.pubsub.topicValidators.set(topic, validateFruit)

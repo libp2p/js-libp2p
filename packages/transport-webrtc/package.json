@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "A libp2p transport using WebRTC connections",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc#readme",
@@ -28,6 +28,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -72,9 +73,9 @@
   },
   "devDependencies": {
     "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@libp2p/interface-compliance-tests": "^4.0.6",
+    "@libp2p/interface-compliance-tests": "^4.1.0",
     "@libp2p/peer-id-factory": "^3.0.4",
-    "@libp2p/websockets": "^7.0.7",
+    "@libp2p/websockets": "^7.0.8",
     "@types/sinon": "^10.0.15",
     "aegir": "^40.0.8",
     "delay": "^6.0.0",
@@ -82,7 +83,7 @@
     "it-length": "^3.0.2",
     "it-map": "^3.0.3",
     "it-pair": "^2.0.6",
-    "libp2p": "^0.46.11",
+    "libp2p": "^0.46.12",
     "p-retry": "^6.1.0",
     "protons": "^7.0.2",
     "sinon": "^16.0.0",

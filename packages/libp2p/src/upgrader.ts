@@ -478,7 +478,7 @@ export class DefaultUpgrader implements Upgrader {
 
           return muxedStream
         } catch (err: any) {
-          log.error('could not create new stream', err)
+          log.error('could not create new stream for protocols %s on connection with address %a', protocols, connection.remoteAddr, err)
 
           if (muxedStream.timeline.close == null) {
             muxedStream.abort(err)
