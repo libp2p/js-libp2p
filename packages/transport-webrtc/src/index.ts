@@ -5,7 +5,7 @@ import type { Transport } from '@libp2p/interface/transport'
 
 export interface DataChannelOptions {
   /**
-   * The maximum message size sendable over the channel
+   * The maximum message size sendable over the channel in bytes (default 16KB)
    */
   maxMessageSize?: number
 
@@ -25,14 +25,14 @@ export interface DataChannelOptions {
   /**
    * When closing a stream, we wait for `bufferedAmount` to become 0 before
    * closing the underlying RTCDataChannel - this controls how long we wait
-   * (default: 30s)
+   * in ms (default: 30s)
    */
   drainTimeout?: number
 
   /**
    * When closing a stream we first send a FIN flag to the remote and wait
    * for a FIN_ACK reply before closing the underlying RTCDataChannel - this
-   * controls how long we wait for the acknowledgement (default: 5s)
+   * controls how long we wait for the acknowledgement in ms (default: 5s)
    */
   closeTimeout?: number
 }
