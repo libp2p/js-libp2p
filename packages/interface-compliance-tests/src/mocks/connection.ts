@@ -170,7 +170,13 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
   return connection
 }
 
-export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>): Stream {
+export interface StreamInit {
+  direction?: Direction
+  protocol?: string
+  id?: string
+}
+
+export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}): Stream {
   return {
     ...stream,
     close: async () => {},
@@ -186,8 +192,29 @@ export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Sourc
     id: `stream-${Date.now()}`,
     status: 'open',
     readStatus: 'ready',
-    writeStatus: 'ready'
+    writeStatus: 'ready',
+    ...init
   }
+}
+
+export interface StreamPairInit {
+  duplex: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>
+  init?: StreamInit
+}
+
+export function streamPair (a: StreamPairInit, b: StreamPairInit, init: StreamInit = {}): [Stream, Stream] {
+  return [
+    mockStream(a.duplex, {
+      direction: 'outbound',
+      ...init,
+      ...(a.init ?? {})
+    }),
+    mockStream(b.duplex, {
+      direction: 'inbound',
+      ...init,
+      ...(b.init ?? {})
+    })
+  ]
 }
 
 export interface Peer {
