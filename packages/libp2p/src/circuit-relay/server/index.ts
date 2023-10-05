@@ -16,8 +16,9 @@ import {
   DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL,
   DEFAULT_MAX_RESERVATION_STORE_SIZE,
   DEFAULT_MAX_RESERVATION_TTL,
-  RELAY_SOURCE_TAG
-  , RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC
+  RELAY_SOURCE_TAG, 
+  RELAY_V2_HOP_CODEC, 
+  RELAY_V2_STOP_CODEC
 } from '../constants.js'
 import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
