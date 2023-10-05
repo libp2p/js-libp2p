@@ -31,7 +31,9 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     peerConnection.onicecandidate = ({ candidate }) => {
       answerSentPromise.promise.then(
         async () => {
-          // a null candidate means end-of-candidates
+          // a null candidate means end-of-candidates, an empty string candidate
+          // means end-of-candidates for this generation, otherwise this should
+          // be a valid candidate object
           // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
           const data = JSON.stringify(candidate?.toJSON() ?? null)
 

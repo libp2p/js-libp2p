@@ -170,6 +170,10 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onclose = (_evt) => {
+      // if the channel has closed we'll never receive a FIN_ACK so resolve the
+      // promise so we don't try to wait later
+      this.receiveFinAck.resolve()
+
       void this.close().catch(err => {
         this.log.error('error closing stream after channel closed', err)
       })
@@ -268,17 +272,24 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendCloseWrite (options: AbortOptions): Promise<void> {
-    if (this.channel.readyState === 'closed') {
-      return
+    const sent = await this._sendFlag(Message.Flag.FIN)
+
+    if (sent) {
+      this.log.trace('awaiting FIN_ACK')
+      try {
+        await raceSignal(this.receiveFinAck.promise, options?.signal, {
+          errorMessage: 'sending close-write was aborted before FIN_ACK was received',
+          errorCode: 'ERR_FIN_ACK_NOT_RECEIVED'
+        })
+      } catch (err) {
+        this.log.error('failed to await FIN_ACK', err)
+      }
+    } else {
+      this.log.trace('sending FIN failed, not awaiting FIN_ACK')
     }
 
-    await this._sendFlag(Message.Flag.FIN)
-
-    this.log.trace('awaiting FIN_ACK')
-    await raceSignal(this.receiveFinAck.promise, options?.signal, {
-      errorMessage: 'sending close-write was aborted before FIN_ACK was received',
-      errorCode: 'ERR_FIN_ACK_NOT_RECEIVED'
-    })
+    // if we've attempted to receive a FIN_ACK, do not try again
+    this.receiveFinAck.resolve()
   }
 
   async sendCloseRead (): Promise<void> {
@@ -327,12 +338,28 @@ export class WebRTCStream extends AbstractStream {
     }
   }
 
-  private async _sendFlag (flag: Message.Flag): Promise<void> {
+  private async _sendFlag (flag: Message.Flag): Promise<boolean> {
+    if (this.channel.readyState !== 'open') {
+      // flags can be sent while we or the remote are closing the datachannel so
+      // if the channel isn't open, don't try to send it but return false to let
+      // the caller know and act if they need to
+      this.log.trace('not sending flag %s because channel is not open', flag.toString())
+      return false
+    }
+
     this.log.trace('sending flag %s', flag.toString())
     const msgbuf = Message.encode({ flag })
     const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
 
-    await this._sendMessage(prefixedBuf, false)
+    try {
+      await this._sendMessage(prefixedBuf, false)
+
+      return true
+    } catch (err: any) {
+      this.log.error('could not send flag %s', flag.toString(), err)
+    }
+
+    return false
   }
 }
 

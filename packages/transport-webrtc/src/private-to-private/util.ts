@@ -44,9 +44,29 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
         throw new CodeError('ICE candidate message expected', 'ERR_NOT_ICE_CANDIDATE')
       }
 
+      let candidateInit = JSON.parse(message.data ?? 'null')
+
+      if (candidateInit === '') {
+        log.trace('end-of-candidates for this generation received')
+        candidateInit = {
+          candidate: '',
+          sdpMid: '0',
+          sdpMLineIndex: 0
+        }
+      }
+
+      if (candidateInit === null) {
+        log.trace('end-of-candidates received')
+        candidateInit = {
+          candidate: null,
+          sdpMid: '0',
+          sdpMLineIndex: 0
+        }
+      }
+
       // a null candidate means end-of-candidates
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
-      const candidate = new RTCIceCandidate(JSON.parse(message.data ?? 'null'))
+      const candidate = new RTCIceCandidate(candidateInit)
 
       log.trace('%s received new ICE candidate', options.direction, candidate)
 
@@ -54,7 +74,6 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
         await pc.addIceCandidate(candidate)
       } catch (err) {
         log.error('%s bad candidate received', options.direction, err)
-        throw new CodeError('bad candidate received', 'ERR_BAD_ICE_CANDIDATE')
       }
     }
   } catch (err) {
