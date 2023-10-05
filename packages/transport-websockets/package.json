@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/websockets",
-  "version": "7.0.7",
+  "version": "7.0.8",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/transport-websockets#readme",
@@ -51,6 +51,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -82,7 +83,7 @@
     "ws": "^8.12.1"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^4.0.6",
+    "@libp2p/interface-compliance-tests": "^4.1.0",
     "aegir": "^40.0.8",
     "is-loopback-addr": "^2.0.1",
     "it-all": "^3.0.1",

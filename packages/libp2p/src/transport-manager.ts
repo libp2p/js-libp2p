@@ -199,7 +199,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
           upgrader: this.components.upgrader
         })
 
-        let listeners: Map<string, Listener> = this.listeners.get(key) ?? new Map()
+        const listeners: Map<string, Listener> = this.listeners.get(key) ?? new Map()
 
         this.listeners.set(key, listeners)
 
@@ -257,13 +257,10 @@ export class DefaultTransportManager implements TransportManager, Startable {
    * If a transport has any running listeners, they will be closed.
    */
   async remove (key: string): Promise<void> {
-    log('removing %s', key)
-
     // Close any running listeners
     for (const listener of this.listeners.get(key)?.values() ?? []) {
       await listener.close()
     }
-
     this.transports.delete(key)
     this.listeners.delete(key)
   }
