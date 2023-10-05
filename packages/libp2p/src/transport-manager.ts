@@ -29,8 +29,8 @@ export interface DefaultTransportManagerComponents {
 export class DefaultTransportManager implements TransportManager, Startable {
   private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
-  /** Map<TransportKey, Map<MultiaddrStr, Listener>> */
-  private readonly listeners: Map<string, Map<string, Listener>>
+  /** Map<TransportKey, Map<Multiaddr Listener>> */
+  private readonly listeners: Map<string, Map<Multiaddr, Listener>>
   private readonly faultTolerance: FaultTolerance
   private started: boolean
 
@@ -199,11 +199,11 @@ export class DefaultTransportManager implements TransportManager, Startable {
           upgrader: this.components.upgrader
         })
 
-        const listeners: Map<string, Listener> = this.listeners.get(key) ?? new Map()
+        const listeners: Map<Multiaddr, Listener> = this.listeners.get(key) ?? new Map()
 
         this.listeners.set(key, listeners)
 
-        listeners.set(addr.toString(), listener)
+        listeners.set(addr, listener)
 
         // Track listen/close events
         listener.addEventListener('listening', () => {
@@ -213,7 +213,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
         })
         listener.addEventListener('close', () => {
           // remove the listener
-          listeners.delete(addr.toString())
+          listeners.delete(addr)
 
           this.components.events.safeDispatchEvent('transport:close', {
             detail: listener
@@ -269,10 +269,10 @@ export class DefaultTransportManager implements TransportManager, Startable {
     log('removing listener for %a', ma)
 
     for (const listeners of this.listeners.values()) {
-      const listener = listeners.get(ma.toString())
+      const listener = listeners.get(ma)
       if (listener != null) {
         await listener.close()
-        listeners.delete(ma.toString())
+        listeners.delete(ma)
       }
     }
   }

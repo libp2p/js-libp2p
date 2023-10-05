@@ -132,4 +132,28 @@ describe('Transport Manager (TCP)', () => {
 
     await tm.stop()
   })
+
+  it('should remove a spefic listener on a transport when it stops listening', async () => {
+    const transport = tcp()()
+    tm.add(transport)
+
+    expect(tm.getListeners()).to.have.lengthOf(0)
+
+    const spyListener = sinon.spy(transport, 'createListener')
+
+    await tm.listen(addrs)
+
+    expect(spyListener.callCount).to.equal(addrs.length)
+
+    // wait for listeners to start listening
+    await pWaitFor(async () => {
+      return tm.getListeners().length === addrs.length
+    })
+
+    await tm.removeListener(addrs[0])
+
+    expect(tm.getListeners()).to.have.lengthOf(addrs.length - 1)
+
+    await tm.stop()
+  })
 })
