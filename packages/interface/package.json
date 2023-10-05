@@ -140,6 +140,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -168,7 +169,7 @@
   "devDependencies": {
     "@types/sinon": "^10.0.15",
     "aegir": "^40.0.8",
-    "sinon": "^15.1.2",
+    "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"
   }
 }

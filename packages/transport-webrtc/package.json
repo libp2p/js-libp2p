@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "3.1.10",
+  "version": "3.2.1",
   "description": "A libp2p transport using WebRTC connections",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc#readme",
@@ -28,6 +28,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -46,11 +47,12 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^13.0.0",
     "@libp2p/interface": "^0.1.2",
-    "@libp2p/interface-internal": "^0.1.4",
+    "@libp2p/interface-internal": "^0.1.5",
     "@libp2p/logger": "^3.0.2",
     "@libp2p/peer-id": "^3.0.2",
     "@multiformats/mafmt": "^12.1.2",
     "@multiformats/multiaddr": "^12.1.5",
+    "@multiformats/multiaddr-matcher": "^1.0.1",
     "abortable-iterator": "^5.0.1",
     "detect-browser": "^5.3.0",
     "it-length-prefixed": "^9.0.1",
@@ -70,18 +72,18 @@
   },
   "devDependencies": {
     "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@libp2p/interface-compliance-tests": "^4.0.5",
-    "@libp2p/peer-id-factory": "^3.0.3",
-    "@libp2p/websockets": "^7.0.6",
+    "@libp2p/interface-compliance-tests": "^4.1.0",
+    "@libp2p/peer-id-factory": "^3.0.4",
+    "@libp2p/websockets": "^7.0.8",
     "@types/sinon": "^10.0.15",
     "aegir": "^40.0.8",
     "delay": "^6.0.0",
     "it-length": "^3.0.2",
     "it-map": "^3.0.3",
     "it-pair": "^2.0.6",
-    "libp2p": "^0.46.10",
+    "libp2p": "^0.46.12",
     "protons": "^7.0.2",
-    "sinon": "^15.1.2",
+    "sinon": "^16.0.0",
     "sinon-ts": "^1.0.0"
   },
   "browser": {

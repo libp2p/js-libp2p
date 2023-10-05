@@ -21,6 +21,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -36,7 +37,7 @@
     "@libp2p/floodsub": "^8.0.0",
     "@libp2p/mdns": "^9.0.0",
     "@libp2p/mplex": "^9.0.0",
-    "@libp2p/pubsub-peer-discovery": "^8.0.4",
+    "@libp2p/pubsub-peer-discovery": "^9.0.0",
     "@libp2p/tcp": "^8.0.0",
     "libp2p": "^0.46.0"
   },
