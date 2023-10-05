@@ -129,7 +129,6 @@ export class WebRTCStream extends AbstractStream {
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
-    // this.sentFinAck = false
 
     // set up initial state
     switch (this.channel.readyState) {
