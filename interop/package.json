@@ -59,7 +59,7 @@
     "@libp2p/webtransport": "^3.1.1",
     "@multiformats/mafmt": "^12.1.2",
     "@multiformats/multiaddr": "^12.1.5",
-    "aegir": "^40.0.12",
+    "aegir": "^41.0.0",
     "libp2p": "^0.46.12",
     "redis": "^4.5.1"
   },

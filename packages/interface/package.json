@@ -169,7 +169,7 @@
   },
   "devDependencies": {
     "@types/sinon": "^10.0.15",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.3",
     "it-drain": "^3.0.3",
