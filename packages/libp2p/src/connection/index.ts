@@ -14,10 +14,10 @@ const CLOSE_TIMEOUT = 500
 interface ConnectionInit {
   remoteAddr: Multiaddr
   remotePeer: PeerId
-  newStream: (protocols: string[], options?: AbortOptions) => Promise<Stream>
-  close: (options?: AbortOptions) => Promise<void>
-  abort: (err: Error) => void
-  getStreams: () => Stream[]
+  newStream(protocols: string[], options?: AbortOptions): Promise<Stream>
+  close(options?: AbortOptions): Promise<void>
+  abort(err: Error): void
+  getStreams(): Stream[]
   status: ConnectionStatus
   direction: Direction
   timeline: ConnectionTimeline
