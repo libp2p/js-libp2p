@@ -100,7 +100,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i events",
     "prepublishOnly": "node scripts/update-version.js && npm run build",
     "build": "aegir build",
     "generate": "run-s generate:proto:*",
@@ -139,6 +139,7 @@
     "any-signal": "^4.1.1",
     "datastore-core": "^9.0.1",
     "delay": "^6.0.0",
+    "events": "^3.3.0",
     "interface-datastore": "^8.2.0",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.2",
