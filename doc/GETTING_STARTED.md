@@ -134,7 +134,7 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux',
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   transports: [webSockets()],
@@ -214,7 +214,7 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux',
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 import { bootstrap } from '@libp2p/bootstrap'
 

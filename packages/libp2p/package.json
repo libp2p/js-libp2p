@@ -164,7 +164,8 @@
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6",
     "wherearewe": "^2.0.1",
-    "xsalsa20": "^1.1.0"
+    "xsalsa20": "^1.1.0",
+    "yup": "^1.2.0"
   },
   "devDependencies": {
     "@chainsafe/libp2p-gossipsub": "^10.0.0",

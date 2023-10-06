@@ -6,8 +6,9 @@ import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import { number, object, string } from 'yup'
 import { codes } from '../errors.js'
-import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
+import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
@@ -17,8 +18,6 @@ import type { ConnectionManager } from '@libp2p/interface-internal/connection-ma
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 
 const log = logger('libp2p:fetch')
-
-const DEFAULT_TIMEOUT = 10000
 
 export interface FetchServiceInit {
   protocolPrefix?: string
@@ -94,15 +93,27 @@ class DefaultFetchService implements Startable, FetchService {
   private readonly components: FetchServiceComponents
   private readonly lookupFunctions: Map<string, LookupFunction>
   private started: boolean
-  private readonly init: FetchServiceInit
+  private readonly timeout: number
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
 
   constructor (components: FetchServiceComponents, init: FetchServiceInit) {
+    const validatedConfig = object({
+      protocolPrefix: string().default('libp2p'),
+      timeout: number().integer().default(TIMEOUT),
+      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
+    }).validateSync(init)
+
     this.started = false
     this.components = components
-    this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.protocol = `/${validatedConfig.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = validatedConfig.timeout
+    this.maxInboundStreams = validatedConfig.maxInboundStreams
+    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
+
     this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)
-    this.init = init
   }
 
   async start (): Promise<void> {
@@ -115,8 +126,8 @@ class DefaultFetchService implements Startable, FetchService {
           log.error(err)
         })
     }, {
-      maxInboundStreams: this.init.maxInboundStreams,
-      maxOutboundStreams: this.init.maxOutboundStreams
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
     })
     this.started = true
   }
@@ -143,8 +154,8 @@ class DefaultFetchService implements Startable, FetchService {
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      log('using default timeout of %d ms', this.init.timeout)
-      signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
+      log('using default timeout of %d ms', this.timeout)
+      signal = AbortSignal.timeout(this.timeout)
 
       try {
         // fails on node < 15.4

@@ -67,7 +67,8 @@ describe('Protocol prefix is configurable', () => {
       '/ipfs/id/1.0.0',
       '/ipfs/id/push/1.0.0',
       '/ipfs/ping/1.0.0',
-      '/libp2p/fetch/0.0.1'
+      '/libp2p/fetch/0.0.1',
+      '/libp2p/circuit/relay/0.2.0/stop'
     ])
   })
 })
