@@ -37,7 +37,7 @@
     "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude interop --exclude examples/auto-relay --exclude examples/chat --exclude examples/connection-encryption --exclude examples/delegated-routing --exclude examples/discovery-mechanisms --exclude examples/echo --exclude examples/peer-and-content-routing --exclude examples/pnet --exclude examples/protocol-and-stream-muxing --exclude examples/pubsub --exclude examples/transports --exclude doc"
   },
   "devDependencies": {
-    "aegir": "^40.0.1"
+    "aegir": "^41.0.0"
   },
   "eslintConfig": {
     "extends": "ipfs",

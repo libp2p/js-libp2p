@@ -38,7 +38,7 @@
     "libp2p": "^0.46.0"
   },
   "devDependencies": {
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.0",
     "execa": "^8.0.1",
     "p-defer": "^4.0.0",
     "uint8arrays": "^4.0.4"

@@ -43,7 +43,7 @@
     "libp2p": "^0.46.0"
   },
   "devDependencies": {
-    "aegir": "^40.0.1",
+    "aegir": "^41.0.0",
     "execa": "^7.1.1",
     "playwright": "^1.35.1",
     "vite": "^2.8.6"
