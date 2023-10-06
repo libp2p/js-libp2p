@@ -15,17 +15,17 @@ export interface Listener extends EventEmitter<ListenerEvents> {
   /**
    * Start a listener
    */
-  listen: (multiaddr: Multiaddr) => Promise<void>
+  listen(multiaddr: Multiaddr): Promise<void>
   /**
    * Get listen addresses
    */
-  getAddrs: () => Multiaddr[]
+  getAddrs(): Multiaddr[]
   /**
    * Close listener
    *
    * @returns {Promise<void>}
    */
-  close: () => Promise<void>
+  close(): Promise<void>
 }
 
 export const symbol = Symbol.for('@libp2p/transport')
@@ -60,12 +60,12 @@ export interface Transport {
   /**
    * Dial a given multiaddr.
    */
-  dial: (ma: Multiaddr, options: DialOptions) => Promise<Connection>
+  dial(ma: Multiaddr, options: DialOptions): Promise<Connection>
 
   /**
    * Create transport listeners.
    */
-  createListener: (options: CreateListenerOptions) => Listener
+  createListener(options: CreateListenerOptions): Listener
 
   /**
    * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
@@ -108,10 +108,10 @@ export interface Upgrader {
   /**
    * Upgrades an outbound connection on `transport.dial`.
    */
-  upgradeOutbound: (maConn: MultiaddrConnection, opts?: UpgraderOptions) => Promise<Connection>
+  upgradeOutbound(maConn: MultiaddrConnection, opts?: UpgraderOptions): Promise<Connection>
 
   /**
    * Upgrades an inbound connection on transport listener.
    */
-  upgradeInbound: (maConn: MultiaddrConnection, opts?: UpgraderOptions) => Promise<Connection>
+  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions): Promise<Connection>
 }

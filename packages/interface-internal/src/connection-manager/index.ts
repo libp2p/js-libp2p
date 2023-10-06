@@ -30,7 +30,7 @@ export interface ConnectionManager {
    * // []
    * ```
    */
-  getConnections: (peerId?: PeerId) => Connection[]
+  getConnections(peerId?: PeerId): Connection[]
 
   /**
    * Return a map of all connections with their associated PeerIds
@@ -41,7 +41,7 @@ export interface ConnectionManager {
    * const connectionsMap = libp2p.connectionManager.getConnectionsMap()
    * ```
    */
-  getConnectionsMap: () => PeerMap<Connection[]>
+  getConnectionsMap(): PeerMap<Connection[]>
 
   /**
    * Open a connection to a remote peer
@@ -52,12 +52,12 @@ export interface ConnectionManager {
    * const connection = await libp2p.connectionManager.openConnection(peerId)
    * ```
    */
-  openConnection: (peer: PeerId | Multiaddr | Multiaddr[], options?: OpenConnectionOptions) => Promise<Connection>
+  openConnection(peer: PeerId | Multiaddr | Multiaddr[], options?: OpenConnectionOptions): Promise<Connection>
 
   /**
    * Close our connections to a peer
    */
-  closeConnections: (peer: PeerId, options?: AbortOptions) => Promise<void>
+  closeConnections(peer: PeerId, options?: AbortOptions): Promise<void>
 
   /**
    * Invoked after an incoming connection is opened but before PeerIds are
@@ -65,12 +65,12 @@ export interface ConnectionManager {
    * resources to accept the connection in which case it will return true,
    * otherwise it will return false.
    */
-  acceptIncomingConnection: (maConn: MultiaddrConnection) => Promise<boolean>
+  acceptIncomingConnection(maConn: MultiaddrConnection): Promise<boolean>
 
   /**
    * Invoked after upgrading a multiaddr connection has finished
    */
-  afterUpgradeInbound: () => void
+  afterUpgradeInbound(): void
 
   /**
    * Return the list of in-progress or queued dials
@@ -81,5 +81,5 @@ export interface ConnectionManager {
    * const dials = libp2p.connectionManager.getDialQueue()
    * ```
    */
-  getDialQueue: () => PendingDial[]
+  getDialQueue(): PendingDial[]
 }

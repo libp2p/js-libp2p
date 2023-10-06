@@ -33,11 +33,11 @@ export interface CloseServerOnMaxConnectionsOpts {
   listenBelow: number
   /** Close server once connection count is greater than or equal to `closeAbove` */
   closeAbove: number
-  onListenError?: (err: Error) => void
+  onListenError?(err: Error): void
 }
 
 interface Context extends TCPCreateListenerOptions {
-  handler?: (conn: Connection) => void
+  handler?(conn: Connection): void
   upgrader: Upgrader
   socketInactivityTimeout?: number
   socketCloseTimeout?: number

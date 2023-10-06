@@ -9,10 +9,10 @@ interface BasePeerId {
   readonly privateKey?: Uint8Array
   readonly publicKey?: Uint8Array
 
-  toString: () => string
-  toCID: () => CID
-  toBytes: () => Uint8Array
-  equals: (other: PeerId | Uint8Array | string) => boolean
+  toString(): string
+  toCID(): CID
+  toBytes(): Uint8Array
+  equals(other: PeerId | Uint8Array | string): boolean
 }
 
 export interface RSAPeerId extends BasePeerId {

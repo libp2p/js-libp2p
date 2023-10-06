@@ -98,12 +98,12 @@ export class FloodSub extends PubSubBaseProtocol {
     }
 
     peers.forEach(id => {
-      if (this.components.peerId.equals(id)) {
+      if (this.components.peerId.equals(id) === true) {
         log('not sending message on topic %s to myself', message.topic)
         return
       }
 
-      if (id.equals(from)) {
+      if (id.equals(from) === true) {
         log('not sending message on topic %s to sender %p', message.topic, id)
         return
       }
