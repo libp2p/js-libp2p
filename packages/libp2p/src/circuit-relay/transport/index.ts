@@ -6,9 +6,10 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
+import { number, object } from 'yup'
 import { MAX_CONNECTIONS } from '../../connection-manager/constants.js'
 import { codes } from '../../errors.js'
-import { CIRCUIT_PROTO_CODE, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { CIRCUIT_PROTO_CODE, DEFAULT_STOP_TIMEOUT, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery, type RelayDiscoveryComponents } from './discovery.js'
 import { createListener } from './listener.js'
@@ -100,12 +101,6 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
   reservationCompletionTimeout?: number
 }
 
-const defaults = {
-  maxInboundStopStreams: MAX_CONNECTIONS,
-  maxOutboundStopStreams: MAX_CONNECTIONS,
-  stopTimeout: 30000
-}
-
 class CircuitRelayTransport implements Transport {
   private readonly discovery?: RelayDiscovery
   private readonly registrar: Registrar
@@ -116,12 +111,19 @@ class CircuitRelayTransport implements Transport {
   private readonly addressManager: AddressManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
-  private readonly maxInboundStopStreams: number
+  private readonly maxInboundStopStreams?: number
   private readonly maxOutboundStopStreams?: number
-  private readonly stopTimeout: number
+  private readonly stopTimeout?: number
   private started: boolean
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
+    const validatedConfig = object({
+      discoverRelays: number().min(0).integer().default(0),
+      maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+      maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+      stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)
+    }).validateSync(init)
+
     this.registrar = components.registrar
     this.peerStore = components.peerStore
     this.connectionManager = components.connectionManager
@@ -129,11 +131,11 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
-    this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
-    this.stopTimeout = init.stopTimeout ?? defaults.stopTimeout
+    this.maxInboundStopStreams = validatedConfig.maxInboundStopStreams
+    this.maxOutboundStopStreams = validatedConfig.maxOutboundStopStreams
+    this.stopTimeout = validatedConfig.stopTimeout
 
-    if (init.discoverRelays != null && init.discoverRelays > 0) {
+    if (validatedConfig.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
       this.discovery.addEventListener('relay:discover', (evt) => {
         this.reservationStore.addRelay(evt.detail, 'discovered')
@@ -321,7 +323,7 @@ class CircuitRelayTransport implements Transport {
    * An incoming STOP request means a remote peer wants to dial us via a relay
    */
   async onStop ({ connection, stream }: IncomingStreamData): Promise<void> {
-    const signal = AbortSignal.timeout(this.stopTimeout)
+    const signal = AbortSignal.timeout(this.stopTimeout ?? DEFAULT_STOP_TIMEOUT)
     const pbstr = pbStream(stream).pb(StopMessage)
     const request = await pbstr.read({
       signal
