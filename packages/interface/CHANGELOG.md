@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+### [0.1.3](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.2...interface-v0.1.3) (2023-10-06)
+
+
+### Bug Fixes
+
+* close webrtc streams without data loss ([#2073](https://www.github.com/libp2p/js-libp2p/issues/2073)) ([7d8b155](https://www.github.com/libp2p/js-libp2p/commit/7d8b15517a480e01a8ebd427ab0093509b78d5b0))
+
 ### [0.1.2](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.1...interface-v0.1.2) (2023-08-14)
 
 
