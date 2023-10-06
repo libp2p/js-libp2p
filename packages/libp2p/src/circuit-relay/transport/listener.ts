@@ -32,7 +32,6 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
 
     // remove listening addrs when a relay is removed
     this.relayStore.addEventListener('relay:removed', this._onRemoveRelayPeer)
-    console.log('added event listener:', this.relayStore.listenerCount('relay:removed'))
   }
 
   _onRemoveRelayPeer = (evt: CustomEvent<PeerId>): void => {
@@ -92,11 +91,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
   }
 
   async close (): Promise<void> {
-    // remove event listener
-    console.log('removing relay event listener for peer %s', Array.from(this.listeningAddrs.keys()).join(', '))
-    log.trace('removing relay event listener for peer %s', Array.from(this.listeningAddrs.keys()).join(', '))
-    this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
-    console.log('removing count:', this.relayStore.listenerCount('relay:removed'))
+
   }
 
   #removeRelayPeer (peerId: PeerId): void {
@@ -107,6 +102,8 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.listeningAddrs.delete(peerId)
 
     if (had) {
+      log.trace('removing relay event listener for peer %s', Array.from(this.listeningAddrs.keys()).join(', '))
+      this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
       // Announce listen addresses change
       this.safeDispatchEvent('close', {})
     }

@@ -112,8 +112,9 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     // remove the reservation and multiaddr and maybe trigger search
     // for new relays
     this.events.addEventListener('peer:disconnect', (evt) => {
-      console.log('peer:disconnect event listener', evt.detail)
-      this.#removeRelay(evt.detail)
+      this.#removeRelay(evt.detail).catch(err => {
+        log.error('error removing relay %p', evt.detail, err)
+      })
     })
   }
 
@@ -288,24 +289,43 @@ export class ReservationStore extends EventEmitter<ReservationStoreEvents> imple
     throw new Error(errMsg)
   }
 
+  async removeListeners (peerId: PeerId): Promise<void> {
+    const listenersToRemove: string[] = []
+
+    this.transportManager.getListeners().forEach((listeners) => {
+      listeners.getAddrs().forEach((addr) => {
+        if (addr.toString().includes(peerId.toString())) {
+          listenersToRemove.push(addr.toString())
+        }
+      })
+    })
+
+    for (const addr of listenersToRemove) {
+      await this.transportManager.remove(addr)
+      log('removed addr: %s', addr)
+    }
+  }
+
   /**
    * Remove listen relay
    */
-  #removeRelay (peerId: PeerId): void {
+  async #removeRelay (peerId: PeerId): Promise<void> {
     const existingReservation = this.reservations.get(peerId)
 
     if (existingReservation == null) {
       return
     }
 
-    log('connection to relay %p closed, removing reservation from local store', peerId)
+    log.trace('connection to relay %p closed, removing reservation from local store', peerId)
 
     clearTimeout(existingReservation.timeout)
     this.reservations.delete(peerId)
 
+    await this.removeListeners(peerId)
+
     this.safeDispatchEvent('relay:removed', { detail: peerId })
 
-    console.log('removing listener for relay peer %s', peerId)
+    log.trace('removing relay peer %s', peerId)
 
     if (this.reservations.size < this.maxDiscoveredRelays) {
       log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)

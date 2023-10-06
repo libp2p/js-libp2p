@@ -685,12 +685,10 @@ describe('circuit-relay', () => {
       expect(events[1].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
     })
 
-    // Not sure why this test isn't passing
-    it.skip('should remove the relay event listener when the relay stops', async () => {
+    it('should remove the relay event listener when the relay stops', async () => {
       // discover relay and make reservation
       await local.dial(relay1.getMultiaddrs()[0])
       await local.dial(relay2.getMultiaddrs()[0])
-      await local.dial(relay3.getMultiaddrs()[0])
 
       await usingAsRelayCount(local, [relay1, relay2], 2)
 
@@ -708,8 +706,7 @@ describe('circuit-relay', () => {
       expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(2)
 
       // remove one listener
-      await relay1.stop()
-      await relay2.stop()
+      await local.hangUp(relay1.peerId)
 
       await notUsingAsRelay(local, relay1)
 
