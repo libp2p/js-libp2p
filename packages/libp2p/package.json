@@ -100,7 +100,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i events",
     "prepublishOnly": "node scripts/update-version.js && npm run build",
     "build": "aegir build",
     "generate": "run-s generate:proto:*",
