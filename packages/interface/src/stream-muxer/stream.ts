@@ -11,8 +11,8 @@ import type { Source } from 'it-stream-types'
 // copied from @libp2p/logger to break a circular dependency
 interface Logger {
   (formatter: any, ...args: any[]): void
-  error: (formatter: any, ...args: any[]) => void
-  trace: (formatter: any, ...args: any[]) => void
+  error(formatter: any, ...args: any[]): void
+  trace(formatter: any, ...args: any[]): void
   enabled: boolean
 }
 
@@ -44,27 +44,27 @@ export interface AbstractStreamInit {
   /**
    * Invoked when the stream ends
    */
-  onEnd?: (err?: Error | undefined) => void
+  onEnd?(err?: Error | undefined): void
 
   /**
    * Invoked when the readable end of the stream is closed
    */
-  onCloseRead?: () => void
+  onCloseRead?(): void
 
   /**
    * Invoked when the writable end of the stream is closed
    */
-  onCloseWrite?: () => void
+  onCloseWrite?(): void
 
   /**
    * Invoked when the the stream has been reset by the remote
    */
-  onReset?: () => void
+  onReset?(): void
 
   /**
    * Invoked when the the stream has errored
    */
-  onAbort?: (err: Error) => void
+  onAbort?(err: Error): void
 
   /**
    * How long to wait in ms for stream data to be written to the underlying

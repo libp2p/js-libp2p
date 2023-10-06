@@ -9,6 +9,6 @@ export interface CreateOptions {
 }
 
 export interface AESCipher {
-  encrypt: (data: Uint8Array, password: string | Uint8Array) => Promise<Uint8Array>
-  decrypt: (data: Uint8Array, password: string | Uint8Array) => Promise<Uint8Array>
+  encrypt(data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array>
+  decrypt(data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array>
 }

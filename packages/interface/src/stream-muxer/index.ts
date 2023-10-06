@@ -12,7 +12,7 @@ export interface StreamMuxerFactory {
   /**
    * Creates a new stream muxer to be used with a new connection
    */
-  createStreamMuxer: (init?: StreamMuxerInit) => StreamMuxer
+  createStreamMuxer(init?: StreamMuxerInit): StreamMuxer
 }
 
 /**
@@ -32,29 +32,29 @@ export interface StreamMuxer extends Duplex<AsyncGenerator<Uint8Array>, Source<U
    * Initiate a new stream with the given name. If no name is
    * provided, the id of the stream will be used.
    */
-  newStream: (name?: string) => Stream | Promise<Stream>
+  newStream(name?: string): Stream | Promise<Stream>
 
   /**
    * Close or abort all tracked streams and stop the muxer
    */
-  close: (options?: AbortOptions) => Promise<void>
+  close(options?: AbortOptions): Promise<void>
 
   /**
    * Close or abort all tracked streams and stop the muxer
    */
-  abort: (err: Error) => void
+  abort(err: Error): void
 }
 
 export interface StreamMuxerInit {
   /**
    * A callback function invoked every time an incoming stream is opened
    */
-  onIncomingStream?: (stream: Stream) => void
+  onIncomingStream?(stream: Stream): void
 
   /**
    * A callback function invoke every time a stream ends
    */
-  onStreamEnd?: (stream: Stream) => void
+  onStreamEnd?(stream: Stream): void
 
   /**
    * Outbound stream muxers are opened by the local node, inbound stream muxers are opened by the remote

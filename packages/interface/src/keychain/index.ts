@@ -47,7 +47,7 @@ export interface KeyChain {
    * const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
    * ```
    */
-  exportKey: (name: string, password: string) => Promise<Multibase<'m'>>
+  exportKey(name: string, password: string): Promise<Multibase<'m'>>
 
   /**
    * Import a new key from a PEM encoded PKCS #8 string.
@@ -60,7 +60,7 @@ export interface KeyChain {
    * const keyInfo = await libp2p.keychain.importKey('keyTestImport', pemKey, 'password123')
    * ```
    */
-  importKey: (name: string, pem: string, password: string) => Promise<KeyInfo>
+  importKey(name: string, pem: string, password: string): Promise<KeyInfo>
 
   /**
    * Import a new key from a PeerId with a private key component
@@ -71,7 +71,7 @@ export interface KeyChain {
    * const keyInfo = await libp2p.keychain.importPeer('keyTestImport', peerIdFromString('12D3Foo...'))
    * ```
    */
-  importPeer: (name: string, peerId: PeerId) => Promise<KeyInfo>
+  importPeer(name: string, peerId: PeerId): Promise<KeyInfo>
 
   /**
    * Export an existing key as a PeerId
@@ -82,7 +82,7 @@ export interface KeyChain {
    * const peerId = await libp2p.keychain.exportPeerId('key-name')
    * ```
    */
-  exportPeerId: (name: string) => Promise<PeerId>
+  exportPeerId(name: string): Promise<PeerId>
 
   /**
    * Create a key in the keychain.
@@ -93,7 +93,7 @@ export interface KeyChain {
    * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * ```
    */
-  createKey: (name: string, type: KeyType, size?: number) => Promise<KeyInfo>
+  createKey(name: string, type: KeyType, size?: number): Promise<KeyInfo>
 
   /**
    * List all the keys.
@@ -104,7 +104,7 @@ export interface KeyChain {
    * const keyInfos = await libp2p.keychain.listKeys()
    * ```
    */
-  listKeys: () => Promise<KeyInfo[]>
+  listKeys(): Promise<KeyInfo[]>
 
   /**
    * Removes a key from the keychain.
@@ -116,7 +116,7 @@ export interface KeyChain {
    * const keyInfo = await libp2p.keychain.removeKey('keyTest')
    * ```
    */
-  removeKey: (name: string) => Promise<KeyInfo>
+  removeKey(name: string): Promise<KeyInfo>
 
   /**
    * Rename a key in the keychain.
@@ -128,7 +128,7 @@ export interface KeyChain {
    * const keyInfo = await libp2p.keychain.renameKey('keyTest', 'keyNewNtest')
    * ```
    */
-  renameKey: (oldName: string, newName: string) => Promise<KeyInfo>
+  renameKey(oldName: string, newName: string): Promise<KeyInfo>
 
   /**
    * Find a key by it's id.
@@ -140,7 +140,7 @@ export interface KeyChain {
    * const keyInfo2 = await libp2p.keychain.findKeyById(keyInfo.id)
    * ```
    */
-  findKeyById: (id: string) => Promise<KeyInfo>
+  findKeyById(id: string): Promise<KeyInfo>
 
   /**
    * Find a key by it's name.
@@ -152,7 +152,7 @@ export interface KeyChain {
    * const keyInfo2 = await libp2p.keychain.findKeyByName('keyTest')
    * ```
    */
-  findKeyByName: (name: string) => Promise<KeyInfo>
+  findKeyByName(name: string): Promise<KeyInfo>
 
   /**
    * Rotate keychain password and re-encrypt all associated keys
@@ -163,5 +163,5 @@ export interface KeyChain {
    * await libp2p.keychain.rotateKeychainPass('oldPassword', 'newPassword')
    * ```
    */
-  rotateKeychainPass: (oldPass: string, newPass: string) => Promise<void>
+  rotateKeychainPass(oldPass: string, newPass: string): Promise<void>
 }

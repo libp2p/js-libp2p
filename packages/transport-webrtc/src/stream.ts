@@ -379,7 +379,7 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
   /**
    * A callback invoked when the channel ends
    */
-  onEnd?: (err?: Error | undefined) => void
+  onEnd?(err?: Error | undefined): void
 }
 
 export function createStream (options: WebRTCStreamOptions): WebRTCStream {

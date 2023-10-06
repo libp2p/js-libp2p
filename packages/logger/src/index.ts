@@ -44,8 +44,8 @@ debug.formatters.a = (v?: Multiaddr): string => {
 
 export interface Logger {
   (formatter: any, ...args: any[]): void
-  error: (formatter: any, ...args: any[]) => void
-  trace: (formatter: any, ...args: any[]) => void
+  error(formatter: any, ...args: any[]): void
+  trace(formatter: any, ...args: any[]): void
   enabled: boolean
 }
 
