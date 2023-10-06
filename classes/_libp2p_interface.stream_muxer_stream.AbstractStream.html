@@ -33,7 +33,7 @@ configuration of the nodes.</p>
 <ul class="tsd-hierarchy">
 <li><a href="../interfaces/_libp2p_interface.connection.Stream.html" class="tsd-signature-type tsd-kind-interface">Stream</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L77">packages/interface/src/stream-muxer/stream.ts:77</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L86">packages/interface/src/stream-muxer/stream.ts:86</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -57,6 +57,7 @@ configuration of the nodes.</p>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html#onReset" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Reset?</span></a>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html#protocol" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>protocol?</span></a>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html#readStatus" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>read<wbr/>Status</span></a>
+<a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html#sendCloseWriteTimeout" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>send<wbr/>Close<wbr/>Write<wbr/>Timeout</span></a>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html#sinkController" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>sink<wbr/>Controller</span></a>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html#sinkEnd" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>sink<wbr/>End</span></a>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html#source" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>source</span></a>
@@ -103,7 +104,7 @@ configuration of the nodes.</p>
 <h5><span class="tsd-kind-parameter">init</span>: <a href="../interfaces/_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html" class="tsd-signature-type tsd-kind-interface">AbstractStreamInit</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_interface.stream_muxer_stream.AbstractStream.html" class="tsd-signature-type tsd-kind-class">AbstractStream</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L100">packages/interface/src/stream-muxer/stream.ts:100</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L110">packages/interface/src/stream-muxer/stream.ts:110</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member"><a id="direction" class="tsd-anchor"></a>
@@ -114,12 +115,12 @@ configuration of the nodes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#direction">direction</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L79">packages/interface/src/stream-muxer/stream.ts:79</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L88">packages/interface/src/stream-muxer/stream.ts:88</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="endErr" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>end<wbr/>Err</span><a href="#endErr" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">end<wbr/>Err</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L90">packages/interface/src/stream-muxer/stream.ts:90</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L99">packages/interface/src/stream-muxer/stream.ts:99</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="id" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>id</span><a href="#id" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
@@ -128,12 +129,12 @@ configuration of the nodes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#id">id</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L78">packages/interface/src/stream-muxer/stream.ts:78</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L87">packages/interface/src/stream-muxer/stream.ts:87</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-protected"><a id="log" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>log</span><a href="#log" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">log</span><span class="tsd-signature-symbol">:</span> <a href="https://www.npmjs.com/package/@libp2p/interface" class="tsd-signature-type external" target="_blank">Logger</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L98">packages/interface/src/stream-muxer/stream.ts:98</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L108">packages/interface/src/stream-muxer/stream.ts:108</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="metadata" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>metadata</span><a href="#metadata" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">metadata</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -142,7 +143,7 @@ configuration of the nodes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#metadata">metadata</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L82">packages/interface/src/stream-muxer/stream.ts:82</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L91">packages/interface/src/stream-muxer/stream.ts:91</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="onAbort" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>on<wbr/>Abort</span><a href="#onAbort" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Abort</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -160,7 +161,7 @@ configuration of the nodes.</p>
 <h5><span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L96">packages/interface/src/stream-muxer/stream.ts:96</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L105">packages/interface/src/stream-muxer/stream.ts:105</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="onCloseRead" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>on<wbr/>Close<wbr/>Read</span><a href="#onCloseRead" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Close<wbr/>Read</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -173,7 +174,7 @@ configuration of the nodes.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L93">packages/interface/src/stream-muxer/stream.ts:93</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L102">packages/interface/src/stream-muxer/stream.ts:102</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="onCloseWrite" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>on<wbr/>Close<wbr/>Write</span><a href="#onCloseWrite" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Close<wbr/>Write</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -186,7 +187,7 @@ configuration of the nodes.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L94">packages/interface/src/stream-muxer/stream.ts:94</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L103">packages/interface/src/stream-muxer/stream.ts:103</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="onEnd" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>on<wbr/>End</span><a href="#onEnd" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>End</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -204,7 +205,7 @@ configuration of the nodes.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L92">packages/interface/src/stream-muxer/stream.ts:92</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L101">packages/interface/src/stream-muxer/stream.ts:101</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="onReset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>on<wbr/>Reset</span><a href="#onReset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Reset</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
@@ -217,16 +218,16 @@ configuration of the nodes.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L95">packages/interface/src/stream-muxer/stream.ts:95</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L104">packages/interface/src/stream-muxer/stream.ts:104</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="protocol" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>protocol</span><a href="#protocol" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">protocol</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
-<div class="tsd-comment tsd-typography"><p>Once a protocol has been negotiated for this stream, it will be set on the stat object</p>
+<div class="tsd-comment tsd-typography"><p>The protocol negotiated for this stream</p>
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#protocol">protocol</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L81">packages/interface/src/stream-muxer/stream.ts:81</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L90">packages/interface/src/stream-muxer/stream.ts:90</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="readStatus" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>read<wbr/>Status</span><a href="#readStatus" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">read<wbr/>Status</span><span class="tsd-signature-symbol">:</span> <a href="../types/_libp2p_interface.connection.ReadStatus.html" class="tsd-signature-type tsd-kind-type-alias">ReadStatus</a></div>
@@ -235,23 +236,28 @@ configuration of the nodes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#readStatus">readStatus</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L85">packages/interface/src/stream-muxer/stream.ts:85</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L94">packages/interface/src/stream-muxer/stream.ts:94</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-is-private"><a id="sendCloseWriteTimeout" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>send<wbr/>Close<wbr/>Write<wbr/>Timeout</span><a href="#sendCloseWriteTimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">send<wbr/>Close<wbr/>Write<wbr/>Timeout</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L106">packages/interface/src/stream-muxer/stream.ts:106</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="sinkController" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>sink<wbr/>Controller</span><a href="#sinkController" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sink<wbr/>Controller</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController" class="tsd-signature-type external" target="_blank">AbortController</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L88">packages/interface/src/stream-muxer/stream.ts:88</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L97">packages/interface/src/stream-muxer/stream.ts:97</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="sinkEnd" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>sink<wbr/>End</span><a href="#sinkEnd" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sink<wbr/>End</span><span class="tsd-signature-symbol">:</span> <a href="https://www.npmjs.com/package/p-defer" class="tsd-signature-type external" target="_blank">DeferredPromise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L89">packages/interface/src/stream-muxer/stream.ts:89</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L98">packages/interface/src/stream-muxer/stream.ts:98</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="source" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>source</span><a href="#source" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">source</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator" class="tsd-signature-type external" target="_blank">AsyncGenerator</a><span class="tsd-signature-symbol">&lt;</span><a href="https://achingbrain.github.io/uint8arraylist/classes/Uint8ArrayList.html" class="tsd-signature-type external" target="_blank">Uint8ArrayList</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#source">source</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L83">packages/interface/src/stream-muxer/stream.ts:83</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L92">packages/interface/src/stream-muxer/stream.ts:92</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="status" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>status</span><a href="#status" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">status</span><span class="tsd-signature-symbol">:</span> <a href="../types/_libp2p_interface.connection.StreamStatus.html" class="tsd-signature-type tsd-kind-type-alias">StreamStatus</a></div>
@@ -260,12 +266,12 @@ configuration of the nodes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#status">status</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L84">packages/interface/src/stream-muxer/stream.ts:84</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L93">packages/interface/src/stream-muxer/stream.ts:93</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="streamSource" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>stream<wbr/>Source</span><a href="#streamSource" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">stream<wbr/>Source</span><span class="tsd-signature-symbol">:</span> <a href="https://alanshaw.github.io/it-pushable/interfaces/Pushable.html" class="tsd-signature-type external" target="_blank">Pushable</a><span class="tsd-signature-symbol">&lt;</span><a href="https://achingbrain.github.io/uint8arraylist/classes/Uint8ArrayList.html" class="tsd-signature-type external" target="_blank">Uint8ArrayList</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L91">packages/interface/src/stream-muxer/stream.ts:91</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L100">packages/interface/src/stream-muxer/stream.ts:100</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="timeline" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>timeline</span><a href="#timeline" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">timeline</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/_libp2p_interface.connection.StreamTimeline.html" class="tsd-signature-type tsd-kind-interface">StreamTimeline</a></div>
@@ -274,7 +280,7 @@ configuration of the nodes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#timeline">timeline</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L80">packages/interface/src/stream-muxer/stream.ts:80</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L89">packages/interface/src/stream-muxer/stream.ts:89</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="writeStatus" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>write<wbr/>Status</span><a href="#writeStatus" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">write<wbr/>Status</span><span class="tsd-signature-symbol">:</span> <a href="../types/_libp2p_interface.connection.WriteStatus.html" class="tsd-signature-type tsd-kind-type-alias">WriteStatus</a></div>
@@ -283,7 +289,7 @@ configuration of the nodes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#writeStatus">writeStatus</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L86">packages/interface/src/stream-muxer/stream.ts:86</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L95">packages/interface/src/stream-muxer/stream.ts:95</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="_closeSink" class="tsd-anchor"></a>
@@ -298,7 +304,7 @@ configuration of the nodes.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L369">packages/interface/src/stream-muxer/stream.ts:369</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L391">packages/interface/src/stream-muxer/stream.ts:391</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="_closeSinkAndSource" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>_close<wbr/>Sink<wbr/>And<wbr/>Source</span><a href="#_closeSinkAndSource" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -311,7 +317,7 @@ configuration of the nodes.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L364">packages/interface/src/stream-muxer/stream.ts:364</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L386">packages/interface/src/stream-muxer/stream.ts:386</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="_closeSource" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>_close<wbr/>Source</span><a href="#_closeSource" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -324,7 +330,7 @@ configuration of the nodes.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L379">packages/interface/src/stream-muxer/stream.ts:379</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L401">packages/interface/src/stream-muxer/stream.ts:401</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="abort" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>abort</span><a href="#abort" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -342,7 +348,7 @@ error)</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#abort">abort</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L325">packages/interface/src/stream-muxer/stream.ts:325</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L346">packages/interface/src/stream-muxer/stream.ts:346</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="close" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>close</span><a href="#close" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -362,7 +368,7 @@ error)</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#close">close</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L244">packages/interface/src/stream-muxer/stream.ts:244</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L272">packages/interface/src/stream-muxer/stream.ts:272</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="closeRead" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>close<wbr/>Read</span><a href="#closeRead" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -381,7 +387,7 @@ error)</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#closeRead">closeRead</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L259">packages/interface/src/stream-muxer/stream.ts:259</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L287">packages/interface/src/stream-muxer/stream.ts:287</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="closeWrite" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>close<wbr/>Write</span><a href="#closeWrite" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -399,7 +405,7 @@ error)</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/_libp2p_interface.connection.Stream.html">Stream</a>.<a href="../interfaces/_libp2p_interface.connection.Stream.html#closeWrite">closeWrite</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L282">packages/interface/src/stream-muxer/stream.ts:282</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L310">packages/interface/src/stream-muxer/stream.ts:310</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="destroy" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>destroy</span><a href="#destroy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -411,7 +417,7 @@ be received, close immediately to free up resources</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L420">packages/interface/src/stream-muxer/stream.ts:420</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L442">packages/interface/src/stream-muxer/stream.ts:442</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected"><a id="onSinkEnd" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>on<wbr/>Sink<wbr/>End</span><a href="#onSinkEnd" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected">
@@ -424,7 +430,7 @@ be received, close immediately to free up resources</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L218">packages/interface/src/stream-muxer/stream.ts:218</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L241">packages/interface/src/stream-muxer/stream.ts:241</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected"><a id="onSourceEnd" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>on<wbr/>Source<wbr/>End</span><a href="#onSourceEnd" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected">
@@ -437,7 +443,7 @@ be received, close immediately to free up resources</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L193">packages/interface/src/stream-muxer/stream.ts:193</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L211">packages/interface/src/stream-muxer/stream.ts:211</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="remoteCloseRead" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>remote<wbr/>Close<wbr/>Read</span><a href="#remoteCloseRead" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -449,7 +455,7 @@ messages</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L406">packages/interface/src/stream-muxer/stream.ts:406</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L428">packages/interface/src/stream-muxer/stream.ts:428</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="remoteCloseWrite" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>remote<wbr/>Close<wbr/>Write</span><a href="#remoteCloseWrite" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -461,7 +467,7 @@ messages</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L392">packages/interface/src/stream-muxer/stream.ts:392</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L414">packages/interface/src/stream-muxer/stream.ts:414</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="reset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>reset</span><a href="#reset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -473,7 +479,7 @@ error)</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L352">packages/interface/src/stream-muxer/stream.ts:352</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L373">packages/interface/src/stream-muxer/stream.ts:373</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sendCloseRead" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>Close<wbr/>Read</span><a href="#sendCloseRead" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -490,7 +496,7 @@ will be read by this end of the stream</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L473">packages/interface/src/stream-muxer/stream.ts:473</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L495">packages/interface/src/stream-muxer/stream.ts:495</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sendCloseWrite" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>Close<wbr/>Write</span><a href="#sendCloseWrite" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -507,7 +513,7 @@ will be sent by this end of the stream</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L467">packages/interface/src/stream-muxer/stream.ts:467</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L489">packages/interface/src/stream-muxer/stream.ts:489</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sendData" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>Data</span><a href="#sendData" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -525,7 +531,7 @@ will be sent by this end of the stream</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L456">packages/interface/src/stream-muxer/stream.ts:456</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L478">packages/interface/src/stream-muxer/stream.ts:478</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sendNewStream" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>New<wbr/>Stream</span><a href="#sendNewStream" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -542,7 +548,7 @@ opened</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L451">packages/interface/src/stream-muxer/stream.ts:451</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L473">packages/interface/src/stream-muxer/stream.ts:473</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sendReset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>Reset</span><a href="#sendReset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -558,7 +564,7 @@ opened</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L461">packages/interface/src/stream-muxer/stream.ts:461</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L483">packages/interface/src/stream-muxer/stream.ts:483</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sink" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>sink</span><a href="#sink" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -572,7 +578,7 @@ opened</p>
 <h4 class="tsd-returns-title">Returns <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of Stream.sink</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L140">packages/interface/src/stream-muxer/stream.ts:140</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L150">packages/interface/src/stream-muxer/stream.ts:150</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sourcePush" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>source<wbr/>Push</span><a href="#sourcePush" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -589,7 +595,7 @@ call this method to allow the stream consumer to read the data.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L435">packages/interface/src/stream-muxer/stream.ts:435</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L457">packages/interface/src/stream-muxer/stream.ts:457</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="sourceReadableLength" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>source<wbr/>Readable<wbr/>Length</span><a href="#sourceReadableLength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -601,7 +607,7 @@ data building up when the stream consumer is too slow.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L443">packages/interface/src/stream-muxer/stream.ts:443</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L465">packages/interface/src/stream-muxer/stream.ts:465</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -634,6 +640,7 @@ data building up when the stream consumer is too slow.</p>
 <li><a href="#onReset" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Reset</span></a></li>
 <li><a href="#protocol" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>protocol</span></a></li>
 <li><a href="#readStatus" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>read<wbr/>Status</span></a></li>
+<li><a href="#sendCloseWriteTimeout" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>send<wbr/>Close<wbr/>Write<wbr/>Timeout</span></a></li>
 <li><a href="#sinkController" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>sink<wbr/>Controller</span></a></li>
 <li><a href="#sinkEnd" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>sink<wbr/>End</span></a></li>
 <li><a href="#source" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>source</span></a></li>

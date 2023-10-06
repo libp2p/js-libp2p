@@ -22,7 +22,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">AbstractStreamInit</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L20">packages/interface/src/stream-muxer/stream.ts:20</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L23">packages/interface/src/stream-muxer/stream.ts:23</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -35,11 +35,15 @@
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#id" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>id</span></a>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#log" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>log</span></a>
 <a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#metadata" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>metadata?</span></a>
-<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onAbort" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Abort?</span></a>
-<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onCloseRead" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Close<wbr/>Read?</span></a>
-<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onCloseWrite" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Close<wbr/>Write?</span></a>
-<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onEnd" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>End?</span></a>
-<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onReset" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Reset?</span></a>
+<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#sendCloseWriteTimeout" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>send<wbr/>Close<wbr/>Write<wbr/>Timeout?</span></a>
+</div></section>
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading">Methods</h3>
+<div class="tsd-index-list"><a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onAbort" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Abort?</span></a>
+<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onCloseRead" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Close<wbr/>Read?</span></a>
+<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onCloseWrite" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Close<wbr/>Write?</span></a>
+<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onEnd" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>End?</span></a>
+<a href="_libp2p_interface.stream_muxer_stream.AbstractStreamInit.html#onReset" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Reset?</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
@@ -51,7 +55,7 @@ connection when closing the writable end of the stream. (default: 500)</p>
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L70">packages/interface/src/stream-muxer/stream.ts:70</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L73">packages/interface/src/stream-muxer/stream.ts:73</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="direction" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>direction</span><a href="#direction" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">direction</span><span class="tsd-signature-symbol">:</span> <a href="../types/_libp2p_interface.connection.Direction.html" class="tsd-signature-type tsd-kind-type-alias">Direction</a></div>
@@ -59,7 +63,7 @@ connection when closing the writable end of the stream. (default: 500)</p>
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L29">packages/interface/src/stream-muxer/stream.ts:29</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L32">packages/interface/src/stream-muxer/stream.ts:32</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="id" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>id</span><a href="#id" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
@@ -67,7 +71,7 @@ connection when closing the writable end of the stream. (default: 500)</p>
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L24">packages/interface/src/stream-muxer/stream.ts:24</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L27">packages/interface/src/stream-muxer/stream.ts:27</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="log" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log</span><a href="#log" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">log</span><span class="tsd-signature-symbol">:</span> <a href="https://www.npmjs.com/package/@libp2p/interface" class="tsd-signature-type external" target="_blank">Logger</a></div>
@@ -75,7 +79,7 @@ connection when closing the writable end of the stream. (default: 500)</p>
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L34">packages/interface/src/stream-muxer/stream.ts:34</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L37">packages/interface/src/stream-muxer/stream.ts:37</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="metadata" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>metadata</span><a href="#metadata" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">metadata</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type ">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -83,16 +87,22 @@ connection when closing the writable end of the stream. (default: 500)</p>
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L39">packages/interface/src/stream-muxer/stream.ts:39</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L42">packages/interface/src/stream-muxer/stream.ts:42</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member"><a id="sendCloseWriteTimeout" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>send<wbr/>Close<wbr/>Write<wbr/>Timeout</span><a href="#sendCloseWriteTimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">send<wbr/>Close<wbr/>Write<wbr/>Timeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
+<div class="tsd-comment tsd-typography"><p>After the stream sink has closed, a limit on how long it takes to send
+a close-write message to the remote peer.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L79">packages/interface/src/stream-muxer/stream.ts:79</a></li></ul></aside></section></section>
+<section class="tsd-panel-group tsd-member-group">
+<h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="onAbort" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>on<wbr/>Abort</span><a href="#onAbort" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Abort</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
-<div class="tsd-type-declaration">
-<h4>Type declaration</h4>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature" id="onAbort.__type.__type-1"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<li class="tsd-signature tsd-anchor-link" id="onAbort.onAbort-1"><span class="tsd-kind-call-signature">on<wbr/>Abort</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#onAbort.onAbort-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Invoked when the the stream has errored</p>
 </div>
@@ -102,50 +112,35 @@ connection when closing the writable end of the stream. (default: 500)</p>
 <li>
 <h5><span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><aside class="tsd-sources">
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L64">packages/interface/src/stream-muxer/stream.ts:64</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L67">packages/interface/src/stream-muxer/stream.ts:67</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="onCloseRead" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>on<wbr/>Close<wbr/>Read</span><a href="#onCloseRead" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Close<wbr/>Read</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
-<div class="tsd-type-declaration">
-<h4>Type declaration</h4>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature" id="onCloseRead.__type-2.__type-3"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<li class="tsd-signature tsd-anchor-link" id="onCloseRead.onCloseRead-1"><span class="tsd-kind-call-signature">on<wbr/>Close<wbr/>Read</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#onCloseRead.onCloseRead-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Invoked when the readable end of the stream is closed</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><aside class="tsd-sources">
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L49">packages/interface/src/stream-muxer/stream.ts:49</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L52">packages/interface/src/stream-muxer/stream.ts:52</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="onCloseWrite" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>on<wbr/>Close<wbr/>Write</span><a href="#onCloseWrite" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Close<wbr/>Write</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
-<div class="tsd-type-declaration">
-<h4>Type declaration</h4>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature" id="onCloseWrite.__type-4.__type-5"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<li class="tsd-signature tsd-anchor-link" id="onCloseWrite.onCloseWrite-1"><span class="tsd-kind-call-signature">on<wbr/>Close<wbr/>Write</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#onCloseWrite.onCloseWrite-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Invoked when the writable end of the stream is closed</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><aside class="tsd-sources">
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L54">packages/interface/src/stream-muxer/stream.ts:54</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L57">packages/interface/src/stream-muxer/stream.ts:57</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="onEnd" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>on<wbr/>End</span><a href="#onEnd" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>End</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
-<div class="tsd-type-declaration">
-<h4>Type declaration</h4>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature" id="onEnd.__type-6.__type-7"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<li class="tsd-signature tsd-anchor-link" id="onEnd.onEnd-1"><span class="tsd-kind-call-signature">on<wbr/>End</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">err</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#onEnd.onEnd-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Invoked when the stream ends</p>
 </div>
@@ -155,25 +150,20 @@ connection when closing the writable end of the stream. (default: 500)</p>
 <li>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">err</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error" class="tsd-signature-type external" target="_blank">Error</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><aside class="tsd-sources">
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L44">packages/interface/src/stream-muxer/stream.ts:44</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L47">packages/interface/src/stream-muxer/stream.ts:47</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="onReset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>on<wbr/>Reset</span><a href="#onReset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Reset</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
-<div class="tsd-type-declaration">
-<h4>Type declaration</h4>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature" id="onReset.__type-8.__type-9"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<li class="tsd-signature tsd-anchor-link" id="onReset.onReset-1"><span class="tsd-kind-call-signature">on<wbr/>Reset</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#onReset.onReset-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Invoked when the the stream has been reset by the remote</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><aside class="tsd-sources">
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/5f9d4f73/packages/interface/src/stream-muxer/stream.ts#L59">packages/interface/src/stream-muxer/stream.ts:59</a></li></ul></aside></section></section></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/70dbb97e/packages/interface/src/stream-muxer/stream.ts#L62">packages/interface/src/stream-muxer/stream.ts:62</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -198,11 +188,12 @@ connection when closing the writable end of the stream. (default: 500)</p>
 <li><a href="#id" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>id</span></a></li>
 <li><a href="#log" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>log</span></a></li>
 <li><a href="#metadata" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>metadata</span></a></li>
-<li><a href="#onAbort" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Abort</span></a></li>
-<li><a href="#onCloseRead" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Close<wbr/>Read</span></a></li>
-<li><a href="#onCloseWrite" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Close<wbr/>Write</span></a></li>
-<li><a href="#onEnd" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>End</span></a></li>
-<li><a href="#onReset" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Reset</span></a></li></ul></div></details></div>
+<li><a href="#sendCloseWriteTimeout" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>send<wbr/>Close<wbr/>Write<wbr/>Timeout</span></a></li>
+<li><a href="#onAbort" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Abort</span></a></li>
+<li><a href="#onCloseRead" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Close<wbr/>Read</span></a></li>
+<li><a href="#onCloseWrite" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Close<wbr/>Write</span></a></li>
+<li><a href="#onEnd" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>End</span></a></li>
+<li><a href="#onReset" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Reset</span></a></li></ul></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>libp2p - v1.0.0</span></a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">

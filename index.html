@@ -12,18 +12,47 @@
 <div class="col-content">
 <div class="tsd-page-title">
 <h2>libp2p - v1.0.0</h2></div>
-<div class="tsd-panel tsd-typography"><a id="md:js-libp2p-monorepo-" class="tsd-anchor"></a><h1><a href="#md:js-libp2p-monorepo-">js-libp2p-monorepo <!-- omit in toc --></a></h1><p><a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" alt="libp2p.io"></a>
+<div class="tsd-panel tsd-typography"><h1 align="center">
+  <a href="https://libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
+</h1>
+
+<h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
+
+<p align="center">
+  <a href="http://protocol.ai"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
+  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
+  <a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
+  <a href="https://matrix.to/#/#libp2p-implementers:ipfs.io"><img src="https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square" /> </a>
+  <a href="https://discord.gg/ipfs"><img src="https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square" /></a>
+  <a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg" /></a>
+  <a href="https://www.npmjs.com/package/libp2p"><img src="https://img.shields.io/npm/dm/libp2p.svg" /></a>
+  <a href="https://www.jsdelivr.com/package/npm/libp2p"><img src="https://data.jsdelivr.com/v1/package/npm/libp2p/badge"/></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master&label=ci&style=flat-square" /></a>
+  <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/master.svg?style=flat-square"></a>
+  <br>
+  <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
+  <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
+  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
+  <br>
+</p>
+
+<a id="md:js-libp2p-monorepo-" class="tsd-anchor"></a><h1><a href="#md:js-libp2p-monorepo-">js-libp2p-monorepo <!-- omit in toc --></a></h1><p><a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" alt="libp2p.io"></a>
 <a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square" alt="Discuss"></a>
 <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square" alt="codecov"></a>
 <a href="https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master&style=flat-square" alt="CI"></a></p>
 <blockquote>
 <p>JavaScript implementation of libp2p, a modular peer to peer network stack</p>
 </blockquote>
+<a id="md:project-status" class="tsd-anchor"></a><h3><a href="#md:project-status">Project status</a></h3><p>This project has been used in production for years in Ethereum, IPFS, and more.  It is actively maintained by multiple organizations and continues to be improved!  The API might change, but we strictly follow semver.</p>
+<p>The documentation in the master branch may contain changes from a pre-release.
+If you are looking for the documentation of the latest release, you can view the latest release on <a href="https://www.npmjs.com/package/libp2p"><strong>npm</strong></a>, or select the tag in github that matches the version you are looking for.</p>
+<p><strong>Want to get started?</strong> Check our <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide and <a href="/examples">examples folder</a>.</p>
+<p><strong>Want to update libp2p in your project?</strong> Check our <a href="./doc/migrations">migrations folder</a>.</p>
 <a id="md:table-of-contents-" class="tsd-anchor"></a><h2><a href="#md:table-of-contents-">Table of contents <!-- omit in toc --></a></h2><ul>
-<li><a href="#structure">Structure</a><ul>
-<li><a href="#project-status">Project status</a></li>
-</ul>
-</li>
 <li><a href="#background">Background</a></li>
 <li><a href="#roadmap">Roadmap</a></li>
 <li><a href="#install">Install</a></li>
@@ -34,6 +63,7 @@
 <li><a href="#tutorials-and-examples">Tutorials and Examples</a></li>
 </ul>
 </li>
+<li><a href="#structure">Structure</a></li>
 <li><a href="#development">Development</a><ul>
 <li><a href="#tests">Tests</a><ul>
 <li><a href="#run-unit-tests">Run unit tests</a></li>
@@ -46,8 +76,33 @@
 <li><a href="#contribute">Contribute</a></li>
 <li><a href="#api-docs">API Docs</a></li>
 <li><a href="#license">License</a></li>
-<li><a href="#contribution">Contribution</a></li>
 </ul>
+<a id="md:background" class="tsd-anchor"></a><h2><a href="#md:background">Background</a></h2><p>libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.</p>
+<p>We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:</p>
+<ul>
+<li><a href="https://libp2p.io">libp2p.io</a></li>
+<li><a href="https://docs.libp2p.io">docs.libp2p.io</a></li>
+<li><a href="https://github.com/libp2p/specs">Specification (WIP)</a></li>
+<li><a href="https://discuss.libp2p.io">Discussion Forums</a></li>
+<li>Talks<ul>
+<li><a href="https://archive.devcon.org/archive/watch/2/libp2p-devp2p-ipfs-and-ethereum-networking/"><code>libp2p &lt;3 ethereum</code> at DEVCON2</a></li>
+</ul>
+</li>
+<li>Articles<ul>
+<li><a href="https://github.com/libp2p/libp2p#description">The overview of libp2p</a></li>
+</ul>
+</li>
+</ul>
+<p>To sum up, libp2p is a &quot;network stack&quot; -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.</p>
+<a id="md:roadmap" class="tsd-anchor"></a><h2><a href="#md:roadmap">Roadmap</a></h2><p>The js-libp2p roadmap can be found here: <a href="https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md">https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md</a></p>
+<p>It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.</p>
+<p>It is complementary to the overarching libp2p project roadmap: <a href="https://github.com/libp2p/specs/blob/master/ROADMAP.md">https://github.com/libp2p/specs/blob/master/ROADMAP.md</a></p>
+<a id="md:install" class="tsd-anchor"></a><h2><a href="#md:install">Install</a></h2><pre><code class="language-sh"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">libp2p</span>
+</code><button>Copy</button></pre>
+<a id="md:usage" class="tsd-anchor"></a><h2><a href="#md:usage">Usage</a></h2><a id="md:configuration" class="tsd-anchor"></a><h3><a href="#md:configuration">Configuration</a></h3><p>For all the information on how you can configure libp2p see <a href="./doc/CONFIGURATION.md">CONFIGURATION.md</a>.</p>
+<a id="md:limits" class="tsd-anchor"></a><h3><a href="#md:limits">Limits</a></h3><p>For help configuring your node to resist malicious network peers, see <a href="./doc/LIMITS.md">LIMITS.md</a></p>
+<a id="md:getting-started" class="tsd-anchor"></a><h3><a href="#md:getting-started">Getting started</a></h3><p>If you are starting your journey with <code>js-libp2p</code>, read the <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide.</p>
+<a id="md:tutorials-and-examples" class="tsd-anchor"></a><h3><a href="#md:tutorials-and-examples">Tutorials and Examples</a></h3><p>You can find multiple examples on the <a href="./examples">examples folder</a> that will guide you through using libp2p for several scenarios.</p>
 <a id="md:structure" class="tsd-anchor"></a><h2><a href="#md:structure">Structure</a></h2><ul>
 <li><a href="./doc"><code>/doc</code></a> Docs for libp2p</li>
 <li><a href="./examples/auto-relay"><code>/examples/auto-relay</code></a> Shows how to configure relayed connections</li>
@@ -89,65 +144,6 @@
 <li><a href="./packages/transport-webtransport"><code>/packages/transport-webtransport</code></a> JavaScript implementation of the WebTransport module that libp2p uses and that implements the interface-transport spec</li>
 <li><a href="./packages/utils"><code>/packages/utils</code></a> Package to aggregate shared logic and dependencies for the libp2p ecosystem</li>
 </ul>
-<h1 align="center">
-  <a href="https://libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
-</h1>
-
-<h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
-
-<p align="center">
-  <a href="http://protocol.ai"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
-  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
-  <a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
-  <a href="https://matrix.to/#/#libp2p-implementers:ipfs.io"><img src="https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square" /> </a>
-  <a href="https://discord.gg/ipfs"><img src="https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square" /></a>
-  <a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg" /></a>
-  <a href="https://www.npmjs.com/package/libp2p"><img src="https://img.shields.io/npm/dm/libp2p.svg" /></a>
-  <a href="https://www.jsdelivr.com/package/npm/libp2p"><img src="https://data.jsdelivr.com/v1/package/npm/libp2p/badge"/></a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master&label=ci&style=flat-square" /></a>
-  <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/master.svg?style=flat-square"></a>
-  <br>
-  <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
-  <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
-  <br>
-</p>
-
-<a id="md:project-status" class="tsd-anchor"></a><h3><a href="#md:project-status">Project status</a></h3><p>This project has been used in production for years in Ethereum, IPFS, and more.  It is actively maintained by multiple organizations and continues to be improved!  The API might change, but we strictly follow semver.</p>
-<p>The documentation in the master branch may contain changes from a pre-release.
-If you are looking for the documentation of the latest release, you can view the latest release on <a href="https://www.npmjs.com/package/libp2p"><strong>npm</strong></a>, or select the tag in github that matches the version you are looking for.</p>
-<p><strong>Want to get started?</strong> Check our <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide and <a href="/examples">examples folder</a>.</p>
-<p><strong>Want to update libp2p in your project?</strong> Check our <a href="./doc/migrations">migrations folder</a>.</p>
-<a id="md:background" class="tsd-anchor"></a><h2><a href="#md:background">Background</a></h2><p>libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.</p>
-<p>We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:</p>
-<ul>
-<li><a href="https://libp2p.io">libp2p.io</a></li>
-<li><a href="https://docs.libp2p.io">docs.libp2p.io</a></li>
-<li><a href="https://github.com/libp2p/specs">Specification (WIP)</a></li>
-<li><a href="https://discuss.libp2p.io">Discussion Forums</a></li>
-<li>Talks<ul>
-<li><a href="https://archive.devcon.org/archive/watch/2/libp2p-devp2p-ipfs-and-ethereum-networking/"><code>libp2p &lt;3 ethereum</code> at DEVCON2</a></li>
-</ul>
-</li>
-<li>Articles<ul>
-<li><a href="https://github.com/libp2p/libp2p#description">The overview of libp2p</a></li>
-</ul>
-</li>
-</ul>
-<p>To sum up, libp2p is a &quot;network stack&quot; -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.</p>
-<a id="md:roadmap" class="tsd-anchor"></a><h2><a href="#md:roadmap">Roadmap</a></h2><p>The js-libp2p roadmap can be found here: <a href="https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md">https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md</a></p>
-<p>It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.</p>
-<p>It is complementary to the overarching libp2p project roadmap: <a href="https://github.com/libp2p/specs/blob/master/ROADMAP.md">https://github.com/libp2p/specs/blob/master/ROADMAP.md</a></p>
-<a id="md:install" class="tsd-anchor"></a><h2><a href="#md:install">Install</a></h2><pre><code class="language-sh"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">libp2p</span>
-</code><button>Copy</button></pre>
-<a id="md:usage" class="tsd-anchor"></a><h2><a href="#md:usage">Usage</a></h2><a id="md:configuration" class="tsd-anchor"></a><h3><a href="#md:configuration">Configuration</a></h3><p>For all the information on how you can configure libp2p see <a href="./doc/CONFIGURATION.md">CONFIGURATION.md</a>.</p>
-<a id="md:limits" class="tsd-anchor"></a><h3><a href="#md:limits">Limits</a></h3><p>For help configuring your node to resist malicious network peers, see <a href="./doc/LIMITS.md">LIMITS.md</a></p>
-<a id="md:getting-started" class="tsd-anchor"></a><h3><a href="#md:getting-started">Getting started</a></h3><p>If you are starting your journey with <code>js-libp2p</code>, read the <a href="./doc/GETTING_STARTED.md">GETTING_STARTED.md</a> guide.</p>
-<a id="md:tutorials-and-examples" class="tsd-anchor"></a><h3><a href="#md:tutorials-and-examples">Tutorials and Examples</a></h3><p>You can find multiple examples on the <a href="./examples">examples folder</a> that will guide you through using libp2p for several scenarios.</p>
 <a id="md:development" class="tsd-anchor"></a><h2><a href="#md:development">Development</a></h2><p><strong>Clone and install dependencies:</strong></p>
 <pre><code class="language-sh"><span class="hl-1">&gt; git clone https://github.com/libp2p/js-libp2p.git</span><br/><span class="hl-1">&gt; cd js-libp2p</span><br/><span class="hl-1">&gt; npm install</span><br/><span class="hl-1">&gt; npm run build</span>
 </code><button>Copy</button></pre>
@@ -456,11 +452,8 @@ If you are looking for the documentation of the latest release, you can view the
 <li><a href="#md:js-libp2p-monorepo-"><span>js-<wbr/>libp2p-<wbr/>monorepo </span></a></li>
 <li>
 <ul>
+<li><a href="#md:project-status"><span>Project status</span></a></li>
 <li><a href="#md:table-of-contents-"><span>Table of contents </span></a></li>
-<li><a href="#md:structure"><span>Structure</span></a></li>
-<li>
-<ul>
-<li><a href="#md:project-status"><span>Project status</span></a></li></ul></li>
 <li><a href="#md:background"><span>Background</span></a></li>
 <li><a href="#md:roadmap"><span>Roadmap</span></a></li>
 <li><a href="#md:install"><span>Install</span></a></li>
@@ -471,6 +464,7 @@ If you are looking for the documentation of the latest release, you can view the
 <li><a href="#md:limits"><span>Limits</span></a></li>
 <li><a href="#md:getting-started"><span>Getting started</span></a></li>
 <li><a href="#md:tutorials-and-examples"><span>Tutorials and <wbr/>Examples</span></a></li></ul></li>
+<li><a href="#md:structure"><span>Structure</span></a></li>
 <li><a href="#md:development"><span>Development</span></a></li>
 <li>
 <ul>
