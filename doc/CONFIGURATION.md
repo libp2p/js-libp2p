@@ -44,6 +44,8 @@ libp2p is a modular networking stack. It's designed to be able to suit a variety
 
 Regardless of how you configure libp2p, the top level [API](./API.md) will always remain the same. **Note**: if some modules are not configured, like Content Routing, using those methods will throw errors.
 
+To get a high-level overview of the js-libp2p architecture, please read the [Architecture](./ARCHITECTURE.md) document.
+
 ## Modules
 
 `js-libp2p` acts as the composer for this modular p2p networking stack using libp2p compatible modules as its subsystems. For getting an instance of `js-libp2p` compliant with all types of networking requirements, it is possible to specify the following subsystems:

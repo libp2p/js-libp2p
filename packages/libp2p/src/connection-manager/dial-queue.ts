@@ -1,7 +1,7 @@
 import { setMaxListeners } from 'events'
 import { AbortError, CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { type Multiaddr, type Resolver, resolvers } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { type ClearableSignal, anySignal } from 'any-signal'
@@ -29,8 +29,8 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 const log = logger('libp2p:connection-manager:dial-queue')
 
 export interface PendingDialTarget {
-  resolve: (value: any) => void
-  reject: (err: Error) => void
+  resolve(value: any): void
+  reject(err: Error): void
 }
 
 export interface DialOptions extends AbortOptions {
@@ -51,7 +51,7 @@ interface DialerInit {
 }
 
 const defaultOptions = {
-  addressSorter: publicAddressesFirst,
+  addressSorter: defaultAddressSort,
   maxParallelDials: MAX_PARALLEL_DIALS,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
   maxParallelDialsPerPeer: MAX_PARALLEL_DIALS_PER_PEER,

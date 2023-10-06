@@ -5,6 +5,6 @@ export interface Topology {
   min?: number
   max?: number
 
-  onConnect?: (peerId: PeerId, conn: Connection) => void
-  onDisconnect?: (peerId: PeerId) => void
+  onConnect?(peerId: PeerId, conn: Connection): void
+  onDisconnect?(peerId: PeerId): void
 }

@@ -48,30 +48,30 @@ async function start () {
 - options
   - `peerName` - Peer name to announce (should not be peeer id), default random string
   - `multiaddrs` - multiaddrs to announce
-  - `broadcast` - (true/false) announce our presence through mDNS, default `false`
+  - `broadcast` - (true/false) announce our presence through mDNS, default `true`
   - `interval` - query interval, default 10 \* 1000 (10 seconds)
-  - `serviceTag` - name of the service announce , default 'ipfs.local\`
+  - `serviceTag` - name of the service announce , default '_p2p._udp.local\`
 
 ## MDNS messages
 
-A query is sent to discover the IPFS nodes on the local network
+A query is sent to discover the libp2p nodes on the local network
 
 ```js
 {
   type: 'query',
-  questions: [ { name: 'ipfs.local', type: 'PTR' } ]
+  questions: [ { name: '_p2p._udp.local', type: 'PTR' } ]
 }
 ```
 
-When a query is detected, each IPFS node sends an answer about itself
+When a query is detected, each libp2p node sends an answer about itself
 
 ```js
-    [ { name: 'ipfs.local',
+    [ { name: '_p2p._udp.local',
         type: 'PTR',
         class: 'IN',
         ttl: 120,
-        data: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK.ipfs.local' },
-      { name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK.ipfs.local',
+        data: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local' },
+      { name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
         type: 'SRV',
         class: 'IN',
         ttl: 120,
@@ -80,7 +80,7 @@ When a query is detected, each IPFS node sends an answer about itself
            weight: 1,
            port: '20002',
            target: 'LAPTOP-G5LJ7VN9' } },
-      { name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK.ipfs.local',
+      { name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
         type: 'TXT',
         class: 'IN',
         ttl: 120,

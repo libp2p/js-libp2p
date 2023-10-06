@@ -1,9 +1,71 @@
-### [0.45.9](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.8...libp2p-v0.45.9) (2023-06-14)
+### [0.46.10](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.9...libp2p-v0.46.10) (2023-09-10)
 
 
 ### Bug Fixes
 
-* allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
+* **libp2p:** only dial one address at a time for peers ([#2028](https://www.github.com/libp2p/js-libp2p/issues/2028)) ([73b87c5](https://www.github.com/libp2p/js-libp2p/commit/73b87c5a1474f9acd47989b675724ea64d02c7b9))
+* **libp2p:** sort addresses to dial as public, then relay ([#2031](https://www.github.com/libp2p/js-libp2p/issues/2031)) ([5294f14](https://www.github.com/libp2p/js-libp2p/commit/5294f14caa314bb150554afff3a7ff45d2bf17ba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-record bumped from ^6.0.3 to ^6.0.4
+    * @libp2p/peer-store bumped from ^9.0.3 to ^9.0.4
+    * @libp2p/utils bumped from ^4.0.2 to ^4.0.3
+  * devDependencies
+    * @libp2p/kad-dht bumped from ^10.0.5 to ^10.0.6
+    * @libp2p/mdns bumped from ^9.0.6 to ^9.0.7
+    * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
+    * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
+
+### [0.46.12](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.11...libp2p-v0.46.12) (2023-10-01)
+
+
+### Bug Fixes
+
+* ensure all listeners are properly closed on tcp shutdown ([#2058](https://www.github.com/libp2p/js-libp2p/issues/2058)) ([b57bca4](https://www.github.com/libp2p/js-libp2p/commit/b57bca4493e1634108fe187466024e374b76c114))
+* include peer id in autodial log message ([#2075](https://www.github.com/libp2p/js-libp2p/issues/2075)) ([368ee26](https://www.github.com/libp2p/js-libp2p/commit/368ee26dbea5de8fb67d9a4596a169f327e73145))
+* **libp2p:** update circuit relay and upgrader logs ([#2071](https://www.github.com/libp2p/js-libp2p/issues/2071)) ([f09ac4a](https://www.github.com/libp2p/js-libp2p/commit/f09ac4a7704070fd92bae8d4482d06eac45ddd2c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.6 to ^9.0.7
+    * @libp2p/floodsub bumped from ^8.0.7 to ^8.0.8
+    * @libp2p/interface-compliance-tests bumped from ^4.0.6 to ^4.1.0
+    * @libp2p/kad-dht bumped from ^10.0.7 to ^10.0.8
+    * @libp2p/mdns bumped from ^9.0.8 to ^9.0.9
+    * @libp2p/mplex bumped from ^9.0.6 to ^9.0.7
+    * @libp2p/tcp bumped from ^8.0.7 to ^8.0.8
+    * @libp2p/websockets bumped from ^7.0.7 to ^7.0.8
+
+### [0.46.11](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.10...libp2p-v0.46.11) (2023-09-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.3 to ^2.0.4
+    * @libp2p/interface-internal bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/keychain bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-collections bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/peer-id-factory bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-record bumped from ^6.0.4 to ^6.0.5
+    * @libp2p/peer-store bumped from ^9.0.4 to ^9.0.5
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.5 to ^9.0.6
+    * @libp2p/floodsub bumped from ^8.0.6 to ^8.0.7
+    * @libp2p/interface-compliance-tests bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/kad-dht bumped from ^10.0.6 to ^10.0.7
+    * @libp2p/mdns bumped from ^9.0.7 to ^9.0.8
+    * @libp2p/mplex bumped from ^9.0.5 to ^9.0.6
+    * @libp2p/tcp bumped from ^8.0.6 to ^8.0.7
+    * @libp2p/websockets bumped from ^7.0.6 to ^7.0.7
 
 ### [0.46.9](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.8...libp2p-v0.46.9) (2023-09-05)
 
@@ -225,6 +287,13 @@
     * @libp2p/mplex bumped from ^8.0.0 to ^9.0.0
     * @libp2p/tcp bumped from ^7.0.0 to ^8.0.0
     * @libp2p/websockets bumped from ^6.0.0 to ^7.0.0
+
+### [0.45.9](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.8...libp2p-v0.45.9) (2023-06-14)
+
+
+### Bug Fixes
+
+* allow specifiying maxOutboundStreams in connection.newStream ([#1817](https://www.github.com/libp2p/js-libp2p/issues/1817)) ([b348fba](https://www.github.com/libp2p/js-libp2p/commit/b348fbaa7e16fd40f9a93e83a92c8152ad9e97e9))
 
 ### [0.45.8](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.45.7...libp2p-v0.45.8) (2023-06-14)
 

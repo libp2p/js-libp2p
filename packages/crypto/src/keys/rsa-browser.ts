@@ -141,7 +141,7 @@ Explanation:
 
 */
 
-function convertKey (key: JsonWebKey, pub: boolean, msg: Uint8Array, handle: (msg: string, key: { encrypt: (msg: string) => string, decrypt: (msg: string) => string }) => string): Uint8Array {
+function convertKey (key: JsonWebKey, pub: boolean, msg: Uint8Array, handle: (msg: string, key: { encrypt(msg: string): string, decrypt(msg: string): string }) => string): Uint8Array {
   const fkey = pub ? jwk2pub(key) : jwk2priv(key)
   const fmsg = uint8ArrayToString(Uint8Array.from(msg), 'ascii')
   const fomsg = handle(fmsg, fkey)

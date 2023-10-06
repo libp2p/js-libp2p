@@ -16,7 +16,7 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 
 export interface DHTMessageHandler {
-  handle: (peerId: PeerId, msg: Message) => Promise<Message | undefined>
+  handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
 }
 
 export interface RPCInit {

@@ -8,9 +8,9 @@ import type { Message } from './message-types.js'
 
 export interface Options {
   id: number
-  send: (msg: Message) => Promise<void>
+  send(msg: Message): Promise<void>
   name?: string
-  onEnd?: (err?: Error) => void
+  onEnd?(err?: Error): void
   type?: 'initiator' | 'receiver'
   maxMsgSize?: number
 }
@@ -18,7 +18,7 @@ export interface Options {
 interface MplexStreamInit extends AbstractStreamInit {
   streamId: number
   name: string
-  send: (msg: Message) => Promise<void>
+  send(msg: Message): Promise<void>
 
   /**
    * The maximum allowable data size, any data larger than this will be

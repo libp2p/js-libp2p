@@ -21,6 +21,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -38,7 +39,7 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.2",
     "execa": "^8.0.1",
     "p-defer": "^4.0.0"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/crypto#readme",
@@ -63,6 +63,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     },
     "ignorePatterns": [
@@ -96,7 +97,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.0",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.2",
     "benchmark": "^2.1.4",
     "protons": "^7.0.2"
   },
