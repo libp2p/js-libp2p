@@ -946,12 +946,14 @@ describe('circuit-relay', () => {
     let local: Libp2p
     let remote: Libp2p
     let relay: Libp2p<{ relay: CircuitRelayService }>
+    const defaultDurationLimit = 100
 
     beforeEach(async () => {
       relay = await createRelay({
         services: {
           relay: circuitRelayServer({
             reservations: {
+              defaultDurationLimit,
               applyDefaultLimit: false
             }
           })
@@ -999,6 +1001,42 @@ describe('circuit-relay', () => {
       )
 
       expect(result.subarray()).to.equalBytes(data)
+    })
+
+    it('should not apply a time limit', async () => {
+      const ma = getRelayAddress(remote)
+
+      const stream = await local.dialProtocol(ma, ECHO_PROTOCOL, {
+        runOnTransientConnection: true
+      })
+
+      let finished = false
+
+      setTimeout(() => {
+        finished = true
+      }, defaultDurationLimit * 5)
+
+      const start = Date.now()
+      let finish = 0
+
+      await pipe(
+        async function * () {
+          while (true) {
+            yield new Uint8Array()
+            await delay(10)
+
+            if (finished) {
+              finish = Date.now()
+              break
+            }
+          }
+        },
+        stream
+      )
+
+      // default time limit is set to 100ms so the stream should have been open
+      // for longer than that
+      expect(finish - start).to.be.greaterThan(defaultDurationLimit)
     })
   })
 })
