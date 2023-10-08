@@ -53,7 +53,7 @@ export interface FetchService {
   /**
    * Sends a request to fetch the value associated with the given key from the given peer
    */
-  fetch: (peer: PeerId, key: string, options?: AbortOptions) => Promise<Uint8Array | null>
+  fetch(peer: PeerId, key: string, options?: AbortOptions): Promise<Uint8Array | null>
 
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
@@ -66,7 +66,7 @@ export interface FetchService {
    * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
    * ```
    */
-  registerLookupFunction: (prefix: string, lookup: LookupFunction) => void
+  registerLookupFunction(prefix: string, lookup: LookupFunction): void
 
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that
@@ -79,7 +79,7 @@ export interface FetchService {
    * libp2p.fetchService.unregisterLookupFunction('/prefix')
    * ```
    */
-  unregisterLookupFunction: (prefix: string, lookup?: LookupFunction) => void
+  unregisterLookupFunction(prefix: string, lookup?: LookupFunction): void
 }
 
 /**

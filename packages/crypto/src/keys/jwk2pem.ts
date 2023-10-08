@@ -4,8 +4,8 @@ import forge from 'node-forge/lib/forge.js'
 import { base64urlToBigInteger } from '../util.js'
 
 export interface JWK {
-  encrypt: (msg: string) => string
-  decrypt: (msg: string) => string
+  encrypt(msg: string): string
+  decrypt(msg: string): string
 }
 
 function convert (key: any, types: string[]): Array<typeof forge.jsbn.BigInteger> {

@@ -57,7 +57,7 @@ export const defaultInit: PerfServiceInit = {
 }
 
 export interface PerfService {
-  measurePerformance: (startTime: number, connection: Connection, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions) => Promise<number>
+  measurePerformance(startTime: number, connection: Connection, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions): Promise<number>
 }
 
 export interface PerfServiceInit {

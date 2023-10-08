@@ -153,8 +153,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
 }
 
 interface CreateSortedMapOptions <V, R = V> {
-  validate: (key: string, value: V) => void
-  map?: (key: string, value: V) => R
+  validate(key: string, value: V): void
+  map?(key: string, value: V): R
 }
 
 /**

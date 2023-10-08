@@ -29,8 +29,8 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 const log = logger('libp2p:connection-manager:dial-queue')
 
 export interface PendingDialTarget {
-  resolve: (value: any) => void
-  reject: (err: Error) => void
+  resolve(value: any): void
+  reject(err: Error): void
 }
 
 export interface DialOptions extends AbortOptions {

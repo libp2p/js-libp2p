@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import lengths from './lengths.js'
 
 export interface HMAC {
-  digest: (data: Uint8Array) => Promise<Uint8Array>
+  digest(data: Uint8Array): Promise<Uint8Array>
   length: number
 }
 

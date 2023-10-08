@@ -7,7 +7,7 @@ import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
 import type { TCPListener } from '../src/listener.js'
 
-const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise<any> | any>): { assertConnectedSocket: (i: number) => Promise<net.Socket>, assertRefusedSocket: (i: number) => Promise<net.Socket> } => {
+const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise<any> | any>): { assertConnectedSocket(i: number): Promise<net.Socket>, assertRefusedSocket(i: number): Promise<net.Socket> } => {
   function createSocket (i: number): net.Socket {
     const socket = net.connect({ host: '127.0.0.1', port })
 
