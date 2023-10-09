@@ -25,6 +25,15 @@ const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
 // ensure the dial has a high priority to jump to the head of the dial queue
 const DCUTR_DIAL_PRIORITY = 100
 
+const configValidator = object({
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
+  timeout: number().integer().default(5000).min(1),
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
+  retries: number().integer().default(3).min(1),
+  maxInboundStreams: number().integer().default(1).min(1),
+  maxOutboundStreams: number().integer().default(1).min(1)
+})
+
 export class DefaultDCUtRService implements Startable {
   private started: boolean
   private readonly timeout: number
@@ -46,14 +55,7 @@ export class DefaultDCUtRService implements Startable {
     this.connectionManager = components.connectionManager
     this.transportManager = components.transportManager
 
-    const validatedConfig = object({
-      // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
-      timeout: number().integer().default(5000).min(1),
-      // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
-      retries: number().integer().default(3).min(1),
-      maxInboundStreams: number().integer().default(1).min(1),
-      maxOutboundStreams: number().integer().default(1).min(1)
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.timeout = validatedConfig.timeout
     this.retries = validatedConfig.retries
@@ -371,7 +373,7 @@ export class DefaultDCUtRService implements Startable {
         }
 
         output.push(ma)
-      } catch {}
+      } catch { }
     }
 
     return output

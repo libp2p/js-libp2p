@@ -38,6 +38,14 @@ export interface PingServiceComponents {
   connectionManager: ConnectionManager
 }
 
+const configValidator = object({
+  protocolPrefix: string().default(PROTOCOL_PREFIX),
+  timeout: number().integer().default(TIMEOUT),
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  runOnTransientConnection: boolean().default(true)
+})
+
 class DefaultPingService implements Startable, PingService {
   public readonly protocol: string
   private readonly components: PingServiceComponents
@@ -51,13 +59,7 @@ class DefaultPingService implements Startable, PingService {
     this.components = components
     this.started = false
 
-    const validatedConfig = object({
-      protocolPrefix: string().default(PROTOCOL_PREFIX),
-      timeout: number().integer().default(TIMEOUT),
-      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
-      runOnTransientConnection: boolean().default(true)
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.protocol = `/${validatedConfig.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.timeout = validatedConfig.timeout
@@ -117,7 +119,7 @@ class DefaultPingService implements Startable, PingService {
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let stream: Stream | undefined
-    let onAbort = (): void => {}
+    let onAbort = (): void => { }
 
     options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
 

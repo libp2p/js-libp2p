@@ -97,6 +97,15 @@ export interface AutoNATComponents {
   peerRouting: PeerRouting
 }
 
+const configValidator = object({
+  protocolPrefix: string().default(PROTOCOL_PREFIX),
+  timeout: number().integer().default(TIMEOUT),
+  startupDelay: number().integer().default(STARTUP_DELAY),
+  refreshInterval: number().integer().default(REFRESH_INTERVAL),
+  maxInboundStreams: number().integer().default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().default(MAX_OUTBOUND_STREAMS)
+})
+
 class DefaultAutoNATService implements Startable {
   private readonly components: AutoNATComponents
   private readonly startupDelay: number
@@ -109,14 +118,7 @@ class DefaultAutoNATService implements Startable {
   private started: boolean
 
   constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
-    const validatedConfig = object({
-      protocolPrefix: string().default(PROTOCOL_PREFIX),
-      timeout: number().integer().default(TIMEOUT),
-      startupDelay: number().integer().default(STARTUP_DELAY),
-      refreshInterval: number().integer().default(REFRESH_INTERVAL),
-      maxInboundStreams: number().integer().default(MAX_INBOUND_STREAMS),
-      maxOutboundStreams: number().integer().default(MAX_OUTBOUND_STREAMS)
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.components = components
     this.started = false
@@ -177,7 +179,7 @@ class DefaultAutoNATService implements Startable {
     try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, signal)
-    } catch {}
+    } catch { }
 
     const ourHosts = this.components.addressManager.getAddresses()
       .map(ma => ma.toOptions().host)
@@ -445,7 +447,7 @@ class DefaultAutoNATService implements Startable {
     try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, signal)
-    } catch {}
+    } catch { }
 
     const self = this
 
@@ -469,7 +471,7 @@ class DefaultAutoNATService implements Startable {
       const networkSegments: string[] = []
 
       const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
-        let onAbort = (): void => {}
+        let onAbort = (): void => { }
 
         try {
           log('asking %p to verify multiaddr', peer.id)

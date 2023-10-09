@@ -39,6 +39,14 @@ export interface ReservationStoreInit {
 
 export type ReservationStoreOptions = RecursivePartial<ReservationStoreInit>
 
+const configValidator = object({
+  maxReservations: number().min(0).integer().default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
+  reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
+  applyDefaultLimit: boolean().default(true),
+  reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
+  defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT),
+  defaultDataLimit: mixed().test('is-bigint', 'Invalid bigint', value => typeof value === 'bigint').default(DEFAULT_DATA_LIMIT)
+})
 export class ReservationStore implements Startable {
   public readonly reservations = new PeerMap<RelayReservation>()
   private _started = false
@@ -51,14 +59,7 @@ export class ReservationStore implements Startable {
   private readonly defaultDataLimit: bigint
 
   constructor (options: ReservationStoreOptions = {}) {
-    const validatedConfig = object({
-      maxReservations: number().min(0).integer().default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
-      reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
-      applyDefaultLimit: boolean().default(true),
-      reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
-      defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT),
-      defaultDataLimit: mixed().test('is-bigint', 'Invalid bigint', value => typeof value === 'bigint').default(DEFAULT_DATA_LIMIT)
-    }).validateSync(options)
+    const validatedConfig = configValidator.validateSync(options)
 
     this.maxReservations = validatedConfig.maxReservations
     this.reservationClearInterval = validatedConfig.reservationClearInterval

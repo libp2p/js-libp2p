@@ -42,6 +42,20 @@ import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/r
 
 const log = logger('libp2p:identify')
 
+const configValidator = object({
+  protocolPrefix: string().default(PROTOCOL_PREFIX),
+  agentVersion: string().default(AGENT_VERSION),
+  timeout: number().integer().default(TIMEOUT),
+  maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxPushIncomingStreams: number().integer().min(0).default(MAX_PUSH_INCOMING_STREAMS),
+  maxPushOutgoingStreams: number().integer().min(0).default(MAX_PUSH_OUTGOING_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  maxObservedAddresses: number().integer().min(0).default(MAX_OBSERVED_ADDRESSES),
+  runOnConnectionOpen: boolean().default(RUN_ON_CONNECTION_OPEN),
+  runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
+})
+
 export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly identifyProtocolStr: string
   private readonly identifyPushProtocolStr: string
@@ -68,19 +82,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly runOnConnectionOpen: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
-    const validatedConfig = object({
-      protocolPrefix: string().default(PROTOCOL_PREFIX),
-      agentVersion: string().default(AGENT_VERSION),
-      timeout: number().integer().default(TIMEOUT),
-      maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
-      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-      maxPushIncomingStreams: number().integer().min(0).default(MAX_PUSH_INCOMING_STREAMS),
-      maxPushOutgoingStreams: number().integer().min(0).default(MAX_PUSH_OUTGOING_STREAMS),
-      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
-      maxObservedAddresses: number().integer().min(0).default(MAX_OBSERVED_ADDRESSES),
-      runOnConnectionOpen: boolean().default(RUN_ON_CONNECTION_OPEN),
-      runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.started = false
     this.peerId = components.peerId
@@ -199,7 +201,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       try {
         // fails on node < 15.4
         setMaxListeners?.(Infinity, signal)
-      } catch {}
+      } catch { }
 
       try {
         stream = await connection.newStream([this.identifyPushProtocolStr], {
@@ -322,7 +324,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     log('our observed address is %a', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
-        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses)) {
+      this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses)) {
       log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
@@ -357,7 +359,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     try {
       // fails on node < 15.4
       setMaxListeners?.(Infinity, signal)
-    } catch {}
+    } catch { }
 
     try {
       const publicKey = this.peerId.publicKey ?? new Uint8Array(0)

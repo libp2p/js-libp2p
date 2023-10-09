@@ -101,6 +101,13 @@ export interface CircuitRelayTransportInit extends RelayStoreInit {
   reservationCompletionTimeout?: number
 }
 
+const configValidator = object({
+  discoverRelays: number().min(0).integer().default(0),
+  maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+  maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+  stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)
+})
+
 class CircuitRelayTransport implements Transport {
   private readonly discovery?: RelayDiscovery
   private readonly registrar: Registrar
@@ -117,12 +124,7 @@ class CircuitRelayTransport implements Transport {
   private started: boolean
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
-    const validatedConfig = object({
-      discoverRelays: number().min(0).integer().default(0),
-      maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
-      maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
-      stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.registrar = components.registrar
     this.peerStore = components.peerStore

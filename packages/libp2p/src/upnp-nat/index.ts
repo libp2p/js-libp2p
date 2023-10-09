@@ -65,6 +65,17 @@ export interface UPnPNATComponents {
   addressManager: AddressManager
 }
 
+const validIPRegex = /^(?:(?:^|\.)(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){4}$/
+
+const configValidator = object({
+  externalAddress: string().matches(validIPRegex, 'Invalid IP address'),
+  localAddress: string().matches(validIPRegex, 'Invalid IP address'),
+  description: string(),
+  ttl: number().integer().default(DEFAULT_TTL),
+  keepAlive: boolean().default(true),
+  gateway: string().optional()
+})
+
 class UPnPNAT implements Startable {
   private readonly components: UPnPNATComponents
   private readonly externalAddress?: string
@@ -80,20 +91,11 @@ class UPnPNAT implements Startable {
     this.components = components
     this.started = false
 
-    const validIPRegex = /^(?:(?:^|\.)(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){4}$/
-
-    const validatedConfig = object({
-      externalAddress: string().matches(validIPRegex, 'Invalid IP address'),
-      localAddress: string().matches(validIPRegex, 'Invalid IP address'),
-      description: string().default(`${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`),
-      ttl: number().integer().default(DEFAULT_TTL),
-      keepAlive: boolean().default(true),
-      gateway: string().optional()
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.externalAddress = validatedConfig.externalAddress
     this.localAddress = validatedConfig.localAddress
-    this.description = validatedConfig.description
+    this.description = validatedConfig.description ?? `${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`
     this.ttl = validatedConfig.ttl
     this.keepAlive = validatedConfig.keepAlive
     this.gateway = validatedConfig.gateway

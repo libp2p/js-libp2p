@@ -101,6 +101,20 @@ export interface RelayServerEvents {
   'relay:advert:error': CustomEvent<Error>
 }
 
+const configValidator = object({
+  hopTimeout: number().min(0).integer().default(DEFAULT_HOP_TIMEOUT),
+  reservations: object({
+    maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
+    reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
+    applyDefaultLimit: boolean().default(false),
+    reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
+    defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT)
+  }),
+  maxInboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
+  maxOutboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS),
+  maxOutboundStopStreams: number().integer().min(0).default(MAX_CONNECTIONS)
+})
+
 class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
   private readonly registrar: Registrar
   private readonly peerStore: PeerStore
@@ -123,19 +137,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   constructor (components: CircuitRelayServerComponents, init: CircuitRelayServerInit = {}) {
     super()
 
-    const validatedConfig = object({
-      hopTimeout: number().min(0).integer().default(DEFAULT_HOP_TIMEOUT),
-      reservations: object({
-        maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
-        reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
-        applyDefaultLimit: boolean().default(true),
-        reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
-        defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT).max(init?.reservations?.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL, `default duration limit must be less than reservation TTL: ${init?.reservations?.reservationTtl}`)
-      }),
-      maxInboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
-      maxOutboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS),
-      maxOutboundStopStreams: number().integer().min(0).default(MAX_CONNECTIONS)
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.registrar = components.registrar
     this.peerStore = components.peerStore

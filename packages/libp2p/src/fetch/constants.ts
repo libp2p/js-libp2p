@@ -4,4 +4,4 @@ export const PROTOCOL_NAME = 'fetch'
 
 export const MAX_INBOUND_STREAMS = 1
 export const MAX_OUTBOUND_STREAMS = 1
-export const TIMEOUT = 60000
+export const TIMEOUT = 10000

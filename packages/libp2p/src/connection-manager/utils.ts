@@ -73,7 +73,7 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Cle
   try {
     // fails on node < 15.4
     setMaxListeners?.(Infinity, signal)
-  } catch {}
+  } catch { }
 
   return signal
 }
@@ -92,7 +92,7 @@ export const validateConnectionManagerConfig = (opts: ConnectionManagerInit): Ob
     inboundUpgradeTimeout: number().integer().default(INBOUND_UPGRADE_TIMEOUT),
     allow: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
     deny: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
-    inboundConnectionThreshold: number().max(opts?.maxConnections ?? MAX_CONNECTIONS, `inboundConnectionThreshold must be less than the max connections limit: ${opts?.inboundConnectionThreshold}`).integer().default(INBOUND_CONNECTION_THRESHOLD),
-    maxIncomingPendingConnections: number().integer().max(opts?.maxConnections ?? MAX_CONNECTIONS, `maxIncomingPendingConnections must be less than the max connections limit: ${opts?.maxIncomingPendingConnections}`).default(MAX_INCOMING_PENDING_CONNECTIONS)
+    inboundConnectionThreshold: number().integer().default(INBOUND_CONNECTION_THRESHOLD),
+    maxIncomingPendingConnections: number().integer().default(MAX_INCOMING_PENDING_CONNECTIONS)
   })
 }

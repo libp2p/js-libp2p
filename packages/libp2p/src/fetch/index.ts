@@ -82,6 +82,13 @@ export interface FetchService {
   unregisterLookupFunction(prefix: string, lookup?: LookupFunction): void
 }
 
+const configValidator = object({
+  protocolPrefix: string().default('libp2p'),
+  timeout: number().integer().default(TIMEOUT),
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
+})
+
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
  * Developers can register one or more lookup function for retrieving the value corresponding to
@@ -98,12 +105,7 @@ class DefaultFetchService implements Startable, FetchService {
   private readonly maxOutboundStreams: number
 
   constructor (components: FetchServiceComponents, init: FetchServiceInit) {
-    const validatedConfig = object({
-      protocolPrefix: string().default('libp2p'),
-      timeout: number().integer().default(TIMEOUT),
-      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
-    }).validateSync(init)
+    const validatedConfig = configValidator.validateSync(init)
 
     this.started = false
     this.components = components
@@ -150,7 +152,7 @@ class DefaultFetchService implements Startable, FetchService {
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let signal = options.signal
     let stream: Stream | undefined
-    let onAbort = (): void => {}
+    let onAbort = (): void => { }
 
     // create a timeout if no abort signal passed
     if (signal == null) {
@@ -160,7 +162,7 @@ class DefaultFetchService implements Startable, FetchService {
       try {
         // fails on node < 15.4
         setMaxListeners?.(Infinity, signal)
-      } catch {}
+      } catch { }
     }
 
     try {

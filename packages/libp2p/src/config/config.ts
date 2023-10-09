@@ -22,19 +22,11 @@ const DefaultConfig: Partial<Libp2pInit> = {
   }
 }
 
-export function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
+export function validateConfig<T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
   const libp2pConfig = object({
     addresses: validateAddressManagerConfig(opts?.addresses as AddressManagerInit),
     connectionManager: validateConnectionManagerConfig(opts?.connectionManager as ConnectionManagerInit)
   })
-
-  if ((opts?.services) != null) {
-    // @ts-expect-error until we resolve https://github.com/libp2p/js-libp2p/pull/1762 and have a better way of discovering type dependencies
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if ((opts.services?.kadDHT || opts.services?.relay || opts.services?.ping) && !opts.services.identify) {
-      throw new Error('identify service is required when using kadDHT, relay, or ping')
-    }
-  }
 
   const parsedOpts = libp2pConfig.validateSync(opts)
 
