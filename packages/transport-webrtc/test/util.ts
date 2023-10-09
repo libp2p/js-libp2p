@@ -21,7 +21,7 @@ export function receiveFinAck (channel: RTCDataChannel): void {
 
 let mockDataChannelId = 0
 
-export const mockDataChannel = (opts: { send: (bytes: Uint8Array) => void, bufferedAmount?: number }): RTCDataChannel => {
+export const mockDataChannel = (opts: { send(bytes: Uint8Array): void, bufferedAmount?: number }): RTCDataChannel => {
   // @ts-expect-error incomplete implementation
   const channel: RTCDataChannel = {
     readyState: 'open',

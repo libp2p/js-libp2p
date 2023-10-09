@@ -15,7 +15,7 @@ export interface ECDHKeyPair {
 
 export interface ECDHKey {
   key: Uint8Array
-  genSharedKey: (theirPub: Uint8Array, forcePrivate?: ECDHKeyPair) => Promise<Uint8Array>
+  genSharedKey(theirPub: Uint8Array, forcePrivate?: ECDHKeyPair): Promise<Uint8Array>
 }
 
 export interface JWKEncodedPublicKey { kty: string, crv: 'P-256' | 'P-384' | 'P-521', x: string, y: string, ext: boolean }
