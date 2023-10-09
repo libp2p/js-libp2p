@@ -1,7 +1,7 @@
+import { codes } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import pRetry from 'p-retry'
-import { codes } from '../../errors.js'
 import {
   DEFAULT_ADVERT_BOOT_DELAY,
   RELAY_RENDEZVOUS_NS

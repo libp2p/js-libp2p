@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { codes } from '@libp2p/interface/errors'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
-import { codes } from '../../src/errors.js'
 import { type FetchService, fetchService } from '../../src/fetch/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'

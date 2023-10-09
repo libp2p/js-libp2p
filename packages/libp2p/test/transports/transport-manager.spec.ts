@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { codes as ErrorCodes } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { FaultTolerance } from '@libp2p/interface/transport'
@@ -11,7 +12,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'

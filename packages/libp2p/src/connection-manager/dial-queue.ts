@@ -1,5 +1,5 @@
 import { setMaxListeners } from 'events'
-import { AbortError, CodeError } from '@libp2p/interface/errors'
+import { AbortError, CodeError, codes } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { type Multiaddr, type Resolver, resolvers } from '@multiformats/multiaddr'
@@ -8,7 +8,6 @@ import { type ClearableSignal, anySignal } from 'any-signal'
 import pDefer from 'p-defer'
 import PQueue from 'p-queue'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import {
   DIAL_TIMEOUT,

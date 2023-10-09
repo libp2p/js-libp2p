@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { codes } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
@@ -23,7 +24,6 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { type Components, defaultComponents } from '../../src/components.js'
-import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { preSharedKey } from '../../src/pnet/index.js'

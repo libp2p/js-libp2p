@@ -20,7 +20,7 @@
  */
 
 import { setMaxListeners } from 'events'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, codes } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -31,7 +31,6 @@ import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
-import { codes } from '../errors.js'
 import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,

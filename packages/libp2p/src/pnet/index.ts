@@ -23,13 +23,12 @@
  */
 
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, codes } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
-import { codes } from '../errors.js'
 import {
   createBoxStream,
   createUnboxStream,

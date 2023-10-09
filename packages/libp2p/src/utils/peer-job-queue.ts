@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, codes } from '@libp2p/interface/errors'
 import PQueue from 'p-queue'
-import { codes } from '../errors.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { QueueAddOptions, Options, Queue } from 'p-queue'
 

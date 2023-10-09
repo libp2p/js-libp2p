@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { codes } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { start } from '@libp2p/interface/startable'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
@@ -10,7 +11,6 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { codes } from '../../src/errors.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode, createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '../../src/index.js'

@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { codes } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { FaultTolerance } from '@libp2p/interface/transport'
@@ -13,7 +14,6 @@ import { pEvent } from 'p-event'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { defaultComponents, type Components } from '../../src/components.js'
-import { codes } from '../../src/errors.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { uPnPNATService } from '../../src/upnp-nat/index.js'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'

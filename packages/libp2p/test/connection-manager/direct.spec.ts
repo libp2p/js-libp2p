@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { AbortError } from '@libp2p/interface/errors'
+import { AbortError, codes as ErrorCodes } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
@@ -22,7 +22,6 @@ import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { codes as ErrorCodes } from '../../src/errors.js'
 import { type IdentifyService, identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'

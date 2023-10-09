@@ -1,9 +1,8 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, codes } from '@libp2p/interface/errors'
 import { isPeerId } from '@libp2p/interface/peer-id'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { isMultiaddr } from '@multiformats/multiaddr'
-import { codes } from './errors.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

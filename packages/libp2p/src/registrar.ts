@@ -1,7 +1,6 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, codes } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
-import { codes } from './errors.js'
 import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
 import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
