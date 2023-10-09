@@ -91,12 +91,12 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
   /**
    * A Metrics implementation can be supplied to collect metrics on this node
    */
-  metrics?: (components: Components) => Metrics
+  metrics?(components: Components): Metrics
 
   /**
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
-  connectionProtector?: (components: Components) => ConnectionProtector
+  connectionProtector?(components: Components): ConnectionProtector
 
   /**
    * Arbitrary libp2p modules

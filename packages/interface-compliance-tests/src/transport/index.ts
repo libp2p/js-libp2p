@@ -6,8 +6,8 @@ import type { Transport } from '@libp2p/interface/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface Connector {
-  delay: (ms: number) => void
-  restore: () => void
+  delay(ms: number): void
+  restore(): void
 }
 
 export interface TransportTestFixtures {

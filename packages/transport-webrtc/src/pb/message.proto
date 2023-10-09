@@ -2,7 +2,8 @@ syntax = "proto3";
 
 message Message {
   enum Flag {
-    // The sender will no longer send messages on the stream.
+    // The sender will no longer send messages on the stream. The recipient
+    // should send a FIN_ACK back to the sender.
     FIN = 0;
 
     // The sender will no longer read messages on the stream. Incoming data is
@@ -12,6 +13,10 @@ message Message {
     // The sender abruptly terminates the sending part of the stream. The
     // receiver can discard any data that it already received on that stream.
     RESET = 2;
+
+    // The sender previously received a FIN.
+    // Workaround for https://bugs.chromium.org/p/chromium/issues/detail?id=1484907
+    FIN_ACK = 3;
   }
 
   optional Flag flag = 1;
