@@ -1,4 +1,7 @@
-import { MULTICODEC_IDENTIFY, MULTICODEC_IDENTIFY_PUSH } from './consts.js'
+import {
+  MULTICODEC_IDENTIFY,
+  MULTICODEC_IDENTIFY_PUSH
+} from './consts.js'
 import { DefaultIdentifyService } from './identify.js'
 import { Identify } from './pb/message.js'
 import type { AbortOptions, IdentifyResult, Libp2pEvents } from '@libp2p/interface'

@@ -24,9 +24,7 @@ export default {
       const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
         connectionManager: {
-          inboundConnectionThreshold: 1000,
-          maxIncomingPendingConnections: 1000,
-          maxConnections: 1000,
+          inboundConnectionThreshold: Infinity,
           minConnections: 0
         },
         addresses: {
@@ -53,7 +51,7 @@ export default {
           fetch: fetchService(),
           relay: circuitRelayServer({
             reservations: {
-              maxReservations: 100000
+              maxReservations: Infinity
             }
           })
         }

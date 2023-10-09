@@ -31,7 +31,6 @@ import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
-import { number, object, string } from 'yup'
 import { codes } from '../errors.js'
 import {
   MAX_INBOUND_STREAMS,
@@ -109,23 +108,14 @@ class DefaultAutoNATService implements Startable {
   private started: boolean
 
   constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
-    const validatedConfig = object({
-      protocolPrefix: string().default(PROTOCOL_PREFIX),
-      timeout: number().integer().default(TIMEOUT),
-      startupDelay: number().integer().default(STARTUP_DELAY),
-      refreshInterval: number().integer().default(REFRESH_INTERVAL),
-      maxInboundStreams: number().integer().default(MAX_INBOUND_STREAMS),
-      maxOutboundStreams: number().integer().default(MAX_OUTBOUND_STREAMS)
-    }).validateSync(init)
-
     this.components = components
     this.started = false
-    this.protocol = `/${validatedConfig.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-    this.timeout = validatedConfig.timeout
-    this.maxInboundStreams = validatedConfig.maxInboundStreams
-    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
-    this.startupDelay = validatedConfig.startupDelay
-    this.refreshInterval = validatedConfig.refreshInterval
+    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = init.timeout ?? TIMEOUT
+    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
+    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
+    this.startupDelay = init.startupDelay ?? STARTUP_DELAY
+    this.refreshInterval = init.refreshInterval ?? REFRESH_INTERVAL
     this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
   }
 

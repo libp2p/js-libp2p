@@ -8,7 +8,6 @@ import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
-import { boolean, number, object, string } from 'yup'
 import { codes } from '../errors.js'
 import {
   AGENT_VERSION,
@@ -16,17 +15,7 @@ import {
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION,
-  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
-  MAX_INBOUND_STREAMS,
-  MAX_OUTBOUND_STREAMS,
-  MAX_IDENTIFY_MESSAGE_SIZE,
-  TIMEOUT,
-  RUN_ON_CONNECTION_OPEN,
-  PROTOCOL_PREFIX,
-  RUN_ON_TRANSIENT_CONNECTION,
-  MAX_PUSH_INCOMING_STREAMS,
-  MAX_PUSH_OUTGOING_STREAMS,
-  MAX_OBSERVED_ADDRESSES
+  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
 } from './consts.js'
 import { Identify } from './pb/message.js'
 import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
@@ -41,6 +30,24 @@ import type { ConnectionManager } from '@libp2p/interface-internal/connection-ma
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
 
 const log = logger('libp2p:identify')
+
+// https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
+const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
+
+const defaultValues = {
+  protocolPrefix: 'ipfs',
+  agentVersion: AGENT_VERSION,
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
+  timeout: 60000,
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1,
+  maxPushIncomingStreams: 1,
+  maxPushOutgoingStreams: 1,
+  maxObservedAddresses: 10,
+  maxIdentifyMessageSize: 8192,
+  runOnConnectionOpen: true,
+  runOnTransientConnection: true
+}
 
 export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly identifyProtocolStr: string
@@ -65,23 +72,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly maxObservedAddresses: number
   private readonly events: EventEmitter<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
-  private readonly runOnConnectionOpen: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
-    const validatedConfig = object({
-      protocolPrefix: string().default(PROTOCOL_PREFIX),
-      agentVersion: string().default(AGENT_VERSION),
-      timeout: number().integer().default(TIMEOUT),
-      maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
-      maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-      maxPushIncomingStreams: number().integer().min(0).default(MAX_PUSH_INCOMING_STREAMS),
-      maxPushOutgoingStreams: number().integer().min(0).default(MAX_PUSH_OUTGOING_STREAMS),
-      maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
-      maxObservedAddresses: number().integer().min(0).default(MAX_OBSERVED_ADDRESSES),
-      runOnConnectionOpen: boolean().default(RUN_ON_CONNECTION_OPEN),
-      runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
-    }).validateSync(init)
-
     this.started = false
     this.peerId = components.peerId
     this.peerStore = components.peerStore
@@ -90,25 +82,24 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.connectionManager = components.connectionManager
     this.events = components.events
 
-    this.identifyProtocolStr = `/${validatedConfig.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
-    this.identifyPushProtocolStr = `/${validatedConfig.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
-    this.timeout = validatedConfig.timeout
-    this.maxInboundStreams = validatedConfig.maxInboundStreams
-    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
-    this.maxPushIncomingStreams = validatedConfig.maxPushIncomingStreams
-    this.maxPushOutgoingStreams = validatedConfig.maxPushOutgoingStreams
-    this.maxIdentifyMessageSize = validatedConfig.maxIdentifyMessageSize
-    this.maxObservedAddresses = validatedConfig.maxObservedAddresses
-    this.runOnTransientConnection = validatedConfig.runOnTransientConnection
-    this.runOnConnectionOpen = validatedConfig.runOnConnectionOpen
+    this.identifyProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
+    this.identifyPushProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    this.timeout = init.timeout ?? defaultValues.timeout
+    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
+    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
+    this.maxPushIncomingStreams = init.maxPushIncomingStreams ?? defaultValues.maxPushIncomingStreams
+    this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? defaultValues.maxPushOutgoingStreams
+    this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? defaultValues.maxIdentifyMessageSize
+    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
+    this.runOnTransientConnection = init.runOnTransientConnection ?? defaultValues.runOnTransientConnection
 
     // Store self host metadata
     this.host = {
-      protocolVersion: `${validatedConfig.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: validatedConfig.agentVersion
+      protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
+      agentVersion: init.agentVersion ?? defaultValues.agentVersion
     }
 
-    if (this.runOnConnectionOpen) {
+    if (init.runOnConnectionOpen ?? defaultValues.runOnConnectionOpen) {
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
@@ -322,7 +313,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     log('our observed address is %a', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
-        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses)) {
+        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
       log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }

@@ -4,7 +4,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
-import { identifyService } from '../../src/identify/index.js'
 import { PROTOCOL } from '../../src/ping/constants.js'
 import { pingService, type PingService } from '../../src/ping/index.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
@@ -19,7 +18,6 @@ describe('ping', () => {
       createNode({
         config: createBaseOptions({
           services: {
-            identify: identifyService(),
             ping: pingService()
           }
         })
@@ -27,7 +25,6 @@ describe('ping', () => {
       createNode({
         config: createBaseOptions({
           services: {
-            identify: identifyService(),
             ping: pingService()
           }
         })
@@ -35,7 +32,6 @@ describe('ping', () => {
       createNode({
         config: createBaseOptions({
           services: {
-            identify: identifyService(),
             ping: pingService()
           }
         })
@@ -110,7 +106,6 @@ describe('ping', () => {
     const client = await createNode({
       config: createBaseOptions({
         services: {
-          identify: identifyService(),
           ping: pingService({
             // Allow two outbound ping streams.
             // It is not allowed by the spec, but this test needs to open two concurrent streams.

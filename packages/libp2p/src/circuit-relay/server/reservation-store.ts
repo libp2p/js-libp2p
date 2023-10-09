@@ -1,5 +1,4 @@
 import { PeerMap } from '@libp2p/peer-collections'
-import { object, mixed, number, boolean } from 'yup'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
 import { type Limit, Status } from '../pb/index.js'
 import type { RelayReservation } from '../index.js'
@@ -51,21 +50,12 @@ export class ReservationStore implements Startable {
   private readonly defaultDataLimit: bigint
 
   constructor (options: ReservationStoreOptions = {}) {
-    const validatedConfig = object({
-      maxReservations: number().min(0).integer().default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
-      reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
-      applyDefaultLimit: boolean().default(true),
-      reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
-      defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT),
-      defaultDataLimit: mixed().test('is-bigint', 'Invalid bigint', value => typeof value === 'bigint').default(DEFAULT_DATA_LIMIT)
-    }).validateSync(options)
-
-    this.maxReservations = validatedConfig.maxReservations
-    this.reservationClearInterval = validatedConfig.reservationClearInterval
-    this.applyDefaultLimit = validatedConfig.applyDefaultLimit
-    this.reservationTtl = validatedConfig.reservationTtl
-    this.defaultDurationLimit = validatedConfig.defaultDurationLimit
-    this.defaultDataLimit = validatedConfig.defaultDataLimit as bigint
+    this.maxReservations = options.maxReservations ?? DEFAULT_MAX_RESERVATION_STORE_SIZE
+    this.reservationClearInterval = options.reservationClearInterval ?? DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL
+    this.applyDefaultLimit = options.applyDefaultLimit !== false
+    this.reservationTtl = options.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL
+    this.defaultDurationLimit = options.defaultDurationLimit ?? DEFAULT_DURATION_LIMIT
+    this.defaultDataLimit = options.defaultDataLimit ?? DEFAULT_DATA_LIMIT
   }
 
   isStarted (): boolean {

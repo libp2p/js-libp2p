@@ -5,7 +5,6 @@ import { Circuit, IP, DNS } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
 import isPrivate from 'private-ip'
-import { number, object } from 'yup'
 import { codes } from '../errors.js'
 import { HolePunch } from './pb/message.js'
 import { multicodec } from './index.js'
@@ -24,6 +23,15 @@ const log = logger('libp2p:dcutr')
 const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
 // ensure the dial has a high priority to jump to the head of the dial queue
 const DCUTR_DIAL_PRIORITY = 100
+
+const defaultValues = {
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
+  timeout: 5000,
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
+  retries: 3,
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1
+}
 
 export class DefaultDCUtRService implements Startable {
   private started: boolean
@@ -46,19 +54,10 @@ export class DefaultDCUtRService implements Startable {
     this.connectionManager = components.connectionManager
     this.transportManager = components.transportManager
 
-    const validatedConfig = object({
-      // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
-      timeout: number().integer().default(5000).min(1),
-      // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
-      retries: number().integer().default(3).min(1),
-      maxInboundStreams: number().integer().default(1).min(1),
-      maxOutboundStreams: number().integer().default(1).min(1)
-    }).validateSync(init)
-
-    this.timeout = validatedConfig.timeout
-    this.retries = validatedConfig.retries
-    this.maxInboundStreams = validatedConfig.maxInboundStreams
-    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
+    this.timeout = init.timeout ?? defaultValues.timeout
+    this.retries = init.retries ?? defaultValues.retries
+    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
+    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
   }
 
   isStarted (): boolean {
