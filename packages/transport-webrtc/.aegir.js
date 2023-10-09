@@ -36,7 +36,7 @@ export default {
         },
         connectionManager: {
           minConnections: 0,
-          inboundConnectionThreshold: Infinity
+          inboundConnectionThreshold: 1000
         }
       })
 
