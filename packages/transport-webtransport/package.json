@@ -68,7 +68,7 @@
     "@multiformats/multiaddr": "^12.1.5",
     "@multiformats/multiaddr-matcher": "^1.0.1",
     "it-stream-types": "^2.0.1",
-    "multiformats": "^12.0.1",
+    "multiformats": "github:multiformats/js-multiformats#feat/typescript",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6"
   },

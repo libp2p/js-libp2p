@@ -162,7 +162,7 @@
     "abortable-iterator": "^5.0.1",
     "it-pushable": "^3.2.0",
     "it-stream-types": "^2.0.1",
-    "multiformats": "^12.0.1",
+    "multiformats": "github:multiformats/js-multiformats#feat/typescript",
     "p-defer": "^4.0.0",
     "race-signal": "^1.0.0",
     "uint8arraylist": "^2.4.3"
