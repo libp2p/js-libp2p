@@ -273,6 +273,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
       if (listener != null) {
         await listener.close()
         listeners.delete(ma)
+        return
       }
     }
   }
