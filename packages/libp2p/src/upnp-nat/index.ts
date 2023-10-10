@@ -71,7 +71,7 @@ const configValidator = object({
   externalAddress: string().matches(validIPRegex, 'Invalid IP address'),
   localAddress: string().matches(validIPRegex, 'Invalid IP address'),
   description: string(),
-  ttl: number().integer().default(DEFAULT_TTL),
+  ttl: number().integer().min(0).default(DEFAULT_TTL),
   keepAlive: boolean().default(true),
   gateway: string().optional()
 })

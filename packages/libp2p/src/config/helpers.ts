@@ -1,11 +1,13 @@
+import { CodeError } from '@libp2p/interface/errors'
 import { multiaddr } from '@multiformats/multiaddr'
+import { codes } from '../errors.js'
 
 export const validateMultiaddr = (value: Array<string | undefined> | undefined): boolean => {
   value?.forEach((addr) => {
     try {
       multiaddr(addr)
     } catch (err) {
-      throw new Error(`invalid multiaddr: ${addr}`)
+      throw new CodeError(`invalid multiaddr: ${addr}`, codes.ERR_INVALID_MULTIADDR)
     }
   })
   return true

@@ -102,7 +102,7 @@ export interface RelayServerEvents {
 }
 
 const configValidator = object({
-  hopTimeout: number().min(0).integer().default(DEFAULT_HOP_TIMEOUT),
+  hopTimeout: number().integer().min(0).default(DEFAULT_HOP_TIMEOUT),
   reservations: object({
     maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
     reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),

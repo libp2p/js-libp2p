@@ -45,7 +45,7 @@ const log = logger('libp2p:identify')
 const configValidator = object({
   protocolPrefix: string().default(PROTOCOL_PREFIX),
   agentVersion: string().default(AGENT_VERSION),
-  timeout: number().integer().default(TIMEOUT),
+  timeout: number().integer().min(0).default(TIMEOUT),
   maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
   maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
   maxPushIncomingStreams: number().integer().min(0).default(MAX_PUSH_INCOMING_STREAMS),

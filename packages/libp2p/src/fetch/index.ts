@@ -84,7 +84,7 @@ export interface FetchService {
 
 const configValidator = object({
   protocolPrefix: string().default('libp2p'),
-  timeout: number().integer().default(TIMEOUT),
+  timeout: number().integer().min(0).default(TIMEOUT),
   maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
   maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
 })
