@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.1.11](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.10...perf-v1.1.11) (2023-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^0.46.13 to ^0.46.14
+
 ### [1.1.10](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.9...perf-v1.1.10) (2023-10-06)
 
 
