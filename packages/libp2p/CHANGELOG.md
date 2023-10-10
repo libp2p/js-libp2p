@@ -20,6 +20,13 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+### [0.46.14](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.13...libp2p-v0.46.14) (2023-10-10)
+
+
+### Bug Fixes
+
+* **circuit-relay:** respect applyDefaultLimit when it is false ([#2139](https://www.github.com/libp2p/js-libp2p/issues/2139)) ([df2153e](https://www.github.com/libp2p/js-libp2p/commit/df2153e268a72edd00c7663ce9d196d5547e994d))
+
 ### [0.46.13](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.12...libp2p-v0.46.13) (2023-10-06)
 
 
