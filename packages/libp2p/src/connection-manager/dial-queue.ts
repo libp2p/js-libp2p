@@ -101,8 +101,8 @@ export class DialQueue {
       setMaxListeners?.(Infinity, this.shutDownController.signal)
     } catch {}
 
-    this.pendingDialCount = components.metrics?.registerMetric('libp2p_dialler_pending_dials')
-    this.inProgressDialCount = components.metrics?.registerMetric('libp2p_dialler_in_progress_dials')
+    this.pendingDialCount = components.metrics?.registerMetric('libp2p_dial_queue_pending_dials')
+    this.inProgressDialCount = components.metrics?.registerMetric('libp2p_dial_queue_in_progress_dials')
     this.pendingDials = []
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
