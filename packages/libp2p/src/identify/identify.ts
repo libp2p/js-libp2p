@@ -1,5 +1,5 @@
-import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -187,10 +187,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
       const signal = AbortSignal.timeout(this.timeout)
 
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, signal)
-      } catch {}
+      setMaxListeners(Infinity, signal)
 
       try {
         stream = await connection.newStream([this.identifyPushProtocolStr], {
@@ -345,10 +342,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     const signal = AbortSignal.timeout(this.timeout)
 
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
+    setMaxListeners(Infinity, signal)
 
     try {
       const publicKey = this.peerId.publicKey ?? new Uint8Array(0)

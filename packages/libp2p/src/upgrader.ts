@@ -1,5 +1,5 @@
-import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -170,10 +170,7 @@ export class DefaultUpgrader implements Upgrader {
 
     signal.addEventListener('abort', onAbort, { once: true })
 
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch { }
+    setMaxListeners(Infinity, signal)
 
     try {
       if ((await this.components.connectionGater.denyInboundConnection?.(maConn)) === true) {
@@ -444,10 +441,7 @@ export class DefaultUpgrader implements Upgrader {
 
             options.signal = AbortSignal.timeout(30000)
 
-            try {
-              // fails on node < 15.4
-              setMaxListeners?.(Infinity, options.signal)
-            } catch { }
+            setMaxListeners(Infinity, options.signal)
           }
 
           const { stream, protocol } = await mss.select(muxedStream, protocols, options)

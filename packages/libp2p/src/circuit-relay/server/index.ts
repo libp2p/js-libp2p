@@ -1,5 +1,4 @@
-import { setMaxListeners } from 'events'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
@@ -134,10 +133,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.maxOutboundHopStreams = init.maxOutboundHopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
 
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, this.shutdownController.signal)
-    } catch { }
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     if (init.advertise != null && init.advertise !== false) {
       this.advertService = new AdvertService(components, init.advertise === true ? undefined : init.advertise)

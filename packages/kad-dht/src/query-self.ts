@@ -1,4 +1,4 @@
-import { setMaxListeners } from 'events'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger, type Logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
@@ -110,11 +110,7 @@ export class QuerySelf implements Startable {
       const signal = anySignal([this.controller.signal, AbortSignal.timeout(this.queryTimeout)])
 
       // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
-      try {
-        if (setMaxListeners != null) {
-          setMaxListeners(Infinity, signal)
-        }
-      } catch {} // fails on node < 15.4
+      setMaxListeners(Infinity, signal)
 
       try {
         if (this.routingTable.size === 0) {

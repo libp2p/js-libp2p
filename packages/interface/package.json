@@ -39,6 +39,9 @@
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
+  "browser": {
+    "events": "./dist/src/events.browser.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",

@@ -1,8 +1,7 @@
-import { setMaxListeners } from 'events'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
 import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
 import { DefaultKeyChain } from '@libp2p/keychain'
@@ -70,10 +69,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       return internalResult || externalResult
     }
 
-    try {
-      // This emitter gets listened to a lot
-      setMaxListeners?.(Infinity, events)
-    } catch {}
+    // This emitter gets listened to a lot
+    setMaxListeners(Infinity, events)
 
     this.#started = false
     this.peerId = init.peerId
