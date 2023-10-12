@@ -6,8 +6,7 @@
     "module": "ES2020"
   },
   "include": [
-    "src",
-    "test"
+    "src"
   ],
   "references": [
     {

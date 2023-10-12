@@ -5,7 +5,6 @@
   },
   "include": [
     "src",
-    "test",
     "proto_ts"
   ],
   "references": [

@@ -165,7 +165,8 @@
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6",
     "wherearewe": "^2.0.1",
-    "xsalsa20": "^1.1.0"
+    "xsalsa20": "^1.1.0",
+    "@types/xsalsa20": "^1.1.0"
   },
   "devDependencies": {
     "@chainsafe/libp2p-gossipsub": "^10.0.0",
@@ -182,7 +183,6 @@
     "@libp2p/mplex": "^9.0.8",
     "@libp2p/tcp": "^8.0.9",
     "@libp2p/websockets": "^7.0.9",
-    "@types/xsalsa20": "^1.1.0",
     "aegir": "^41.0.2",
     "execa": "^8.0.1",
     "go-libp2p": "^1.1.1",

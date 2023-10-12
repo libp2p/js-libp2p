@@ -4,8 +4,7 @@
     "outDir": "dist"
   },
   "include": [
-    "src",
-    "test"
+    "src"
   ],
   "exclude": [
     "test/message/rpc.js"
