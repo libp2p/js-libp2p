@@ -5,11 +5,10 @@ import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'ts-sinon'
-import { mdns } from '../src/index.js'
-import type { PeerDiscovery } from '@libp2p/interface/peer-discovery'
+import { MulticastDNS } from '../src/mdns.js'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 
-let discovery: PeerDiscovery
+let discovery: MulticastDNS
 
 describe('compliance tests', () => {
   let intervalId: ReturnType<typeof setInterval>
@@ -24,17 +23,21 @@ describe('compliance tests', () => {
         multiaddr(`/ip4/127.0.0.1/tcp/13921/p2p/${peerId1.toString()}`)
       ])
 
-      discovery = mdns({
+      discovery = new MulticastDNS({
+        addressManager
+      }, {
         broadcast: false,
         port: 50001
-      })({
-        addressManager
       })
 
       // Trigger discovery
       const maStr = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star'
 
       intervalId = setInterval(() => {
+        if (!discovery.isStarted()) {
+          return
+        }
+
         discovery.dispatchEvent(new CustomEvent('peer', {
           detail: {
             id: peerId2,
