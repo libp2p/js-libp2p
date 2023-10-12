@@ -38,7 +38,7 @@
     "delay": "^6.0.0",
     "it-all": "^3.0.2",
     "libp2p": "^0.46.0",
-    "multiformats": "github:multiformats/js-multiformats#feat/typescript"
+    "multiformats": "github:maschad/js-multiformats#add-prepare-script"
   },
   "devDependencies": {
     "aegir": "^41.0.2",

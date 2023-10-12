@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^0.1.3",
-    "multiformats": "github:multiformats/js-multiformats#feat/typescript",
+    "multiformats": "github:maschad/js-multiformats#add-prepare-script",
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {

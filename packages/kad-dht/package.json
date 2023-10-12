@@ -77,7 +77,7 @@
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "it-take": "^3.0.1",
-    "multiformats": "github:multiformats/js-multiformats#feat/typescript",
+    "multiformats": "github:maschad/js-multiformats#add-prepare-script",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-queue": "^7.3.4",
