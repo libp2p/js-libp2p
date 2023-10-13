@@ -91,14 +91,14 @@ class UPnPNAT implements Startable {
     this.components = components
     this.started = false
 
-    const validatedConfig = configValidator.validateSync(init)
+    const config = configValidator.validateSync(init)
 
-    this.externalAddress = validatedConfig.externalAddress
-    this.localAddress = validatedConfig.localAddress
-    this.description = validatedConfig.description ?? `${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`
-    this.ttl = validatedConfig.ttl
-    this.keepAlive = validatedConfig.keepAlive
-    this.gateway = validatedConfig.gateway
+    this.externalAddress = config.externalAddress
+    this.localAddress = config.localAddress
+    this.description = config.description ?? `${pkg.name}@${pkg.version} ${this.components.peerId.toString()}`
+    this.ttl = config.ttl
+    this.keepAlive = config.keepAlive
+    this.gateway = config.gateway
 
     if (this.ttl < DEFAULT_TTL) {
       throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, codes.ERR_INVALID_PARAMETERS)

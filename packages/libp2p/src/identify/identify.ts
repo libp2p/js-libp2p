@@ -82,7 +82,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly runOnConnectionOpen: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
-    const validatedConfig = configValidator.validateSync(init)
+    const config = configValidator.validateSync(init)
 
     this.started = false
     this.peerId = components.peerId
@@ -92,22 +92,22 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.connectionManager = components.connectionManager
     this.events = components.events
 
-    this.identifyProtocolStr = `/${validatedConfig.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
-    this.identifyPushProtocolStr = `/${validatedConfig.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
-    this.timeout = validatedConfig.timeout
-    this.maxInboundStreams = validatedConfig.maxInboundStreams
-    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
-    this.maxPushIncomingStreams = validatedConfig.maxPushIncomingStreams
-    this.maxPushOutgoingStreams = validatedConfig.maxPushOutgoingStreams
-    this.maxIdentifyMessageSize = validatedConfig.maxIdentifyMessageSize
-    this.maxObservedAddresses = validatedConfig.maxObservedAddresses
-    this.runOnTransientConnection = validatedConfig.runOnTransientConnection
-    this.runOnConnectionOpen = validatedConfig.runOnConnectionOpen
+    this.identifyProtocolStr = `/${config.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
+    this.identifyPushProtocolStr = `/${config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    this.timeout = config.timeout
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
+    this.maxPushIncomingStreams = config.maxPushIncomingStreams
+    this.maxPushOutgoingStreams = config.maxPushOutgoingStreams
+    this.maxIdentifyMessageSize = config.maxIdentifyMessageSize
+    this.maxObservedAddresses = config.maxObservedAddresses
+    this.runOnTransientConnection = config.runOnTransientConnection
+    this.runOnConnectionOpen = config.runOnConnectionOpen
 
     // Store self host metadata
     this.host = {
-      protocolVersion: `${validatedConfig.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: validatedConfig.agentVersion
+      protocolVersion: `${config.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
+      agentVersion: config.agentVersion
     }
 
     if (this.runOnConnectionOpen) {

@@ -59,14 +59,14 @@ export class ReservationStore implements Startable {
   private readonly defaultDataLimit: bigint
 
   constructor (options: ReservationStoreOptions = {}) {
-    const validatedConfig = configValidator.validateSync(options)
+    const config = configValidator.validateSync(options)
 
-    this.maxReservations = validatedConfig.maxReservations
-    this.reservationClearInterval = validatedConfig.reservationClearInterval
-    this.applyDefaultLimit = validatedConfig.applyDefaultLimit
-    this.reservationTtl = validatedConfig.reservationTtl
-    this.defaultDurationLimit = validatedConfig.defaultDurationLimit
-    this.defaultDataLimit = validatedConfig.defaultDataLimit as bigint
+    this.maxReservations = config.maxReservations
+    this.reservationClearInterval = config.reservationClearInterval
+    this.applyDefaultLimit = config.applyDefaultLimit
+    this.reservationTtl = config.reservationTtl
+    this.defaultDurationLimit = config.defaultDurationLimit
+    this.defaultDataLimit = config.defaultDataLimit as bigint
   }
 
   isStarted (): boolean {

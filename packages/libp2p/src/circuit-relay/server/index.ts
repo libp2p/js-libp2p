@@ -137,7 +137,7 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
   constructor (components: CircuitRelayServerComponents, init: CircuitRelayServerInit = {}) {
     super()
 
-    const validatedConfig = configValidator.validateSync(init)
+    const config = configValidator.validateSync(init)
 
     this.registrar = components.registrar
     this.peerStore = components.peerStore
@@ -146,11 +146,11 @@ class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Star
     this.connectionManager = components.connectionManager
     this.connectionGater = components.connectionGater
     this.started = false
-    this.hopTimeout = validatedConfig.hopTimeout
+    this.hopTimeout = config.hopTimeout
     this.shutdownController = new AbortController()
-    this.maxInboundHopStreams = validatedConfig.maxInboundHopStreams
-    this.maxOutboundHopStreams = validatedConfig.maxOutboundHopStreams
-    this.maxOutboundStopStreams = validatedConfig.maxOutboundStopStreams
+    this.maxInboundHopStreams = config.maxInboundHopStreams
+    this.maxOutboundHopStreams = config.maxOutboundHopStreams
+    this.maxOutboundStopStreams = config.maxOutboundStopStreams
 
     try {
       // fails on node < 15.4

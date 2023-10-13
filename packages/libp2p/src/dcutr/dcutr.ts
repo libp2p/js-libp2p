@@ -55,12 +55,12 @@ export class DefaultDCUtRService implements Startable {
     this.connectionManager = components.connectionManager
     this.transportManager = components.transportManager
 
-    const validatedConfig = configValidator.validateSync(init)
+    const config = configValidator.validateSync(init)
 
-    this.timeout = validatedConfig.timeout
-    this.retries = validatedConfig.retries
-    this.maxInboundStreams = validatedConfig.maxInboundStreams
-    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
+    this.timeout = config.timeout
+    this.retries = config.retries
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
   }
 
   isStarted (): boolean {

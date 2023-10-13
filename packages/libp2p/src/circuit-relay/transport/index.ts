@@ -124,7 +124,7 @@ class CircuitRelayTransport implements Transport {
   private started: boolean
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
-    const validatedConfig = configValidator.validateSync(init)
+    const config = configValidator.validateSync(init)
 
     this.registrar = components.registrar
     this.peerStore = components.peerStore
@@ -133,11 +133,11 @@ class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.maxInboundStopStreams = validatedConfig.maxInboundStopStreams
-    this.maxOutboundStopStreams = validatedConfig.maxOutboundStopStreams
-    this.stopTimeout = validatedConfig.stopTimeout
+    this.maxInboundStopStreams = config.maxInboundStopStreams
+    this.maxOutboundStopStreams = config.maxOutboundStopStreams
+    this.stopTimeout = config.stopTimeout
 
-    if (validatedConfig.discoverRelays > 0) {
+    if (config.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
       this.discovery.addEventListener('relay:discover', (evt) => {
         this.reservationStore.addRelay(evt.detail, 'discovered')

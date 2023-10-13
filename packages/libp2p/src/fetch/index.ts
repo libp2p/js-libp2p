@@ -105,14 +105,14 @@ class DefaultFetchService implements Startable, FetchService {
   private readonly maxOutboundStreams: number
 
   constructor (components: FetchServiceComponents, init: FetchServiceInit) {
-    const validatedConfig = configValidator.validateSync(init)
+    const config = configValidator.validateSync(init)
 
     this.started = false
     this.components = components
-    this.protocol = `/${validatedConfig.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-    this.timeout = validatedConfig.timeout
-    this.maxInboundStreams = validatedConfig.maxInboundStreams
-    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
+    this.protocol = `/${config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = config.timeout
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
 
     this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)

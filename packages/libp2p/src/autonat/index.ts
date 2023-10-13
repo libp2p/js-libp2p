@@ -118,16 +118,16 @@ class DefaultAutoNATService implements Startable {
   private started: boolean
 
   constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
-    const validatedConfig = configValidator.validateSync(init)
+    const config = configValidator.validateSync(init)
 
     this.components = components
     this.started = false
-    this.protocol = `/${validatedConfig.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-    this.timeout = validatedConfig.timeout
-    this.maxInboundStreams = validatedConfig.maxInboundStreams
-    this.maxOutboundStreams = validatedConfig.maxOutboundStreams
-    this.startupDelay = validatedConfig.startupDelay
-    this.refreshInterval = validatedConfig.refreshInterval
+    this.protocol = `/${config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = config.timeout
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
+    this.startupDelay = config.startupDelay
+    this.refreshInterval = config.refreshInterval
     this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
   }
 
