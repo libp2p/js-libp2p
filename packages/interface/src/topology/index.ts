@@ -2,9 +2,6 @@ import type { Connection } from '../connection/index.js'
 import type { PeerId } from '../peer-id/index.js'
 
 export interface Topology {
-  min?: number
-  max?: number
-
   /**
    * If true, invoke `onConnect` for this topology on transient (e.g. short-lived
    * and/or data-limited) connections. (default: false)
