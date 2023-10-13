@@ -29,7 +29,7 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 
 const protocol = '/test/1.0.0'
 
-describe('registrar', () => {
+describe.only('registrar', () => {
   let components: Components
   let registrar: Registrar
   let peerId: PeerId
@@ -335,6 +335,51 @@ describe('registrar', () => {
 
       // Register topology for protocol
       await registrar.register(protocol, topology)
+
+      // remote peer connects
+      events.safeDispatchEvent('peer:update', {
+        detail: {
+          peer: {
+            id: remotePeerId,
+            protocols: [protocol]
+          }
+        }
+      })
+
+      await expect(onConnectDefer.promise).to.eventually.be.undefined()
+    })
+
+    it('should call topology handlers for non-transient connection opened after transient connection', async () => {
+      const onConnectDefer = pDefer()
+      let callCount = 0
+
+      const topology: Topology = {
+        notifyOnTransient: true,
+        onConnect: () => {
+          callCount++
+
+          if (callCount === 2) {
+            onConnectDefer.resolve()
+          }
+        }
+      }
+
+      // Register topology for protocol
+      await registrar.register(protocol, topology)
+
+      // Setup connections before registrar
+      const remotePeerId = await createEd25519PeerId()
+      const transientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+      transientConnection.transient = true
+
+      const nonTransientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+      nonTransientConnection.transient = false
+
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([
+        transientConnection,
+        nonTransientConnection
+      ])
 
       // remote peer connects
       events.safeDispatchEvent('peer:update', {
