@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -18,7 +18,7 @@ export interface CircuitRelayTransportListenerComponents {
   relayStore: ReservationStore
 }
 
-class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> implements Listener {
+class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly connectionManager: ConnectionManager
   private readonly relayStore: ReservationStore
   private readonly listeningAddrs: PeerMap<Multiaddr[]>

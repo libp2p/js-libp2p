@@ -1,4 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
+import { CustomEvent } from '@libp2p/interface/events'
 import { isPeerId, type PeerId } from '@libp2p/interface/peer-id'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -6,7 +7,7 @@ import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { connectionPair } from './connection.js'
 import type { Libp2pEvents, PendingDial } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PubSub } from '@libp2p/interface/pubsub'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
@@ -16,7 +17,7 @@ export interface MockNetworkComponents {
   peerId: PeerId
   registrar: Registrar
   connectionManager: ConnectionManager
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
   pubsub?: PubSub
 }
 
@@ -51,7 +52,7 @@ export const mockNetwork = new MockNetwork()
 export interface MockConnectionManagerComponents {
   peerId: PeerId
   registrar: Registrar
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 class MockConnectionManager implements ConnectionManager, Startable {
@@ -130,9 +131,9 @@ class MockConnectionManager implements ConnectionManager, Startable {
     this.connections.push(aToB)
     ;(componentsB.connectionManager as MockConnectionManager).connections.push(bToA)
 
-    this.components.events.safeDispatchEvent('connection:open', {
+    this.components.events.dispatchEvent(new CustomEvent('connection:open', {
       detail: aToB
-    })
+    }))
 
     for (const protocol of this.components.registrar.getProtocols()) {
       for (const topology of this.components.registrar.getTopologies(protocol)) {
@@ -140,11 +141,11 @@ class MockConnectionManager implements ConnectionManager, Startable {
       }
     }
 
-    this.components.events.safeDispatchEvent('peer:connect', { detail: componentsB.peerId })
+    this.components.events.dispatchEvent(new CustomEvent('peer:connect', { detail: componentsB.peerId }))
 
-    componentsB.events.safeDispatchEvent('connection:open', {
+    componentsB.events.dispatchEvent(new CustomEvent('connection:open', {
       detail: bToA
-    })
+    }))
 
     for (const protocol of componentsB.registrar.getProtocols()) {
       for (const topology of componentsB.registrar.getTopologies(protocol)) {

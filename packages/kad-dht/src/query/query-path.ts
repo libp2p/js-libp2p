@@ -9,7 +9,7 @@ import { queryErrorEvent } from './events.js'
 import type { CleanUpEvents } from './manager.js'
 import type { QueryEvent, QueryOptions } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Logger } from '@libp2p/logger'
 import type { PeerSet } from '@libp2p/peer-collections'
@@ -60,7 +60,7 @@ export interface QueryPathOptions extends QueryOptions {
   /**
    * will emit a 'cleanup' event if the caller exits the for..await of early
    */
-  cleanUp: EventEmitter<CleanUpEvents>
+  cleanUp: TypedEventTarget<CleanUpEvents>
 
   /**
    * A timeout for queryFunc in ms
@@ -185,7 +185,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
   yield * toGenerator(queue, signal, cleanUp, log)
 }
 
-async function * toGenerator (queue: Queue, signal: AbortSignal, cleanUp: EventEmitter<CleanUpEvents>, log: Logger): AsyncGenerator<QueryEvent, void, undefined> {
+async function * toGenerator (queue: Queue, signal: AbortSignal, cleanUp: TypedEventTarget<CleanUpEvents>, log: Logger): AsyncGenerator<QueryEvent, void, undefined> {
   let deferred = defer()
   let running = true
   const results: QueryEvent[] = []
