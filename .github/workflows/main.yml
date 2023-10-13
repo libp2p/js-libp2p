@@ -15,5 +15,256 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-      - run: npm i --production
+      - run: npm i
       - run: npm run build
+
+  check:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - run: npm run --if-present lint
+      - run: npm run --if-present dep-check
+      - run: npm run --if-present doc-check
+
+  test-node:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        node: [lts/*]
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm run --if-present test:node
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: node
+
+  test-chrome:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npm run --if-present test:chrome
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: chrome
+
+  test-chrome-webworker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npm run --if-present test:chrome-webworker
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: chrome-webworker
+
+  test-firefox:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npm run --if-present test:firefox
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: firefox
+
+  test-firefox-webworker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npm run --if-present test:firefox-webworker
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: firefox-webworker
+
+  test-webkit:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npx playwright install-deps
+      - run: npm run --if-present test:webkit
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: webkit
+
+  test-electron-main:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npx xvfb-maybe npm run --if-present test:electron-main
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: electron-main
+
+  test-electron-renderer:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npx xvfb-maybe npm run --if-present test:electron-renderer
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
+        with:
+          directory: ./.nyc_output
+          flags: electron-renderer
+
+  test-interop:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npm run test:interop -- --bail
+
+  test-examples:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - run: npm run --if-present test:example
+
+  transport-interop:
+    needs: build
+    runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Build images
+        run: (cd interop && make -j 4)
+      - name: Save package-lock.json as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: package locks
+          path: |
+            package-lock.json
+            interop/package-lock.json
+      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@master
+        with:
+          test-filter: js-libp2p-head
+          test-ignore: nim
+          extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json
+          s3-cache-bucket: ${{ vars.S3_LIBP2P_BUILD_CACHE_BUCKET_NAME }}
+          s3-access-key-id: ${{ vars.S3_LIBP2P_BUILD_CACHE_AWS_ACCESS_KEY_ID }}
+          s3-secret-access-key: ${{ secrets.S3_LIBP2P_BUILD_CACHE_AWS_SECRET_ACCESS_KEY }}
+          worker-count: 16
+
+  release:
+    runs-on: ubuntu-latest
+    needs:
+      [
+        test-node,
+        test-chrome,
+        test-chrome-webworker,
+        test-firefox,
+        test-firefox-webworker,
+        test-electron-main,
+        test-electron-renderer,
+        test-interop,
+        test-examples,
+        transport-interop,
+      ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v2
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          command: manifest
+          release-type: node
+          manifest-file: .release-please-manifest.json
+          config-file: .release-please.json
+          changelog-types: |
+            [
+              { "type": "feat", "section": "Features", "hidden": false },
+              { "type": "fix", "section": "Bug Fixes", "hidden": false },
+              { "type": "chore", "section": "Trivial Changes", "hidden": false },
+              { "type": "docs", "section": "Documentation", "hidden": false },
+              { "type": "deps", "section": "Dependencies", "hidden": false },
+              { "type": "refactor", "section": "Refactors", "hidden": false }
+            ]
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          registry-url: "https://registry.npmjs.org"
+
+      - uses: ipfs/aegir/actions/docker-login@master
+        with:
+          docker-token: ${{ secrets.DOCKER_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+      - if: ${{ steps.release.outputs.releases_created }}
+        name: Run release version
+        run: |
+          git update-index --assume-unchanged packages/libp2p/src/version.ts
+          npm run --if-present release
+        env:
+          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - if: ${{ !steps.release.outputs.releases_created }}
+        name: Run release rc
+        run: |
+          git update-index --assume-unchanged packages/libp2p/src/version.ts
+          npm run --if-present release:rc
+        env:
+          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
