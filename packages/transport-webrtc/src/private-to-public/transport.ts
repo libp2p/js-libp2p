@@ -3,6 +3,7 @@ import { type CreateListenerOptions, symbol, type Transport, type Listener } fro
 import { logger } from '@libp2p/logger'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
+import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import * as multihashes from 'multihashes'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
@@ -15,7 +16,7 @@ import { RTCPeerConnection } from '../webrtc/index.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
-import type { DataChannelOpts } from '../stream.js'
+import type { DataChannelOptions } from '../index.js'
 import type { Connection } from '@libp2p/interface/connection'
 import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -55,7 +56,7 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
-  dataChannel?: Partial<DataChannelOpts>
+  dataChannel?: DataChannelOptions
 }
 
 export class WebRTCDirectTransport implements Transport {
@@ -67,9 +68,9 @@ export class WebRTCDirectTransport implements Transport {
     this.init = init
     if (components.metrics != null) {
       this.metrics = {
-        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_dialer_events_total', {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc-direct_dialer_events_total', {
           label: 'event',
-          help: 'Total count of WebRTC dial events by type'
+          help: 'Total count of WebRTC-direct dial events by type'
         })
       }
     }
@@ -80,7 +81,7 @@ export class WebRTCDirectTransport implements Transport {
    */
   async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options)
-    log(`dialing address - ${ma.toString()}`)
+    log('dialing address: %a', ma)
     return rawConn
   }
 
@@ -95,7 +96,7 @@ export class WebRTCDirectTransport implements Transport {
    * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
    */
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(validMa)
+    return multiaddrs.filter(WebRTCDirect.exactMatch)
   }
 
   /**
@@ -193,7 +194,7 @@ export class WebRTCDirectTransport implements Transport {
       // we pass in undefined for these parameters.
       const noise = Noise({ prologueBytes: fingerprintsPrologue })()
 
-      const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
+      const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', ...(this.init.dataChannel ?? {}) })
       const wrappedDuplex = {
         ...wrappedChannel,
         sink: wrappedChannel.sink.bind(wrappedChannel),
@@ -274,13 +275,4 @@ export class WebRTCDirectTransport implements Transport {
 
     return concat([prefix, local, remote])
   }
-}
-
-/**
- * Determine if a given multiaddr contains a WebRTC Code (280),
- * a Certhash Code (466) and a PeerId
- */
-function validMa (ma: Multiaddr): boolean {
-  const codes = ma.protoCodes()
-  return codes.includes(WEBRTC_CODE) && codes.includes(CERTHASH_CODE) && ma.getPeerId() != null && !codes.includes(protocols('p2p-circuit').code)
 }

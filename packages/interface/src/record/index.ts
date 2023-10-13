@@ -16,11 +16,11 @@ export interface Record {
   /**
    * Marshal a record to be used in an envelope.
    */
-  marshal: () => Uint8Array
+  marshal(): Uint8Array
   /**
    * Verifies if the other provided Record is identical to this one.
    */
-  equals: (other: Record) => boolean
+  equals(other: Record): boolean
 }
 
 export interface Envelope {
@@ -29,7 +29,7 @@ export interface Envelope {
   payload: Uint8Array
   signature: Uint8Array | Uint8ArrayList
 
-  marshal: () => Uint8Array
-  validate: (domain: string) => Promise<boolean>
-  equals: (other: Envelope) => boolean
+  marshal(): Uint8Array
+  validate(domain: string): Promise<boolean>
+  equals(other: Envelope): boolean
 }

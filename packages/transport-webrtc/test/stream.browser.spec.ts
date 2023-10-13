@@ -5,13 +5,14 @@ import { bytes } from 'multiformats'
 import { Message } from '../src/pb/message.js'
 import { createStream, type WebRTCStream } from '../src/stream.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
+import { receiveFinAck } from './util.js'
 import type { Stream } from '@libp2p/interface/connection'
 const TEST_MESSAGE = 'test_message'
 
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const stream = createStream({ channel: dataChannel, direction: 'outbound' })
+  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1 })
 
   return { peerConnection, dataChannel, stream }
 }
@@ -28,9 +29,10 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
 describe('Stream Stats', () => {
   let stream: WebRTCStream
   let peerConnection: RTCPeerConnection
+  let dataChannel: RTCDataChannel
 
   beforeEach(async () => {
-    ({ stream, peerConnection } = setup())
+    ({ stream, peerConnection, dataChannel } = setup())
   })
 
   afterEach(() => {
@@ -45,7 +47,10 @@ describe('Stream Stats', () => {
 
   it('close marks it closed', async () => {
     expect(stream.timeline.close).to.not.exist()
+
+    receiveFinAck(dataChannel)
     await stream.close()
+
     expect(stream.timeline.close).to.be.a('number')
   })
 
@@ -58,15 +63,23 @@ describe('Stream Stats', () => {
 
   it('closeWrite marks it write-closed only', async () => {
     expect(stream.timeline.close).to.not.exist()
+
+    receiveFinAck(dataChannel)
     await stream.closeWrite()
+
     expect(stream.timeline.close).to.not.exist()
     expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
   })
 
   it('closeWrite AND closeRead = close', async () => {
     expect(stream.timeline.close).to.not.exist()
-    await stream.closeWrite()
-    await stream.closeRead()
+
+    receiveFinAck(dataChannel)
+    await Promise.all([
+      stream.closeRead(),
+      stream.closeWrite()
+    ])
+
     expect(stream.timeline.close).to.be.a('number')
     expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
     expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)

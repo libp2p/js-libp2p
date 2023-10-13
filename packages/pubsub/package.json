@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/pubsub",
-  "version": "8.0.5",
+  "version": "8.0.7",
   "description": "libp2p pubsub base class",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/pubsub#readme",
@@ -60,6 +60,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -78,12 +79,12 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^2.0.3",
-    "@libp2p/interface": "^0.1.2",
-    "@libp2p/interface-internal": "^0.1.4",
-    "@libp2p/logger": "^3.0.2",
-    "@libp2p/peer-collections": "^4.0.3",
-    "@libp2p/peer-id": "^3.0.2",
+    "@libp2p/crypto": "^2.0.5",
+    "@libp2p/interface": "^0.1.3",
+    "@libp2p/interface-internal": "^0.1.6",
+    "@libp2p/logger": "^3.0.3",
+    "@libp2p/peer-collections": "^4.0.5",
+    "@libp2p/peer-id": "^3.0.3",
     "abortable-iterator": "^5.0.1",
     "it-length-prefixed": "^9.0.1",
     "it-pipe": "^3.0.1",
@@ -94,9 +95,9 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^3.0.3",
+    "@libp2p/peer-id-factory": "^3.0.5",
     "@types/sinon": "^10.0.15",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.2",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",

@@ -423,7 +423,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
    * ```
    */
-  getMultiaddrs: () => Multiaddr[]
+  getMultiaddrs(): Multiaddr[]
 
   /**
    * Returns a list of supported protocols
@@ -435,7 +435,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * // [ '/ipfs/ping/1.0.0', '/ipfs/id/1.0.0' ]
    * ```
    */
-  getProtocols: () => string[]
+  getProtocols(): string[]
 
   /**
    * Return a list of all connections this node has open, optionally filtering
@@ -450,7 +450,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * }
    * ```
    */
-  getConnections: (peerId?: PeerId) => Connection[]
+  getConnections(peerId?: PeerId): Connection[]
 
   /**
    * Return the list of dials currently in progress or queued to start
@@ -463,12 +463,12 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * }
    * ```
    */
-  getDialQueue: () => PendingDial[]
+  getDialQueue(): PendingDial[]
 
   /**
    * Return a list of all peers we currently have a connection open to
    */
-  getPeers: () => PeerId[]
+  getPeers(): PeerId[]
 
   /**
    * Dials to the provided peer. If successful, the known metadata of the
@@ -490,7 +490,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * await conn.close()
    * ```
    */
-  dial: (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions) => Promise<Connection>
+  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection>
 
   /**
    * Dials to the provided peer and tries to handshake with the given protocols in order.
@@ -508,7 +508,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol: (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions) => Promise<Stream>
+  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
 
   /**
    * Attempts to gracefully close an open connection to the given peer. If the
@@ -523,7 +523,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * await libp2p.hangUp(remotePeerId)
    * ```
    */
-  hangUp: (peer: PeerId | Multiaddr, options?: AbortOptions) => Promise<void>
+  hangUp(peer: PeerId | Multiaddr, options?: AbortOptions): Promise<void>
 
   /**
    * Sets up [multistream-select routing](https://github.com/multiformats/multistream-select) of protocols to their application handlers. Whenever a stream is opened on one of the provided protocols, the handler will be called. `handle` must be called in order to register a handler and support for a given protocol. This also informs other peers of the protocols you support.
@@ -545,7 +545,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * })
    * ```
    */
-  handle: (protocol: string | string[], handler: StreamHandler, options?: StreamHandlerOptions) => Promise<void>
+  handle(protocol: string | string[], handler: StreamHandler, options?: StreamHandlerOptions): Promise<void>
 
   /**
    * Removes the handler for each protocol. The protocol
@@ -557,7 +557,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
-  unhandle: (protocols: string[] | string) => Promise<void>
+  unhandle(protocols: string[] | string): Promise<void>
 
   /**
    * Register a topology to be informed when peers are encountered that
@@ -576,7 +576,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * })
    * ```
    */
-  register: (protocol: string, topology: Topology) => Promise<string>
+  register(protocol: string, topology: Topology): Promise<string>
 
   /**
    * Unregister topology to no longer be informed when peers connect or
@@ -590,14 +590,14 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * libp2p.unregister(id)
    * ```
    */
-  unregister: (id: string) => void
+  unregister(id: string): void
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
    * this may mean searching the DHT if the key is not present in the KeyStore.
    * A set of user defined services
    */
-  getPublicKey: (peer: PeerId, options?: AbortOptions) => Promise<Uint8Array>
+  getPublicKey(peer: PeerId, options?: AbortOptions): Promise<Uint8Array>
 
   /**
    * A set of user defined services

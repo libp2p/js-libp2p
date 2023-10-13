@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/logger",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "A logging component for use in js-libp2p modules",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/logger#readme",
@@ -31,6 +31,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     }
   },
@@ -48,16 +49,16 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.2",
+    "@libp2p/interface": "^0.1.3",
     "@multiformats/multiaddr": "^12.1.5",
     "debug": "^4.3.4",
     "interface-datastore": "^8.2.0",
     "multiformats": "^12.0.1"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^3.0.2",
+    "@libp2p/peer-id": "^3.0.3",
     "@types/debug": "^4.1.7",
-    "aegir": "^40.0.8",
+    "aegir": "^41.0.2",
     "sinon": "^16.0.0",
     "uint8arrays": "^4.0.4"
   }
