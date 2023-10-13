@@ -29,7 +29,7 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 
 const protocol = '/test/1.0.0'
 
-describe.only('registrar', () => {
+describe('registrar', () => {
   let components: Components
   let registrar: Registrar
   let peerId: PeerId
