@@ -5,30 +5,31 @@ on:
       - master
   pull_request:
     branches:
-      - "**"
+      - '**'
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-      - run: npm i
-      - run: npm run build
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: lts/*
+    - uses: ipfs/aegir/actions/cache-node-modules@master
 
   check:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-      - run: npm run --if-present lint
-      - run: npm run --if-present dep-check
-      - run: npm run --if-present doc-check
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: lts/*
+    - uses: ipfs/aegir/actions/cache-node-modules@master
+    - run: npm run --if-present lint
+    - run: npm run --if-present dep-check
+    - run: npm run --if-present doc-check
 
   test-node:
     needs: build
@@ -43,7 +44,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:node
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
@@ -58,7 +59,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
@@ -73,7 +74,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
@@ -88,7 +89,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
@@ -103,7 +104,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
@@ -118,7 +119,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
@@ -134,7 +135,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-main
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
@@ -149,7 +150,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
@@ -164,7 +165,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run test:interop -- --bail
 
   test-examples:
@@ -175,7 +176,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:example
 
   transport-interop:
@@ -186,7 +187,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - name: Build images
         run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
@@ -208,19 +209,18 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs:
-      [
-        test-node,
-        test-chrome,
-        test-chrome-webworker,
-        test-firefox,
-        test-firefox-webworker,
-        test-electron-main,
-        test-electron-renderer,
-        test-interop,
-        test-examples,
-        transport-interop,
-      ]
+    needs: [
+      test-node,
+      test-chrome,
+      test-chrome-webworker,
+      test-firefox,
+      test-firefox-webworker,
+      test-electron-main,
+      test-electron-renderer,
+      test-interop,
+      test-examples,
+      transport-interop
+    ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
@@ -246,8 +246,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          registry-url: "https://registry.npmjs.org"
-
+          registry-url: 'https://registry.npmjs.org'
+      - uses: ipfs/aegir/actions/cache-node-modules@master
       - uses: ipfs/aegir/actions/docker-login@master
         with:
           docker-token: ${{ secrets.DOCKER_TOKEN }}
@@ -263,8 +263,8 @@ jobs:
       - if: ${{ !steps.release.outputs.releases_created }}
         name: Run release rc
         run: |
-          git update-index --assume-unchanged packages/libp2p/src/version.ts
-          npm run --if-present release:rc
+            git update-index --assume-unchanged packages/libp2p/src/version.ts
+            npm run --if-present release:rc
         env:
           GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
