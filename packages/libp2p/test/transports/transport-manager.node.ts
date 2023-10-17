@@ -133,7 +133,7 @@ describe('Transport Manager (TCP)', () => {
     await tm.stop()
   })
 
-  it('should remove a spefic listener on a transport when it stops listening', async () => {
+  it('should remove a specific listener on a transport when it stops listening', async () => {
     const transport = tcp()()
     tm.add(transport)
 
