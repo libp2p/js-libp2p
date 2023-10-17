@@ -102,7 +102,7 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.listeningAddrs.delete(peerId)
 
     if (had) {
-      log.trace('removing relay event listener for peer %s', Array.from(this.listeningAddrs.keys()).join(', '))
+      log.trace('removing relay event listener for peer %p', peerId)
       this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
       // Announce listen addresses change
       this.safeDispatchEvent('close', {})
