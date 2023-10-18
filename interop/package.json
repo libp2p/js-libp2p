@@ -47,6 +47,7 @@
     "start": "node index.js",
     "build": "aegir build",
     "lint": "aegir lint",
+    "test:interop:multidim": "aegir test",
     "test:transport:interop": "aegir test"
   },
   "dependencies": {
