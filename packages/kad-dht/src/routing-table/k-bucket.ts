@@ -95,14 +95,14 @@ export interface KBucketOptions {
    * An optional `distance` function that gets two `id` Uint8Arrays and return
    * distance (as number) between them.
    */
-  distance?: (a: Uint8Array, b: Uint8Array) => number
+  distance?(a: Uint8Array, b: Uint8Array): number
 
   /**
    * An optional `arbiter` function that given two `contact` objects with the
    * same `id` returns the desired object to be used for updating the k-bucket.
    * For more details, see [arbiter function](#arbiter-function).
    */
-  arbiter?: (incumbent: Contact, candidate: Contact) => Contact
+  arbiter?(incumbent: Contact, candidate: Contact): Contact
 }
 
 export interface Contact {

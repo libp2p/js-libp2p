@@ -11,6 +11,73 @@
 
 * bump @chainsafe/libp2p-noise from 11.0.4 to 12.0.1 ([#80](https://github.com/libp2p/js-libp2p-webtransport/issues/80)) ([599dab1](https://github.com/libp2p/js-libp2p-webtransport/commit/599dab1b4f6ae816b0c0feefc926c1b38d24b676))
 
+### [3.1.3](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.2...webtransport-v3.1.3) (2023-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.13 to ^0.46.14
+
+### [3.1.2](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.1...webtransport-v3.1.2) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/peer-id bumped from ^3.0.2 to ^3.0.3
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.3 to ^3.0.5
+    * libp2p bumped from ^0.46.12 to ^0.46.13
+
+### [3.1.1](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.0...webtransport-v3.1.1) (2023-10-01)
+
+
+### Bug Fixes
+
+* **transports:** filter circuit addresses ([#2060](https://www.github.com/libp2p/js-libp2p/issues/2060)) ([972b10a](https://www.github.com/libp2p/js-libp2p/commit/972b10a967653f60666a061bddfa46c0decfcc70))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.11 to ^0.46.12
+
+## [3.1.0](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.11...webtransport-v3.1.0) (2023-09-20)
+
+
+### Features
+
+* collect dial/listen metrics in webrtc and webtransport ([#2061](https://www.github.com/libp2p/js-libp2p/issues/2061)) ([6cb80f7](https://www.github.com/libp2p/js-libp2p/commit/6cb80f7d3b308aff955f4de247680a3c9c26993b))
+
+### [3.0.11](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.10...webtransport-v3.0.11) (2023-09-15)
+
+
+### Bug Fixes
+
+* **@libp2p/webtransport:** handle dialing circuit addresses ([#2054](https://www.github.com/libp2p/js-libp2p/issues/2054)) ([20d5f22](https://www.github.com/libp2p/js-libp2p/commit/20d5f2200ee2a538a923f9e1df517c2bffad9105))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.10 to ^0.46.11
+
+### [3.0.10](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.9...webtransport-v3.0.10) (2023-09-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.9 to ^0.46.10
+
 ### [3.0.9](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.0.8...webtransport-v3.0.9) (2023-09-05)
 
 

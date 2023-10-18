@@ -4,7 +4,6 @@ import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { codes } from '../errors.js'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from './constants.js'
 import type { Limit } from './pb/index.js'
 import type { Stream } from '@libp2p/interface/connection'
 import type { Source } from 'it-stream-types'
@@ -13,6 +12,8 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 const log = logger('libp2p:circuit-relay:utils')
 
 async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
+  const limitBytes = limit.remaining
+
   for await (const buf of source) {
     const len = BigInt(buf.byteLength)
 
@@ -29,7 +30,7 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
         log.error(err)
       }
 
-      throw new Error('data limit exceeded')
+      throw new CodeError(`data limit of ${limitBytes} bytes exceeded`, codes.ERR_TRANSFER_LIMIT_EXCEEDED)
     }
 
     limit.remaining -= len
@@ -37,7 +38,7 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
   }
 }
 
-const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Required<Limit>): void => {
+export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: AbortSignal, limit?: Limit): void {
   function abortStreams (err: Error): void {
     src.abort(err)
     dst.abort(err)
@@ -47,25 +48,33 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
   const abortController = new AbortController()
   const signal = anySignal([abortSignal, abortController.signal])
 
-  const timeout = setTimeout(() => {
-    abortController.abort()
-  }, limit.duration)
+  let timeout: ReturnType<typeof setTimeout> | undefined
+
+  if (limit?.duration != null) {
+    timeout = setTimeout(() => {
+      abortController.abort()
+    }, limit.duration)
+  }
 
   let srcDstFinished = false
   let dstSrcFinished = false
 
-  const dataLimit = {
-    remaining: limit.data
+  let dataLimit: { remaining: bigint } | undefined
+
+  if (limit?.data != null) {
+    dataLimit = {
+      remaining: limit.data
+    }
   }
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      dst.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
+      dst.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, codes.ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
 
-    void dst.sink(countStreamBytes(src.source, dataLimit))
+    void dst.sink(dataLimit == null ? src.source : countStreamBytes(src.source, dataLimit))
       .catch(err => {
         log.error('error while relaying streams src -> dst', err)
         abortStreams(err)
@@ -83,12 +92,12 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      src.abort(new CodeError('duration limit exceeded', codes.ERR_TIMEOUT))
+      src.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, codes.ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
 
-    void src.sink(countStreamBytes(dst.source, dataLimit))
+    void src.sink(dataLimit == null ? dst.source : countStreamBytes(dst.source, dataLimit))
       .catch(err => {
         log.error('error while relaying streams dst -> src', err)
         abortStreams(err)
@@ -102,16 +111,6 @@ const doRelay = (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Requ
           clearTimeout(timeout)
         }
       })
-  })
-}
-
-export function createLimitedRelay (source: Stream, destination: Stream, abortSignal: AbortSignal, limit?: Limit): void {
-  const dataLimit = limit?.data ?? BigInt(DEFAULT_DATA_LIMIT)
-  const durationLimit = limit?.duration ?? DEFAULT_DURATION_LIMIT
-
-  doRelay(source, destination, abortSignal, {
-    data: dataLimit,
-    duration: durationLimit
   })
 }
 

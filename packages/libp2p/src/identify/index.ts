@@ -79,9 +79,9 @@ export interface IdentifyService {
    * Please use with caution. If you find yourself needing to call this method to discover other peers that support your protocol,
    * you may be better off configuring a topology to be notified instead.
    */
-  identify: (connection: Connection, options?: AbortOptions) => Promise<IdentifyResult>
+  identify(connection: Connection, options?: AbortOptions): Promise<IdentifyResult>
 
-  push: () => Promise<void>
+  push(): Promise<void>
 }
 
 export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => IdentifyService {
