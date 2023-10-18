@@ -14,11 +14,6 @@ export const INBOUND_UPGRADE_TIMEOUT = 30e3
 export const MAX_PEER_ADDRS_TO_DIAL = 25
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxParallelDialsPerPeer
- */
-export const MAX_PARALLEL_DIALS_PER_PEER = 1
-
-/**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#autoDialInterval
  */
 export const AUTO_DIAL_INTERVAL = 5000

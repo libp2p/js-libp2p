@@ -12,7 +12,6 @@ import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import {
   DIAL_TIMEOUT,
-  MAX_PARALLEL_DIALS_PER_PEER,
   MAX_PARALLEL_DIALS,
   MAX_PEER_ADDRS_TO_DIAL,
   LAST_DIAL_FAILURE_KEY
@@ -45,7 +44,6 @@ interface DialerInit {
   addressSorter?: AddressSorter
   maxParallelDials?: number
   maxPeerAddrsToDial?: number
-  maxParallelDialsPerPeer?: number
   dialTimeout?: number
   resolvers?: Record<string, Resolver>
 }
@@ -54,7 +52,6 @@ const defaultOptions = {
   addressSorter: defaultAddressSort,
   maxParallelDials: MAX_PARALLEL_DIALS,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
-  maxParallelDialsPerPeer: MAX_PARALLEL_DIALS_PER_PEER,
   dialTimeout: DIAL_TIMEOUT,
   resolvers: {
     dnsaddr: dnsaddrResolver
@@ -78,7 +75,6 @@ export class DialQueue {
   private readonly transportManager: TransportManager
   private readonly addressSorter: AddressSorter
   private readonly maxPeerAddrsToDial: number
-  private readonly maxParallelDialsPerPeer: number
   private readonly dialTimeout: number
   private readonly inProgressDialCount?: Metric
   private readonly pendingDialCount?: Metric
@@ -87,7 +83,6 @@ export class DialQueue {
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter ?? defaultOptions.addressSorter
     this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions.maxPeerAddrsToDial
-    this.maxParallelDialsPerPeer = init.maxParallelDialsPerPeer ?? defaultOptions.maxParallelDialsPerPeer
     this.dialTimeout = init.dialTimeout ?? defaultOptions.dialTimeout
 
     this.peerId = components.peerId
@@ -421,12 +416,8 @@ export class DialQueue {
     const dialAbortControllers: Array<(AbortController | undefined)> = pendingDial.multiaddrs.map(() => new AbortController())
 
     try {
-      // internal peer dial queue to ensure we only dial the configured number of addresses
-      // per peer at the same time to prevent one peer with a lot of addresses swamping
-      // the dial queue
-      const peerDialQueue = new PQueue({
-        concurrency: this.maxParallelDialsPerPeer
-      })
+      // internal peer dial queue - only one dial per peer at a time
+      const peerDialQueue = new PQueue({ concurrency: 1 })
       peerDialQueue.on('error', (err) => {
         log.error('error dialling', err)
       })

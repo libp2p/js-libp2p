@@ -198,8 +198,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     connectionManager = new DefaultConnectionManager(localComponents, {
       addressSorter: addressesSorttSpy,
-      maxParallelDials: 3,
-      maxParallelDialsPerPeer: 3
+      maxParallelDials: 3
     })
     await connectionManager.start()
 
@@ -216,8 +215,6 @@ describe('dialing (direct, WebSockets)', () => {
       .sort(defaultAddressSort)
 
     expect(localTMDialStub.getCall(0).args[0].equals(sortedAddresses[0].multiaddr))
-    expect(localTMDialStub.getCall(1).args[0].equals(sortedAddresses[1].multiaddr))
-    expect(localTMDialStub.getCall(2).args[0].equals(sortedAddresses[2].multiaddr))
   })
 
   it('shutting down should abort pending dials', async () => {
@@ -259,32 +256,6 @@ describe('dialing (direct, WebSockets)', () => {
     } catch {
       expect(connectionManager.getDialQueue()).to.have.lengthOf(0) // 0 dial requests
     }
-  })
-
-  it('should dial all multiaddrs for a passed peer id', async () => {
-    const addrs = [
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${remoteComponents.peerId.toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${remoteComponents.peerId.toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8002/ws/p2p/${remoteComponents.peerId.toString()}`)
-    ]
-
-    // Inject data into the AddressBook
-    await localComponents.peerStore.merge(remoteComponents.peerId, {
-      multiaddrs: addrs
-    })
-
-    connectionManager = new DefaultConnectionManager(localComponents, {
-      maxParallelDialsPerPeer: 10
-    })
-    await connectionManager.start()
-
-    const transactionManagerDialStub = sinon.stub(localTM, 'dial')
-    transactionManagerDialStub.callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
-
-    // Perform dial
-    await connectionManager.openConnection(remoteComponents.peerId)
-
-    expect(transactionManagerDialStub).to.have.property('callCount', 3)
   })
 
   it('should dial only the multiaddr that is passed', async () => {
