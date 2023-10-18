@@ -9,7 +9,7 @@ import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PARALLEL_DIALS_PER_PEER, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
@@ -88,14 +88,6 @@ export interface ConnectionManagerInit {
    * (default: 100, 50 in browsers)
    */
   maxParallelDials?: number
-
-  /**
-   * To prevent individual peers with large amounts of multiaddrs swamping the
-   * dial queue, this value controls how many addresses to dial in parallel per
-   * peer. So for example if two peers have 10 addresses and this value is set
-   * at 5, we will dial 5 addresses from each at a time. (default: 1)
-   */
-  maxParallelDialsPerPeer?: number
 
   /**
    * Maximum number of addresses allowed for a given peer - if a peer has more
@@ -260,7 +252,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       addressSorter: init.addressSorter ?? defaultAddressSort,
       maxParallelDials: init.maxParallelDials ?? MAX_PARALLEL_DIALS,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,
-      maxParallelDialsPerPeer: init.maxParallelDialsPerPeer ?? MAX_PARALLEL_DIALS_PER_PEER,
       dialTimeout: init.dialTimeout ?? DIAL_TIMEOUT,
       resolvers: init.resolvers ?? {
         dnsaddr: dnsaddrResolver

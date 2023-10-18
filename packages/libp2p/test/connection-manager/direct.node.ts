@@ -22,7 +22,6 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
-import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -223,25 +222,48 @@ describe('dialing (direct, TCP)', () => {
       .and.to.have.property('code', ERR_TIMEOUT)
   })
 
-  it('should dial to the max concurrency', async () => {
-    const peerId = await createEd25519PeerId()
-    const addrs = [
-      multiaddr('/ip4/0.0.0.0/tcp/8000'),
-      multiaddr('/ip4/0.0.0.0/tcp/8001'),
-      multiaddr('/ip4/0.0.0.0/tcp/8002')
-    ]
+  it('should only dial to the max concurrency', async () => {
+    const peerId1 = await createEd25519PeerId()
+    const peerId2 = await createEd25519PeerId()
+    const peerId3 = await createEd25519PeerId()
+
+    const addr1 = multiaddr(`/ip4/127.0.0.1/tcp/1234/p2p/${peerId1}`)
+    const addr2 = multiaddr(`/ip4/127.0.12.4/tcp/3210/p2p/${peerId2}`)
+    const addr3 = multiaddr(`/ip4/123.3.11.1/tcp/2010/p2p/${peerId3}`)
+
+    const slowDial = async (): Promise<Connection> => {
+      await delay(100)
+      return mockConnection(mockMultiaddrConnection(mockDuplex(), peerId1))
+    }
+
+    const actions: Record<string, (...args: any[]) => Promise<any>> = {
+      [addr1.toString()]: slowDial,
+      [addr2.toString()]: slowDial,
+      [addr3.toString()]: async () => mockConnection(mockMultiaddrConnection(mockDuplex(), peerId3))
+    }
 
     const dialer = new DialQueue(localComponents, {
-      maxParallelDials: 2,
-      maxParallelDialsPerPeer: 10
+      maxParallelDials: 2
     })
 
-    const deferredDial = pDefer<Connection>()
     const transportManagerDialStub = Sinon.stub(localTM, 'dial')
-    transportManagerDialStub.callsFake(async () => deferredDial.promise)
+    transportManagerDialStub.callsFake(async ma => {
+      const maStr = ma.toString()
+      const action = actions[maStr]
 
-    // Perform 3 multiaddr dials
-    void dialer.dial(addrs)
+      if (action != null) {
+        return action()
+      }
+
+      throw new Error(`No action found for multiaddr ${maStr}`)
+    })
+
+    // dial 3 different peers
+    void Promise.all([
+      dialer.dial(addr1),
+      dialer.dial(addr2),
+      dialer.dial(addr3)
+    ])
 
     // Let the call stack run
     await delay(0)
@@ -249,58 +271,8 @@ describe('dialing (direct, TCP)', () => {
     // We should have 2 in progress, and 1 waiting
     expect(transportManagerDialStub).to.have.property('callCount', 2)
 
-    deferredDial.resolve(mockConnection(mockMultiaddrConnection(mockDuplex(), peerId)))
-
-    // Let the call stack run
-    await delay(0)
-
-    // Only two dials should be executed, as the first dial will succeed
-    expect(transportManagerDialStub).to.have.property('callCount', 2)
-  })
-
-  it('should append the remote peerId to multiaddrs', async () => {
-    const addrs = [
-      multiaddr('/ip4/0.0.0.0/tcp/8000'),
-      multiaddr('/ip4/0.0.0.0/tcp/8001'),
-      multiaddr('/ip4/0.0.0.0/tcp/8002'),
-      multiaddr('/unix/tmp/some/path.sock')
-    ]
-
-    // Inject data into the AddressBook
-    await localComponents.peerStore.merge(remoteComponents.peerId, {
-      multiaddrs: addrs
-    })
-
-    const dialer = new DialQueue(localComponents, {
-      maxParallelDialsPerPeer: 10
-    })
-
-    const transportManagerDialStub = Sinon.stub(localTM, 'dial')
-    transportManagerDialStub.callsFake(async (ma) => {
-      await delay(10)
-      return mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId))
-    })
-
-    // Perform dial
-    await dialer.dial(remoteComponents.peerId)
+    // stop dials
     dialer.stop()
-
-    // Dialled each address
-    expect(transportManagerDialStub).to.have.property('callCount', 4)
-
-    for (let i = 0; i < addrs.length; i++) {
-      const call = transportManagerDialStub.getCall(i)
-      const ma = call.args[0]
-
-      // should not append peerId to path multiaddrs
-      if (ma.toString().startsWith('/unix')) {
-        expect(ma.toString()).to.not.endWith(`/p2p/${remoteComponents.peerId.toString()}`)
-
-        continue
-      }
-
-      expect(ma.toString()).to.endWith(`/p2p/${remoteComponents.peerId.toString()}`)
-    }
   })
 })
 
