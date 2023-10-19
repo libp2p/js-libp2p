@@ -4,7 +4,6 @@ import { CodeError } from '@libp2p/interface/errors'
 import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
-import { DefaultKeyChain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -12,7 +11,6 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
-import mergeOptions from 'merge-options'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from './address-manager/index.js'
@@ -30,21 +28,18 @@ import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
 import type { Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { Connection, NewStreamOptions, Stream } from '@libp2p/interface/connection'
-import type { KeyChain } from '@libp2p/interface/keychain'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Topology } from '@libp2p/interface/topology'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal/registrar'
-import type { Datastore } from 'interface-datastore'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
   public peerRouting: PeerRouting
-  public keychain: KeyChain
   public metrics?: Metrics
   public services: T
   public logger: ComponentLogger
@@ -133,13 +128,6 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     // Addresses {listen, announce, noAnnounce}
     this.configureComponent('addressManager', new DefaultAddressManager(this.components, init.addresses))
 
-    // Create keychain
-    const keychainOpts = DefaultKeyChain.generateOptions()
-    this.keychain = this.configureComponent('keyChain', new DefaultKeyChain(this.components, {
-      ...keychainOpts,
-      ...init.keychain
-    }))
-
     // Peer routers
     const peerRouters: PeerRouting[] = (init.peerRouters ?? []).map((fn, index) => this.configureComponent(`peer-router-${index}`, fn(this.components)))
     this.peerRouting = this.components.peerRouting = this.configureComponent('peerRouting', new DefaultPeerRouting(this.components, {
@@ -221,13 +209,6 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.#started = true
 
     this.#log('libp2p is starting')
-
-    const keys = await this.keychain.listKeys()
-
-    if (keys.find(key => key.name === 'self') == null) {
-      this.#log('importing self key into keychain')
-      await this.keychain.importPeer('self', this.components.peerId)
-    }
 
     try {
       await this.components.beforeStart?.()
@@ -411,29 +392,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * libp2p interface and is useful for testing and debugging.
  */
 export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
-  if (options.peerId == null) {
-    const datastore = options.datastore as Datastore | undefined
-
-    if (datastore != null) {
-      try {
-        // try load the peer id from the keychain
-        const keyChain = new DefaultKeyChain({
-          datastore
-        }, mergeOptions(DefaultKeyChain.generateOptions(), options.keychain))
-
-        options.peerId = await keyChain.exportPeerId('self')
-      } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
-          throw err
-        }
-      }
-    }
-  }
-
-  if (options.peerId == null) {
-    // no peer id in the keychain, create a new peer id
-    options.peerId = await createEd25519PeerId()
-  }
+  options.peerId ??= await createEd25519PeerId()
 
   return new Libp2pNode(validateConfig(options))
 }
