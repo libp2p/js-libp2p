@@ -12,20 +12,17 @@ import { pushable } from 'it-pushable'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../../src/autonat/constants.js'
-import { autoNATService } from '../../src/autonat/index.js'
-import { Message } from '../../src/autonat/pb/index.js'
-import { defaultComponents } from '../../src/components.js'
-import type { AutoNATServiceInit } from '../../src/autonat/index.js'
-import type { Components } from '../../src/components.js'
-import type { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../src/constants.js'
+import { autoNATService } from '../src/index.js'
+import { Message } from '../src/pb/index.js'
+import type { AutoNATComponents, AutoNATServiceInit } from '../src/index.js'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { PeerRouting } from '@libp2p/interface/peer-routing'
-import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Transport } from '@libp2p/interface/transport'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -42,13 +39,12 @@ const defaultInit: AutoNATServiceInit = {
 
 describe('autonat', () => {
   let service: any
-  let components: Components
+  let components: AutoNATComponents
   let peerRouting: StubbedInstance<PeerRouting>
   let registrar: StubbedInstance<Registrar>
   let addressManager: StubbedInstance<AddressManager>
-  let connectionManager: StubbedInstance<DefaultConnectionManager>
+  let connectionManager: StubbedInstance<ConnectionManager>
   let transportManager: StubbedInstance<TransportManager>
-  let peerStore: StubbedInstance<PeerStore>
 
   beforeEach(async () => {
     peerRouting = stubInterface<PeerRouting>()
@@ -56,19 +52,17 @@ describe('autonat', () => {
     addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([])
 
-    connectionManager = stubInterface<DefaultConnectionManager>()
+    connectionManager = stubInterface<ConnectionManager>()
     transportManager = stubInterface<TransportManager>()
-    peerStore = stubInterface<PeerStore>()
 
-    components = defaultComponents({
+    components = {
       peerId: await createEd25519PeerId(),
       peerRouting,
       registrar,
       addressManager,
       connectionManager,
-      transportManager,
-      peerStore
-    })
+      transportManager
+    }
 
     service = autoNATService(defaultInit)(components)
 

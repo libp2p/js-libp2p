@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { EventEmitter } from '@libp2p/interface/events'
+import { ERR_TIMEOUT } from '@libp2p/interface/src/errors.js'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -125,7 +126,7 @@ describe('ping', () => {
     await expect(localPing.ping(remoteComponents.peerId, {
       signal
     }))
-      .to.eventually.be.rejected.with.property('code', 'ERR_TIMEOUT')
+      .to.eventually.be.rejected.with.property('code', ERR_TIMEOUT)
 
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)

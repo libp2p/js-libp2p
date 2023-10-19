@@ -1,0 +1,36 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../interface-compliance-tests"
+    },
+    {
+      "path": "../interface-internal"
+    },
+    {
+      "path": "../libp2p"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id-factory"
+    },
+    {
+      "path": "../transport-tcp"
+    }
+  ]
+}

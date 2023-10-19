@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { AbortError } from '@libp2p/interface/errors'
+import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
@@ -167,7 +167,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remoteAddr))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
+      .and.to.have.property('code', ERR_TIMEOUT)
   })
 
   it('should throw when a peer advertises more than the allowed number of addresses', async () => {

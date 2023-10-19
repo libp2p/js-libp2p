@@ -48,10 +48,6 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./autonat": {
-      "types": "./dist/src/autonat/index.d.ts",
-      "import": "./dist/src/autonat/index.js"
-    },
     "./circuit-relay": {
       "types": "./dist/src/circuit-relay/index.d.ts",
       "import": "./dist/src/circuit-relay/index.js"
@@ -104,7 +100,6 @@
     "prepublishOnly": "node scripts/update-version.js && npm run build",
     "build": "aegir build",
     "generate": "run-s generate:proto:*",
-    "generate:proto:autonat": "protons ./src/autonat/pb/index.proto",
     "generate:proto:circuit-relay": "protons ./src/circuit-relay/pb/index.proto",
     "generate:proto:dcutr": "protons ./src/dcutr/pb/message.proto",
     "generate:proto:fetch": "protons ./src/fetch/pb/proto.proto",
@@ -149,7 +144,6 @@
     "it-map": "^3.0.3",
     "it-merge": "^3.0.0",
     "it-pair": "^2.0.6",
-    "it-parallel": "^3.0.0",
     "it-pipe": "^3.0.1",
     "it-protobuf-stream": "^1.0.0",
     "it-stream-types": "^2.0.1",

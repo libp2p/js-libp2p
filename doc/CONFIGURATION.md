@@ -930,7 +930,7 @@ For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-au
 
 ```ts
 import { createLibp2p } from 'libp2p'
-import { autoNATService } from 'libp2p/autonat'
+import { autoNATService } from '@libp2p/autonat'
 
 const node = await createLibp2p({
   services: {

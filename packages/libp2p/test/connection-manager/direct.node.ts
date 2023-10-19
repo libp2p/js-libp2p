@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { type Connection, type ConnectionProtector, isConnection } from '@libp2p/interface/connection'
-import { AbortError } from '@libp2p/interface/errors'
+import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
@@ -218,7 +218,7 @@ describe('dialing (direct, TCP)', () => {
 
     await expect(dialer.dial(remoteAddr))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
+      .and.to.have.property('code', ERR_TIMEOUT)
   })
 
   it('should dial to the max concurrency', async () => {
