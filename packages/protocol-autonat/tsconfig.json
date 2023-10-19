@@ -9,28 +9,19 @@
   ],
   "references": [
     {
-      "path": "../crypto"
-    },
-    {
       "path": "../interface"
-    },
-    {
-      "path": "../interface-compliance-tests"
     },
     {
       "path": "../interface-internal"
     },
     {
-      "path": "../libp2p"
+      "path": "../logger"
     },
     {
-      "path": "../logger"
+      "path": "../peer-id"
     },
     {
       "path": "../peer-id-factory"
     },
-    {
-      "path": "../transport-tcp"
-    }
   ]
 }
