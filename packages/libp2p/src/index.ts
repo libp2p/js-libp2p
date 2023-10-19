@@ -30,7 +30,6 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerRouting } from '@libp2p/interface/peer-routing'
 import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
 import type { Transport } from '@libp2p/interface/transport'
-import type { KeyChainInit } from '@libp2p/keychain'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { Datastore } from 'interface-datastore'
 
@@ -78,11 +77,6 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * libp2p PeerStore configuration
    */
   peerStore: PersistentPeerStoreInit
-
-  /**
-   * keychain configuration
-   */
-  keychain: KeyChainInit
 
   /**
    * An array that must include at least 1 compliant transport

@@ -17,7 +17,6 @@
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { EventEmitter } from './events.js'
-import type { KeyChain } from './keychain/index.js'
 import type { Metrics } from './metrics/index.js'
 import type { PeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
@@ -371,20 +370,6 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * ```
    */
   contentRouting: ContentRouting
-
-  /**
-   * The keychain contains the keys used by the current node, and can create new
-   * keys, export them, import them, etc.
-   *
-   * @example
-   *
-   * ```js
-   * const keyInfo = await libp2p.keychain.createKey('new key')
-   * console.info(keyInfo)
-   * // { id: '...', name: 'new key' }
-   * ```
-   */
-  keychain: KeyChain
 
   /**
    * The metrics subsystem allows recording values to assess the health/performance
