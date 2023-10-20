@@ -331,98 +331,101 @@ describe('dial queue', () => {
     resolvers.delete('dnsaddr')
   })
 
-  const ensureDialOrder = async (peerId: PeerId, orderedAddresses: Address[], testType: 'lastFailure' | 'lastSuccess'): Promise<void> => {
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+  describe('sorting multiaddrs to be dialled', () => {
+    const ensureDialOrder = async (orderedAddresses: Address[], testType: 'lastFailure' | 'lastSuccess'): Promise<void> => {
+      const peerId = await createEd25519PeerId()
 
-    const duplicatedOrderedAddresses = [...orderedAddresses]
+      components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
 
-    const dialer = new DialQueue(components, {
-      maxParallelDials: 1
+      const duplicatedOrderedAddresses = [...orderedAddresses]
+
+      const dialer = new DialQueue(components, {
+        maxParallelDials: 1
+      })
+
+      // reverse order of addresses
+      orderedAddresses.reverse()
+
+      const sortedAddresses = await dialer.calculateMultiaddrs(peerId, orderedAddresses)
+
+      expect(sortedAddresses.map(address => address[testType])).to.deep.equal(duplicatedOrderedAddresses.map(address => address[testType]))
+    }
+
+    it('should sort already succesfully dialled addresses by most recently successful', async () => {
+      const orderedAddresses: Address[] = [
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231'),
+          lastSuccess: Date.now()
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232'),
+          lastSuccess: Date.now() - 1000
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
+          lastSuccess: Date.now() - 2000
+        }
+      ]
+
+      await ensureDialOrder(orderedAddresses, 'lastSuccess')
     })
 
-    // reverse order of addresses
-    orderedAddresses.reverse()
+    it('should sort addresses which failed to be dialled by least recent failure', async () => {
+      const orderedAddresses: Address[] = [
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231'),
+          lastFailure: Date.now() - 2000
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232'),
+          lastFailure: Date.now() - 1000
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
+          lastFailure: Date.now()
+        }
+      ]
 
-    const sortedAddresses = await dialer.calculateMultiaddrs(peerId, orderedAddresses)
+      await ensureDialOrder(orderedAddresses, 'lastFailure')
+    })
 
-    expect(sortedAddresses.map(address => address[testType])).to.deep.equal(duplicatedOrderedAddresses.map(address => address[testType]))
-  }
+    it('should dial new addresses before addresses which have failed to be dialled', async () => {
+      const orderedAddresses: Address[] = [
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231')
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232'),
+          lastFailure: Date.now() - 2000
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
+          lastFailure: Date.now() - 1000
+        }
+      ]
 
-  it('should sort already succesfully dialled addresses by most recently sucessful', async () => {
-    const peerId = await createEd25519PeerId()
-    const orderedAddresses: Address[] = [
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231'),
-        lastSuccess: Date.now()
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232'),
-        lastSuccess: Date.now() - 1000
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        lastSuccess: Date.now() - 2000
-      }
-    ]
+      await ensureDialOrder(orderedAddresses, 'lastFailure')
+    })
 
-    await ensureDialOrder(peerId, orderedAddresses, 'lastSuccess')
-  })
+    it('should dial successfully dialled addresses first, then new addresses, then failed addresses last', async () => {
+      const orderedAddresses: Address[] = [
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231'),
+          lastSuccess: Date.now() - 5000
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232')
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1235')
+        },
+        {
+          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
+          lastFailure: Date.now() - 6000
+        }
+      ]
 
-  it('should sort addresses which failed to be dialled by least recent failure', async () => {
-    const peerId = await createEd25519PeerId()
-    const orderedAddresses: Address[] = [
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231'),
-        lastFailure: Date.now() - 2000
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232'),
-        lastFailure: Date.now() - 1000
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        lastFailure: Date.now()
-      }
-    ]
-
-    await ensureDialOrder(peerId, orderedAddresses, 'lastFailure')
-  })
-
-  it('should dial new addresses before addresses which have failed to be dialled', async () => {
-    const peerId = await createEd25519PeerId()
-    const orderedAddresses: Address[] = [
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231')
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232'),
-        lastFailure: Date.now() - 2000
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        lastFailure: Date.now() - 1000
-      }
-    ]
-
-    await ensureDialOrder(peerId, orderedAddresses, 'lastFailure')
-  })
-
-  it('should dial succesfull dialled addresses first, then new addresses, then failed addresses', async () => {
-    const peerId = await createEd25519PeerId()
-    const orderedAddresses: Address[] = [
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1231'),
-        lastSuccess: Date.now() - 5000
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1232')
-      },
-      {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        lastFailure: Date.now() - 6000
-      }
-    ]
-
-    await ensureDialOrder(peerId, orderedAddresses, 'lastSuccess')
+      await ensureDialOrder(orderedAddresses, 'lastSuccess')
+    })
   })
 })

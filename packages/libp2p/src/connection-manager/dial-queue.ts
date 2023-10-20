@@ -413,35 +413,38 @@ export class DialQueue {
   }
 
   private sortMultiaddrsByDialability (a: Address, b: Address): number {
-    if (a.lastSuccess !== undefined && b.lastSuccess !== undefined) {
-      if (a.lastSuccess > b.lastSuccess) {
+    const { lastSuccess: lastSuccessA, lastFailure: lastFailureA } = a
+    const { lastSuccess: lastSuccessB, lastFailure: lastFailureB } = b
+
+    if (lastSuccessA !== undefined && lastSuccessB !== undefined) {
+      if (lastSuccessA > lastSuccessB) {
         return -1
       } else {
         return 1
       }
     }
 
-    if (a.lastFailure !== undefined && b.lastFailure !== undefined) {
-      if (a.lastFailure > b.lastFailure) {
+    if (lastFailureA !== undefined && lastFailureB !== undefined) {
+      if (lastFailureA > lastFailureB) {
         return 1
       } else {
         return -1
       }
     }
 
-    if (a.lastSuccess !== undefined) {
+    if (lastSuccessA !== undefined) {
       return -1
     }
 
-    if (b.lastSuccess !== undefined) {
+    if (lastSuccessB !== undefined) {
       return 1
     }
 
-    if (a.lastFailure !== undefined) {
+    if (lastFailureA !== undefined) {
       return 1
     }
 
-    if (b.lastFailure !== undefined) {
+    if (lastFailureB !== undefined) {
       return -1
     }
 
