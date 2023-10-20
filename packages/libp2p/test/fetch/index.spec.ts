@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
+import { ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { EventEmitter } from '@libp2p/interface/events'
-import { ERR_TIMEOUT } from '@libp2p/interface/src/errors.js'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
