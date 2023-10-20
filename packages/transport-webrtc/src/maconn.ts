@@ -5,7 +5,7 @@ import type { CounterGroup } from '@libp2p/interface/metrics'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 
-const log = logger('libp2p:webrtc:connection')
+const log = logger('libp2p:webrtc:maconn')
 
 interface WebRTCMultiaddrConnectionInit {
   /**
@@ -65,8 +65,13 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
     this.timeline = init.timeline
     this.peerConnection = init.peerConnection
 
+    const initialState = this.peerConnection.connectionState
+
     this.peerConnection.onconnectionstatechange = () => {
-      if (this.peerConnection.connectionState === 'closed' || this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed') {
+      log.trace('peer connection state change', this.peerConnection.connectionState, 'initial state', initialState)
+
+      if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
+        // nothing else to do but close the connection
         this.timeline.close = Date.now()
       }
     }

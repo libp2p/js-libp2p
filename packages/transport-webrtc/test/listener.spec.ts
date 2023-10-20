@@ -16,6 +16,8 @@ describe('webrtc private-to-private listener', () => {
     const listener = new WebRTCPeerListener({
       peerId,
       transportManager
+    }, {
+      shutdownController: new AbortController()
     })
 
     const otherListener = stubInterface<Listener>({

@@ -88,8 +88,8 @@ describe('libp2p-webtransport', () => {
     const maStrP2p = maStr.split('/p2p/')[1]
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
 
-    const err = await expect(node.dial(ma)).to.eventually.be.rejected()
-    expect(err.toString()).to.contain('Expected multiaddr to contain certhashes')
+    await expect(node.dial(ma)).to.eventually.be.rejected()
+      .with.property('code', 'ERR_NO_VALID_ADDRESSES')
   })
 
   it('fails to connect due to an aborted signal', async () => {

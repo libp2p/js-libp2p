@@ -38,22 +38,22 @@ export interface Registrar {
   /**
    * Return the list of protocols with registered handlers
    */
-  getProtocols: () => string[]
+  getProtocols(): string[]
 
   /**
    * Add a protocol handler
    */
-  handle: (protocol: string, handler: StreamHandler, options?: StreamHandlerOptions) => Promise<void>
+  handle(protocol: string, handler: StreamHandler, options?: StreamHandlerOptions): Promise<void>
 
   /**
    * Remove a protocol handler
    */
-  unhandle: (protocol: string) => Promise<void>
+  unhandle(protocol: string): Promise<void>
 
   /**
    * Return the handler for the passed protocol
    */
-  getHandler: (protocol: string) => StreamHandlerRecord
+  getHandler(protocol: string): StreamHandlerRecord
 
   /**
    * Register a topology handler for a protocol - the topology will be
@@ -63,16 +63,16 @@ export interface Registrar {
    * An id will be returned that can later be used to unregister the
    * topology.
    */
-  register: (protocol: string, topology: Topology) => Promise<string>
+  register(protocol: string, topology: Topology): Promise<string>
 
   /**
    * Remove the topology handler with the passed id.
    */
-  unregister: (id: string) => void
+  unregister(id: string): void
 
   /**
    * Return all topology handlers that wish to be informed about peers
    * that support the passed protocol.
    */
-  getTopologies: (protocol: string) => Topology[]
+  getTopologies(protocol: string): Topology[]
 }

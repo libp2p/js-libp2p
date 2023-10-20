@@ -12,7 +12,7 @@ const sign = async (key: CryptoKey, data: Uint8Array): Promise<Uint8Array> => {
   return new Uint8Array(buf, 0, buf.byteLength)
 }
 
-export async function create (hashType: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array): Promise<{ digest: (data: Uint8Array) => Promise<Uint8Array>, length: number }> {
+export async function create (hashType: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array): Promise<{ digest(data: Uint8Array): Promise<Uint8Array>, length: number }> {
   const hash = hashTypes[hashType]
 
   const key = await webcrypto.get().subtle.importKey(
