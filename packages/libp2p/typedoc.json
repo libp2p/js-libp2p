@@ -6,7 +6,6 @@
     "./src/identify/index.ts",
     "./src/insecure/index.ts",
     "./src/ping/index.ts",
-    "./src/pnet/index.ts",
     "./src/upnp-nat/index.ts"
   ]
 }
