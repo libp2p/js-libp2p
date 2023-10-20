@@ -279,8 +279,7 @@ export class DialQueue {
     return signal
   }
 
-  // eslint-disable-next-line complexity
-  private async calculateMultiaddrs (peerId?: PeerId, addrs: Address[] = [], options: DialOptions = {}): Promise<Address[]> {
+  async calculateMultiaddrs (peerId?: PeerId, addrs: Address[] = [], options: DialOptions = {}): Promise<Address[]> {
     // if a peer id or multiaddr(s) with a peer id, make sure it isn't our peer id and that we are allowed to dial it
     if (peerId != null) {
       if (this.peerId.equals(peerId)) {
@@ -380,6 +379,8 @@ export class DialQueue {
         // append peer id to multiaddr if it is not already present
         if (addressPeerId !== peerId.toString()) {
           return {
+            lastFailure: addr.lastFailure,
+            lastSuccess: addr.lastSuccess,
             multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
             isCertified: addr.isCertified
           }
@@ -406,7 +407,45 @@ export class DialQueue {
       throw new CodeError('The connection gater denied all addresses in the dial request', codes.ERR_NO_VALID_ADDRESSES)
     }
 
+    sortedGatedAddrs.sort((a, b) => this.sortMultiaddrsByDialability(a, b))
+
     return sortedGatedAddrs
+  }
+
+  private sortMultiaddrsByDialability (a: Address, b: Address): number {
+    if (a.lastSuccess !== undefined && b.lastSuccess !== undefined) {
+      if (a.lastSuccess > b.lastSuccess) {
+        return -1
+      } else {
+        return 1
+      }
+    }
+
+    if (a.lastFailure !== undefined && b.lastFailure !== undefined) {
+      if (a.lastFailure > b.lastFailure) {
+        return 1
+      } else {
+        return -1
+      }
+    }
+
+    if (a.lastSuccess !== undefined) {
+      return -1
+    }
+
+    if (b.lastSuccess !== undefined) {
+      return 1
+    }
+
+    if (a.lastFailure !== undefined) {
+      return 1
+    }
+
+    if (b.lastFailure !== undefined) {
+      return -1
+    }
+
+    return 0
   }
 
   private async performDial (pendingDial: PendingDialInternal, options: DialOptions = {}): Promise<Connection> {
