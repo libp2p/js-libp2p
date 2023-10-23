@@ -484,6 +484,17 @@ export class DialQueue {
               pendingDial.status = 'active'
 
               let conn: Connection
+              let peer: Peer | undefined
+
+              try {
+                if (pendingDial.peerId != null) {
+                  peer = await this.peerStore.get(pendingDial.peerId)
+                }
+              } catch (err: any) {
+                if (err.code === codes.ERR_NOT_FOUND) {
+                  log.trace('peer %p not found in peer store, could be a new multiaddr', pendingDial.peerId)
+                }
+              }
 
               try {
                 conn = await this.transportManager.dial(addr, {
@@ -492,11 +503,11 @@ export class DialQueue {
                 })
 
                 // mark multiaddr dial as successful
-                await this._updateAddressStatus(conn.remotePeer, addr, true)
+                await this._updateAddressStatus(conn.remotePeer, addr, true, peer)
               } catch (err: any) {
                 if (pendingDial.peerId != null) {
                   // mark multiaddr dial as failure
-                  await this._updateAddressStatus(pendingDial.peerId, addr, false)
+                  await this._updateAddressStatus(pendingDial.peerId, addr, false, peer)
                 }
 
                 // rethrow error
@@ -577,17 +588,7 @@ export class DialQueue {
   /**
    * Record the last dial success/failure status of the passed multiaddr
    */
-  private async _updateAddressStatus (peerId: PeerId, multiaddr: Multiaddr, success: boolean): Promise<void> {
-    let peer: Peer | undefined
-
-    try {
-      peer = await this.peerStore.get(peerId)
-    } catch (err: any) {
-      if (err.code === codes.ERR_NOT_FOUND) {
-        log.trace('peer %p not found in peer store, could be a new multiaddr', peerId)
-      }
-    }
-
+  private async _updateAddressStatus (peerId: PeerId, multiaddr: Multiaddr, success: boolean, peer?: Peer): Promise<void> {
     const addr: Address = {
       multiaddr
     }
