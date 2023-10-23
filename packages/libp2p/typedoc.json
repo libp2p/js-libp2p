@@ -1,7 +1,6 @@
 {
   "entryPoints": [
     "./src/index.ts",
-    "./src/autonat/index.ts",
     "./src/circuit-relay/index.ts",
     "./src/fetch/index.ts",
     "./src/identify/index.ts",

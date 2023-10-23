@@ -1,7 +1,7 @@
 import { CodeError } from '@libp2p/interface/errors'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
-import { messages, codes } from '../errors.js'
+import { codes, messages } from '../errors.js'
 import {
   storeAddresses,
   uniquePeers,

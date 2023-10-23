@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
@@ -135,7 +136,7 @@ describe('fetch', () => {
     await expect(localFetch.fetch(remoteComponents.peerId, key, {
       signal
     }))
-      .to.eventually.be.rejected.with.property('code', 'ERR_TIMEOUT')
+      .to.eventually.be.rejected.with.property('code', ERR_TIMEOUT)
 
     // should have closed stream
     expect(newStreamSpy).to.have.property('callCount', 1)
