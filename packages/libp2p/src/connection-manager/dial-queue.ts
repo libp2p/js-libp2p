@@ -1,4 +1,4 @@
-import { AbortError, CodeError } from '@libp2p/interface/errors'
+import { AbortError, CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
@@ -269,7 +269,7 @@ export class DialQueue {
 
         // Error is a timeout
         if (signal.aborted) {
-          const error = new CodeError(err.message, codes.ERR_TIMEOUT)
+          const error = new CodeError(err.message, ERR_TIMEOUT)
           throw error
         }
 

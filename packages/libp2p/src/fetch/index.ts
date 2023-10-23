@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import first from 'it-first'
@@ -155,7 +155,7 @@ class DefaultFetchService implements Startable, FetchService {
       })
 
       onAbort = () => {
-        stream?.abort(new CodeError('fetch timeout', codes.ERR_TIMEOUT))
+        stream?.abort(new CodeError('fetch timeout', ERR_TIMEOUT))
       }
 
       // make stream abortable

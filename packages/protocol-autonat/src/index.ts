@@ -8,7 +8,7 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { autoNATService } from 'libp2p/autonat'
+ * import { autoNATService } from '@libp2p/autonat'
  *
  * const node = await createLibp2p({
  *   // ...other options
@@ -19,7 +19,7 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
@@ -31,7 +31,6 @@ import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
-import { codes } from '../errors.js'
 import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
@@ -157,7 +156,7 @@ class DefaultAutoNATService implements Startable {
     const signal = AbortSignal.timeout(this.timeout)
 
     const onAbort = (): void => {
-      data.stream.abort(new CodeError('handleIncomingAutonatStream timeout', codes.ERR_TIMEOUT))
+      data.stream.abort(new CodeError('handleIncomingAutonatStream timeout', ERR_TIMEOUT))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
@@ -466,7 +465,7 @@ class DefaultAutoNATService implements Startable {
             signal
           })
 
-          onAbort = () => { stream.abort(new CodeError('verifyAddress timeout', codes.ERR_TIMEOUT)) }
+          onAbort = () => { stream.abort(new CodeError('verifyAddress timeout', ERR_TIMEOUT)) }
 
           signal.addEventListener('abort', onAbort, { once: true })
 
