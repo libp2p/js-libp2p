@@ -65,3 +65,7 @@ export class InvalidCryptoTransmissionError extends Error {
 
   static readonly code = 'ERR_INVALID_CRYPTO_TRANSMISSION'
 }
+
+// Error codes
+
+export const ERR_TIMEOUT = 'ERR_TIMEOUT'
