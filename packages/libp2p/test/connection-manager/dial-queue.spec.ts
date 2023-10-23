@@ -1,9 +1,12 @@
 /* eslint-env mocha */
 
+import { EventEmitter } from '@libp2p/interface/events'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
@@ -19,16 +22,21 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 describe('dial queue', () => {
   let components: {
     peerId: PeerId
-    peerStore: StubbedInstance<PeerStore>
+    peerStore: PeerStore
     transportManager: StubbedInstance<TransportManager>
     connectionGater: StubbedInstance<ConnectionGater>
   }
   let dialer: DialQueue
 
   beforeEach(async () => {
+    const peerId = await createEd25519PeerId()
     components = {
-      peerId: await createEd25519PeerId(),
-      peerStore: stubInterface<PeerStore>(),
+      peerId,
+      peerStore: new PersistentPeerStore({
+        datastore: new MemoryDatastore(),
+        events: new EventEmitter(),
+        peerId
+      }),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
     }
@@ -329,6 +337,40 @@ describe('dial queue', () => {
     expect(dialedBadAddress).to.be.false('Dialed address with wrong peer id')
 
     resolvers.delete('dnsaddr')
+  })
+
+  it('should ensure that if a peer fails to be dialled, the retry period is increased exponentially', async () => {
+    const peerId = await createEd25519PeerId()
+    const ma = multiaddr(`/ip4/127.0.0.1/tcp/1231/p2p/${peerId}`)
+
+    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async () => {
+      throw new Error('dial failure')
+    })
+
+    dialer = new DialQueue(components, {
+      maxParallelDials: 1
+    })
+
+    // First dial attempt
+    try {
+      await dialer.dial(ma)
+      expect.fail('Should have thrown')
+    } catch (err: any) {
+      expect(err).to.have.property('message', 'dial failure')
+    }
+
+    const firstFailureValue = (await components.peerStore.get(peerId)).addresses.map(address => address.lastFailure)[0] ?? 0
+
+    // second dial attempt
+    try {
+      await dialer.dial(ma)
+      expect.fail('Should have thrown')
+    } catch (err: any) {
+      expect(err).to.have.property('message', 'dial failure')
+    }
+
+    expect((await components.peerStore.get(peerId)).addresses.map(address => address.lastFailure)[0]).to.equal(firstFailureValue * 2)
   })
 
   describe('sorting multiaddrs to be dialled', () => {

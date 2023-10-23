@@ -7,15 +7,13 @@ import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { type ClearableSignal, anySignal } from 'any-signal'
 import pDefer from 'p-defer'
 import PQueue from 'p-queue'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS_PER_PEER,
   MAX_PARALLEL_DIALS,
-  MAX_PEER_ADDRS_TO_DIAL,
-  LAST_DIAL_FAILURE_KEY
+  MAX_PEER_ADDRS_TO_DIAL
 } from './constants.js'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
 import type { AddressSorter, AbortOptions, PendingDial } from '@libp2p/interface'
@@ -23,7 +21,7 @@ import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { Metric, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Address, PeerStore } from '@libp2p/interface/peer-store'
+import type { Address, Peer, PeerStore } from '@libp2p/interface/peer-store'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
 const log = logger('libp2p:connection-manager:dial-queue')
@@ -233,19 +231,6 @@ export class DialQueue {
       })
       .catch(async err => {
         log.error('dial failed to %s', pendingDial.multiaddrs.map(ma => ma.toString()).join(', '), err)
-
-        if (peerId != null) {
-          // record the last failed dial
-          try {
-            await this.peerStore.patch(peerId, {
-              metadata: {
-                [LAST_DIAL_FAILURE_KEY]: uint8ArrayFromString(Date.now().toString())
-              }
-            })
-          } catch (err: any) {
-            log.error('could not update last dial failure key for %p', peerId, err)
-          }
-        }
 
         // Error is a timeout
         if (signal.aborted) {
@@ -593,14 +578,37 @@ export class DialQueue {
    * Record the last dial success/failure status of the passed multiaddr
    */
   private async _updateAddressStatus (peerId: PeerId, multiaddr: Multiaddr, success: boolean): Promise<void> {
+    let peer: Peer | undefined
+
+    try {
+      peer = await this.peerStore.get(peerId)
+    } catch (err: any) {
+      if (err.code === codes.ERR_NOT_FOUND) {
+        log.trace('peer %p not found in peer store, could be a new multiaddr', peerId)
+      }
+    }
+
     const addr: Address = {
       multiaddr
+    }
+
+    if (peer !== undefined) {
+      const existingAddr = peer.addresses.find(a => a.multiaddr.equals(multiaddr))
+
+      if (existingAddr !== undefined) {
+        addr.lastSuccess = existingAddr.lastSuccess
+        addr.lastFailure = existingAddr.lastFailure
+      }
     }
 
     if (success) {
       addr.lastSuccess = Date.now()
     } else {
-      addr.lastFailure = Date.now()
+      if (addr.lastFailure !== undefined) {
+        addr.lastFailure *= 2
+      } else {
+        addr.lastFailure = Date.now()
+      }
     }
 
     await this.peerStore.merge(peerId, {
