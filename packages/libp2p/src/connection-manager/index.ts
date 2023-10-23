@@ -67,12 +67,6 @@ export interface ConnectionManagerInit {
   autoDialMaxQueueLength?: number
 
   /**
-   * When we've failed to dial a peer, do not autodial them again within this
-   * number of ms. (default: 1 minute, 7 minutes in browsers)
-   */
-  autoDialPeerRetryThreshold?: number
-
-  /**
    * Newly discovered peers may be auto-dialed to increase the number of open
    * connections, but they can be discovered in quick succession so add a small
    * delay before attempting to dial them in case more peers have been

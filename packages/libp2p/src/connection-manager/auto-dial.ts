@@ -16,7 +16,6 @@ interface AutoDialInit {
   autoDialConcurrency?: number
   autoDialPriority?: number
   autoDialInterval?: number
-  autoDialPeerRetryThreshold?: number
   autoDialDiscoveredPeersDebounce?: number
 }
 
