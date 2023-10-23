@@ -22,6 +22,7 @@
     "packages/peer-id-factory": {},
     "packages/peer-record": {},
     "packages/peer-store": {},
+    "packages/protocol-autonat": {},
     "packages/protocol-perf": {},
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},

@@ -1,5 +1,5 @@
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
@@ -125,7 +125,7 @@ class DefaultPingService implements Startable, PingService {
       })
 
       onAbort = () => {
-        stream?.abort(new CodeError('ping timeout', codes.ERR_TIMEOUT))
+        stream?.abort(new CodeError('ping timeout', ERR_TIMEOUT))
       }
 
       // make stream abortable

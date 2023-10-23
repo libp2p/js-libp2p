@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -167,7 +167,7 @@ export class DefaultUpgrader implements Upgrader {
     const signal = AbortSignal.timeout(this.inboundUpgradeTimeout)
 
     const onAbort = (): void => {
-      maConn.abort(new CodeError('inbound upgrade timeout', codes.ERR_TIMEOUT))
+      maConn.abort(new CodeError('inbound upgrade timeout', ERR_TIMEOUT))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
