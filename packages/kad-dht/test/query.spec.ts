@@ -534,8 +534,7 @@ describe('QueryManager', () => {
         messageType: MESSAGE_TYPE.GET_VALUE,
         closer: [{
           id: peers[2],
-          multiaddrs: [],
-          protocols: []
+          multiaddrs: []
         }]
       })
     }
