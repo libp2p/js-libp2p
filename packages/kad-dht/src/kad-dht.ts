@@ -218,7 +218,7 @@ export class DefaultKadDHT extends EventEmitter<PeerDiscoveryEvents> implements 
   }
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
-    this.log('peer %p connected with protocols', peerData.id, peerData.protocols)
+    this.log('peer %p connected', peerData.id)
 
     if (this.lan) {
       peerData = removePublicAddresses(peerData)

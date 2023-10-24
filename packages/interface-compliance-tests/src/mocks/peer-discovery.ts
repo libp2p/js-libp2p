@@ -49,8 +49,7 @@ export class MockDiscovery extends EventEmitter<PeerDiscoveryEvents> implements 
           this.safeDispatchEvent<PeerInfo>('peer', {
             detail: {
               id: peerId,
-              multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/8000')],
-              protocols: []
+              multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/8000')]
             }
           })
         }, this.options.discoveryDelay ?? 1000)

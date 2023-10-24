@@ -85,8 +85,7 @@ class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscove
 
       const peerData: PeerInfo = {
         id: peerIdFromString(peerIdStr),
-        multiaddrs: [ma],
-        protocols: []
+        multiaddrs: [ma]
       }
 
       this.list.push(peerData)

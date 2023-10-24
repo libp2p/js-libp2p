@@ -68,12 +68,10 @@ describe('rpc - handlers - AddProvider', () => {
 
     msg.providerPeers = [{
       id: peerIds[0],
-      multiaddrs: [ma1],
-      protocols: []
+      multiaddrs: [ma1]
     }, {
       id: peerIds[1],
-      multiaddrs: [ma2],
-      protocols: []
+      multiaddrs: [ma2]
     }]
 
     await handler.handle(peerIds[0], msg)

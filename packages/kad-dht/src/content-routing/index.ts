@@ -64,8 +64,7 @@ export class ContentRouting {
     const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, key.multihash.bytes, 0)
     msg.providerPeers = [{
       id: this.components.peerId,
-      multiaddrs,
-      protocols: []
+      multiaddrs
     }]
 
     let sent = 0
@@ -140,8 +139,7 @@ export class ContentRouting {
 
           providers.push({
             id: peerId,
-            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
-            protocols: peer.protocols
+            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
           })
         } catch (err: any) {
           if (err.code !== 'ERR_NOT_FOUND') {

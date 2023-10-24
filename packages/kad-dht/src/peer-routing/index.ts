@@ -85,8 +85,7 @@ export class PeerRouting {
 
       return {
         id: peerData.id,
-        multiaddrs: peerData.addresses.map((address) => address.multiaddr),
-        protocols: []
+        multiaddrs: peerData.addresses.map((address) => address.multiaddr)
       }
     }
 
@@ -226,8 +225,7 @@ export class PeerRouting {
           from: this.components.peerId,
           peer: {
             id: peerId,
-            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
-            protocols: peer.protocols
+            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
           }
         }, options)
       } catch (err: any) {
@@ -296,8 +294,7 @@ export class PeerRouting {
 
         output.push({
           id: peerId,
-          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
-          protocols: peer.protocols
+          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
         })
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {

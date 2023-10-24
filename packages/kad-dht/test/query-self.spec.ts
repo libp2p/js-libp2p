@@ -78,8 +78,7 @@ describe('Query Self', () => {
         from: remotePeer,
         peer: {
           id: remotePeer,
-          multiaddrs: [],
-          protocols: []
+          multiaddrs: []
         }
       })
     }())
@@ -110,8 +109,7 @@ describe('Query Self', () => {
         from: remotePeer,
         peer: {
           id: remotePeer,
-          multiaddrs: [],
-          protocols: []
+          multiaddrs: []
         }
       })
     }())

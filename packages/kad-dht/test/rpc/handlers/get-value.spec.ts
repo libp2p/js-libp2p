@@ -94,8 +94,7 @@ describe('rpc - handlers - GetValue', () => {
     peerRouting.getCloserPeersOffline.withArgs(key, sourcePeer)
       .resolves([{
         id: closerPeer,
-        multiaddrs: [],
-        protocols: []
+        multiaddrs: []
       }])
 
     const msg = new Message(T, key, 0)
