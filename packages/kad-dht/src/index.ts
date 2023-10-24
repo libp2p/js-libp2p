@@ -155,47 +155,47 @@ export interface KadDHT {
   /**
    * Get a value from the DHT, the final ValueEvent will be the best value
    */
-  get: (key: Uint8Array, options?: QueryOptions) => AsyncIterable<QueryEvent>
+  get(key: Uint8Array, options?: QueryOptions): AsyncIterable<QueryEvent>
 
   /**
    * Find providers of a given CID
    */
-  findProviders: (key: CID, options?: QueryOptions) => AsyncIterable<QueryEvent>
+  findProviders(key: CID, options?: QueryOptions): AsyncIterable<QueryEvent>
 
   /**
    * Find a peer on the DHT
    */
-  findPeer: (id: PeerId, options?: QueryOptions) => AsyncIterable<QueryEvent>
+  findPeer(id: PeerId, options?: QueryOptions): AsyncIterable<QueryEvent>
 
   /**
    * Find the closest peers to the passed key
    */
-  getClosestPeers: (key: Uint8Array, options?: QueryOptions) => AsyncIterable<QueryEvent>
+  getClosestPeers(key: Uint8Array, options?: QueryOptions): AsyncIterable<QueryEvent>
 
   /**
    * Store provider records for the passed CID on the DHT pointing to us
    */
-  provide: (key: CID, options?: QueryOptions) => AsyncIterable<QueryEvent>
+  provide(key: CID, options?: QueryOptions): AsyncIterable<QueryEvent>
 
   /**
    * Store the passed value under the passed key on the DHT
    */
-  put: (key: Uint8Array, value: Uint8Array, options?: QueryOptions) => AsyncIterable<QueryEvent>
+  put(key: Uint8Array, value: Uint8Array, options?: QueryOptions): AsyncIterable<QueryEvent>
 
   /**
    * Returns the mode this node is in
    */
-  getMode: () => Promise<'client' | 'server'>
+  getMode(): Promise<'client' | 'server'>
 
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  setMode: (mode: 'client' | 'server') => Promise<void>
+  setMode(mode: 'client' | 'server'): Promise<void>
 
   /**
    * Force a routing table refresh
    */
-  refreshRoutingTable: () => Promise<void>
+  refreshRoutingTable(): Promise<void>
 }
 
 export interface SingleKadDHT extends KadDHT {

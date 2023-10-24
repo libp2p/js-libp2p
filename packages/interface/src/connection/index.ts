@@ -101,7 +101,7 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    *
    * The sink and the source will return normally.
    */
-  close: (options?: AbortOptions) => Promise<void>
+  close(options?: AbortOptions): Promise<void>
 
   /**
    * Closes the stream for **reading**. If iterating over the source of this stream in a `for await of` loop, it will return (exit the loop) after any buffered data has been consumed.
@@ -110,14 +110,14 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    *
    * The source will return normally, the sink will continue to consume.
    */
-  closeRead: (options?: AbortOptions) => Promise<void>
+  closeRead(options?: AbortOptions): Promise<void>
 
   /**
    * Closes the stream for **writing**. If iterating over the source of this stream in a `for await of` loop, it will return (exit the loop) after any buffered data has been consumed.
    *
    * The source will return normally, the sink will continue to consume.
    */
-  closeWrite: (options?: AbortOptions) => Promise<void>
+  closeWrite(options?: AbortOptions): Promise<void>
 
   /**
    * Closes the stream for **reading** *and* **writing**. This should be called when a *local error* has occurred.
@@ -128,7 +128,7 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    *
    * The sink will return and the source will throw if an error is passed or return normally if not.
    */
-  abort: (err: Error) => void
+  abort(err: Error): void
 
   /**
    * Unique identifier for a stream. Identifiers are not unique across muxers.
@@ -146,7 +146,7 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
   timeline: StreamTimeline
 
   /**
-   * Once a protocol has been negotiated for this stream, it will be set on the stat object
+   * The protocol negotiated for this stream
    */
   protocol?: string
 
@@ -231,12 +231,12 @@ export interface Connection {
   timeline: ConnectionTimeline
 
   /**
-   * Once a multiplexer has been negotiated for this stream, it will be set on the stat object
+   * The multiplexer negotiated for this connection
    */
   multiplexer?: string
 
   /**
-   * Once a connection encrypter has been negotiated for this stream, it will be set on the stat object
+   * The encryption protocol negotiated for this connection
    */
   encryption?: string
 
@@ -256,18 +256,18 @@ export interface Connection {
   /**
    * Create a new stream on this connection and negotiate one of the passed protocols
    */
-  newStream: (protocols: string | string[], options?: NewStreamOptions) => Promise<Stream>
+  newStream(protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
 
   /**
    * Gracefully close the connection. All queued data will be written to the
    * underlying transport.
    */
-  close: (options?: AbortOptions) => Promise<void>
+  close(options?: AbortOptions): Promise<void>
 
   /**
    * Immediately close the connection, any queued data will be discarded
    */
-  abort: (err: Error) => void
+  abort(err: Error): void
 }
 
 export const symbol = Symbol.for('@libp2p/connection')
@@ -282,7 +282,7 @@ export interface ConnectionProtector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    */
-  protect: (connection: MultiaddrConnection) => Promise<MultiaddrConnection>
+  protect(connection: MultiaddrConnection): Promise<MultiaddrConnection>
 }
 
 export interface MultiaddrConnectionTimeline {
@@ -313,12 +313,12 @@ export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, 
    * Gracefully close the connection. All queued data will be written to the
    * underlying transport.
    */
-  close: (options?: AbortOptions) => Promise<void>
+  close(options?: AbortOptions): Promise<void>
 
   /**
    * Immediately close the connection, any queued data will be discarded
    */
-  abort: (err: Error) => void
+  abort(err: Error): void
 
   /**
    * The address of the remote end of the connection

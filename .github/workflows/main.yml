@@ -179,7 +179,7 @@ jobs:
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:example
 
-  multidim-interop:
+  transport-interop:
     needs: build
     runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
     steps:
@@ -219,7 +219,7 @@ jobs:
       test-electron-renderer,
       test-interop,
       test-examples,
-      multidim-interop
+      transport-interop
     ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:

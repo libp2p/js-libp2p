@@ -35,7 +35,7 @@ export interface ContentRouting {
    * await contentRouting.provide(cid)
    * ```
    */
-  provide: (cid: CID, options?: AbortOptions) => Promise<void>
+  provide(cid: CID, options?: AbortOptions): Promise<void>
 
   /**
    * Find the providers of the passed CID.
@@ -49,7 +49,7 @@ export interface ContentRouting {
    * }
    * ```
    */
-  findProviders: (cid: CID, options?: AbortOptions) => AsyncIterable<PeerInfo>
+  findProviders(cid: CID, options?: AbortOptions): AsyncIterable<PeerInfo>
 
   /**
    * Puts a value corresponding to the passed key in a way that can later be
@@ -65,7 +65,7 @@ export interface ContentRouting {
    * await contentRouting.put(key, value)
    * ```
    */
-  put: (key: Uint8Array, value: Uint8Array, options?: AbortOptions) => Promise<void>
+  put(key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void>
 
   /**
    * Retrieves a value from the network corresponding to the passed key.
@@ -79,5 +79,5 @@ export interface ContentRouting {
    * const value = await contentRouting.get(key)
    * ```
    */
-  get: (key: Uint8Array, options?: AbortOptions) => Promise<Uint8Array>
+  get(key: Uint8Array, options?: AbortOptions): Promise<Uint8Array>
 }

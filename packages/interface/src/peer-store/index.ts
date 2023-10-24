@@ -156,7 +156,7 @@ export interface PeerStore {
    * })
    * ```
    */
-  forEach: (fn: (peer: Peer) => void, query?: PeerQuery) => Promise<void>
+  forEach(fn: (peer: Peer) => void, query?: PeerQuery): Promise<void>
 
   /**
    * Returns all peers in the peer store.
@@ -169,7 +169,7 @@ export interface PeerStore {
    * }
    * ```
    */
-  all: (query?: PeerQuery) => Promise<Peer[]>
+  all(query?: PeerQuery): Promise<Peer[]>
 
   /**
    * Delete all data stored for the passed peer
@@ -187,7 +187,7 @@ export interface PeerStore {
    * // []
    * ```
    */
-  delete: (peerId: PeerId) => Promise<void>
+  delete(peerId: PeerId): Promise<void>
 
   /**
    * Returns true if the passed PeerId is in the peer store
@@ -202,7 +202,7 @@ export interface PeerStore {
    * // true
    * ```
    */
-  has: (peerId: PeerId) => Promise<boolean>
+  has(peerId: PeerId): Promise<boolean>
 
   /**
    * Returns all data stored for the passed PeerId
@@ -214,7 +214,7 @@ export interface PeerStore {
    * // { .. }
    * ```
    */
-  get: (peerId: PeerId) => Promise<Peer>
+  get(peerId: PeerId): Promise<Peer>
 
   /**
    * Adds a peer to the peer store, overwriting any existing data
@@ -227,7 +227,7 @@ export interface PeerStore {
    * })
    * ```
    */
-  save: (id: PeerId, data: PeerData) => Promise<Peer>
+  save(id: PeerId, data: PeerData): Promise<Peer>
 
   /**
    * Adds a peer to the peer store, overwriting only the passed fields
@@ -240,7 +240,7 @@ export interface PeerStore {
    * })
    * ```
    */
-  patch: (id: PeerId, data: PeerData) => Promise<Peer>
+  patch(id: PeerId, data: PeerData): Promise<Peer>
 
   /**
    * Adds a peer to the peer store, deeply merging any existing data.
@@ -253,7 +253,7 @@ export interface PeerStore {
    * })
    * ```
    */
-  merge: (id: PeerId, data: PeerData) => Promise<Peer>
+  merge(id: PeerId, data: PeerData): Promise<Peer>
 
   /**
    * Unmarshal and verify a signed peer record, extract the multiaddrs and
@@ -268,5 +268,5 @@ export interface PeerStore {
    * await peerStore.consumePeerRecord(buf, expectedPeer)
    * ```
    */
-  consumePeerRecord: (buf: Uint8Array, expectedPeer?: PeerId) => Promise<boolean>
+  consumePeerRecord(buf: Uint8Array, expectedPeer?: PeerId): Promise<boolean>
 }

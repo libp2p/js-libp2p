@@ -17,7 +17,7 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 const log = logger('libp2p:ping')
 
 export interface PingService {
-  ping: (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions) => Promise<number>
+  ping(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<number>
 }
 
 export interface PingServiceInit {

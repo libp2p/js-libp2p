@@ -48,28 +48,28 @@ export interface Metric {
   /**
    * Update the stored metric to the passed value
    */
-  update: (value: number) => void
+  update(value: number): void
 
   /**
    * Increment the metric by the passed value or 1
    */
-  increment: (value?: number) => void
+  increment(value?: number): void
 
   /**
    * Decrement the metric by the passed value or 1
    */
-  decrement: (value?: number) => void
+  decrement(value?: number): void
 
   /**
    * Reset this metric to its default value
    */
-  reset: () => void
+  reset(): void
 
   /**
    * Start a timed metric, call the returned function to
    * stop the timer
    */
-  timer: () => StopTimer
+  timer(): StopTimer
 }
 
 /**
@@ -80,31 +80,31 @@ export interface MetricGroup {
   /**
    * Update the stored metric group to the passed value
    */
-  update: (values: Record<string, number>) => void
+  update(values: Record<string, number>): void
 
   /**
    * Increment the metric group keys by the passed number or
    * any non-numeric value to increment by 1
    */
-  increment: (values: Record<string, number | unknown>) => void
+  increment(values: Record<string, number | unknown>): void
 
   /**
    * Decrement the metric group keys by the passed number or
    * any non-numeric value to decrement by 1
    */
-  decrement: (values: Record<string, number | unknown>) => void
+  decrement(values: Record<string, number | unknown>): void
 
   /**
    * Reset the passed key in this metric group to its default value
    * or all keys if no key is passed
    */
-  reset: () => void
+  reset(): void
 
   /**
    * Start a timed metric for the named key in the group, call
    * the returned function to stop the timer
    */
-  timer: (key: string) => StopTimer
+  timer(key: string): StopTimer
 }
 
 /**
@@ -115,12 +115,12 @@ export interface Counter {
   /**
    * Increment the metric by the passed value or 1
    */
-  increment: (value?: number) => void
+  increment(value?: number): void
 
   /**
    * Reset this metric to its default value
    */
-  reset: () => void
+  reset(): void
 }
 
 /**
@@ -133,13 +133,13 @@ export interface CounterGroup {
    * Increment the metric group keys by the passed number or
    * any non-numeric value to increment by 1
    */
-  increment: (values: Record<string, number | unknown>) => void
+  increment(values: Record<string, number | unknown>): void
 
   /**
    * Reset the passed key in this metric group to its default value
    * or all keys if no key is passed
    */
-  reset: () => void
+  reset(): void
 }
 
 /**
@@ -151,12 +151,12 @@ export interface Metrics {
   /**
    * Track a newly opened multiaddr connection
    */
-  trackMultiaddrConnection: (maConn: MultiaddrConnection) => void
+  trackMultiaddrConnection(maConn: MultiaddrConnection): void
 
   /**
    * Track a newly opened protocol stream
    */
-  trackProtocolStream: (stream: Stream, connection: Connection) => void
+  trackProtocolStream(stream: Stream, connection: Connection): void
 
   /**
    * Register an arbitrary metric. Call this to set help/labels for metrics
