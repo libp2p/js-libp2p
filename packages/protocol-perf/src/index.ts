@@ -52,7 +52,7 @@ import type { AbortOptions } from '@libp2p/interfaces'
 const log = logger('libp2p:perf')
 
 export const defaultInit: PerfServiceInit = {
-  protocolName: '/perf/1.2.0',
+  protocolName: '/perf/1.0.0',
   writeBlockSize: BigInt(64 << 10)
 }
 
