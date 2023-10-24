@@ -93,8 +93,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       if (evt.detail.previous == null) {
         const peerInfo: PeerInfo = {
           id: evt.detail.peer.id,
-          multiaddrs: evt.detail.peer.addresses.map(a => a.multiaddr),
-          protocols: evt.detail.peer.protocols
+          multiaddrs: evt.detail.peer.addresses.map(a => a.multiaddr)
         }
 
         components.events.safeDispatchEvent('peer:discovery', { detail: peerInfo })
@@ -377,8 +376,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     }
 
     void this.components.peerStore.merge(peer.id, {
-      multiaddrs: peer.multiaddrs,
-      protocols: peer.protocols
+      multiaddrs: peer.multiaddrs
     })
       .catch(err => { log.error(err) })
   }

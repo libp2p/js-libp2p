@@ -104,7 +104,6 @@ function fromPbPeer (peer: PBMessage.Peer): PeerInfo {
 
   return {
     id: peerIdFromBytes(peer.id),
-    multiaddrs: (peer.addrs ?? []).map((a) => multiaddr(a)),
-    protocols: []
+    multiaddrs: (peer.addrs ?? []).map((a) => multiaddr(a))
   }
 }
