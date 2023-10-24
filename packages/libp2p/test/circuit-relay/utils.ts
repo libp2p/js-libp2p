@@ -159,8 +159,7 @@ export class MockContentRouting implements ContentRouting {
 
     providers.push({
       id: this.peerId,
-      multiaddrs: this.addressManager.getAddresses(),
-      protocols: []
+      multiaddrs: this.addressManager.getAddresses()
     })
 
     MockContentRouting.providers.set(cid.toString(), providers)

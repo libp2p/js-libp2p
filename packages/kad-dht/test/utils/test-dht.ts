@@ -94,8 +94,7 @@ export class TestDHT {
       }
 
       components.peerStore.merge(peerData.id, {
-        multiaddrs: peerData.multiaddrs,
-        protocols: peerData.protocols
+        multiaddrs: peerData.multiaddrs
       })
         .catch(err => { log.error(err) })
     })
