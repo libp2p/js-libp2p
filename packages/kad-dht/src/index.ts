@@ -13,6 +13,8 @@ import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
+export { Libp2pRecord as Record } from './record/index.js'
+
 /**
  * The types of events emitted during DHT queries
  */
