@@ -74,8 +74,7 @@ export function gotResponse (rsp: ResponsePacket, localPeerName: string, service
 
     return {
       id: peerIdFromString(peerId),
-      multiaddrs: multiaddrs.map(addr => addr.decapsulateCode(protocols('p2p').code)),
-      protocols: []
+      multiaddrs: multiaddrs.map(addr => addr.decapsulateCode(protocols('p2p').code))
     }
   } catch (e) {
     log.error('failed to parse mdns response', e)
