@@ -86,8 +86,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
         const peerAfterFilter = addrFilter({
           id: peerId,
-          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
-          protocols: peer.protocols
+          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
         })
 
         if (peerAfterFilter.multiaddrs.length > 0) {

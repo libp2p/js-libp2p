@@ -134,8 +134,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
 
       const peerData: PeerInfo = {
         id: peerIdFromString(peerIdStr),
-        multiaddrs: [ma],
-        protocols: []
+        multiaddrs: [ma]
       }
 
       this.list.push(peerData)
