@@ -48,8 +48,7 @@ export class FindNodeHandler implements DHTMessageHandler {
     if (uint8ArrayEquals(this.components.peerId.toBytes(), msg.key)) {
       closer = [{
         id: this.components.peerId,
-        multiaddrs: this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code)),
-        protocols: []
+        multiaddrs: this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
       }]
     } else {
       closer = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
