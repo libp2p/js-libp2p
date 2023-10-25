@@ -30,6 +30,23 @@ export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitFor
   }, opts)
 }
 
+export async function usingAsRelayCount (node: Libp2p, relays: Libp2p[], count: number): Promise<void> {
+  // Wait for peer to be used as a relay
+  await pWaitFor(async () => {
+    let relayCount = 0
+
+    for (const relay of relays) {
+      for (const addr of node.getMultiaddrs()) {
+        const search = `${relay.peerId.toString()}/p2p-circuit`
+        if (addr.toString().includes(search)) {
+          relayCount++
+        }
+      }
+    }
+    return relayCount === count
+  })
+}
+
 export async function notUsingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay
   await pWaitFor(() => {

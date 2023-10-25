@@ -31,9 +31,11 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.listeningAddrs = new PeerMap()
 
     // remove listening addrs when a relay is removed
-    this.relayStore.addEventListener('relay:removed', (evt) => {
-      this.#removeRelayPeer(evt.detail)
-    })
+    this.relayStore.addEventListener('relay:removed', this._onRemoveRelayPeer)
+  }
+
+  _onRemoveRelayPeer = (evt: CustomEvent<PeerId>): void => {
+    this.#removeRelayPeer(evt.detail)
   }
 
   async listen (addr: Multiaddr): Promise<void> {
@@ -100,6 +102,8 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.listeningAddrs.delete(peerId)
 
     if (had) {
+      log.trace('removing relay event listener for peer %p', peerId)
+      this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
       // Announce listen addresses change
       this.safeDispatchEvent('close', {})
     }
