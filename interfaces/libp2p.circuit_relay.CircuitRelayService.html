@@ -18,21 +18,18 @@
 <li><a href="libp2p.circuit_relay.CircuitRelayService.html">CircuitRelayService</a></li></ul>
 <h1>Interface CircuitRelayService</h1></div>
 <section class="tsd-panel tsd-comment">
-<div class="tsd-comment tsd-typography"><p>Adds types to the EventTarget class. Hopefully this won&#39;t be necessary forever.</p>
-<p><a href="https://github.com/microsoft/TypeScript/issues/28357">https://github.com/microsoft/TypeScript/issues/28357</a>
-<a href="https://github.com/microsoft/TypeScript/issues/43477">https://github.com/microsoft/TypeScript/issues/43477</a>
-<a href="https://github.com/microsoft/TypeScript/issues/299">https://github.com/microsoft/TypeScript/issues/299</a>
+<div class="tsd-comment tsd-typography"><p>An implementation of a typed event target
 etc</p>
 </div>
 <div class="tsd-comment tsd-typography"></div></section>
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
-<li><a href="../classes/_libp2p_interface.events.EventEmitter.html" class="tsd-signature-type tsd-kind-class">EventEmitter</a><span class="tsd-signature-symbol">&lt;</span><a href="libp2p.circuit_relay.CircuitRelayServiceEvents.html" class="tsd-signature-type tsd-kind-interface">CircuitRelayServiceEvents</a><span class="tsd-signature-symbol">&gt;</span>
+<li><a href="../classes/_libp2p_interface.events.TypedEventEmitter.html" class="tsd-signature-type tsd-kind-class">TypedEventEmitter</a><span class="tsd-signature-symbol">&lt;</span><a href="libp2p.circuit_relay.CircuitRelayServiceEvents.html" class="tsd-signature-type tsd-kind-interface">CircuitRelayServiceEvents</a><span class="tsd-signature-symbol">&gt;</span>
 <ul class="tsd-hierarchy">
 <li><span class="target">CircuitRelayService</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/28c1b905/packages/libp2p/src/circuit-relay/index.ts#L54">libp2p/src/circuit-relay/index.ts:54</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/de4f4c3e/packages/libp2p/src/circuit-relay/index.ts#L54">packages/libp2p/src/circuit-relay/index.ts:54</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -56,14 +53,14 @@ etc</p>
 <section class="tsd-panel tsd-member tsd-is-private tsd-is-inherited"><a id="_private" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>#private</span><a href="#_private" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">#private</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
-<p>Inherited from EventEmitter.#private</p>
+<p>Inherited from TypedEventEmitter.#private</p>
 <ul>
-<li>Defined in interface/dist/src/events.d.ts:17</li></ul></aside></section>
+<li>Defined in packages/interface/dist/src/events.d.ts:28</li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="reservations" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>reservations</span><a href="#reservations" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">reservations</span><span class="tsd-signature-symbol">:</span> <a href="../classes/_libp2p_peer_collections.PeerMap.html" class="tsd-signature-type tsd-kind-class">PeerMap</a><span class="tsd-signature-symbol">&lt;</span><a href="libp2p.circuit_relay.RelayReservation.html" class="tsd-signature-type tsd-kind-interface">RelayReservation</a><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/28c1b905/packages/libp2p/src/circuit-relay/index.ts#L55">libp2p/src/circuit-relay/index.ts:55</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/de4f4c3e/packages/libp2p/src/circuit-relay/index.ts#L55">packages/libp2p/src/circuit-relay/index.ts:55</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="addEventListener" class="tsd-anchor"></a>
@@ -86,23 +83,27 @@ etc</p>
 <li>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">options</span>: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">AddEventListenerOptions</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
-<p>Inherited from <a href="../classes/_libp2p_interface.events.EventEmitter.html">EventEmitter</a>.<a href="../classes/_libp2p_interface.events.EventEmitter.html#addEventListener">addEventListener</a></p>
+<p>Inherited from <a href="../classes/_libp2p_interface.events.TypedEventEmitter.html">TypedEventEmitter</a>.<a href="../classes/_libp2p_interface.events.TypedEventEmitter.html#addEventListener">addEventListener</a></p>
 <ul>
-<li>Defined in interface/dist/src/events.d.ts:19</li></ul></aside></li></ul></section>
+<li>Defined in packages/interface/dist/src/events.d.ts:30</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="dispatchEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>dispatch<wbr/>Event</span><a href="#dispatchEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="dispatchEvent.dispatchEvent-1"><span class="tsd-kind-call-signature">dispatch<wbr/>Event</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">event</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#dispatchEvent.dispatchEvent-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Dispatches a synthetic event event to target and returns true if either event&#39;s cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise.</p>
+<p><a href="https://developer.mozilla.org/docs/Web/API/EventTarget/dispatchEvent">MDN Reference</a></p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
 <h5><span class="tsd-kind-parameter">event</span>: <a href="https://developer.mozilla.org/en-US/docs/Web/API/Event" class="tsd-signature-type external" target="_blank">Event</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
-<p>Inherited from <a href="../classes/_libp2p_interface.events.EventEmitter.html">EventEmitter</a>.<a href="../classes/_libp2p_interface.events.EventEmitter.html#dispatchEvent">dispatchEvent</a></p>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<p>Inherited from <a href="../classes/_libp2p_interface.events.TypedEventEmitter.html">TypedEventEmitter</a>.<a href="../classes/_libp2p_interface.events.TypedEventEmitter.html#dispatchEvent">dispatchEvent</a></p>
 <ul>
-<li>Defined in interface/dist/src/events.d.ts:21</li></ul></aside></li></ul></section>
+<li>Defined in packages/interface/dist/src/events.d.ts:32</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="listenerCount" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>listener<wbr/>Count</span><a href="#listenerCount" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -114,9 +115,9 @@ etc</p>
 <li>
 <h5><span class="tsd-kind-parameter">type</span>: <span class="tsd-signature-type">string</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
-<p>Inherited from <a href="../classes/_libp2p_interface.events.EventEmitter.html">EventEmitter</a>.<a href="../classes/_libp2p_interface.events.EventEmitter.html#listenerCount">listenerCount</a></p>
+<p>Inherited from <a href="../classes/_libp2p_interface.events.TypedEventEmitter.html">TypedEventEmitter</a>.<a href="../classes/_libp2p_interface.events.TypedEventEmitter.html#listenerCount">listenerCount</a></p>
 <ul>
-<li>Defined in interface/dist/src/events.d.ts:18</li></ul></aside></li></ul></section>
+<li>Defined in packages/interface/dist/src/events.d.ts:29</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="removeEventListener" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>remove<wbr/>Event<wbr/>Listener</span><a href="#removeEventListener" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -137,9 +138,9 @@ etc</p>
 <li>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">options</span>: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">EventListenerOptions</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
-<p>Inherited from <a href="../classes/_libp2p_interface.events.EventEmitter.html">EventEmitter</a>.<a href="../classes/_libp2p_interface.events.EventEmitter.html#removeEventListener">removeEventListener</a></p>
+<p>Inherited from <a href="../classes/_libp2p_interface.events.TypedEventEmitter.html">TypedEventEmitter</a>.<a href="../classes/_libp2p_interface.events.TypedEventEmitter.html#removeEventListener">removeEventListener</a></p>
 <ul>
-<li>Defined in interface/dist/src/events.d.ts:20</li></ul></aside></li></ul></section>
+<li>Defined in packages/interface/dist/src/events.d.ts:31</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="safeDispatchEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>safe<wbr/>Dispatch<wbr/>Event</span><a href="#safeDispatchEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -158,9 +159,9 @@ etc</p>
 <li>
 <h5><span class="tsd-kind-parameter">detail</span>: <span class="tsd-signature-type ">CustomEventInit</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">Detail</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
-<p>Inherited from <a href="../classes/_libp2p_interface.events.EventEmitter.html">EventEmitter</a>.<a href="../classes/_libp2p_interface.events.EventEmitter.html#safeDispatchEvent">safeDispatchEvent</a></p>
+<p>Inherited from <a href="../classes/_libp2p_interface.events.TypedEventEmitter.html">TypedEventEmitter</a>.<a href="../classes/_libp2p_interface.events.TypedEventEmitter.html#safeDispatchEvent">safeDispatchEvent</a></p>
 <ul>
-<li>Defined in interface/dist/src/events.d.ts:22</li></ul></aside></li></ul></section></section></div>
+<li>Defined in packages/interface/dist/src/events.d.ts:33</li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
