@@ -32,14 +32,11 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import { preSharedKey } from '../../src/pnet/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import swarmKey from '../fixtures/swarm.key.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 
@@ -496,9 +493,11 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should use the protectors when provided for connecting', async () => {
-    const protector: ConnectionProtector = preSharedKey({
-      psk: swarmKeyBuffer
-    })()
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
 
     libp2p = await createLibp2pNode({
       peerId,
@@ -516,8 +515,6 @@ describe('libp2p.dialer (direct, TCP)', () => {
     })
 
     const protectorProtectSpy = Sinon.spy(protector, 'protect')
-
-    remoteLibp2p.components.connectionProtector = preSharedKey({ psk: swarmKeyBuffer })()
 
     await libp2p.start()
 

@@ -2,8 +2,6 @@
  * Implemented by components that have a lifecycle
  */
 export interface Startable {
-  isStarted(): boolean
-
   /**
    * If implemented, this method will be invoked before the start method.
    *
