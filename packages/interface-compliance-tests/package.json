@@ -131,7 +131,7 @@
     "p-limit": "^4.0.0",
     "p-wait-for": "^5.0.2",
     "protons-runtime": "^5.0.0",
-    "sinon": "^16.0.0",
+    "sinon": "^17.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6"
   },
