@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -23,7 +23,7 @@ describe('libp2p-websockets', () => {
     ws = webSockets()()
     conn = await ws.dial(ma, {
       upgrader: mockUpgrader({
-        events: new TypedEventEmitter()
+        events: new EventEmitter()
       })
     })
   })

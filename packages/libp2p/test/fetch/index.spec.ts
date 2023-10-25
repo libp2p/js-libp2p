@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -27,7 +27,7 @@ const defaultInit: FetchServiceInit = {
 async function createComponents (index: number): Promise<Components> {
   const peerId = await createEd25519PeerId()
 
-  const events = new TypedEventEmitter()
+  const events = new EventEmitter()
   const components = defaultComponents({
     peerId,
     registrar: mockRegistrar(),

@@ -1,4 +1,4 @@
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import type { KadDHTComponents } from '.'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -17,7 +17,7 @@ export interface TopologyListenerEvents {
 /**
  * Receives notifications of new peers joining the network that support the DHT protocol
  */
-export class TopologyListener extends TypedEventEmitter<TopologyListenerEvents> implements Startable {
+export class TopologyListener extends EventEmitter<TopologyListenerEvents> implements Startable {
   private readonly log: Logger
   private readonly components: KadDHTComponents
   private readonly protocol: string

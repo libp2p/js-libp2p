@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -18,12 +18,12 @@ describe('PersistentPeerStore', () => {
   let peerId: PeerId
   let otherPeerId: PeerId
   let peerStore: PersistentPeerStore
-  let events: TypedEventTarget<Libp2pEvents>
+  let events: EventEmitter<Libp2pEvents>
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
     otherPeerId = await createEd25519PeerId()
-    events = new TypedEventEmitter()
+    events = new EventEmitter()
     peerStore = new PersistentPeerStore({ peerId, events, datastore: new MemoryDatastore() })
   })
 

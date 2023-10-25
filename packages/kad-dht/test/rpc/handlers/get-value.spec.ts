@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -40,7 +40,7 @@ describe('rpc - handlers - GetValue', () => {
     peerStore = new PersistentPeerStore({
       peerId,
       datastore,
-      events: new TypedEventEmitter<Libp2pEvents>()
+      events: new EventEmitter<Libp2pEvents>()
     })
 
     const components: GetValueHandlerComponents = {

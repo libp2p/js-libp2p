@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -22,7 +22,7 @@ describe('listen', () => {
   beforeEach(() => {
     transport = tcp()()
     upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     })
   })
 
@@ -175,7 +175,7 @@ describe('dial', () => {
     })
     upgrader = mockUpgrader({
       registrar,
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     })
 
     transport = tcp()()

@@ -2,7 +2,7 @@ import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { MAX_CONNECTIONS } from './constants.js'
 import type { Libp2pEvents } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
+import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -17,7 +17,7 @@ interface ConnectionPrunerInit {
 interface ConnectionPrunerComponents {
   connectionManager: ConnectionManager
   peerStore: PeerStore
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 const defaultOptions = {
@@ -33,7 +33,7 @@ export class ConnectionPruner {
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
   private readonly allow: Multiaddr[]
-  private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly events: EventEmitter<Libp2pEvents>
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections

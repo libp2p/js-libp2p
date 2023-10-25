@@ -15,7 +15,7 @@ import { DialQueue } from './dial-queue.js'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { TypedEventTarget } from '@libp2p/interface/events'
+import type { EventEmitter } from '@libp2p/interface/events'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Peer, PeerStore } from '@libp2p/interface/peer-store'
@@ -165,7 +165,7 @@ export interface DefaultConnectionManagerComponents {
   peerStore: PeerStore
   transportManager: TransportManager
   connectionGater: ConnectionGater
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 /**
@@ -187,7 +187,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   private readonly peerStore: PeerStore
   private readonly metrics?: Metrics
-  private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly events: EventEmitter<Libp2pEvents>
 
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections

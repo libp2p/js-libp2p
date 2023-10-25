@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -23,13 +23,13 @@ import type { ConnectionManager } from '@libp2p/interface-internal/connection-ma
 
 describe('auto-dial', () => {
   let autoDialler: AutoDial
-  let events: TypedEventTarget<Libp2pEvents>
+  let events: EventEmitter<Libp2pEvents>
   let peerStore: PeerStore
   let peerId: PeerId
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
-    events = new TypedEventEmitter()
+    events = new EventEmitter()
     peerStore = new PersistentPeerStore({
       datastore: new MemoryDatastore(),
       events,

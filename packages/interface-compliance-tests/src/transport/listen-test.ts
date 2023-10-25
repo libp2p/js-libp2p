@@ -1,5 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import { pipe } from 'it-pipe'
@@ -27,7 +27,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       registrar = mockRegistrar()
       upgrader = mockUpgrader({
         registrar,
-        events: new TypedEventEmitter()
+        events: new EventEmitter()
       });
 
       ({ transport, addrs } = await common.setup())

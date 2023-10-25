@@ -1,5 +1,5 @@
 import os from 'os'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
@@ -14,7 +14,7 @@ import type { WebSocketServer } from 'it-ws/server'
 
 const log = logger('libp2p:websockets:listener')
 
-class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Listener {
+class WebSocketListener extends EventEmitter<ListenerEvents> implements Listener {
   private readonly connections: Set<DuplexWebSocket>
   private listeningMultiaddr?: Multiaddr
   private readonly server: WebSocketServer

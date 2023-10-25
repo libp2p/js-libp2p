@@ -1,5 +1,5 @@
 import { AbortError } from '@libp2p/interface/errors'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import drain from 'it-drain'
@@ -27,7 +27,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       registrar = mockRegistrar()
       upgrader = mockUpgrader({
         registrar,
-        events: new TypedEventEmitter()
+        events: new EventEmitter()
       });
 
       ({ addrs, transport, connector } = await common.setup())

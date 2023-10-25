@@ -3,7 +3,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { debounce } from './utils.js'
 import type { Libp2pEvents } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
+import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
@@ -38,7 +38,7 @@ export interface DefaultAddressManagerComponents {
   peerId: PeerId
   transportManager: TransportManager
   peerStore: PeerStore
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 /**

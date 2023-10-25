@@ -16,7 +16,7 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { TypedEventTarget } from './events.js'
+import type { EventEmitter } from './events.js'
 import type { KeyChain } from './keychain/index.js'
 import type { Metrics } from './metrics/index.js'
 import type { PeerId } from './peer-id/index.js'
@@ -303,7 +303,7 @@ export interface PendingDial {
 /**
  * Libp2p nodes implement this interface.
  */
-export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, TypedEventTarget<Libp2pEvents<T>> {
+export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, EventEmitter<Libp2pEvents<T>> {
   /**
    * The PeerId is a unique identifier for a node on the network.
    *

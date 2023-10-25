@@ -6,7 +6,7 @@ export default {
     async before () {
       const { multiaddr } = await import('@multiformats/multiaddr')
       const { mockRegistrar, mockUpgrader } = await import('@libp2p/interface-compliance-tests/mocks')
-      const { TypedEventEmitter } = await import('@libp2p/interface/events')
+      const { EventEmitter } = await import('@libp2p/interface/events')
       const { webSockets } = await import('./dist/src/index.js')
 
       const protocol = '/echo/1.0.0'
@@ -19,7 +19,7 @@ export default {
       })
       const upgrader = mockUpgrader({
         registrar,
-        events: new TypedEventEmitter()
+        events: new EventEmitter()
       })
 
       const ws = webSockets()()
