@@ -26,10 +26,8 @@ import { type Components, defaultComponents } from '../../src/components.js'
 import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
-import { preSharedKey } from '../../src/pnet/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
-import swarmKey from '../fixtures/swarm.key.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface/connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
@@ -206,9 +204,12 @@ describe('Upgrader', () => {
   it('should use a private connection protector when provided', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
-    const protector = preSharedKey({
-      psk: uint8ArrayFromString(swarmKey)
-    })()
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
+
     const protectorProtectSpy = sinon.spy(protector, 'protect')
 
     localComponents.connectionProtector = protector
@@ -615,6 +616,12 @@ describe('libp2p.upgrader', () => {
   it('should create an Upgrader', async () => {
     const deferred = pDefer<Components>()
 
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
+
     libp2p = await createLibp2p({
       peerId: peers[0],
       transports: [
@@ -627,9 +634,7 @@ describe('libp2p.upgrader', () => {
       connectionEncryption: [
         plaintext()
       ],
-      connectionProtector: preSharedKey({
-        psk: uint8ArrayFromString(swarmKey)
-      }),
+      connectionProtector: () => protector,
       services: {
         test: (components: any) => {
           deferred.resolve(components)
