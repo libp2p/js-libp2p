@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { CustomEvent } from '@libp2p/interface/events'
 import { isPeerId, type PeerId } from '@libp2p/interface/peer-id'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -131,9 +130,9 @@ class MockConnectionManager implements ConnectionManager, Startable {
     this.connections.push(aToB)
     ;(componentsB.connectionManager as MockConnectionManager).connections.push(bToA)
 
-    this.components.events.dispatchEvent(new CustomEvent('connection:open', {
+    this.components.events.safeDispatchEvent('connection:open', {
       detail: aToB
-    }))
+    })
 
     for (const protocol of this.components.registrar.getProtocols()) {
       for (const topology of this.components.registrar.getTopologies(protocol)) {
@@ -141,11 +140,11 @@ class MockConnectionManager implements ConnectionManager, Startable {
       }
     }
 
-    this.components.events.dispatchEvent(new CustomEvent('peer:connect', { detail: componentsB.peerId }))
+    this.components.events.safeDispatchEvent('peer:connect', { detail: componentsB.peerId })
 
-    componentsB.events.dispatchEvent(new CustomEvent('connection:open', {
+    componentsB.events.safeDispatchEvent('connection:open', {
       detail: bToA
-    }))
+    })
 
     for (const protocol of componentsB.registrar.getProtocols()) {
       for (const topology of componentsB.registrar.getTopologies(protocol)) {
