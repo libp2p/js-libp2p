@@ -5,6 +5,14 @@
 
 * skip self-query if not running ([#479](https://github.com/libp2p/js-libp2p-kad-dht/issues/479)) ([7095290](https://github.com/libp2p/js-libp2p-kad-dht/commit/70952907a27fd8778773172059879656b4f08855))
 
+### [10.0.10](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.9...kad-dht-v10.0.10) (2023-10-25)
+
+
+### Bug Fixes
+
+* allow DHT self-query to time out ([#2169](https://www.github.com/libp2p/js-libp2p/issues/2169)) ([ce0e38d](https://www.github.com/libp2p/js-libp2p/commit/ce0e38d28240303f7afc7f37de441b067e3e855e))
+* export DHT record class ([#2168](https://www.github.com/libp2p/js-libp2p/issues/2168)) ([2f6a239](https://www.github.com/libp2p/js-libp2p/commit/2f6a2397f7e8ec7cf2edda7c9996be263a423661))
+
 ### [10.0.9](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.8...kad-dht-v10.0.9) (2023-10-06)
 
 
