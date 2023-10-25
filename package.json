@@ -21,7 +21,7 @@
     "test:firefox": "aegir run test:firefox",
     "test:firefox-webworker": "aegir run test:firefox-webworker",
     "test:electron-main": "aegir run test:electron-main",
-    "test:external": "aegir run test:external",
+    "test:external": "aegir test-dependant",
     "test:cli": "aegir run test:cli",
     "test:interop": "aegir run test:interop",
     "coverage": "aegir run coverage",
