@@ -103,8 +103,6 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
 
   // dns4 or dns6 or dnsaddr
   if (tuples[0][0] === DNS4_CODE || tuples[0][0] === DNS6_CODE || tuples[0][0] === DNSADDR_CODE) {
-    log('%a is public %s', multiaddr, true)
-
     return true
   }
 
@@ -112,8 +110,6 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
   if (tuples[0][0] === IP4_CODE || tuples[0][0] === IP6_CODE) {
     const result = isPrivate(`${tuples[0][1]}`)
     const isPublic = result == null || !result
-
-    log('%a is public %s', multiaddr, isPublic)
 
     return isPublic
   }
@@ -170,13 +166,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
       components.events.addEventListener('self:peer:update', (evt) => {
         log('received update of self-peer info')
         const hasPublicAddress = evt.detail.peer.addresses
-          .some(({ multiaddr }) => {
-            const isPublic = multiaddrIsPublic(multiaddr)
-
-            log('%a is public %s', multiaddr, isPublic)
-
-            return isPublic
-          })
+          .some(({ multiaddr }) => multiaddrIsPublic(multiaddr))
 
         this.getMode()
           .then(async mode => {
