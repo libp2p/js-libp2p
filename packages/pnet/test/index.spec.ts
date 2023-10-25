@@ -6,8 +6,8 @@ import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { INVALID_PSK } from '../../src/pnet/errors.js'
-import { preSharedKey, generateKey } from '../../src/pnet/index.js'
+import { INVALID_PSK } from '../src/errors.js'
+import { preSharedKey, generateKey } from '../src/index.js'
 
 const swarmKeyBuffer = new Uint8Array(95)
 const wrongSwarmKeyBuffer = new Uint8Array(95)

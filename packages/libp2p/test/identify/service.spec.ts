@@ -153,7 +153,6 @@ describe('identify', () => {
 
     // Wait for identify to finish
     await identityServiceIdentifySpy.firstCall.returnValue
-    sinon.stub(libp2p, 'isStarted').returns(true)
 
     // Cause supported protocols to change
     await libp2p.handle('/echo/2.0.0', () => {})
@@ -251,7 +250,6 @@ describe('identify', () => {
 
     // Wait for identify to finish
     await identityServiceIdentifySpy.firstCall.returnValue
-    sinon.stub(libp2p, 'isStarted').returns(true)
 
     await libp2p.peerStore.merge(libp2p.peerId, {
       multiaddrs: [multiaddr('/ip4/180.0.0.1/tcp/15001/ws')]
