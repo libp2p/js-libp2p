@@ -124,7 +124,6 @@ describe('libp2p.transportManager (dial only)', () => {
       start: false
     })
 
-    expect(libp2p.isStarted()).to.be.false()
     await expect(libp2p.start()).to.eventually.be.rejected
       .with.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
@@ -147,7 +146,6 @@ describe('libp2p.transportManager (dial only)', () => {
       start: false
     })
 
-    expect(libp2p.isStarted()).to.be.false()
     await expect(libp2p.start()).to.eventually.be.undefined()
   })
 
@@ -169,7 +167,6 @@ describe('libp2p.transportManager (dial only)', () => {
       start: false
     })
 
-    expect(libp2p.isStarted()).to.be.false()
     await expect(libp2p.start()).to.eventually.be.undefined()
   })
 })

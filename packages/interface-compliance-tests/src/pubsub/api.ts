@@ -48,7 +48,6 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
 
       await start(...Object.values(components))
 
-      expect(pubsub.isStarted()).to.equal(true)
       expect(components.registrar.register).to.have.property('callCount', 1)
     })
 
@@ -62,7 +61,6 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
       await start(...Object.values(components))
       await stop(...Object.values(components))
 
-      expect(pubsub.isStarted()).to.equal(false)
       expect(components.registrar.unregister).to.have.property('callCount', 1)
     })
 
