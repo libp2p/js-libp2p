@@ -96,7 +96,7 @@
 
 import { logger } from '@libp2p/logger'
 import each from 'it-foreach'
-import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry } from 'prom-client'
+import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry, type RegistryContentType } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
 import { PrometheusCounter } from './counter.js'
 import { PrometheusMetricGroup } from './metric-group.js'
@@ -126,7 +126,7 @@ export interface PrometheusMetricsInit {
   /**
    * prom-client options to pass to the `collectDefaultMetrics` function
    */
-  defaultMetrics?: DefaultMetricsCollectorConfiguration
+  defaultMetrics?: DefaultMetricsCollectorConfiguration<RegistryContentType>
 
   /**
    * All metrics in prometheus are global so to prevent clashes in naming
