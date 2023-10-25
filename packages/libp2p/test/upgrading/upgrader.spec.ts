@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -76,7 +76,7 @@ describe('Upgrader', () => {
       registrar: mockRegistrar(),
       datastore: new MemoryDatastore(),
       connectionProtector: localConnectionProtector,
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
@@ -103,7 +103,7 @@ describe('Upgrader', () => {
       registrar: mockRegistrar(),
       datastore: new MemoryDatastore(),
       connectionProtector: remoteConnectionProtector,
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)

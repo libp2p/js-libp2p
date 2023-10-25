@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import Queue from 'p-queue'
@@ -43,7 +43,7 @@ export interface RoutingTableEvents {
  * A wrapper around `k-bucket`, to provide easy store and
  * retrieval for peers.
  */
-export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implements Startable {
+export class RoutingTable extends EventEmitter<RoutingTableEvents> implements Startable {
   public kBucketSize: number
   public kb?: KBucket
   public pingQueue: Queue

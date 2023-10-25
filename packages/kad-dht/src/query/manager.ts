@@ -1,6 +1,6 @@
 import { setMaxListeners } from 'events'
 import { AbortError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { anySignal } from 'any-signal'
@@ -143,7 +143,7 @@ export class QueryManager implements Startable {
 
     // query a subset of peers up to `kBucketSize / 2` in length
     const startTime = Date.now()
-    const cleanUp = new TypedEventEmitter<CleanUpEvents>()
+    const cleanUp = new EventEmitter<CleanUpEvents>()
 
     try {
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {

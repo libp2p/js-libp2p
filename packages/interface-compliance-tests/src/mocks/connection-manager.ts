@@ -6,7 +6,7 @@ import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { connectionPair } from './connection.js'
 import type { Libp2pEvents, PendingDial } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
-import type { TypedEventTarget } from '@libp2p/interface/events'
+import type { EventEmitter } from '@libp2p/interface/events'
 import type { PubSub } from '@libp2p/interface/pubsub'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
@@ -16,7 +16,7 @@ export interface MockNetworkComponents {
   peerId: PeerId
   registrar: Registrar
   connectionManager: ConnectionManager
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
   pubsub?: PubSub
 }
 
@@ -51,7 +51,7 @@ export const mockNetwork = new MockNetwork()
 export interface MockConnectionManagerComponents {
   peerId: PeerId
   registrar: Registrar
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 class MockConnectionManager implements ConnectionManager, Startable {

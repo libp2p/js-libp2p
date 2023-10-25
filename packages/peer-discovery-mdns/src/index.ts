@@ -1,4 +1,4 @@
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { logger } from '@libp2p/logger'
 import multicastDNS from 'multicast-dns'
@@ -24,7 +24,7 @@ export interface MulticastDNSComponents {
   addressManager: AddressManager
 }
 
-class MulticastDNS extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
+class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   public mdns?: multicastDNS.MulticastDNS
 
   private readonly broadcast: boolean

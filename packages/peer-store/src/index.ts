@@ -3,7 +3,7 @@ import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore, type PeerUpdate } from './store.js'
 import type { Libp2pEvents } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
+import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore, Peer, PeerData, PeerQuery } from '@libp2p/interface/peer-store'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -14,7 +14,7 @@ const log = logger('libp2p:peer-store')
 export interface PersistentPeerStoreComponents {
   peerId: PeerId
   datastore: Datastore
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 /**
@@ -33,7 +33,7 @@ export interface PersistentPeerStoreInit {
  */
 export class PersistentPeerStore implements PeerStore {
   private readonly store: PersistentStore
-  private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly events: EventEmitter<Libp2pEvents>
   private readonly peerId: PeerId
 
   constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {

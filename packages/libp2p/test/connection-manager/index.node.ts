@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { start } from '@libp2p/interface/startable'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
@@ -53,7 +53,7 @@ describe('Connection Manager', () => {
       peerStore,
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     })
     const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
@@ -91,7 +91,7 @@ describe('Connection Manager', () => {
       peerStore,
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     })
     const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,

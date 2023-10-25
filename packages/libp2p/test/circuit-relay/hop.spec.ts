@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 5] */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { isStartable } from '@libp2p/interface/startable'
 import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { PeerMap } from '@libp2p/peer-collections'
@@ -38,7 +38,7 @@ interface Node {
   connectionManager: ConnectionManager
   circuitRelayTransport: Transport
   connectionGater: ConnectionGater
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 let peerIndex = 0
@@ -66,7 +66,7 @@ describe('circuit-relay hop protocol', function () {
     ])
     const peerStore = stubInterface<PeerStore>()
 
-    const events = new TypedEventEmitter()
+    const events = new EventEmitter()
     events.addEventListener('connection:open', (evt) => {
       const conn = evt.detail
       connections.set(conn.remotePeer, conn)

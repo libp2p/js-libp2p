@@ -4,7 +4,7 @@
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -41,7 +41,7 @@ void registrar.handle(protocol, (evt) => {
 })
 const upgrader = mockUpgrader({
   registrar,
-  events: new TypedEventEmitter()
+  events: new EventEmitter()
 })
 
 describe('instantiate the transport', () => {

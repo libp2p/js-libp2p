@@ -15,23 +15,7 @@ interface Listener {
  * https://github.com/microsoft/TypeScript/issues/299
  * etc
  */
-export interface TypedEventTarget <EventMap extends Record<string, any>> extends EventTarget {
-  addEventListener<K extends keyof EventMap>(type: K, listener: EventHandler<EventMap[K]> | null, options?: boolean | AddEventListenerOptions): void
-
-  listenerCount (type: string): number
-
-  removeEventListener<K extends keyof EventMap>(type: K, listener?: EventHandler<EventMap[K]> | null, options?: boolean | EventListenerOptions): void
-
-  removeEventListener (type: string, listener?: EventHandler<Event>, options?: boolean | EventListenerOptions): void
-
-  safeDispatchEvent<Detail>(type: keyof EventMap, detail: CustomEventInit<Detail>): boolean
-}
-
-/**
- * An implementation of a typed event target
- * etc
- */
-export class TypedEventEmitter<EventMap extends Record<string, any>> extends EventTarget implements TypedEventTarget<EventMap> {
+export class EventEmitter<EventMap extends Record<string, any>> extends EventTarget {
   #listeners = new Map<any, Listener[]>()
 
   listenerCount (type: string): number {
@@ -114,6 +98,3 @@ class CustomEventPolyfill<T = any> extends Event {
 }
 
 export const CustomEvent = globalThis.CustomEvent ?? CustomEventPolyfill
-
-// TODO: remove this in v1
-export { TypedEventEmitter as EventEmitter }

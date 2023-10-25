@@ -1,5 +1,5 @@
 import type { Stream } from '../connection/index.js'
-import type { TypedEventTarget } from '../events.js'
+import type { EventEmitter } from '../events.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Pushable } from 'it-pushable'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -65,7 +65,7 @@ export interface PubSubRPC {
   messages: PubSubRPCMessage[]
 }
 
-export interface PeerStreams extends TypedEventTarget<PeerStreamEvents> {
+export interface PeerStreams extends EventEmitter<PeerStreamEvents> {
   id: PeerId
   protocol: string
   outboundStream?: Pushable<Uint8ArrayList>
@@ -152,7 +152,7 @@ export interface TopicValidatorFn {
   (peer: PeerId, message: Message): TopicValidatorResult | Promise<TopicValidatorResult>
 }
 
-export interface PubSub<Events extends Record<string, any> = PubSubEvents> extends TypedEventTarget<Events> {
+export interface PubSub<Events extends Record<string, any> = PubSubEvents> extends EventEmitter<Events> {
   /**
    * The global signature policy controls whether or not we sill send and receive
    * signed or unsigned messages.

@@ -1,6 +1,6 @@
 import net from 'node:net'
 import { promisify } from 'node:util'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -22,7 +22,7 @@ describe('maxConnections', () => {
     const transport = tcp({ maxConnections })()
 
     const upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     })
     const listener = transport.createListener({ upgrader })
     // eslint-disable-next-line @typescript-eslint/promise-function-async

@@ -27,7 +27,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 
 function arrayEquals (array1: Uint8Array, array2: Uint8Array): boolean {
@@ -122,8 +122,10 @@ export interface Bucket {
 /**
  * Implementation of a Kademlia DHT k-bucket used for storing
  * contact (peer node) information.
+ *
+ * @extends EventEmitter
  */
-export class KBucket extends TypedEventEmitter<KBucketEvents> {
+export class KBucket extends EventEmitter<KBucketEvents> {
   public localNodeId: Uint8Array
   public root: Bucket
   private readonly numberOfNodesPerKBucket: number

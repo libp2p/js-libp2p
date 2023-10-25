@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { Circuit } from '@multiformats/mafmt'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { ListenerEvents, Listener } from '@libp2p/interface/transport'
@@ -14,7 +14,7 @@ export interface WebRTCPeerListenerInit {
   shutdownController: AbortController
 }
 
-export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implements Listener {
+export class WebRTCPeerListener extends EventEmitter<ListenerEvents> implements Listener {
   private readonly peerId: PeerId
   private readonly transportManager: TransportManager
   private readonly shutdownController: AbortController

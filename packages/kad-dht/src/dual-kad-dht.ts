@@ -1,6 +1,6 @@
 import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
 import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PeerDiscovery, peerDiscovery, type PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
 import { logger } from '@libp2p/logger'
@@ -121,7 +121,7 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements DualKadDHT, PeerDiscovery {
+export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualKadDHT, PeerDiscovery {
   public readonly wan: DefaultKadDHT
   public readonly lan: DefaultKadDHT
   public readonly components: KadDHTComponents

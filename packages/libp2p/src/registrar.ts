@@ -3,7 +3,7 @@ import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
 import { codes } from './errors.js'
 import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
+import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Topology } from '@libp2p/interface/topology'
@@ -19,7 +19,7 @@ export interface RegistrarComponents {
   peerId: PeerId
   connectionManager: ConnectionManager
   peerStore: PeerStore
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 /**

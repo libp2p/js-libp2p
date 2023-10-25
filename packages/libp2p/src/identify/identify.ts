@@ -21,7 +21,7 @@ import { Identify } from './pb/message.js'
 import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { TypedEventTarget } from '@libp2p/interface/events'
+import type { EventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Peer, PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
@@ -70,7 +70,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly maxPushOutgoingStreams: number
   private readonly maxIdentifyMessageSize: number
   private readonly maxObservedAddresses: number
-  private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly events: EventEmitter<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {

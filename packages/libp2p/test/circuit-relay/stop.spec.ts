@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { isStartable } from '@libp2p/interface/startable'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -43,7 +43,7 @@ describe('circuit-relay stop protocol', function () {
       transportManager: stubInterface<TransportManager>(),
       upgrader: stubInterface<Upgrader>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new EventEmitter()
     }
 
     transport = circuitRelayTransport({

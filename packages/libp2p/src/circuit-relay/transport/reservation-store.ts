@@ -1,4 +1,4 @@
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { EventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -32,7 +32,7 @@ export interface RelayStoreComponents {
   connectionManager: ConnectionManager
   transportManager: TransportManager
   peerStore: PeerStore
-  events: TypedEventTarget<Libp2pEvents>
+  events: EventEmitter<Libp2pEvents>
 }
 
 export interface RelayStoreInit {
@@ -76,12 +76,12 @@ export interface ReservationStoreEvents {
   'relay:removed': CustomEvent<PeerId>
 }
 
-export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> implements Startable {
+export class ReservationStore extends EventEmitter<ReservationStoreEvents> implements Startable {
   private readonly peerId: PeerId
   private readonly connectionManager: ConnectionManager
   private readonly transportManager: TransportManager
   private readonly peerStore: PeerStore
-  private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly events: EventEmitter<Libp2pEvents>
   private readonly reserveQueue: PeerJobQueue
   private readonly reservations: PeerMap<RelayEntry>
   private readonly maxDiscoveredRelays: number
