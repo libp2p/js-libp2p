@@ -1,4 +1,4 @@
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -50,7 +50,7 @@ export interface BootstrapComponents {
 /**
  * Emits 'peer' events on a regular interval for each peer in the provided list.
  */
-class Bootstrap extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
+class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   static tag = 'bootstrap'
 
   private timer?: ReturnType<typeof setTimeout>

@@ -1,4 +1,4 @@
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
 import * as lp from 'it-length-prefixed'
@@ -20,7 +20,7 @@ export interface PeerStreamsInit {
 /**
  * Thin wrapper around a peer's inbound / outbound pubsub streams
  */
-export class PeerStreams extends EventEmitter<PeerStreamEvents> {
+export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
   public readonly id: PeerId
   public readonly protocol: string
   /**

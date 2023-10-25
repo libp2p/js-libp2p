@@ -1,5 +1,5 @@
 import { setMaxListeners } from 'events'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
@@ -99,7 +99,7 @@ const defaults = {
   maxOutboundStopStreams: MAX_CONNECTIONS
 }
 
-class CircuitRelayServer extends EventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
+class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
   private readonly registrar: Registrar
   private readonly peerStore: PeerStore
   private readonly addressManager: AddressManager

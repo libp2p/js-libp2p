@@ -1,4 +1,4 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
 import { type Logger, logger } from '@libp2p/logger'
 import pDefer from 'p-defer'
 import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
@@ -39,7 +39,7 @@ export interface SingleKadDHTInit extends KadDHTInit {
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class DefaultKadDHT extends EventEmitter<PeerDiscoveryEvents> implements KadDHT {
+export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements KadDHT {
   public protocol: string
   public routingTable: RoutingTable
   public providers: Providers
