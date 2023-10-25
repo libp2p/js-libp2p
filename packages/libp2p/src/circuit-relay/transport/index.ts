@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { symbol, type Transport, type Listener, type Upgrader } from '@libp2p/interface/transport'
+import { symbol, type Transport, type CreateListenerOptions, type Listener, type Upgrader } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
@@ -296,7 +296,7 @@ class CircuitRelayTransport implements Transport {
   /**
    * Create a listener
    */
-  createListener (): Listener {
+  createListener (options: CreateListenerOptions): Listener {
     return createListener({
       connectionManager: this.connectionManager,
       relayStore: this.reservationStore
