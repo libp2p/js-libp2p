@@ -20,6 +20,20 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+### [0.46.15](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.14...libp2p-v0.46.15) (2023-10-25)
+
+
+### Bug Fixes
+
+* remove relay:removed event listener after relay is removed ([#1998](https://www.github.com/libp2p/js-libp2p/issues/1998)) ([ab2c1f6](https://www.github.com/libp2p/js-libp2p/commit/ab2c1f6731ccfe21a39482bdab217a8abd3f027b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/kad-dht bumped from ^10.0.9 to ^10.0.10
+
 ### [0.46.14](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.13...libp2p-v0.46.14) (2023-10-10)
 
 
