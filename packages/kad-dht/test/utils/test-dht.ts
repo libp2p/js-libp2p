@@ -1,4 +1,4 @@
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import { logger } from '@libp2p/logger'
@@ -29,7 +29,7 @@ export class TestDHT {
   }
 
   async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<DefaultDualKadDHT> {
-    const events = new EventEmitter<Libp2pEvents>()
+    const events = new TypedEventEmitter<Libp2pEvents>()
     const components: KadDHTComponents = {
       peerId: await createPeerId(),
       datastore: new MemoryDatastore(),

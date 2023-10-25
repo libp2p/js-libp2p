@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PubSub, type Message, type StrictNoSign, type StrictSign, type PubSubInit, type PubSubEvents, type PeerStreams, type PubSubRPCMessage, type PubSubRPC, type PubSubRPCSubscription, type SubscriptionChangeData, type PublishResult, type TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface/pubsub'
 import { logger } from '@libp2p/logger'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
@@ -28,7 +28,7 @@ export interface PubSubComponents {
  * PubSubBaseProtocol handles the peers and connections logic for pubsub routers
  * and specifies the API that pubsub routers should have.
  */
-export abstract class PubSubBaseProtocol<Events extends Record<string, any> = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events> {
+export abstract class PubSubBaseProtocol<Events extends Record<string, any> = PubSubEvents> extends TypedEventEmitter<Events> implements PubSub<Events> {
   public started: boolean
   /**
    * Map of topics to which peers are subscribed to

@@ -1,4 +1,4 @@
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import {
   RELAY_RENDEZVOUS_NS,
@@ -32,7 +32,7 @@ export interface RelayDiscoveryComponents {
  * ReservationManager automatically makes a circuit v2 reservation on any connected
  * peers that support the circuit v2 HOP protocol.
  */
-export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implements Startable {
+export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> implements Startable {
   private readonly peerId: PeerId
   private readonly peerStore: PeerStore
   private readonly contentRouting: ContentRouting

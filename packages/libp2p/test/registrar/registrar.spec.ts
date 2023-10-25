@@ -2,7 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
 import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -43,7 +43,7 @@ describe('registrar', () => {
 
   describe('errors', () => {
     beforeEach(() => {
-      const events = new EventEmitter()
+      const events = new TypedEventEmitter()
       components = defaultComponents({
         peerId,
         events,
@@ -81,13 +81,13 @@ describe('registrar', () => {
     let peerId: PeerId
     let connectionManager: StubbedInstance<ConnectionManager>
     let peerStore: StubbedInstance<PeerStore>
-    let events: EventEmitter<Libp2pEvents>
+    let events: TypedEventTarget<Libp2pEvents>
 
     beforeEach(async () => {
       peerId = await createEd25519PeerId()
       connectionManager = stubInterface<ConnectionManager>()
       peerStore = stubInterface<PeerStore>()
-      events = new EventEmitter<Libp2pEvents>()
+      events = new TypedEventEmitter<Libp2pEvents>()
 
       registrar = new DefaultRegistrar({
         peerId,
