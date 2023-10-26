@@ -19,29 +19,29 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
 
-      test-examples:
-        name: Test example ${{ matrix.example.name }}
-        runs-on: ubuntu-latest
-        continue-on-error: true
-        strategy:
-          matrix:
-            example:
-              - name: js-libp2p-example-chat
-                repo: https://github.com/libp2p/js-libp2p-example-chat.git
-                deps:
-                  - '@libp2p/peer-id-factory@/home/runner/work/js-libp2p/js-libp2p/packages/peer-id-factory'
-                  - '@libp2p/tcp@/home/runner/work/js-libp2p/js-libp2p/packages/transport-tcp'
-                  - '@libp2p/websockets@/home/runner/work/js-libp2p/js-libp2p/packages/transport-websockets'
-                  - 'libp2p@/home/runner/work/js-libp2p/js-libp2p/packages/libp2p'
-              - name: js-libp2p-example-circuit-relay
-                repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
-                deps:
-                  - '@libp2p/websockets@$PWD/packages/transport-websockets'
-                  - 'libp2p@$PWD/packages/libp2p'
-        steps:
-          - uses: actions/checkout@v3
-          - uses: actions/setup-node@v3
-            with:
-              node-version: lts/*
-          - uses: ipfs/aegir/actions/cache-node-modules@master
-          - run: npx xvfb-maybe npm run test:external -- ${{ matrix.example.repo }} --deps '${{ join(matrix.example.deps, ',') }}'
+  test-examples:
+    name: Test example ${{ matrix.example.name }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        example:
+          - name: js-libp2p-example-chat
+            repo: https://github.com/libp2p/js-libp2p-example-chat.git
+            deps:
+              - '@libp2p/peer-id-factory@/home/runner/work/js-libp2p/js-libp2p/packages/peer-id-factory'
+              - '@libp2p/tcp@/home/runner/work/js-libp2p/js-libp2p/packages/transport-tcp'
+              - '@libp2p/websockets@/home/runner/work/js-libp2p/js-libp2p/packages/transport-websockets'
+              - 'libp2p@/home/runner/work/js-libp2p/js-libp2p/packages/libp2p'
+          - name: js-libp2p-example-circuit-relay
+            repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
+            deps:
+              - '@libp2p/websockets@$PWD/packages/transport-websockets'
+              - 'libp2p@$PWD/packages/libp2p'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - run: npx xvfb-maybe npm run test:external -- ${{ matrix.example.repo }} --deps '${{ join(matrix.example.deps, ',') }}'
