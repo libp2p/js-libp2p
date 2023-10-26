@@ -38,10 +38,15 @@ jobs:
             deps:
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
+          - name: js-libp2p-example-connection-encryption
+            repo: https://github.com/libp2p/js-libp2p-example-connection-encryption.git
+            deps:
+              - '@libp2p/tcp@/home/runner/work/js-libp2p/js-libp2p/packages/transport-tcp'
+              - 'libp2p@$PWD/packages/libp2p'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npx xvfb-maybe npm run test:external -- ${{ matrix.example.repo }} --deps '${{ join(matrix.example.deps, ',') }}'
+      - run: npx xvfb-maybe aegir test-external ${{ matrix.example.repo }} --deps "${{ join(matrix.example.deps, ',') }}"
