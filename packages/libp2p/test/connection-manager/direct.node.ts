@@ -6,7 +6,7 @@ import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { type Connection, type ConnectionProtector, isConnection } from '@libp2p/interface/connection'
 import { AbortError } from '@libp2p/interface/errors'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
@@ -58,7 +58,7 @@ describe('dialing (direct, TCP)', () => {
       createEd25519PeerId()
     ])
 
-    const remoteEvents = new EventEmitter()
+    const remoteEvents = new TypedEventEmitter()
     remoteComponents = defaultComponents({
       peerId: remotePeerId,
       events: remoteEvents,
@@ -78,7 +78,7 @@ describe('dialing (direct, TCP)', () => {
     remoteTM = remoteComponents.transportManager = new DefaultTransportManager(remoteComponents)
     remoteTM.add(tcp()())
 
-    const localEvents = new EventEmitter()
+    const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
       peerId: localPeerId,
       events: localEvents,

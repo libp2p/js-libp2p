@@ -35,7 +35,7 @@
  */
 
 import type { Limit } from './pb/index.js'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventEmitter } from '@libp2p/interface/events'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -51,7 +51,7 @@ export interface CircuitRelayServiceEvents {
   'relay:advert:error': CustomEvent<Error>
 }
 
-export interface CircuitRelayService extends EventEmitter<CircuitRelayServiceEvents> {
+export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServiceEvents> {
   reservations: PeerMap<RelayReservation>
 }
 

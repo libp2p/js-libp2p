@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -18,7 +18,7 @@ export interface CircuitRelayTransportListenerComponents {
   relayStore: ReservationStore
 }
 
-class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> implements Listener {
+class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly connectionManager: ConnectionManager
   private readonly relayStore: ReservationStore
   private readonly listeningAddrs: PeerMap<Multiaddr[]>
@@ -31,9 +31,11 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.listeningAddrs = new PeerMap()
 
     // remove listening addrs when a relay is removed
-    this.relayStore.addEventListener('relay:removed', (evt) => {
-      this.#removeRelayPeer(evt.detail)
-    })
+    this.relayStore.addEventListener('relay:removed', this._onRemoveRelayPeer)
+  }
+
+  _onRemoveRelayPeer = (evt: CustomEvent<PeerId>): void => {
+    this.#removeRelayPeer(evt.detail)
   }
 
   async listen (addr: Multiaddr): Promise<void> {
@@ -100,6 +102,8 @@ class CircuitRelayTransportListener extends EventEmitter<ListenerEvents> impleme
     this.listeningAddrs.delete(peerId)
 
     if (had) {
+      log.trace('removing relay event listener for peer %p', peerId)
+      this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
       // Announce listen addresses change
       this.safeDispatchEvent('close', {})
     }

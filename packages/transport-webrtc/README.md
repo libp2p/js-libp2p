@@ -12,7 +12,6 @@
 - [Install](#install)
   - [Browser `<script>` tag](#browser-script-tag)
 - [Usage](#usage)
-- [Examples](#examples)
 - [Interfaces](#interfaces)
   - [Transport](#transport)
   - [Connection](#connection)
@@ -66,10 +65,6 @@ const response = await pipe([fromString(message)], stream, async (source) => awa
 const responseDecoded = toString(response.slice(0, response.length))
 ```
 
-## Examples
-
-Examples can be found in the [examples folder](examples/README.md).
-
 ## Interfaces
 
 ### Transport
@@ -78,8 +73,7 @@ Examples can be found in the [examples folder](examples/README.md).
 
 Browsers can usually only `dial`, but `listen` is supported in the WebRTC
 transport when paired with another listener like CircuitV2, where you listen on
-a relayed connection. Take a look at [index.js](examples/browser-to-browser/index.js) for
-an example.
+a relayed connection.
 
 ### Connection
 

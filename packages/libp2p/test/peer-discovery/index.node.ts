@@ -2,7 +2,7 @@
 
 import { bootstrap } from '@libp2p/bootstrap'
 import { randomBytes } from '@libp2p/crypto'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
@@ -22,7 +22,7 @@ import type { KadDHT } from '@libp2p/kad-dht'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
-class TestPeerDiscovery extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
+class TestPeerDiscovery extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
   get [peerDiscovery] (): PeerDiscovery {
     return this
   }

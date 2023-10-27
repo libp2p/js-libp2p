@@ -13,7 +13,7 @@
   },
   "private": true,
   "scripts": {
-    "reset": "aegir run clean && aegir clean interop/node_modules examples/*/node_modules packages/*/node_modules node_modules package-lock.json packages/*/package-lock.json examples/*/package-lock.json interop/*/package-lock.json",
+    "reset": "aegir run clean && aegir clean interop/node_modules packages/*/node_modules node_modules package-lock.json packages/*/package-lock.json interop/*/package-lock.json",
     "test": "aegir run test",
     "test:node": "aegir run test:node",
     "test:chrome": "aegir run test:chrome",
@@ -21,10 +21,8 @@
     "test:firefox": "aegir run test:firefox",
     "test:firefox-webworker": "aegir run test:firefox-webworker",
     "test:electron-main": "aegir run test:electron-main",
-    "test:external": "aegir run test:external",
     "test:cli": "aegir run test:cli",
     "test:interop": "aegir run test:interop",
-    "test:example": "aegir run test:example",
     "coverage": "aegir run coverage",
     "build": "aegir run build",
     "clean": "aegir run clean",
@@ -33,8 +31,8 @@
     "release": "run-s build docs:no-publish npm:release docs",
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
-    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude examples/auto-relay --exclude examples/chat --exclude examples/connection-encryption --exclude examples/delegated-routing --exclude examples/discovery-mechanisms --exclude examples/echo --exclude examples/peer-and-content-routing --exclude examples/pnet --exclude examples/protocol-and-stream-muxing --exclude examples/pubsub --exclude examples/transports --exclude doc",
-    "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude interop --exclude examples/auto-relay --exclude examples/chat --exclude examples/connection-encryption --exclude examples/delegated-routing --exclude examples/discovery-mechanisms --exclude examples/echo --exclude examples/peer-and-content-routing --exclude examples/pnet --exclude examples/protocol-and-stream-muxing --exclude examples/pubsub --exclude examples/transports --exclude doc"
+    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude doc",
+    "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude interop --exclude doc"
   },
   "devDependencies": {
     "aegir": "^41.0.2"
@@ -47,7 +45,6 @@
   },
   "workspaces": [
     "doc",
-    "examples/*",
     "interop",
     "packages/*"
   ]

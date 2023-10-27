@@ -1,4 +1,4 @@
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import pRetry from 'p-retry'
 import { codes } from '../../errors.js'
@@ -31,7 +31,7 @@ export interface AdvertServiceEvents {
   'advert:error': CustomEvent<Error>
 }
 
-export class AdvertService extends EventEmitter<AdvertServiceEvents> implements Startable {
+export class AdvertService extends TypedEventEmitter<AdvertServiceEvents> implements Startable {
   private readonly contentRouting: ContentRouting
   private timeout?: any
   private started: boolean

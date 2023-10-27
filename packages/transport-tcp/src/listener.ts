@@ -1,6 +1,6 @@
 import net from 'net'
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
@@ -71,7 +71,7 @@ type Status = { code: TCPListenerStatusCode.INACTIVE } | {
   netConfig: NetConfig
 }
 
-export class TCPListener extends EventEmitter<ListenerEvents> implements Listener {
+export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly server: net.Server
   /** Keep track of open connections to destroy in case of timeout */
   private readonly connections = new Set<MultiaddrConnection>()

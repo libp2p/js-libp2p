@@ -86,9 +86,7 @@ describe('validator', () => {
         }
       }
       await expect(validator.verifyRecord(validators, rec))
-        .to.eventually.rejectedWith(
-          /Invalid record keytype/
-        )
+        .to.eventually.rejected.with.property('code', 'ERR_INVALID_RECORD_KEY_TYPE')
     })
   })
 
