@@ -169,7 +169,6 @@ jobs:
       - run: npm run test:interop -- --bail
 
   transport-interop:
-    needs: build
     runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@v3
