@@ -181,6 +181,10 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
+        with:
+          directories: |
+            ./interop/dist
+            ./interop/node_modules
       - name: Build images
         run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
