@@ -48,8 +48,8 @@ jobs:
       - run: npm run --if-present test:node
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: node
+          files: .coverage/*,packages/*/.coverage/*
 
   test-chrome:
     needs: build
@@ -63,8 +63,8 @@ jobs:
       - run: npm run --if-present test:chrome
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: chrome
+          files: .coverage/*,packages/*/.coverage/*
 
   test-chrome-webworker:
     needs: build
@@ -78,8 +78,8 @@ jobs:
       - run: npm run --if-present test:chrome-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: chrome-webworker
+          files: .coverage/*,packages/*/.coverage/*
 
   test-firefox:
     needs: build
@@ -93,8 +93,8 @@ jobs:
       - run: npm run --if-present test:firefox
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: firefox
+          files: .coverage/*,packages/*/.coverage/*
 
   test-firefox-webworker:
     needs: build
@@ -108,8 +108,8 @@ jobs:
       - run: npm run --if-present test:firefox-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: firefox-webworker
+          files: .coverage/*,packages/*/.coverage/*
 
   test-webkit:
     needs: build
@@ -124,8 +124,8 @@ jobs:
       - run: npm run --if-present test:webkit
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: webkit
+          files: .coverage/*,packages/*/.coverage/*
 
   test-electron-main:
     needs: build
@@ -139,8 +139,8 @@ jobs:
       - run: npx xvfb-maybe npm run --if-present test:electron-main
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: electron-main
+          files: .coverage/*,packages/*/.coverage/*
 
   test-electron-renderer:
     needs: build
@@ -154,8 +154,8 @@ jobs:
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: electron-renderer
+          files: .coverage/*,packages/*/.coverage/*
 
   test-interop:
     needs: build
