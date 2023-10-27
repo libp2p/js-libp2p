@@ -78,7 +78,7 @@ We've come a long way, but this project is still in Alpha, lots of development i
 The documentation in the master branch may contain changes from a pre-release.
 If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
-**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples folder](/examples).
+**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples repo](https://github.com/libp2p/js-libp2p-examples).
 
 **Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
 
@@ -123,7 +123,7 @@ If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md
 
 ### Tutorials and Examples
 
-You can find multiple examples on the [examples folder](./examples) that will guide you through using libp2p for several scenarios.
+You can find multiple examples on the [examples repo](https://github.com/libp2p/js-libp2p-examples) that will guide you through using libp2p for several scenarios.
 
 ## Development
 
