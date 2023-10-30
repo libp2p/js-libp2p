@@ -102,7 +102,7 @@ Please be aware that all interactions related to libp2p are subject to the IPFS 
 
 Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
-This module leans heavily on (Aegir)\[<https://github.com/ipfs/aegir>] for most of the `package.json` scripts.
+This module leans heavily on [Aegir](https://github.com/ipfs/aegir) for most of the `package.json` scripts.
 
 ### Build
 
