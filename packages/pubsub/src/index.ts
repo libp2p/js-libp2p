@@ -1,3 +1,18 @@
+/**
+ * @packageDocumentation
+ *
+ * A set of components to be extended in order to create a pubsub implementation.
+ *
+ * @example
+ * ```javascript
+ * import { PubSubBaseProtocol } from '@libp2p/pubsub'
+ *
+ * class MyPubsubImplementation extends PubSubBaseProtocol {
+ *   // .. extra methods here
+ * }
+ * ```
+ */
+
 import { CodeError } from '@libp2p/interface/errors'
 import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PubSub, type Message, type StrictNoSign, type StrictSign, type PubSubInit, type PubSubEvents, type PeerStreams, type PubSubRPCMessage, type PubSubRPC, type PubSubRPCSubscription, type SubscriptionChangeData, type PublishResult, type TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface/pubsub'

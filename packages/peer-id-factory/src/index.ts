@@ -1,3 +1,26 @@
+/**
+ * @packageDocumentation
+ *
+ * Generate, import, and export PeerIDs, for use with [IPFS](https://github.com/ipfs/ipfs).
+ *
+ * A Peer ID is the SHA-256 [multihash](https://github.com/multiformats/multihash) of a public key.
+ *
+ * The public key is a base64 encoded string of a protobuf containing an RSA DER buffer. This uses a node buffer to pass the base64 encoded public key protobuf to the multihash for ID generation.
+ *
+ * @example
+ *
+ * ```JavaScript
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ *
+ * const peerId = await createEd25519PeerId()
+ * console.log(id.toString())
+ * ```
+ *
+ * ```bash
+ * 12D3KooWRm8J3iL796zPFi2EtGGtUJn58AG67gcqzMFHZnnsTzqD
+ * ```
+ */
+
 import { generateKeyPair, marshalPrivateKey, unmarshalPrivateKey, marshalPublicKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
