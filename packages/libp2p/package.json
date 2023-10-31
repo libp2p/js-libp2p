@@ -72,10 +72,6 @@
       "types": "./dist/src/ping/index.d.ts",
       "import": "./dist/src/ping/index.js"
     },
-    "./pnet": {
-      "types": "./dist/src/pnet/index.d.ts",
-      "import": "./dist/src/pnet/index.js"
-    },
     "./upnp-nat": {
       "types": "./dist/src/upnp-nat/index.d.ts",
       "import": "./dist/src/upnp-nat/index.js"
@@ -157,8 +153,7 @@
     "rate-limiter-flexible": "^3.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6",
-    "wherearewe": "^2.0.1",
-    "xsalsa20": "^1.1.0"
+    "wherearewe": "^2.0.1"
   },
   "devDependencies": {
     "@chainsafe/libp2p-gossipsub": "^10.0.0",
@@ -175,7 +170,6 @@
     "@libp2p/mplex": "^9.0.9",
     "@libp2p/tcp": "^8.0.10",
     "@libp2p/websockets": "^7.0.10",
-    "@types/xsalsa20": "^1.1.0",
     "aegir": "^41.0.2",
     "execa": "^8.0.1",
     "go-libp2p": "^1.1.1",
