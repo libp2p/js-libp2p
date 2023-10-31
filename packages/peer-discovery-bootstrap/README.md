@@ -1,5 +1,3 @@
-# @libp2p/bootstrap <!-- omit in toc -->
-
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,37 +5,11 @@
 
 > Peer discovery via a list of bootstrap peers
 
-## Table of contents <!-- omit in toc -->
+# About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [Usage](#usage)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribution](#contribution)
+The configured bootstrap peers will be discovered after the configured timeout. This will ensure there are some peers in the peer store for the node to use to discover other peers.
 
-## Install
-
-```console
-$ npm i @libp2p/bootstrap
-```
-
-### Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `Libp2pBootstrap` in the global namespace.
-
-```html
-<script src="https://unpkg.com/@libp2p/bootstrap/dist/index.min.js"></script>
-```
-
-## Usage
-
-The configured bootstrap peers will be discovered after the configured timeout. This will ensure
-there are some peers in the peer store for the node to use to discover other peers.
-
-They will be tagged with a tag with the name `'bootstrap'` tag, the value `50` and it will expire
-after two minutes which means the nodes connections may be closed if the maximum number of
-connections is reached.
+They will be tagged with a tag with the name `'bootstrap'` tag, the value `50` and it will expire after two minutes which means the nodes connections may be closed if the maximum number of connections is reached.
 
 Clients that need constant connections to bootstrap nodes (e.g. browsers) can set the TTL to `Infinity`.
 
@@ -73,31 +45,38 @@ let options = {
   ]
 }
 
-async function start () {
-  let libp2p = await createLibp2p(options)
+const libp2p = await createLibp2p(options)
 
-  libp2p.on('peer:discovery', function (peerId) {
-    console.log('found peer: ', peerId.toB58String())
-  })
-
-  await libp2p.start()
-
-}
-
-start()
+libp2p.on('peer:discovery', function (peerId) {
+  console.log('found peer: ', peerId.toB58String())
+})
 ```
 
-## API Docs
+# Install
+
+```console
+$ npm i @libp2p/bootstrap
+```
+
+## Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `Libp2pBootstrap` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@libp2p/bootstrap/dist/index.min.js"></script>
+```
+
+# API Docs
 
 - <https://libp2p.github.io/js-libp2p/modules/_libp2p_bootstrap.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribution
+# Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
