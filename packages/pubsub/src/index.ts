@@ -213,6 +213,13 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   protected _onPeerConnected (peerId: PeerId, conn: Connection): void {
     log('connected %p', peerId)
 
+    const existing = this.peers.get(peerId)
+
+    // If peer streams already exists, do nothing
+    if (existing != null) {
+      return
+    }
+
     void Promise.resolve().then(async () => {
       try {
         const stream = await conn.newStream(this.multicodecs)
