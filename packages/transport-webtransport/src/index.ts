@@ -1,3 +1,26 @@
+/**
+ * @packageDocumentation
+ *
+ * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
+ *
+ * @example
+ *
+ * ```js
+ * import { createLibp2pNode } from 'libp2p'
+ * import { webTransport } from '@libp2p/webtransport'
+ * import { noise } from 'libp2p-noise'
+ *
+ * const node = await createLibp2pNode({
+ *   transports: [
+ *     webTransport()
+ *   ],
+ *   connectionEncryption: [
+ *     noise()
+ *   ]
+ * })
+ * ```
+ */
+
 import { noise } from '@chainsafe/libp2p-noise'
 import { type Transport, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'

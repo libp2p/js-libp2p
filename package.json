@@ -31,8 +31,8 @@
     "release": "run-s build docs:no-publish npm:release docs",
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
-    "docs": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs -- --exclude interop --exclude doc",
-    "docs:no-publish": "NODE_OPTIONS=--max_old_space_size=8192 aegir docs --publish false -- --exclude interop --exclude doc"
+    "docs": "aegir docs",
+    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc"
   },
   "devDependencies": {
     "aegir": "^41.0.2"

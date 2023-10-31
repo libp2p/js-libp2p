@@ -1,5 +1,3 @@
-# @libp2p/multistream-select <!-- omit in toc -->
-
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,38 +5,11 @@
 
 > JavaScript implementation of multistream-select
 
-## Table of contents <!-- omit in toc -->
+# About
 
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [Background](#background)
-  - [What is `multistream-select`?](#what-is-multistream-select)
-  - [Select a protocol flow](#select-a-protocol-flow)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribution](#contribution)
+multistream-select is protocol multiplexing per connection/stream. [Full spec here](https://github.com/multiformats/multistream-select)
 
-## Install
-
-```console
-$ npm i @libp2p/multistream-select
-```
-
-### Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `Libp2pMultistreamSelect` in the global namespace.
-
-```html
-<script src="https://unpkg.com/@libp2p/multistream-select/dist/index.min.js"></script>
-```
-
-## Background
-
-### What is `multistream-select`?
-
-TLDR; multistream-select is protocol multiplexing per connection/stream. [Full spec here](https://github.com/multiformats/multistream-select)
-
-### Select a protocol flow
+## Select a protocol flow
 
 The caller will send "interactive" messages, expecting for some acknowledgement from the callee, which will "select" the handler for the desired and supported protocol:
 
@@ -54,17 +25,31 @@ The caller will send "interactive" messages, expecting for some acknowledgement 
 > <dht-message>
 ```
 
-## API Docs
+# Install
+
+```console
+$ npm i @libp2p/multistream-select
+```
+
+## Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `Libp2pMultistreamSelect` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@libp2p/multistream-select/dist/index.min.js"></script>
+```
+
+# API Docs
 
 - <https://libp2p.github.io/js-libp2p/modules/_libp2p_multistream_select.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribution
+# Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
