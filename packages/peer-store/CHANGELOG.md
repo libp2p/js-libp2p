@@ -11,6 +11,40 @@
 
 * **dev:** bump p-event from 5.0.1 to 6.0.0 ([#89](https://github.com/libp2p/js-libp2p-peer-store/issues/89)) ([9d96700](https://github.com/libp2p/js-libp2p-peer-store/commit/9d9670048b5e8feeac656cba92cb2e513e4a77be))
 
+### [9.0.7](https://www.github.com/libp2p/js-libp2p/compare/peer-store-v9.0.6...peer-store-v9.0.7) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-collections bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/peer-record bumped from ^6.0.6 to ^6.0.7
+
+### [9.0.6](https://www.github.com/libp2p/js-libp2p/compare/peer-store-v9.0.5...peer-store-v9.0.6) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/peer-collections bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/peer-id bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/peer-id-factory bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-record bumped from ^6.0.5 to ^6.0.6
+
 ### [9.0.5](https://www.github.com/libp2p/js-libp2p/compare/peer-store-v9.0.4...peer-store-v9.0.5) (2023-09-15)
 
 

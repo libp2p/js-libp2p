@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -18,7 +18,7 @@ const announceAddreses = ['/dns4/peer.io']
 describe('Address Manager', () => {
   let peerId: PeerId
   let peerStore: StubbedInstance<PeerStore>
-  let events: EventEmitter<Libp2pEvents>
+  let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
@@ -26,7 +26,7 @@ describe('Address Manager', () => {
       // @ts-expect-error incorrect return type
       patch: Promise.resolve({})
     })
-    events = new EventEmitter()
+    events = new TypedEventEmitter()
   })
 
   it('should not need any addresses', () => {

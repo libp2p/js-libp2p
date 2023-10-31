@@ -5,6 +5,32 @@
 
 * move prom-client to deps ([#32](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/32)) ([73acad0](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/73acad0a20a9a0ad024cd47a53f154668dbae77b))
 
+### [2.0.9](https://www.github.com/libp2p/js-libp2p/compare/prometheus-metrics-v2.0.8...prometheus-metrics-v2.0.9) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+
+### [2.0.8](https://www.github.com/libp2p/js-libp2p/compare/prometheus-metrics-v2.0.7...prometheus-metrics-v2.0.8) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/peer-id-factory bumped from ^3.0.4 to ^3.0.5
+
 ### [2.0.7](https://www.github.com/libp2p/js-libp2p/compare/prometheus-metrics-v2.0.6...prometheus-metrics-v2.0.7) (2023-10-01)
 
 

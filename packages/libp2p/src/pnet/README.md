@@ -8,7 +8,6 @@ js-libp2p-pnet <!-- omit in toc -->
 ## Table of Contents <!-- omit in toc -->
 
 - [Usage](#usage)
-- [Examples](#examples)
 - [Private Shared Keys](#private-shared-keys)
 - [PSK Generation](#psk-generation)
     - [From a module using libp2p](#from-a-module-using-libp2p)
@@ -31,9 +30,6 @@ const node = await createLibp2p({
   })
 })
 ```
-
-## Examples
-[Private Networks with IPFS](../../examples/pnet-ipfs)
 
 ## Private Shared Keys
 

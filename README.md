@@ -43,7 +43,7 @@ This project has been used in production for years in Ethereum, IPFS, and more. 
 The documentation in the master branch may contain changes from a pre-release.
 If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
-**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples folder](/examples).
+**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
 
 **Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
 
@@ -114,22 +114,11 @@ If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md
 
 ### Tutorials and Examples
 
-You can find multiple examples on the [examples folder](./examples) that will guide you through using libp2p for several scenarios.
+You can find multiple examples on the [examples repo](https://github.com/libp2p/js-libp2p-examples) that will guide you through using libp2p for several scenarios.
 
 ## Structure
 
 - [`/doc`](./doc) Docs for libp2p
-- [`/examples/auto-relay`](./examples/auto-relay) Shows how to configure relayed connections
-- [`/examples/chat`](./examples/chat) An example chat app using libp2p
-- [`/examples/connection-encryption`](./examples/connection-encryption) An example of how to configure connection encrypters
-- [`/examples/delegated-routing`](./examples/delegated-routing) How to configure libp2p delegated routers
-- [`/examples/discovery-mechanisms`](./examples/discovery-mechanisms) How to configure peer discovery mechanisms
-- [`/examples/echo`](./examples/echo) An example echo app
-- [`/examples/peer-and-content-routing`](./examples/peer-and-content-routing) How to use peer and content routing
-- [`/examples/pnet`](./examples/pnet) How to configure a libp2p private network
-- [`/examples/protocol-and-stream-muxing`](./examples/protocol-and-stream-muxing) How to use multiplex protocols streams
-- [`/examples/pubsub`](./examples/pubsub) An example using libp2p pubsub
-- [`/examples/transports`](./examples/transports) An example using different types of libp2p transport
 - [`/interop`](./interop) Multidimension Interop Test
 - [`/packages/crypto`](./packages/crypto) Crypto primitives for libp2p
 - [`/packages/interface`](./packages/interface) The interface implemented by a libp2p node

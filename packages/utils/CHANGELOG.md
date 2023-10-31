@@ -11,6 +11,26 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#100](https://github.com/libp2p/js-libp2p-utils/issues/100)) ([da6547c](https://github.com/libp2p/js-libp2p-utils/commit/da6547cdd073ba1a4225be5a419c6776c4ebe6f1))
 
+### [4.0.5](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.4...utils-v4.0.5) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+
+### [4.0.4](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.3...utils-v4.0.4) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+
 ### [4.0.3](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.2...utils-v4.0.3) (2023-09-10)
 
 
