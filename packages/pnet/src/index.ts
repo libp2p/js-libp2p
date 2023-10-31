@@ -7,7 +7,7 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { preSharedKey, generateKey } from 'libp2p/pnet'
+ * import { preSharedKey, generateKey } from '@libp2p/pnet'
  *
  * // Create a Uint8Array and write the swarm key to it
  * const swarmKey = new Uint8Array(95)
@@ -20,6 +20,40 @@
  *   })
  * })
  * ```
+ *
+ * ## Private Shared Keys
+ *
+ * Private Shared Keys are expected to be in the following format:
+ *
+ * ```
+ * /key/swarm/psk/1.0.0/
+ * /base16/
+ * dffb7e3135399a8b1612b2aaca1c36a3a8ac2cd0cca51ceeb2ced87d308cac6d
+ * ```
+ *
+ * ## PSK Generation
+ *
+ * A utility method has been created to generate a key for your private network. You can use one of the methods below to generate your key.
+ *
+ * ### From a module using libp2p
+ *
+ * If you have a module locally that depends on libp2p, you can run the following from that project, assuming the node_modules are installed.
+ *
+ * ```console
+ * node -e "import('@libp2p/pnet').then(({ generateKey }) => generateKey(process.stdout))" > swarm.key
+ * ```
+ *
+ * ### Programmatically
+ *
+ * ```js
+ * import fs from 'fs'
+ * import { generateKey } from '@libp2p/pnet'
+ *
+ * const swarmKey = new Uint8Array(95)
+ * generateKey(swarmKey)
+ *
+ * fs.writeFileSync('swarm.key', swarmKey)
+ * ```
  */
 
 import { randomBytes } from '@libp2p/crypto'
@@ -29,7 +63,6 @@ import { handshake } from 'it-handshake'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
-import { codes } from '../errors.js'
 import {
   createBoxStream,
   createUnboxStream,
@@ -81,7 +114,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     }
 
     if (connection == null) {
-      throw new CodeError(Errors.NO_HANDSHAKE_CONNECTION, codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError(Errors.NO_HANDSHAKE_CONNECTION, Errors.ERR_INVALID_PARAMETERS)
     }
 
     // Exchange nonces
@@ -94,7 +127,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     const result = await shake.reader.next(NONCE_LENGTH)
 
     if (result.value == null) {
-      throw new CodeError(Errors.STREAM_ENDED, codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError(Errors.STREAM_ENDED, Errors.ERR_INVALID_PARAMETERS)
     }
 
     const remoteNonce = result.value.slice()
