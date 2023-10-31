@@ -1,3 +1,5 @@
+import { setMaxListeners as nodeSetMaxListeners } from 'events'
+
 export interface EventCallback<EventType> { (evt: EventType): void }
 export interface EventObject<EventType> { handleEvent: EventCallback<EventType> }
 export type EventHandler<EventType> = EventCallback<EventType> | EventObject<EventType>
@@ -117,3 +119,12 @@ export const CustomEvent = globalThis.CustomEvent ?? CustomEventPolyfill
 
 // TODO: remove this in v1
 export { TypedEventEmitter as EventEmitter }
+
+// create a setMaxListeners that doesn't break browser usage
+export const setMaxListeners: typeof nodeSetMaxListeners = (n, ...eventTargets) => {
+  try {
+    nodeSetMaxListeners(n, ...eventTargets)
+  } catch {
+    // swallow error, gulp
+  }
+}

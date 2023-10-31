@@ -1,5 +1,5 @@
-import { setMaxListeners } from 'events'
 import { AbortError, CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { type Multiaddr, type Resolver, resolvers } from '@multiformats/multiaddr'
@@ -96,10 +96,7 @@ export class DialQueue {
     this.transportManager = components.transportManager
     this.shutDownController = new AbortController()
 
-    try {
-      // This emitter gets listened to a lot
-      setMaxListeners?.(Infinity, this.shutDownController.signal)
-    } catch {}
+    setMaxListeners(Infinity, this.shutDownController.signal)
 
     this.pendingDialCount = components.metrics?.registerMetric('libp2p_dialler_pending_dials')
     this.inProgressDialCount = components.metrics?.registerMetric('libp2p_dialler_in_progress_dials')

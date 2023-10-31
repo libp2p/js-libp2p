@@ -19,8 +19,8 @@
  * ```
  */
 
-import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -164,10 +164,7 @@ class DefaultAutoNATService implements Startable {
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
+    setMaxListeners(Infinity, signal)
 
     const ourHosts = this.components.addressManager.getAddresses()
       .map(ma => ma.toOptions().host)
@@ -432,10 +429,7 @@ class DefaultAutoNATService implements Startable {
 
     // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
     // appearing in the console
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
+    setMaxListeners(Infinity, signal)
 
     const self = this
 
