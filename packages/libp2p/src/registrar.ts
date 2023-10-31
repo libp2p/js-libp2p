@@ -2,7 +2,7 @@ import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
 import { codes } from './errors.js'
-import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, PeerUpdate } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -37,9 +37,11 @@ export class DefaultRegistrar implements Registrar {
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onPeerUpdate = this._onPeerUpdate.bind(this)
+    this._onPeerIdentify = this._onPeerIdentify.bind(this)
 
     this.components.events.addEventListener('peer:disconnect', this._onDisconnect)
     this.components.events.addEventListener('peer:update', this._onPeerUpdate)
+    this.components.events.addEventListener('peer:identify', this._onPeerIdentify)
   }
 
   getProtocols (): string[] {
@@ -181,12 +183,12 @@ export class DefaultRegistrar implements Registrar {
   }
 
   /**
-   * Check if a new peer supports the multicodecs for this topology
+   * When a peer is updated, if they have removed supported protocols notify any
+   * topologies interested in the removed protocols.
    */
   _onPeerUpdate (evt: CustomEvent<PeerUpdate>): void {
     const { peer, previous } = evt.detail
     const removed = (previous?.protocols ?? []).filter(protocol => !peer.protocols.includes(protocol))
-    const added = peer.protocols.filter(protocol => !(previous?.protocols ?? []).includes(protocol))
 
     for (const protocol of removed) {
       const topologies = this.topologies.get(protocol)
@@ -200,8 +202,18 @@ export class DefaultRegistrar implements Registrar {
         topology.onDisconnect?.(peer.id)
       }
     }
+  }
 
-    for (const protocol of added) {
+  /**
+   * After identify has completed and we have received the list of supported
+   * protocols, notify any topologies interested in those protocols.
+   */
+  _onPeerIdentify (evt: CustomEvent<IdentifyResult>): void {
+    const protocols = evt.detail.protocols
+    const connection = evt.detail.connection
+    const peerId = evt.detail.peerId
+
+    for (const protocol of protocols) {
       const topologies = this.topologies.get(protocol)
 
       if (topologies == null) {
@@ -209,14 +221,12 @@ export class DefaultRegistrar implements Registrar {
         continue
       }
 
-      for (const connection of this.components.connectionManager.getConnections(peer.id)) {
-        for (const topology of topologies.values()) {
-          if (connection.transient && topology.notifyOnTransient !== true) {
-            continue
-          }
-
-          topology.onConnect?.(peer.id, connection)
+      for (const topology of topologies.values()) {
+        if (connection.transient && topology.notifyOnTransient !== true) {
+          continue
         }
+
+        topology.onConnect?.(peerId, connection)
       }
     }
   }

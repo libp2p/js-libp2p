@@ -168,12 +168,11 @@ describe('registrar', () => {
       })
 
       // remote peer connects
-      events.safeDispatchEvent('peer:update', {
+      events.safeDispatchEvent('peer:identify', {
         detail: {
-          peer: {
-            id: remotePeerId,
-            protocols: [protocol]
-          }
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
         }
       })
       await onConnectDefer.promise
@@ -210,12 +209,11 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // remote peer connects
-      events.safeDispatchEvent('peer:update', {
+      events.safeDispatchEvent('peer:identify', {
         detail: {
-          peer: {
-            id: remotePeerId,
-            protocols: [protocol]
-          }
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
         }
       })
 
@@ -293,12 +291,11 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // remote peer connects
-      events.safeDispatchEvent('peer:update', {
+      events.safeDispatchEvent('peer:identify', {
         detail: {
-          peer: {
-            id: remotePeerId,
-            protocols: [protocol]
-          }
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
         }
       })
 
@@ -337,12 +334,11 @@ describe('registrar', () => {
       await registrar.register(protocol, topology)
 
       // remote peer connects
-      events.safeDispatchEvent('peer:update', {
+      events.safeDispatchEvent('peer:identify', {
         detail: {
-          peer: {
-            id: remotePeerId,
-            protocols: [protocol]
-          }
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
         }
       })
 
@@ -381,13 +377,21 @@ describe('registrar', () => {
         nonTransientConnection
       ])
 
-      // remote peer connects
-      events.safeDispatchEvent('peer:update', {
+      // remote peer connects over transient connection
+      events.safeDispatchEvent('peer:identify', {
         detail: {
-          peer: {
-            id: remotePeerId,
-            protocols: [protocol]
-          }
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: transientConnection
+        }
+      })
+
+      // remote peer opens non-transient connection
+      events.safeDispatchEvent('peer:identify', {
+        detail: {
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: nonTransientConnection
         }
       })
 
