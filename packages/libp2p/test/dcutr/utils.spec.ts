@@ -2,6 +2,7 @@
 
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { isPublicAndDialable } from '../../src/dcutr/utils.js'
 import type { Transport } from '@libp2p/interface/transport'
@@ -23,7 +24,7 @@ describe('dcutr utils', () => {
     for (const [key, value] of Object.entries(testCases)) {
       it(`should ${value ? '' : 'not '}allow ${key}`, () => {
         const transportManager = stubInterface<TransportManager>({
-          transportForMultiaddr: stubInterface<Transport>()
+          transportForMultiaddr: Sinon.stub().returns(stubInterface<Transport>())
         })
 
         expect(isPublicAndDialable(multiaddr(key), transportManager)).to.equal(value)
