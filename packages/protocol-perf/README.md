@@ -12,7 +12,7 @@ addresses.
 
 ## Example
 
-```typescript
+```ts
 import { createLibp2p } from 'libp2p'
 import { perfService } from 'libp2p/perf'
 
@@ -26,7 +26,7 @@ const connection = await node.dial(multiaddr(multiaddrAddress))
 
 const startTime = Date.now()
 
-await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
+await node.services.perf.measurePerformance(startTime, connection, uploadBytes, downloadBytes)
 
 ```
 
