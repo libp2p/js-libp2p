@@ -99,6 +99,11 @@ export interface IdentifyResult {
    * If sent by the remote peer this is the deserialized signed peer record
    */
   signedPeerRecord?: SignedPeerRecord
+
+  /**
+   * The connection that the identify protocol ran over
+   */
+  connection: Connection
 }
 
 /**

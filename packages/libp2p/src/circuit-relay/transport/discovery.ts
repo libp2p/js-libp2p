@@ -57,6 +57,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
     // register a topology listener for when new peers are encountered
     // that support the hop protocol
     this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, {
+      notifyOnTransient: true,
       onConnect: (peerId) => {
         this.safeDispatchEvent('relay:discover', { detail: peerId })
       }
