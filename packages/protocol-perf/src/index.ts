@@ -36,7 +36,7 @@
  *
  * const startTime = Date.now()
  *
- * await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
+ * await node.services.perf.measurePerformance(startTime, connection, uploadBytes, downloadBytes)
  *
  * ```
  */
@@ -53,11 +53,11 @@ const log = logger('libp2p:perf')
 
 export const defaultInit: PerfServiceInit = {
   protocolName: '/perf/1.0.0',
-  writeBlockSize: BigInt(64 << 10)
+  writeBlockSize: Number(64 << 10)
 }
 
 export interface PerfService {
-  measurePerformance(connection: Connection, sendBytes: bigint, recvBytes: bigint, options?: AbortOptions): Promise<PerfOutput>
+  measurePerformance(connection: Connection, sendBytes: number, recvBytes: number, options?: AbortOptions): Promise<PerfOutput>
 }
 
 export interface PerfOutput {
@@ -72,7 +72,7 @@ export interface PerfServiceInit {
   maxInboundStreams?: number
   maxOutboundStreams?: number
   timeout?: number
-  writeBlockSize?: bigint
+  writeBlockSize?: number
 }
 
 export interface PerfServiceComponents {
@@ -85,7 +85,7 @@ class DefaultPerfService implements Startable, PerfService {
   private readonly components: PerfServiceComponents
   private started: boolean
   private readonly databuf: ArrayBuffer
-  private readonly writeBlockSize: bigint
+  private readonly writeBlockSize: number
 
   constructor (components: PerfServiceComponents, init: PerfServiceInit) {
     this.components = components
@@ -118,11 +118,11 @@ class DefaultPerfService implements Startable, PerfService {
 
     const writeBlockSize = this.writeBlockSize
 
-    let bytesToSendBack: bigint | null = null
+    let bytesToSendBack: number | null = null
 
     for await (const buf of stream.source) {
       if (bytesToSendBack === null) {
-        bytesToSendBack = BigInt(buf.getBigUint64(0, false))
+        bytesToSendBack = Number(buf.getUint32(0, false))
       }
       // Ingest all the bufs and wait for the read side to close
     }
@@ -133,15 +133,15 @@ class DefaultPerfService implements Startable, PerfService {
       throw new Error('bytesToSendBack was not set')
     }
 
-    let lastAmountOfBytesSent = BigInt(0)
+    let lastAmountOfBytesSent = 0
     let lastReportedTime = Date.now()
-    let totalBytesSent = BigInt(0)
+    let totalBytesSent = 0
 
     const initialStartTime = Date.now()
 
     await stream.sink(async function * () {
       while (bytesToSendBack > 0n) {
-        let toSend: bigint = writeBlockSize
+        let toSend: number = writeBlockSize
         if (toSend > bytesToSendBack) {
           toSend = bytesToSendBack
         }
@@ -153,7 +153,7 @@ class DefaultPerfService implements Startable, PerfService {
           const output: PerfOutput = {
             type: 'intermediary',
             timeSeconds: (Date.now() - lastReportedTime) / 1000,
-            uploadBytes: BigInt(0).toString(),
+            uploadBytes: '0',
             downloadBytes: lastAmountOfBytesSent.toString()
           }
 
@@ -161,7 +161,7 @@ class DefaultPerfService implements Startable, PerfService {
           console.log(JSON.stringify(output))
 
           lastReportedTime = Date.now()
-          lastAmountOfBytesSent = BigInt(0)
+          lastAmountOfBytesSent = 0
         }
 
         lastAmountOfBytesSent += toSend
@@ -172,7 +172,7 @@ class DefaultPerfService implements Startable, PerfService {
     const finalOutput: PerfOutput = {
       type: 'final',
       timeSeconds: (Date.now() - initialStartTime) / 1000,
-      uploadBytes: BigInt(0).toString(),
+      uploadBytes: '0',
       downloadBytes: totalBytesSent.toString()
     }
 
@@ -180,8 +180,10 @@ class DefaultPerfService implements Startable, PerfService {
     console.log(JSON.stringify(finalOutput))
   }
 
-  async measurePerformance (connection: Connection, sendBytes: bigint, recvBytes: bigint, options: AbortOptions = {}): Promise<PerfOutput> {
+  async measurePerformance (connection: Connection, sendBytes: number, recvBytes: number, options: AbortOptions = {}): Promise<PerfOutput> {
     log('opening stream on protocol %s to %p', this.protocol, connection.remotePeer)
+
+    let finalOutput: PerfOutput
 
     const uint8Buf = new Uint8Array(this.databuf)
 
@@ -189,15 +191,15 @@ class DefaultPerfService implements Startable, PerfService {
 
     const stream = await connection.newStream([this.protocol], options)
 
-    let lastAmountOfBytesSent = BigInt(0)
+    let lastAmountOfBytesSent = 0
     let lastReportedTime = Date.now()
-    let totalBytesSent = BigInt(0)
+    let totalBytesSent = 0
 
-    const initialStartTime = Date.now()
+    const initialStartTime = lastReportedTime
 
-    // Convert sendBytes to uint64 big endian buffer
+    // Convert sendBytes to uint32 big endian buffer
     const view = new DataView(this.databuf)
-    view.setBigInt64(0, recvBytes, false)
+    view.setUint32(0, recvBytes, false)
 
     log('sending %i bytes to %p', sendBytes, connection.remotePeer)
 
@@ -207,7 +209,7 @@ class DefaultPerfService implements Startable, PerfService {
         yield uint8Buf.subarray(0, 8)
 
         while (sendBytes > 0n) {
-          let toSend: bigint = writeBlockSize
+          let toSend: number = writeBlockSize
           if (toSend > sendBytes) {
             toSend = sendBytes
           }
@@ -215,15 +217,16 @@ class DefaultPerfService implements Startable, PerfService {
           yield uint8Buf.subarray(0, Number(toSend))
 
           if (Date.now() - lastReportedTime > 1000) {
+            const newReportedTime = Date.now()
             const output: PerfOutput = {
               type: 'intermediary',
-              timeSeconds: (Date.now() - lastReportedTime) / 1000,
+              timeSeconds: (newReportedTime - lastReportedTime) / 1000,
               uploadBytes: lastAmountOfBytesSent.toString(),
-              downloadBytes: BigInt(0).toString()
+              downloadBytes: '0'
             }
 
-            lastReportedTime = Date.now()
-            lastAmountOfBytesSent = BigInt(0)
+            lastReportedTime = newReportedTime
+            lastAmountOfBytesSent = 0
 
             // eslint-disable-next-line no-console
             console.log(JSON.stringify(output))
@@ -235,9 +238,9 @@ class DefaultPerfService implements Startable, PerfService {
       })())
 
       // Read the received bytes
-      let actualRecvdBytes = BigInt(0)
+      let actualRecvdBytes = 0
       for await (const buf of stream.source) {
-        actualRecvdBytes += BigInt(buf.length)
+        actualRecvdBytes += buf.length
       }
 
       if (actualRecvdBytes !== recvBytes) {
@@ -247,15 +250,15 @@ class DefaultPerfService implements Startable, PerfService {
       log('error sending %s bytes to %p: %s', totalBytesSent, connection.remotePeer, err)
       throw err
     } finally {
+      finalOutput = {
+        type: 'final',
+        timeSeconds: (Date.now() - initialStartTime) / 1000,
+        uploadBytes: totalBytesSent.toString(),
+        downloadBytes: '0'
+      }
+
       log('performed %s to %p', this.protocol, connection.remotePeer)
       await stream.close()
-    }
-
-    const finalOutput: PerfOutput = {
-      type: 'final',
-      timeSeconds: (Date.now() - initialStartTime) / 1000,
-      uploadBytes: totalBytesSent.toString(),
-      downloadBytes: BigInt(0).toString()
     }
 
     return finalOutput

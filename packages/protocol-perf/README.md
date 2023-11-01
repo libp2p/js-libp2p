@@ -11,6 +11,7 @@
 
 - [Install](#install)
   - [Browser `<script>` tag](#browser-script-tag)
+- [Usage](#usage)
 - [API Docs](#api-docs)
 - [License](#license)
 - [Contribution](#contribution)
@@ -28,6 +29,21 @@ Loading this module through a script tag will make it's exports available as `Li
 ```html
 <script src="https://unpkg.com/@libp2p/perf/dist/index.min.js"></script>
 ```
+
+## Usage
+
+This library is an implementation of the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md) was created to evaluate the throughput of a libp2p connection. It is primarily used by the [test-plans perfomance benchmarking](https://github.com/libp2p/test-plans/tree/master/perf). It can be ran either in server mode or client mode, and accepts a server address, an amount upload-bytes and download-bytes as arguments. See below as an example:
+
+  ```console
+  $ npm run start --run-server --server-address 0.0.0.0:4001
+  ```
+  and in another console run:
+
+  ```console
+  $ npm run start --server-address 0.0.0.0:4001 --upload-bytes 0 --download-bytes 1000000
+  ```
+
+This will upload 0 bytes and download 1000000 bytes from the server until the connection is closed.
 
 ## API Docs
 

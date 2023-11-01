@@ -87,7 +87,7 @@ export async function main (runServer: boolean, serverIpAddress: string, transpo
 
   if (!runServer) {
     const connection = await node.dial(multiaddr(tcpMultiaddrAddress))
-    const finalOutput = await node.services.perf.measurePerformance(connection, BigInt(uploadBytes), BigInt(downloadBytes))
+    const finalOutput = await node.services.perf.measurePerformance(connection, uploadBytes, downloadBytes)
 
     // eslint-disable-next-line no-console
     console.log(finalOutput)
