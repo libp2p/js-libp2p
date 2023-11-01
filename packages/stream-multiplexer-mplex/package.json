@@ -53,7 +53,7 @@
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
-    "test:node": "aegir test -t node --cov",
+    "test:node": "aegir test -t node --cov --exit",
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {

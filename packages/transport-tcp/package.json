@@ -47,7 +47,7 @@
     "dep-check": "aegir dep-check",
     "build": "aegir build",
     "test": "aegir test -t node -t electron-main",
-    "test:node": "aegir test -t node --cov",
+    "test:node": "aegir test -t node --cov --exit",
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
