@@ -89,7 +89,7 @@
     "p-retry": "^6.1.0",
     "protons": "^7.0.2",
     "sinon": "^17.0.0",
-    "sinon-ts": "^1.0.0"
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js"

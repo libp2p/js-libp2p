@@ -193,7 +193,7 @@
     "p-wait-for": "^5.0.2",
     "protons": "^7.0.2",
     "sinon": "^17.0.0",
-    "sinon-ts": "^1.0.0"
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/connection-manager/constants.js": "./dist/src/connection-manager/constants.browser.js",
