@@ -536,4 +536,40 @@ describe('Connection Manager', () => {
     await expect(connectionManager.acceptIncomingConnection(maConn2))
       .to.eventually.be.true()
   })
+
+  it('should allow dialing peers when an existing transient connection exists', async () => {
+    connectionManager = new DefaultConnectionManager({
+      peerId: await createEd25519PeerId(),
+      peerStore: stubInterface<PeerStore>(),
+      transportManager: stubInterface<TransportManager>(),
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new TypedEventEmitter()
+    }, {
+      ...defaultOptions,
+      maxIncomingPendingConnections: 1
+    })
+    await connectionManager.start()
+
+    const targetPeer = await createEd25519PeerId()
+    const addr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${targetPeer}`)
+
+    const existingConnection = stubInterface<Connection>({
+      transient: true
+    })
+    const newConnection = stubInterface<Connection>()
+
+    sinon.stub(connectionManager.dialQueue, 'dial')
+      .withArgs(addr)
+      .resolves(newConnection)
+
+    // we have an existing transient connection
+    const map = connectionManager.getConnectionsMap()
+    map.set(targetPeer, [
+      existingConnection
+    ])
+
+    const conn = await connectionManager.openConnection(addr)
+
+    expect(conn).to.equal(newConnection)
+  })
 })

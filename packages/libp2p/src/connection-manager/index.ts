@@ -261,7 +261,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       dialTimeout: init.dialTimeout ?? DIAL_TIMEOUT,
       resolvers: init.resolvers ?? {
         dnsaddr: dnsaddrResolver
-      }
+      },
+      connections: this.connections
     })
   }
 
@@ -505,12 +506,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     if (peerId != null && options.force !== true) {
       log('dial %p', peerId)
-      const existingConnections = this.getConnections(peerId)
+      const existingConnection = this.getConnections(peerId)
+        .find(conn => !conn.transient)
 
-      if (existingConnections.length > 0) {
-        log('had an existing connection to %p', peerId)
+      if (existingConnection != null) {
+        log('had an existing non-transient connection to %p', peerId)
 
-        return existingConnections[0]
+        return existingConnection
       }
     }
 
