@@ -82,6 +82,16 @@ export interface DCUtRServiceInit {
    * connection (default: 1)
    */
   maxOutboundStreams?: number
+
+  /**
+   * This is primarily for testing purposes. If set to true, the service will
+   * allow a relay connection to be upgraded to a direct connection for private
+   * addresses. This will likely not work in the wild unless you are on the same
+   * LAN as the peer you are connecting to.
+   *
+   * @internal
+   */
+  allowPrivateUpgrade?: boolean
 }
 
 export interface DCUtRServiceComponents {

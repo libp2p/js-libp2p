@@ -18,19 +18,22 @@ import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/src/transport-manager/index.js'
 
 const log = logger('libp2p:dcutr')
+const logA = logger('libp2p:dcutr:A')
+const logB = logger('libp2p:dcutr:B')
 
 // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#rpc-messages
 const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
 // ensure the dial has a high priority to jump to the head of the dial queue
 const DCUTR_DIAL_PRIORITY = 100
 
-const defaultValues = {
+const defaultValues: Required<DCUtRServiceInit> = {
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
   timeout: 5000,
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
   retries: 3,
   maxInboundStreams: 1,
-  maxOutboundStreams: 1
+  maxOutboundStreams: 1,
+  allowPrivateUpgrade: false
 }
 
 export class DefaultDCUtRService implements Startable {
@@ -39,6 +42,7 @@ export class DefaultDCUtRService implements Startable {
   private readonly retries: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
+  private readonly allowPrivateUpgrade: boolean
   private readonly peerStore: PeerStore
   private readonly registrar: Registrar
   private readonly connectionManager: ConnectionManager
@@ -58,6 +62,7 @@ export class DefaultDCUtRService implements Startable {
     this.retries = init.retries ?? defaultValues.retries
     this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
+    this.allowPrivateUpgrade = init.allowPrivateUpgrade ?? defaultValues.allowPrivateUpgrade
   }
 
   isStarted (): boolean {
@@ -68,23 +73,36 @@ export class DefaultDCUtRService implements Startable {
     if (this.started) {
       return
     }
+    log.trace('starting DCUtR service')
 
     // register for notifications of when peers that support DCUtR connect
     // nb. requires the identify service to be enabled
     this.topologyId = await this.registrar.register(multicodec, {
       notifyOnTransient: true,
       onConnect: (peerId, connection) => {
+        log.trace('onConnectAttempt %s %p', connection.direction, peerId)
         if (!connection.transient) {
           // the connection is already direct, no upgrade is required
+          log.trace('connection to %p is already direct, not attempting DCUtR', peerId)
           return
         }
 
         // the inbound peer starts the connection upgrade
         if (connection.direction !== 'inbound') {
+          log('connection request to %p is from local, not attempting DCUtR', peerId)
           return
         }
 
-        this.upgradeInbound(connection)
+        // if we already have a separate direct connection, use that instead
+        const existingDirectConnection = this.connectionManager.getConnections(peerId)
+          .find(conn => !conn.transient)
+
+        if (existingDirectConnection != null) {
+          log.trace('already have a direct connection to %p, not attempting DCUtR', peerId)
+          return
+        }
+
+        void this.upgradeInbound(connection)
           .catch(err => {
             log.error('error during outgoing DCUtR attempt', err)
           })
@@ -140,6 +158,7 @@ export class DefaultDCUtRService implements Startable {
 
       try {
         // 1. B opens a stream to A using the /libp2p/dcutr protocol.
+        logB.trace('opening a stream to A')
         stream = await relayedConnection.newStream([multicodec], {
           signal: options.signal,
           runOnTransientConnection: true
@@ -152,38 +171,39 @@ export class DefaultDCUtRService implements Startable {
         // 2. B sends to A a Connect message containing its observed (and
         // possibly predicted) addresses from identify and starts a timer
         // to measure RTT of the relay connection.
-        log('B sending connect to %p', relayedConnection.remotePeer)
+        logB.trace('sending CONNECT to %p', relayedConnection.remotePeer)
         const connectTimer = Date.now()
         await pb.write({
           type: HolePunch.Type.CONNECT,
           observedAddresses: this.addressManager.getAddresses().map(ma => ma.bytes)
         }, options)
 
-        log('B receiving connect from %p', relayedConnection.remotePeer)
+        logB.trace('waiting for CONNECT from %p', relayedConnection.remotePeer)
         // 4. Upon receiving the Connect, B sends a Sync message
         const connect = await pb.read(options)
+        logB.trace('received CONNECT from %p', relayedConnection.remotePeer)
 
         if (connect.type !== HolePunch.Type.CONNECT) {
-          log('A sent wrong message type')
+          logB.error('A sent the wrong message type')
           throw new CodeError('DCUtR message type was incorrect', codes.ERR_INVALID_MESSAGE)
         }
 
         const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses)
 
         if (multiaddrs.length === 0) {
-          log('A did not have any dialable multiaddrs')
+          logB.error('A did not have any dialable multiaddrs')
           throw new CodeError('DCUtR connect message had no multiaddrs', codes.ERR_INVALID_MESSAGE)
         }
 
         const rtt = Date.now() - connectTimer
 
-        log('A sending sync, rtt %dms', rtt)
+        logB.trace('sending SYNC to A, rtt %dms', rtt)
         await pb.write({
           type: HolePunch.Type.SYNC,
           observedAddresses: []
         }, options)
 
-        log('A waiting for half RTT')
+        logB.trace('waiting for half RTT')
         // ..and starts a timer for half the RTT measured from the time between
         // sending the initial Connect and receiving the response
         await delay(rtt / 2)
@@ -192,19 +212,20 @@ export class DefaultDCUtRService implements Startable {
         // now we only have tcp support
         // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
 
-        log('B dialing', multiaddrs)
+        logB.trace('dialing', multiaddrs)
         // Upon expiry of the timer, B dials the address to A.
         const conn = await this.connectionManager.openConnection(multiaddrs, {
           signal: options.signal,
           priority: DCUTR_DIAL_PRIORITY
         })
 
-        log('DCUtR to %p succeeded to address %a, closing relayed connection', relayedConnection.remotePeer, conn.remoteAddr)
+        logB('DCUtR to %p succeeded to address %a, closing relayed connection', relayedConnection.remotePeer, conn.remoteAddr)
         await relayedConnection.close(options)
+        logB.trace('closed relayed connection')
 
         break
       } catch (err: any) {
-        log.error('error while attempting DCUtR on attempt %d of %d', i + 1, this.retries, err)
+        logB.error('error while attempting DCUtR on attempt %d of %d', i + 1, this.retries, err)
         stream?.abort(err)
 
         if (i === this.retries) {
@@ -246,10 +267,11 @@ export class DefaultDCUtRService implements Startable {
       })
 
     if (publicAddresses.length > 0) {
+      logB.trace('peer %p has public addresses, attempting unilateral connection upgrade', relayedConnection.remotePeer)
       const signal = AbortSignal.timeout(this.timeout)
 
       try {
-        log('attempting unilateral connection upgrade to %a', publicAddresses)
+        logB.trace('attempting unilateral connection upgrade to %a', publicAddresses)
 
         // force-dial the multiaddr(s), otherwise `connectionManager.openConnection`
         // will return the existing relayed connection
@@ -270,10 +292,10 @@ export class DefaultDCUtRService implements Startable {
 
         return true
       } catch (err) {
-        log.error('unilateral connection upgrade to %p on addresses %a failed', relayedConnection.remotePeer, publicAddresses, err)
+        logB.error('unilateral connection upgrade to %p on addresses %a failed', relayedConnection.remotePeer, publicAddresses, err)
       }
     } else {
-      log('peer %p has no public addresses, not attempting unilateral connection upgrade', relayedConnection.remotePeer)
+      logB.trace('peer %p has no public addresses, not attempting unilateral connection upgrade', relayedConnection.remotePeer)
     }
 
     // no public addresses or failed to dial public addresses
@@ -295,55 +317,59 @@ export class DefaultDCUtRService implements Startable {
         maxDataLength: MAX_DCUTR_MESSAGE_SIZE
       }).pb(HolePunch)
 
-      log('A receiving connect')
+      logA.trace('waiting for CONNECT from B')
       // 3. Upon receiving the Connect, A responds back with a Connect message
       // containing its observed (and possibly predicted) addresses.
       const connect = await pb.read(options)
 
       if (connect.type !== HolePunch.Type.CONNECT) {
-        log('B sent wrong message type')
+        logA.error('B sent wrong message type')
         throw new CodeError('DCUtR message type was incorrect', codes.ERR_INVALID_MESSAGE)
       }
+      logA.trace('received CONNECT from B')
 
       if (connect.observedAddresses.length === 0) {
-        log('B sent no multiaddrs')
+        logA.error('B sent no multiaddrs')
         throw new CodeError('DCUtR connect message had no multiaddrs', codes.ERR_INVALID_MESSAGE)
       }
 
       const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses)
 
       if (multiaddrs.length === 0) {
-        log('B had no dialable multiaddrs')
+        logA.error('B had no dialable multiaddrs')
         throw new CodeError('DCUtR connect message had no dialable multiaddrs', codes.ERR_INVALID_MESSAGE)
       }
 
-      log('A sending connect')
+      logA.trace('sending CONNECT to B')
       await pb.write({
         type: HolePunch.Type.CONNECT,
         observedAddresses: this.addressManager.getAddresses().map(ma => ma.bytes)
       })
 
-      log('A receiving sync')
+      logA.trace('waiting for message SYNC from B')
       const sync = await pb.read(options)
 
       if (sync.type !== HolePunch.Type.SYNC) {
+        logA.error('B sent the wrong message type')
         throw new CodeError('DCUtR message type was incorrect', codes.ERR_INVALID_MESSAGE)
       }
+      logA.trace('received SYNC from B')
 
       // TODO: when we have a QUIC transport, the dial step is different - for
       // now we only have tcp support
       // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
 
       // Upon receiving the Sync, A immediately dials the address to B
-      log('A dialing', multiaddrs)
+      logA.trace('dialing', multiaddrs)
       const connection = await this.connectionManager.openConnection(multiaddrs, {
         signal: options.signal,
         priority: DCUTR_DIAL_PRIORITY,
         force: true
       })
 
-      log('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
+      logA('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
       await relayedConnection.close(options)
+      logA.trace('closed relayed connection')
     } catch (err: any) {
       log.error('incoming DCUtR from %p failed', relayedConnection.remotePeer, err)
       stream.abort(err)
@@ -384,27 +410,35 @@ export class DefaultDCUtRService implements Startable {
   isPublicAndDialable (ma: Multiaddr): boolean {
     // ignore circuit relay
     if (Circuit.matches(ma)) {
+      log.trace('ignoring circuit relay address %a', ma)
       return false
     }
 
     // dns addresses are probably public?
     if (DNS.matches(ma)) {
+      log.trace('ignoring dns address %a', ma)
       return true
     }
 
     // ensure we have only IPv4/IPv6 addresses
     if (!IP.matches(ma)) {
+      log.trace('ignoring non-ip address %a', ma)
       return false
     }
 
     const transport = this.transportManager.transportForMultiaddr(ma)
 
     if (transport == null) {
+      log.trace('ignoring address with no transport %a', ma)
       return false
     }
 
     const options = ma.toOptions()
+    if (!this.allowPrivateUpgrade && isPrivate(options.host) === true) {
+      log.trace('ignoring private address %a', ma)
+      return false
+    }
 
-    return isPrivate(options.host) === false
+    return true
   }
 }

@@ -25,7 +25,6 @@ describe('dcutr', () => {
     await pRetry(async () => {
       const connections = libp2pA.getConnections(libp2pB.peerId)
       const onlyDirect = connections.filter(conn => !conn.transient)
-
       if (onlyDirect.length === connections.length) {
         // all connections are direct
         return true
@@ -70,7 +69,7 @@ describe('dcutr', () => {
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
         }
       }))
       libp2pB = await createLibp2pNode(createBaseOptions({
@@ -82,7 +81,7 @@ describe('dcutr', () => {
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
         }
       }))
 
@@ -118,18 +117,23 @@ describe('dcutr', () => {
     })
   })
 
-  // TODO: how to test this?
-  describe.skip('DCUtR connection upgrade', () => {
+  describe('DCUtR connection upgrade for TCP', () => {
     beforeEach(async () => {
+      // based on https://github.com/ipfs/helia/issues/182#issuecomment-1653860165
+      // libp2pA is the gateway
       libp2pA = await createLibp2pNode(createBaseOptions({
         addresses: {
           listen: [`/ip4/0.0.0.0/tcp/${LOCAL_PORT}`]
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
+        },
+        connectionManager: {
+          minConnections: 0 // disable autodial
         }
       }))
+      // libp2pB is the browser node
       libp2pB = await createLibp2pNode(createBaseOptions({
         addresses: {
           listen: [
@@ -139,7 +143,7 @@ describe('dcutr', () => {
         },
         services: {
           identify: identifyService(),
-          dcutr: dcutrService()
+          dcutr: dcutrService({ allowPrivateUpgrade: true })
         }
       }))
 
@@ -166,6 +170,17 @@ describe('dcutr', () => {
 
       // connection should be transient
       expect(connection).to.have.property('transient', true)
+
+      // wait for the relayedAddress connection to be closed
+      const closedRelayConnection = async (): Promise<boolean> => pRetry(async () => {
+        if (connection.status !== 'closed') {
+          throw new Error('relayed connection is still open')
+        }
+        return true
+      }, {
+        retries: 10
+      })
+      await expect(closedRelayConnection()).to.eventually.equal(true)
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()
