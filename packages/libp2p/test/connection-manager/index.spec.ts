@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { KEEP_ALIVE } from '@libp2p/interface/peer-store/tags'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -365,7 +365,7 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     }, {
       ...defaultOptions,
       deny: [
@@ -393,7 +393,7 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     }, {
       ...defaultOptions,
       maxConnections: 1
@@ -425,7 +425,7 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     }, {
       ...defaultOptions,
       inboundConnectionThreshold: 1
@@ -461,7 +461,7 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     }, {
       ...defaultOptions,
       maxConnections: 1,
@@ -497,7 +497,7 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     }, {
       ...defaultOptions,
       maxIncomingPendingConnections: 1

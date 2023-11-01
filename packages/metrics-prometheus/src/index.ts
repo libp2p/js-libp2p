@@ -1,10 +1,69 @@
 /**
  * @packageDocumentation
  *
- * Collect libp2p metrics for scraping by Prometheus or Graphana.
- * @module libp2p-prometheus-metrics
+ * Configure your libp2p node with Prometheus metrics:
  *
- * A tracked metric can be created by calling either `registerMetric` on the metrics object
+ * ```js
+ * import { createLibp2p } from 'libp2p'
+ * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+ *
+ * const node = await createLibp2p({
+ *   metrics: prometheusMetrics()
+ * })
+ * ```
+ *
+ * Then use the `prom-client` module to supply metrics to the Prometheus/Graphana client using your http framework:
+ *
+ * ```js
+ * import client from 'prom-client'
+ *
+ * async handler (request, h) {
+ *   return h.response(await client.register.metrics())
+ *     .type(client.register.contentType)
+ * }
+ * ```
+ *
+ * All Prometheus metrics are global so there's no other work required to extract them.
+ *
+ * ### Queries
+ *
+ * Some useful queries are:
+ *
+ * #### Data sent/received
+ *
+ * ```
+ * rate(libp2p_data_transfer_bytes_total[30s])
+ * ```
+ *
+ * #### CPU usage
+ *
+ * ```
+ * rate(process_cpu_user_seconds_total[30s]) * 100
+ * ```
+ *
+ * #### Memory usage
+ *
+ * ```
+ * nodejs_memory_usage_bytes
+ * ```
+ *
+ * #### DHT query time
+ *
+ * ```
+ * libp2p_kad_dht_wan_query_time_seconds
+ * ```
+ *
+ * or
+ *
+ * ```
+ * libp2p_kad_dht_lan_query_time_seconds
+ * ```
+ *
+ * #### TCP transport dialer errors
+ *
+ * ```
+ * rate(libp2p_tcp_dialer_errors_total[30s])
+ * ```
  *
  * @example
  *
@@ -20,9 +79,10 @@
  *
  * myMetric.update(1)
  * ```
- * A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
  *
  * @example
+ *
+ * A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
  *
  * ```typescript
  * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
@@ -39,9 +99,9 @@
  * })
  * ```
  *
- * If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
- *
  * @example
+ *
+ * If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
  *
  * ```typescript
  * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
@@ -58,13 +118,13 @@
  *
  * There are specific metric groups for tracking libp2p connections and streams:
  *
- * Track a newly opened multiaddr connection:
  * @example
+ *
+ * Track a newly opened multiaddr connection:
  *
  * ```typescript
  * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
  * import { createLibp2p } from 'libp2p'
- *
  *
  * const metrics = prometheusMetrics()()
  *
@@ -76,8 +136,9 @@
  * const connections = metrics.trackMultiaddrConnection(connection)
  * ```
  *
- * Track a newly opened stream:
  * @example
+ *
+ * Track a newly opened stream:
  *
  * ```typescript
  * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
@@ -96,7 +157,7 @@
 
 import { logger } from '@libp2p/logger'
 import each from 'it-foreach'
-import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry } from 'prom-client'
+import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry, type RegistryContentType } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
 import { PrometheusCounter } from './counter.js'
 import { PrometheusMetricGroup } from './metric-group.js'
@@ -126,7 +187,7 @@ export interface PrometheusMetricsInit {
   /**
    * prom-client options to pass to the `collectDefaultMetrics` function
    */
-  defaultMetrics?: DefaultMetricsCollectorConfiguration
+  defaultMetrics?: DefaultMetricsCollectorConfiguration<RegistryContentType>
 
   /**
    * All metrics in prometheus are global so to prevent clashes in naming

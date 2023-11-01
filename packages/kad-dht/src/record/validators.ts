@@ -23,7 +23,7 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
   const validator = validators[parts[1].toString()]
 
   if (validator == null) {
-    const errMsg = 'Invalid record keytype'
+    const errMsg = `No validator available for key type "${parts[1]}"`
 
     throw new CodeError(errMsg, 'ERR_INVALID_RECORD_KEY_TYPE')
   }

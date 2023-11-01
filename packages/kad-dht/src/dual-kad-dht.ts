@@ -1,6 +1,6 @@
 import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PeerDiscovery, peerDiscovery, type PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
 import { logger } from '@libp2p/logger'
@@ -103,8 +103,6 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
 
   // dns4 or dns6 or dnsaddr
   if (tuples[0][0] === DNS4_CODE || tuples[0][0] === DNS6_CODE || tuples[0][0] === DNSADDR_CODE) {
-    log('%m is public %s', multiaddr, true)
-
     return true
   }
 
@@ -112,8 +110,6 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
   if (tuples[0][0] === IP4_CODE || tuples[0][0] === IP6_CODE) {
     const result = isPrivate(`${tuples[0][1]}`)
     const isPublic = result == null || !result
-
-    log('%m is public %s', multiaddr, isPublic)
 
     return isPublic
   }
@@ -125,7 +121,7 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualKadDHT, PeerDiscovery {
+export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements DualKadDHT, PeerDiscovery {
   public readonly wan: DefaultKadDHT
   public readonly lan: DefaultKadDHT
   public readonly components: KadDHTComponents
@@ -170,13 +166,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
       components.events.addEventListener('self:peer:update', (evt) => {
         log('received update of self-peer info')
         const hasPublicAddress = evt.detail.peer.addresses
-          .some(({ multiaddr }) => {
-            const isPublic = multiaddrIsPublic(multiaddr)
-
-            log('%m is public %s', multiaddr, isPublic)
-
-            return isPublic
-          })
+          .some(({ multiaddr }) => multiaddrIsPublic(multiaddr))
 
         this.getMode()
           .then(async mode => {

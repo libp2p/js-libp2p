@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { FaultTolerance } from '@libp2p/interface/transport'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
@@ -31,7 +31,7 @@ describe('UPnP NAT (TCP)', () => {
   let client: StubbedInstance<NatAPI>
 
   async function createNatManager (addrs = DEFAULT_ADDRESSES, natManagerOptions = {}): Promise<{ natManager: any, components: Components }> {
-    const events = new EventEmitter()
+    const events = new TypedEventEmitter()
     const components: any = defaultComponents({
       peerId: await createEd25519PeerId(),
       upgrader: mockUpgrader({ events }),

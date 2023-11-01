@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { abortableDuplex } from 'abortable-iterator'
 import drain from 'it-drain'
@@ -35,7 +35,7 @@ interface NetworkEvents {
 /**
  * Handle network operations for the dht
  */
-export class Network extends EventEmitter<NetworkEvents> implements Startable {
+export class Network extends TypedEventEmitter<NetworkEvents> implements Startable {
   private readonly log: Logger
   private readonly protocol: string
   private running: boolean

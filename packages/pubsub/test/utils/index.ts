@@ -136,7 +136,8 @@ export const ConnectionPair = (): [Connection, Connection] => {
         ...d0,
         protocol: protocol[0],
         closeWrite: async () => {}
-      })
+      }),
+      streams: []
     },
     {
       // @ts-expect-error incomplete implementation
@@ -144,7 +145,8 @@ export const ConnectionPair = (): [Connection, Connection] => {
         ...d1,
         protocol: protocol[0],
         closeWrite: async () => {}
-      })
+      }),
+      streams: []
     }
   ]
 }

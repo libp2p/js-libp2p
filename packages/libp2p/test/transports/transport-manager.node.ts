@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { FaultTolerance } from '@libp2p/interface/transport'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
@@ -33,7 +33,7 @@ describe('Transport Manager (TCP)', () => {
   })
 
   beforeEach(async () => {
-    const events = new EventEmitter()
+    const events = new TypedEventEmitter()
     components = defaultComponents({
       peerId: localPeer,
       events,

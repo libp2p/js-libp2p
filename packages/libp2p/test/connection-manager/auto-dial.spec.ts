@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -23,13 +23,13 @@ import type { ConnectionManager } from '@libp2p/interface-internal/connection-ma
 
 describe('auto-dial', () => {
   let autoDialler: AutoDial
-  let events: EventEmitter<Libp2pEvents>
+  let events: TypedEventTarget<Libp2pEvents>
   let peerStore: PeerStore
   let peerId: PeerId
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
-    events = new EventEmitter()
+    events = new TypedEventEmitter()
     peerStore = new PersistentPeerStore({
       datastore: new MemoryDatastore(),
       events,
@@ -69,8 +69,8 @@ describe('auto-dial', () => {
     await peerStore.save(peerWithoutAddress.id, peerWithoutAddress)
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([])
     })
 
     autoDialler = new AutoDial({
@@ -123,8 +123,8 @@ describe('auto-dial', () => {
     connectionMap.set(connectedPeer.id, [stubInterface<Connection>()])
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: connectionMap,
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(connectionMap),
+      getDialQueue: Sinon.stub().returns([])
     })
 
     autoDialler = new AutoDial({
@@ -172,13 +172,13 @@ describe('auto-dial', () => {
     await peerStore.save(peerNotInDialQueue.id, peerNotInDialQueue)
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: [{
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([{
         id: 'foo',
         peerId: peerInDialQueue.id,
         multiaddrs: [],
         status: 'queued'
-      }]
+      }])
     })
 
     autoDialler = new AutoDial({
@@ -203,8 +203,8 @@ describe('auto-dial', () => {
     const peerStoreAllSpy = Sinon.spy(peerStore, 'all')
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([])
     })
 
     autoDialler = new AutoDial({
@@ -254,8 +254,8 @@ describe('auto-dial', () => {
     await peerStore.save(undialablePeer.id, undialablePeer)
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([])
     })
 
     autoDialler = new AutoDial({

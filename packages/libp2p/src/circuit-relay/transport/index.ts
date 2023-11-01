@@ -17,7 +17,7 @@ import type { Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
@@ -50,7 +50,7 @@ export interface CircuitRelayTransportComponents extends RelayDiscoveryComponent
   addressManager: AddressManager
   contentRouting: ContentRouting
   connectionGater: ConnectionGater
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 interface ConnectOptions {

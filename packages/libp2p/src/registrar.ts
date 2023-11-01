@@ -2,8 +2,8 @@ import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import merge from 'merge-options'
 import { codes } from './errors.js'
-import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { IdentifyResult, Libp2pEvents, PeerUpdate } from '@libp2p/interface'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Topology } from '@libp2p/interface/topology'
@@ -19,7 +19,7 @@ export interface RegistrarComponents {
   peerId: PeerId
   connectionManager: ConnectionManager
   peerStore: PeerStore
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 /**
@@ -37,11 +37,11 @@ export class DefaultRegistrar implements Registrar {
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onPeerUpdate = this._onPeerUpdate.bind(this)
-    this._onConnect = this._onConnect.bind(this)
+    this._onPeerIdentify = this._onPeerIdentify.bind(this)
 
     this.components.events.addEventListener('peer:disconnect', this._onDisconnect)
-    this.components.events.addEventListener('peer:connect', this._onConnect)
     this.components.events.addEventListener('peer:update', this._onPeerUpdate)
+    this.components.events.addEventListener('peer:identify', this._onPeerIdentify)
   }
 
   getProtocols (): string[] {
@@ -183,52 +183,12 @@ export class DefaultRegistrar implements Registrar {
   }
 
   /**
-   * On peer connected if we already have their protocols. Usually used for reconnects
-   * as change:protocols event won't be emitted due to identical protocols.
-   */
-  _onConnect (evt: CustomEvent<PeerId>): void {
-    const remotePeer = evt.detail
-
-    void this.components.peerStore.get(remotePeer)
-      .then(peer => {
-        const connection = this.components.connectionManager.getConnections(peer.id)[0]
-
-        if (connection == null) {
-          log('peer %p connected but the connection manager did not have a connection', peer)
-          // peer disconnected while we were loading their details from the peer store
-          return
-        }
-
-        for (const protocol of peer.protocols) {
-          const topologies = this.topologies.get(protocol)
-
-          if (topologies == null) {
-            // no topologies are interested in this protocol
-            continue
-          }
-
-          for (const topology of topologies.values()) {
-            topology.onConnect?.(remotePeer, connection)
-          }
-        }
-      })
-      .catch(err => {
-        if (err.code === codes.ERR_NOT_FOUND) {
-          // peer has not completed identify so they are not in the peer store
-          return
-        }
-
-        log.error('could not inform topologies of connecting peer %p', remotePeer, err)
-      })
-  }
-
-  /**
-   * Check if a new peer support the multicodecs for this topology
+   * When a peer is updated, if they have removed supported protocols notify any
+   * topologies interested in the removed protocols.
    */
   _onPeerUpdate (evt: CustomEvent<PeerUpdate>): void {
     const { peer, previous } = evt.detail
     const removed = (previous?.protocols ?? []).filter(protocol => !peer.protocols.includes(protocol))
-    const added = peer.protocols.filter(protocol => !(previous?.protocols ?? []).includes(protocol))
 
     for (const protocol of removed) {
       const topologies = this.topologies.get(protocol)
@@ -242,8 +202,18 @@ export class DefaultRegistrar implements Registrar {
         topology.onDisconnect?.(peer.id)
       }
     }
+  }
 
-    for (const protocol of added) {
+  /**
+   * After identify has completed and we have received the list of supported
+   * protocols, notify any topologies interested in those protocols.
+   */
+  _onPeerIdentify (evt: CustomEvent<IdentifyResult>): void {
+    const protocols = evt.detail.protocols
+    const connection = evt.detail.connection
+    const peerId = evt.detail.peerId
+
+    for (const protocol of protocols) {
       const topologies = this.topologies.get(protocol)
 
       if (topologies == null) {
@@ -252,12 +222,11 @@ export class DefaultRegistrar implements Registrar {
       }
 
       for (const topology of topologies.values()) {
-        const connection = this.components.connectionManager.getConnections(peer.id)[0]
-
-        if (connection == null) {
+        if (connection.transient && topology.notifyOnTransient !== true) {
           continue
         }
-        topology.onConnect?.(peer.id, connection)
+
+        topology.onConnect?.(peerId, connection)
       }
     }
   }

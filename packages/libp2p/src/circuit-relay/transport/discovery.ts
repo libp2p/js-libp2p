@@ -1,4 +1,4 @@
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import {
   RELAY_RENDEZVOUS_NS,
@@ -32,7 +32,7 @@ export interface RelayDiscoveryComponents {
  * ReservationManager automatically makes a circuit v2 reservation on any connected
  * peers that support the circuit v2 HOP protocol.
  */
-export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implements Startable {
+export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> implements Startable {
   private readonly peerId: PeerId
   private readonly peerStore: PeerStore
   private readonly contentRouting: ContentRouting
@@ -57,6 +57,7 @@ export class RelayDiscovery extends EventEmitter<RelayDiscoveryEvents> implement
     // register a topology listener for when new peers are encountered
     // that support the hop protocol
     this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, {
+      notifyOnTransient: true,
       onConnect: (peerId) => {
         this.safeDispatchEvent('relay:discover', { detail: peerId })
       }

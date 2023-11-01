@@ -1,3 +1,34 @@
+/**
+ * @packageDocumentation
+ *
+ * A map that reports it's size to the libp2p [Metrics](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/metrics#readme) system.
+ *
+ * If metrics are disabled a regular map is used.
+ *
+ * @example
+ *
+ * ```JavaScript
+ * import { logger } from '@libp2p/logger'
+ *
+ * const log = logger('libp2p:my:component:name')
+ *
+ * log('something happened: %s', 'it was ok')
+ * log.error('something bad happened: %o', err)
+ *
+ * log('with this peer: %p', aPeerId)
+ * log('and this base58btc: %b', aUint8Array)
+ * log('and this base32: %t', aUint8Array)
+ *  ```
+ * ```console
+ * $ DEBUG=libp2p:* node index.js
+ * something happened: it was ok
+ * something bad happened: <stack trace>
+ * with this peer: 12D3Foo
+ * with this base58btc: Qmfoo
+ * with this base32: bafyfoo
+ * ```
+ */
+
 import debug from 'debug'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'

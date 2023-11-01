@@ -1,5 +1,5 @@
-import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
@@ -146,10 +146,7 @@ class DefaultFetchService implements Startable, FetchService {
       log('using default timeout of %d ms', this.init.timeout)
       signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
 
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, signal)
-      } catch {}
+      setMaxListeners(Infinity, signal)
     }
 
     try {

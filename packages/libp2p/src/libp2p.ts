@@ -1,8 +1,7 @@
-import { setMaxListeners } from 'events'
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
 import { DefaultKeyChain } from '@libp2p/keychain'
@@ -42,7 +41,7 @@ import type { Datastore } from 'interface-datastore'
 
 const log = logger('libp2p')
 
-export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends EventEmitter<Libp2pEvents> implements Libp2p<T> {
+export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -59,7 +58,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     // event bus - components can listen to this emitter to be notified of system events
     // and also cause them to be emitted
-    const events = new EventEmitter<Libp2pEvents>()
+    const events = new TypedEventEmitter<Libp2pEvents>()
     const originalDispatch = events.dispatchEvent.bind(events)
     events.dispatchEvent = (evt: any) => {
       const internalResult = originalDispatch(evt)
@@ -70,10 +69,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       return internalResult || externalResult
     }
 
-    try {
-      // This emitter gets listened to a lot
-      setMaxListeners?.(Infinity, events)
-    } catch {}
+    // This emitter gets listened to a lot
+    setMaxListeners(Infinity, events)
 
     this.#started = false
     this.peerId = init.peerId

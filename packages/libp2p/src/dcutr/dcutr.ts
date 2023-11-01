@@ -1,12 +1,11 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import { Circuit, IP, DNS } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
-import isPrivate from 'private-ip'
 import { codes } from '../errors.js'
 import { HolePunch } from './pb/message.js'
+import { isPublicAndDialable } from './utils.js'
 import { multicodec } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Connection, Stream } from '@libp2p/interface/connection'
@@ -72,6 +71,7 @@ export class DefaultDCUtRService implements Startable {
     // register for notifications of when peers that support DCUtR connect
     // nb. requires the identify service to be enabled
     this.topologyId = await this.registrar.register(multicodec, {
+      notifyOnTransient: true,
       onConnect: (peerId, connection) => {
         if (!connection.transient) {
           // the connection is already direct, no upgrade is required
@@ -241,7 +241,7 @@ export class DefaultDCUtRService implements Startable {
         return ma
       })
       .filter(ma => {
-        return this.isPublicAndDialable(ma)
+        return isPublicAndDialable(ma, this.transportManager)
       })
 
     if (publicAddresses.length > 0) {
@@ -365,7 +365,7 @@ export class DefaultDCUtRService implements Startable {
       try {
         const ma = multiaddr(addr)
 
-        if (!this.isPublicAndDialable(ma)) {
+        if (!isPublicAndDialable(ma, this.transportManager)) {
           continue
         }
 
@@ -374,36 +374,5 @@ export class DefaultDCUtRService implements Startable {
     }
 
     return output
-  }
-
-  /**
-   * Returns true if the passed multiaddr is public, not relayed and we have a
-   * transport that can dial it
-   */
-  isPublicAndDialable (ma: Multiaddr): boolean {
-    // ignore circuit relay
-    if (Circuit.matches(ma)) {
-      return false
-    }
-
-    // dns addresses are probably public?
-    if (DNS.matches(ma)) {
-      return true
-    }
-
-    // ensure we have only IPv4/IPv6 addresses
-    if (!IP.matches(ma)) {
-      return false
-    }
-
-    const transport = this.transportManager.transportForMultiaddr(ma)
-
-    if (transport == null) {
-      return false
-    }
-
-    const options = ma.toOptions()
-
-    return isPrivate(options.host) === false
   }
 }

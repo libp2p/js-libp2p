@@ -5,7 +5,7 @@ import { logger } from '@libp2p/logger'
 import { codes } from './errors.js'
 import type { Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { Startable } from '@libp2p/interface/startable'
 import type { Listener, Transport, Upgrader } from '@libp2p/interface/transport'
@@ -23,7 +23,7 @@ export interface DefaultTransportManagerComponents {
   metrics?: Metrics
   addressManager: AddressManager
   upgrader: Upgrader
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 export class DefaultTransportManager implements TransportManager, Startable {
