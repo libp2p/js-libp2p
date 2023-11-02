@@ -2,7 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { AbortError } from '@libp2p/interface/errors'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -44,7 +44,7 @@ describe('dialing (direct, WebSockets)', () => {
   let connectionManager: DefaultConnectionManager
 
   beforeEach(async () => {
-    const localEvents = new EventEmitter()
+    const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
       peerId: await createEd25519PeerId(),
       datastore: new MemoryDatastore(),

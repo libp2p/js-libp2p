@@ -1,48 +1,3 @@
-# libp2p <!-- omit in toc -->
-
-[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
-[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
-[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
-
-> JavaScript implementation of libp2p, a modular peer to peer network stack
-
-## Table of contents <!-- omit in toc -->
-
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-  - [Project status](#project-status)
-- [Background](#background)
-- [Roadmap](#roadmap)
-- [Usage](#usage)
-  - [Configuration](#configuration)
-  - [Limits](#limits)
-  - [Getting started](#getting-started)
-  - [Tutorials and Examples](#tutorials-and-examples)
-- [Development](#development)
-  - [Tests](#tests)
-    - [Run unit tests](#run-unit-tests)
-  - [Packages](#packages)
-- [Used by](#used-by)
-- [Contribute](#contribute)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribution](#contribution)
-
-## Install
-
-```console
-$ npm i libp2p
-```
-
-### Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `Libp2p` in the global namespace.
-
-```html
-<script src="https://unpkg.com/libp2p/dist/index.min.js"></script>
-```
-
 <h1 align="center">
   <a href="https://libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/master/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
 </h1>
@@ -71,18 +26,20 @@ Loading this module through a script tag will make it's exports available as `Li
   <br>
 </p>
 
-### Project status
+> JavaScript implementation of libp2p, a modular peer to peer network stack
+
+# Project status
 
 We've come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..
 
 The documentation in the master branch may contain changes from a pre-release.
 If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
-**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples folder](/examples).
+**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples repo](https://github.com/libp2p/js-libp2p-examples).
 
 **Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
 
-## Background
+# Background
 
 libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.
 
@@ -99,7 +56,7 @@ We are in the process of writing better documentation, blog posts, tutorials and
 
 To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
 
-## Roadmap
+# Roadmap
 
 The js-libp2p roadmap can be found here: <https://github.com/libp2p/js-libp2p/blob/master/ROADMAP.md>
 
@@ -107,25 +64,25 @@ It represents current projects the js-libp2p maintainers are focused on and prov
 
 It is complementary to the overarching libp2p project roadmap: <https://github.com/libp2p/specs/blob/master/ROADMAP.md>
 
-## Usage
+# Usage
 
 ### Configuration
 
 For all the information on how you can configure libp2p see [CONFIGURATION.md](./doc/CONFIGURATION.md).
 
-### Limits
+## Limits
 
 For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
 
-### Getting started
+## Getting started
 
 If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide.
 
-### Tutorials and Examples
+## Tutorials and Examples
 
-You can find multiple examples on the [examples folder](./examples) that will guide you through using libp2p for several scenarios.
+You can find multiple examples on the [examples repo](https://github.com/libp2p/js-libp2p-examples) that will guide you through using libp2p for several scenarios.
 
-## Development
+# Development
 
 **Clone and install dependencies:**
 
@@ -136,9 +93,9 @@ You can find multiple examples on the [examples folder](./examples) that will gu
 > npm run build
 ```
 
-### Tests
+# Tests
 
-#### Run unit tests
+## Run unit tests
 
 ```sh
 # run all the unit tsts
@@ -151,7 +108,7 @@ You can find multiple examples on the [examples folder](./examples) that will gu
 > npm run test:chrome
 ```
 
-### Packages
+# Packages
 
 List of packages currently in existence for libp2p
 
@@ -195,7 +152,7 @@ List of packages currently in existence for libp2p
 | [`@ChainSafe/libp2p-gossipsub`](//github.com/ChainSafe/js-libp2p-gossipsub)                    | [![npm](https://img.shields.io/npm/v/%40ChainSafe%2Flibp2p-gossipsub.svg?maxAge=86400\&style=flat-square)](//github.com/ChainSafe/js-libp2p-gossipsub/releases)                    | [![Deps](https://img.shields.io/librariesio/release/npm/%40ChainSafe%2Flibp2p-gossipsub?logo=Libraries.io\&logoColor=white\&style=flat-square)](//libraries.io/npm/%40ChainSafe%2Flibp2p-gossipsub)             | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/ChainSafe/js-libp2p-gossipsub/main.yml?branch=master\&label=ci\&style=flat-square)](//github.com/ChainSafe/js-libp2p-gossipsub/actions?query=branch%3Amaster+workflow%3Aci+)                                          | [![codecov](https://codecov.io/gh/ChainSafe/js-libp2p-gossipsub/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/gh/ChainSafe/js-libp2p-gossipsub)                           |
 | [`@libp2p/floodsub`](//github.com/libp2p/js-libp2p-floodsub)                                   | [![npm](https://img.shields.io/npm/v/%40libp2p%2Ffloodsub.svg?maxAge=86400\&style=flat-square)](//github.com/libp2p/js-libp2p-floodsub/releases)                                   | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Ffloodsub?logo=Libraries.io\&logoColor=white\&style=flat-square)](//libraries.io/npm/%40libp2p%2Ffloodsub)                                   | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p-floodsub/js-test-and-release.yml?branch=master\&label=ci\&style=flat-square)](//github.com/libp2p/js-libp2p-floodsub/actions?query=branch%3Amaster+workflow%3Aci+)                                   | [![codecov](https://codecov.io/gh/libp2p/js-libp2p-floodsub/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p-floodsub)                                   |
 
-## Used by
+# Used by
 
 <div style="padding: 20px">
   <p align="middle">
@@ -207,7 +164,7 @@ List of packages currently in existence for libp2p
 
 And [many others...](https://github.com/libp2p/js-libp2p/network/dependents)
 
-## Contribute
+# Contribute
 
 The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
 
@@ -215,17 +172,17 @@ The libp2p implementation in JavaScript is a work in progress. As such, there ar
 - **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
 - **Add tests**. There can never be enough tests.
 
-## API Docs
+# API Docs
 
 - <https://libp2p.github.io/js-libp2p/modules/libp2p.html>
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribution
+# Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

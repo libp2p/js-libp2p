@@ -1,4 +1,8 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "name": "libp2p"
+  "name": "libp2p",
+  "exclude": [
+    "interop",
+    "doc"
+  ]
 }

@@ -1,5 +1,15 @@
 # Changelog
 
+### [0.1.7](https://www.github.com/libp2p/js-libp2p/compare/interface-internal-v0.1.6...interface-internal-v0.1.7) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/peer-collections bumped from ^4.0.5 to ^4.0.6
+
 ### [0.1.6](https://www.github.com/libp2p/js-libp2p/compare/interface-internal-v0.1.5...interface-internal-v0.1.6) (2023-10-06)
 
 

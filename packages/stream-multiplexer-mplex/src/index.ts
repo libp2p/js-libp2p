@@ -1,3 +1,36 @@
+/**
+ * @packageDocumentation
+ *
+ * This is a [simple stream multiplexer(https://docs.libp2p.io/concepts/multiplex/mplex/) that has been deprecated.
+ *
+ * Please use [@chainsafe/libp2p-yamux](https://www.npmjs.com/package/@chainsafe/libp2p-yamux) instead.
+ *
+ * @example
+ *
+ * ```js
+ * import { mplex } from '@libp2p/mplex'
+ * import { pipe } from 'it-pipe'
+ *
+ * const factory = mplex()
+ *
+ * const muxer = factory.createStreamMuxer(components, {
+ *   onStream: stream => { // Receive a duplex stream from the remote
+ *     // ...receive data from the remote and optionally send data back
+ *   },
+ *   onStreamEnd: stream => {
+ *     // ...handle any tracking you may need of stream closures
+ *   }
+ * })
+ *
+ * pipe(conn, muxer, conn) // conn is duplex connection to another peer
+ *
+ * const stream = muxer.newStream() // Create a new duplex stream to the remote
+ *
+ * // Use the duplex stream to send some data to the remote...
+ * pipe([1, 2, 3], stream)
+ * ```
+ */
+
 import { MplexStreamMuxer } from './mplex.js'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
 

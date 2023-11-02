@@ -1,18 +1,18 @@
 import { mockConnection } from './connection.js'
 import type { Libp2pEvents } from '@libp2p/interface'
 import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { Upgrader, UpgraderOptions } from '@libp2p/interface/transport'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 
 export interface MockUpgraderInit {
   registrar?: Registrar
-  events?: EventEmitter<Libp2pEvents>
+  events?: TypedEventTarget<Libp2pEvents>
 }
 
 class MockUpgrader implements Upgrader {
   private readonly registrar?: Registrar
-  private readonly events?: EventEmitter<Libp2pEvents>
+  private readonly events?: TypedEventTarget<Libp2pEvents>
 
   constructor (init: MockUpgraderInit) {
     this.registrar = init.registrar

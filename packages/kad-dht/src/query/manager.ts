@@ -1,6 +1,5 @@
-import { setMaxListeners } from 'events'
 import { AbortError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { anySignal } from 'any-signal'
@@ -75,11 +74,7 @@ export class QueryManager implements Startable {
     // allow us to stop queries on shut down
     this.shutDownController = new AbortController()
     // make sure we don't make a lot of noise in the logs
-    try {
-      if (setMaxListeners != null) {
-        setMaxListeners(Infinity, this.shutDownController.signal)
-      }
-    } catch {} // fails on node < 15.4
+    setMaxListeners(Infinity, this.shutDownController.signal)
   }
 
   isStarted (): boolean {
@@ -122,28 +117,20 @@ export class QueryManager implements Startable {
 
       // this signal will get listened to for network requests, etc
       // so make sure we don't make a lot of noise in the logs
-      try {
-        if (setMaxListeners != null) {
-          setMaxListeners(Infinity, options.signal)
-        }
-      } catch {} // fails on node < 15.4
+      setMaxListeners(Infinity, options.signal)
     }
 
     const signal = anySignal([this.shutDownController.signal, options.signal])
 
     // this signal will get listened to for every invocation of queryFunc
     // so make sure we don't make a lot of noise in the logs
-    try {
-      if (setMaxListeners != null) {
-        setMaxListeners(Infinity, signal)
-      }
-    } catch {} // fails on node < 15.4
+    setMaxListeners(Infinity, signal)
 
     const log = logger(`libp2p:kad-dht:${this.lan ? 'lan' : 'wan'}:query:` + uint8ArrayToString(key, 'base58btc'))
 
     // query a subset of peers up to `kBucketSize / 2` in length
     const startTime = Date.now()
-    const cleanUp = new EventEmitter<CleanUpEvents>()
+    const cleanUp = new TypedEventEmitter<CleanUpEvents>()
 
     try {
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {

@@ -3,7 +3,7 @@ import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { PeerJobQueue } from '../utils/peer-job-queue.js'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, MIN_CONNECTIONS } from './constants.js'
 import type { Libp2pEvents } from '@libp2p/interface'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
@@ -22,7 +22,7 @@ interface AutoDialInit {
 interface AutoDialComponents {
   connectionManager: ConnectionManager
   peerStore: PeerStore
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 const defaultOptions = {

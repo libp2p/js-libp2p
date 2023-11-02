@@ -4,7 +4,7 @@ import type { Libp2pEvents } from '@libp2p/interface'
 import type { ConnectionProtector } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerRouting } from '@libp2p/interface/peer-routing'
@@ -18,7 +18,7 @@ import type { Datastore } from 'interface-datastore'
 
 export interface Components extends Record<string, any>, Startable {
   peerId: PeerId
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
   addressManager: AddressManager
   peerStore: PeerStore
   upgrader: Upgrader
@@ -35,7 +35,7 @@ export interface Components extends Record<string, any>, Startable {
 
 export interface ComponentsInit {
   peerId?: PeerId
-  events?: EventEmitter<Libp2pEvents>
+  events?: TypedEventTarget<Libp2pEvents>
   addressManager?: AddressManager
   peerStore?: PeerStore
   upgrader?: Upgrader

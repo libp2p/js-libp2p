@@ -5,6 +5,38 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+### [3.2.5](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.4...webrtc-v3.2.5) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/interface-internal bumped from ^0.1.6 to ^0.1.7
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/websockets bumped from ^7.0.9 to ^7.0.10
+    * libp2p bumped from ^0.46.15 to ^0.46.16
+
+### [3.2.4](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.3...webrtc-v3.2.4) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.14 to ^0.46.15
+
 ### [3.2.3](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.2...webrtc-v3.2.3) (2023-10-10)
 
 

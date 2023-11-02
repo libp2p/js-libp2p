@@ -1,5 +1,20 @@
+/**
+ * @packageDocumentation
+ *
+ * A set of components to be extended in order to create a pubsub implementation.
+ *
+ * @example
+ * ```javascript
+ * import { PubSubBaseProtocol } from '@libp2p/pubsub'
+ *
+ * class MyPubsubImplementation extends PubSubBaseProtocol {
+ *   // .. extra methods here
+ * }
+ * ```
+ */
+
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PubSub, type Message, type StrictNoSign, type StrictSign, type PubSubInit, type PubSubEvents, type PeerStreams, type PubSubRPCMessage, type PubSubRPC, type PubSubRPCSubscription, type SubscriptionChangeData, type PublishResult, type TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface/pubsub'
 import { logger } from '@libp2p/logger'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
@@ -28,7 +43,7 @@ export interface PubSubComponents {
  * PubSubBaseProtocol handles the peers and connections logic for pubsub routers
  * and specifies the API that pubsub routers should have.
  */
-export abstract class PubSubBaseProtocol<Events extends Record<string, any> = PubSubEvents> extends EventEmitter<Events> implements PubSub<Events> {
+export abstract class PubSubBaseProtocol<Events extends Record<string, any> = PubSubEvents> extends TypedEventEmitter<Events> implements PubSub<Events> {
   public started: boolean
   /**
    * Map of topics to which peers are subscribed to
@@ -197,6 +212,12 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    */
   protected _onPeerConnected (peerId: PeerId, conn: Connection): void {
     log('connected %p', peerId)
+
+    // if this connection is already in use for pubsub, ignore it
+    if (conn.streams.find(stream => stream.direction === 'outbound' && stream.protocol != null && this.multicodecs.includes(stream.protocol)) != null) {
+      log('outbound pubsub streams already present on connection from %p', peerId)
+      return
+    }
 
     void Promise.resolve().then(async () => {
       try {
@@ -513,8 +534,14 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   sendRpc (peer: PeerId, rpc: PubSubRPC): void {
     const peerStreams = this.peers.get(peer)
 
-    if (peerStreams == null || !peerStreams.isWritable) {
-      log.error('Cannot send RPC to %p as there is no open stream to it available', peer)
+    if (peerStreams == null) {
+      log.error('Cannot send RPC to %p as there are no streams to it available', peer)
+
+      return
+    }
+
+    if (!peerStreams.isWritable) {
+      log.error('Cannot send RPC to %p as there is no outbound stream to it available', peer)
 
       return
     }

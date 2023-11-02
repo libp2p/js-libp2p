@@ -1,10 +1,11 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { type AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
 import type { Libp2pEvents } from '@libp2p/interface'
@@ -18,15 +19,14 @@ const announceAddreses = ['/dns4/peer.io']
 describe('Address Manager', () => {
   let peerId: PeerId
   let peerStore: StubbedInstance<PeerStore>
-  let events: EventEmitter<Libp2pEvents>
+  let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
     peerStore = stubInterface<PeerStore>({
-      // @ts-expect-error incorrect return type
-      patch: Promise.resolve({})
+      patch: Sinon.stub().resolves({})
     })
-    events = new EventEmitter()
+    events = new TypedEventEmitter()
   })
 
   it('should not need any addresses', () => {
@@ -147,7 +147,7 @@ describe('Address Manager', () => {
     const am = new DefaultAddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>({
-        getAddrs: []
+        getAddrs: Sinon.stub().returns([])
       }),
       peerStore,
       events

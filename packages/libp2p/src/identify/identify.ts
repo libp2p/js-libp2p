@@ -1,5 +1,5 @@
-import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -21,7 +21,7 @@ import { Identify } from './pb/message.js'
 import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Peer, PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
@@ -70,7 +70,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly maxPushOutgoingStreams: number
   private readonly maxIdentifyMessageSize: number
   private readonly maxObservedAddresses: number
-  private readonly events: EventEmitter<Libp2pEvents>
+  private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
@@ -187,10 +187,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
       const signal = AbortSignal.timeout(this.timeout)
 
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, signal)
-      } catch {}
+      setMaxListeners(Infinity, signal)
 
       try {
         stream = await connection.newStream([this.identifyPushProtocolStr], {
@@ -318,22 +315,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
 
-    const signedPeerRecord = await this.#consumeIdentifyMessage(connection.remotePeer, message)
-
-    const result: IdentifyResult = {
-      peerId: id,
-      protocolVersion: message.protocolVersion,
-      agentVersion: message.agentVersion,
-      publicKey: message.publicKey,
-      listenAddrs: message.listenAddrs.map(buf => multiaddr(buf)),
-      observedAddr: message.observedAddr == null ? undefined : multiaddr(message.observedAddr),
-      protocols: message.protocols,
-      signedPeerRecord
-    }
-
-    this.events.safeDispatchEvent('peer:identify', { detail: result })
-
-    return result
+    return this.#consumeIdentifyMessage(connection, message)
   }
 
   /**
@@ -345,10 +327,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     const signal = AbortSignal.timeout(this.timeout)
 
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
+    setMaxListeners(Infinity, signal)
 
     try {
       const publicKey = this.peerId.publicKey ?? new Uint8Array(0)
@@ -411,7 +390,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       const message = await pb.read(options)
       await stream.close(options)
 
-      await this.#consumeIdentifyMessage(connection.remotePeer, message)
+      await this.#consumeIdentifyMessage(connection, message)
     } catch (err: any) {
       log.error('received invalid message', err)
       stream.abort(err)
@@ -421,8 +400,8 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     log('handled push from %p', connection.remotePeer)
   }
 
-  async #consumeIdentifyMessage (remotePeer: PeerId, message: Identify): Promise<SignedPeerRecord | undefined> {
-    log('received identify from %p', remotePeer)
+  async #consumeIdentifyMessage (connection: Connection, message: Identify): Promise<IdentifyResult> {
+    log('received identify from %p', connection.remotePeer)
 
     if (message == null) {
       throw new Error('Message was null or undefined')
@@ -441,7 +420,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     // if the peer record has been sent, prefer the addresses in the record as they are signed by the remote peer
     if (message.signedPeerRecord != null) {
-      log('received signedPeerRecord in push from %p', remotePeer)
+      log('received signedPeerRecord in push from %p', connection.remotePeer)
 
       let peerRecordEnvelope = message.signedPeerRecord
       const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
@@ -453,7 +432,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       }
 
       // Make sure remote peer is the one sending the record
-      if (!remotePeer.equals(peerRecord.peerId)) {
+      if (!connection.remotePeer.equals(peerRecord.peerId)) {
         throw new Error('signing key does not match remote PeerId')
       }
 
@@ -499,7 +478,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         addresses: peerRecord.multiaddrs
       }
     } else {
-      log('%p did not send a signed peer record', remotePeer)
+      log('%p did not send a signed peer record', connection.remotePeer)
     }
 
     if (message.agentVersion != null) {
@@ -510,9 +489,23 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       peer.metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
     }
 
-    await this.peerStore.patch(remotePeer, peer)
+    await this.peerStore.patch(connection.remotePeer, peer)
 
-    return output
+    const result: IdentifyResult = {
+      peerId: connection.remotePeer,
+      protocolVersion: message.protocolVersion,
+      agentVersion: message.agentVersion,
+      publicKey: message.publicKey,
+      listenAddrs: message.listenAddrs.map(buf => multiaddr(buf)),
+      observedAddr: message.observedAddr == null ? undefined : multiaddr(message.observedAddr),
+      protocols: message.protocols,
+      signedPeerRecord: output,
+      connection
+    }
+
+    this.events.safeDispatchEvent('peer:identify', { detail: result })
+
+    return result
   }
 }
 

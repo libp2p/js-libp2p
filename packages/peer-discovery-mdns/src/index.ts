@@ -1,4 +1,82 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
+/**
+ * @packageDocumentation
+ *
+ * A peer discover mechanism that uses [mDNS](https://datatracker.ietf.org/doc/html/rfc6762) to discover peers on the local network.
+ *
+ * @example
+ *
+ * ```ts
+ * import { mdns } from '@libp2p/mdns'
+ *
+ * const options = {
+ *   peerDiscovery: [
+ *     mdns()
+ *   ]
+ * }
+ *
+ * const libp2p = await createLibp2p(options)
+ *
+ * libp2p.on('peer:discovery', function (peerId) {
+ *   console.log('found peer: ', peerId.toB58String())
+ * })
+ *
+ * await libp2p.start()
+ * ```
+ *
+ * ## MDNS messages
+ *
+ * A query is sent to discover the libp2p nodes on the local network
+ *
+ * ```js
+ * {
+ *    type: 'query',
+ *    questions: [ { name: '_p2p._udp.local', type: 'PTR' } ]
+ * }
+ * ```
+ *
+ * When a query is detected, each libp2p node sends an answer about itself
+ *
+ * ```js
+ * [{
+ *   name: '_p2p._udp.local',
+ *   type: 'PTR',
+ *   class: 'IN',
+ *   ttl: 120,
+ *   data: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local'
+ * }, {
+ *   name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
+ *   type: 'SRV',
+ *   class: 'IN',
+ *   ttl: 120,
+ *   data: {
+ *     priority: 10,
+ *     weight: 1,
+ *     port: '20002',
+ *     target: 'LAPTOP-G5LJ7VN9'
+ *   }
+ * }, {
+ *   name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
+ *   type: 'TXT',
+ *   class: 'IN',
+ *   ttl: 120,
+ *   data: ['QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK']
+ * }, {
+ *   name: 'LAPTOP-G5LJ7VN9',
+ *   type: 'A',
+ *   class: 'IN',
+ *   ttl: 120,
+ *   data: '127.0.0.1'
+ * }, {
+ *   name: 'LAPTOP-G5LJ7VN9',
+ *   type: 'AAAA',
+ *   class: 'IN',
+ *   ttl: 120,
+ *   data: '::1'
+ * }]
+ * ```
+ */
+
+import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { logger } from '@libp2p/logger'
 import multicastDNS from 'multicast-dns'
@@ -12,11 +90,33 @@ import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 const log = logger('libp2p:mdns')
 
 export interface MulticastDNSInit {
+  /**
+   * (true/false) announce our presence through mDNS, default `true`
+   */
   broadcast?: boolean
+
+  /**
+   * query interval, default 10 \* 1000 (10 seconds)
+   */
   interval?: number
+
+  /**
+   * name of the service announce , default '_p2p._udp.local\`
+   */
   serviceTag?: string
+  /**
+   * Peer name to announce (should not be peeer id), default random string
+   */
   peerName?: string
+
+  /**
+   * UDP port to broadcast to
+   */
   port?: number
+
+  /**
+   * UDP IP to broadcast to
+   */
   ip?: string
 }
 
@@ -24,7 +124,7 @@ export interface MulticastDNSComponents {
   addressManager: AddressManager
 }
 
-class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
+class MulticastDNS extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   public mdns?: multicastDNS.MulticastDNS
 
   private readonly broadcast: boolean

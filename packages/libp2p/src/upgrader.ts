@@ -1,5 +1,5 @@
-import { setMaxListeners } from 'events'
 import { CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -11,7 +11,7 @@ import type { Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions } from '@libp2p/interface/connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -104,7 +104,7 @@ export interface DefaultUpgraderComponents {
   connectionProtector?: ConnectionProtector
   registrar: Registrar
   peerStore: PeerStore
-  events: EventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 type EncryptedConn = Duplex<AsyncGenerator<Uint8Array, any, unknown>, Source<Uint8Array>, Promise<void>>
@@ -116,7 +116,7 @@ export class DefaultUpgrader implements Upgrader {
   private readonly connectionEncryption: Map<string, ConnectionEncrypter>
   private readonly muxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
-  private readonly events: EventEmitter<Libp2pEvents>
+  private readonly events: TypedEventTarget<Libp2pEvents>
 
   constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
     this.components = components
@@ -170,10 +170,7 @@ export class DefaultUpgrader implements Upgrader {
 
     signal.addEventListener('abort', onAbort, { once: true })
 
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, signal)
-    } catch { }
+    setMaxListeners(Infinity, signal)
 
     try {
       if ((await this.components.connectionGater.denyInboundConnection?.(maConn)) === true) {
@@ -444,10 +441,7 @@ export class DefaultUpgrader implements Upgrader {
 
             options.signal = AbortSignal.timeout(30000)
 
-            try {
-              // fails on node < 15.4
-              setMaxListeners?.(Infinity, options.signal)
-            } catch { }
+            setMaxListeners(Infinity, options.signal)
           }
 
           const { stream, protocol } = await mss.select(muxedStream, protocols, options)
