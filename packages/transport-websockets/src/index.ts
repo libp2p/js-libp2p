@@ -1,3 +1,68 @@
+/**
+ * @packageDocumentation
+ *
+ * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
+ *
+ * @example
+ *
+ * ```js
+ * import { createLibp2pNode } from 'libp2p'
+ * import { webSockets } from '@libp2p/webrtc-direct'
+ *
+ * const node = await createLibp2p({
+ *   transports: [
+ *     webSockets()
+ *   ]
+ * //... other config
+ * })
+ * await node.start()
+ * await node.dial('/ip4/127.0.0.1/tcp/9090/ws')
+ * ```
+ *
+ * ## Filters
+ *
+ * When run in a browser by default this module will only connect to secure web socket addresses.
+ *
+ * To change this you should pass a filter to the factory function.
+ *
+ * You can create your own address filters for this transports, or rely in the filters [provided](./src/filters.js).
+ *
+ * The available filters are:
+ *
+ * - `filters.all`
+ *   - Returns all TCP and DNS based addresses, both with `ws` or `wss`.
+ * - `filters.dnsWss`
+ *   - Returns all DNS based addresses with `wss`.
+ * - `filters.dnsWsOrWss`
+ *   - Returns all DNS based addresses, both with `ws` or `wss`.
+ *
+ * @example
+ *
+ * ```js
+ * import { createLibp2pNode } from 'libp2p'
+ * import { websockets } from '@libp2p/websockets'
+ * import filters from '@libp2p/websockets/filters'
+ * import { mplex } from '@libp2p/mplex'
+ * import { noise } from '@libp2p/noise'
+ *
+ * const transportKey = Websockets.prototype[Symbol.toStringTag]
+ * const node = await Libp2p.create({
+ *   transport: [
+ *     websockets({
+ *       // connect to all sockets, even insecure ones
+ *       filter: filters.all
+ *     })
+ *   ],
+ *   streamMuxers: [
+ *     mplex()
+ *   ],
+ *   connectionEncryption: [
+ *     noise()
+ *   ]
+ * })
+ * ```
+ */
+
 import { AbortError, CodeError } from '@libp2p/interface/errors'
 import { type Transport, type MultiaddrFilter, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
 import { logger } from '@libp2p/logger'

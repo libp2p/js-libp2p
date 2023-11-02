@@ -1,3 +1,19 @@
+/**
+ * @packageDocumentation
+ *
+ * An implementation of a peer id
+ *
+ * @example
+ *
+ * ```JavaScript
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
+ *
+ * console.log(peer.toCid()) // CID(bafzaa...)
+ * console.log(peer.toString()) // "12D3K..."
+ * ```
+ */
+
 import { CodeError } from '@libp2p/interface/errors'
 import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type Secp256k1PeerId, symbol, type PeerId } from '@libp2p/interface/peer-id'
 import { base58btc } from 'multiformats/bases/base58'

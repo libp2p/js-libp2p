@@ -1,6 +1,6 @@
-import { setMaxListeners } from 'events'
 import { symbol } from '@libp2p/interface/connection'
 import { CodeError } from '@libp2p/interface/errors'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions } from '@libp2p/interface/connection'
@@ -93,6 +93,10 @@ export class ConnectionImpl implements Connection {
     this.encryption = init.encryption
     this.transient = init.transient ?? false
 
+    if (this.remoteAddr.getPeerId() == null) {
+      this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`)
+    }
+
     this._newStream = newStream
     this._close = close
     this._abort = abort
@@ -152,10 +156,7 @@ export class ConnectionImpl implements Connection {
 
     options.signal = options?.signal ?? AbortSignal.timeout(CLOSE_TIMEOUT)
 
-    try {
-      // fails on node < 15.4
-      setMaxListeners?.(Infinity, options.signal)
-    } catch { }
+    setMaxListeners(Infinity, options.signal)
 
     try {
       log.trace('closing all streams')

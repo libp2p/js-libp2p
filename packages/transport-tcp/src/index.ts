@@ -1,3 +1,59 @@
+/**
+ * @packageDocumentation
+ *
+ * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on the TCP networking stack.
+ *
+ * @example
+ *
+ * ```js
+ * import { tcp } from '@libp2p/tcp'
+ * import { multiaddr } from '@multiformats/multiaddr'
+ * import { pipe } from 'it-pipe'
+ * import all from 'it-all'
+ *
+ * // A simple upgrader that just returns the MultiaddrConnection
+ * const upgrader = {
+ *   upgradeInbound: async maConn => maConn,
+ *   upgradeOutbound: async maConn => maConn
+ * }
+ *
+ * const transport = tcp()()
+ *
+ * const listener = transport.createListener({
+ *   upgrader,
+ *   handler: (socket) => {
+ *     console.log('new connection opened')
+ *     pipe(
+ *       ['hello', ' ', 'World!'],
+ *       socket
+ *     )
+ *   }
+ * })
+ *
+ * const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
+ * await listener.listen(addr)
+ * console.log('listening')
+ *
+ * const socket = await transport.dial(addr, { upgrader })
+ * const values = await pipe(
+ *   socket,
+ *   all
+ * )
+ * console.log(`Value: ${values.toString()}`)
+ *
+ * // Close connection after reading
+ * await listener.close()
+ * ```
+ *
+ * Outputs:
+ *
+ * ```sh
+ * listening
+ * new connection opened
+ * Value: hello World!
+ * ```
+ */
+
 import net from 'net'
 import { AbortError, CodeError } from '@libp2p/interface/errors'
 import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'

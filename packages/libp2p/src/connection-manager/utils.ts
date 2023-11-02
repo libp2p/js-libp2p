@@ -1,4 +1,4 @@
-import { setMaxListeners } from 'events'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { type ClearableSignal, anySignal } from 'any-signal'
@@ -55,10 +55,7 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Cle
 
   for (const sig of signals) {
     if (sig != null) {
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, sig)
-      } catch { }
+      setMaxListeners(Infinity, sig)
       sigs.push(sig)
     }
   }
@@ -66,10 +63,7 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Cle
   // let any signal abort the dial
   const signal = anySignal(sigs)
 
-  try {
-    // fails on node < 15.4
-    setMaxListeners?.(Infinity, signal)
-  } catch {}
+  setMaxListeners(Infinity, signal)
 
   return signal
 }

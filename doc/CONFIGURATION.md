@@ -1017,7 +1017,7 @@ As libp2p is designed to be a modular networking library, its usage will vary ba
 
 If you have developed a project using `js-libp2p`, please consider submitting your configuration to this list so that it can be found easily by other users.
 
-The [examples](../examples) are also a good source of help for finding a configuration that suits your needs.
+The [examples repo](https://github.com/libp2p/js-libp2p-examples) is also a good source of help for finding a configuration that suits your needs.
 
 ## Limits
 

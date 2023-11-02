@@ -1,3 +1,35 @@
+/**
+ * @packageDocumentation
+ *
+ * > Don't use this module
+ *
+ * This module is a naive implementation of pubsub. It broadcasts all messages to all network peers, cannot provide older messages and has no protection against bad actors.
+ *
+ * It exists for academic purposes only, you should not use it in production.
+ *
+ * Instead please use [gossipsub](https://www.npmjs.com/package/@chainsafe/libp2p-gossipsub) - a more complete implementation which is also compatible with floodsub.
+ *
+ * @example
+ *
+ * ```JavaScript
+ * import { createLibp2pNode } from 'libp2p'
+ * import { floodsub } from '@libp2p/floodsub'
+ *
+ * const node = await createLibp2pNode({
+ *   pubsub: floodsub()
+ *   //... other options
+ * })
+ * await node.start()
+ *
+ * node.pubsub.subscribe('fruit')
+ * node.pubsub.addEventListener('message', (evt) => {
+ *   console.log(evt)
+ * })
+ *
+ * node.pubsub.publish('fruit', new TextEncoder().encode('banana'))
+ * ```
+ */
+
 import { logger } from '@libp2p/logger'
 import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { toString } from 'uint8arrays/to-string'
