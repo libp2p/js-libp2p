@@ -214,7 +214,8 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     log('connected %p', peerId)
 
     // if this connection is already in use for pubsub, ignore it
-    if (conn.streams.find(stream => stream.protocol != null && this.multicodecs.includes(stream.protocol)) != null) {
+    if (conn.streams.find(stream => stream.direction === 'outbound' && stream.protocol != null && this.multicodecs.includes(stream.protocol)) != null) {
+      log('outbound pubsub streams already present on connection from %p', peerId)
       return
     }
 
@@ -533,8 +534,14 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   sendRpc (peer: PeerId, rpc: PubSubRPC): void {
     const peerStreams = this.peers.get(peer)
 
-    if (peerStreams == null || !peerStreams.isWritable) {
-      log.error('Cannot send RPC to %p as there is no open stream to it available', peer)
+    if (peerStreams == null) {
+      log.error('Cannot send RPC to %p as there are no streams to it available', peer)
+
+      return
+    }
+
+    if (!peerStreams.isWritable) {
+      log.error('Cannot send RPC to %p as there is no outbound stream to it available', peer)
 
       return
     }

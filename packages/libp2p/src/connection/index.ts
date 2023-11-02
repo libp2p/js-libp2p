@@ -93,6 +93,10 @@ export class ConnectionImpl implements Connection {
     this.encryption = init.encryption
     this.transient = init.transient ?? false
 
+    if (this.remoteAddr.getPeerId() == null) {
+      this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`)
+    }
+
     this._newStream = newStream
     this._close = close
     this._abort = abort
