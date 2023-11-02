@@ -490,6 +490,17 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       peer.metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
     }
 
+    // if the remote has not sent addresses, preserve the existing ones.
+    // this can happen during an identify-push triggered by a supported protocol
+    // change but the protobuf format makes it impossible to know if the remote
+    // was telling us they have no addresses (unlikely) or if they meant to send
+    // a partial update and omit the list entirely
+    if (peer.addresses.length === 0) {
+      // @ts-expect-error addresses is not optional
+      delete peer.addresses
+    }
+
+    log('patching %p with', peer)
     await this.peerStore.patch(connection.remotePeer, peer)
 
     const result: IdentifyResult = {

@@ -3,7 +3,7 @@
 
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair, mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -15,6 +15,7 @@ import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pbStream } from 'it-protobuf-stream'
+import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -31,8 +32,10 @@ import { DefaultIdentifyService } from '../../src/identify/identify.js'
 import { identifyService, type IdentifyServiceInit, Message } from '../../src/identify/index.js'
 import { Identify } from '../../src/identify/pb/message.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
+import type { Connection } from '@libp2p/interface/connection'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { Duplex, Source } from 'it-stream-types'
 
 const listenMaddrs = [multiaddr('/ip4/127.0.0.1/tcp/15002/ws')]
 
@@ -503,5 +506,61 @@ describe('identify', () => {
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
     }])
     expect(peer.id.publicKey).to.equalBytes(remoteComponents.peerId.publicKey)
+  })
+
+  it('should not overwrite addresses when none are sent', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    await start(localIdentify)
+
+    const duplex: Duplex<any, Source<any>, any> = {
+      source: pushable(),
+      sink: async (source) => {
+        await drain(source)
+      }
+    }
+
+    duplex.source.push(lp.encode.single(Identify.encode({
+      listenAddrs: [
+        multiaddr('/ip4/127.0.0.1/tcp/4001').bytes
+      ],
+      protocols: [
+        '/proto/1'
+      ]
+    })))
+
+    await localIdentify._handlePush({
+      stream: mockStream(duplex),
+      connection: stubInterface<Connection>({
+        remotePeer: remoteComponents.peerId
+      })
+    })
+
+    const peerData = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(peerData.addresses[0].multiaddr.toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
+    expect(peerData.protocols).to.deep.equal(['/proto/1'])
+
+    const updateDuplex: Duplex<any, Source<any>, any> = {
+      source: pushable(),
+      sink: async (source) => {
+        await drain(source)
+      }
+    }
+
+    updateDuplex.source.push(lp.encode.single(Identify.encode({
+      protocols: [
+        '/proto/2'
+      ]
+    })))
+
+    await localIdentify._handlePush({
+      stream: mockStream(updateDuplex),
+      connection: stubInterface<Connection>({
+        remotePeer: remoteComponents.peerId
+      })
+    })
+
+    const updatedPeerData = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(updatedPeerData.addresses[0].multiaddr.toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
+    expect(updatedPeerData.protocols).to.deep.equal(['/proto/2'])
   })
 })
