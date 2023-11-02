@@ -38,6 +38,7 @@ interface PrivateToPrivateComponents {
 
 async function getComponents (): Promise<PrivateToPrivateComponents> {
   const relayPeerId = await createEd25519PeerId()
+  const initiatorPeerId = await createEd25519PeerId()
   const receiverPeerId = await createEd25519PeerId()
   const receiverMultiaddr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${relayPeerId}/p2p-circuit/webrtc/p2p/${receiverPeerId}`)
   const [initiatorToReceiver, receiverToInitiator] = duplexPair<any>()
@@ -66,7 +67,9 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
     },
     recipient: {
       peerConnection: new RTCPeerConnection(),
-      connection: stubInterface<Connection>(),
+      connection: stubInterface<Connection>({
+        remoteAddr: multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${relayPeerId}/p2p-circuit/p2p/${initiatorPeerId}`)
+      }),
       abortController: recipientAbortController,
       signal: recipientAbortController.signal,
       stream: receiverStream

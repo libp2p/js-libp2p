@@ -1,18 +1,18 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { SIGNALING_PROTO_ID, splitAddr, type WebRTCTransportMetrics } from './transport.js'
-import { parseRemoteAddress, readCandidatesUntilConnected, resolveOnConnected } from './util.js'
+import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
 import type { DataChannelOptions } from '../index.js'
 import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:webrtc:initiate-connection')
 
@@ -33,7 +33,7 @@ export interface ConnectOptions {
 }
 
 export async function initiateConnection ({ peerConnection, signal, metrics, multiaddr: ma, connectionManager, transportManager }: ConnectOptions): Promise<{ remoteAddress: Multiaddr }> {
-  const { baseAddr, peerId } = splitAddr(ma)
+  const { baseAddr } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
 
@@ -158,12 +158,10 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
         signal
       })
 
-      const remoteAddress = parseRemoteAddress(peerConnection.currentRemoteDescription?.sdp ?? '')
-
-      log.trace('initiator connected to remote address %s', remoteAddress)
+      log.trace('initiator connected to remote address %s', ma)
 
       return {
-        remoteAddress: multiaddr(remoteAddress).encapsulate(`/p2p/${peerId.toString()}`)
+        remoteAddress: ma
       }
     } catch (err: any) {
       peerConnection.close()
