@@ -33,6 +33,7 @@ import { identifyService, type IdentifyServiceInit, Message } from '../../src/id
 import { Identify } from '../../src/identify/pb/message.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Connection } from '@libp2p/interface/connection'
+import type { Peer } from '@libp2p/interface/peer-store'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Duplex, Source } from 'it-stream-types'
@@ -84,7 +85,7 @@ async function createComponents (index: number): Promise<Components> {
   return components
 }
 
-describe('identify', () => {
+describe.only('identify', () => {
   let localComponents: Components
   let remoteComponents: Components
 
@@ -508,7 +509,53 @@ describe('identify', () => {
     expect(peer.id.publicKey).to.equalBytes(remoteComponents.peerId.publicKey)
   })
 
-  it('should not overwrite addresses when none are sent', async () => {
+  it('should not overwrite peer data when fields are omitted', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+    await start(localIdentify)
+
+    const peer: Peer = {
+      id: remoteComponents.peerId,
+      addresses: [{
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
+        isCertified: true
+      }],
+      protocols: [
+        '/proto/1'
+      ],
+      metadata: new Map([['key', uint8ArrayFromString('value')]]),
+      tags: new Map([['key', { value: 1 }]])
+    }
+
+    await localComponents.peerStore.save(remoteComponents.peerId, peer)
+
+    const duplex: Duplex<any, Source<any>, any> = {
+      source: pushable(),
+      sink: async (source) => {
+        await drain(source)
+      }
+    }
+
+    duplex.source.push(lp.encode.single(Identify.encode({
+      protocols: [
+        '/proto/2'
+      ]
+    })))
+
+    await localIdentify._handlePush({
+      stream: mockStream(duplex),
+      connection: stubInterface<Connection>({
+        remotePeer: remoteComponents.peerId
+      })
+    })
+
+    const updatedPeerData = await localComponents.peerStore.get(remoteComponents.peerId)
+    expect(updatedPeerData.addresses[0].multiaddr.toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
+    expect(updatedPeerData.protocols).to.deep.equal(['/proto/2'])
+    expect(updatedPeerData.metadata.get('key')).to.equalBytes(uint8ArrayFromString('value'))
+    expect(updatedPeerData.tags.get('key')).to.deep.equal({ value: 1 })
+  })
+
+  it('should reject incorrect public key', async () => {
     const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
     await start(localIdentify)
 
@@ -520,13 +567,10 @@ describe('identify', () => {
     }
 
     duplex.source.push(lp.encode.single(Identify.encode({
-      listenAddrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/4001').bytes
-      ],
-      protocols: [
-        '/proto/1'
-      ]
+      publicKey: Uint8Array.from([0, 1, 2, 3, 4])
     })))
+
+    const localPeerStorePatchSpy = sinon.spy(localComponents.peerStore, 'patch')
 
     await localIdentify._handlePush({
       stream: mockStream(duplex),
@@ -535,32 +579,6 @@ describe('identify', () => {
       })
     })
 
-    const peerData = await localComponents.peerStore.get(remoteComponents.peerId)
-    expect(peerData.addresses[0].multiaddr.toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
-    expect(peerData.protocols).to.deep.equal(['/proto/1'])
-
-    const updateDuplex: Duplex<any, Source<any>, any> = {
-      source: pushable(),
-      sink: async (source) => {
-        await drain(source)
-      }
-    }
-
-    updateDuplex.source.push(lp.encode.single(Identify.encode({
-      protocols: [
-        '/proto/2'
-      ]
-    })))
-
-    await localIdentify._handlePush({
-      stream: mockStream(updateDuplex),
-      connection: stubInterface<Connection>({
-        remotePeer: remoteComponents.peerId
-      })
-    })
-
-    const updatedPeerData = await localComponents.peerStore.get(remoteComponents.peerId)
-    expect(updatedPeerData.addresses[0].multiaddr.toString()).to.equal('/ip4/127.0.0.1/tcp/4001')
-    expect(updatedPeerData.protocols).to.deep.equal(['/proto/2'])
+    expect(localPeerStorePatchSpy.called).to.be.false('patch was called when public key was invalid')
   })
 })
