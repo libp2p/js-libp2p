@@ -23,7 +23,7 @@ import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions } fro
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Peer, PeerStore } from '@libp2p/interface/peer-store'
+import type { Peer, PeerData, PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
@@ -404,17 +404,30 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     log('received identify from %p', connection.remotePeer)
 
     if (message == null) {
-      throw new Error('Message was null or undefined')
+      throw new CodeError('message was null or undefined', 'ERR_INVALID_MESSAGE')
     }
 
-    const peer = {
-      addresses: message.listenAddrs.map(buf => ({
+    const peer: PeerData = {}
+
+    if (message.listenAddrs.length > 0) {
+      peer.addresses = message.listenAddrs.map(buf => ({
         isCertified: false,
         multiaddr: multiaddr(buf)
-      })),
-      protocols: message.protocols,
-      metadata: new Map(),
-      peerRecordEnvelope: message.signedPeerRecord
+      }))
+    }
+
+    if (message.protocols.length > 0) {
+      peer.protocols = message.protocols
+    }
+
+    if (message.publicKey != null) {
+      peer.publicKey = message.publicKey
+
+      const peerId = await peerIdFromKeys(message.publicKey)
+
+      if (!peerId.equals(connection.remotePeer)) {
+        throw new CodeError('public key did not match remote PeerId', 'ERR_INVALID_PUBLIC_KEY')
+      }
     }
 
     let output: SignedPeerRecord | undefined
@@ -429,12 +442,12 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
       // Verify peerId
       if (!peerRecord.peerId.equals(envelope.peerId)) {
-        throw new Error('signing key does not match PeerId in the PeerRecord')
+        throw new CodeError('signing key does not match PeerId in the PeerRecord', 'ERR_INVALID_SIGNING_KEY')
       }
 
       // Make sure remote peer is the one sending the record
       if (!connection.remotePeer.equals(peerRecord.peerId)) {
-        throw new Error('signing key does not match remote PeerId')
+        throw new CodeError('signing key does not match remote PeerId', 'ERR_INVALID_PEER_RECORD_KEY')
       }
 
       let existingPeer: Peer | undefined
@@ -482,15 +495,25 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       log('%p did not send a signed peer record', connection.remotePeer)
     }
 
-    if (message.agentVersion != null) {
-      peer.metadata.set('AgentVersion', uint8ArrayFromString(message.agentVersion))
-    }
-
-    if (message.protocolVersion != null) {
-      peer.metadata.set('ProtocolVersion', uint8ArrayFromString(message.protocolVersion))
-    }
-
+    log('patching %p with', peer)
     await this.peerStore.patch(connection.remotePeer, peer)
+
+    if (message.agentVersion != null || message.protocolVersion != null) {
+      const metadata: Record<string, Uint8Array> = {}
+
+      if (message.agentVersion != null) {
+        metadata.AgentVersion = uint8ArrayFromString(message.agentVersion)
+      }
+
+      if (message.protocolVersion != null) {
+        metadata.ProtocolVersion = uint8ArrayFromString(message.protocolVersion)
+      }
+
+      log('updating %p metadata', peer)
+      await this.peerStore.merge(connection.remotePeer, {
+        metadata
+      })
+    }
 
     const result: IdentifyResult = {
       peerId: connection.remotePeer,
