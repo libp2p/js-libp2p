@@ -52,13 +52,3 @@ export const INBOUND_CONNECTION_THRESHOLD = 5
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxIncomingPendingConnections
  */
 export const MAX_INCOMING_PENDING_CONNECTIONS = 10
-
-/**
- * Store as part of the peer store metadata for a given peer, the value for this
- * key is a timestamp of the last time a dial attempted failed with the relevant
- * peer stored as a string.
- *
- * Used to insure we do not endlessly try to auto dial peers we have recently
- * failed to dial.
- */
-export const LAST_DIAL_FAILURE_KEY = 'last-dial-failure'
