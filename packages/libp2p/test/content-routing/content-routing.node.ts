@@ -115,6 +115,38 @@ describe('content-routing', () => {
 
       return deferred.promise
     })
+
+    it('should call progress handler', async () => {
+      const deferred = pDefer()
+
+      if (nodes[0].services.dht == null) {
+        throw new Error('DHT was not configured')
+      }
+
+      sinon.stub(nodes[0].services.dht, 'findProviders').callsFake(async function * () {
+        yield {
+          from: nodes[0].peerId,
+          type: EventTypes.PROVIDER,
+          name: 'PROVIDER',
+          providers: [{
+            id: nodes[0].peerId,
+            multiaddrs: [],
+            protocols: []
+          }]
+        }
+        deferred.resolve()
+      })
+
+      const onProgress = sinon.stub()
+
+      await drain(nodes[0].contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'), {
+        onProgress
+      }))
+
+      await deferred.promise
+
+      expect(onProgress.called).to.be.true()
+    })
   })
 
   describe('via delegate router', () => {

@@ -38,22 +38,31 @@ import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Topology } from '@libp2p/interface/topology'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal/registrar'
 import type { Datastore } from 'interface-datastore'
+import type { ProgressEvent } from 'progress-events'
 
 const log = logger('libp2p')
 
-export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
+export class Libp2pNode<
+  Services extends ServiceMap = Record<string, unknown>,
+  FindPeerProgressEvents extends ProgressEvent = ProgressEvent,
+  GetClosestPeersProgressEvents extends ProgressEvent = ProgressEvent,
+  ProvideProgressEvents extends ProgressEvent = ProgressEvent,
+  FindProvidersProgressEvents extends ProgressEvent = ProgressEvent,
+  PutProgressEvents extends ProgressEvent = ProgressEvent,
+  GetProgressEvents extends ProgressEvent = ProgressEvent
+> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<Services> {
   public peerId: PeerId
   public peerStore: PeerStore
-  public contentRouting: ContentRouting
-  public peerRouting: PeerRouting
+  public contentRouting: ContentRouting<ProvideProgressEvents, FindProvidersProgressEvents, PutProgressEvents, GetProgressEvents>
+  public peerRouting: PeerRouting<FindPeerProgressEvents, GetClosestPeersProgressEvents>
   public keychain: KeyChain
   public metrics?: Metrics
-  public services: T
+  public services: Services
 
   public components: Components
   #started: boolean
 
-  constructor (init: Libp2pInit<T>) {
+  constructor (init: Libp2pInit<Services>) {
     super()
 
     // event bus - components can listen to this emitter to be notified of system events
@@ -174,7 +183,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
           continue
         }
 
-        this.services[name as keyof T] = service
+        this.services[name as keyof Services] = service
         this.configureComponent(name, service)
 
         if (service[contentRouting] != null) {
@@ -407,7 +416,23 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * Returns a new Libp2pNode instance - this exposes more of the internals than the
  * libp2p interface and is useful for testing and debugging.
  */
-export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
+export async function createLibp2pNode <
+  Services extends ServiceMap = Record<string, unknown>,
+  FindPeerProgressEvents extends ProgressEvent = ProgressEvent,
+  GetClosestPeersProgressEvents extends ProgressEvent = ProgressEvent,
+  ProvideProgressEvents extends ProgressEvent = ProgressEvent,
+  FindProvidersProgressEvents extends ProgressEvent = ProgressEvent,
+  PutProgressEvents extends ProgressEvent = ProgressEvent,
+  GetProgressEvents extends ProgressEvent = ProgressEvent
+> (options: Libp2pOptions<Services>): Promise<Libp2pNode<
+Services,
+FindPeerProgressEvents,
+GetClosestPeersProgressEvents,
+ProvideProgressEvents,
+FindProvidersProgressEvents,
+PutProgressEvents,
+GetProgressEvents
+>> {
   if (options.peerId == null) {
     const datastore = options.datastore as Datastore | undefined
 

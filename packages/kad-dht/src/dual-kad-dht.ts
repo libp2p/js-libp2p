@@ -4,9 +4,9 @@ import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PeerDiscovery, peerDiscovery, type PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
 import { logger } from '@libp2p/logger'
-import drain from 'it-drain'
 import merge from 'it-merge'
 import isPrivate from 'private-ip'
+import { CustomProgressEvent } from 'progress-events'
 import { DefaultKadDHT } from './kad-dht.js'
 import { queryErrorEvent } from './query/events.js'
 import type { DualKadDHT, KadDHT, KadDHTComponents, KadDHTInit, QueryEvent, QueryOptions } from './index.js'
@@ -14,37 +14,63 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
+
+export type ProvideProgressEvents =
+  ProgressEvent<'libp2p:content-routing:provide:dht:event', QueryEvent>
+
+export type FindProvidersProgressEvents =
+  ProgressEvent<'libp2p:content-routing:find-providers:dht:event', QueryEvent>
+
+export type PutProgressEvents =
+  ProgressEvent<'libp2p:content-routing:put:dht:event', QueryEvent>
+
+export type GetProgressEvents =
+  ProgressEvent<'libp2p:content-routing:get:dht:event', QueryEvent>
 
 const log = logger('libp2p:kad-dht')
 
 /**
  * Wrapper class to convert events into returned values
  */
-class DHTContentRouting implements ContentRouting {
+class DHTContentRouting implements ContentRouting<
+ProvideProgressEvents,
+FindProvidersProgressEvents,
+PutProgressEvents,
+GetProgressEvents
+> {
   private readonly dht: KadDHT
 
   constructor (dht: KadDHT) {
     this.dht = dht
   }
 
-  async provide (cid: CID, options: QueryOptions = {}): Promise<void> {
-    await drain(this.dht.provide(cid, options))
+  async provide (cid: CID, options: QueryOptions & ProgressOptions<ProvideProgressEvents> = {}): Promise<void> {
+    for await (const event of this.dht.provide(cid, options)) {
+      options.onProgress?.(new CustomProgressEvent('libp2p:content-routing:provide:dht:event', event))
+    }
   }
 
-  async * findProviders (cid: CID, options: QueryOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
+  async * findProviders (cid: CID, options: QueryOptions & ProgressOptions<FindProvidersProgressEvents> = {}): AsyncGenerator<PeerInfo, void, undefined> {
     for await (const event of this.dht.findProviders(cid, options)) {
+      options.onProgress?.(new CustomProgressEvent('libp2p:content-routing:find-providers:dht:event', event))
+
       if (event.name === 'PROVIDER') {
         yield * event.providers
       }
     }
   }
 
-  async put (key: Uint8Array, value: Uint8Array, options?: QueryOptions): Promise<void> {
-    await drain(this.dht.put(key, value, options))
+  async put (key: Uint8Array, value: Uint8Array, options: QueryOptions & ProgressOptions<PutProgressEvents> = {}): Promise<void> {
+    for await (const event of this.dht.put(key, value, options)) {
+      options.onProgress?.(new CustomProgressEvent('libp2p:content-routing:put:dht:event', event))
+    }
   }
 
-  async get (key: Uint8Array, options?: QueryOptions): Promise<Uint8Array> {
+  async get (key: Uint8Array, options: QueryOptions & ProgressOptions<GetProgressEvents> = {}): Promise<Uint8Array> {
     for await (const event of this.dht.get(key, options)) {
+      options.onProgress?.(new CustomProgressEvent('libp2p:content-routing:get:dht:event', event))
+
       if (event.name === 'VALUE') {
         return event.value
       }
@@ -54,18 +80,29 @@ class DHTContentRouting implements ContentRouting {
   }
 }
 
+export type FindPeerProgressEvents =
+  ProgressEvent<'libp2p:peer-routing:find-peer:dht:event', QueryEvent>
+
+export type GetClosestPeersProgressEvents =
+  ProgressEvent<'libp2p:peer-routing:get-closest-peers:dht:event', QueryEvent>
+
 /**
  * Wrapper class to convert events into returned values
  */
-class DHTPeerRouting implements PeerRouting {
+class DHTPeerRouting implements PeerRouting<
+FindPeerProgressEvents,
+GetClosestPeersProgressEvents
+> {
   private readonly dht: KadDHT
 
   constructor (dht: KadDHT) {
     this.dht = dht
   }
 
-  async findPeer (peerId: PeerId, options: QueryOptions = {}): Promise<PeerInfo> {
+  async findPeer (peerId: PeerId, options: QueryOptions & ProgressOptions<FindPeerProgressEvents> = {}): Promise<PeerInfo> {
     for await (const event of this.dht.findPeer(peerId, options)) {
+      options.onProgress?.(new CustomProgressEvent('libp2p:peer-routing:find-peer:dht:event', event))
+
       if (event.name === 'FINAL_PEER') {
         return event.peer
       }
@@ -74,8 +111,10 @@ class DHTPeerRouting implements PeerRouting {
     throw new CodeError('Not found', 'ERR_NOT_FOUND')
   }
 
-  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options: QueryOptions & ProgressOptions<GetClosestPeersProgressEvents> = {}): AsyncIterable<PeerInfo> {
     for await (const event of this.dht.getClosestPeers(key, options)) {
+      options.onProgress?.(new CustomProgressEvent('libp2p:peer-routing:get-closest-peers:dht:event', event))
+
       if (event.name === 'FINAL_PEER') {
         yield event.peer
       }

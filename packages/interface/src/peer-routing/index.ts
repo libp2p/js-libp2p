@@ -1,6 +1,7 @@
 import type { AbortOptions } from '../index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { PeerInfo } from '../peer-info/index.js'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 /**
  * Any object that implements this Symbol as a property should return a
@@ -23,7 +24,10 @@ import type { PeerInfo } from '../peer-info/index.js'
  */
 export const peerRouting = Symbol.for('@libp2p/peer-routing')
 
-export interface PeerRouting {
+export interface PeerRouting<
+  FindPeerProgressEvents extends ProgressEvent = ProgressEvent,
+  GetClosestPeersProgressEvents extends ProgressEvent = ProgressEvent
+> {
   /**
    * Searches the network for peer info corresponding to the passed peer id.
    *
@@ -34,7 +38,7 @@ export interface PeerRouting {
    * const peer = await peerRouting.findPeer(peerId, options)
    * ```
    */
-  findPeer(peerId: PeerId, options?: AbortOptions): Promise<PeerInfo>
+  findPeer(peerId: PeerId, options?: AbortOptions & ProgressOptions<FindPeerProgressEvents>): Promise<PeerInfo>
 
   /**
    * Search the network for peers that are closer to the passed key. Peer
@@ -49,5 +53,5 @@ export interface PeerRouting {
    * }
    * ```
    */
-  getClosestPeers(key: Uint8Array, options?: AbortOptions): AsyncIterable<PeerInfo>
+  getClosestPeers(key: Uint8Array, options?: AbortOptions & ProgressOptions<GetClosestPeersProgressEvents>): AsyncIterable<PeerInfo>
 }
