@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+### [0.1.5](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.4...interface-v0.1.5) (2023-11-03)
+
+
+### Bug Fixes
+
+* opt-in to toplogy notifications on transient connections ([#2049](https://www.github.com/libp2p/js-libp2p/issues/2049)) ([346ff5a](https://www.github.com/libp2p/js-libp2p/commit/346ff5a2b81bded9f9b26051501ab9d25246961c))
+
 ### [0.1.4](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.3...interface-v0.1.4) (2023-10-25)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/multistream-select",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "JavaScript implementation of multistream-select",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/multistream-select#readme",
@@ -53,8 +53,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.4",
-    "@libp2p/logger": "^3.0.4",
+    "@libp2p/interface": "^0.1.5",
+    "@libp2p/logger": "^3.0.5",
     "abortable-iterator": "^5.0.1",
     "it-first": "^3.0.1",
     "it-handshake": "^4.1.3",
