@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { enable, disable } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
@@ -12,6 +13,14 @@ import type { Libp2p } from '@libp2p/interface'
 
 describe('ping', () => {
   let nodes: Array<Libp2p<{ ping: PingService }>>
+
+  before(() => {
+    enable('libp2p:*')
+  })
+
+  after(() => {
+    disable()
+  })
 
   beforeEach(async () => {
     nodes = await Promise.all([
