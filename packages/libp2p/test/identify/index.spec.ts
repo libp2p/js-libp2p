@@ -85,7 +85,7 @@ async function createComponents (index: number): Promise<Components> {
   return components
 }
 
-describe.only('identify', () => {
+describe('identify', () => {
   let localComponents: Components
   let remoteComponents: Components
 
