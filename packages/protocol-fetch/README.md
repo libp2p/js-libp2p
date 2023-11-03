@@ -16,7 +16,7 @@ The fetch protocol is a simple protocol for requesting a value corresponding to 
 
 ## Usage
 
-```javascript
+```ts
 import { createLibp2p } from 'libp2p'
 
 /**

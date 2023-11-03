@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { fetchService, type FetchServiceInit } from '../src/index.js'
 import { ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
@@ -12,9 +13,6 @@ import delay from 'delay'
 import { pipe } from 'it-pipe'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { defaultComponents, type Components } from '../../src/components.js'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { fetchService, type FetchServiceInit } from '../../src/fetch/index.js'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 

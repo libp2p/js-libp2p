@@ -69,3 +69,6 @@ export class InvalidCryptoTransmissionError extends Error {
 // Error codes
 
 export const ERR_TIMEOUT = 'ERR_TIMEOUT'
+export const ERR_INVALID_MESSAGE = 'ERR_INVALID_MESSAGE'
+export const ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS'
+export const ERR_KEY_ALREADY_EXISTS = 'ERR_KEY_ALREADY_EXISTS'

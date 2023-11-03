@@ -1,16 +1,14 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mplex } from '@libp2p/mplex'
+import { type FetchService, fetchService } from '../src/index.js'
 import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
-import { codes } from '../../src/errors.js'
-import { type FetchService, fetchService } from '../../src/fetch/index.js'
-import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
+import { createLibp2p } from 'libp2p'
+import { noise } from '@chainsafe/libp2p-noise'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 async function createNode (peerId: PeerId): Promise<Libp2p<{ fetch: FetchService }>> {
   return createLibp2p({
@@ -24,11 +22,10 @@ async function createNode (peerId: PeerId): Promise<Libp2p<{ fetch: FetchService
       tcp()
     ],
     streamMuxers: [
-      yamux(),
-      mplex()
+      yamux()
     ],
     connectionEncryption: [
-      plaintext()
+      noise()
     ],
     services: {
       fetch: fetchService()
@@ -56,8 +53,8 @@ describe('Fetch', () => {
   }
 
   beforeEach(async () => {
-    const peerIdA = await createPeerId()
-    const peerIdB = await createPeerId()
+    const peerIdA = await createEd25519PeerId()
+    const peerIdB = await createEd25519PeerId()
     sender = await createNode(peerIdA)
     receiver = await createNode(peerIdB)
 

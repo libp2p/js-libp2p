@@ -1,12 +1,11 @@
-import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
+import { CodeError, ERR_TIMEOUT, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_KEY_ALREADY_EXISTS } from '@libp2p/interface/errors'
 import { logger } from '@libp2p/logger'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
-import { codes } from '../errors.js'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { AbortOptions } from '@libp2p/interface'
@@ -172,7 +171,7 @@ class DefaultFetchService implements Startable, FetchService {
           const buf = await first(source)
 
           if (buf == null) {
-            throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
+            throw new CodeError('No data received', ERR_INVALID_MESSAGE)
           }
 
           const response = FetchResponse.decode(buf)
@@ -189,11 +188,11 @@ class DefaultFetchService implements Startable, FetchService {
             case (FetchResponse.StatusCode.ERROR): {
               log('received status for %s error', key)
               const errmsg = uint8arrayToString(response.data)
-              throw new CodeError('Error in fetch protocol response: ' + errmsg, codes.ERR_INVALID_PARAMETERS)
+              throw new CodeError('Error in fetch protocol response: ' + errmsg, ERR_INVALID_PARAMETERS)
             }
             default: {
               log('received status for %s unknown', key)
-              throw new CodeError('Unknown response status', codes.ERR_INVALID_MESSAGE)
+              throw new CodeError('Unknown response status', ERR_INVALID_MESSAGE)
             }
           }
         }
@@ -224,7 +223,7 @@ class DefaultFetchService implements Startable, FetchService {
         const buf = await first(source)
 
         if (buf == null) {
-          throw new CodeError('No data received', codes.ERR_INVALID_MESSAGE)
+          throw new CodeError('No data received', ERR_INVALID_MESSAGE)
         }
 
         // for await (const buf of source) {
@@ -280,7 +279,7 @@ class DefaultFetchService implements Startable, FetchService {
    */
   registerLookupFunction (prefix: string, lookup: LookupFunction): void {
     if (this.lookupFunctions.has(prefix)) {
-      throw new CodeError(`Fetch protocol handler for key prefix '${prefix}' already registered`, codes.ERR_KEY_ALREADY_EXISTS)
+      throw new CodeError(`Fetch protocol handler for key prefix '${prefix}' already registered`, ERR_KEY_ALREADY_EXISTS)
     }
 
     this.lookupFunctions.set(prefix, lookup)

@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
+import { type FetchService, fetchService } from '@libp2p/fetch'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
-import { type FetchService, fetchService } from '../../src/fetch/index.js'
 import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { type PingService, pingService } from '../../src/ping/index.js'
