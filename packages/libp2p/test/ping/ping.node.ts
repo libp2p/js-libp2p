@@ -28,6 +28,9 @@ describe('ping', () => {
         config: createBaseOptions({
           services: {
             ping: pingService()
+          },
+          connectionManager: {
+            minConnections: 0
           }
         })
       }),
@@ -35,6 +38,9 @@ describe('ping', () => {
         config: createBaseOptions({
           services: {
             ping: pingService()
+          },
+          connectionManager: {
+            minConnections: 0
           }
         })
       }),
@@ -42,6 +48,9 @@ describe('ping', () => {
         config: createBaseOptions({
           services: {
             ping: pingService()
+          },
+          connectionManager: {
+            minConnections: 0
           }
         })
       })
