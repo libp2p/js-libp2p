@@ -128,7 +128,7 @@
     "merge-options": "^3.0.4",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
-    "p-limit": "^4.0.0",
+    "p-limit": "^5.0.0",
     "p-wait-for": "^5.0.2",
     "protons-runtime": "^5.0.0",
     "sinon": "^17.0.0",

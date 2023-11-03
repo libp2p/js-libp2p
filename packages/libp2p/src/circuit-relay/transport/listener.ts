@@ -2,10 +2,8 @@ import { CodeError } from '@libp2p/interface/errors'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
-import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { ReservationStore } from './reservation-store.js'
-import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Listener, ListenerEvents } from '@libp2p/interface/transport'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
@@ -41,25 +39,9 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
   async listen (addr: Multiaddr): Promise<void> {
     log('listen on %a', addr)
 
-    const relayPeerStr = addr.getPeerId()
-    let relayConn: Connection | undefined
-
-    // check if we already have a connection to the relay
-    if (relayPeerStr != null) {
-      const relayPeer = peerIdFromString(relayPeerStr)
-      const connections = this.connectionManager.getConnectionsMap().get(relayPeer) ?? []
-
-      if (connections.length > 0) {
-        relayConn = connections[0]
-      }
-    }
-
-    // open a new connection as we don't already have one
-    if (relayConn == null) {
-      const addrString = addr.toString().split('/p2p-circuit').find(a => a !== '')
-      const ma = multiaddr(addrString)
-      relayConn = await this.connectionManager.openConnection(ma)
-    }
+    // remove the circuit part to get the peer id of the relay
+    const relayAddr = addr.decapsulate('/p2p-circuit')
+    const relayConn = await this.connectionManager.openConnection(relayAddr)
 
     if (!this.relayStore.hasReservation(relayConn.remotePeer)) {
       // addRelay calls transportManager.listen which calls this listen method
