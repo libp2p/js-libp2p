@@ -107,6 +107,23 @@ export interface IdentifyResult {
 }
 
 /**
+ * Logger component for libp2p
+ */
+export interface Logger {
+  (formatter: any, ...args: any[]): void
+  error(formatter: any, ...args: any[]): void
+  trace(formatter: any, ...args: any[]): void
+  enabled: boolean
+}
+
+/**
+ * Peer logger component for libp2p
+ */
+export interface ComponentLogger {
+  forComponent(name: string): Logger
+}
+
+/**
  * Once you have a libp2p instance, you can listen to several events it emits,
  * so that you can be notified of relevant network events.
  *
@@ -408,6 +425,8 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    */
   metrics?: Metrics
 
+  logger: ComponentLogger
+
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
    * the listen addresses used by transports with any configured
@@ -624,6 +643,13 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
  */
 export interface AbortOptions {
   signal?: AbortSignal
+}
+
+/**
+ * An object that contains a Logger as the `log` property.
+ */
+export interface LoggerOptions {
+  log: Logger
 }
 
 /**

@@ -3,6 +3,7 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { KEEP_ALIVE } from '@libp2p/interface/peer-store/tags'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -365,7 +366,8 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new TypedEventEmitter(),
+      logger: defaultLogger()
     }, {
       ...defaultOptions,
       deny: [
@@ -393,7 +395,8 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new TypedEventEmitter(),
+      logger: defaultLogger()
     }, {
       ...defaultOptions,
       maxConnections: 1
@@ -425,7 +428,8 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new TypedEventEmitter(),
+      logger: defaultLogger()
     }, {
       ...defaultOptions,
       inboundConnectionThreshold: 1
@@ -461,7 +465,8 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new TypedEventEmitter(),
+      logger: defaultLogger()
     }, {
       ...defaultOptions,
       maxConnections: 1,
@@ -497,7 +502,8 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new TypedEventEmitter(),
+      logger: defaultLogger()
     }, {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
@@ -543,7 +549,8 @@ describe('Connection Manager', () => {
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new TypedEventEmitter(),
+      logger: defaultLogger()
     }, {
       ...defaultOptions,
       maxIncomingPendingConnections: 1

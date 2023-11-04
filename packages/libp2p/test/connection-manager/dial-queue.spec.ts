@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { peerLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
@@ -10,6 +11,7 @@ import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -23,15 +25,19 @@ describe('dial queue', () => {
     peerStore: StubbedInstance<PeerStore>
     transportManager: StubbedInstance<TransportManager>
     connectionGater: StubbedInstance<ConnectionGater>
+    logger: ComponentLogger
   }
   let dialer: DialQueue
 
   beforeEach(async () => {
+    const peerId = await createEd25519PeerId()
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
+      connectionGater: stubInterface<ConnectionGater>(),
+      logger: peerLogger(peerId)
     }
   })
 

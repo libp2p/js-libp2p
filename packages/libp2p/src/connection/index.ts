@@ -1,13 +1,10 @@
 import { symbol } from '@libp2p/interface/connection'
 import { CodeError } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger, ComponentLogger } from '@libp2p/interface'
 import type { Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:connection')
 
 const CLOSE_TIMEOUT = 500
 
@@ -24,6 +21,7 @@ interface ConnectionInit {
   multiplexer?: string
   encryption?: string
   transient?: boolean
+  logger: ComponentLogger
 }
 
 /**
@@ -76,6 +74,8 @@ export class ConnectionImpl implements Connection {
    */
   private readonly _getStreams: () => Stream[]
 
+  readonly #log: Logger
+
   /**
    * An implementation of the js-libp2p connection.
    * Any libp2p transport should use an upgrader to return this connection.
@@ -92,6 +92,7 @@ export class ConnectionImpl implements Connection {
     this.multiplexer = init.multiplexer
     this.encryption = init.encryption
     this.transient = init.transient ?? false
+    this.#log = init.logger.forComponent('libp2p:connection')
 
     if (this.remoteAddr.getPeerId() == null) {
       this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`)
@@ -150,7 +151,7 @@ export class ConnectionImpl implements Connection {
       return
     }
 
-    log('closing connection to %a', this.remoteAddr)
+    this.#log('closing connection to %a', this.remoteAddr)
 
     this.status = 'closing'
 
@@ -159,35 +160,35 @@ export class ConnectionImpl implements Connection {
     setMaxListeners(Infinity, options.signal)
 
     try {
-      log.trace('closing all streams')
+      this.#log.trace('closing all streams')
 
       // close all streams gracefully - this can throw if we're not multiplexed
       await Promise.all(
         this.streams.map(async s => s.close(options))
       )
 
-      log.trace('closing underlying transport')
+      this.#log.trace('closing underlying transport')
 
       // close raw connection
       await this._close(options)
 
-      log.trace('updating timeline with close time')
+      this.#log.trace('updating timeline with close time')
 
       this.status = 'closed'
       this.timeline.close = Date.now()
     } catch (err: any) {
-      log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
+      this.#log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
       this.abort(err)
     }
   }
 
   abort (err: Error): void {
-    log.error('aborting connection to %a due to error', this.remoteAddr, err)
+    this.#log.error('aborting connection to %a due to error', this.remoteAddr, err)
 
     this.status = 'closing'
     this.streams.forEach(s => { s.abort(err) })
 
-    log.error('all streams aborted', this.streams.length)
+    this.#log.error('all streams aborted', this.streams.length)
 
     // Abort raw connection
     this._abort(err)

@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -17,7 +18,8 @@ function defaultConnectionInit (): any {
     newStream: Sinon.stub(),
     close: Sinon.stub(),
     abort: Sinon.stub(),
-    getStreams: Sinon.stub()
+    getStreams: Sinon.stub(),
+    logger: defaultLogger()
   }
 }
 
