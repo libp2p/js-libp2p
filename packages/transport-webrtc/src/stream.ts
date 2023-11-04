@@ -84,7 +84,6 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
-  //  private sentFinAck: boolean
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
