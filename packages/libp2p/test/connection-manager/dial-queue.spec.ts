@@ -3,6 +3,7 @@
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, resolvers } from '@multiformats/multiaddr'
+import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -329,5 +330,42 @@ describe('dial queue', () => {
     expect(dialedBadAddress).to.be.false('Dialed address with wrong peer id')
 
     resolvers.delete('dnsaddr')
+  })
+
+  it('should dial WebRTC address with peer id appended', async () => {
+    const remotePeer = await createEd25519PeerId()
+    const relayPeer = await createEd25519PeerId()
+    const ma = multiaddr(`/ip4/123.123.123.123/tcp/123/ws/p2p/${relayPeer}/p2p-circuit/webrtc`)
+    const maWithPeer = `${ma}/p2p/${remotePeer}`
+
+    components.transportManager.transportForMultiaddr.callsFake(ma => {
+      if (WebRTC.exactMatch(ma)) {
+        return stubInterface<Transport>()
+      }
+    })
+    components.peerStore.get.withArgs(remotePeer).resolves({
+      id: remotePeer,
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map(),
+      addresses: [{
+        multiaddr: ma,
+        isCertified: true
+      }]
+    })
+
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
+
+    components.transportManager.dial.callsFake(async (ma, opts = {}) => {
+      if (ma.toString() === maWithPeer) {
+        await delay(100)
+        return connection
+      }
+
+      throw new Error('Could not dial address')
+    })
+
+    dialer = new DialQueue(components)
+    await expect(dialer.dial(remotePeer)).to.eventually.equal(connection)
   })
 })
