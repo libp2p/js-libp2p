@@ -495,7 +495,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       log('%p did not send a signed peer record', connection.remotePeer)
     }
 
-    log('patching %p with', peer)
+    log('patching %p with', connection.remotePeer, peer)
     await this.peerStore.patch(connection.remotePeer, peer)
 
     if (message.agentVersion != null || message.protocolVersion != null) {
@@ -509,7 +509,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         metadata.ProtocolVersion = uint8ArrayFromString(message.protocolVersion)
       }
 
-      log('updating %p metadata', peer)
+      log('merging %p metadata', connection.remotePeer, metadata)
       await this.peerStore.merge(connection.remotePeer, {
         metadata
       })
