@@ -348,7 +348,7 @@ export class DialQueue {
     }
 
     // resolve addresses - this can result in a one-to-many translation when dnsaddrs are resolved
-    const resolvedAddresses = (await Promise.all(
+    let resolvedAddresses = (await Promise.all(
       addrs.map(async addr => {
         const result = await resolveMultiaddrs(addr.multiaddr, options)
 
@@ -363,6 +363,30 @@ export class DialQueue {
       })
     ))
       .flat()
+
+    // ensure the peer id is appended to the multiaddr
+    if (peerId != null) {
+      const peerIdMultiaddr = `/p2p/${peerId.toString()}`
+      resolvedAddresses = resolvedAddresses.map(addr => {
+        const addressPeerId = addr.multiaddr.getPeerId()
+        const lastProto = addr.multiaddr.protos().pop()
+
+        // do not append peer id to path multiaddrs
+        if (lastProto?.path === true) {
+          return addr
+        }
+
+        // append peer id to multiaddr if it is not already present
+        if (addressPeerId !== peerId.toString()) {
+          return {
+            multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
+            isCertified: addr.isCertified
+          }
+        }
+
+        return addr
+      })
+    }
 
     const filteredAddrs = resolvedAddresses.filter(addr => {
       // filter out any multiaddrs that we do not have transports for
@@ -396,7 +420,7 @@ export class DialQueue {
       dedupedAddrs.set(maStr, addr)
     }
 
-    let dedupedMultiaddrs = [...dedupedAddrs.values()]
+    const dedupedMultiaddrs = [...dedupedAddrs.values()]
 
     if (dedupedMultiaddrs.length === 0 || dedupedMultiaddrs.length > this.maxPeerAddrsToDial) {
       log('addresses for %p before filtering', peerId ?? 'unknown peer', resolvedAddresses.map(({ multiaddr }) => multiaddr.toString()))
@@ -411,30 +435,6 @@ export class DialQueue {
     // make sure we don't have too many addresses to dial
     if (dedupedMultiaddrs.length > this.maxPeerAddrsToDial) {
       throw new CodeError('dial with more addresses than allowed', codes.ERR_TOO_MANY_ADDRESSES)
-    }
-
-    // ensure the peer id is appended to the multiaddr
-    if (peerId != null) {
-      const peerIdMultiaddr = `/p2p/${peerId.toString()}`
-      dedupedMultiaddrs = dedupedMultiaddrs.map(addr => {
-        const addressPeerId = addr.multiaddr.getPeerId()
-        const lastProto = addr.multiaddr.protos().pop()
-
-        // do not append peer id to path multiaddrs
-        if (lastProto?.path === true) {
-          return addr
-        }
-
-        // append peer id to multiaddr if it is not already present
-        if (addressPeerId !== peerId.toString()) {
-          return {
-            multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
-            isCertified: addr.isCertified
-          }
-        }
-
-        return addr
-      })
     }
 
     const gatedAdrs: Address[] = []
