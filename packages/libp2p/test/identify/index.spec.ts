@@ -3,7 +3,7 @@
 
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
-import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair, mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { mockConnectionGater, mockRegistrar, mockUpgrader, connectionPair, mockStream, streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -13,6 +13,7 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
+import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import { pbStream } from 'it-protobuf-stream'
 import { pushable } from 'it-pushable'
@@ -580,5 +581,30 @@ describe('identify', () => {
     })
 
     expect(localPeerStorePatchSpy.called).to.be.false('patch was called when public key was invalid')
+  })
+
+  it('should not send unroutable observed addresses', async () => {
+    const localIdentify = new DefaultIdentifyService(localComponents, defaultInit)
+
+    const duplex = duplexPair<any>()
+    const streams = streamPair({
+      duplex: duplex[0]
+    }, {
+      duplex: duplex[1]
+    })
+
+    const data: IncomingStreamData = {
+      stream: streams[0],
+      connection: stubInterface<Connection>({
+        remoteAddr: multiaddr('/webrtc/p2p/QmR5VwgsL7jyfZHAGyp66tguVrQhCRQuRc3NokocsCZ3fA')
+      })
+    }
+
+    await localIdentify._handleIdentify(data)
+
+    const pb = pbStream(duplex[1])
+    const result = await pb.read(Identify)
+
+    expect(result.observedAddr).to.be.undefined()
   })
 })
