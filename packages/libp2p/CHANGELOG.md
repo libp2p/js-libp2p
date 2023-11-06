@@ -20,6 +20,15 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+### [0.46.18](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.17...libp2p-v0.46.18) (2023-11-06)
+
+
+### Bug Fixes
+
+* append peer id to dial addresses before filtering ([#2199](https://www.github.com/libp2p/js-libp2p/issues/2199)) ([bafccd6](https://www.github.com/libp2p/js-libp2p/commit/bafccd6b8e90c2cf1c616aeeb5001ade940c523a))
+* log peer data in identify correctly ([#2197](https://www.github.com/libp2p/js-libp2p/issues/2197)) ([fdcb801](https://www.github.com/libp2p/js-libp2p/commit/fdcb801ee3180b740a25e0e05a75c32dd8e4ef63))
+* only send ip/domain observed address in identify ([#2201](https://www.github.com/libp2p/js-libp2p/issues/2201)) ([40855f4](https://www.github.com/libp2p/js-libp2p/commit/40855f4f38bf5e56ccb2890699ec0cdd60596a27))
+
 ### [0.46.17](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.16...libp2p-v0.46.17) (2023-11-03)
 
 
