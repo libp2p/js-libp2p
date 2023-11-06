@@ -38,8 +38,6 @@ interface BufferedStream {
   onEnd(err?: Error): void
 }
 
-let streamIndex = 0
-
 export class DataChannelMuxerFactory implements StreamMuxerFactory {
   public readonly protocol: string
 
@@ -190,10 +188,8 @@ export class DataChannelMuxer implements StreamMuxer {
   sink: Sink<Source<Uint8Array | Uint8ArrayList>, Promise<void>> = nopSink
 
   newStream (): Stream {
-    streamIndex++
-
     // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
-    const channel = this.peerConnection.createDataChannel(`stream-${streamIndex}`)
+    const channel = this.peerConnection.createDataChannel('')
     const stream = createStream({
       channel,
       direction: 'outbound',
