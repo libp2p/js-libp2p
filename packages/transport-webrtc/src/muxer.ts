@@ -144,7 +144,7 @@ export class DataChannelMuxer implements StreamMuxer {
     // will not be set up yet so add a tiny delay before letting the
     // connection know about early streams
     if (this.init.streams.length > 0) {
-      setTimeout(() => {
+      queueMicrotask(() => {
         this.init.streams.forEach(bufferedStream => {
           bufferedStream.onEnd = () => {
             this.#onStreamEnd(bufferedStream.stream, bufferedStream.channel)
@@ -153,7 +153,7 @@ export class DataChannelMuxer implements StreamMuxer {
           this.metrics?.increment({ incoming_stream: true })
           this.init?.onIncomingStream?.(bufferedStream.stream)
         })
-      }, 1)
+      })
     }
   }
 
