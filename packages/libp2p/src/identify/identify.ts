@@ -4,6 +4,7 @@ import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
+import { IP_OR_DOMAIN } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -345,6 +346,12 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         signedPeerRecord = envelope.marshal().subarray()
       }
 
+      let observedAddr: Uint8Array | undefined = connection.remoteAddr.bytes
+
+      if (!IP_OR_DOMAIN.matches(connection.remoteAddr)) {
+        observedAddr = undefined
+      }
+
       const pb = pbStream(stream).pb(Identify)
 
       await pb.write({
@@ -353,7 +360,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         publicKey,
         listenAddrs: multiaddrs.map(addr => addr.bytes),
         signedPeerRecord,
-        observedAddr: connection.remoteAddr.bytes,
+        observedAddr,
         protocols: peerData.protocols
       }, {
         signal
