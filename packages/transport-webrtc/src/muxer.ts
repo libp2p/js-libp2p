@@ -137,14 +137,24 @@ export class DataChannelMuxer implements StreamMuxer {
       init?.onIncomingStream?.(stream)
     }
 
-    this.init.streams.forEach(bufferedStream => {
-      bufferedStream.onEnd = () => {
-        this.#onStreamEnd(bufferedStream.stream, bufferedStream.channel)
-      }
+    // the DataChannelMuxer constructor is called during set up of the
+    // connection by the upgrader.
+    //
+    // If we invoke `init.onIncomingStream` immediately, the connection object
+    // will not be set up yet so add a tiny delay before letting the
+    // connection know about early streams
+    if (this.init.streams.length > 0) {
+      setTimeout(() => {
+        this.init.streams.forEach(bufferedStream => {
+          bufferedStream.onEnd = () => {
+            this.#onStreamEnd(bufferedStream.stream, bufferedStream.channel)
+          }
 
-      this.metrics?.increment({ incoming_stream: true })
-      this.init?.onIncomingStream?.(bufferedStream.stream)
-    })
+          this.metrics?.increment({ incoming_stream: true })
+          this.init?.onIncomingStream?.(bufferedStream.stream)
+        })
+      }, 1)
+    }
   }
 
   #onStreamEnd (stream: Stream, channel: RTCDataChannel): void {
