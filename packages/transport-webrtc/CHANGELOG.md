@@ -5,6 +5,14 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+### [3.2.8](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.7...webrtc-v3.2.8) (2023-11-06)
+
+
+### Bug Fixes
+
+* datachannel label should be an empty string ([#2204](https://www.github.com/libp2p/js-libp2p/issues/2204)) ([dfbe0cc](https://www.github.com/libp2p/js-libp2p/commit/dfbe0cc05be428f3c1de36e10d28e3d1777e8f04))
+* delay notification of early WebRTC stream creation ([#2206](https://www.github.com/libp2p/js-libp2p/issues/2206)) ([d25d951](https://www.github.com/libp2p/js-libp2p/commit/d25d95104ee4eb353ed73cc0c7200e5a9d5b18d2))
+
 ### [3.2.7](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.6...webrtc-v3.2.7) (2023-11-06)
 
 

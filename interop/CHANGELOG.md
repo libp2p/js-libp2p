@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.0.11](https://www.github.com/libp2p/js-libp2p/compare/multidim-interop-v1.0.10...multidim-interop-v1.0.11) (2023-11-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/webrtc bumped from ^3.2.7 to ^3.2.8
+
 ### [1.0.10](https://www.github.com/libp2p/js-libp2p/compare/multidim-interop-v1.0.9...multidim-interop-v1.0.10) (2023-11-06)
 
 

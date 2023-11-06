@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/multidim-interop",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Multidimensional interop tests",
   "author": "Glen De Cauwsemaecker <glen@littlebearlabs.io> / @marcopolo",
   "license": "Apache-2.0 OR MIT",
@@ -55,7 +55,7 @@
     "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/mplex": "^9.0.10",
     "@libp2p/tcp": "^8.0.11",
-    "@libp2p/webrtc": "^3.2.7",
+    "@libp2p/webrtc": "^3.2.8",
     "@libp2p/websockets": "^7.0.11",
     "@libp2p/webtransport": "^3.1.7",
     "@multiformats/mafmt": "^12.1.2",
