@@ -11,13 +11,14 @@ import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { DefaultConnectionManager, type DefaultConnectionManagerComponents } from '../../src/connection-manager/index.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
@@ -26,6 +27,17 @@ const defaultOptions = {
   minConnections: 1,
   autoDialInterval: Infinity,
   inboundUpgradeTimeout: 10000
+}
+
+function defaultComponents (peerId: PeerId): DefaultConnectionManagerComponents {
+  return {
+    peerId,
+    peerStore: stubInterface<PeerStore>(),
+    transportManager: stubInterface<TransportManager>(),
+    connectionGater: stubInterface<ConnectionGater>(),
+    events: new TypedEventEmitter(),
+    logger: defaultLogger()
+  }
 }
 
 describe('Connection Manager', () => {
@@ -361,14 +373,7 @@ describe('Connection Manager', () => {
 
   it('should deny connections from denylist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-    connectionManager = new DefaultConnectionManager({
-      peerId: libp2p.peerId,
-      peerStore: stubInterface<PeerStore>(),
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter(),
-      logger: defaultLogger()
-    }, {
+    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       deny: [
         '/ip4/83.13.55.32'
@@ -390,14 +395,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections when maxConnections is exceeded', async () => {
-    connectionManager = new DefaultConnectionManager({
-      peerId: libp2p.peerId,
-      peerStore: stubInterface<PeerStore>(),
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter(),
-      logger: defaultLogger()
-    }, {
+    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxConnections: 1
     })
@@ -423,14 +421,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
-    connectionManager = new DefaultConnectionManager({
-      peerId: libp2p.peerId,
-      peerStore: stubInterface<PeerStore>(),
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter(),
-      logger: defaultLogger()
-    }, {
+    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       inboundConnectionThreshold: 1
     })
@@ -460,14 +451,7 @@ describe('Connection Manager', () => {
 
   it('should allow connections from allowlist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-    connectionManager = new DefaultConnectionManager({
-      peerId: libp2p.peerId,
-      peerStore: stubInterface<PeerStore>(),
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter(),
-      logger: defaultLogger()
-    }, {
+    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxConnections: 1,
       allow: [
@@ -497,14 +481,7 @@ describe('Connection Manager', () => {
   })
 
   it('should limit the number of inbound pending connections', async () => {
-    connectionManager = new DefaultConnectionManager({
-      peerId: await createEd25519PeerId(),
-      peerStore: stubInterface<PeerStore>(),
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter(),
-      logger: defaultLogger()
-    }, {
+    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
     })
@@ -544,14 +521,7 @@ describe('Connection Manager', () => {
   })
 
   it('should allow dialing peers when an existing transient connection exists', async () => {
-    connectionManager = new DefaultConnectionManager({
-      peerId: await createEd25519PeerId(),
-      peerStore: stubInterface<PeerStore>(),
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter(),
-      logger: defaultLogger()
-    }, {
+    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
     })
