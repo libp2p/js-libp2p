@@ -170,7 +170,7 @@ export class WebRTCTransport implements Transport, Startable {
       const webRTCConn = new WebRTCMultiaddrConnection({
         peerConnection,
         timeline: { open: (new Date()).getTime() },
-        remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${connection.remotePeer.toString()}`),
+        remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents
       })
 
