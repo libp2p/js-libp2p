@@ -432,7 +432,7 @@ export class DefaultUpgrader implements Upgrader {
           throw new CodeError('Stream is not multiplexed', codes.ERR_MUXER_UNAVAILABLE)
         }
 
-        log('%s: starting new stream on %s', direction, protocols)
+        log('%s-%s: starting new stream on %s', connection.id, direction, protocols)
         const muxedStream = await muxer.newStream()
 
         try {

@@ -121,10 +121,6 @@ export class WebRTCTransport implements Transport, Startable {
     log.trace('dialing address: %a', ma)
 
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
-    const muxerFactory = new DataChannelMuxerFactory({
-      peerConnection,
-      dataChannelOptions: this.init.dataChannel
-    })
 
     const { remoteAddress } = await initiateConnection({
       peerConnection,
@@ -145,7 +141,10 @@ export class WebRTCTransport implements Transport, Startable {
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
       skipProtection: true,
       skipEncryption: true,
-      muxerFactory
+      muxerFactory: new DataChannelMuxerFactory({
+        peerConnection,
+        dataChannelOptions: this.init.dataChannel
+      })
     })
 
     // close the connection on shut down
@@ -157,7 +156,6 @@ export class WebRTCTransport implements Transport, Startable {
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
-    const muxerFactory = new DataChannelMuxerFactory({ peerConnection, dataChannelOptions: this.init.dataChannel })
 
     try {
       const { remoteAddress } = await handleIncomingStream({
@@ -170,7 +168,7 @@ export class WebRTCTransport implements Transport, Startable {
       const webRTCConn = new WebRTCMultiaddrConnection({
         peerConnection,
         timeline: { open: (new Date()).getTime() },
-        remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${connection.remotePeer.toString()}`),
+        remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents
       })
 
@@ -180,7 +178,7 @@ export class WebRTCTransport implements Transport, Startable {
       await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
         skipProtection: true,
-        muxerFactory
+        muxerFactory: new DataChannelMuxerFactory({ peerConnection, dataChannelOptions: this.init.dataChannel })
       })
 
       // close the stream if SDP messages have been exchanged successfully
