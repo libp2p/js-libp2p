@@ -157,7 +157,10 @@ export class WebRTCTransport implements Transport, Startable {
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
-    const muxerFactory = new DataChannelMuxerFactory({ peerConnection, dataChannelOptions: this.init.dataChannel })
+    const muxerFactory = new DataChannelMuxerFactory({
+      peerConnection,
+      dataChannelOptions: this.init.dataChannel
+    })
 
     try {
       const { remoteAddress } = await handleIncomingStream({
@@ -170,7 +173,7 @@ export class WebRTCTransport implements Transport, Startable {
       const webRTCConn = new WebRTCMultiaddrConnection({
         peerConnection,
         timeline: { open: (new Date()).getTime() },
-        remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${connection.remotePeer.toString()}`),
+        remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents
       })
 

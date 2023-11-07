@@ -32,6 +32,12 @@ export interface DataChannelMuxerFactoryInit {
   dataChannelOptions?: DataChannelOptions
 }
 
+interface BufferedStream {
+  stream: Stream
+  channel: RTCDataChannel
+  onEnd(err?: Error): void
+}
+
 export class DataChannelMuxerFactory implements StreamMuxerFactory {
   public readonly protocol: string
 
@@ -39,7 +45,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
    * WebRTC Peer Connection
    */
   private readonly peerConnection: RTCPeerConnection
-  private streamBuffer: Stream[] = []
+  private bufferedStreams: BufferedStream[] = []
   private readonly metrics?: CounterGroup
   private readonly dataChannelOptions?: DataChannelOptions
 
@@ -51,15 +57,25 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
 
     // store any datachannels opened before upgrade has been completed
     this.peerConnection.ondatachannel = ({ channel }) => {
+      // @ts-expect-error fields are set below
+      const bufferedStream: BufferedStream = {}
+
       const stream = createStream({
         channel,
         direction: 'inbound',
-        onEnd: () => {
-          this.streamBuffer = this.streamBuffer.filter(s => s.id !== stream.id)
+        onEnd: (err) => {
+          bufferedStream.onEnd(err)
         },
         ...this.dataChannelOptions
       })
-      this.streamBuffer.push(stream)
+
+      bufferedStream.stream = stream
+      bufferedStream.channel = channel
+      bufferedStream.onEnd = () => {
+        this.bufferedStreams = this.bufferedStreams.filter(s => s.stream.id !== stream.id)
+      }
+
+      this.bufferedStreams.push(bufferedStream)
     }
   }
 
@@ -69,14 +85,14 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
       peerConnection: this.peerConnection,
       dataChannelOptions: this.dataChannelOptions,
       metrics: this.metrics,
-      streams: this.streamBuffer,
+      streams: this.bufferedStreams,
       protocol: this.protocol
     })
   }
 }
 
 export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit, StreamMuxerInit {
-  streams: Stream[]
+  streams: BufferedStream[]
 }
 
 /**
@@ -94,7 +110,7 @@ export class DataChannelMuxer implements StreamMuxer {
   private readonly metrics?: CounterGroup
 
   constructor (readonly init: DataChannelMuxerInit) {
-    this.streams = init.streams
+    this.streams = init.streams.map(s => s.stream)
     this.peerConnection = init.peerConnection
     this.protocol = init.protocol ?? PROTOCOL
     this.metrics = init.metrics
@@ -111,11 +127,7 @@ export class DataChannelMuxer implements StreamMuxer {
         channel,
         direction: 'inbound',
         onEnd: () => {
-          log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
-          drainAndClose(channel, `inbound ${stream.id} ${stream.protocol}`, this.dataChannelOptions.drainTimeout)
-          this.streams = this.streams.filter(s => s.id !== stream.id)
-          this.metrics?.increment({ stream_end: true })
-          init?.onStreamEnd?.(stream)
+          this.#onStreamEnd(stream, channel)
         },
         ...this.dataChannelOptions
       })
@@ -125,10 +137,32 @@ export class DataChannelMuxer implements StreamMuxer {
       init?.onIncomingStream?.(stream)
     }
 
-    const onIncomingStream = init?.onIncomingStream
-    if (onIncomingStream != null) {
-      this.streams.forEach(s => { onIncomingStream(s) })
+    // the DataChannelMuxer constructor is called during set up of the
+    // connection by the upgrader.
+    //
+    // If we invoke `init.onIncomingStream` immediately, the connection object
+    // will not be set up yet so add a tiny delay before letting the
+    // connection know about early streams
+    if (this.init.streams.length > 0) {
+      queueMicrotask(() => {
+        this.init.streams.forEach(bufferedStream => {
+          bufferedStream.onEnd = () => {
+            this.#onStreamEnd(bufferedStream.stream, bufferedStream.channel)
+          }
+
+          this.metrics?.increment({ incoming_stream: true })
+          this.init?.onIncomingStream?.(bufferedStream.stream)
+        })
+      })
     }
+  }
+
+  #onStreamEnd (stream: Stream, channel: RTCDataChannel): void {
+    log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
+    drainAndClose(channel, `${stream.direction} ${stream.id} ${stream.protocol}`, this.dataChannelOptions.drainTimeout)
+    this.streams = this.streams.filter(s => s.id !== stream.id)
+    this.metrics?.increment({ stream_end: true })
+    this.init?.onStreamEnd?.(stream)
   }
 
   /**
@@ -170,11 +204,7 @@ export class DataChannelMuxer implements StreamMuxer {
       channel,
       direction: 'outbound',
       onEnd: () => {
-        log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
-        drainAndClose(channel, `outbound ${stream.id} ${stream.protocol}`, this.dataChannelOptions.drainTimeout)
-        this.streams = this.streams.filter(s => s.id !== stream.id)
-        this.metrics?.increment({ stream_end: true })
-        this.init?.onStreamEnd?.(stream)
+        this.#onStreamEnd(stream, channel)
       },
       ...this.dataChannelOptions
     })

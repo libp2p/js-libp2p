@@ -122,6 +122,15 @@ describe('basics', () => {
     expect(output).to.equalBytes(toBuffer(input))
   })
 
+  it('reports remote addresses correctly', async () => {
+    const initatorConnection = await connectNodes()
+    expect(initatorConnection.remoteAddr.toString()).to.equal(`${process.env.RELAY_MULTIADDR}/p2p-circuit/webrtc/p2p/${remoteNode.peerId}`)
+
+    const receiverConnections = remoteNode.getConnections(localNode.peerId)
+    expect(receiverConnections).to.have.lengthOf(1)
+    expect(receiverConnections[0].remoteAddr.toString()).to.equal(`/webrtc/p2p/${localNode.peerId}`)
+  })
+
   it('can send a large file', async () => {
     const connection = await connectNodes()
 

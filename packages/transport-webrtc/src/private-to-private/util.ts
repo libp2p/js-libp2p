@@ -110,16 +110,3 @@ export function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredProm
     }
   }
 }
-
-export function parseRemoteAddress (sdp: string): string {
-  // 'a=candidate:1746876089 1 udp 2113937151 0614fbad-b...ocal 54882 typ host generation 0 network-cost 999'
-  const candidateLine = sdp.split('\r\n').filter(line => line.startsWith('a=candidate')).pop()
-  const candidateParts = candidateLine?.split(' ')
-
-  if (candidateLine == null || candidateParts == null || candidateParts.length < 5) {
-    log('could not parse remote address from', candidateLine)
-    return '/webrtc'
-  }
-
-  return `/dnsaddr/${candidateParts[4]}/${candidateParts[2].toLowerCase()}/${candidateParts[5]}/webrtc`
-}
