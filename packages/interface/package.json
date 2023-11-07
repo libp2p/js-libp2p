@@ -42,6 +42,9 @@
   "browser": {
     "events": "./dist/src/events.browser.js"
   },
+  "react-native": {
+    "events": "./dist/src/events.browser.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
