@@ -7,43 +7,55 @@
 
 # About
 
-The `performanceService` implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which is used to measure performance within and across libp2p implementations
-addresses.
+The `performanceService` implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which can be used to measure transfer performance within and across libp2p implementations.
 
 ## Example
 
-```ts
-import { createLibp2p } from 'libp2p'
-import { perfService } from 'libp2p/perf'
+```typescript
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { createLibp2p, type Libp2p } from 'libp2p'
+import { plaintext } from 'libp2p/insecure'
+import { perfService, type PerfService } from '@libp2p/perf'
 
-const node = await createLibp2p({
-  services: [
-    perf: perfService()
-  ]
-})
+const ONE_MEG = 1024 * 1024
+const UPLOAD_BYTES = ONE_MEG * 1024
+const DOWNLOAD_BYTES = ONE_MEG * 1024
 
-const connection = await node.dial(multiaddr(multiaddrAddress))
+async function createNode (): Promise<Libp2p<{ perf: PerfService }>> {
+  return createLibp2p({
+    addresses: {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
+    },
+    transports: [
+      tcp()
+    ],
+    connectionEncryption: [
+      noise(), plaintext()
+    ],
+    streamMuxers: [
+      yamux(), mplex()
+    ],
+    services: {
+      perf: perfService()
+    }
+  })
+}
 
-const startTime = Date.now()
+const libp2p1 = await createNode()
+const libp2p2 = await createNode()
 
-await node.services.perf.measurePerformance(startTime, connection, uploadBytes, downloadBytes)
+for await (const output of libp2p1.services.perf.measurePerformance(libp2p2.getMultiaddrs()[0], UPLOAD_BYTES, DOWNLOAD_BYTES)) {
+  console.info(output)
+}
 
+await libp2p1.stop()
+await libp2p2.stop()
 ```
-
-## Usage
-
-This library is an implementation of the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md) was created to evaluate the throughput of a libp2p connection. It is primarily used by the [test-plans perfomance benchmarking](https://github.com/libp2p/test-plans/tree/master/perf). It can be ran either in server mode or client mode, and accepts a server address, an amount upload-bytes and download-bytes as arguments. See below as an example:
-
-  ```console
-  $ npm run start --run-server --server-address 0.0.0.0:4001
-  ```
-  and in another console run:
-
-  ```console
-  $ npm run start --server-address 0.0.0.0:4001 --upload-bytes 0 --download-bytes 1000000
-  ```
-
-This will upload 0 bytes and download 1000000 bytes from the server until the connection is closed.
 
 # API Docs
 
