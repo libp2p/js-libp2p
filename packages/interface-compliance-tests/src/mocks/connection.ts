@@ -4,6 +4,7 @@ import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { mockMultiaddrConnection } from './multiaddr-connection.js'
 import { mockMuxer } from './muxer.js'
 import { mockRegistrar } from './registrar.js'
@@ -14,7 +15,6 @@ import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface/stream-m
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:mock-connection')
 
@@ -177,6 +177,20 @@ export interface StreamInit {
 }
 
 export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}): Stream {
+  const originalSource = stream.source
+
+  // ensure stream output is `Uint8ArrayList` as it would be from an actual
+  // Stream where everything is length-varint encoded
+  stream.source = (async function * (): AsyncGenerator<Uint8ArrayList, any, unknown> {
+    for await (const buf of originalSource) {
+      if (buf instanceof Uint8Array) {
+        yield new Uint8ArrayList(buf)
+      } else {
+        yield buf
+      }
+    }
+  })()
+
   return {
     ...stream,
     close: async () => {},
