@@ -17,6 +17,11 @@ describe('ping', () => {
     nodes = await Promise.all([
       createNode({
         config: createBaseOptions({
+          addresses: {
+            listen: [
+              '/ip4/0.0.0.0/tcp/0'
+            ]
+          },
           services: {
             ping: pingService()
           }
@@ -24,6 +29,11 @@ describe('ping', () => {
       }),
       createNode({
         config: createBaseOptions({
+          addresses: {
+            listen: [
+              '/ip4/0.0.0.0/tcp/0'
+            ]
+          },
           services: {
             ping: pingService()
           }
@@ -31,6 +41,11 @@ describe('ping', () => {
       }),
       createNode({
         config: createBaseOptions({
+          addresses: {
+            listen: [
+              '/ip4/0.0.0.0/tcp/0'
+            ]
+          },
           services: {
             ping: pingService()
           }
