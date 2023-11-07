@@ -124,6 +124,8 @@ export class PerfService implements Startable, PerfServiceInterface {
         yield uint8Buf.subarray(0, 8)
 
         while (sendBytes > 0) {
+          options.signal?.throwIfAborted()
+
           let toSend: number = writeBlockSize
           if (toSend > sendBytes) {
             toSend = sendBytes
@@ -163,6 +165,8 @@ export class PerfService implements Startable, PerfServiceInterface {
       let totalBytesReceived = 0
 
       for await (const buf of stream.source) {
+        options.signal?.throwIfAborted()
+
         if (Date.now() - lastReportedTime > 1000) {
           yield {
             type: 'intermediary',
