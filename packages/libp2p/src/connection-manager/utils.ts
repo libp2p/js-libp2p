@@ -1,14 +1,12 @@
 import { setMaxListeners } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { type ClearableSignal, anySignal } from 'any-signal'
-
-const log = logger('libp2p:connection-manager:utils')
+import type { LoggerOptions } from '@libp2p/interface'
 
 /**
  * Resolve multiaddr recursively
  */
-export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
+export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions & LoggerOptions): Promise<Multiaddr[]> {
   // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
   // Now only supporting resolve for dnsaddr
   const resolvableProto = ma.protoNames().includes('dnsaddr')
@@ -31,7 +29,7 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
     return array
   }, ([]))
 
-  log('resolved %s to', ma, output.map(ma => ma.toString()))
+  options.log('resolved %s to', ma, output.map(ma => ma.toString()))
 
   return output
 }
@@ -39,13 +37,13 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
 /**
  * Resolve a given multiaddr. If this fails, an empty array will be returned
  */
-async function resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
+async function resolveRecord (ma: Multiaddr, options: AbortOptions & LoggerOptions): Promise<Multiaddr[]> {
   try {
     ma = multiaddr(ma.toString()) // Use current multiaddr module
     const multiaddrs = await ma.resolve(options)
     return multiaddrs
   } catch (err) {
-    log.error(`multiaddr ${ma.toString()} could not be resolved`, err)
+    options.log.error(`multiaddr ${ma.toString()} could not be resolved`, err)
     return []
   }
 }
