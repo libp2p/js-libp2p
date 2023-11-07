@@ -1,7 +1,5 @@
 {
   "plugins": ["node-workspace"],
-  "bump-minor-pre-major": true,
-  "bump-patch-for-minor-pre-major": true,
   "group-pull-request-title-pattern": "chore: release ${component}",
   "packages": {
     "interop": {},
