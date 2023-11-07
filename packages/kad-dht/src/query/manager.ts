@@ -113,11 +113,16 @@ export class QueryManager implements Startable {
 
     if (options.signal == null) {
       // don't let queries run forever
-      options.signal = AbortSignal.timeout(DEFAULT_QUERY_TIMEOUT)
+      const signal = AbortSignal.timeout(DEFAULT_QUERY_TIMEOUT)
 
       // this signal will get listened to for network requests, etc
       // so make sure we don't make a lot of noise in the logs
-      setMaxListeners(Infinity, options.signal)
+      setMaxListeners(Infinity, signal)
+
+      options = {
+        ...options,
+        signal
+      }
     }
 
     const signal = anySignal([this.shutDownController.signal, options.signal])

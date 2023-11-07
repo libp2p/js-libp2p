@@ -199,7 +199,7 @@ export class PerfService implements Startable, PerfServiceInterface {
       log('performed %s to %p', this.protocol, connection.remotePeer)
       await stream.close()
     } catch (err: any) {
-      log('error sending %s bytes to %p: %s', totalBytesSent, connection.remotePeer, err)
+      log('error sending %d/%d bytes to %p: %s', totalBytesSent, sendBytes, connection.remotePeer, err)
       stream.abort(err)
       throw err
     }

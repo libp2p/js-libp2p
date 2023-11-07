@@ -20,6 +20,8 @@ import type { ConnectionManager } from '@libp2p/interface-internal/connection-ma
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { Duplex, Source } from 'it-stream-types'
 
+const DEFAULT_PROTOCOL_SELECT_TIMEOUT = 30000
+
 interface CreateConnectionOptions {
   cryptoProtocol: string
   direction: 'inbound' | 'outbound'
@@ -439,9 +441,13 @@ export class DefaultUpgrader implements Upgrader {
           if (options.signal == null) {
             this.#log('No abort signal was passed while trying to negotiate protocols %s falling back to default timeout', protocols)
 
-            options.signal = AbortSignal.timeout(30000)
+            const signal = AbortSignal.timeout(DEFAULT_PROTOCOL_SELECT_TIMEOUT)
+            setMaxListeners(Infinity, signal)
 
-            setMaxListeners(Infinity, options.signal)
+            options = {
+              ...options,
+              signal
+            }
           }
 
           const { stream, protocol } = await mss.select(muxedStream, protocols, options)
