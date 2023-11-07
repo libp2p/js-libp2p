@@ -126,7 +126,14 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         return
       }
 
-      options.signal = options.signal ?? AbortSignal.timeout(closeTimeout)
+      if (options.signal == null) {
+        const signal = AbortSignal.timeout(closeTimeout)
+
+        options = {
+          ...options,
+          signal
+        }
+      }
 
       try {
         log('%s closing socket', lOptsStr)

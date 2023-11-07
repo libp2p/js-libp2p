@@ -109,7 +109,14 @@ class DefaultPingService implements Startable, PingService {
     let stream: Stream | undefined
     let onAbort = (): void => {}
 
-    options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
+    if (options.signal == null) {
+      const signal = AbortSignal.timeout(this.timeout)
+
+      options = {
+        ...options,
+        signal
+      }
+    }
 
     try {
       stream = await connection.newStream(this.protocol, {
@@ -122,7 +129,7 @@ class DefaultPingService implements Startable, PingService {
       }
 
       // make stream abortable
-      options.signal.addEventListener('abort', onAbort, { once: true })
+      options.signal?.addEventListener('abort', onAbort, { once: true })
 
       const result = await pipe(
         [data],
@@ -150,7 +157,7 @@ class DefaultPingService implements Startable, PingService {
 
       throw err
     } finally {
-      options.signal.removeEventListener('abort', onAbort)
+      options.signal?.removeEventListener('abort', onAbort)
       if (stream != null) {
         await stream.close()
       }

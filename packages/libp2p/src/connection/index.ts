@@ -155,9 +155,15 @@ export class ConnectionImpl implements Connection {
 
     this.status = 'closing'
 
-    options.signal = options?.signal ?? AbortSignal.timeout(CLOSE_TIMEOUT)
+    if (options.signal == null) {
+      const signal = AbortSignal.timeout(CLOSE_TIMEOUT)
+      setMaxListeners(Infinity, signal)
 
-    setMaxListeners(Infinity, options.signal)
+      options = {
+        ...options,
+        signal
+      }
+    }
 
     try {
       this.#log.trace('closing all streams')
