@@ -41,7 +41,15 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
     async close (options: AbortOptions = {}) {
       const start = Date.now()
-      options.signal = options.signal ?? AbortSignal.timeout(CLOSE_TIMEOUT)
+
+      if (options.signal == null) {
+        const signal = AbortSignal.timeout(CLOSE_TIMEOUT)
+
+        options = {
+          ...options,
+          signal
+        }
+      }
 
       const listener = (): void => {
         const { host, port } = maConn.remoteAddr.toOptions()
@@ -51,7 +59,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
       }
 
-      options.signal.addEventListener('abort', listener)
+      options.signal?.addEventListener('abort', listener)
 
       try {
         await stream.close()
@@ -59,7 +67,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         log.error('error closing WebSocket gracefully', err)
         this.abort(err)
       } finally {
-        options.signal.removeEventListener('abort', listener)
+        options.signal?.removeEventListener('abort', listener)
         maConn.timeline.close = Date.now()
       }
     },

@@ -257,7 +257,15 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
     let stream: Stream | undefined
 
-    options.signal = options.signal ?? AbortSignal.timeout(this.timeout)
+    if (options.signal == null) {
+      const signal = AbortSignal.timeout(this.timeout)
+      setMaxListeners(Infinity, signal)
+
+      options = {
+        ...options,
+        signal
+      }
+    }
 
     try {
       stream = await connection.newStream([this.identifyProtocolStr], {
