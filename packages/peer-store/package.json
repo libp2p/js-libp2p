@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-store",
-  "version": "9.0.8",
+  "version": "9.0.9",
   "description": "Stores information about peers libp2p knows on the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-store#readme",
@@ -54,12 +54,12 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.5",
-    "@libp2p/logger": "^3.0.5",
-    "@libp2p/peer-collections": "^4.0.7",
-    "@libp2p/peer-id": "^3.0.5",
-    "@libp2p/peer-id-factory": "^3.0.7",
-    "@libp2p/peer-record": "^6.0.8",
+    "@libp2p/interface": "^0.1.6",
+    "@libp2p/logger": "^3.1.0",
+    "@libp2p/peer-collections": "^4.0.8",
+    "@libp2p/peer-id": "^3.0.6",
+    "@libp2p/peer-id-factory": "^3.0.8",
+    "@libp2p/peer-record": "^6.0.9",
     "@multiformats/multiaddr": "^12.1.5",
     "interface-datastore": "^8.2.0",
     "it-all": "^3.0.2",
