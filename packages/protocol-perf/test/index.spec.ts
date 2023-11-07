@@ -1,31 +1,36 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
-import { connectionPair, mockRegistrar, type MockNetworkComponents, mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { defaultInit, perfService } from '../src/index.js'
+import last from 'it-last'
+import { duplexPair } from 'it-pair/duplex'
+import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { PerfService } from '../src/perf-service.js'
+import type { Connection } from '@libp2p/interface/connection'
+import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { Registrar } from '@libp2p/interface-internal/registrar'
 
-export async function createComponents (): Promise<MockNetworkComponents> {
-  const components: any = {
-    peerId: await createEd25519PeerId(),
-    registrar: mockRegistrar(),
-    events: new TypedEventEmitter()
+interface StubbedPerfServiceComponents {
+  registrar: StubbedInstance<Registrar>
+  connectionManager: StubbedInstance<ConnectionManager>
+}
+
+export function createComponents (): StubbedPerfServiceComponents {
+  return {
+    registrar: stubInterface<Registrar>(),
+    connectionManager: stubInterface<ConnectionManager>()
   }
-
-  components.connectionManager = mockConnectionManager(components)
-
-  return components as MockNetworkComponents
 }
 
 describe('perf', () => {
-  let localComponents: MockNetworkComponents
-  let remoteComponents: MockNetworkComponents
+  let localComponents: StubbedPerfServiceComponents
+  let remoteComponents: StubbedPerfServiceComponents
 
   beforeEach(async () => {
-    localComponents = await createComponents()
-    remoteComponents = await createComponents()
+    localComponents = createComponents()
+    remoteComponents = createComponents()
 
     await Promise.all([
       start(localComponents),
@@ -41,20 +46,64 @@ describe('perf', () => {
   })
 
   it('should run perf', async () => {
-    const client = perfService(defaultInit)(localComponents)
-    const server = perfService(defaultInit)(remoteComponents)
+    const client = new PerfService(localComponents)
+    const server = new PerfService(remoteComponents)
 
     await start(client)
     await start(server)
 
     // simulate connection between nodes
-    const [localToRemote, remoteToLocal] = connectionPair(localComponents, remoteComponents)
-    localComponents.events.safeDispatchEvent('connection:open', { detail: localToRemote })
-    remoteComponents.events.safeDispatchEvent('connection:open', { detail: remoteToLocal })
+    const ma = multiaddr('/ip4/0.0.0.0')
+    const duplexes = duplexPair<any>()
+    const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
 
-    const startTime = Date.now()
+    const aToB = stubInterface<Connection>()
+    aToB.newStream.resolves(streams[0])
+    localComponents.connectionManager.openConnection.withArgs(ma, {
+      force: true
+    }).resolves(aToB)
+    localComponents.connectionManager.getConnections.returns([])
+
+    const bToA = stubInterface<Connection>()
+    void server.handleMessage({ stream: streams[1], connection: bToA })
 
     // Run Perf
-    await expect(client.measurePerformance(startTime, localToRemote, 1024n, 1024n)).to.eventually.be.fulfilled()
+    const finalResult = await last(client.measurePerformance(ma, 1024, 1024))
+
+    expect(finalResult).to.have.property('type', 'final')
+    expect(finalResult).to.have.property('uploadBytes', 1024)
+
+    expect(localComponents.connectionManager.openConnection.getCall(0).args[1]?.force).to.be.true('did not open new connection')
+  })
+
+  it('should reuse existing connection', async () => {
+    const client = new PerfService(localComponents)
+    const server = new PerfService(remoteComponents)
+
+    await start(client)
+    await start(server)
+
+    // simulate connection between nodes
+    const ma = multiaddr('/ip4/0.0.0.0')
+    const duplexes = duplexPair<any>()
+    const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
+
+    const aToB = stubInterface<Connection>()
+    aToB.newStream.resolves(streams[0])
+    localComponents.connectionManager.openConnection.resolves(aToB)
+    localComponents.connectionManager.getConnections.returns([])
+
+    const bToA = stubInterface<Connection>()
+    void server.handleMessage({ stream: streams[1], connection: bToA })
+
+    // Run Perf
+    const finalResult = await last(client.measurePerformance(ma, 1024, 1024, {
+      reuseExistingConnection: true
+    }))
+
+    expect(finalResult).to.have.property('type', 'final')
+    expect(finalResult).to.have.property('uploadBytes', 1024)
+
+    expect(localComponents.connectionManager.openConnection.getCall(0).args[1]?.force).to.be.false('did not reuse existing connection')
   })
 })
