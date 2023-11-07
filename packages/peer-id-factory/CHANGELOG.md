@@ -5,6 +5,17 @@
 
 * update README.md ([#59](https://github.com/libp2p/js-libp2p-peer-id/issues/59)) ([aba6483](https://github.com/libp2p/js-libp2p-peer-id/commit/aba6483dad028ee5c24bfc01135b77568666cfd3))
 
+### [3.0.8](https://www.github.com/libp2p/js-libp2p/compare/peer-id-factory-v3.0.7...peer-id-factory-v3.0.8) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+
 ### [3.0.7](https://www.github.com/libp2p/js-libp2p/compare/peer-id-factory-v3.0.6...peer-id-factory-v3.0.7) (2023-11-03)
 
 

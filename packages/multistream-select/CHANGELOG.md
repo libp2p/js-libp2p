@@ -11,6 +11,16 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-multistream-select/issues/70)) ([f87b1c3](https://github.com/libp2p/js-libp2p-multistream-select/commit/f87b1c3505934ebeed6eff018af8d3042e7e6e06))
 
+### [4.0.6](https://www.github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.5...multistream-select-v4.0.6) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+
 ### [4.0.5](https://www.github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.4...multistream-select-v4.0.5) (2023-11-03)
 
 

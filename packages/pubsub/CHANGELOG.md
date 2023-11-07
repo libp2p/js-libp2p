@@ -5,6 +5,22 @@
 
 * **dev:** bump delay from 5.0.0 to 6.0.0 ([#144](https://github.com/libp2p/js-libp2p-pubsub/issues/144)) ([1364ce4](https://github.com/libp2p/js-libp2p-pubsub/commit/1364ce41815d3392cfca61169e113cc5414ac2d9))
 
+### [8.0.10](https://www.github.com/libp2p/js-libp2p/compare/pubsub-v8.0.9...pubsub-v8.0.10) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/peer-collections bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+
 ### [8.0.9](https://www.github.com/libp2p/js-libp2p/compare/pubsub-v8.0.8...pubsub-v8.0.9) (2023-11-03)
 
 

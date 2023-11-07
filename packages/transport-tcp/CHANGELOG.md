@@ -5,6 +5,24 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#279](https://github.com/libp2p/js-libp2p-tcp/issues/279)) ([3ed1235](https://github.com/libp2p/js-libp2p-tcp/commit/3ed12353aa48b5a933f80042846a8f1c2337fa47))
 
+### [8.0.13](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.12...tcp-v8.0.13) (2023-11-07)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/utils bumped from ^4.0.6 to ^4.0.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+
 ### [8.0.12](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.11...tcp-v8.0.12) (2023-11-07)
 
 

@@ -1,5 +1,23 @@
 # Changelog
 
+### [2.0.1](https://www.github.com/libp2p/js-libp2p/compare/perf-v2.0.0...perf-v2.0.1) (2023-11-07)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+
 ## [2.0.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.15...perf-v2.0.0) (2023-11-07)
 
 

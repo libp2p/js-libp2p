@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+### [0.1.6](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.5...interface-v0.1.6) (2023-11-07)
+
+
+### Features
+
+* add component logger ([#2198](https://www.github.com/libp2p/js-libp2p/issues/2198)) ([fb8a6f1](https://www.github.com/libp2p/js-libp2p/commit/fb8a6f1887e71852217355f65c2b22566dd26749)), closes [#2105](https://www.github.com/libp2p/js-libp2p/issues/2105)
+
 ### [0.1.5](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.4...interface-v0.1.5) (2023-11-03)
 
 

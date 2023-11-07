@@ -20,6 +20,45 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+### [0.46.20](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.19...libp2p-v0.46.20) (2023-11-07)
+
+
+### Features
+
+* add component logger ([#2198](https://www.github.com/libp2p/js-libp2p/issues/2198)) ([fb8a6f1](https://www.github.com/libp2p/js-libp2p/commit/fb8a6f1887e71852217355f65c2b22566dd26749)), closes [#2105](https://www.github.com/libp2p/js-libp2p/issues/2105)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/keychain bumped from ^3.0.7 to ^3.0.8
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/multistream-select bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-collections bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+    * @libp2p/peer-record bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/peer-store bumped from ^9.0.8 to ^9.0.9
+    * @libp2p/utils bumped from ^4.0.6 to ^4.0.7
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.11 to ^9.0.12
+    * @libp2p/floodsub bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+    * @libp2p/kad-dht bumped from ^10.0.13 to ^10.0.14
+    * @libp2p/mdns bumped from ^9.0.13 to ^9.0.14
+    * @libp2p/mplex bumped from ^9.0.11 to ^9.0.12
+    * @libp2p/tcp bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/websockets bumped from ^7.0.12 to ^7.0.13
+
 ### [0.46.19](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.18...libp2p-v0.46.19) (2023-11-07)
 
 
