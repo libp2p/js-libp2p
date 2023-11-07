@@ -121,6 +121,10 @@ export class WebRTCTransport implements Transport, Startable {
     log.trace('dialing address: %a', ma)
 
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
+    const muxerFactory = new DataChannelMuxerFactory({
+      peerConnection,
+      dataChannelOptions: this.init.dataChannel
+    })
 
     const { remoteAddress } = await initiateConnection({
       peerConnection,
@@ -141,10 +145,7 @@ export class WebRTCTransport implements Transport, Startable {
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
       skipProtection: true,
       skipEncryption: true,
-      muxerFactory: new DataChannelMuxerFactory({
-        peerConnection,
-        dataChannelOptions: this.init.dataChannel
-      })
+      muxerFactory
     })
 
     // close the connection on shut down
@@ -156,6 +157,10 @@ export class WebRTCTransport implements Transport, Startable {
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
+    const muxerFactory = new DataChannelMuxerFactory({
+      peerConnection,
+      dataChannelOptions: this.init.dataChannel
+    })
 
     try {
       const { remoteAddress } = await handleIncomingStream({
@@ -178,7 +183,7 @@ export class WebRTCTransport implements Transport, Startable {
       await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
         skipProtection: true,
-        muxerFactory: new DataChannelMuxerFactory({ peerConnection, dataChannelOptions: this.init.dataChannel })
+        muxerFactory
       })
 
       // close the stream if SDP messages have been exchanged successfully
