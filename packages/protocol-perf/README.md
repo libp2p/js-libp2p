@@ -7,43 +7,54 @@
 
 # About
 
-The `performanceService` implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which is used to measure performance within and across libp2p implementations
-addresses.
+The PerfService implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which can be used to measure transfer performance within and across libp2p implementations.
 
 ## Example
 
 ```typescript
-import { createLibp2p } from 'libp2p'
-import { perfService } from '@libp2p/perf'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { createLibp2p, type Libp2p } from 'libp2p'
+import { plaintext } from 'libp2p/insecure'
+import { perfService, type PerfService } from '@libp2p/perf'
 
-const node = await createLibp2p({
-  service: [
-    perfService()
-  ]
-})
-```
+const ONE_MEG = 1024 * 1024
+const UPLOAD_BYTES = ONE_MEG * 1024
+const DOWNLOAD_BYTES = ONE_MEG * 1024
 
-The `measurePerformance` function can be used to measure the latency and throughput of a connection.
-server.  This will not work in browsers.
+async function createNode (): Promise<Libp2p<{ perf: PerfService }>> {
+  return createLibp2p({
+    addresses: {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
+    },
+    transports: [
+      tcp()
+    ],
+    connectionEncryption: [
+      noise(), plaintext()
+    ],
+    streamMuxers: [
+      yamux(), mplex()
+    ],
+    services: {
+      perf: perfService()
+    }
+  })
+}
 
-## Example
+const libp2p1 = await createNode()
+const libp2p2 = await createNode()
 
-```typescript
-import { createLibp2p } from 'libp2p'
-import { perfService } from 'libp2p/perf'
+for await (const output of libp2p1.services.perf.measurePerformance(libp2p2.getMultiaddrs()[0], UPLOAD_BYTES, DOWNLOAD_BYTES)) {
+  console.info(output)
+}
 
-const node = await createLibp2p({
-  services: [
-    perf: perfService()
-  ]
-})
-
-const connection = await node.dial(multiaddr(multiaddrAddress))
-
-const startTime = Date.now()
-
-await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
-
+await libp2p1.stop()
+await libp2p2.stop()
 ```
 
 # API Docs
