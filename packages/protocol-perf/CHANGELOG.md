@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.0.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.15...perf-v2.0.0) (2023-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Measures upload/download speed separately and also over time rather than in total.
+
+### Features
+
+* measure transfer perf over time ([#2067](https://www.github.com/libp2p/js-libp2p/issues/2067)) ([78db573](https://www.github.com/libp2p/js-libp2p/commit/78db573f9e8f28cd3d0a89f36094f5d566482b9f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.3 to ^4.1.4
+
 ### [1.1.15](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.14...perf-v1.1.15) (2023-11-06)
 
 
