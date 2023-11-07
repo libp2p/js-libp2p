@@ -5,7 +5,7 @@ import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interfa
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
 import { DefaultKeyChain } from '@libp2p/keychain'
-import { logger } from '@libp2p/logger'
+import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -28,7 +28,7 @@ import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { Libp2pEvents, PendingDial, ServiceMap, AbortOptions } from '@libp2p/interface'
+import type { Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { Connection, NewStreamOptions, Stream } from '@libp2p/interface/connection'
 import type { KeyChain } from '@libp2p/interface/keychain'
 import type { Metrics } from '@libp2p/interface/metrics'
@@ -39,8 +39,6 @@ import type { Topology } from '@libp2p/interface/topology'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal/registrar'
 import type { Datastore } from 'interface-datastore'
 
-const log = logger('libp2p')
-
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
@@ -49,9 +47,11 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   public keychain: KeyChain
   public metrics?: Metrics
   public services: T
+  public logger: ComponentLogger
 
   public components: Components
   #started: boolean
+  readonly #log: Logger
 
   constructor (init: Libp2pInit<T>) {
     super()
@@ -74,10 +74,13 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     this.#started = false
     this.peerId = init.peerId
+    this.logger = init.logger ?? defaultLogger()
+    this.#log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
     const components = this.components = defaultComponents({
       peerId: init.peerId,
+      logger: this.logger,
       events,
       datastore: init.datastore ?? new MemoryDatastore(),
       connectionGater: connectionGater(init.connectionGater)
@@ -170,7 +173,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         const service: any = createService(this.components)
 
         if (service == null) {
-          log.error('service factory %s returned null or undefined instance', name)
+          this.#log.error('service factory %s returned null or undefined instance', name)
           continue
         }
 
@@ -178,17 +181,17 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         this.configureComponent(name, service)
 
         if (service[contentRouting] != null) {
-          log('registering service %s for content routing', name)
+          this.#log('registering service %s for content routing', name)
           contentRouters.push(service[contentRouting])
         }
 
         if (service[peerRouting] != null) {
-          log('registering service %s for peer routing', name)
+          this.#log('registering service %s for peer routing', name)
           peerRouters.push(service[peerRouting])
         }
 
         if (service[peerDiscovery] != null) {
-          log('registering service %s for peer discovery', name)
+          this.#log('registering service %s for peer discovery', name)
           service[peerDiscovery].addEventListener('peer', (evt: CustomEvent<PeerInfo>) => {
             this.#onDiscoveryPeer(evt)
           })
@@ -199,7 +202,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
   private configureComponent <T> (name: string, component: T): T {
     if (component == null) {
-      log.error('component %s was null or undefined', name)
+      this.#log.error('component %s was null or undefined', name)
     }
 
     this.components[name] = component
@@ -217,12 +220,12 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     this.#started = true
 
-    log('libp2p is starting')
+    this.#log('libp2p is starting')
 
     const keys = await this.keychain.listKeys()
 
     if (keys.find(key => key.name === 'self') == null) {
-      log('importing self key into keychain')
+      this.#log('importing self key into keychain')
       await this.keychain.importPeer('self', this.components.peerId)
     }
 
@@ -232,9 +235,9 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       await this.components.afterStart?.()
 
       this.safeDispatchEvent('start', { detail: this })
-      log('libp2p has started')
+      this.#log('libp2p has started')
     } catch (err: any) {
-      log.error('An error occurred starting libp2p', err)
+      this.#log.error('An error occurred starting libp2p', err)
       await this.stop()
       throw err
     }
@@ -248,7 +251,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       return
     }
 
-    log('libp2p is stopping')
+    this.#log('libp2p is stopping')
 
     this.#started = false
 
@@ -257,7 +260,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     await this.components.afterStop?.()
 
     this.safeDispatchEvent('stop', { detail: this })
-    log('libp2p has stopped')
+    this.#log('libp2p has stopped')
   }
 
   isStarted (): boolean {
@@ -322,7 +325,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
    * Get the public key for the given peer id
    */
   async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<Uint8Array> {
-    log('getPublicKey %p', peer)
+    this.#log('getPublicKey %p', peer)
 
     if (peer.publicKey != null) {
       return peer.publicKey
@@ -391,7 +394,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     const { detail: peer } = evt
 
     if (peer.id.toString() === this.peerId.toString()) {
-      log.error(new Error(codes.ERR_DISCOVERED_SELF))
+      this.#log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
 
@@ -399,7 +402,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       multiaddrs: peer.multiaddrs,
       protocols: peer.protocols
     })
-      .catch(err => { log.error(err) })
+      .catch(err => { this.#log.error(err) })
   }
 }
 

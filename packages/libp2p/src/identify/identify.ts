@@ -1,6 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
@@ -20,7 +19,7 @@ import {
 } from './consts.js'
 import { Identify } from './pb/message.js'
 import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions } from '@libp2p/interface'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions, Logger } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -29,8 +28,6 @@ import type { Startable } from '@libp2p/interface/startable'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
-
-const log = logger('libp2p:identify')
 
 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
 const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
@@ -73,6 +70,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly maxObservedAddresses: number
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
+  readonly #log: Logger
 
   constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
     this.started = false
@@ -82,6 +80,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.addressManager = components.addressManager
     this.connectionManager = components.connectionManager
     this.events = components.events
+    this.#log = components.logger.forComponent('libp2p:identify')
 
     this.identifyProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
     this.identifyPushProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
@@ -104,13 +103,13 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
-        this.identify(connection).catch(err => { log.error('error during identify trigged by connection:open', err) })
+        this.identify(connection).catch(err => { this.#log.error('error during identify trigged by connection:open', err) })
       })
     }
 
     // When self peer record changes, trigger identify-push
     components.events.addEventListener('self:peer:update', (evt) => {
-      void this.push().catch(err => { log.error(err) })
+      void this.push().catch(err => { this.#log.error(err) })
     })
 
     // Append user agent version to default AGENT_VERSION depending on the environment
@@ -141,7 +140,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     await this.registrar.handle(this.identifyProtocolStr, (data) => {
       void this._handleIdentify(data).catch(err => {
-        log.error(err)
+        this.#log.error(err)
       })
     }, {
       maxInboundStreams: this.maxInboundStreams,
@@ -150,7 +149,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     })
     await this.registrar.handle(this.identifyPushProtocolStr, (data) => {
       void this._handlePush(data).catch(err => {
-        log.error(err)
+        this.#log.error(err)
       })
     }, {
       maxInboundStreams: this.maxPushIncomingStreams,
@@ -215,7 +214,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         })
       } catch (err: any) {
         // Just log errors
-        log.error('could not push identify update to peer', err)
+        this.#log.error('could not push identify update to peer', err)
         stream?.abort(err)
       }
     })
@@ -276,7 +275,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
       return message
     } catch (err: any) {
-      log.error('error while reading identify message', err)
+      this.#log.error('error while reading identify message', err)
       stream?.abort(err)
       throw err
     }
@@ -307,12 +306,12 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     // Get the observedAddr if there is one
     const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
-    log('identify completed for peer %p and protocols %o', id, protocols)
-    log('our observed address is %a', cleanObservedAddr)
+    this.#log('identify completed for peer %p and protocols %o', id, protocols)
+    this.#log('our observed address is %a', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
         this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
-      log('storing our observed address %a', cleanObservedAddr)
+      this.#log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
 
@@ -370,7 +369,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         signal
       })
     } catch (err: any) {
-      log.error('could not respond to identify request', err)
+      this.#log.error('could not respond to identify request', err)
       stream.abort(err)
     }
   }
@@ -399,16 +398,16 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
       await this.#consumeIdentifyMessage(connection, message)
     } catch (err: any) {
-      log.error('received invalid message', err)
+      this.#log.error('received invalid message', err)
       stream.abort(err)
       return
     }
 
-    log('handled push from %p', connection.remotePeer)
+    this.#log('handled push from %p', connection.remotePeer)
   }
 
   async #consumeIdentifyMessage (connection: Connection, message: Identify): Promise<IdentifyResult> {
-    log('received identify from %p', connection.remotePeer)
+    this.#log('received identify from %p', connection.remotePeer)
 
     if (message == null) {
       throw new CodeError('message was null or undefined', 'ERR_INVALID_MESSAGE')
@@ -441,7 +440,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     // if the peer record has been sent, prefer the addresses in the record as they are signed by the remote peer
     if (message.signedPeerRecord != null) {
-      log('received signedPeerRecord in push from %p', connection.remotePeer)
+      this.#log('received signedPeerRecord in push from %p', connection.remotePeer)
 
       let peerRecordEnvelope = message.signedPeerRecord
       const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
@@ -478,7 +477,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
           // ensure seq is greater than, or equal to, the last received
           if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-            log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+            this.#log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
             peerRecord = storedRecord
             peerRecordEnvelope = existingPeer.peerRecordEnvelope
           }
@@ -499,10 +498,10 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         addresses: peerRecord.multiaddrs
       }
     } else {
-      log('%p did not send a signed peer record', connection.remotePeer)
+      this.#log('%p did not send a signed peer record', connection.remotePeer)
     }
 
-    log('patching %p with', connection.remotePeer, peer)
+    this.#log('patching %p with', connection.remotePeer, peer)
     await this.peerStore.patch(connection.remotePeer, peer)
 
     if (message.agentVersion != null || message.protocolVersion != null) {
@@ -516,7 +515,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         metadata.ProtocolVersion = uint8ArrayFromString(message.protocolVersion)
       }
 
-      log('merging %p metadata', connection.remotePeer, metadata)
+      this.#log('merging %p metadata', connection.remotePeer, metadata)
       await this.peerStore.merge(connection.remotePeer, {
         metadata
       })

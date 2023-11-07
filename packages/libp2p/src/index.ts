@@ -19,7 +19,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
-import type { Libp2p, ServiceMap, RecursivePartial } from '@libp2p/interface'
+import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger } from '@libp2p/interface'
 import type { ConnectionProtector } from '@libp2p/interface/connection'
 import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
@@ -108,6 +108,27 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * Arbitrary libp2p modules
    */
   services: ServiceFactoryMap<T>
+
+  /**
+   * An optional logging implementation that can be used to write runtime logs.
+   *
+   * Set the `DEBUG` env var or the `debug` key on LocalStorage to see logs.
+   *
+   * @example
+   *
+   * Node.js:
+   *
+   * ```console
+   * $ DEBUG="*libp2p:*" node myscript.js
+   * ```
+   *
+   * Browsers:
+   *
+   * ```javascript
+   * localStorage.setItem('debug', '*libp2p:*')
+   * ```
+   */
+  logger?: ComponentLogger
 }
 
 export type { Libp2p }

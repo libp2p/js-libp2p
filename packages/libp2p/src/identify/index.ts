@@ -4,7 +4,7 @@ import {
 } from './consts.js'
 import { DefaultIdentifyService } from './identify.js'
 import { Identify } from './pb/message.js'
-import type { AbortOptions, IdentifyResult, Libp2pEvents } from '@libp2p/interface'
+import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -59,6 +59,7 @@ export interface IdentifyServiceComponents {
   registrar: Registrar
   addressManager: AddressManager
   events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
 }
 
 /**

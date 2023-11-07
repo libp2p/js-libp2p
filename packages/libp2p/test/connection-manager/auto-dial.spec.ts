@@ -12,6 +12,7 @@ import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { defaultComponents } from '../../src/components.js'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
@@ -73,11 +74,11 @@ describe('auto-dial', () => {
       getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialler = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10,
       autoDialInterval: 10000
     })
@@ -127,11 +128,11 @@ describe('auto-dial', () => {
       getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialler = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10
     })
     autoDialler.start()
@@ -181,11 +182,11 @@ describe('auto-dial', () => {
       }])
     })
 
-    autoDialler = new AutoDial({
+    autoDialler = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10
     })
     autoDialler.start()
@@ -207,11 +208,11 @@ describe('auto-dial', () => {
       getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialler = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10,
       autoDialInterval: 10000
     })
@@ -258,11 +259,11 @@ describe('auto-dial', () => {
       getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialler = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10,
       autoDialPeerRetryThreshold: 2000
     })
