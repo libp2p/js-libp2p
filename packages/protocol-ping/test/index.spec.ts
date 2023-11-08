@@ -5,7 +5,9 @@ import { start } from '@libp2p/interface/startable'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
+import { byteStream } from 'it-byte-stream'
 import { pair } from 'it-pair'
+import { duplexPair } from 'it-pair/duplex'
 import pDefer from 'p-defer'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { PROTOCOL } from '../src/constants.js'
@@ -93,5 +95,40 @@ describe('ping', () => {
 
     // should have aborted stream
     expect(stream.abort).to.have.property('called', true)
+  })
+
+  it('should handle incoming ping', async () => {
+    const ping = new PingService(components)
+
+    await start(ping)
+
+    const remotePeer = await createEd25519PeerId()
+
+    const connection = stubInterface<Connection>()
+    components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
+
+    const stream = echoStream()
+    connection.newStream.withArgs(PROTOCOL).resolves(stream)
+
+    const duplex = duplexPair<any>()
+    const incomingStream = stubInterface<Stream>(duplex[0])
+    const outgoingStream = stubInterface<Stream>(duplex[1])
+
+    const handler = components.registrar.handle.getCall(0).args[1]
+
+    // handle incoming ping stream
+    handler({
+      stream: incomingStream,
+      connection: stubInterface<Connection>()
+    })
+
+    const input = Uint8Array.from([0, 1, 2, 3, 4])
+
+    const b = byteStream(outgoingStream)
+    await b.write(input)
+
+    const output = await b.read()
+
+    expect(output).to.equalBytes(input)
   })
 })
