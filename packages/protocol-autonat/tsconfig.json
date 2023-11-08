@@ -15,13 +15,13 @@
       "path": "../interface-internal"
     },
     {
+      "path": "../logger"
+    },
+    {
       "path": "../peer-id"
     },
     {
       "path": "../peer-id-factory"
-    },
-    {
-      "path": "../logger"
     }
   ]
 }

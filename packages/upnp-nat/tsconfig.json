@@ -10,6 +10,18 @@
   "references": [
     {
       "path": "../interface"
+    },
+    {
+      "path": "../interface-internal"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id-factory"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }
