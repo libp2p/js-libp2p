@@ -77,6 +77,10 @@ Loading this module through a script tag will make it's exports available as `Li
 <script src="https://unpkg.com/@libp2p/pnet/dist/index.min.js"></script>
 ```
 
+# API Docs
+
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_pnet.html>
+
 # License
 
 Licensed under either of
