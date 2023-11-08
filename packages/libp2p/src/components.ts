@@ -1,7 +1,7 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { isStartable, type Startable } from '@libp2p/interface/startable'
 import { defaultLogger } from '@libp2p/logger'
-import type { Libp2pEvents, ComponentLogger } from '@libp2p/interface'
+import type { Libp2pEvents, ComponentLogger, NodeInfo } from '@libp2p/interface'
 import type { ConnectionProtector } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
@@ -19,6 +19,7 @@ import type { Datastore } from 'interface-datastore'
 
 export interface Components extends Record<string, any>, Startable {
   peerId: PeerId
+  nodeInfo: NodeInfo
   logger: ComponentLogger
   events: TypedEventTarget<Libp2pEvents>
   addressManager: AddressManager
@@ -37,6 +38,7 @@ export interface Components extends Record<string, any>, Startable {
 
 export interface ComponentsInit {
   peerId?: PeerId
+  nodeInfo?: NodeInfo
   logger?: ComponentLogger
   events?: TypedEventTarget<Libp2pEvents>
   addressManager?: AddressManager
