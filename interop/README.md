@@ -7,6 +7,12 @@
 
 > Multidimensional interop tests
 
+# Install
+
+```console
+$ npm i @libp2p/multidim-interop
+```
+
 ## Table of contents <!-- omit in toc -->
 
 - [Usage](#usage)
@@ -51,14 +57,14 @@ $ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
    $ git clone https://github.com/libp2p/test-plans.git
    ```
 2. (Optional) If you are running an M1 Mac you may need to override the build platform.
-    - Edit `/multidim-interop/dockerBuildWrapper.sh`
-    - Add `--platform linux/arm64/v8` to the `docker buildx build` command
-      ```
-      docker buildx build \
-        --platform linux/arm64/v8 \    <-- add this line
-        --load \
-        -t $IMAGE_NAME $CACHING_OPTIONS "$@"
-      ```
+   - Edit `/multidim-interop/dockerBuildWrapper.sh`
+   - Add `--platform linux/arm64/v8` to the `docker buildx build` command
+     ```
+     docker buildx build \
+       --platform linux/arm64/v8 \    <-- add this line
+       --load \
+       -t $IMAGE_NAME $CACHING_OPTIONS "$@"
+     ```
 3. (Optional) Enable some sort of debug output
    - nim-libp2p
      - edit `/multidim-interop/impl/nim/$VERSION/Dockerfile`
@@ -106,13 +112,13 @@ $ docker run -e transport=webtransport -e muxer=yamux -e security=noise -e is_di
 $ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=false -e redis_addr=redis:6379 --link redis:redis go-v0.29
 ```
 
-## License
+# License
 
 Licensed under either of
 
 - Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
-## Contribution
+# Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
