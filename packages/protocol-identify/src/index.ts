@@ -1,10 +1,29 @@
+/**
+ * @packageDocumentation
+ *
+ * Use the `identify` function to add support for the [Identify protocol](https://github.com/libp2p/specs/blob/master/identify/README.md) to libp2p.
+ *
+ * @example
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { identify } from '@libp2p/identify'
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   services: {
+ *     identify: identify()
+ *   }
+ * })
+ * ```
+ */
+
 import {
   MULTICODEC_IDENTIFY,
   MULTICODEC_IDENTIFY_PUSH
 } from './consts.js'
-import { DefaultIdentifyService } from './identify.js'
-import { Identify } from './pb/message.js'
-import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger } from '@libp2p/interface'
+import { Identify as IdentifyClass } from './identify.js'
+import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -13,7 +32,7 @@ import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 
-export interface IdentifyServiceInit {
+export interface IdentifyInit {
   /**
    * The prefix to use for the protocol (default: 'ipfs')
    */
@@ -52,7 +71,7 @@ export interface IdentifyServiceInit {
   runOnTransientConnection?: boolean
 }
 
-export interface IdentifyServiceComponents {
+export interface IdentifyComponents {
   peerId: PeerId
   peerStore: PeerStore
   connectionManager: ConnectionManager
@@ -60,19 +79,18 @@ export interface IdentifyServiceComponents {
   addressManager: AddressManager
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  nodeInfo: NodeInfo
 }
 
 /**
- * The protocols the IdentifyService supports
+ * The protocols the Identify service supports
  */
 export const multicodecs = {
   IDENTIFY: MULTICODEC_IDENTIFY,
   IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH
 }
 
-export const Message = { Identify }
-
-export interface IdentifyService {
+export interface Identify {
   /**
    * due to the default limits on inbound/outbound streams for this protocol,
    * invoking this method when runOnConnectionOpen is true can lead to unpredictable results
@@ -85,6 +103,6 @@ export interface IdentifyService {
   push(): Promise<void>
 }
 
-export function identifyService (init: IdentifyServiceInit = {}): (components: IdentifyServiceComponents) => IdentifyService {
-  return (components) => new DefaultIdentifyService(components, init)
+export function identify (init: IdentifyInit = {}): (components: IdentifyComponents) => Identify {
+  return (components) => new IdentifyClass(components, init)
 }

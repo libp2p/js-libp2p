@@ -2,6 +2,7 @@
 /* eslint max-nested-callbacks: ['error', 6] */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -9,7 +10,6 @@ import { Circuit } from '@multiformats/mafmt'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
-import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { hasRelay } from './utils.js'
@@ -41,7 +41,7 @@ describe('circuit-relay', () => {
           denyDialMultiaddr: () => false
         },
         services: {
-          identify: identifyService()
+          identify: identify()
         }
       }),
       createLibp2p({
@@ -67,7 +67,7 @@ describe('circuit-relay', () => {
           denyDialMultiaddr: () => false
         },
         services: {
-          identify: identifyService()
+          identify: identify()
         }
       })
     ])
