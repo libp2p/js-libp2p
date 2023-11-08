@@ -24,6 +24,7 @@ import { DefaultPeerRouting } from './peer-routing.js'
 import { DefaultRegistrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
+import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
 import type { Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
@@ -75,6 +76,10 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.services = {}
     const components = this.components = defaultComponents({
       peerId: init.peerId,
+      nodeInfo: init.nodeInfo ?? {
+        name: pkg.name,
+        version: pkg.version
+      },
       logger: this.logger,
       events,
       datastore: init.datastore ?? new MemoryDatastore(),
