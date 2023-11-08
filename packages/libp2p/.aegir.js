@@ -18,7 +18,6 @@ export default {
       const { plaintext } = await import('./dist/src/insecure/index.js')
       const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
       const { identifyService } = await import('./dist/src/identify/index.js')
-      const { pingService } = await import('./dist/src/ping/index.js')
       const { fetchService } = await import('./dist/src/fetch/index.js')
 
       const peerId = await createEd25519PeerId()
@@ -47,7 +46,6 @@ export default {
         ],
         services: {
           identify: identifyService(),
-          ping: pingService(),
           fetch: fetchService(),
           relay: circuitRelayServer({
             reservations: {

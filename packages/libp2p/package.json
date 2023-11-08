@@ -67,10 +67,6 @@
     "./insecure": {
       "types": "./dist/src/insecure/index.d.ts",
       "import": "./dist/src/insecure/index.js"
-    },
-    "./ping": {
-      "types": "./dist/src/ping/index.d.ts",
-      "import": "./dist/src/ping/index.js"
     }
   },
   "eslintConfig": {

@@ -5,6 +5,7 @@ import { } from 'aegir/chai'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
+import { ping, type PingService } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
@@ -14,7 +15,6 @@ import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import { type IdentifyService, identifyService } from 'libp2p/identify'
-import { pingService, type PingService } from 'libp2p/ping'
 
 async function redisProxy (commands: any[]): Promise<any> {
   const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, { body: JSON.stringify(commands), method: 'POST' })
@@ -49,7 +49,7 @@ describe('ping test', function () {
         denyDialMultiaddr: async () => false
       },
       services: {
-        ping: pingService(),
+        ping: ping(),
         identify: identifyService()
       }
     }
