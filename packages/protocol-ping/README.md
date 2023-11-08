@@ -24,16 +24,6 @@ const node = await createLibp2p({
 })
 ```
 
-## Table of contents <!-- omit in toc -->
-
-- [About](#about)
-  - [Example](#example)
-- [Install](#install)
-  - [Browser `<script>` tag](#browser-script-tag)
-- [API Docs](#api-docs)
-- [License](#license)
-- [Contribution](#contribution)
-
 # Install
 
 ```console
