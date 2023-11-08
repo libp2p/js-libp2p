@@ -22,6 +22,7 @@
     "packages/peer-store": {},
     "packages/protocol-autonat": {},
     "packages/protocol-perf": {},
+    "packages/protocol-ping": {},
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},
     "packages/stream-multiplexer-mplex": {},

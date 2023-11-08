@@ -54,6 +54,7 @@
     "@chainsafe/libp2p-noise": "^13.0.0",
     "@chainsafe/libp2p-yamux": "^5.0.0",
     "@libp2p/mplex": "^9.0.12",
+    "@libp2p/ping": "^0.0.0",
     "@libp2p/tcp": "^8.0.13",
     "@libp2p/webrtc": "^3.2.10",
     "@libp2p/websockets": "^7.0.13",

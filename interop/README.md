@@ -7,7 +7,7 @@
 
 > Multidimensional interop tests
 
-# Install
+# Install <!-- omit in toc -->
 
 ```console
 $ npm i @libp2p/multidim-interop
@@ -57,7 +57,7 @@ $ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
    $ git clone https://github.com/libp2p/test-plans.git
    ```
 2. (Optional) If you are running an M1 Mac you may need to override the build platform.
-   - Edit `/multidim-interop/dockerBuildWrapper.sh`
+   - Edit `/transport-interop/dockerBuildWrapper.sh`
    - Add `--platform linux/arm64/v8` to the `docker buildx build` command
      ```
      docker buildx build \
@@ -67,7 +67,7 @@ $ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
      ```
 3. (Optional) Enable some sort of debug output
    - nim-libp2p
-     - edit `/multidim-interop/impl/nim/$VERSION/Dockerfile`
+     - edit `/transport-interop/impl/nim/$VERSION/Dockerfile`
      - Change `-d:chronicles_log_level=WARN` to `-d:chronicles_log_level=DEBUG`
    - rust-libp2p
      - When starting the docker container add `-e RUST_LOG=debug`
