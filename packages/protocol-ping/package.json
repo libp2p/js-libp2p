@@ -1,0 +1,64 @@
+{
+  "name": "@libp2p/ping",
+  "version": "0.0.0",
+  "description": "Implementation of Ping Protocol",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/protocol-ping#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "build": "aegir build",
+    "test": "aegir test",
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "dep-check": "aegir dep-check"
+  },
+  "dependencies": {
+    "@libp2p/crypto": "^2.0.8",
+    "@libp2p/interface": "^0.1.2",
+    "@libp2p/interface-internal": "^0.1.5",
+    "@libp2p/logger": "^3.1.0",
+    "@libp2p/peer-id-factory": "^3.0.8",
+    "@multiformats/multiaddr": "^12.1.5",
+    "it-first": "^3.0.3",
+    "it-pipe": "^3.0.1",
+    "uint8arrays": "^4.0.6"
+  },
+  "devDependencies": {
+    "aegir": "^41.0.2",
+    "it-pair": "^2.0.6",
+    "p-defer": "^4.0.0",
+    "sinon-ts": "^2.0.0"
+  }
+}

@@ -987,14 +987,14 @@ Changing the protocol name prefix can isolate default public network (IPFS) for 
 ```js
 import { createLibp2p } from 'libp2p'
 import { identifyService } from 'libp2p/identify'
-import { pingService } from 'libp2p/ping'
+import { ping } from 'libp2p/@ping'
 
 const node = await createLibp2p({
   services: {
     identify: identifyService({
       protocolPrefix: 'ipfs' // default
     }),
-    ping: pingService({
+    ping: ping({
       protocolPrefix: 'ipfs' // default
     })
   }
@@ -1003,7 +1003,7 @@ const node = await createLibp2p({
 protocols: [
   "/ipfs/id/1.0.0", // identify service protocol (if we have multiplexers)
   "/ipfs/id/push/1.0.0", // identify service push protocol (if we have multiplexers)
-  "/ipfs/ping/1.0.0", // built-in ping protocol
+  "/ipfs/ping/1.0.0", // ping protocol
 ]
 */
 ```
