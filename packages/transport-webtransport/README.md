@@ -40,8 +40,6 @@ Loading this module through a script tag will make it's exports available as `Li
 <script src="https://unpkg.com/@libp2p/webtransport/dist/index.min.js"></script>
 ```
 
-For more information see [libp2p/js-libp2p/doc/CONFIGURATION.md#customizing-transports](https://github.com/libp2p/js-libp2p/blob/master/doc/CONFIGURATION.md#customizing-transports).
-
 # API Docs
 
 - <https://libp2p.github.io/js-libp2p/modules/_libp2p_webtransport.html>
@@ -56,5 +54,3 @@ Licensed under either of
 # Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
-
-See the [Contributing](./CONTRIBUTING.md) doc for details on developing changes to this repo.

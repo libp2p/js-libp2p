@@ -5,8 +5,9 @@
   },
   "include": [
     "src",
-    "test"
-, "../upnp-nat/test/upnp-nat"  ],
+    "test",
+    "../upnp-nat/test/upnp-nat"
+  ],
   "references": [
     {
       "path": "../crypto"
@@ -22,9 +23,6 @@
     },
     {
       "path": "../kad-dht"
-    },
-    {
-      "path": "../keychain"
     },
     {
       "path": "../logger"

@@ -3,23 +3,17 @@
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
 
+> UPnP NAT hole punching
+
 # Install
 
 ```console
-$ npm i @libp2p/peer-id
-```
-
-## Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `Libp2pPeerId` in the global namespace.
-
-```html
-<script src="https://unpkg.com/@libp2p/peer-id/dist/index.min.js"></script>
+$ npm i @libp2p/upnp-nat
 ```
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_peer_id.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_upnp_nat.html>
 
 # License
 

@@ -45,7 +45,7 @@ $ npm i @libp2p/autonat
 Loading this module through a script tag will make it's exports available as `Libp2pAutonat` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@libp2p/perf/dist/index.min.js"></script>
+<script src="https://unpkg.com/@libp2p/autonat/dist/index.min.js"></script>
 ```
 
 # API Docs
