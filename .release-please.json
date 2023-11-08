@@ -29,6 +29,7 @@
     "packages/transport-webrtc": {},
     "packages/transport-websockets": {},
     "packages/transport-webtransport": {},
+    "packages/upnp-nat": {},
     "packages/utils": {}
   }
 }

@@ -71,10 +71,6 @@
     "./ping": {
       "types": "./dist/src/ping/index.d.ts",
       "import": "./dist/src/ping/index.js"
-    },
-    "./upnp-nat": {
-      "types": "./dist/src/upnp-nat/index.d.ts",
-      "import": "./dist/src/upnp-nat/index.js"
     }
   },
   "eslintConfig": {
@@ -111,7 +107,6 @@
     "test:interop": "aegir test -t node -f dist/test/interop.js"
   },
   "dependencies": {
-    "@achingbrain/nat-port-mapper": "^1.0.9",
     "@libp2p/crypto": "^2.0.8",
     "@libp2p/interface": "^0.1.6",
     "@libp2p/interface-internal": "^0.1.9",
