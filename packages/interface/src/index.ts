@@ -610,6 +610,21 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
 }
 
 /**
+ * Metadata about the current node
+ */
+export interface NodeInfo {
+  /**
+   * The implementation name
+   */
+  name: string
+
+  /**
+   * The implementation version
+   */
+  version: string
+}
+
+/**
  * An object that contains an AbortSignal as
  * the optional `signal` property.
  *
