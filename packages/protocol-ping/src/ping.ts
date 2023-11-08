@@ -1,43 +1,18 @@
 import { randomBytes } from '@libp2p/crypto'
 import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { codes } from '../errors.js'
-import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
-import type { AbortOptions } from '@libp2p/interface'
+import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK } from './constants.js'
+import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Startable } from '@libp2p/interface/startable'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-const log = logger('libp2p:ping')
-
-export interface PingService {
-  ping(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<number>
-}
-
-export interface PingServiceInit {
-  protocolPrefix?: string
-  maxInboundStreams?: number
-  maxOutboundStreams?: number
-  runOnTransientConnection?: boolean
-
-  /**
-   * How long we should wait for a ping response
-   */
-  timeout?: number
-}
-
-export interface PingServiceComponents {
-  registrar: Registrar
-  connectionManager: ConnectionManager
-}
-
-class DefaultPingService implements Startable, PingService {
+export class PingService implements Startable, PingServiceInterface {
   public readonly protocol: string
   private readonly components: PingServiceComponents
   private started: boolean
@@ -45,15 +20,19 @@ class DefaultPingService implements Startable, PingService {
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
   private readonly runOnTransientConnection: boolean
+  readonly #log: Logger
 
-  constructor (components: PingServiceComponents, init: PingServiceInit) {
+  constructor (components: PingServiceComponents, init: PingServiceInit = {}) {
     this.components = components
+    this.#log = components.logger.forComponent('libp2p:ping')
     this.started = false
     this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.timeout = init.timeout ?? TIMEOUT
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.runOnTransientConnection = init.runOnTransientConnection ?? true
+
+    this.handleMessage = this.handleMessage.bind(this)
   }
 
   async start (): Promise<void> {
@@ -78,30 +57,27 @@ class DefaultPingService implements Startable, PingService {
    * A handler to register with Libp2p to process ping messages
    */
   handleMessage (data: IncomingStreamData): void {
-    log('incoming ping from %p', data.connection.remotePeer)
+    this.#log('incoming ping from %p', data.connection.remotePeer)
 
     const { stream } = data
     const start = Date.now()
 
     void pipe(stream, stream)
       .catch(err => {
-        log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
+        this.#log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
       })
       .finally(() => {
         const ms = Date.now() - start
 
-        log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
+        this.#log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
       })
   }
 
   /**
    * Ping a given peer and wait for its response, getting the operation latency.
-   *
-   * @param {PeerId|Multiaddr} peer
-   * @returns {Promise<number>}
    */
   async ping (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<number> {
-    log('pinging %p', peer)
+    this.#log('pinging %p', peer)
 
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
@@ -140,18 +116,18 @@ class DefaultPingService implements Startable, PingService {
       const ms = Date.now() - start
 
       if (result == null) {
-        throw new CodeError(`Did not receive a ping ack after ${ms}ms`, codes.ERR_WRONG_PING_ACK)
+        throw new CodeError(`Did not receive a ping ack after ${ms}ms`, ERR_WRONG_PING_ACK)
       }
 
       if (!uint8ArrayEquals(data, result.subarray())) {
-        throw new CodeError(`Received wrong ping ack after ${ms}ms`, codes.ERR_WRONG_PING_ACK)
+        throw new CodeError(`Received wrong ping ack after ${ms}ms`, ERR_WRONG_PING_ACK)
       }
 
-      log('ping %p complete in %dms', connection.remotePeer, ms)
+      this.#log('ping %p complete in %dms', connection.remotePeer, ms)
 
       return ms
     } catch (err: any) {
-      log.error('error while pinging %p', connection.remotePeer, err)
+      this.#log.error('error while pinging %p', connection.remotePeer, err)
 
       stream?.abort(err)
 
@@ -163,8 +139,4 @@ class DefaultPingService implements Startable, PingService {
       }
     }
   }
-}
-
-export function pingService (init: PingServiceInit = {}): (components: PingServiceComponents) => PingService {
-  return (components) => new DefaultPingService(components, init)
 }
