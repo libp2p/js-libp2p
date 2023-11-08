@@ -47,8 +47,8 @@
     "start": "node index.js",
     "build": "aegir build",
     "lint": "aegir lint",
-    "test:interop:multidim": "aegir test",
-    "test:transport:interop": "aegir test"
+    "test:interop:multidim": "DEBUG=libp2p* aegir test",
+    "test:transport:interop": "DEBUG=libp2p* aegir test"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^13.0.0",
