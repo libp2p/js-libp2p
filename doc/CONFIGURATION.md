@@ -954,7 +954,7 @@ If your router supports this, libp2p can be configured to use it as follows:
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { uPnPNATService } from 'libp2p/upnp-nat'
+import { uPnPNATService } from '@libp2p/upnp-nat'
 
 const node = await createLibp2p({
   services: {
