@@ -1,22 +1,19 @@
 import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
+import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
-import { PeerJobQueue } from '../../utils/peer-job-queue.js'
 import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
-import type { Libp2pEvents, AbortOptions } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
-
-const log = logger('libp2p:circuit-relay:transport:reservation-store')
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
 const REFRESH_WINDOW = (60 * 1000) * 10
@@ -33,6 +30,7 @@ export interface RelayStoreComponents {
   transportManager: TransportManager
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
 }
 
 export interface RelayStoreInit {
@@ -88,10 +86,12 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly maxReservationQueueLength: number
   private readonly reservationCompletionTimeout: number
   private started: boolean
+  readonly #log: Logger
 
   constructor (components: RelayStoreComponents, init?: RelayStoreInit) {
     super()
 
+    this.#log = components.logger.forComponent('libp2p:circuit-relay:transport:reservation-store')
     this.peerId = components.peerId
     this.connectionManager = components.connectionManager
     this.transportManager = components.transportManager
@@ -141,21 +141,21 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
    */
   async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
     if (this.peerId.equals(peerId)) {
-      log('not trying to use self as relay')
+      this.#log('not trying to use self as relay')
       return
     }
 
     if (this.reserveQueue.size > this.maxReservationQueueLength) {
-      log('not adding relay as the queue is full')
+      this.#log('not adding relay as the queue is full')
       return
     }
 
     if (this.reserveQueue.hasJob(peerId)) {
-      log('relay peer is already in the reservation queue')
+      this.#log('relay peer is already in the reservation queue')
       return
     }
 
-    log('add relay %p', peerId)
+    this.#log('add relay %p', peerId)
 
     await this.reserveQueue.add(async () => {
       try {
@@ -164,7 +164,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         if (existingReservation != null) {
           if (getExpirationMilliseconds(existingReservation.reservation.expire) > REFRESH_WINDOW) {
-            log('already have reservation on relay peer %p and it expires in more than 10 minutes', peerId)
+            this.#log('already have reservation on relay peer %p and it expires in more than 10 minutes', peerId)
             return
           }
 
@@ -179,7 +179,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
           return acc
         }, 0) >= this.maxDiscoveredRelays) {
-          log('already have enough discovered relays')
+          this.#log('already have enough discovered relays')
           return
         }
 
@@ -190,7 +190,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         })
 
         if (connection.remoteAddr.protoNames().includes('p2p-circuit')) {
-          log('not creating reservation over relayed connection')
+          this.#log('not creating reservation over relayed connection')
           return
         }
 
@@ -198,7 +198,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
           signal
         })
 
-        log('created reservation on relay peer %p', peerId)
+        this.#log('created reservation on relay peer %p', peerId)
 
         const expiration = getExpirationMilliseconds(reservation.expire)
 
@@ -208,7 +208,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         const timeout = setTimeout(() => {
           this.addRelay(peerId, type).catch(err => {
-            log.error('could not refresh reservation to relay %p', peerId, err)
+            this.#log.error('could not refresh reservation to relay %p', peerId, err)
           })
         }, timeoutDuration)
 
@@ -232,7 +232,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         // listen on multiaddr that only the circuit transport is listening for
         await this.transportManager.listen([multiaddr(`/p2p/${peerId.toString()}/p2p-circuit`)])
       } catch (err) {
-        log.error('could not reserve slot on %p', peerId, err)
+        this.#log.error('could not reserve slot on %p', peerId, err)
 
         // cancel the renewal timeout if it's been set
         const reservation = this.reservations.get(peerId)
@@ -260,7 +260,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   async #createReservation (connection: Connection, options: AbortOptions): Promise<Reservation> {
     options.signal?.throwIfAborted()
 
-    log('requesting reservation from %p', connection.remotePeer)
+    this.#log('requesting reservation from %p', connection.remotePeer)
     const stream = await connection.newStream(RELAY_V2_HOP_CODEC, options)
     const pbstr = pbStream(stream)
     const hopstr = pbstr.pb(HopMessage)
@@ -271,7 +271,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     try {
       response = await hopstr.read(options)
     } catch (err: any) {
-      log.error('error parsing reserve message response from %p because', connection.remotePeer, err)
+      this.#log.error('error parsing reserve message response from %p because', connection.remotePeer, err)
       throw err
     } finally {
       await stream.close()
@@ -282,7 +282,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     }
 
     const errMsg = `reservation failed with status ${response.status ?? 'undefined'}`
-    log.error(errMsg)
+    this.#log.error(errMsg)
 
     throw new Error(errMsg)
   }
@@ -297,7 +297,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       return
     }
 
-    log('connection to relay %p closed, removing reservation from local store', peerId)
+    this.#log('connection to relay %p closed, removing reservation from local store', peerId)
 
     clearTimeout(existingReservation.timeout)
     this.reservations.delete(peerId)
@@ -305,7 +305,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     this.safeDispatchEvent('relay:removed', { detail: peerId })
 
     if (this.reservations.size < this.maxDiscoveredRelays) {
-      log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
+      this.#log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
       this.safeDispatchEvent('relay:not-enough-relays', {})
     }
   }

@@ -1,10 +1,10 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import {
   RELAY_RENDEZVOUS_NS,
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
 import { namespaceToCid } from '../utils.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
@@ -12,8 +12,6 @@ import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
-
-const log = logger('libp2p:circuit-relay:discover-relays')
 
 export interface RelayDiscoveryEvents {
   'relay:discover': CustomEvent<PeerId>
@@ -26,6 +24,7 @@ export interface RelayDiscoveryComponents {
   transportManager: TransportManager
   contentRouting: ContentRouting
   registrar: Registrar
+  logger: ComponentLogger
 }
 
 /**
@@ -39,9 +38,12 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
   private readonly registrar: Registrar
   private started: boolean
   private topologyId?: string
+  readonly #log: Logger
 
   constructor (components: RelayDiscoveryComponents) {
     super()
+
+    this.#log = components.logger.forComponent('libp2p:circuit-relay:discover-relays')
     this.started = false
     this.peerId = components.peerId
     this.peerStore = components.peerStore
@@ -65,7 +67,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
 
     void this.discover()
       .catch(err => {
-        log.error('error listening on relays', err)
+        this.#log.error('error listening on relays', err)
       })
 
     this.started = true
@@ -88,7 +90,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
    * 3. Search the network
    */
   async discover (): Promise<void> {
-    log('searching peer store for relays')
+    this.#log('searching peer store for relays')
     const peers = (await this.peerStore.all({
       filters: [
         // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
@@ -102,14 +104,14 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
     }))
 
     for (const peer of peers) {
-      log('found relay peer %p in content peer store', peer.id)
+      this.#log('found relay peer %p in content peer store', peer.id)
       this.safeDispatchEvent('relay:discover', { detail: peer.id })
     }
 
-    log('found %d relay peers in peer store', peers.length)
+    this.#log('found %d relay peers in peer store', peers.length)
 
     try {
-      log('searching content routing for relays')
+      this.#log('searching content routing for relays')
       const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
 
       let found = 0
@@ -123,14 +125,14 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
             multiaddrs: provider.multiaddrs
           })
 
-          log('found relay peer %p in content routing', peerId)
+          this.#log('found relay peer %p in content routing', peerId)
           this.safeDispatchEvent('relay:discover', { detail: peerId })
         }
       }
 
-      log('found %d relay peers in content routing', found)
+      this.#log('found %d relay peers in content routing', found)
     } catch (err: any) {
-      log.error('failed when finding relays on the network', err)
+      this.#log.error('failed when finding relays on the network', err)
     }
   }
 }

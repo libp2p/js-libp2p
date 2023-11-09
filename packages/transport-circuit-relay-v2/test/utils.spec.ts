@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { type Logger } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -7,8 +8,9 @@ import drain from 'it-drain'
 import { pushable } from 'it-pushable'
 import toBuffer from 'it-to-buffer'
 import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../../src/circuit-relay/utils.js'
+import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../src/utils.js'
 import type { Duplex, Source } from 'it-stream-types'
 
 describe('circuit-relay utils', () => {
@@ -48,7 +50,9 @@ describe('circuit-relay utils', () => {
     const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
     const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
 
-    createLimitedRelay(localStream, remoteStream, controller.signal)
+    createLimitedRelay(localStream, remoteStream, controller.signal, undefined, {
+      log: stubInterface<Logger>()
+    })
 
     expect(await toBuffer(received)).to.have.property('byteLength', 12)
     expect(localStreamAbortSpy).to.have.property('called', false)
@@ -94,7 +98,9 @@ describe('circuit-relay utils', () => {
     const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
     const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
 
-    createLimitedRelay(localStream, remoteStream, controller.signal, limit)
+    createLimitedRelay(localStream, remoteStream, controller.signal, limit, {
+      log: stubInterface<Logger>()
+    })
 
     expect(await toBuffer(received)).to.have.property('byteLength', 5)
     expect(localStreamAbortSpy).to.have.property('called', true)
@@ -152,7 +158,9 @@ describe('circuit-relay utils', () => {
     const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
     const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
 
-    createLimitedRelay(localStream, remoteStream, controller.signal, limit)
+    createLimitedRelay(localStream, remoteStream, controller.signal, limit, {
+      log: stubInterface<Logger>()
+    })
 
     expect(await toBuffer(received)).to.have.property('byteLength', 5)
     expect(localStreamAbortSpy).to.have.property('called', true)
@@ -199,7 +207,9 @@ describe('circuit-relay utils', () => {
     const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
     const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
 
-    createLimitedRelay(localStream, remoteStream, controller.signal, limit)
+    createLimitedRelay(localStream, remoteStream, controller.signal, limit, {
+      log: stubInterface<Logger>()
+    })
 
     expect(await toBuffer(received)).to.have.property('byteLength', 12)
     expect(localStreamAbortSpy).to.have.property('called', true)

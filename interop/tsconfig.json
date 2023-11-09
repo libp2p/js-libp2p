@@ -21,6 +21,9 @@
       "path": "../packages/stream-multiplexer-mplex"
     },
     {
+      "path": "../packages/transport-circuit-relay-v2"
+    },
+    {
       "path": "../packages/transport-tcp"
     },
     {

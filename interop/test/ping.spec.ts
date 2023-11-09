@@ -4,6 +4,7 @@
 import { } from 'aegir/chai'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { type Identify, identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { ping, type PingService } from '@libp2p/ping'
@@ -14,7 +15,6 @@ import * as filters from '@libp2p/websockets/filters'
 import { webTransport } from '@libp2p/webtransport'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
 
 async function redisProxy (commands: any[]): Promise<any> {
   const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, { body: JSON.stringify(commands), method: 'POST' })

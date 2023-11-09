@@ -1,6 +1,6 @@
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
+import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { PeerJobQueue } from '../utils/peer-job-queue.js'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
 import type { Libp2pEvents, Logger, ComponentLogger } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
