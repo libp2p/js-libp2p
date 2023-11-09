@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
 import { kadDHT } from '@libp2p/kad-dht'
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { plaintext } from '@libp2p/plaintext'
 import { createLibp2pNode } from '../../src/libp2p.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'

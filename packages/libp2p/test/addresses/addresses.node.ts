@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
+import { plaintext } from '@libp2p/plaintext'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { webSockets } from '@libp2p/websockets'
 import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
-import { plaintext } from '@libp2p/plaintext'
 import { createNode } from '../fixtures/creators/peer.js'
 import { AddressesOptions } from './utils.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
