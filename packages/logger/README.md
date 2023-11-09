@@ -7,9 +7,7 @@
 
 # About
 
-A map that reports it's size to the libp2p [Metrics](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/metrics#readme) system.
-
-If metrics are disabled a regular map is used.
+A logger for libp2p based on the venerable [debug](https://www.npmjs.com/package/debug) module.
 
 ## Example
 

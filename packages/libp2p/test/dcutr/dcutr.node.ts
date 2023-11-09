@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
+import { identify } from '@libp2p/identify'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pRetry from 'p-retry'
 import { circuitRelayServer, type CircuitRelayService } from '../../src/circuit-relay/index.js'
 import { dcutrService } from '../../src/dcutr/index.js'
-import { identifyService } from '../../src/identify/index.js'
 import { createLibp2pNode } from '../../src/libp2p.js'
 import { usingAsRelay } from '../circuit-relay/utils.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
@@ -46,7 +46,7 @@ describe('dcutr', () => {
         listen: [`/ip4/0.0.0.0/tcp/${RELAY_PORT}`]
       },
       services: {
-        identify: identifyService(),
+        identify: identify(),
         relay: circuitRelayServer()
       }
     }))
@@ -69,7 +69,7 @@ describe('dcutr', () => {
           listen: [`/ip4/0.0.0.0/tcp/${LOCAL_PORT}`]
         },
         services: {
-          identify: identifyService(),
+          identify: identify(),
           dcutr: dcutrService()
         }
       }))
@@ -81,7 +81,7 @@ describe('dcutr', () => {
           ]
         },
         services: {
-          identify: identifyService(),
+          identify: identify(),
           dcutr: dcutrService()
         }
       }))
@@ -126,7 +126,7 @@ describe('dcutr', () => {
           listen: [`/ip4/0.0.0.0/tcp/${LOCAL_PORT}`]
         },
         services: {
-          identify: identifyService(),
+          identify: identify(),
           dcutr: dcutrService()
         }
       }))
@@ -138,7 +138,7 @@ describe('dcutr', () => {
           ]
         },
         services: {
-          identify: identifyService(),
+          identify: identify(),
           dcutr: dcutrService()
         }
       }))

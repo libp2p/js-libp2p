@@ -1,7 +1,4 @@
-import { version } from '../version.js'
-
 export const PROTOCOL_VERSION = 'ipfs/0.1.0' // deprecated
-export const AGENT_VERSION = `js-libp2p/${version}`
 export const MULTICODEC_IDENTIFY = '/ipfs/id/1.0.0' // deprecated
 export const MULTICODEC_IDENTIFY_PUSH = '/ipfs/id/push/1.0.0' // deprecated
 

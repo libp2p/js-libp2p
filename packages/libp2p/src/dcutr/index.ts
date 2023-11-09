@@ -15,7 +15,7 @@
  * import { createLibp2p } from 'libp2p'
  * import { circuitRelayTransport } from 'libp2p/circuit-relay'
  * import { tcp } from '@libp2p/tcp'
- * import { identifyService } from 'libp2p/identify'
+ * import { identify } from '@libp2p/identify'
  * import { dCUtRService } from 'libp2p/dcutr'
  *
  * const node = await createLibp2p({
@@ -24,7 +24,7 @@
  *     tcp()
  *   ],
  *   services: {
- *     identify: identifyService(),
+ *     identify: identify(),
  *     dcutr: dcutrService()
  *   }
  * })

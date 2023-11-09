@@ -17,7 +17,7 @@ export default {
       const { createLibp2p } = await import('./dist/src/index.js')
       const { plaintext } = await import('./dist/src/insecure/index.js')
       const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
-      const { identifyService } = await import('./dist/src/identify/index.js')
+      const { identify } = await import('@libp2p/identify')
       const { fetchService } = await import('./dist/src/fetch/index.js')
 
       const peerId = await createEd25519PeerId()
@@ -45,7 +45,7 @@ export default {
           plaintext()
         ],
         services: {
-          identify: identifyService(),
+          identify: identify(),
           fetch: fetchService(),
           relay: circuitRelayServer({
             reservations: {

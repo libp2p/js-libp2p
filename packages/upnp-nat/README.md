@@ -5,6 +5,41 @@
 
 > UPnP NAT hole punching
 
+# About
+
+The service exported by this module attempts to configure NAT hole punching
+via UPnP.
+
+This will make your node publicly accessible from the internet.
+
+For this to work there are some prerequisites:
+
+1. Your router must have UPnP support enabled
+2. Your libp2p node must be listening on a non-loopback IPv4 address
+3. You must not be [double-NATed](https://kb.netgear.com/30186/What-is-double-NAT-and-why-is-it-bad) by your ISP
+
+## Example
+
+```typescript
+import { createLibp2p } from 'libp2p'
+import { tcp } from '@libp2p/tcp'
+import { uPnPNAT } from '@libp2p/upnp-nat'
+
+const node = await createLibp2p({
+  addresses: [
+    listen: [
+      '/ip4/0.0.0.0/tcp/0'
+    ]
+  ],
+  transports: [
+    tcp()
+  ],
+  services: {
+    upnpNAT: uPnPNAT()
+  }
+})
+```
+
 # Install
 
 ```console
