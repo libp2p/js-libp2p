@@ -60,6 +60,10 @@
       "types": "./dist/src/multiaddr/is-private.d.ts",
       "import": "./dist/src/multiaddr/is-private.js"
     },
+    "./peer-job-queue": {
+      "types": "./dist/src/peer-job-queue.d.ts",
+      "import": "./dist/src/peer-job-queue.js"
+    },
     "./stream-to-ma-conn": {
       "types": "./dist/src/stream-to-ma-conn.d.ts",
       "import": "./dist/src/stream-to-ma-conn.js"
@@ -93,14 +97,17 @@
     "@multiformats/multiaddr-matcher": "^1.0.1",
     "is-loopback-addr": "^2.0.1",
     "it-stream-types": "^2.0.1",
+    "p-queue": "^7.4.1",
     "private-ip": "^3.0.0",
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
+    "@libp2p/peer-id-factory": "^3.0.8",
     "aegir": "^41.0.2",
     "it-all": "^3.0.1",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
+    "p-defer": "^4.0.0",
     "uint8arrays": "^4.0.4"
   }
 }

@@ -16,7 +16,7 @@ export default {
       const { WebSockets } = await import('@multiformats/mafmt')
       const { createLibp2p } = await import('./dist/src/index.js')
       const { plaintext } = await import('@libp2p/plaintext')
-      const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
+      const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
       const { identify } = await import('@libp2p/identify')
       const { fetchService } = await import('./dist/src/fetch/index.js')
 

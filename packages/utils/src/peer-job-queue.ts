@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError, ERR_INVALID_PARAMETERS } from '@libp2p/interface/errors'
 import PQueue from 'p-queue'
-import { codes } from '../errors.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { QueueAddOptions, Options, Queue } from 'p-queue'
 
@@ -51,7 +50,7 @@ class PeerPriorityQueue implements Queue<RunFunction, PeerPriorityQueueOptions> 
     const priority = options?.priority ?? 0
 
     if (peerId == null) {
-      throw new CodeError('missing peer id', codes.ERR_INVALID_PARAMETERS)
+      throw new CodeError('missing peer id', ERR_INVALID_PARAMETERS)
     }
 
     const element: PeerJob = {

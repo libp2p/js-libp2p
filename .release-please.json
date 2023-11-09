@@ -29,6 +29,7 @@
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},
     "packages/stream-multiplexer-mplex": {},
+    "packages/transport-circuit-relay-v2": {},
     "packages/transport-tcp": {},
     "packages/transport-webrtc": {},
     "packages/transport-websockets": {},

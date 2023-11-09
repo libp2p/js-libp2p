@@ -1,16 +1,14 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import pRetry from 'p-retry'
-import { codes } from '../../errors.js'
 import {
   DEFAULT_ADVERT_BOOT_DELAY,
+  ERR_NO_ROUTERS_AVAILABLE,
   RELAY_RENDEZVOUS_NS
 } from '../constants.js'
 import { namespaceToCid } from '../utils.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
 import type { Startable } from '@libp2p/interface/startable'
-
-const log = logger('libp2p:circuit-relay:advert-service')
 
 export interface AdvertServiceInit {
   /**
@@ -24,6 +22,7 @@ export interface AdvertServiceInit {
 
 export interface AdvertServiceComponents {
   contentRouting: ContentRouting
+  logger: ComponentLogger
 }
 
 export interface AdvertServiceEvents {
@@ -36,6 +35,7 @@ export class AdvertService extends TypedEventEmitter<AdvertServiceEvents> implem
   private timeout?: any
   private started: boolean
   private readonly bootDelay: number
+  readonly #log: Logger
 
   /**
    * Creates an instance of Relay
@@ -43,6 +43,7 @@ export class AdvertService extends TypedEventEmitter<AdvertServiceEvents> implem
   constructor (components: AdvertServiceComponents, init?: AdvertServiceInit) {
     super()
 
+    this.#log = components.logger.forComponent('libp2p:circuit-relay:advert-service')
     this.contentRouting = components.contentRouting
     this.bootDelay = init?.bootDelay ?? DEFAULT_ADVERT_BOOT_DELAY
     this.started = false
@@ -63,7 +64,7 @@ export class AdvertService extends TypedEventEmitter<AdvertServiceEvents> implem
     // Advertise service if HOP enabled and advertising enabled
     this.timeout = setTimeout(() => {
       this._advertiseService().catch(err => {
-        log.error('could not advertise service', err)
+        this.#log.error('could not advertise service', err)
       })
     }, this.bootDelay)
 
@@ -94,13 +95,13 @@ export class AdvertService extends TypedEventEmitter<AdvertServiceEvents> implem
       } catch (err: any) {
         this.safeDispatchEvent('advert:error', { detail: err })
 
-        if (err.code === codes.ERR_NO_ROUTERS_AVAILABLE) {
-          log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)
+        if (err.code === ERR_NO_ROUTERS_AVAILABLE) {
+          this.#log.error('a content router, such as a DHT, must be provided in order to advertise the relay service', err)
           this.stop()
           return
         }
 
-        log.error('could not advertise service', err)
+        this.#log.error('could not advertise service', err)
         throw err
       }
     })
