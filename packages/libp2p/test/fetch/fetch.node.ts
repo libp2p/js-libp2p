@@ -2,12 +2,12 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
+import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
 import { codes } from '../../src/errors.js'
 import { type FetchService, fetchService } from '../../src/fetch/index.js'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
