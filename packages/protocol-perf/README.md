@@ -17,7 +17,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { createLibp2p, type Libp2p } from 'libp2p'
-import { plaintext } from 'libp2p/insecure'
+import { plaintext } from '@libp2p/plaintext'
 import { perfService, type PerfService } from '@libp2p/perf'
 
 const ONE_MEG = 1024 * 1024

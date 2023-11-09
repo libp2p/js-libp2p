@@ -3,6 +3,7 @@
   "group-pull-request-title-pattern": "chore: release ${component}",
   "packages": {
     "interop": {},
+    "packages/connection-encrypter-plaintext": {},
     "packages/crypto": {},
     "packages/interface": {},
     "packages/interface-compliance-tests": {},

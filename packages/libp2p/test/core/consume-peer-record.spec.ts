@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
-import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 

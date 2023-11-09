@@ -10,7 +10,7 @@ import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { plaintext } from '../../src/insecure/index.js'
+import { plaintext } from '../src/index.js'
 import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
 import type { PeerId } from '@libp2p/interface/peer-id'
 

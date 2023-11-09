@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { createLibp2p, type Libp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
 
 describe('peer-id', () => {
   let libp2p: Libp2p
