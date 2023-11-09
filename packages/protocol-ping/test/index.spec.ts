@@ -10,7 +10,7 @@ import { pair } from 'it-pair'
 import { duplexPair } from 'it-pair/duplex'
 import pDefer from 'p-defer'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
-import { PROTOCOL } from '../src/constants.js'
+import { PING_PROTOCOL } from '../src/constants.js'
 import { PingService } from '../src/ping.js'
 import type { ComponentLogger } from '@libp2p/interface'
 import type { Stream, Connection } from '@libp2p/interface/connection'
@@ -56,7 +56,7 @@ describe('ping', () => {
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
     const stream = echoStream()
-    connection.newStream.withArgs(PROTOCOL).resolves(stream)
+    connection.newStream.withArgs(PING_PROTOCOL).resolves(stream)
 
     // Run ping
     await expect(ping.ping(remotePeer)).to.eventually.be.gte(0)
@@ -82,7 +82,7 @@ describe('ping', () => {
     stream.abort.callsFake((err) => {
       deferred.reject(err)
     })
-    connection.newStream.withArgs(PROTOCOL).resolves(stream)
+    connection.newStream.withArgs(PING_PROTOCOL).resolves(stream)
 
     // 10 ms timeout
     const signal = AbortSignal.timeout(timeout)
@@ -108,7 +108,7 @@ describe('ping', () => {
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
     const stream = echoStream()
-    connection.newStream.withArgs(PROTOCOL).resolves(stream)
+    connection.newStream.withArgs(PING_PROTOCOL).resolves(stream)
 
     const duplex = duplexPair<any>()
     const incomingStream = stubInterface<Stream>(duplex[0])
