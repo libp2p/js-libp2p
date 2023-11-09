@@ -3,24 +3,38 @@
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
 
-> An insecure connection encrypter
+> Implementation of Circuit Relay v2
 
 # About
 
-A connection encrypter that does no connection encryption.
-
-This should not be used in production should be used for research purposes only.
+The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+addresses.
 
 ## Example
 
 ```typescript
 import { createLibp2p } from 'libp2p'
-import { plaintext } from '@libp2p/plaintext'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
-  // ...other options
-  connectionEncryption: [
-    plaintext()
+  transports: [
+    circuitRelayTransport()
+  ]
+})
+```
+
+The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+server.  This will not work in browsers.
+
+## Example
+
+```typescript
+import { createLibp2p } from 'libp2p'
+import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
+
+const node = await createLibp2p({
+  services: [
+    circuitRelay: circuitRelayServer()
   ]
 })
 ```
@@ -28,20 +42,20 @@ const node = await createLibp2p({
 # Install
 
 ```console
-$ npm i @libp2p/plaintext
+$ npm i @libp2p/circuit-relay-v2
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pPlaintext` in the global namespace.
+Loading this module through a script tag will make it's exports available as `Libp2pCircuitRelayV2` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@libp2p/plaintext/dist/index.min.js"></script>
+<script src="https://unpkg.com/@libp2p/circuit-relay-v2/dist/index.min.js"></script>
 ```
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_plaintext.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_circuit_relay_v2.html>
 
 # License
 

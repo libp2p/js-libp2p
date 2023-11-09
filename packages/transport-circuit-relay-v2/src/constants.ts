@@ -70,3 +70,10 @@ export const DEFAULT_HOP_TIMEOUT = 30 * second
  * How long to wait before starting to advertise the relay service
  */
 export const DEFAULT_ADVERT_BOOT_DELAY = 30 * second
+
+export const MAX_CONNECTIONS = 300
+
+export const ERR_NO_ROUTERS_AVAILABLE = 'ERR_NO_ROUTERS_AVAILABLE'
+export const ERR_RELAYED_DIAL = 'ERR_RELAYED_DIAL'
+export const ERR_HOP_REQUEST_FAILED = 'ERR_HOP_REQUEST_FAILED'
+export const ERR_TRANSFER_LIMIT_EXCEEDED = 'ERR_TRANSFER_LIMIT_EXCEEDED'

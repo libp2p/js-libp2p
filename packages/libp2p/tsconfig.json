@@ -5,10 +5,12 @@
   },
   "include": [
     "src",
-    "test",
-    "../upnp-nat/test/upnp-nat"
+    "test"
   ],
   "references": [
+    {
+      "path": "../connection-encrypter-plaintext"
+    },
     {
       "path": "../crypto"
     },
@@ -46,9 +48,6 @@
       "path": "../peer-id-factory"
     },
     {
-      "path": "../peer-record"
-    },
-    {
       "path": "../peer-store"
     },
     {
@@ -59,6 +58,9 @@
     },
     {
       "path": "../stream-multiplexer-mplex"
+    },
+    {
+      "path": "../transport-circuit-relay-v2"
     },
     {
       "path": "../transport-tcp"
