@@ -3,7 +3,7 @@
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
-import { PeerJobQueue } from '../../src/utils/peer-job-queue.js'
+import { PeerJobQueue } from '../src/peer-job-queue.js'
 
 describe('peer job queue', () => {
   it('should have jobs', async () => {

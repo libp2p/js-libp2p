@@ -12,10 +12,28 @@
       "path": "../interface"
     },
     {
+      "path": "../interface-compliance-tests"
+    },
+    {
+      "path": "../interface-internal"
+    },
+    {
       "path": "../logger"
     },
     {
+      "path": "../peer-collections"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
       "path": "../peer-id-factory"
+    },
+    {
+      "path": "../peer-record"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

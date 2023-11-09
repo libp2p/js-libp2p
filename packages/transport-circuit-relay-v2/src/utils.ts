@@ -3,15 +3,16 @@ import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { codes } from '../errors.js'
+import { ERR_TRANSFER_LIMIT_EXCEEDED } from './constants.js'
 import type { Limit } from './pb/index.js'
+import type { LoggerOptions } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const log = logger('libp2p:circuit-relay:utils')
 
-async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
+async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }, options: LoggerOptions): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
   const limitBytes = limit.remaining
 
   for await (const buf of source) {
@@ -27,10 +28,10 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
           yield buf.subarray(0, remaining)
         }
       } catch (err: any) {
-        log.error(err)
+        options.log.error(err)
       }
 
-      throw new CodeError(`data limit of ${limitBytes} bytes exceeded`, codes.ERR_TRANSFER_LIMIT_EXCEEDED)
+      throw new CodeError(`data limit of ${limitBytes} bytes exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED)
     }
 
     limit.remaining -= len
@@ -38,7 +39,7 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
   }
 }
 
-export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: AbortSignal, limit?: Limit): void {
+export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Limit | undefined, options: LoggerOptions): void {
   function abortStreams (err: Error): void {
     src.abort(err)
     dst.abort(err)
@@ -69,12 +70,12 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      dst.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, codes.ERR_TRANSFER_LIMIT_EXCEEDED))
+      dst.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
 
-    void dst.sink(dataLimit == null ? src.source : countStreamBytes(src.source, dataLimit))
+    void dst.sink(dataLimit == null ? src.source : countStreamBytes(src.source, dataLimit, options))
       .catch(err => {
         log.error('error while relaying streams src -> dst', err)
         abortStreams(err)
@@ -92,12 +93,12 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      src.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, codes.ERR_TRANSFER_LIMIT_EXCEEDED))
+      src.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
 
-    void src.sink(dataLimit == null ? dst.source : countStreamBytes(dst.source, dataLimit))
+    void src.sink(dataLimit == null ? dst.source : countStreamBytes(dst.source, dataLimit, options))
       .catch(err => {
         log.error('error while relaying streams dst -> src', err)
         abortStreams(err)

@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from '../../src/circuit-relay/constants.js'
-import { Status } from '../../src/circuit-relay/pb/index.js'
-import { ReservationStore } from '../../src/circuit-relay/server/reservation-store.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from '../src/constants.js'
+import { Status } from '../src/pb/index.js'
+import { ReservationStore } from '../src/server/reservation-store.js'
 
 describe('circuit-relay server reservation store', function () {
   it('should add reservation', async function () {
     const store = new ReservationStore({ maxReservations: 2 })
-    const peer = await createPeerId()
+    const peer = await createEd25519PeerId()
     const result = store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
     expect(result.expire).to.not.be.undefined()
@@ -19,7 +19,7 @@ describe('circuit-relay server reservation store', function () {
 
   it('should add reservation if peer already has reservation', async function () {
     const store = new ReservationStore({ maxReservations: 1 })
-    const peer = await createPeerId()
+    const peer = await createEd25519PeerId()
     store.reserve(peer, multiaddr())
     const result = store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
@@ -29,14 +29,14 @@ describe('circuit-relay server reservation store', function () {
 
   it('should fail to add reservation on exceeding limit', async function () {
     const store = new ReservationStore({ maxReservations: 0 })
-    const peer = await createPeerId()
+    const peer = await createEd25519PeerId()
     const result = store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.RESERVATION_REFUSED)
   })
 
   it('should remove reservation', async function () {
     const store = new ReservationStore({ maxReservations: 10 })
-    const peer = await createPeerId()
+    const peer = await createEd25519PeerId()
     const result = store.reserve(peer, multiaddr())
     expect(result.status).to.equal(Status.OK)
     expect(store.hasReservation(peer)).to.be.true()
@@ -53,7 +53,7 @@ describe('circuit-relay server reservation store', function () {
       defaultDataLimit,
       defaultDurationLimit
     })
-    const peer = await createPeerId()
+    const peer = await createEd25519PeerId()
     store.reserve(peer, multiaddr())
 
     const reservation = store.get(peer)
@@ -64,7 +64,7 @@ describe('circuit-relay server reservation store', function () {
 
   it('should apply default connection limits', async function () {
     const store = new ReservationStore()
-    const peer = await createPeerId()
+    const peer = await createEd25519PeerId()
     store.reserve(peer, multiaddr())
 
     const reservation = store.get(peer)
@@ -77,7 +77,7 @@ describe('circuit-relay server reservation store', function () {
     const store = new ReservationStore({
       applyDefaultLimit: false
     })
-    const peer = await createPeerId()
+    const peer = await createEd25519PeerId()
     store.reserve(peer, multiaddr())
 
     const reservation = store.get(peer)

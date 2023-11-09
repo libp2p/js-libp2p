@@ -8,7 +8,7 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { circuitRelayTransport } from 'libp2p/circuit-relay'
+ * import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
  *
  * const node = await createLibp2p({
  *   transports: [
@@ -24,7 +24,7 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { circuitRelayServer } from 'libp2p/circuit-relay'
+ * import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
  *
  * const node = await createLibp2p({
  *   services: [
@@ -57,3 +57,8 @@ export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServi
 
 export { circuitRelayServer } from './server/index.js'
 export { circuitRelayTransport } from './transport/index.js'
+
+export {
+  RELAY_V2_HOP_CODEC,
+  RELAY_V2_STOP_CODEC
+} from './constants.js'
