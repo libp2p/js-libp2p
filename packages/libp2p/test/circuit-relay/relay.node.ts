@@ -20,7 +20,7 @@ import { DEFAULT_DATA_LIMIT, RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
 import { createLibp2p, type Libp2pOptions } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
+import { plaintext } from '@libp2p/plaintext'
 import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, notUsingAsRelay, usingAsRelay, usingAsRelayCount } from './utils.js'
 import type { Components } from '../../src/components.js'
 import type { Libp2p } from '@libp2p/interface'

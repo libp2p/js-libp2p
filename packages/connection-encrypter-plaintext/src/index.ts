@@ -9,15 +9,13 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { plaintext } from 'libp2p/insecure'
- *
- * // Create a Uint8Array and write the swarm key to it
- * const swarmKey = new Uint8Array(95)
- * generateKey(swarmKey)
+ * import { plaintext } from '@libp2p/plaintext'
  *
  * const node = await createLibp2p({
  *   // ...other options
- *   connectionEncryption: [plaintext()]
+ *   connectionEncryption: [
+ *     plaintext()
+ *   ]
  * })
  * ```
  */

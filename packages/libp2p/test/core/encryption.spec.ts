@@ -2,7 +2,7 @@
 
 import { webSockets } from '@libp2p/websockets'
 import { createLibp2p, type Libp2pOptions } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
+import { plaintext } from '@libp2p/plaintext'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 

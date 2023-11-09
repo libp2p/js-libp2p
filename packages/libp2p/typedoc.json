@@ -2,8 +2,6 @@
   "entryPoints": [
     "./src/index.ts",
     "./src/circuit-relay/index.ts",
-    "./src/dcutr/index.ts",
-    "./src/fetch/index.ts",
-    "./src/insecure/index.ts"
+    "./src/fetch/index.ts"
   ]
 }

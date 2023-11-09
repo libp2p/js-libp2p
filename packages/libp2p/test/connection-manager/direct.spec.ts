@@ -25,7 +25,7 @@ import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
+import { plaintext } from '@libp2p/plaintext'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'

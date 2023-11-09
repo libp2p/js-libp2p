@@ -55,10 +55,6 @@
     "./fetch": {
       "types": "./dist/src/fetch/index.d.ts",
       "import": "./dist/src/fetch/index.js"
-    },
-    "./insecure": {
-      "types": "./dist/src/insecure/index.d.ts",
-      "import": "./dist/src/insecure/index.js"
     }
   },
   "eslintConfig": {
@@ -150,6 +146,7 @@
     "@libp2p/kad-dht": "^10.0.14",
     "@libp2p/mdns": "^9.0.14",
     "@libp2p/mplex": "^9.0.12",
+    "@libp2p/plaintext": "^0.0.0",
     "@libp2p/tcp": "^8.0.13",
     "@libp2p/websockets": "^7.0.13",
     "aegir": "^41.0.2",
