@@ -21,22 +21,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -47,10 +31,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./fetch": {
-      "types": "./dist/src/fetch/index.d.ts",
-      "import": "./dist/src/fetch/index.js"
     }
   },
   "eslintConfig": {
@@ -71,12 +51,6 @@
     "dep-check": "aegir dep-check",
     "prepublishOnly": "node scripts/update-version.js && npm run build",
     "build": "aegir build",
-    "generate": "run-s generate:proto:*",
-    "generate:proto:circuit-relay": "protons ./src/circuit-relay/pb/index.proto",
-    "generate:proto:dcutr": "protons ./src/dcutr/pb/message.proto",
-    "generate:proto:fetch": "protons ./src/fetch/pb/proto.proto",
-    "generate:proto:identify": "protons ./src/identify/pb/message.proto",
-    "generate:proto:plaintext": "protons ./src/insecure/pb/proto.proto",
     "test": "aegir test",
     "test:node": "aegir test -t node -f \"./dist/test/**/*.{node,spec}.js\" --cov",
     "test:chrome": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" --cov",
@@ -108,7 +82,6 @@
     "it-drain": "^3.0.2",
     "it-filter": "^3.0.1",
     "it-first": "^3.0.1",
-    "it-length-prefixed": "^9.0.1",
     "it-map": "^3.0.3",
     "it-merge": "^3.0.0",
     "it-pipe": "^3.0.1",
@@ -118,7 +91,6 @@
     "p-defer": "^4.0.0",
     "p-queue": "^7.3.4",
     "private-ip": "^3.0.0",
-    "protons-runtime": "^5.0.0",
     "rate-limiter-flexible": "^3.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6"
@@ -145,11 +117,9 @@
     "execa": "^8.0.1",
     "go-libp2p": "^1.1.1",
     "it-pushable": "^3.2.0",
-    "npm-run-all": "^4.1.5",
     "p-event": "^6.0.0",
     "p-times": "^4.0.0",
     "p-wait-for": "^5.0.2",
-    "protons": "^7.0.2",
     "sinon": "^17.0.0",
     "sinon-ts": "^2.0.0"
   },
