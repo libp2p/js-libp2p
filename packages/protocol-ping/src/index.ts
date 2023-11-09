@@ -54,3 +54,5 @@ export interface PingServiceComponents {
 export function ping (init: PingServiceInit = {}): (components: PingServiceComponents) => PingService {
   return (components) => new PingServiceClass(components, init)
 }
+
+export { PING_PROTOCOL } from './constants.js'
