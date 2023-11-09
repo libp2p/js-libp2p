@@ -15,7 +15,7 @@ export default {
       const { yamux } = await import('@chainsafe/libp2p-yamux')
       const { WebSockets } = await import('@multiformats/mafmt')
       const { createLibp2p } = await import('./dist/src/index.js')
-      const { plaintext } = await import('./dist/src/insecure/index.js')
+      const { plaintext } = await import('@libp2p/plaintext')
       const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
       const { identify } = await import('@libp2p/identify')
       const { fetchService } = await import('./dist/src/fetch/index.js')
