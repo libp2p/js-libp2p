@@ -49,7 +49,7 @@
   "dependencies": {
     "@libp2p/interface": "^0.1.2",
     "@libp2p/peer-id": "^3.0.6",
-    "@multiformats/multiaddr": "^12.1.5",
+    "@multiformats/multiaddr": "^12.1.10",
     "it-handshake": "^4.1.3",
     "it-length-prefixed": "^9.0.3",
     "it-map": "^3.0.4",

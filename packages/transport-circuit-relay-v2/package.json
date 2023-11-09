@@ -54,7 +54,7 @@
     "@libp2p/peer-record": "^6.0.9",
     "@libp2p/utils": "^4.0.7",
     "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.1.5",
+    "@multiformats/multiaddr": "^12.1.10",
     "any-signal": "^4.1.1",
     "delay": "^6.0.0",
     "it-protobuf-stream": "^1.0.2",
