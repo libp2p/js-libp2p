@@ -1,4 +1,6 @@
-import { CodeError } from '@libp2p/interface/errors'
+/* eslint-disable complexity */
+
+import { CodeError, ERR_NOT_FOUND } from '@libp2p/interface/errors'
 import { setMaxListeners } from '@libp2p/interface/events'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -8,17 +10,15 @@ import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
-import { codes } from '../errors.js'
 import {
-  AGENT_VERSION,
   IDENTIFY_PROTOCOL_VERSION,
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
 } from './consts.js'
-import { Identify } from './pb/message.js'
-import type { IdentifyService, IdentifyServiceComponents, IdentifyServiceInit } from './index.js'
+import { Identify as IdentifyMessage } from './pb/message.js'
+import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions, Logger } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { TypedEventTarget } from '@libp2p/interface/events'
@@ -34,7 +34,6 @@ const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
 
 const defaultValues = {
   protocolPrefix: 'ipfs',
-  agentVersion: AGENT_VERSION,
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
   timeout: 60000,
   maxInboundStreams: 1,
@@ -47,7 +46,7 @@ const defaultValues = {
   runOnTransientConnection: true
 }
 
-export class DefaultIdentifyService implements Startable, IdentifyService {
+export class Identify implements Startable, IdentifyInterface {
   private readonly identifyProtocolStr: string
   private readonly identifyPushProtocolStr: string
   public readonly host: {
@@ -72,7 +71,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
   private readonly runOnTransientConnection: boolean
   readonly #log: Logger
 
-  constructor (components: IdentifyServiceComponents, init: IdentifyServiceInit) {
+  constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
     this.started = false
     this.peerId = components.peerId
     this.peerStore = components.peerStore
@@ -96,7 +95,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     // Store self host metadata
     this.host = {
       protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: init.agentVersion ?? defaultValues.agentVersion
+      agentVersion: init.agentVersion ?? `${components.nodeInfo.name}/${components.nodeInfo.version}`
     }
 
     if (init.runOnConnectionOpen ?? defaultValues.runOnConnectionOpen) {
@@ -113,7 +112,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     })
 
     // Append user agent version to default AGENT_VERSION depending on the environment
-    if (this.host.agentVersion === AGENT_VERSION) {
+    if (this.host.agentVersion === `${components.nodeInfo.name}/${components.nodeInfo.version}`) {
       if (isNode || isElectronMain) {
         this.host.agentVersion += ` UserAgent=${globalThis.process.version}`
       } else if (isBrowser || isWebWorker || isElectronRenderer || isReactNative) {
@@ -184,20 +183,19 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     const pushes = connections.map(async connection => {
       let stream: Stream | undefined
-
       const signal = AbortSignal.timeout(this.timeout)
 
       setMaxListeners(Infinity, signal)
 
       try {
-        stream = await connection.newStream([this.identifyPushProtocolStr], {
+        stream = await connection.newStream(this.identifyPushProtocolStr, {
           signal,
           runOnTransientConnection: this.runOnTransientConnection
         })
 
         const pb = pbStream(stream, {
           maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
-        }).pb(Identify)
+        }).pb(IdentifyMessage)
 
         await pb.write({
           listenAddrs: listenAddresses.map(ma => ma.bytes),
@@ -244,7 +242,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
           connections.push(conn)
         } catch (err: any) {
-          if (err.code !== codes.ERR_NOT_FOUND) {
+          if (err.code !== ERR_NOT_FOUND) {
             throw err
           }
         }
@@ -254,7 +252,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     await this.pushToConnections(connections)
   }
 
-  async _identify (connection: Connection, options: AbortOptions = {}): Promise<Identify> {
+  async _identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyMessage> {
     let stream: Stream | undefined
 
     if (options.signal == null) {
@@ -268,14 +266,14 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     }
 
     try {
-      stream = await connection.newStream([this.identifyProtocolStr], {
+      stream = await connection.newStream(this.identifyProtocolStr, {
         ...options,
         runOnTransientConnection: this.runOnTransientConnection
       })
 
       const pb = pbStream(stream, {
         maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
-      }).pb(Identify)
+      }).pb(IdentifyMessage)
 
       const message = await pb.read(options)
 
@@ -298,17 +296,17 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     } = message
 
     if (publicKey == null) {
-      throw new CodeError('public key was missing from identify message', codes.ERR_MISSING_PUBLIC_KEY)
+      throw new CodeError('public key was missing from identify message', 'ERR_MISSING_PUBLIC_KEY')
     }
 
     const id = await peerIdFromKeys(publicKey)
 
     if (!connection.remotePeer.equals(id)) {
-      throw new CodeError('identified peer does not match the expected peer', codes.ERR_INVALID_PEER)
+      throw new CodeError('identified peer does not match the expected peer', 'ERR_INVALID_PEER')
     }
 
     if (this.peerId.equals(id)) {
-      throw new CodeError('identified peer is our own peer id?', codes.ERR_INVALID_PEER)
+      throw new CodeError('identified peer is our own peer id?', 'ERR_INVALID_PEER')
     }
 
     // Get the observedAddr if there is one
@@ -359,7 +357,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
         observedAddr = undefined
       }
 
-      const pb = pbStream(stream).pb(Identify)
+      const pb = pbStream(stream).pb(IdentifyMessage)
 
       await pb.write({
         protocolVersion: this.host.protocolVersion,
@@ -399,7 +397,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
       const pb = pbStream(stream, {
         maxDataLength: this.maxIdentifyMessageSize ?? MAX_IDENTIFY_MESSAGE_SIZE
-      }).pb(Identify)
+      }).pb(IdentifyMessage)
 
       const message = await pb.read(options)
       await stream.close(options)
@@ -414,7 +412,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
     this.#log('handled push from %p', connection.remotePeer)
   }
 
-  async #consumeIdentifyMessage (connection: Connection, message: Identify): Promise<IdentifyResult> {
+  async #consumeIdentifyMessage (connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
     this.#log('received identify from %p', connection.remotePeer)
 
     if (message == null) {
@@ -448,7 +446,7 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     // if the peer record has been sent, prefer the addresses in the record as they are signed by the remote peer
     if (message.signedPeerRecord != null) {
-      this.#log('received signedPeerRecord in push from %p', connection.remotePeer)
+      this.#log('received signedPeerRecord from %p', connection.remotePeer)
 
       let peerRecordEnvelope = message.signedPeerRecord
       const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)

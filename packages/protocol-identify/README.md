@@ -3,23 +3,22 @@
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
 
-> Implementation of Autonat Protocol
+> Implementation of the Identify Protocol
 
 # About
 
-Use the `autoNATService` function to add support for the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/)
-to libp2p.
+Use the `identify` function to add support for the [Identify protocol](https://github.com/libp2p/specs/blob/master/identify/README.md) to libp2p.
 
 ## Example
 
 ```typescript
 import { createLibp2p } from 'libp2p'
-import { autoNAT } from '@libp2p/autonat'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
   // ...other options
   services: {
-    autoNAT: autoNAT()
+    identify: identify()
   }
 })
 ```
@@ -27,20 +26,22 @@ const node = await createLibp2p({
 # Install
 
 ```console
-$ npm i @libp2p/autonat
+$ npm i @libp2p/identify
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pAutonat` in the global namespace.
+Loading this module through a script tag will make it's exports available as `Libp2pIdentify` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@libp2p/autonat/dist/index.min.js"></script>
+<script src="https://unpkg.com/@libp2p/identify/dist/index.min.js"></script>
 ```
+
+> Implementation of Autonat Protocol
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_autonat.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_identify.html>
 
 # License
 

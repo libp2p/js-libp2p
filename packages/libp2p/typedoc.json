@@ -4,7 +4,6 @@
     "./src/circuit-relay/index.ts",
     "./src/dcutr/index.ts",
     "./src/fetch/index.ts",
-    "./src/identify/index.ts",
     "./src/insecure/index.ts"
   ]
 }

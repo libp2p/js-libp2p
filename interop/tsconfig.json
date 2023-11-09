@@ -12,6 +12,9 @@
       "path": "../packages/libp2p"
     },
     {
+      "path": "../packages/protocol-identify"
+    },
+    {
       "path": "../packages/protocol-ping"
     },
     {
