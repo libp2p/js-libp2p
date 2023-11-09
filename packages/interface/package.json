@@ -39,9 +39,6 @@
     "!dist/test",
     "!**/*.tsbuildinfo"
   ],
-  "browser": {
-    "events": "./dist/src/events.browser.js"
-  },
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
@@ -178,5 +175,8 @@
     "it-drain": "^3.0.3",
     "sinon": "^17.0.0",
     "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "events": "./dist/src/events.browser.js"
   }
 }

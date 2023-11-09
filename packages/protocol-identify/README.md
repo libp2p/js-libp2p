@@ -37,8 +37,6 @@ Loading this module through a script tag will make it's exports available as `Li
 <script src="https://unpkg.com/@libp2p/identify/dist/index.min.js"></script>
 ```
 
-> Implementation of Autonat Protocol
-
 # API Docs
 
 - <https://libp2p.github.io/js-libp2p/modules/_libp2p_identify.html>

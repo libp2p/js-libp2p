@@ -21,6 +21,7 @@
     "packages/peer-record": {},
     "packages/peer-store": {},
     "packages/protocol-autonat": {},
+    "packages/protocol-dcutr": {},
     "packages/protocol-identify": {},
     "packages/protocol-perf": {},
     "packages/protocol-ping": {},
