@@ -4,7 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { isPublicAndDialable } from '../../src/dcutr/utils.js'
+import { isPublicAndDialable } from '../src/utils.js'
 import type { Transport } from '@libp2p/interface/transport'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
