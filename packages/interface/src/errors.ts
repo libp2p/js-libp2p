@@ -70,3 +70,4 @@ export class InvalidCryptoTransmissionError extends Error {
 
 export const ERR_TIMEOUT = 'ERR_TIMEOUT'
 export const ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS'
+export const ERR_NOT_FOUND = 'ERR_NOT_FOUND'

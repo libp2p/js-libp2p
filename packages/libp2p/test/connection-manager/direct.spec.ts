@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { type Identify, identify } from '@libp2p/identify'
 import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
@@ -23,7 +24,6 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { type IdentifyService, identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
@@ -357,7 +357,7 @@ describe('dialing (direct, WebSockets)', () => {
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
-  let libp2p: Libp2p<{ identify: IdentifyService }>
+  let libp2p: Libp2p<{ identify: Identify }>
   let peerId: PeerId
 
   beforeEach(async () => {
@@ -388,7 +388,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         plaintext()
       ],
       services: {
-        identify: identifyService()
+        identify: identify()
       },
       connectionGater: mockConnectionGater()
     })
@@ -432,7 +432,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         plaintext()
       ],
       services: {
-        identify: identifyService({
+        identify: identify({
           runOnConnectionOpen: false
         })
       },

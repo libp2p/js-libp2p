@@ -319,7 +319,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
 import { SignaturePolicy } from '@libp2p/interface/pubsub'
-import { identifyService } from 'libp2p/identify'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
     transports: [
@@ -333,7 +333,7 @@ const node = await createLibp2p({
       noise()
     ],
     services: {
-      identify: identifyService(),
+      identify: identify(),
       pubsub: gossipsub({
         emitSelf: false,                                  // whether the node should emit to self on publish
         globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
@@ -356,7 +356,7 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { kadDHT } from '@libp2p/kad-dht'
-import { identifyService } from 'libp2p-identify'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
   transports: [
@@ -370,7 +370,7 @@ const node = await createLibp2p({
     noise()
   ],
   services: {
-    identify: identifyService(),
+    identify: identify(),
     dht: kadDHT({
       kBucketSize: 20,
       clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
@@ -444,7 +444,7 @@ import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport, circuitRelayServer } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p-identify'
+import { identify } from '@libp2p/identify'
 
 
 const node = await createLibp2p({
@@ -473,7 +473,7 @@ const node = await createLibp2p({
     denyInboundRelayedConnection: (relay: PeerId, remotePeer: PeerId) => Promise<boolean>
   },
   services: {
-    identify: identifyService(),
+    identify: identify(),
     relay: circuitRelayServer({ // makes the node function as a relay server
       hopTimeout: 30 * 1000, // incoming relay requests must be resolved within this time limit
       advertise: true,
@@ -986,12 +986,12 @@ Changing the protocol name prefix can isolate default public network (IPFS) for 
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { identifyService } from 'libp2p/identify'
+import { identify } from '@libp2p/identify'
 import { ping } from 'libp2p/@ping'
 
 const node = await createLibp2p({
   services: {
-    identify: identifyService({
+    identify: identify({
       protocolPrefix: 'ipfs' // default
     }),
     ping: ping({

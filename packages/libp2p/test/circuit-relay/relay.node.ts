@@ -2,6 +2,7 @@
 /* eslint max-nested-callbacks: ['error', 6] */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { Circuit } from '@multiformats/mafmt'
@@ -18,7 +19,6 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { DEFAULT_DATA_LIMIT, RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { HopMessage, Status } from '../../src/circuit-relay/pb/index.js'
-import { identifyService } from '../../src/identify/index.js'
 import { createLibp2p, type Libp2pOptions } from '../../src/index.js'
 import { plaintext } from '../../src/insecure/index.js'
 import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, notUsingAsRelay, usingAsRelay, usingAsRelayCount } from './utils.js'
@@ -46,7 +46,7 @@ async function createClient (options: Libp2pOptions = {}): Promise<Libp2p> {
       minConnections: 0
     },
     services: {
-      identify: identifyService()
+      identify: identify()
     },
     ...options
   })
@@ -71,7 +71,7 @@ async function createRelay (options: Libp2pOptions = {}): Promise<Libp2p<{ relay
     ...options,
     services: {
       relay: circuitRelayServer(),
-      identify: identifyService(),
+      identify: identify(),
       ...(options.services ?? {})
     }
   })

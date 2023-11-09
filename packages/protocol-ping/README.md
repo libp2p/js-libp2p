@@ -7,21 +7,24 @@
 
 # About
 
-Use the `autoNATService` function to add support for the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/)
-to libp2p.
+The ping service implements the [libp2p ping spec](https://github.com/libp2p/specs/blob/master/ping/ping.md) allowing you to make a latency measurement to a remote peer.
 
 ## Example
 
 ```typescript
 import { createLibp2p } from 'libp2p'
-import { autoNATService } from '@libp2p/autonat'
+import { ping } from '@libp2p/ping'
+import { multiaddr } from '@multiformats/multiaddr'
 
 const node = await createLibp2p({
-  // ...other options
   services: {
-    autoNAT: autoNATService()
+    ping: ping()
   }
 })
+
+const rtt = await node.services.ping.ping(multiaddr('/ip4/...'))
+
+console.info(rtt)
 ```
 
 # Install
