@@ -16,7 +16,7 @@
  * import { circuitRelayTransport } from 'libp2p/circuit-relay'
  * import { tcp } from '@libp2p/tcp'
  * import { identify } from '@libp2p/identify'
- * import { dCUtRService } from 'libp2p/dcutr'
+ * import { dcutr } from '@libp2p/dcutr'
  *
  * const node = await createLibp2p({
  *   transports: [
@@ -25,7 +25,7 @@
  *   ],
  *   services: {
  *     identify: identify(),
- *     dcutr: dcutrService()
+ *     dcutr: dcutr()
  *   }
  * })
  *
@@ -54,6 +54,7 @@
  */
 
 import { DefaultDCUtRService } from './dcutr.js'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
@@ -90,6 +91,7 @@ export interface DCUtRServiceComponents {
   registrar: Registrar
   addressManager: AddressManager
   transportManager: TransportManager
+  logger: ComponentLogger
 }
 
 /**
@@ -97,6 +99,6 @@ export interface DCUtRServiceComponents {
  */
 export const multicodec = '/libp2p/dcutr'
 
-export function dcutrService (init: DCUtRServiceInit = {}): (components: DCUtRServiceComponents) => unknown {
+export function dcutr (init: DCUtRServiceInit = {}): (components: DCUtRServiceComponents) => unknown {
   return (components) => new DefaultDCUtRService(components, init)
 }

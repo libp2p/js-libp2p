@@ -52,10 +52,6 @@
       "types": "./dist/src/circuit-relay/index.d.ts",
       "import": "./dist/src/circuit-relay/index.js"
     },
-    "./dcutr": {
-      "types": "./dist/src/dcutr/index.d.ts",
-      "import": "./dist/src/dcutr/index.js"
-    },
     "./fetch": {
       "types": "./dist/src/fetch/index.d.ts",
       "import": "./dist/src/fetch/index.js"
