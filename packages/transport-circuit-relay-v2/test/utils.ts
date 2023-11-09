@@ -1,7 +1,7 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { RELAY_V2_HOP_CODEC } from '../../src/circuit-relay/constants.js'
+import { RELAY_V2_HOP_CODEC } from '../../../packages/transport-circuit-relay-v2/src/constants.js'
 import type { Libp2p, AbortOptions } from '@libp2p/interface'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
 import type { PeerId } from '@libp2p/interface/peer-id'

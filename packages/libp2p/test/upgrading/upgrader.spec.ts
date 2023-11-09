@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
@@ -22,7 +23,6 @@ import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { type Components, defaultComponents } from '../../src/components.js'
 import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'

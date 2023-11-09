@@ -13,9 +13,6 @@
     },
     {
       "path": "../interface-internal"
-    },
-    {
-      "path": "../logger"
     }
   ]
 }

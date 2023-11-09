@@ -3,6 +3,7 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { isStartable } from '@libp2p/interface/startable'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -10,8 +11,8 @@ import { duplexPair } from 'it-pair/duplex'
 import { pbStream, type MessageStream } from 'it-protobuf-stream'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
-import { Status, StopMessage } from '../../src/circuit-relay/pb/index.js'
+import { circuitRelayTransport } from '../src/index.js'
+import { Status, StopMessage } from '../src/pb/index.js'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
@@ -43,7 +44,8 @@ describe('circuit-relay stop protocol', function () {
       transportManager: stubInterface<TransportManager>(),
       upgrader: stubInterface<Upgrader>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
+      events: new TypedEventEmitter(),
+      logger: defaultLogger()
     }
 
     transport = circuitRelayTransport({
