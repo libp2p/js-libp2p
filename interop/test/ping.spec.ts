@@ -4,6 +4,7 @@
 import { } from 'aegir/chai'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { type Identify, identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { ping, type PingService } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
@@ -14,7 +15,6 @@ import { webTransport } from '@libp2p/webtransport'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 import { circuitRelayTransport } from 'libp2p/circuit-relay'
-import { type IdentifyService, identifyService } from 'libp2p/identify'
 
 async function redisProxy (commands: any[]): Promise<any> {
   const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, { body: JSON.stringify(commands), method: 'POST' })
@@ -24,7 +24,7 @@ async function redisProxy (commands: any[]): Promise<any> {
   return res.json()
 }
 
-let node: Libp2p<{ ping: PingService, identify: IdentifyService }>
+let node: Libp2p<{ ping: PingService, identify: Identify }>
 const isDialer: boolean = process.env.is_dialer === 'true'
 const timeoutSecs: string = process.env.test_timeout_secs ?? '180'
 
@@ -40,7 +40,7 @@ describe('ping test', function () {
     const MUXER = process.env.muxer
     const IP = process.env.ip ?? '0.0.0.0'
 
-    const options: Libp2pOptions<{ ping: PingService, identify: IdentifyService }> = {
+    const options: Libp2pOptions<{ ping: PingService, identify: Identify }> = {
       start: true,
       connectionManager: {
         minConnections: 0
@@ -50,7 +50,7 @@ describe('ping test', function () {
       },
       services: {
         ping: ping(),
-        identify: identifyService()
+        identify: identify()
       }
     }
 

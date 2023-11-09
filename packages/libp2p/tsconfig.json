@@ -52,6 +52,9 @@
       "path": "../peer-store"
     },
     {
+      "path": "../protocol-identify"
+    },
+    {
       "path": "../pubsub-floodsub"
     },
     {
