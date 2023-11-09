@@ -18,7 +18,6 @@ export default {
       const { plaintext } = await import('@libp2p/plaintext')
       const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
       const { identify } = await import('@libp2p/identify')
-      const { fetchService } = await import('./dist/src/fetch/index.js')
 
       const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
@@ -46,7 +45,6 @@ export default {
         ],
         services: {
           identify: identify(),
-          fetch: fetchService(),
           relay: circuitRelayServer({
             reservations: {
               maxReservations: Infinity
