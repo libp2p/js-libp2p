@@ -28,6 +28,20 @@
 
 > JavaScript implementation of libp2p, a modular peer to peer network stack
 
+# About
+
+Use the `createLibp2p` function to create a libp2p node.
+
+## Example
+
+```typescript
+import { createLibp2p } from 'libp2p'
+
+const node = await createLibp2p({
+  // ...other options
+})
+```
+
 # Project status
 
 We've come a long way, but this project is still in Alpha, lots of development is happening, API might change, beware of the Dragons 🐉..
