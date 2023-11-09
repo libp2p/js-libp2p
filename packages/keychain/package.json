@@ -67,6 +67,6 @@
     "@libp2p/peer-id-factory": "^3.0.8",
     "aegir": "^41.0.2",
     "datastore-core": "^9.1.1",
-    "multiformats": "^12.0.1"
+    "multiformats": "^12.1.3"
   }
 }
