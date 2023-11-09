@@ -10,7 +10,7 @@ import toBuffer from 'it-to-buffer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../../../packages/transport-circuit-relay-v2/src/utils.js'
+import { createLimitedRelay, getExpirationMilliseconds, namespaceToCid } from '../src/utils.js'
 import type { Duplex, Source } from 'it-stream-types'
 
 describe('circuit-relay utils', () => {
