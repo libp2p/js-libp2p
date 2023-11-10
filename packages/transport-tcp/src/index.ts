@@ -22,7 +22,7 @@
  * const listener = transport.createListener({
  *   upgrader,
  *   handler: (socket) => {
- *     console.this.#log('new connection opened')
+ *     console.this.log('new connection opened')
  *     pipe(
  *       ['hello', ' ', 'World!'],
  *       socket
@@ -32,14 +32,14 @@
  *
  * const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
  * await listener.listen(addr)
- * console.this.#log('listening')
+ * console.this.log('listening')
  *
  * const socket = await transport.dial(addr, { upgrader })
  * const values = await pipe(
  *   socket,
  *   all
  * )
- * console.this.#log(`Value: ${values.toString()}`)
+ * console.this.log(`Value: ${values.toString()}`)
  *
  * // Close connection after reading
  * await listener.close()
@@ -134,10 +134,10 @@ class TCP implements Transport {
   private readonly opts: TCPOptions
   private readonly metrics?: TCPMetrics
   private readonly components: TCPComponents
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: TCPComponents, options: TCPOptions = {}) {
-    this.#log = components.logger.forComponent('libp2p:tcp')
+    this.log = components.logger.forComponent('libp2p:tcp')
     this.opts = options
     this.components = components
 
@@ -163,7 +163,7 @@ class TCP implements Transport {
 
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
-      this.#log('socket error', err)
+      this.log('socket error', err)
     })
 
     const maConn = toMultiaddrConnection(socket, {
@@ -176,20 +176,20 @@ class TCP implements Transport {
 
     const onAbort = (): void => {
       maConn.close().catch(err => {
-        this.#log.error('Error closing maConn after abort', err)
+        this.log.error('Error closing maConn after abort', err)
       })
     }
     options.signal?.addEventListener('abort', onAbort, { once: true })
 
-    this.#log('new outbound connection %s', maConn.remoteAddr)
+    this.log('new outbound connection %s', maConn.remoteAddr)
     const conn = await options.upgrader.upgradeOutbound(maConn)
-    this.#log('outbound connection %s upgraded', maConn.remoteAddr)
+    this.log('outbound connection %s upgraded', maConn.remoteAddr)
 
     options.signal?.removeEventListener('abort', onAbort)
 
     if (options.signal?.aborted === true) {
       conn.close().catch(err => {
-        this.#log.error('Error closing conn after abort', err)
+        this.log.error('Error closing conn after abort', err)
       })
 
       throw new AbortError()
@@ -208,7 +208,7 @@ class TCP implements Transport {
       const cOpts = multiaddrToNetConfig(ma) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
       const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
 
-      this.#log('dialing %j', cOpts)
+      this.log('dialing %j', cOpts)
       const rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
@@ -219,7 +219,7 @@ class TCP implements Transport {
       }
 
       const onTimeout = (): void => {
-        this.#log('connection timeout %s', cOptsStr)
+        this.log('connection timeout %s', cOptsStr)
         this.metrics?.dialerEvents.increment({ timeout: true })
 
         const err = new CodeError(`connection timeout after ${Date.now() - start}ms`, 'ERR_CONNECT_TIMEOUT')
@@ -228,13 +228,13 @@ class TCP implements Transport {
       }
 
       const onConnect = (): void => {
-        this.#log('connection opened %j', cOpts)
+        this.log('connection opened %j', cOpts)
         this.metrics?.dialerEvents.increment({ connect: true })
         done()
       }
 
       const onAbort = (): void => {
-        this.#log('connection aborted %j', cOpts)
+        this.log('connection aborted %j', cOpts)
         this.metrics?.dialerEvents.increment({ abort: true })
         rawSocket.destroy()
         done(new AbortError())

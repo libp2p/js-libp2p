@@ -33,7 +33,7 @@ export interface QuerySelfComponents {
  * Receives notifications of new peers joining the network that support the DHT protocol
  */
 export class QuerySelf implements Startable {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly peerId: PeerId
   private readonly peerRouting: PeerRouting
   private readonly routingTable: RoutingTable
@@ -51,7 +51,7 @@ export class QuerySelf implements Startable {
     const { peerRouting, lan, count, interval, queryTimeout, routingTable } = init
 
     this.peerId = components.peerId
-    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:query-self`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:query-self`)
     this.started = false
     this.peerRouting = peerRouting
     this.routingTable = routingTable
@@ -76,7 +76,7 @@ export class QuerySelf implements Startable {
     this.timeoutId = setTimeout(() => {
       this.querySelf()
         .catch(err => {
-          this.#log.error('error running self-query', err)
+          this.log.error('error running self-query', err)
         })
     }, this.initialInterval)
   }
@@ -95,12 +95,12 @@ export class QuerySelf implements Startable {
 
   async querySelf (): Promise<void> {
     if (!this.started) {
-      this.#log('skip self-query because we are not started')
+      this.log('skip self-query because we are not started')
       return
     }
 
     if (this.querySelfPromise != null) {
-      this.#log('joining existing self query')
+      this.log('joining existing self query')
       return this.querySelfPromise.promise
     }
 
@@ -115,14 +115,14 @@ export class QuerySelf implements Startable {
 
       try {
         if (this.routingTable.size === 0) {
-          this.#log('routing table was empty, waiting for some peers before running query')
+          this.log('routing table was empty, waiting for some peers before running query')
           // wait to discover at least one DHT peer
           await pEvent(this.routingTable, 'peer:add', {
             signal
           })
         }
 
-        this.#log('run self-query, look for %d peers timing out after %dms', this.count, this.queryTimeout)
+        this.log('run self-query, look for %d peers timing out after %dms', this.count, this.queryTimeout)
         const start = Date.now()
 
         const found = await pipe(
@@ -134,9 +134,9 @@ export class QuerySelf implements Startable {
           async (source) => length(source)
         )
 
-        this.#log('self-query found %d peers in %dms', found, Date.now() - start)
+        this.log('self-query found %d peers in %dms', found, Date.now() - start)
       } catch (err: any) {
-        this.#log.error('self-query error', err)
+        this.log.error('self-query error', err)
       } finally {
         signal.clear()
 
@@ -157,7 +157,7 @@ export class QuerySelf implements Startable {
     this.timeoutId = setTimeout(() => {
       this.querySelf()
         .catch(err => {
-          this.#log.error('error running self-query', err)
+          this.log.error('error running self-query', err)
         })
     }, this.interval)
   }

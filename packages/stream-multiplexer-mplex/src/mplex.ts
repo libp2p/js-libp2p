@@ -55,7 +55,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   public sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>>
   public source: AsyncGenerator<Uint8Array>
 
-  readonly #log: Logger
+  private readonly log: Logger
   private _streamId: number
   private readonly _streams: { initiators: Map<number, MplexStream>, receivers: Map<number, MplexStream> }
   private readonly _init: MplexStreamMuxerInit
@@ -68,7 +68,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   constructor (components: MplexComponents, init?: MplexStreamMuxerInit) {
     init = init ?? {}
 
-    this.#log = components.logger.forComponent('libp2p:mplex')
+    this.log = components.logger.forComponent('libp2p:mplex')
     this.logger = components.logger
     this._streamId = 0
     this._streams = {
@@ -204,7 +204,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   _newStream (options: { id: number, name: string, type: 'initiator' | 'receiver', registry: Map<number, MplexStream> }): MplexStream {
     const { id, name, type, registry } = options
 
-    this.#log('new %s stream %s', type, id)
+    this.log('new %s stream %s', type, id)
 
     if (type === 'initiator' && this._streams.initiators.size === (this._init.maxOutboundStreams ?? MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION)) {
       throw new CodeError('Too many outbound streams open', 'ERR_TOO_MANY_OUTBOUND_STREAMS')
@@ -215,15 +215,15 @@ export class MplexStreamMuxer implements StreamMuxer {
     }
 
     const send = async (msg: Message): Promise<void> => {
-      if (this.#log.enabled) {
-        this.#log.trace('%s stream %s send', type, id, printMessage(msg))
+      if (this.log.enabled) {
+        this.log.trace('%s stream %s send', type, id, printMessage(msg))
       }
 
       this._source.push(msg)
     }
 
     const onEnd = (): void => {
-      this.#log('%s stream with id %s and protocol %s ended', type, id, stream.protocol)
+      this.log('%s stream with id %s and protocol %s ended', type, id, stream.protocol)
       registry.delete(id)
 
       if (this._init.onStreamEnd != null) {
@@ -257,7 +257,7 @@ export class MplexStreamMuxer implements StreamMuxer {
 
         this._source.end()
       } catch (err: any) {
-        this.#log('error in sink', err)
+        this.log('error in sink', err)
         this._source.end(err) // End the source with an error
       }
     }
@@ -268,14 +268,14 @@ export class MplexStreamMuxer implements StreamMuxer {
   async _handleIncoming (message: Message): Promise<void> {
     const { id, type } = message
 
-    if (this.#log.enabled) {
-      this.#log.trace('incoming message', printMessage(message))
+    if (this.log.enabled) {
+      this.log.trace('incoming message', printMessage(message))
     }
 
     // Create a new stream?
     if (message.type === MessageTypes.NEW_STREAM) {
       if (this._streams.receivers.size === (this._init.maxInboundStreams ?? MAX_STREAMS_INBOUND_STREAMS_PER_CONNECTION)) {
-        this.#log('too many inbound streams open')
+        this.log('too many inbound streams open')
 
         // not going to allow this stream, send the reset message manually
         // instead of setting it up just to tear it down
@@ -290,7 +290,7 @@ export class MplexStreamMuxer implements StreamMuxer {
         try {
           await this.rateLimiter.consume('new-stream', 1)
         } catch {
-          this.#log('rate limit hit when opening too many new streams over the inbound stream limit - closing remote connection')
+          this.log('rate limit hit when opening too many new streams over the inbound stream limit - closing remote connection')
           // since there's no backpressure in mplex, the only thing we can really do to protect ourselves is close the connection
           this.abort(new Error('Too many open streams'))
           return
@@ -312,7 +312,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     const stream = list.get(id)
 
     if (stream == null) {
-      this.#log('missing stream %s for message type %s', id, MessageTypeNames[type])
+      this.log('missing stream %s for message type %s', id, MessageTypeNames[type])
 
       // if the remote keeps sending us messages for streams that have been
       // closed or were never opened they may be attacking us so if they do
@@ -320,7 +320,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       try {
         await this.rateLimiter.consume('missing-stream', 1)
       } catch {
-        this.#log('rate limit hit when receiving messages for streams that do not exist - closing remote connection')
+        this.log('rate limit hit when receiving messages for streams that do not exist - closing remote connection')
         // since there's no backpressure in mplex, the only thing we can really do to protect ourselves is close the connection
         this.abort(new Error('Too many messages for missing streams'))
         return
@@ -360,10 +360,10 @@ export class MplexStreamMuxer implements StreamMuxer {
           stream.reset()
           break
         default:
-          this.#log('unknown message type %s', type)
+          this.log('unknown message type %s', type)
       }
     } catch (err: any) {
-      this.#log.error('error while processing message', err)
+      this.log.error('error while processing message', err)
       stream.abort(err)
     }
   }

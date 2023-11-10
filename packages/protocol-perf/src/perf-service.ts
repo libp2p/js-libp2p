@@ -7,7 +7,7 @@ import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Perf implements Startable, PerfInterface {
-  readonly #log: Logger
+  private readonly log: Logger
   public readonly protocol: string
   private readonly components: PerfComponents
   private started: boolean
@@ -19,7 +19,7 @@ export class Perf implements Startable, PerfInterface {
 
   constructor (components: PerfComponents, init: PerfInit = {}) {
     this.components = components
-    this.#log = components.logger.forComponent('libp2p:perf')
+    this.log = components.logger.forComponent('libp2p:perf')
     this.started = false
     this.protocol = init.protocolName ?? PROTOCOL_NAME
     this.writeBlockSize = init.writeBlockSize ?? WRITE_BLOCK_SIZE
@@ -32,7 +32,7 @@ export class Perf implements Startable, PerfInterface {
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data: IncomingStreamData) => {
       void this.handleMessage(data).catch((err) => {
-        this.#log.error('error handling perf protocol message', err)
+        this.log.error('error handling perf protocol message', err)
       })
     }, {
       maxInboundStreams: this.maxInboundStreams,
@@ -90,7 +90,7 @@ export class Perf implements Startable, PerfInterface {
   }
 
   async * measurePerformance (ma: Multiaddr, sendBytes: number, receiveBytes: number, options: PerfOptions = {}): AsyncGenerator<PerfOutput> {
-    this.#log('opening stream on protocol %s to %a', this.protocol, ma)
+    this.log('opening stream on protocol %s to %a', this.protocol, ma)
 
     const uint8Buf = new Uint8Array(this.databuf)
     const writeBlockSize = this.writeBlockSize
@@ -130,7 +130,7 @@ export class Perf implements Startable, PerfInterface {
     const view = new DataView(this.databuf)
     view.setBigUint64(0, BigInt(receiveBytes), false)
 
-    this.#log('sending %i bytes to %p', sendBytes, connection.remotePeer)
+    this.log('sending %i bytes to %p', sendBytes, connection.remotePeer)
 
     try {
       const sendOutput = pushable<PerfOutput>({
@@ -216,10 +216,10 @@ export class Perf implements Startable, PerfInterface {
         downloadBytes: totalBytesReceived
       }
 
-      this.#log('performed %s to %p', this.protocol, connection.remotePeer)
+      this.log('performed %s to %p', this.protocol, connection.remotePeer)
       await stream.close()
     } catch (err: any) {
-      this.#log('error sending %d/%d bytes to %p: %s', totalBytesSent, sendBytes, connection.remotePeer, err)
+      this.log('error sending %d/%d bytes to %p: %s', totalBytesSent, sendBytes, connection.remotePeer, err)
       stream.abort(err)
       throw err
     }

@@ -8,14 +8,14 @@ export interface PingComponents {
 }
 
 export class PingHandler implements DHTMessageHandler {
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: PingComponents) {
-    this.#log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:ping')
+    this.log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:ping')
   }
 
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
-    this.#log('ping from %p', peerId)
+    this.log('ping from %p', peerId)
     return msg
   }
 }

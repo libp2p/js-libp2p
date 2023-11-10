@@ -90,12 +90,12 @@ export interface WebSocketsComponents {
 }
 
 class WebSockets implements Transport {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly init?: WebSocketsInit
   private readonly logger: ComponentLogger
 
   constructor (components: WebSocketsComponents, init?: WebSocketsInit) {
-    this.#log = components.logger.forComponent('libp2p:websockets')
+    this.log = components.logger.forComponent('libp2p:websockets')
     this.logger = components.logger
     this.init = init
   }
@@ -105,17 +105,17 @@ class WebSockets implements Transport {
   readonly [symbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
-    this.#log('dialing %s', ma)
+    this.log('dialing %s', ma)
     options = options ?? {}
 
     const socket = await this._connect(ma, options)
     const maConn = socketToMaConn(socket, ma, {
       logger: this.logger
     })
-    this.#log('new outbound connection %s', maConn.remoteAddr)
+    this.log('new outbound connection %s', maConn.remoteAddr)
 
     const conn = await options.upgrader.upgradeOutbound(maConn)
-    this.#log('outbound connection %s upgraded', maConn.remoteAddr)
+    this.log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
 
@@ -124,7 +124,7 @@ class WebSockets implements Transport {
       throw new AbortError()
     }
     const cOpts = ma.toOptions()
-    this.#log('dialing %s:%s', cOpts.host, cOpts.port)
+    this.log('dialing %s:%s', cOpts.host, cOpts.port)
 
     const errorPromise = pDefer()
     const rawSocket = connect(toUri(ma), this.init)
@@ -133,14 +133,14 @@ class WebSockets implements Transport {
       // information about what happened
       // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
       const err = new CodeError(`Could not connect to ${ma.toString()}`, 'ERR_CONNECTION_FAILED')
-      this.#log.error('connection error:', err)
+      this.log.error('connection error:', err)
       errorPromise.reject(err)
     })
 
     if (options.signal == null) {
       await Promise.race([rawSocket.connected(), errorPromise.promise])
 
-      this.#log('connected %s', ma)
+      this.log('connected %s', ma)
       return rawSocket
     }
 
@@ -150,7 +150,7 @@ class WebSockets implements Transport {
       onAbort = () => {
         reject(new AbortError())
         rawSocket.close().catch(err => {
-          this.#log.error('error closing raw socket', err)
+          this.log.error('error closing raw socket', err)
         })
       }
 
@@ -170,7 +170,7 @@ class WebSockets implements Transport {
       }
     }
 
-    this.#log('connected %s', ma)
+    this.log('connected %s', ma)
     return rawSocket
   }
 

@@ -46,7 +46,7 @@ export interface ProvidersComponents {
  * access is fast there is an LRU cache in front of that.
  */
 export class Providers implements Startable {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly datastore: Datastore
   private readonly cache: ReturnType<typeof cache>
   private readonly cleanupInterval: number
@@ -58,7 +58,7 @@ export class Providers implements Startable {
   constructor (components: ProvidersComponents, init: ProvidersInit = {}) {
     const { cacheSize, cleanupInterval, provideValidity } = init
 
-    this.#log = components.logger.forComponent('libp2p:kad-dht:providers')
+    this.log = components.logger.forComponent('libp2p:kad-dht:providers')
     this.datastore = components.datastore
     this.cleanupInterval = cleanupInterval ?? PROVIDERS_CLEANUP_INTERVAL
     this.provideValidity = provideValidity ?? PROVIDERS_VALIDITY
@@ -84,7 +84,7 @@ export class Providers implements Startable {
     this.cleaner = setInterval(
       () => {
         this._cleanup().catch(err => {
-          this.#log.error(err)
+          this.log.error(err)
         })
       },
       this.cleanupInterval
@@ -127,7 +127,7 @@ export class Providers implements Startable {
           const delta = now - time
           const expired = delta > this.provideValidity
 
-          this.#log('comparing: %d - %d = %d > %d %s', now, time, delta, this.provideValidity, expired ? '(expired)' : '')
+          this.log('comparing: %d - %d = %d > %d %s', now, time, delta, this.provideValidity, expired ? '(expired)' : '')
 
           if (expired) {
             deleteCount++
@@ -138,16 +138,16 @@ export class Providers implements Startable {
           }
           count++
         } catch (err: any) {
-          this.#log.error(err.message)
+          this.log.error(err.message)
         }
       }
 
       // Commit the deletes to the datastore
       if (deleted.size > 0) {
-        this.#log('deleting %d / %d entries', deleteCount, count)
+        this.log('deleting %d / %d entries', deleteCount, count)
         await batch.commit()
       } else {
-        this.#log('nothing to delete')
+        this.log('nothing to delete')
       }
 
       // Clear expired entries from the cache
@@ -168,7 +168,7 @@ export class Providers implements Startable {
         }
       }
 
-      this.#log('Cleanup successful (%dms)', Date.now() - start)
+      this.log('Cleanup successful (%dms)', Date.now() - start)
     })
   }
 
@@ -192,10 +192,10 @@ export class Providers implements Startable {
    */
   async addProvider (cid: CID, provider: PeerId): Promise<void> {
     await this.syncQueue.add(async () => {
-      this.#log('%p provides %s', provider, cid)
+      this.log('%p provides %s', provider, cid)
       const provs = await this._getProvidersMap(cid)
 
-      this.#log('loaded %s provs', provs.size)
+      this.log('loaded %s provs', provs.size)
       const now = new Date()
       provs.set(provider.toString(), now)
 
@@ -211,7 +211,7 @@ export class Providers implements Startable {
    */
   async getProviders (cid: CID): Promise<PeerId[]> {
     return this.syncQueue.add(async () => {
-      this.#log('get providers for %s', cid)
+      this.log('get providers for %s', cid)
       const provs = await this._getProvidersMap(cid)
 
       return [...provs.keys()].map(peerIdStr => {

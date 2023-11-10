@@ -46,10 +46,10 @@ export interface PlaintextComponents {
 
 class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: PlaintextComponents) {
-    this.#log = components.logger.forComponent('libp2p:plaintext')
+    this.log = components.logger.forComponent('libp2p:plaintext')
   }
 
   async secureInbound (localId: PeerId, conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remoteId?: PeerId): Promise<SecuredConnection> {
@@ -85,7 +85,7 @@ class Plaintext implements ConnectionEncrypter {
       }).subarray()
     )
 
-    this.#log('write pubkey exchange to peer %p', remoteId)
+    this.log('write pubkey exchange to peer %p', remoteId)
 
     // Get the Exchange message
     const response = (await lp.decode.fromReader(shake.reader).next()).value
@@ -95,7 +95,7 @@ class Plaintext implements ConnectionEncrypter {
     }
 
     const id = Exchange.decode(response)
-    this.#log('read pubkey exchange from peer %p', remoteId)
+    this.log('read pubkey exchange from peer %p', remoteId)
 
     let peerId
     try {
@@ -117,7 +117,7 @@ class Plaintext implements ConnectionEncrypter {
         throw new Error('Public key did not match id')
       }
     } catch (err: any) {
-      this.#log.error(err)
+      this.log.error(err)
       throw new InvalidCryptoExchangeError('Remote did not provide its public key')
     }
 
@@ -125,7 +125,7 @@ class Plaintext implements ConnectionEncrypter {
       throw new UnexpectedPeerError()
     }
 
-    this.#log('plaintext key exchange completed successfully with peer %p', peerId)
+    this.log('plaintext key exchange completed successfully with peer %p', peerId)
 
     shake.rest()
 

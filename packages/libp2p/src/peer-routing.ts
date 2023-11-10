@@ -27,13 +27,13 @@ export interface DefaultPeerRoutingComponents {
 }
 
 export class DefaultPeerRouting implements PeerRouting {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly peerId: PeerId
   private readonly peerStore: PeerStore
   private readonly routers: PeerRouting[]
 
   constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit) {
-    this.#log = components.logger.forComponent('libp2p:peer-routing')
+    this.log = components.logger.forComponent('libp2p:peer-routing')
     this.peerId = components.peerId
     this.peerStore = components.peerStore
     this.routers = init.routers ?? []
@@ -59,7 +59,7 @@ export class DefaultPeerRouting implements PeerRouting {
           try {
             yield await router.findPeer(id, options)
           } catch (err) {
-            self.#log.error(err)
+            self.log.error(err)
           }
         })())
       ),

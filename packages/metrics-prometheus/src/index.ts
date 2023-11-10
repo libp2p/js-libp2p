@@ -204,29 +204,29 @@ export interface PrometheusMetricsComponents {
 }
 
 class PrometheusMetrics implements Metrics {
-  #log: Logger
+  private readonly log: Logger
   private transferStats: Map<string, number>
   private readonly registry?: Registry
 
   constructor (components: PrometheusMetricsComponents, init?: Partial<PrometheusMetricsInit>) {
-    this.#log = components.logger.forComponent('libp2p:prometheus-metrics')
+    this.log = components.logger.forComponent('libp2p:prometheus-metrics')
     this.registry = init?.registry
 
     if (init?.preserveExistingMetrics !== true) {
-      this.#log('Clearing existing metrics')
+      this.log('Clearing existing metrics')
       metrics.clear()
       ;(this.registry ?? register).clear()
     }
 
     if (init?.collectDefaultMetrics !== false) {
-      this.#log('Collecting default metrics')
+      this.log('Collecting default metrics')
       collectDefaultMetrics({ ...init?.defaultMetrics, register: this.registry ?? init?.defaultMetrics?.register })
     }
 
     // holds global and per-protocol sent/received stats
     this.transferStats = new Map()
 
-    this.#log('Collecting data transfer metrics')
+    this.log('Collecting data transfer metrics')
     this.registerCounterGroup('libp2p_data_transfer_bytes_total', {
       label: 'protocol',
       calculate: () => {
@@ -243,7 +243,7 @@ class PrometheusMetrics implements Metrics {
       }
     })
 
-    this.#log('Collecting memory metrics')
+    this.log('Collecting memory metrics')
     this.registerMetricGroup('nodejs_memory_usage_bytes', {
       label: 'memory',
       calculate: () => {
@@ -308,7 +308,7 @@ class PrometheusMetrics implements Metrics {
     let metric = metrics.get(name)
 
     if (metrics.has(name)) {
-      this.#log('Reuse existing metric', name)
+      this.log('Reuse existing metric', name)
 
       if (opts.calculate != null) {
         metric.addCalculator(opts.calculate)
@@ -317,7 +317,7 @@ class PrometheusMetrics implements Metrics {
       return metrics.get(name)
     }
 
-    this.#log('Register metric', name)
+    this.log('Register metric', name)
     metric = new PrometheusMetric(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metric)
@@ -337,7 +337,7 @@ class PrometheusMetrics implements Metrics {
     let metricGroup = metrics.get(name)
 
     if (metricGroup != null) {
-      this.#log('Reuse existing metric group', name)
+      this.log('Reuse existing metric group', name)
 
       if (opts.calculate != null) {
         metricGroup.addCalculator(opts.calculate)
@@ -346,7 +346,7 @@ class PrometheusMetrics implements Metrics {
       return metricGroup
     }
 
-    this.#log('Register metric group', name)
+    this.log('Register metric group', name)
     metricGroup = new PrometheusMetricGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metricGroup)
@@ -366,7 +366,7 @@ class PrometheusMetrics implements Metrics {
     let counter = metrics.get(name)
 
     if (counter != null) {
-      this.#log('Reuse existing counter', name)
+      this.log('Reuse existing counter', name)
 
       if (opts.calculate != null) {
         counter.addCalculator(opts.calculate)
@@ -375,7 +375,7 @@ class PrometheusMetrics implements Metrics {
       return metrics.get(name)
     }
 
-    this.#log('Register counter', name)
+    this.log('Register counter', name)
     counter = new PrometheusCounter(name, { registry: this.registry, ...opts })
 
     metrics.set(name, counter)
@@ -395,7 +395,7 @@ class PrometheusMetrics implements Metrics {
     let counterGroup = metrics.get(name)
 
     if (counterGroup != null) {
-      this.#log('Reuse existing counter group', name)
+      this.log('Reuse existing counter group', name)
 
       if (opts.calculate != null) {
         counterGroup.addCalculator(opts.calculate)
@@ -404,7 +404,7 @@ class PrometheusMetrics implements Metrics {
       return counterGroup
     }
 
-    this.#log('Register counter group', name)
+    this.log('Register counter group', name)
     counterGroup = new PrometheusCounterGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, counterGroup)

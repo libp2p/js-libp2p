@@ -114,14 +114,14 @@ export class DataChannelMuxer implements StreamMuxer {
   public streams: Stream[]
   public protocol: string
 
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly peerConnection: RTCPeerConnection
   private readonly dataChannelOptions: DataChannelOptions
   private readonly metrics?: CounterGroup
   private readonly logger: ComponentLogger
 
   constructor (components: DataChannelMuxerComponents, readonly init: DataChannelMuxerInit) {
-    this.#log = components.logger.forComponent('libp2p:webrtc:muxer')
+    this.log = components.logger.forComponent('libp2p:webrtc:muxer')
     this.logger = components.logger
     this.streams = init.streams.map(s => s.stream)
     this.peerConnection = init.peerConnection
@@ -172,12 +172,12 @@ export class DataChannelMuxer implements StreamMuxer {
   }
 
   #onStreamEnd (stream: Stream, channel: RTCDataChannel): void {
-    this.#log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
+    this.log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
     drainAndClose(
       channel,
       `${stream.direction} ${stream.id} ${stream.protocol}`,
       this.dataChannelOptions.drainTimeout, {
-        log: this.#log
+        log: this.log
       }
     )
     this.streams = this.streams.filter(s => s.id !== stream.id)

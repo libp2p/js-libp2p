@@ -25,13 +25,13 @@ export interface RegistrarComponents {
  * Responsible for notifying registered protocols of events in the network.
  */
 export class DefaultRegistrar implements Registrar {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly topologies: Map<string, Map<string, Topology>>
   private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: RegistrarComponents
 
   constructor (components: RegistrarComponents) {
-    this.#log = components.logger.forComponent('libp2p:registrar')
+    this.log = components.logger.forComponent('libp2p:registrar')
     this.topologies = new Map()
     this.handlers = new Map()
     this.components = components
@@ -179,7 +179,7 @@ export class DefaultRegistrar implements Registrar {
           return
         }
 
-        this.#log.error('could not inform topologies of disconnecting peer %p', remotePeer, err)
+        this.log.error('could not inform topologies of disconnecting peer %p', remotePeer, err)
       })
   }
 

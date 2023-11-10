@@ -33,86 +33,86 @@ export class PersistentPeerStore implements PeerStore {
   private readonly store: PersistentStore
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly peerId: PeerId
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
-    this.#log = components.logger.forComponent('libp2p:peer-store')
+    this.log = components.logger.forComponent('libp2p:peer-store')
     this.events = components.events
     this.peerId = components.peerId
     this.store = new PersistentStore(components, init)
   }
 
   async forEach (fn: (peer: Peer,) => void, query?: PeerQuery): Promise<void> {
-    this.#log.trace('forEach await read lock')
+    this.log.trace('forEach await read lock')
     const release = await this.store.lock.readLock()
-    this.#log.trace('forEach got read lock')
+    this.log.trace('forEach got read lock')
 
     try {
       for await (const peer of this.store.all(query)) {
         fn(peer)
       }
     } finally {
-      this.#log.trace('forEach release read lock')
+      this.log.trace('forEach release read lock')
       release()
     }
   }
 
   async all (query?: PeerQuery): Promise<Peer[]> {
-    this.#log.trace('all await read lock')
+    this.log.trace('all await read lock')
     const release = await this.store.lock.readLock()
-    this.#log.trace('all got read lock')
+    this.log.trace('all got read lock')
 
     try {
       return await all(this.store.all(query))
     } finally {
-      this.#log.trace('all release read lock')
+      this.log.trace('all release read lock')
       release()
     }
   }
 
   async delete (peerId: PeerId): Promise<void> {
-    this.#log.trace('delete await write lock')
+    this.log.trace('delete await write lock')
     const release = await this.store.lock.writeLock()
-    this.#log.trace('delete got write lock')
+    this.log.trace('delete got write lock')
 
     try {
       await this.store.delete(peerId)
     } finally {
-      this.#log.trace('delete release write lock')
+      this.log.trace('delete release write lock')
       release()
     }
   }
 
   async has (peerId: PeerId): Promise<boolean> {
-    this.#log.trace('has await read lock')
+    this.log.trace('has await read lock')
     const release = await this.store.lock.readLock()
-    this.#log.trace('has got read lock')
+    this.log.trace('has got read lock')
 
     try {
       return await this.store.has(peerId)
     } finally {
-      this.#log.trace('has release read lock')
+      this.log.trace('has release read lock')
       release()
     }
   }
 
   async get (peerId: PeerId): Promise<Peer> {
-    this.#log.trace('get await read lock')
+    this.log.trace('get await read lock')
     const release = await this.store.lock.readLock()
-    this.#log.trace('get got read lock')
+    this.log.trace('get got read lock')
 
     try {
       return await this.store.load(peerId)
     } finally {
-      this.#log.trace('get release read lock')
+      this.log.trace('get release read lock')
       release()
     }
   }
 
   async save (id: PeerId, data: PeerData): Promise<Peer> {
-    this.#log.trace('save await write lock')
+    this.log.trace('save await write lock')
     const release = await this.store.lock.writeLock()
-    this.#log.trace('save got write lock')
+    this.log.trace('save got write lock')
 
     try {
       const result = await this.store.save(id, data)
@@ -121,15 +121,15 @@ export class PersistentPeerStore implements PeerStore {
 
       return result.peer
     } finally {
-      this.#log.trace('save release write lock')
+      this.log.trace('save release write lock')
       release()
     }
   }
 
   async patch (id: PeerId, data: PeerData): Promise<Peer> {
-    this.#log.trace('patch await write lock')
+    this.log.trace('patch await write lock')
     const release = await this.store.lock.writeLock()
-    this.#log.trace('patch got write lock')
+    this.log.trace('patch got write lock')
 
     try {
       const result = await this.store.patch(id, data)
@@ -138,15 +138,15 @@ export class PersistentPeerStore implements PeerStore {
 
       return result.peer
     } finally {
-      this.#log.trace('patch release write lock')
+      this.log.trace('patch release write lock')
       release()
     }
   }
 
   async merge (id: PeerId, data: PeerData): Promise<Peer> {
-    this.#log.trace('merge await write lock')
+    this.log.trace('merge await write lock')
     const release = await this.store.lock.writeLock()
-    this.#log.trace('merge got write lock')
+    this.log.trace('merge got write lock')
 
     try {
       const result = await this.store.merge(id, data)
@@ -155,7 +155,7 @@ export class PersistentPeerStore implements PeerStore {
 
       return result.peer
     } finally {
-      this.#log.trace('merge release write lock')
+      this.log.trace('merge release write lock')
       release()
     }
   }
@@ -164,7 +164,7 @@ export class PersistentPeerStore implements PeerStore {
     const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN)
 
     if (expectedPeer?.equals(envelope.peerId) === false) {
-      this.#log('envelope peer id was not the expected peer id - expected: %p received: %p', expectedPeer, envelope.peerId)
+      this.log('envelope peer id was not the expected peer id - expected: %p received: %p', expectedPeer, envelope.peerId)
       return false
     }
 
@@ -185,7 +185,7 @@ export class PersistentPeerStore implements PeerStore {
       const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
 
       if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-        this.#log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+        this.log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
         return false
       }
     }

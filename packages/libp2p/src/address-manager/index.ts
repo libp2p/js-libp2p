@@ -73,7 +73,7 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
 }
 
 export class DefaultAddressManager {
-  #log: Logger
+  private readonly log: Logger
   private readonly components: DefaultAddressManagerComponents
   // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
   private readonly listen: string[]
@@ -91,7 +91,7 @@ export class DefaultAddressManager {
     const { listen = [], announce = [] } = init
 
     this.components = components
-    this.#log = components.logger.forComponent('libp2p:address-manager')
+    this.log = components.logger.forComponent('libp2p:address-manager')
     this.listen = listen.map(ma => ma.toString())
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.observed = new Map()
@@ -132,7 +132,7 @@ export class DefaultAddressManager {
     this.components.peerStore.patch(this.components.peerId, {
       multiaddrs: addrs
     })
-      .catch(err => { this.#log.error('error updating addresses', err) })
+      .catch(err => { this.log.error('error updating addresses', err) })
   }
 
   /**

@@ -43,7 +43,7 @@ export interface PubSubComponents {
  * and specifies the API that pubsub routers should have.
  */
 export abstract class PubSubBaseProtocol<Events extends Record<string, any> = PubSubEvents> extends TypedEventEmitter<Events> implements PubSub<Events> {
-  #log: Logger
+  protected log: Logger
 
   public started: boolean
   /**
@@ -99,7 +99,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       maxOutboundStreams = 1
     } = props
 
-    this.#log = components.logger.forComponent('libp2p:pubsub')
+    this.log = components.logger.forComponent('libp2p:pubsub')
     this.components = components
     this.multicodecs = ensureArray(multicodecs)
     this.enabled = props.enabled !== false
@@ -130,7 +130,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       return
     }
 
-    this.#log('starting')
+    this.log('starting')
 
     const registrar = this.components.registrar
     // Incoming streams
@@ -150,7 +150,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     }
     this._registrarTopologyIds = await Promise.all(this.multicodecs.map(async multicodec => registrar.register(multicodec, topology)))
 
-    this.#log('started')
+    this.log('started')
     this.started = true
   }
 
@@ -175,7 +175,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       await registrar.unhandle(multicodec)
     }))
 
-    this.#log('stopping')
+    this.log('stopping')
     for (const peerStreams of this.peers.values()) {
       peerStreams.close()
     }
@@ -183,7 +183,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     this.peers.clear()
     this.subscriptions = new Set()
     this.started = false
-    this.#log('stopped')
+    this.log('stopped')
   }
 
   isStarted (): boolean {
@@ -206,18 +206,18 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     const inboundStream = peer.attachInboundStream(stream)
 
     this.processMessages(peerId, inboundStream, peer)
-      .catch(err => { this.#log(err) })
+      .catch(err => { this.log(err) })
   }
 
   /**
    * Registrar notifies an established connection with pubsub protocol
    */
   protected _onPeerConnected (peerId: PeerId, conn: Connection): void {
-    this.#log('connected %p', peerId)
+    this.log('connected %p', peerId)
 
     // if this connection is already in use for pubsub, ignore it
     if (conn.streams.find(stream => stream.direction === 'outbound' && stream.protocol != null && this.multicodecs.includes(stream.protocol)) != null) {
-      this.#log('outbound pubsub streams already present on connection from %p', peerId)
+      this.log('outbound pubsub streams already present on connection from %p', peerId)
       return
     }
 
@@ -233,14 +233,14 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
         const peer = this.addPeer(peerId, stream.protocol)
         await peer.attachOutboundStream(stream)
       } catch (err: any) {
-        this.#log.error(err)
+        this.log.error(err)
       }
 
       // Immediately send my own subscriptions to the newly established conn
       this.send(peerId, { subscriptions: Array.from(this.subscriptions).map(sub => sub.toString()), subscribe: true })
     })
       .catch(err => {
-        this.#log.error(err)
+        this.log.error(err)
       })
   }
 
@@ -250,7 +250,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   protected _onPeerDisconnected (peerId: PeerId, conn?: Connection): void {
     const idB58Str = peerId.toString()
 
-    this.#log('connection ended', idB58Str)
+    this.log('connection ended', idB58Str)
     this._removePeer(peerId)
   }
 
@@ -266,7 +266,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     }
 
     // else create a new peer streams
-    this.#log('new peer %p', peerId)
+    this.log('new peer %p', peerId)
 
     const peerStreams: PeerStreams = new PeerStreamsImpl(this.components, {
       id: peerId,
@@ -294,7 +294,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     peerStreams.close()
 
     // delete peer streams
-    this.#log('delete peer %p', peerId)
+    this.log('delete peer %p', peerId)
     this.peers.delete(peerId)
 
     // remove peer from topics map
@@ -321,7 +321,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
             for (const msg of (rpcMsg.messages ?? [])) {
               if (msg.from == null || msg.data == null || msg.topic == null) {
-                this.#log('message from %p was missing from, data or topic fields, dropping', peerId)
+                this.log('message from %p was missing from, data or topic fields, dropping', peerId)
                 continue
               }
 
@@ -346,7 +346,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
               })),
               messages
             })
-              .catch(err => { this.#log(err) })
+              .catch(err => { this.log(err) })
           }
         }
       )
@@ -360,16 +360,16 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    */
   async processRpc (from: PeerId, peerStreams: PeerStreams, rpc: PubSubRPC): Promise<boolean> {
     if (!this.acceptFrom(from)) {
-      this.#log('received message from unacceptable peer %p', from)
+      this.log('received message from unacceptable peer %p', from)
       return false
     }
 
-    this.#log('rpc from %p', from)
+    this.log('rpc from %p', from)
 
     const { subscriptions, messages } = rpc
 
     if (subscriptions != null && subscriptions.length > 0) {
-      this.#log('subscription update from %p', from)
+      this.log('subscription update from %p', from)
 
       // update peer subscriptions
       subscriptions.forEach((subOpt) => {
@@ -388,11 +388,11 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     }
 
     if (messages != null && messages.length > 0) {
-      this.#log('messages from %p', from)
+      this.log('messages from %p', from)
 
       this.queue.addAll(messages.map(message => async () => {
         if (message.topic == null || (!this.subscriptions.has(message.topic) && !this.canRelayMessage)) {
-          this.#log('received message we didn\'t subscribe to. Dropping.')
+          this.log('received message we didn\'t subscribe to. Dropping.')
           return false
         }
 
@@ -401,10 +401,10 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
           await this.processMessage(from, msg)
         } catch (err: any) {
-          this.#log.error(err)
+          this.log.error(err)
         }
       }))
-        .catch(err => { this.#log(err) })
+        .catch(err => { this.log(err) })
     }
 
     return true
@@ -447,7 +447,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     try {
       await this.validate(from, msg)
     } catch (err: any) {
-      this.#log('Message is invalid, dropping it. %O', err)
+      this.log('Message is invalid, dropping it. %O', err)
       return
     }
 
@@ -537,13 +537,13 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     const peerStreams = this.peers.get(peer)
 
     if (peerStreams == null) {
-      this.#log.error('Cannot send RPC to %p as there are no streams to it available', peer)
+      this.log.error('Cannot send RPC to %p as there are no streams to it available', peer)
 
       return
     }
 
     if (!peerStreams.isWritable) {
-      this.#log.error('Cannot send RPC to %p as there is no outbound stream to it available', peer)
+      this.log.error('Cannot send RPC to %p as there is no outbound stream to it available', peer)
 
       return
     }
@@ -666,7 +666,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       sequenceNumber: randomSeqno()
     }
 
-    this.#log('publish topic: %s from: %p data: %m', topic, message.from, message.data)
+    this.log('publish topic: %s from: %p data: %m', topic, message.from, message.data)
 
     const rpcMessage = await this.buildMessage(message)
     let emittedToSelf = false
@@ -708,7 +708,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       throw new Error('Pubsub has not started')
     }
 
-    this.#log('subscribe to topic: %s', topic)
+    this.log('subscribe to topic: %s', topic)
 
     if (!this.subscriptions.has(topic)) {
       this.subscriptions.add(topic)
@@ -731,7 +731,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
     const wasSubscribed = this.subscriptions.has(topic)
 
-    this.#log('unsubscribe from %s - am subscribed %s', topic, wasSubscribed)
+    this.log('unsubscribe from %s - am subscribed %s', topic, wasSubscribed)
 
     if (wasSubscribed) {
       this.subscriptions.delete(topic)

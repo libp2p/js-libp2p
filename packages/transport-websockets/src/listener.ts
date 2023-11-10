@@ -24,12 +24,12 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
   private readonly connections: Set<DuplexWebSocket>
   private listeningMultiaddr?: Multiaddr
   private readonly server: WebSocketServer
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: WebSocketListenerComponents, init: WebSocketListenerInit) {
     super()
 
-    this.#log = components.logger.forComponent('libp2p:websockets:listener')
+    this.log = components.logger.forComponent('libp2p:websockets:listener')
     // Keep track of open connections to destroy when the listener is closed
     this.connections = new Set<DuplexWebSocket>()
 
@@ -41,7 +41,7 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
         const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
           logger: components.logger
         })
-        this.#log('new inbound connection %s', maConn.remoteAddr)
+        this.log('new inbound connection %s', maConn.remoteAddr)
 
         this.connections.add(stream)
 
@@ -52,7 +52,7 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
         try {
           void init.upgrader.upgradeInbound(maConn)
             .then((conn) => {
-              this.#log('inbound connection %s upgraded', maConn.remoteAddr)
+              this.log('inbound connection %s upgraded', maConn.remoteAddr)
 
               if (init?.handler != null) {
                 init?.handler(conn)
@@ -63,16 +63,16 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
               }))
             })
             .catch(async err => {
-              this.#log.error('inbound connection failed to upgrade', err)
+              this.log.error('inbound connection failed to upgrade', err)
 
               await maConn.close().catch(err => {
-                this.#log.error('inbound connection failed to close after upgrade failed', err)
+                this.log.error('inbound connection failed to close after upgrade failed', err)
               })
             })
         } catch (err) {
-          this.#log.error('inbound connection failed to upgrade', err)
+          this.log.error('inbound connection failed to upgrade', err)
           maConn.close().catch(err => {
-            this.#log.error('inbound connection failed to close after upgrade failed', err)
+            this.log.error('inbound connection failed to close after upgrade failed', err)
           })
         }
       }

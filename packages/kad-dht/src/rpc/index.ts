@@ -34,12 +34,12 @@ export interface RPCComponents extends GetValueHandlerComponents, PutValueHandle
 export class RPC {
   private readonly handlers: Record<string, DHTMessageHandler>
   private readonly routingTable: RoutingTable
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: RPCComponents, init: RPCInit) {
     const { providers, peerRouting, validators, lan } = init
 
-    this.#log = components.logger.forComponent('libp2p:kad-dht:rpc')
+    this.log = components.logger.forComponent('libp2p:kad-dht:rpc')
     this.routingTable = init.routingTable
     this.handlers = {
       [MESSAGE_TYPE.GET_VALUE]: new GetValueHandler(components, { peerRouting }),
@@ -58,14 +58,14 @@ export class RPC {
     try {
       await this.routingTable.add(peerId)
     } catch (err: any) {
-      this.#log.error('Failed to update the kbucket store', err)
+      this.log.error('Failed to update the kbucket store', err)
     }
 
     // get handler & execute it
     const handler = this.handlers[msg.type]
 
     if (handler == null) {
-      this.#log.error(`no handler found for message type: ${msg.type}`)
+      this.log.error(`no handler found for message type: ${msg.type}`)
       return
     }
 
@@ -83,7 +83,7 @@ export class RPC {
       try {
         await this.routingTable.add(peerId)
       } catch (err: any) {
-        this.#log.error(err)
+        this.log.error(err)
       }
 
       const self = this // eslint-disable-line @typescript-eslint/no-this-alias
@@ -95,7 +95,7 @@ export class RPC {
           for await (const msg of source) {
             // handle the message
             const desMessage = Message.deserialize(msg)
-            self.#log('incoming %s from %p', desMessage.type, peerId)
+            self.log('incoming %s from %p', desMessage.type, peerId)
             const res = await self.handleMessage(peerId, desMessage)
 
             // Not all handlers will return a response
@@ -109,7 +109,7 @@ export class RPC {
       )
     })
       .catch(err => {
-        this.#log.error(err)
+        this.log.error(err)
       })
   }
 }

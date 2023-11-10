@@ -42,7 +42,7 @@
  * const libp2p = await createLibp2p(options)
  *
  * libp2p.on('peer:discovery', function (peerId) {
- *   console.this.#log('found peer: ', peerId.toB58String())
+ *   console.this.log('found peer: ', peerId.toB58String())
  * })
  * ```
  */
@@ -101,7 +101,7 @@ export interface BootstrapComponents {
 class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   static tag = 'bootstrap'
 
-  readonly #log: Logger
+  private readonly log: Logger
   private timer?: ReturnType<typeof setTimeout>
   private readonly list: PeerInfo[]
   private readonly timeout: number
@@ -115,13 +115,13 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     super()
 
     this.components = components
-    this.#log = components.logger.forComponent('libp2p:bootstrap')
+    this.log = components.logger.forComponent('libp2p:bootstrap')
     this.timeout = options.timeout ?? DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT
     this.list = []
 
     for (const candidate of options.list) {
       if (!P2P.matches(candidate)) {
-        this.#log.error('Invalid multiaddr')
+        this.log.error('Invalid multiaddr')
         continue
       }
 
@@ -129,7 +129,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       const peerIdStr = ma.getPeerId()
 
       if (peerIdStr == null) {
-        this.#log.error('Invalid bootstrap multiaddr without peer id')
+        this.log.error('Invalid bootstrap multiaddr without peer id')
         continue
       }
 
@@ -160,11 +160,11 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       return
     }
 
-    this.#log('Starting bootstrap node discovery, discovering peers after %s ms', this.timeout)
+    this.log('Starting bootstrap node discovery, discovering peers after %s ms', this.timeout)
     this.timer = setTimeout(() => {
       void this._discoverBootstrapPeers()
         .catch(err => {
-          this.#log.error(err)
+          this.log.error(err)
         })
     }, this.timeout)
   }

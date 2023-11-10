@@ -26,7 +26,7 @@ export interface MulticastDNSComponents {
 export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   public mdns?: multicastDNS.MulticastDNS
 
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly broadcast: boolean
   private readonly interval: number
   private readonly serviceTag: string
@@ -39,7 +39,7 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
   constructor (components: MulticastDNSComponents, init: MulticastDNSInit = {}) {
     super()
 
-    this.#log = components.logger.forComponent('libp2p:mdns')
+    this.log = components.logger.forComponent('libp2p:mdns')
     this.broadcast = init.broadcast !== false
     this.interval = init.interval ?? (1e3 * 10)
     this.serviceTag = init.serviceTag ?? '_p2p._udp.local'
@@ -83,7 +83,7 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
     this.mdns.on('error', this._onMdnsError)
 
     this._queryInterval = query.queryLAN(this.mdns, this.serviceTag, this.interval, {
-      log: this.#log
+      log: this.log
     })
   }
 
@@ -92,7 +92,7 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
       return
     }
 
-    this.#log.trace('received incoming mDNS query')
+    this.log.trace('received incoming mDNS query')
     query.gotQuery(
       event,
       this.mdns,
@@ -100,37 +100,37 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
       this.components.addressManager.getAddresses(),
       this.serviceTag,
       this.broadcast, {
-        log: this.#log
+        log: this.log
       }
     )
   }
 
   _onMdnsResponse (event: multicastDNS.ResponsePacket): void {
-    this.#log.trace('received mDNS query response')
+    this.log.trace('received mDNS query response')
 
     try {
       const foundPeer = query.gotResponse(event, this.peerName, this.serviceTag, {
-        log: this.#log
+        log: this.log
       })
 
       if (foundPeer != null) {
-        this.#log('discovered peer in mDNS query response %p', foundPeer.id)
+        this.log('discovered peer in mDNS query response %p', foundPeer.id)
 
         this.dispatchEvent(new CustomEvent<PeerInfo>('peer', {
           detail: foundPeer
         }))
       }
     } catch (err) {
-      this.#log.error('Error processing peer response', err)
+      this.log.error('Error processing peer response', err)
     }
   }
 
   _onMdnsWarning (err: Error): void {
-    this.#log.error('mdns warning', err)
+    this.log.error('mdns warning', err)
   }
 
   _onMdnsError (err: Error): void {
-    this.#log.error('mdns error', err)
+    this.log.error('mdns error', err)
   }
 
   /**

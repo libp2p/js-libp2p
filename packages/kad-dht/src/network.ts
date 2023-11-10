@@ -34,7 +34,7 @@ interface NetworkEvents {
  * Handle network operations for the dht
  */
 export class Network extends TypedEventEmitter<NetworkEvents> implements Startable {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly protocol: string
   private running: boolean
   private readonly components: KadDHTComponents
@@ -47,7 +47,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
     const { protocol, lan } = init
     this.components = components
-    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
     this.running = false
     this.protocol = protocol
   }
@@ -85,7 +85,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       return
     }
 
-    this.#log('sending %s to %p', msg.type, to)
+    this.log('sending %s to %p', msg.type, to)
     yield dialPeerEvent({ peer: to }, options)
     yield sendQueryEvent({ to, type: msg.type }, options)
 
@@ -121,7 +121,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       return
     }
 
-    this.#log('sending %s to %p', msg.type, to)
+    this.log('sending %s to %p', msg.type, to)
     yield dialPeerEvent({ peer: to }, options)
     yield sendQueryEvent({ to, type: msg.type }, options)
 

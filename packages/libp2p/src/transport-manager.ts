@@ -25,7 +25,7 @@ export interface DefaultTransportManagerComponents {
 }
 
 export class DefaultTransportManager implements TransportManager, Startable {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
   private readonly listeners: Map<string, Listener[]>
@@ -33,7 +33,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
   private started: boolean
 
   constructor (components: DefaultTransportManagerComponents, init: TransportManagerInit = {}) {
-    this.#log = components.logger.forComponent('libp2p:transports')
+    this.log = components.logger.forComponent('libp2p:transports')
     this.components = components
     this.started = false
     this.transports = new Map<string, Transport>()
@@ -58,7 +58,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
       throw new CodeError(`There is already a transport with the tag ${tag}`, codes.ERR_DUPLICATE_TRANSPORT)
     }
 
-    this.#log('adding transport %s', tag)
+    this.log('adding transport %s', tag)
 
     this.transports.set(tag, transport)
 
@@ -88,7 +88,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
   async stop (): Promise<void> {
     const tasks = []
     for (const [key, listeners] of this.listeners) {
-      this.#log('closing listeners for %s', key)
+      this.log('closing listeners for %s', key)
       while (listeners.length > 0) {
         const listener = listeners.pop()
 
@@ -101,7 +101,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     }
 
     await Promise.all(tasks)
-    this.#log('all listeners closed')
+    this.log('all listeners closed')
     for (const key of this.listeners.keys()) {
       this.listeners.set(key, [])
     }
@@ -182,7 +182,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     }
 
     if (addrs == null || addrs.length === 0) {
-      this.#log('no addresses were provided for listening, this node is dial only')
+      this.log('no addresses were provided for listening, this node is dial only')
       return
     }
 
@@ -194,7 +194,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
-        this.#log('creating listener for %s on %a', key, addr)
+        this.log('creating listener for %s on %a', key, addr)
         const listener = transport.createListener({
           upgrader: this.components.upgrader
         })
@@ -253,7 +253,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
       if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
         throw new CodeError(message, codes.ERR_NO_VALID_ADDRESSES)
       }
-      this.#log(`libp2p in dial mode only: ${message}`)
+      this.log(`libp2p in dial mode only: ${message}`)
     }
   }
 
@@ -263,11 +263,11 @@ export class DefaultTransportManager implements TransportManager, Startable {
    */
   async remove (key: string): Promise<void> {
     const listeners = this.listeners.get(key) ?? []
-    this.#log.trace('removing transport %s', key)
+    this.log.trace('removing transport %s', key)
 
     // Close any running listeners
     const tasks = []
-    this.#log.trace('closing listeners for %s', key)
+    this.log.trace('closing listeners for %s', key)
     while (listeners.length > 0) {
       const listener = listeners.pop()
 

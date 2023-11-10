@@ -30,12 +30,12 @@ export class GetProvidersHandler implements DHTMessageHandler {
   private readonly providers: Providers
   private readonly lan: boolean
   private readonly peerStore: PeerStore
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: GetProvidersHandlerComponents, init: GetProvidersHandlerInit) {
     const { peerRouting, providers, lan } = init
 
-    this.#log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:get-providers')
+    this.log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:get-providers')
     this.peerStore = components.peerStore
     this.peerRouting = peerRouting
     this.providers = providers
@@ -50,7 +50,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
       throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
     }
 
-    this.#log('%p asking for providers for %s', peerId, cid)
+    this.log('%p asking for providers for %s', peerId, cid)
 
     const [peers, closer] = await Promise.all([
       this.providers.getProviders(cid),
@@ -69,7 +69,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
       response.closerPeers = closerPeers
     }
 
-    this.#log('got %s providers %s closerPeers', providerPeers.length, closerPeers.length)
+    this.log('got %s providers %s closerPeers', providerPeers.length, closerPeers.length)
     return response
   }
 

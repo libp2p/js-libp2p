@@ -125,13 +125,13 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
   public readonly components: KadDHTComponents
   private readonly contentRouting: ContentRouting
   private readonly peerRouting: PeerRouting
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: KadDHTComponents, init: KadDHTInit = {}) {
     super()
 
     this.components = components
-    this.#log = components.logger.forComponent('libp2p:kad-dht')
+    this.log = components.logger.forComponent('libp2p:kad-dht')
 
     this.wan = new DefaultKadDHT(components, {
       protocolPrefix: '/ipfs',
@@ -164,7 +164,7 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
     // mode when the node's peer data is updated with publicly dialable addresses
     if (init.clientMode == null) {
       components.events.addEventListener('self:peer:update', (evt) => {
-        this.#log('received update of self-peer info')
+        this.log('received update of self-peer info')
         const hasPublicAddress = evt.detail.peer.addresses
           .some(({ multiaddr }) => multiaddrIsPublic(multiaddr))
 
@@ -177,7 +177,7 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
             }
           })
           .catch(err => {
-            this.#log.error('error setting dht server mode', err)
+            this.log.error('error setting dht server mode', err)
           })
       })
     }
@@ -322,7 +322,7 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
       }
 
       if (event.name === 'PEER_RESPONSE' && event.messageName === 'ADD_PROVIDER') {
-        this.#log('sent provider record for %s to %p', key, event.from)
+        this.log('sent provider record for %s to %p', key, event.from)
         success++
       }
     }

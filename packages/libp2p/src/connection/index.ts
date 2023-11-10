@@ -74,7 +74,7 @@ export class ConnectionImpl implements Connection {
    */
   private readonly _getStreams: () => Stream[]
 
-  readonly #log: Logger
+  private readonly log: Logger
 
   /**
    * An implementation of the js-libp2p connection.
@@ -92,7 +92,7 @@ export class ConnectionImpl implements Connection {
     this.multiplexer = init.multiplexer
     this.encryption = init.encryption
     this.transient = init.transient ?? false
-    this.#log = init.logger.forComponent('libp2p:connection')
+    this.log = init.logger.forComponent('libp2p:connection')
 
     if (this.remoteAddr.getPeerId() == null) {
       this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`)
@@ -151,7 +151,7 @@ export class ConnectionImpl implements Connection {
       return
     }
 
-    this.#log('closing connection to %a', this.remoteAddr)
+    this.log('closing connection to %a', this.remoteAddr)
 
     this.status = 'closing'
 
@@ -166,35 +166,35 @@ export class ConnectionImpl implements Connection {
     }
 
     try {
-      this.#log.trace('closing all streams')
+      this.log.trace('closing all streams')
 
       // close all streams gracefully - this can throw if we're not multiplexed
       await Promise.all(
         this.streams.map(async s => s.close(options))
       )
 
-      this.#log.trace('closing underlying transport')
+      this.log.trace('closing underlying transport')
 
       // close raw connection
       await this._close(options)
 
-      this.#log.trace('updating timeline with close time')
+      this.log.trace('updating timeline with close time')
 
       this.status = 'closed'
       this.timeline.close = Date.now()
     } catch (err: any) {
-      this.#log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
+      this.log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
       this.abort(err)
     }
   }
 
   abort (err: Error): void {
-    this.#log.error('aborting connection to %a due to error', this.remoteAddr, err)
+    this.log.error('aborting connection to %a due to error', this.remoteAddr, err)
 
     this.status = 'closing'
     this.streams.forEach(s => { s.abort(err) })
 
-    this.#log.error('all streams aborted', this.streams.length)
+    this.log.error('all streams aborted', this.streams.length)
 
     // Abort raw connection
     this._abort(err)

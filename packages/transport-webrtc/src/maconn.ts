@@ -32,7 +32,7 @@ export interface WebRTCMultiaddrConnectionComponents {
 }
 
 export class WebRTCMultiaddrConnection implements MultiaddrConnection {
-  readonly #log: Logger
+  private readonly log: Logger
   /**
    * WebRTC Peer Connection
    */
@@ -64,7 +64,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   sink: Sink<Source<Uint8Array>, Promise<void>> = nopSink
 
   constructor (components: WebRTCMultiaddrConnectionComponents, init: WebRTCMultiaddrConnectionInit) {
-    this.#log = components.logger.forComponent('libp2p:webrtc:maconn')
+    this.log = components.logger.forComponent('libp2p:webrtc:maconn')
     this.remoteAddr = init.remoteAddr
     this.timeline = init.timeline
     this.peerConnection = init.peerConnection
@@ -72,7 +72,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
     const initialState = this.peerConnection.connectionState
 
     this.peerConnection.onconnectionstatechange = () => {
-      this.#log.trace('peer connection state change', this.peerConnection.connectionState, 'initial state', initialState)
+      this.log.trace('peer connection state change', this.peerConnection.connectionState, 'initial state', initialState)
 
       if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
         // nothing else to do but close the connection
@@ -82,7 +82,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   }
 
   async close (options?: AbortOptions): Promise<void> {
-    this.#log.trace('closing connection')
+    this.log.trace('closing connection')
 
     this.peerConnection.close()
     this.timeline.close = Date.now()
@@ -90,7 +90,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   }
 
   abort (err: Error): void {
-    this.#log.error('closing connection due to error', err)
+    this.log.error('closing connection due to error', err)
 
     this.peerConnection.close()
     this.timeline.close = Date.now()

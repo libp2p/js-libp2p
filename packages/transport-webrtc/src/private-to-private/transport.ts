@@ -52,7 +52,7 @@ export interface WebRTCTransportMetrics {
 }
 
 export class WebRTCTransport implements Transport, Startable {
-  readonly #log: Logger
+  private readonly log: Logger
   private _started = false
   private readonly metrics?: WebRTCTransportMetrics
   private readonly shutdownController: AbortController
@@ -61,7 +61,7 @@ export class WebRTCTransport implements Transport, Startable {
     private readonly components: WebRTCTransportComponents,
     private readonly init: WebRTCTransportInit = {}
   ) {
-    this.#log = components.logger.forComponent('libp2p:webrtc')
+    this.log = components.logger.forComponent('libp2p:webrtc')
     this.shutdownController = new AbortController()
 
     if (components.metrics != null) {
@@ -84,7 +84,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   async start (): Promise<void> {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
-      this._onProtocol(data).catch(err => { this.#log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
+      this._onProtocol(data).catch(err => { this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
     }, {
       runOnTransientConnection: true
     })
@@ -119,7 +119,7 @@ export class WebRTCTransport implements Transport, Startable {
    * <relay address>/p2p/<relay-peer>/p2p-circuit/webrtc/p2p/<destination-peer>
   */
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
-    this.#log.trace('dialing address: %a', ma)
+    this.log.trace('dialing address: %a', ma)
 
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
@@ -134,7 +134,7 @@ export class WebRTCTransport implements Transport, Startable {
       signal: options.signal,
       connectionManager: this.components.connectionManager,
       transportManager: this.components.transportManager,
-      log: this.#log
+      log: this.log
     })
 
     const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
@@ -170,7 +170,7 @@ export class WebRTCTransport implements Transport, Startable {
         connection,
         stream,
         signal,
-        log: this.#log
+        log: this.log
       })
 
       const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
@@ -204,7 +204,7 @@ export class WebRTCTransport implements Transport, Startable {
     const shutDownListener = (): void => {
       webRTCConn.close()
         .catch(err => {
-          this.#log.error('could not close WebRTCMultiaddrConnection', err)
+          this.log.error('could not close WebRTCMultiaddrConnection', err)
         })
     }
 

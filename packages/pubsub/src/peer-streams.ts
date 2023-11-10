@@ -46,12 +46,12 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
    */
   private readonly _inboundAbortController: AbortController
   private closed: boolean
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: PeerStreamsComponents, init: PeerStreamsInit) {
     super()
 
-    this.#log = components.logger.forComponent('libp2p-pubsub:peer-streams')
+    this.log = components.logger.forComponent('libp2p-pubsub:peer-streams')
     this.id = init.id
     this.protocol = init.protocol
 
@@ -127,7 +127,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
         if (this._rawOutboundStream != null) { // eslint-disable-line @typescript-eslint/prefer-optional-chain
           this._rawOutboundStream.closeWrite()
             .catch(err => {
-              this.#log('error closing outbound stream', err)
+              this.log('error closing outbound stream', err)
             })
         }
 
@@ -144,7 +144,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
       (source) => lp.encode(source),
       this._rawOutboundStream
     ).catch((err: Error) => {
-      this.#log.error(err)
+      this.log.error(err)
     })
 
     // Only emit if the connection is new

@@ -85,7 +85,7 @@ export interface ProtectorComponents {
 
 class PreSharedKeyConnectionProtector implements ConnectionProtector {
   public tag: string
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly psk: Uint8Array
   private readonly enabled: boolean
 
@@ -94,7 +94,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    * for wrapping existing connections in a private encryption stream.
    */
   constructor (components: ProtectorComponents, init: ProtectorInit) {
-    this.#log = components.logger.forComponent('libp2p:pnet')
+    this.log = components.logger.forComponent('libp2p:pnet')
     this.enabled = init.enabled !== false
 
     if (this.enabled) {
@@ -122,7 +122,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     }
 
     // Exchange nonces
-    this.#log('protecting the connection')
+    this.log('protecting the connection')
     const localNonce = randomBytes(NONCE_LENGTH)
 
     const shake = handshake(connection)
@@ -138,7 +138,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     shake.rest()
 
     // Create the boxing/unboxing pipe
-    this.#log('exchanged nonces')
+    this.log('exchanged nonces')
     const [internal, external] = duplexPair<Uint8Array>()
     pipe(
       external,
@@ -149,7 +149,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
       external
-    ).catch(this.#log.error)
+    ).catch(this.log.error)
 
     return {
       ...connection,

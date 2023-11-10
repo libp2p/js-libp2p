@@ -32,7 +32,7 @@ export interface RoutingTableRefreshInit {
  * retrieval for peers.
  */
 export class RoutingTableRefresh {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly peerRouting: PeerRouting
   private readonly routingTable: RoutingTable
   private readonly refreshInterval: number
@@ -42,7 +42,7 @@ export class RoutingTableRefresh {
 
   constructor (components: RoutingTableRefreshComponents, init: RoutingTableRefreshInit) {
     const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = init
-    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
     this.peerRouting = peerRouting
     this.routingTable = routingTable
     this.refreshInterval = refreshInterval ?? TABLE_REFRESH_INTERVAL
@@ -53,7 +53,7 @@ export class RoutingTableRefresh {
   }
 
   async start (): Promise<void> {
-    this.#log(`refreshing routing table every ${this.refreshInterval}ms`)
+    this.log(`refreshing routing table every ${this.refreshInterval}ms`)
     this.refreshTable(true)
   }
 
@@ -70,13 +70,13 @@ export class RoutingTableRefresh {
    * peers will tell us who they know who is close to the fake ID
    */
   refreshTable (force: boolean = false): void {
-    this.#log('refreshing routing table')
+    this.log('refreshing routing table')
 
     const prefixLength = this._maxCommonPrefix()
     const refreshCpls = this._getTrackedCommonPrefixLengthsForRefresh(prefixLength)
 
-    this.#log(`max common prefix length ${prefixLength}`)
-    this.#log(`tracked CPLs [ ${refreshCpls.map(date => date.toISOString()).join(', ')} ]`)
+    this.log(`max common prefix length ${prefixLength}`)
+    this.log(`tracked CPLs [ ${refreshCpls.map(date => date.toISOString()).join(', ')} ]`)
 
     /**
      * If we see a gap at a common prefix length in the Routing table, we ONLY refresh up until
@@ -105,16 +105,16 @@ export class RoutingTableRefresh {
               try {
                 await this._refreshCommonPrefixLength(n, lastRefresh, force)
               } catch (err: any) {
-                this.#log.error(err)
+                this.log.error(err)
               }
             }
           }
         } catch (err: any) {
-          this.#log.error(err)
+          this.log.error(err)
         }
       })
     ).catch(err => {
-      this.#log.error(err)
+      this.log.error(err)
     }).then(() => {
       this.refreshTimeoutId = setTimeout(this.refreshTable, this.refreshInterval)
 
@@ -122,25 +122,25 @@ export class RoutingTableRefresh {
         this.refreshTimeoutId.unref()
       }
     }).catch(err => {
-      this.#log.error(err)
+      this.log.error(err)
     })
   }
 
   async _refreshCommonPrefixLength (cpl: number, lastRefresh: Date, force: boolean): Promise<void> {
     if (!force && lastRefresh.getTime() > (Date.now() - this.refreshInterval)) {
-      this.#log('not running refresh for cpl %s as time since last refresh not above interval', cpl)
+      this.log('not running refresh for cpl %s as time since last refresh not above interval', cpl)
       return
     }
 
     // gen a key for the query to refresh the cpl
     const peerId = await this._generateRandomPeerId(cpl)
 
-    this.#log('starting refreshing cpl %s with key %p (routing table size was %s)', cpl, peerId, this.routingTable.size)
+    this.log('starting refreshing cpl %s with key %p (routing table size was %s)', cpl, peerId, this.routingTable.size)
 
     const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), { signal: AbortSignal.timeout(this.refreshQueryTimeout) }))
 
-    this.#log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
-    this.#log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
+    this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
+    this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
   }
 
   _getTrackedCommonPrefixLengthsForRefresh (maxCommonPrefix: number): Date[] {

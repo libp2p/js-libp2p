@@ -16,15 +16,15 @@ export interface AddProviderHandlerInit {
 
 export class AddProviderHandler implements DHTMessageHandler {
   private readonly providers: Providers
-  #log: Logger
+  private readonly log: Logger
 
   constructor (components: AddProviderComponents, init: AddProviderHandlerInit) {
-    this.#log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:add-provider')
+    this.log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:add-provider')
     this.providers = init.providers
   }
 
   async handle (peerId: PeerId, msg: Message): Promise<Message | undefined> {
-    this.#log('start')
+    this.log('start')
 
     if (msg.key == null || msg.key.length === 0) {
       throw new CodeError('Missing key', 'ERR_MISSING_KEY')
@@ -39,23 +39,23 @@ export class AddProviderHandler implements DHTMessageHandler {
     }
 
     if (msg.providerPeers == null || msg.providerPeers.length === 0) {
-      this.#log.error('no providers found in message')
+      this.log.error('no providers found in message')
     }
 
     await Promise.all(
       msg.providerPeers.map(async (pi) => {
         // Ignore providers not from the originator
         if (!pi.id.equals(peerId)) {
-          this.#log('invalid provider peer %p from %p', pi.id, peerId)
+          this.log('invalid provider peer %p from %p', pi.id, peerId)
           return
         }
 
         if (pi.multiaddrs.length < 1) {
-          this.#log('no valid addresses for provider %p. Ignore', peerId)
+          this.log('no valid addresses for provider %p. Ignore', peerId)
           return
         }
 
-        this.#log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => m.toString()))
+        this.log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => m.toString()))
 
         await this.providers.addProvider(cid, pi.id)
       })

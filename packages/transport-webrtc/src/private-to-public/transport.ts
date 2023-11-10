@@ -59,12 +59,12 @@ export interface WebRTCTransportDirectInit {
 }
 
 export class WebRTCDirectTransport implements Transport {
-  readonly #log: Logger
+  private readonly log: Logger
   private readonly metrics?: WebRTCMetrics
   private readonly components: WebRTCDirectTransportComponents
   private readonly init: WebRTCTransportDirectInit
   constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
-    this.#log = components.logger.forComponent('libp2p:webrtc-direct')
+    this.log = components.logger.forComponent('libp2p:webrtc-direct')
     this.components = components
     this.init = init
     if (components.metrics != null) {
@@ -82,7 +82,7 @@ export class WebRTCDirectTransport implements Transport {
    */
   async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options)
-    this.#log('dialing address: %a', ma)
+    this.log('dialing address: %a', ma)
     return rawConn
   }
 
@@ -145,7 +145,7 @@ export class WebRTCDirectTransport implements Transport {
         const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
         const handshakeTimeout = setTimeout(() => {
           const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
-          this.#log.error(error)
+          this.log.error(error)
           this.metrics?.dialerEvents.increment({ open_error: true })
           reject(dataChannelError('data', error))
         }, HANDSHAKE_TIMEOUT_MS)
@@ -160,7 +160,7 @@ export class WebRTCDirectTransport implements Transport {
           clearTimeout(handshakeTimeout)
           const errorTarget = event.target?.toString() ?? 'not specified'
           const error = `Error opening a data channel for handshaking: ${errorTarget}`
-          this.#log.error(error)
+          this.log.error(error)
           // NOTE: We use unknown error here but this could potentially be considered a reset by some standards.
           this.metrics?.dialerEvents.increment({ unknown_error: true })
           reject(dataChannelError('data', error))
@@ -232,7 +232,7 @@ export class WebRTCDirectTransport implements Transport {
           case 'disconnected':
           case 'closed':
             maConn.close().catch((err) => {
-              this.#log.error('error closing connection', err)
+              this.log.error('error closing connection', err)
             }).finally(() => {
               // Remove the event listener once the connection is closed
               controller.abort()
@@ -273,7 +273,7 @@ export class WebRTCDirectTransport implements Transport {
     }
 
     const localFingerprint = sdp.getLocalFingerprint(pc, {
-      log: this.#log
+      log: this.log
     })
     if (localFingerprint == null) {
       throw invalidArgument('no local fingerprint found')

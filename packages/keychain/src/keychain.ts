@@ -85,14 +85,14 @@ function DsInfoName (name: string): Key {
 export class DefaultKeychain implements Keychain {
   private readonly components: KeychainComponents
   private readonly init: KeychainInit
-  #log: Logger
+  private readonly log: Logger
 
   /**
    * Creates a new instance of a key chain
    */
   constructor (components: KeychainComponents, init: KeychainInit) {
     this.components = components
-    this.#log = components.logger.forComponent('libp2p:keychain')
+    this.log = components.logger.forComponent('libp2p:keychain')
     this.init = mergeOptions(defaultOptions, init)
 
     // Enforce NIST SP 800-132
@@ -263,7 +263,7 @@ export class DefaultKeychain implements Keychain {
       return JSON.parse(uint8ArrayToString(res))
     } catch (err: any) {
       await randomDelay()
-      this.#log.error(err)
+      this.log.error(err)
       throw new CodeError(`Key '${name}' does not exist.`, codes.ERR_KEY_NOT_FOUND)
     }
   }
@@ -501,7 +501,7 @@ export class DefaultKeychain implements Keychain {
       return uint8ArrayToString(res)
     } catch (err: any) {
       await randomDelay()
-      this.#log.error(err)
+      this.log.error(err)
       throw new CodeError(`Key '${name}' does not exist.`, codes.ERR_KEY_NOT_FOUND)
     }
   }
@@ -522,7 +522,7 @@ export class DefaultKeychain implements Keychain {
       await randomDelay()
       throw new CodeError(`Invalid pass length ${newPass.length}`, codes.ERR_INVALID_PASS_LENGTH)
     }
-    this.#log('recreating keychain')
+    this.log('recreating keychain')
     const cached = privates.get(this)
 
     if (cached == null) {
@@ -558,6 +558,6 @@ export class DefaultKeychain implements Keychain {
       batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
       await batch.commit()
     }
-    this.#log('keychain reconstructed')
+    this.log('keychain reconstructed')
   }
 }
