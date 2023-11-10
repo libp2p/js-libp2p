@@ -5,6 +5,15 @@
 
 * add browser-to-browser test for bi-directional communication ([#172](https://github.com/libp2p/js-libp2p-webrtc/issues/172)) ([1ec3d8a](https://github.com/libp2p/js-libp2p-webrtc/commit/1ec3d8a8b611d5227f430037e2547fd86d115eaa))
 
+### [3.2.11](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.10...webrtc-v3.2.11) (2023-11-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.20 to ^0.46.21
+
 ### [3.2.10](https://www.github.com/libp2p/js-libp2p/compare/webrtc-v3.2.9...webrtc-v3.2.10) (2023-11-07)
 
 
