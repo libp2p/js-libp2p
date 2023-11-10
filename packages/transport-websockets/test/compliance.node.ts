@@ -2,6 +2,7 @@
 
 import http from 'http'
 import tests from '@libp2p/interface-compliance-tests/transport'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
@@ -11,7 +12,9 @@ import type { Listener } from '@libp2p/interface/transport'
 describe('interface-transport compliance', () => {
   tests({
     async setup () {
-      const ws = webSockets({ filter: filters.all })()
+      const ws = webSockets({ filter: filters.all })({
+        logger: defaultLogger()
+      })
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
         multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),

@@ -1,4 +1,3 @@
-import { logger } from '@libp2p/logger'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -16,8 +15,8 @@ import type { Providers } from '../providers.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
+import type { Logger } from '@libp2p/interface'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { Logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 
@@ -31,7 +30,7 @@ export interface ContentRoutingInit {
 }
 
 export class ContentRouting {
-  private readonly log: Logger
+  readonly #log: Logger
   private readonly components: KadDHTComponents
   private readonly network: Network
   private readonly peerRouting: PeerRouting
@@ -43,7 +42,7 @@ export class ContentRouting {
     const { network, peerRouting, queryManager, routingTable, providers, lan } = init
 
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
+    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
     this.network = network
     this.peerRouting = peerRouting
     this.queryManager = queryManager
@@ -56,7 +55,7 @@ export class ContentRouting {
    * are contactable on the given multiaddrs
    */
   async * provide (key: CID, multiaddrs: Multiaddr[], options: QueryOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
-    this.log('provide %s', key)
+    this.#log('provide %s', key)
 
     // Add peer as provider
     await this.providers.addProvider(key, this.components.peerId)
@@ -77,21 +76,21 @@ export class ContentRouting {
 
         const events = []
 
-        this.log('putProvider %s to %p', key, event.peer.id)
+        this.#log('putProvider %s to %p', key, event.peer.id)
 
         try {
-          this.log('sending provider record for %s to %p', key, event.peer.id)
+          this.#log('sending provider record for %s to %p', key, event.peer.id)
 
           for await (const sendEvent of this.network.sendMessage(event.peer.id, msg, options)) {
             if (sendEvent.name === 'PEER_RESPONSE') {
-              this.log('sent provider record for %s to %p', key, event.peer.id)
+              this.#log('sent provider record for %s to %p', key, event.peer.id)
               sent++
             }
 
             events.push(sendEvent)
           }
         } catch (err: any) {
-          this.log.error('error sending provide record to peer %p', event.peer.id, err)
+          this.#log.error('error sending provide record to peer %p', event.peer.id, err)
           events.push(queryErrorEvent({ from: event.peer.id, error: err }, options))
         }
 
@@ -114,7 +113,7 @@ export class ContentRouting {
       }
     )
 
-    this.log('sent provider records to %d peers', sent)
+    this.#log('sent provider records to %d peers', sent)
   }
 
   /**
@@ -125,7 +124,7 @@ export class ContentRouting {
     const target = key.multihash.bytes
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
-    this.log('findProviders %c', key)
+    this.#log('findProviders %c', key)
 
     const provs = await this.providers.getProviders(key)
 
@@ -146,7 +145,7 @@ export class ContentRouting {
             throw err
           }
 
-          this.log('no peer store entry for %p', peerId)
+          this.#log('no peer store entry for %p', peerId)
         }
       }
 
@@ -177,7 +176,7 @@ export class ContentRouting {
       yield event
 
       if (event.name === 'PEER_RESPONSE') {
-        this.log('Found %d provider entries for %c and %d closer peers', event.providers.length, key, event.closer.length)
+        this.#log('Found %d provider entries for %c and %d closer peers', event.providers.length, key, event.closer.length)
 
         const newProviders = []
 

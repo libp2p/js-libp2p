@@ -279,7 +279,8 @@ class CircuitRelayTransport implements Transport {
       const maConn = streamToMaConnection({
         stream: pbstr.unwrap(),
         remoteAddr: ma,
-        localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`)
+        localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`),
+        logger: this.logger
       })
 
       this.#log('new outbound transient connection %a', maConn.remoteAddr)
@@ -379,7 +380,8 @@ class CircuitRelayTransport implements Transport {
     const maConn = streamToMaConnection({
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
-      localAddr
+      localAddr,
+      logger: this.logger
     })
 
     this.#log('new inbound transient connection %a', maConn.remoteAddr)

@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -9,8 +8,6 @@ import type { LoggerOptions } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
-
-const log = logger('libp2p:circuit-relay:utils')
 
 async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }, options: LoggerOptions): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
   const limitBytes = limit.remaining
@@ -77,7 +74,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
     void dst.sink(dataLimit == null ? src.source : countStreamBytes(src.source, dataLimit, options))
       .catch(err => {
-        log.error('error while relaying streams src -> dst', err)
+        options.log.error('error while relaying streams src -> dst', err)
         abortStreams(err)
       })
       .finally(() => {
@@ -100,7 +97,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
     void src.sink(dataLimit == null ? dst.source : countStreamBytes(dst.source, dataLimit, options))
       .catch(err => {
-        log.error('error while relaying streams dst -> src', err)
+        options.log.error('error while relaying streams dst -> src', err)
         abortStreams(err)
       })
       .finally(() => {

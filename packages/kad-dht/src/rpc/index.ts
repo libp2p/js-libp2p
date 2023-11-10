@@ -1,4 +1,3 @@
-import { type Logger, logger } from '@libp2p/logger'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
@@ -12,6 +11,7 @@ import type { Validators } from '../index.js'
 import type { PeerRouting } from '../peer-routing'
 import type { Providers } from '../providers'
 import type { RoutingTable } from '../routing-table'
+import type { Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 
@@ -34,20 +34,20 @@ export interface RPCComponents extends GetValueHandlerComponents, PutValueHandle
 export class RPC {
   private readonly handlers: Record<string, DHTMessageHandler>
   private readonly routingTable: RoutingTable
-  private readonly log: Logger
+  readonly #log: Logger
 
   constructor (components: RPCComponents, init: RPCInit) {
     const { providers, peerRouting, validators, lan } = init
 
-    this.log = logger('libp2p:kad-dht:rpc')
+    this.#log = components.logger.forComponent('libp2p:kad-dht:rpc')
     this.routingTable = init.routingTable
     this.handlers = {
       [MESSAGE_TYPE.GET_VALUE]: new GetValueHandler(components, { peerRouting }),
       [MESSAGE_TYPE.PUT_VALUE]: new PutValueHandler(components, { validators }),
       [MESSAGE_TYPE.FIND_NODE]: new FindNodeHandler(components, { peerRouting, lan }),
-      [MESSAGE_TYPE.ADD_PROVIDER]: new AddProviderHandler({ providers }),
+      [MESSAGE_TYPE.ADD_PROVIDER]: new AddProviderHandler(components, { providers }),
       [MESSAGE_TYPE.GET_PROVIDERS]: new GetProvidersHandler(components, { peerRouting, providers, lan }),
-      [MESSAGE_TYPE.PING]: new PingHandler()
+      [MESSAGE_TYPE.PING]: new PingHandler(components)
     }
   }
 
@@ -58,14 +58,14 @@ export class RPC {
     try {
       await this.routingTable.add(peerId)
     } catch (err: any) {
-      this.log.error('Failed to update the kbucket store', err)
+      this.#log.error('Failed to update the kbucket store', err)
     }
 
     // get handler & execute it
     const handler = this.handlers[msg.type]
 
     if (handler == null) {
-      this.log.error(`no handler found for message type: ${msg.type}`)
+      this.#log.error(`no handler found for message type: ${msg.type}`)
       return
     }
 
@@ -83,7 +83,7 @@ export class RPC {
       try {
         await this.routingTable.add(peerId)
       } catch (err: any) {
-        this.log.error(err)
+        this.#log.error(err)
       }
 
       const self = this // eslint-disable-line @typescript-eslint/no-this-alias
@@ -95,7 +95,7 @@ export class RPC {
           for await (const msg of source) {
             // handle the message
             const desMessage = Message.deserialize(msg)
-            self.log('incoming %s from %p', desMessage.type, peerId)
+            self.#log('incoming %s from %p', desMessage.type, peerId)
             const res = await self.handleMessage(peerId, desMessage)
 
             // Not all handlers will return a response
@@ -109,7 +109,7 @@ export class RPC {
       )
     })
       .catch(err => {
-        this.log.error(err)
+        this.#log.error(err)
       })
   }
 }

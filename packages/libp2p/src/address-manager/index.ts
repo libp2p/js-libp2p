@@ -1,15 +1,12 @@
-import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { debounce } from './utils.js'
-import type { Libp2pEvents } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:address-manager')
 
 export interface AddressManagerInit {
   /**
@@ -39,6 +36,7 @@ export interface DefaultAddressManagerComponents {
   transportManager: TransportManager
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
 }
 
 /**
@@ -75,6 +73,7 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
 }
 
 export class DefaultAddressManager {
+  #log: Logger
   private readonly components: DefaultAddressManagerComponents
   // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
   private readonly listen: string[]
@@ -92,6 +91,7 @@ export class DefaultAddressManager {
     const { listen = [], announce = [] } = init
 
     this.components = components
+    this.#log = components.logger.forComponent('libp2p:address-manager')
     this.listen = listen.map(ma => ma.toString())
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.observed = new Map()
@@ -132,7 +132,7 @@ export class DefaultAddressManager {
     this.components.peerStore.patch(this.components.peerId, {
       multiaddrs: addrs
     })
-      .catch(err => { log.error('error updating addresses', err) })
+      .catch(err => { this.#log.error('error updating addresses', err) })
   }
 
   /**

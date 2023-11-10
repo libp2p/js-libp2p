@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -20,7 +21,9 @@ describe('private network', () => {
   it('should accept a valid psk buffer', () => {
     const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })()
+    })({
+      logger: defaultLogger()
+    })
 
     expect(protector).to.have.property('tag', '/key/swarm/psk/1.0.0/')
   })
@@ -35,7 +38,9 @@ describe('private network', () => {
     })
     const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })()
+    })({
+      logger: defaultLogger()
+    })
 
     const [aToB, bToA] = await Promise.all([
       protector.protect(inbound),
@@ -70,11 +75,15 @@ describe('private network', () => {
     })
     const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const protectorB = preSharedKey({
       enabled: true,
       psk: wrongSwarmKeyBuffer
-    })()
+    })({
+      logger: defaultLogger()
+    })
 
     const [aToB, bToA] = await Promise.all([
       protector.protect(inbound),
@@ -99,7 +108,9 @@ describe('private network', () => {
       expect(() => {
         return preSharedKey({
           psk: uint8ArrayFromString('not-a-key')
-        })()
+        })({
+          logger: defaultLogger()
+        })
       }).to.throw(INVALID_PSK)
     })
 
@@ -107,7 +118,9 @@ describe('private network', () => {
       expect(() => {
         return preSharedKey({
           psk: uint8ArrayFromString('/key/swarm/psk/1.0.0/\n/base16/\ndffb7e')
-        })()
+        })({
+          logger: defaultLogger()
+        })
       }).to.throw(INVALID_PSK)
     })
   })

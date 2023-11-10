@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { CID } from 'multiformats/cid'
 import { Message } from '../../message/index.js'
 import {
@@ -9,12 +8,11 @@ import {
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { Providers } from '../../providers.js'
 import type { DHTMessageHandler } from '../index.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:kad-dht:rpc:handlers:get-providers')
 
 export interface GetProvidersHandlerInit {
   peerRouting: PeerRouting
@@ -24,18 +22,21 @@ export interface GetProvidersHandlerInit {
 
 export interface GetProvidersHandlerComponents {
   peerStore: PeerStore
+  logger: ComponentLogger
 }
 
 export class GetProvidersHandler implements DHTMessageHandler {
-  private readonly components: GetProvidersHandlerComponents
   private readonly peerRouting: PeerRouting
   private readonly providers: Providers
   private readonly lan: boolean
+  private readonly peerStore: PeerStore
+  readonly #log: Logger
 
   constructor (components: GetProvidersHandlerComponents, init: GetProvidersHandlerInit) {
     const { peerRouting, providers, lan } = init
 
-    this.components = components
+    this.#log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:get-providers')
+    this.peerStore = components.peerStore
     this.peerRouting = peerRouting
     this.providers = providers
     this.lan = Boolean(lan)
@@ -49,7 +50,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
       throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
     }
 
-    log('%p asking for providers for %s', peerId, cid)
+    this.#log('%p asking for providers for %s', peerId, cid)
 
     const [peers, closer] = await Promise.all([
       this.providers.getProviders(cid),
@@ -68,7 +69,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
       response.closerPeers = closerPeers
     }
 
-    log('got %s providers %s closerPeers', providerPeers.length, closerPeers.length)
+    this.#log('got %s providers %s closerPeers', providerPeers.length, closerPeers.length)
     return response
   }
 
@@ -82,7 +83,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
     for (const peerId of peerIds) {
       try {
-        const peer = await this.components.peerStore.get(peerId)
+        const peer = await this.peerStore.get(peerId)
 
         const peerAfterFilter = addrFilter({
           id: peerId,

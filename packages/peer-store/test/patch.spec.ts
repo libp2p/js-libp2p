@@ -2,6 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 
 import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -26,7 +27,12 @@ describe('patch', () => {
     peerId = await createEd25519PeerId()
     otherPeerId = await createEd25519PeerId()
     events = new TypedEventEmitter()
-    peerStore = new PersistentPeerStore({ peerId, events, datastore: new MemoryDatastore() })
+    peerStore = new PersistentPeerStore({
+      peerId,
+      events,
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
+    })
   })
 
   it('emits peer:update event on patch', async () => {

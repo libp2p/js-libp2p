@@ -56,7 +56,6 @@
   "dependencies": {
     "@libp2p/crypto": "^2.0.8",
     "@libp2p/interface": "^0.1.6",
-    "@libp2p/logger": "^3.1.0",
     "@libp2p/peer-id": "^3.0.6",
     "interface-datastore": "^8.2.0",
     "merge-options": "^3.0.4",
@@ -64,6 +63,7 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
+    "@libp2p/logger": "^3.1.0",
     "@libp2p/peer-id-factory": "^3.0.8",
     "aegir": "^41.0.2",
     "datastore-core": "^9.1.1",

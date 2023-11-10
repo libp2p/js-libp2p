@@ -1,5 +1,6 @@
 import { createServer, Socket, type Server, type ServerOpts, type SocketConstructorOpts } from 'net'
 import os from 'os'
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import defer from 'p-defer'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
@@ -75,7 +76,8 @@ describe('socket-to-conn', () => {
     const serverErrored = defer<Error>()
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100
+      socketInactivityTimeout: 100,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -121,7 +123,8 @@ describe('socket-to-conn', () => {
     const serverErrored = defer<Error>()
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100
+      socketInactivityTimeout: 100,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -171,7 +174,8 @@ describe('socket-to-conn', () => {
     const serverErrored = defer<Error>()
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100
+      socketInactivityTimeout: 100,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -213,7 +217,8 @@ describe('socket-to-conn', () => {
     const serverErrored = defer<Error>()
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100
+      socketInactivityTimeout: 100,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -254,7 +259,8 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
-      socketCloseTimeout: 10
+      socketCloseTimeout: 10,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -293,7 +299,8 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
-      socketCloseTimeout: 10
+      socketCloseTimeout: 10,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -332,7 +339,8 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 500,
-      socketCloseTimeout: 100
+      socketCloseTimeout: 100,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -374,7 +382,8 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
-      socketCloseTimeout: 100
+      socketCloseTimeout: 100,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()

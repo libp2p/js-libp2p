@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import client from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
@@ -6,7 +7,9 @@ import { randomMetricName } from './fixtures/random-metric-name.js'
 describe('counters', () => {
   it('should set a counter', async () => {
     const metricName = randomMetricName()
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerCounter(metricName)
     metric.increment()
 
@@ -18,7 +21,9 @@ describe('counters', () => {
   it('should increment a counter with a value', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerCounter(metricName)
     metric.increment(metricValue)
 
@@ -28,7 +33,9 @@ describe('counters', () => {
   it('should calculate a counter', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     metrics.registerCounter(metricName, {
       calculate: () => {
         return metricValue
@@ -41,7 +48,9 @@ describe('counters', () => {
   it('should promise to calculate a counter', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     metrics.registerCounter(metricName, {
       calculate: async () => {
         return metricValue
@@ -54,7 +63,9 @@ describe('counters', () => {
   it('should reset a counter', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerCounter(metricName)
     metric.increment(metricValue)
 
@@ -70,7 +81,9 @@ describe('counters', () => {
     const metricLabel = randomMetricName('label_')
     const metricValue1 = 5
     const metricValue2 = 7
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric1 = metrics.registerCounter(metricName, {
       label: metricLabel
     })

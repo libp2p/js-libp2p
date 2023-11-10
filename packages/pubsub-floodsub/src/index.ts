@@ -23,24 +23,22 @@
  *
  * node.pubsub.subscribe('fruit')
  * node.pubsub.addEventListener('message', (evt) => {
- *   console.log(evt)
+ *   console.this.#log(evt)
  * })
  *
  * node.pubsub.publish('fruit', new TextEncoder().encode('banana'))
  * ```
  */
 
-import { logger } from '@libp2p/logger'
 import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { toString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
 import { multicodec } from './config.js'
 import { RPC } from './message/rpc.js'
+import type { Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult, PubSub } from '@libp2p/interface/pubsub'
 import type { Uint8ArrayList } from 'uint8arraylist'
-
-const log = logger('libp2p:floodsub')
 
 export { multicodec }
 
@@ -58,6 +56,7 @@ export interface FloodSubComponents extends PubSubComponents {
  * (it just floods the network).
  */
 export class FloodSub extends PubSubBaseProtocol {
+  #log: Logger
   public seenCache: SimpleTimeCache<boolean>
 
   constructor (components: FloodSubComponents, init?: FloodSubInit) {
@@ -66,6 +65,8 @@ export class FloodSub extends PubSubBaseProtocol {
       canRelayMessage: true,
       multicodecs: [multicodec]
     })
+
+    this.#log = components.logger.forComponent('libp2p:floodsub')
 
     /**
      * Cache of seen messages
@@ -125,22 +126,22 @@ export class FloodSub extends PubSubBaseProtocol {
     const recipients: PeerId[] = []
 
     if (peers == null || peers.length === 0) {
-      log('no peers are subscribed to topic %s', message.topic)
+      this.#log('no peers are subscribed to topic %s', message.topic)
       return { recipients }
     }
 
     peers.forEach(id => {
       if (this.components.peerId.equals(id)) {
-        log('not sending message on topic %s to myself', message.topic)
+        this.#log('not sending message on topic %s to myself', message.topic)
         return
       }
 
       if (id.equals(from)) {
-        log('not sending message on topic %s to sender %p', message.topic, id)
+        this.#log('not sending message on topic %s to sender %p', message.topic, id)
         return
       }
 
-      log('publish msgs on topics %s %p', message.topic, id)
+      this.#log('publish msgs on topics %s %p', message.topic, id)
 
       recipients.push(id)
       this.send(id, { messages: [message] })

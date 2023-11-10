@@ -5,6 +5,7 @@ import {
   UnexpectedPeerError
 } from '@libp2p/interface/errors'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -27,7 +28,9 @@ describe('plaintext', () => {
       createEd25519PeerId()
     ])
 
-    encrypter = plaintext()()
+    encrypter = plaintext()({
+      logger: defaultLogger()
+    })
   })
 
   afterEach(() => {

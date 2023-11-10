@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import client, { Registry } from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
@@ -8,7 +9,9 @@ describe('custom registry', () => {
     const metricName = randomMetricName()
     const metricValue = 5
     const registry = new Registry()
-    const metrics = prometheusMetrics({ registry })()
+    const metrics = prometheusMetrics({ registry })({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetric(metricName)
     metric.update(metricValue)
 

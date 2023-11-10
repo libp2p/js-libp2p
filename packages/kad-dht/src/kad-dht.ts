@@ -1,5 +1,4 @@
 import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
-import { type Logger, logger } from '@libp2p/logger'
 import pDefer from 'p-defer'
 import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
@@ -20,6 +19,7 @@ import {
   removePublicAddresses
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, QueryOptions, Validators, Selectors, KadDHT, QueryEvent } from './index.js'
+import type { Logger } from '@libp2p/interface'
 import type { PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
@@ -47,7 +47,7 @@ export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implem
   public peerRouting: PeerRouting
 
   public readonly components: KadDHTComponents
-  private readonly log: Logger
+  readonly #log: Logger
   private running: boolean
   private readonly kBucketSize: number
   private clientMode: boolean
@@ -88,7 +88,7 @@ export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implem
     this.running = false
     this.components = components
     this.lan = Boolean(lan)
-    this.log = logger(`libp2p:kad-dht:${lan === true ? 'lan' : 'wan'}`)
+    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan === true ? 'lan' : 'wan'}`)
     this.protocol = `${protocolPrefix ?? PROTOCOL_PREFIX}${lan === true ? LAN_PREFIX : ''}${PROTOCOL_DHT}`
     this.kBucketSize = kBucketSize ?? 20
     this.clientMode = clientMode ?? true
@@ -159,7 +159,7 @@ export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implem
       providers: this.providers,
       lan: this.lan
     })
-    this.routingTableRefresh = new RoutingTableRefresh({
+    this.routingTableRefresh = new RoutingTableRefresh(components, {
       peerRouting: this.peerRouting,
       routingTable: this.routingTable,
       lan: this.lan
@@ -189,7 +189,7 @@ export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implem
       const peerData = evt.detail
 
       this.onPeerConnect(peerData).catch(err => {
-        this.log.error('could not add %p to routing table', peerData.id, err)
+        this.#log.error('could not add %p to routing table', peerData.id, err)
       })
 
       this.dispatchEvent(new CustomEvent('peer', {
@@ -212,13 +212,13 @@ export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implem
 
         await this.onPeerConnect(peerData)
       }).catch(err => {
-        this.log.error('could not add %p to routing table', peerId, err)
+        this.#log.error('could not add %p to routing table', peerId, err)
       })
     })
   }
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
-    this.log('peer %p connected', peerData.id)
+    this.#log('peer %p connected', peerData.id)
 
     if (this.lan) {
       peerData = removePublicAddresses(peerData)
@@ -227,14 +227,14 @@ export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implem
     }
 
     if (peerData.multiaddrs.length === 0) {
-      this.log('ignoring %p as they do not have any %s addresses in %s', peerData.id, this.lan ? 'private' : 'public', peerData.multiaddrs.map(addr => addr.toString()))
+      this.#log('ignoring %p as they do not have any %s addresses in %s', peerData.id, this.lan ? 'private' : 'public', peerData.multiaddrs.map(addr => addr.toString()))
       return
     }
 
     try {
       await this.routingTable.add(peerData.id)
     } catch (err: any) {
-      this.log.error('could not add %p to routing table', peerData.id, err)
+      this.#log.error('could not add %p to routing table', peerData.id, err)
     }
   }
 
@@ -259,10 +259,10 @@ export class DefaultKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implem
     await this.components.registrar.unhandle(this.protocol)
 
     if (mode === 'client') {
-      this.log('enabling client mode')
+      this.#log('enabling client mode')
       this.clientMode = true
     } else {
-      this.log('enabling server mode')
+      this.#log('enabling server mode')
       this.clientMode = false
       await this.components.registrar.handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc), {
         maxInboundStreams: this.maxInboundStreams,

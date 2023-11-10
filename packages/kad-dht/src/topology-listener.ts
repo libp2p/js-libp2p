@@ -1,9 +1,8 @@
 import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import type { KadDHTComponents } from '.'
+import type { Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Startable } from '@libp2p/interface/startable'
-import type { Logger } from '@libp2p/logger'
 
 export interface TopologyListenerInit {
   protocol: string
@@ -18,7 +17,7 @@ export interface TopologyListenerEvents {
  * Receives notifications of new peers joining the network that support the DHT protocol
  */
 export class TopologyListener extends TypedEventEmitter<TopologyListenerEvents> implements Startable {
-  private readonly log: Logger
+  readonly #log: Logger
   private readonly components: KadDHTComponents
   private readonly protocol: string
   private running: boolean
@@ -30,7 +29,7 @@ export class TopologyListener extends TypedEventEmitter<TopologyListenerEvents> 
     const { protocol, lan } = init
 
     this.components = components
-    this.log = logger(`libp2p:kad-dht:topology-listener:${lan ? 'lan' : 'wan'}`)
+    this.#log = components.logger.forComponent(`libp2p:kad-dht:topology-listener:${lan ? 'lan' : 'wan'}`)
     this.running = false
     this.protocol = protocol
   }
@@ -52,7 +51,7 @@ export class TopologyListener extends TypedEventEmitter<TopologyListenerEvents> 
     // register protocol with topology
     this.registrarId = await this.components.registrar.register(this.protocol, {
       onConnect: (peerId) => {
-        this.log('observed peer %p with protocol %s', peerId, this.protocol)
+        this.#log('observed peer %p with protocol %s', peerId, this.protocol)
         this.dispatchEvent(new CustomEvent('peer', {
           detail: peerId
         }))

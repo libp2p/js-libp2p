@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
@@ -9,12 +8,10 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MAX_PROTOCOL_LENGTH } from './constants.js'
 import type { MultistreamSelectInit } from '.'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, LoggerOptions } from '@libp2p/interface'
 import type { Pushable } from 'it-pushable'
 import type { Reader } from 'it-reader'
 import type { Source } from 'it-stream-types'
-
-const log = logger('libp2p:mss')
 
 const NewLine = uint8ArrayFromString('\n')
 
@@ -27,10 +24,10 @@ export function encode (buffer: Uint8Array | Uint8ArrayList): Uint8ArrayList {
 /**
  * `write` encodes and writes a single buffer
  */
-export function write (writer: Pushable<any>, buffer: Uint8Array | Uint8ArrayList, options: MultistreamSelectInit = {}): void {
+export function write (writer: Pushable<any>, buffer: Uint8Array | Uint8ArrayList, options?: MultistreamSelectInit): void {
   const encoded = encode(buffer)
 
-  if (options.writeBytes === true) {
+  if (options?.writeBytes === true) {
     writer.push(encoded.subarray())
   } else {
     writer.push(encoded)
@@ -40,21 +37,21 @@ export function write (writer: Pushable<any>, buffer: Uint8Array | Uint8ArrayLis
 /**
  * `writeAll` behaves like `write`, except it encodes an array of items as a single write
  */
-export function writeAll (writer: Pushable<any>, buffers: Uint8Array[], options: MultistreamSelectInit = {}): void {
+export function writeAll (writer: Pushable<any>, buffers: Uint8Array[], options?: MultistreamSelectInit): void {
   const list = new Uint8ArrayList()
 
   for (const buf of buffers) {
     list.append(encode(buf))
   }
 
-  if (options.writeBytes === true) {
+  if (options?.writeBytes === true) {
     writer.push(list.subarray())
   } else {
     writer.push(list)
   }
 }
 
-export async function read (reader: Reader, options?: AbortOptions): Promise<Uint8ArrayList> {
+export async function read (reader: Reader, options?: AbortOptions & LoggerOptions): Promise<Uint8ArrayList> {
   let byteLength = 1 // Read single byte chunks until the length is known
   const varByteSource = { // No return impl - we want the reader to remain readable
     [Symbol.asyncIterator]: () => varByteSource,
@@ -85,14 +82,14 @@ export async function read (reader: Reader, options?: AbortOptions): Promise<Uin
   }
 
   if (buf.get(buf.byteLength - 1) !== NewLine[0]) {
-    log.error('Invalid mss message - missing newline - %s', buf.subarray())
+    options?.log.error('Invalid mss message - missing newline - %s', buf.subarray())
     throw new CodeError('missing newline', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 
   return buf.sublist(0, -1) // Remove newline
 }
 
-export async function readString (reader: Reader, options?: AbortOptions): Promise<string> {
+export async function readString (reader: Reader, options?: AbortOptions & LoggerOptions): Promise<string> {
   const buf = await read(reader, options)
 
   return uint8ArrayToString(buf.subarray())

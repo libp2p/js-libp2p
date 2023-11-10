@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubObject } from 'sinon-ts'
@@ -17,6 +18,8 @@ describe('Multiaddr Connection', () => {
       reset: () => {}
     })
     const maConn = new WebRTCMultiaddrConnection({
+      logger: defaultLogger()
+    }, {
       peerConnection,
       remoteAddr,
       timeline: {

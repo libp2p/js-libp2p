@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -42,7 +43,8 @@ describe('Convert stream into a multiaddr connection', () => {
     const maConn = streamToMaConnection({
       stream: toMuxedStream(stream),
       localAddr,
-      remoteAddr
+      remoteAddr,
+      logger: defaultLogger()
     })
 
     expect(maConn).to.exist()
@@ -62,7 +64,8 @@ describe('Convert stream into a multiaddr connection', () => {
     const maConn = streamToMaConnection({
       stream: toMuxedStream(stream),
       localAddr,
-      remoteAddr
+      remoteAddr,
+      logger: defaultLogger()
     })
 
     const data = uint8ArrayFromString('hey')

@@ -1,15 +1,14 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import Queue from 'p-queue'
 import * as utils from '../utils.js'
 import { KBucket, type PingEventDetails } from './k-bucket.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Metric, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Logger } from '@libp2p/logger'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
@@ -32,6 +31,7 @@ export interface RoutingTableComponents {
   peerStore: PeerStore
   connectionManager: ConnectionManager
   metrics?: Metrics
+  logger: ComponentLogger
 }
 
 export interface RoutingTableEvents {
@@ -48,7 +48,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   public kb?: KBucket
   public pingQueue: Queue
 
-  private readonly log: Logger
+  readonly #log: Logger
   private readonly components: RoutingTableComponents
   private readonly lan: boolean
   private readonly pingTimeout: number
@@ -69,7 +69,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol, tagName, tagValue } = init
 
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
+    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
     this.kBucketSize = kBucketSize ?? KBUCKET_SIZE
     this.pingTimeout = pingTimeout ?? PING_TIMEOUT
     this.pingConcurrency = pingConcurrency ?? PING_CONCURRENCY
@@ -162,7 +162,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
           }
         })
         .catch(err => {
-          this.log.error('Could not update peer tags', err)
+          this.#log.error('Could not update peer tags', err)
         })
 
       kClosest = newClosest
@@ -214,7 +214,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
                 signal: AbortSignal.timeout(this.pingTimeout)
               }
 
-              this.log('pinging old contact %p', oldContact.peer)
+              this.#log('pinging old contact %p', oldContact.peer)
               const connection = await this.components.connectionManager.openConnection(oldContact.peer, options)
               const stream = await connection.newStream(this.protocol, options)
               await stream.close()
@@ -223,8 +223,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
               if (this.running && this.kb != null) {
                 // only evict peers if we are still running, otherwise we evict when dialing is
                 // cancelled due to shutdown in progress
-                this.log.error('could not ping peer %p', oldContact.peer, err)
-                this.log('evicting old contact after ping failed %p', oldContact.peer)
+                this.#log.error('could not ping peer %p', oldContact.peer, err)
+                this.#log('evicting old contact after ping failed %p', oldContact.peer)
                 this.kb.remove(oldContact.id)
               }
             } finally {
@@ -234,15 +234,15 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
         )
 
         if (this.running && responded < oldContacts.length && this.kb != null) {
-          this.log('adding new contact %p', newContact.peer)
+          this.#log('adding new contact %p', newContact.peer)
           this.kb.add(newContact)
         }
       } catch (err: any) {
-        this.log.error('could not process k-bucket ping event', err)
+        this.#log.error('could not process k-bucket ping event', err)
       }
     })
       .catch(err => {
-        this.log.error('could not process k-bucket ping event', err)
+        this.#log.error('could not process k-bucket ping event', err)
       })
   }
 
@@ -311,7 +311,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     this.kb.add({ id, peer })
 
-    this.log('added %p with kad id %b', peer, id)
+    this.#log('added %p with kad id %b', peer, id)
 
     this.metrics?.routingTableSize.update(this.size)
   }

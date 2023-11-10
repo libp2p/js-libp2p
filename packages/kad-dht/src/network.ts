@@ -1,6 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import { abortableDuplex } from 'abortable-iterator'
 import drain from 'it-drain'
 import first from 'it-first'
@@ -14,12 +13,11 @@ import {
   queryErrorEvent
 } from './query/events.js'
 import type { KadDHTComponents, QueryEvent, QueryOptions } from './index.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Startable } from '@libp2p/interface/startable'
-import type { Logger } from '@libp2p/logger'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -36,7 +34,7 @@ interface NetworkEvents {
  * Handle network operations for the dht
  */
 export class Network extends TypedEventEmitter<NetworkEvents> implements Startable {
-  private readonly log: Logger
+  readonly #log: Logger
   private readonly protocol: string
   private running: boolean
   private readonly components: KadDHTComponents
@@ -49,7 +47,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
     const { protocol, lan } = init
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
+    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
     this.running = false
     this.protocol = protocol
   }
@@ -87,7 +85,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       return
     }
 
-    this.log('sending %s to %p', msg.type, to)
+    this.#log('sending %s to %p', msg.type, to)
     yield dialPeerEvent({ peer: to }, options)
     yield sendQueryEvent({ to, type: msg.type }, options)
 
@@ -123,7 +121,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       return
     }
 
-    this.log('sending %s to %p', msg.type, to)
+    this.#log('sending %s to %p', msg.type, to)
     yield dialPeerEvent({ peer: to }, options)
     yield sendQueryEvent({ to, type: msg.type }, options)
 

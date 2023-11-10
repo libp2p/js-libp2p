@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -21,8 +20,7 @@ import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Logger } from '@libp2p/logger'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 
 export interface ContentFetchingInit {
   validators: Validators
@@ -34,7 +32,7 @@ export interface ContentFetchingInit {
 }
 
 export class ContentFetching {
-  private readonly log: Logger
+  readonly #log: Logger
   private readonly components: KadDHTComponents
   private readonly validators: Validators
   private readonly selectors: Selectors
@@ -46,7 +44,7 @@ export class ContentFetching {
     const { validators, selectors, peerRouting, queryManager, network, lan } = init
 
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
+    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
     this.validators = validators
     this.selectors = selectors
     this.peerRouting = peerRouting
@@ -64,14 +62,14 @@ export class ContentFetching {
    * the local datastore
    */
   async getLocal (key: Uint8Array): Promise<Libp2pRecord> {
-    this.log('getLocal %b', key)
+    this.#log('getLocal %b', key)
 
     const dsKey = bufferToRecordKey(key)
 
-    this.log('fetching record for key %k', dsKey)
+    this.#log('fetching record for key %k', dsKey)
 
     const raw = await this.components.datastore.get(dsKey)
-    this.log('found %k in local datastore', dsKey)
+    this.#log('found %k in local datastore', dsKey)
 
     const rec = Libp2pRecord.deserialize(raw)
 
@@ -84,13 +82,13 @@ export class ContentFetching {
    * Send the best record found to any peers that have an out of date record
    */
   async * sendCorrectionRecord (key: Uint8Array, vals: ValueEvent[], best: Uint8Array, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
-    this.log('sendCorrection for %b', key)
+    this.#log('sendCorrection for %b', key)
     const fixupRec = createPutRecord(key, best)
 
     for (const { value, from } of vals) {
       // no need to do anything
       if (uint8ArrayEquals(value, best)) {
-        this.log('record was ok')
+        this.#log('record was ok')
         continue
       }
 
@@ -98,10 +96,10 @@ export class ContentFetching {
       if (this.components.peerId.equals(from)) {
         try {
           const dsKey = bufferToRecordKey(key)
-          this.log(`Storing corrected record for key ${dsKey.toString()}`)
+          this.#log(`Storing corrected record for key ${dsKey.toString()}`)
           await this.components.datastore.put(dsKey, fixupRec.subarray())
         } catch (err: any) {
-          this.log.error('Failed error correcting self', err)
+          this.#log.error('Failed error correcting self', err)
         }
 
         continue
@@ -124,7 +122,7 @@ export class ContentFetching {
         yield queryErrorEvent({ from, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }, options)
       }
 
-      this.log.error('Failed error correcting entry')
+      this.#log.error('Failed error correcting entry')
     }
   }
 
@@ -132,14 +130,14 @@ export class ContentFetching {
    * Store the given key/value pair in the DHT
    */
   async * put (key: Uint8Array, value: Uint8Array, options: AbortOptions = {}): AsyncGenerator<unknown, void, undefined> {
-    this.log('put key %b value %b', key, value)
+    this.#log('put key %b value %b', key, value)
 
     // create record in the dht format
     const record = createPutRecord(key, value)
 
     // store the record locally
     const dsKey = bufferToRecordKey(key)
-    this.log(`storing record for key ${dsKey.toString()}`)
+    this.#log(`storing record for key ${dsKey.toString()}`)
     await this.components.datastore.put(dsKey, record.subarray())
 
     // put record to the closest peers
@@ -156,7 +154,7 @@ export class ContentFetching {
           const msg = new Message(MESSAGE_TYPE.PUT_VALUE, key, 0)
           msg.record = Libp2pRecord.deserialize(record)
 
-          this.log('send put to %p', event.peer.id)
+          this.#log('send put to %p', event.peer.id)
           for await (const putEvent of this.network.sendRequest(event.peer.id, msg, options)) {
             events.push(putEvent)
 
@@ -188,7 +186,7 @@ export class ContentFetching {
    * Get the value to the given key
    */
   async * get (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent | ValueEvent> {
-    this.log('get %b', key)
+    this.#log('get %b', key)
 
     const vals: ValueEvent[] = []
 
@@ -217,7 +215,7 @@ export class ContentFetching {
     }
 
     const best = records[i]
-    this.log('GetValue %b %b', key, best)
+    this.#log('GetValue %b %b', key, best)
 
     if (best == null) {
       throw new CodeError('best value was not found', 'ERR_NOT_FOUND')
@@ -232,7 +230,7 @@ export class ContentFetching {
    * Get the `n` values to the given key without sorting
    */
   async * getMany (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
-    this.log('getMany values for %b', key)
+    this.#log('getMany values for %b', key)
 
     try {
       const localRec = await this.getLocal(key)
@@ -242,7 +240,7 @@ export class ContentFetching {
         from: this.components.peerId
       }, options)
     } catch (err: any) {
-      this.log('error getting local value for %b', key, err)
+      this.#log('error getting local value for %b', key, err)
     }
 
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias

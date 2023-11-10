@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import client from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
@@ -9,7 +10,9 @@ describe('metric groups', () => {
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetricGroup(metricName, {
       label: metricLabel
     })
@@ -24,7 +27,9 @@ describe('metric groups', () => {
     const metricName = randomMetricName()
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetricGroup(metricName, {
       label: metricLabel
     })
@@ -40,7 +45,9 @@ describe('metric groups', () => {
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetricGroup(metricName, {
       label: metricLabel
     })
@@ -55,7 +62,9 @@ describe('metric groups', () => {
     const metricName = randomMetricName()
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetricGroup(metricName, {
       label: metricLabel
     })
@@ -71,7 +80,9 @@ describe('metric groups', () => {
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetricGroup(metricName, {
       label: metricLabel
     })
@@ -87,7 +98,9 @@ describe('metric groups', () => {
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     metrics.registerMetricGroup(metricName, {
       label: metricLabel,
       calculate: () => {
@@ -105,7 +118,9 @@ describe('metric groups', () => {
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     metrics.registerMetricGroup(metricName, {
       label: metricLabel,
       calculate: async () => {
@@ -123,7 +138,9 @@ describe('metric groups', () => {
     const metricKey = randomMetricName('key_')
     const metricLabel = randomMetricName('label_')
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetricGroup(metricName, {
       label: metricLabel
     })
@@ -145,7 +162,9 @@ describe('metric groups', () => {
     const metricLabel = randomMetricName('label_')
     const metricValue1 = 5
     const metricValue2 = 7
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric1 = metrics.registerMetricGroup(metricName, {
       label: metricLabel
     })

@@ -2,6 +2,7 @@
 
 import { type CreateListenerOptions, symbol } from '@libp2p/interface/transport'
 import { mockMetrics, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -23,7 +24,8 @@ describe('WebRTCDirect Transport', () => {
     metrics = mockMetrics()()
     components = {
       peerId: await createEd25519PeerId(),
-      metrics
+      metrics,
+      logger: defaultLogger()
     }
   })
 

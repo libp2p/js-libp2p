@@ -1,6 +1,5 @@
 import { keys } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
@@ -18,10 +17,10 @@ import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { Logger } from '@libp2p/logger'
+import type { PeerStore } from '@libp2p/interface/src/peer-store/index.js'
 
 export interface PeerRoutingInit {
   routingTable: RoutingTable
@@ -32,22 +31,24 @@ export interface PeerRoutingInit {
 }
 
 export class PeerRouting {
-  private readonly components: KadDHTComponents
-  private readonly log: Logger
+  readonly #log: Logger
   private readonly routingTable: RoutingTable
   private readonly network: Network
   private readonly validators: Validators
   private readonly queryManager: QueryManager
+  private readonly peerStore: PeerStore
+  private readonly peerId: PeerId
 
   constructor (components: KadDHTComponents, init: PeerRoutingInit) {
     const { routingTable, network, validators, queryManager, lan } = init
 
-    this.components = components
     this.routingTable = routingTable
     this.network = network
     this.validators = validators
     this.queryManager = queryManager
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:peer-routing`)
+    this.peerStore = components.peerStore
+    this.peerId = components.peerId
+    this.#log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:peer-routing`)
   }
 
   /**
@@ -59,10 +60,10 @@ export class PeerRouting {
     const p = await this.routingTable.find(peer)
 
     if (p != null) {
-      this.log('findPeerLocal found %p in routing table', peer)
+      this.#log('findPeerLocal found %p in routing table', peer)
 
       try {
-        peerData = await this.components.peerStore.get(p)
+        peerData = await this.peerStore.get(p)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -72,7 +73,7 @@ export class PeerRouting {
 
     if (peerData == null) {
       try {
-        peerData = await this.components.peerStore.get(peer)
+        peerData = await this.peerStore.get(peer)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -81,7 +82,7 @@ export class PeerRouting {
     }
 
     if (peerData != null) {
-      this.log('findPeerLocal found %p in peer store', peer)
+      this.#log('findPeerLocal found %p in peer store', peer)
 
       return {
         id: peerData.id,
@@ -132,16 +133,16 @@ export class PeerRouting {
    * Search for a peer with the given ID
    */
   async * findPeer (id: PeerId, options: QueryOptions = {}): AsyncGenerator<FinalPeerEvent | QueryEvent> {
-    this.log('findPeer %p', id)
+    this.#log('findPeer %p', id)
 
     // Try to find locally
     const pi = await this.findPeerLocal(id)
 
     // already got it
     if (pi != null) {
-      this.log('found local')
+      this.#log('found local')
       yield finalPeerEvent({
-        from: this.components.peerId,
+        from: this.peerId,
         peer: pi
       }, options)
       return
@@ -180,7 +181,7 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.components.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') }, options)
+      yield queryErrorEvent({ from: this.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') }, options)
     }
   }
 
@@ -189,7 +190,7 @@ export class PeerRouting {
    * bytes from a multihash or a peer ID
    */
   async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<DialPeerEvent | QueryEvent> {
-    this.log('getClosestPeers to %b', key)
+    this.#log('getClosestPeers to %b', key)
     const id = await utils.convertBuffer(key)
     const tablePeers = this.routingTable.closestPeers(id)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
@@ -198,7 +199,7 @@ export class PeerRouting {
     await Promise.all(tablePeers.map(async peer => { await peers.add(peer) }))
 
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, signal }) {
-      self.log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
+      self.#log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
       const request = new Message(MESSAGE_TYPE.FIND_NODE, key, 0)
 
       yield * self.network.sendRequest(peer, request, {
@@ -215,14 +216,14 @@ export class PeerRouting {
       }
     }
 
-    this.log('found %d peers close to %b', peers.length, key)
+    this.#log('found %d peers close to %b', peers.length, key)
 
     for (const peerId of peers.peers) {
       try {
-        const peer = await this.components.peerStore.get(peerId)
+        const peer = await this.peerStore.get(peerId)
 
         yield finalPeerEvent({
-          from: this.components.peerId,
+          from: this.peerId,
           peer: {
             id: peerId,
             multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
@@ -251,7 +252,7 @@ export class PeerRouting {
             await this._verifyRecordOnline(event.record)
           } catch (err: any) {
             const errMsg = 'invalid record received, discarded'
-            this.log(errMsg)
+            this.#log(errMsg)
 
             yield queryErrorEvent({ from: event.from, error: new CodeError(errMsg, 'ERR_INVALID_RECORD') }, options)
             continue
@@ -290,7 +291,7 @@ export class PeerRouting {
       }
 
       try {
-        const peer = await this.components.peerStore.get(peerId)
+        const peer = await this.peerStore.get(peerId)
 
         output.push({
           id: peerId,
@@ -304,9 +305,9 @@ export class PeerRouting {
     }
 
     if (output.length > 0) {
-      this.log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
+      this.#log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
     } else {
-      this.log('getCloserPeersOffline could not find peer closer to %b than %p', key, closerThan)
+      this.#log('getCloserPeersOffline could not find peer closer to %b than %p', key, closerThan)
     }
 
     return output

@@ -117,12 +117,14 @@ export class DefaultUpgrader implements Upgrader {
   private readonly muxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
   private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly logger: ComponentLogger
   readonly #log: Logger
 
   constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
     this.components = components
     this.connectionEncryption = new Map()
     this.#log = components.logger.forComponent('libp2p:upgrader')
+    this.logger = components.logger
 
     init.connectionEncryption.forEach(encrypter => {
       this.connectionEncryption.set(encrypter.protocol, encrypter)
@@ -450,7 +452,10 @@ export class DefaultUpgrader implements Upgrader {
             }
           }
 
-          const { stream, protocol } = await mss.select(muxedStream, protocols, options)
+          const { stream, protocol } = await mss.select(muxedStream, protocols, {
+            ...options,
+            log: this.logger.forComponent('libp2p:mss:select')
+          })
 
           const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar, options)
           const streamCount = countStreams(protocol, 'outbound', connection)
@@ -596,7 +601,8 @@ export class DefaultUpgrader implements Upgrader {
 
     try {
       const { stream, protocol } = await mss.handle(connection, protocols, {
-        writeBytes: true
+        writeBytes: true,
+        log: this.logger.forComponent('mss:handle')
       })
       const encrypter = this.connectionEncryption.get(protocol)
 
@@ -625,7 +631,8 @@ export class DefaultUpgrader implements Upgrader {
 
     try {
       const { stream, protocol } = await mss.select(connection, protocols, {
-        writeBytes: true
+        writeBytes: true,
+        log: this.logger.forComponent('libp2p:mss:select')
       })
       const encrypter = this.connectionEncryption.get(protocol)
 
@@ -653,7 +660,8 @@ export class DefaultUpgrader implements Upgrader {
     this.#log('outbound selecting muxer %s', protocols)
     try {
       const { stream, protocol } = await mss.select(connection, protocols, {
-        writeBytes: true
+        writeBytes: true,
+        log: this.logger.forComponent('libp2p:mss:select')
       })
       this.#log('%s selected as muxer protocol', protocol)
       const muxerFactory = muxers.get(protocol)
@@ -674,7 +682,8 @@ export class DefaultUpgrader implements Upgrader {
     this.#log('inbound handling muxers %s', protocols)
     try {
       const { stream, protocol } = await mss.handle(connection, protocols, {
-        writeBytes: true
+        writeBytes: true,
+        log: this.logger.forComponent('libp2p:mss:select')
       })
       const muxerFactory = muxers.get(protocol)
 
