@@ -5,6 +5,13 @@
 
 * skip self-query if not running ([#479](https://github.com/libp2p/js-libp2p-kad-dht/issues/479)) ([7095290](https://github.com/libp2p/js-libp2p-kad-dht/commit/70952907a27fd8778773172059879656b4f08855))
 
+### [10.0.15](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.14...kad-dht-v10.0.15) (2023-11-10)
+
+
+### Bug Fixes
+
+* crash during DHT query abort when reading is slow ([#2225](https://www.github.com/libp2p/js-libp2p/issues/2225)) ([c960eb6](https://www.github.com/libp2p/js-libp2p/commit/c960eb659d2deff0c29cb2f5fe2a506310b8f971)), closes [#2216](https://www.github.com/libp2p/js-libp2p/issues/2216)
+
 ### [10.0.14](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.13...kad-dht-v10.0.14) (2023-11-07)
 
 

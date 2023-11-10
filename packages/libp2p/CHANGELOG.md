@@ -20,6 +20,15 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+### [0.46.21](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.20...libp2p-v0.46.21) (2023-11-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/kad-dht bumped from ^10.0.14 to ^10.0.15
+
 ### [0.46.20](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.19...libp2p-v0.46.20) (2023-11-07)
 
 
