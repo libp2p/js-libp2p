@@ -1,16 +1,16 @@
 import { logger } from '@libp2p/logger'
 import { pushable } from 'it-pushable'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_TRANSIENT_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
-import type { PerfOptions, PerfOutput, PerfServiceComponents, PerfServiceInit, PerfService as PerfServiceInterface } from './index.js'
+import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
 import type { Startable } from '@libp2p/interface/startable'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const log = logger('libp2p:perf')
 
-export class PerfService implements Startable, PerfServiceInterface {
+export class Perf implements Startable, PerfInterface {
   public readonly protocol: string
-  private readonly components: PerfServiceComponents
+  private readonly components: PerfComponents
   private started: boolean
   private readonly databuf: ArrayBuffer
   private readonly writeBlockSize: number
@@ -18,7 +18,7 @@ export class PerfService implements Startable, PerfServiceInterface {
   private readonly maxOutboundStreams: number
   private readonly runOnTransientConnection: boolean
 
-  constructor (components: PerfServiceComponents, init: PerfServiceInit = {}) {
+  constructor (components: PerfComponents, init: PerfInit = {}) {
     this.components = components
     this.started = false
     this.protocol = init.protocolName ?? PROTOCOL_NAME
