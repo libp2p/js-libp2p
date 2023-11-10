@@ -1,4 +1,3 @@
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
 import { CodeError } from '@libp2p/interface/errors'
 import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
@@ -330,11 +329,11 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
     // ensure the returned key is valid
-    unmarshalPublicKey(bytes)
+    // unmarshalPublicKey(bytes)
 
-    await this.peerStore.patch(peer, {
-      publicKey: bytes
-    })
+    // await this.peerStore.patch(peer, {
+    //   publicKey: bytes
+    // })
 
     return bytes
   }
