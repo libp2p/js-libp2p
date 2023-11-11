@@ -117,10 +117,10 @@ class CircuitRelayTransport implements Transport {
   private readonly maxOutboundStopStreams?: number
   private readonly stopTimeout: number
   private started: boolean
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
-    this.#log = components.logger.forComponent('libp2p:circuit-relay:transport')
+    this.log = components.logger.forComponent('libp2p:circuit-relay:transport')
     this.registrar = components.registrar
     this.peerStore = components.peerStore
     this.connectionManager = components.connectionManager
@@ -138,7 +138,7 @@ class CircuitRelayTransport implements Transport {
       this.discovery.addEventListener('relay:discover', (evt) => {
         this.reservationStore.addRelay(evt.detail, 'discovered')
           .catch(err => {
-            this.#log.error('could not add discovered relay %p', evt.detail, err)
+            this.log.error('could not add discovered relay %p', evt.detail, err)
           })
       })
     }
@@ -147,7 +147,7 @@ class CircuitRelayTransport implements Transport {
     this.reservationStore.addEventListener('relay:not-enough-relays', () => {
       this.discovery?.discover()
         .catch(err => {
-          this.#log.error('could not discover relays', err)
+          this.log.error('could not discover relays', err)
         })
     })
 
@@ -164,7 +164,7 @@ class CircuitRelayTransport implements Transport {
 
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this.onStop(data).catch(err => {
-        this.#log.error('error while handling STOP protocol', err)
+        this.log.error('error while handling STOP protocol', err)
         data.stream.abort(err)
       })
     }, {
@@ -194,7 +194,7 @@ class CircuitRelayTransport implements Transport {
   async dial (ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
     if (ma.protoCodes().filter(code => code === CIRCUIT_PROTO_CODE).length !== 1) {
       const errMsg = 'Invalid circuit relay address'
-      this.#log.error(errMsg, ma)
+      this.log.error(errMsg, ma)
       throw new CodeError(errMsg, ERR_RELAYED_DIAL)
     }
 
@@ -207,7 +207,7 @@ class CircuitRelayTransport implements Transport {
 
     if (relayId == null || destinationId == null) {
       const errMsg = `Circuit relay dial to ${ma.toString()} failed as address did not have peer ids`
-      this.#log.error(errMsg)
+      this.log.error(errMsg)
       throw new CodeError(errMsg, ERR_RELAYED_DIAL)
     }
 
@@ -241,7 +241,7 @@ class CircuitRelayTransport implements Transport {
         disconnectOnFailure
       })
     } catch (err: any) {
-      this.#log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
+      this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
 
       if (stream != null) {
         stream.abort(err)
@@ -279,15 +279,16 @@ class CircuitRelayTransport implements Transport {
       const maConn = streamToMaConnection({
         stream: pbstr.unwrap(),
         remoteAddr: ma,
-        localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`)
+        localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`),
+        logger: this.logger
       })
 
-      this.#log('new outbound transient connection %a', maConn.remoteAddr)
+      this.log('new outbound transient connection %a', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn, {
         transient: true
       })
     } catch (err) {
-      this.#log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
+      this.log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
       disconnectOnFailure && await connection.close()
       throw err
     }
@@ -328,10 +329,10 @@ class CircuitRelayTransport implements Transport {
       signal
     })
 
-    this.#log('new circuit relay v2 stop stream from %p with type %s', connection.remotePeer, request.type)
+    this.log('new circuit relay v2 stop stream from %p with type %s', connection.remotePeer, request.type)
 
     if (request?.type === undefined) {
-      this.#log.error('type was missing from circuit v2 stop protocol request from %s', connection.remotePeer)
+      this.log.error('type was missing from circuit v2 stop protocol request from %s', connection.remotePeer)
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
@@ -341,7 +342,7 @@ class CircuitRelayTransport implements Transport {
 
     // Validate the STOP request has the required input
     if (request.type !== StopMessage.Type.CONNECT) {
-      this.#log.error('invalid stop connect request via peer %p', connection.remotePeer)
+      this.log.error('invalid stop connect request via peer %p', connection.remotePeer)
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
         signal
       })
@@ -350,7 +351,7 @@ class CircuitRelayTransport implements Transport {
     }
 
     if (!isValidStop(request)) {
-      this.#log.error('invalid stop connect request via peer %p', connection.remotePeer)
+      this.log.error('invalid stop connect request via peer %p', connection.remotePeer)
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
@@ -361,7 +362,7 @@ class CircuitRelayTransport implements Transport {
     const remotePeerId = peerIdFromBytes(request.peer.id)
 
     if ((await this.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
-      this.#log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)
+      this.log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
         signal
       })
@@ -369,7 +370,7 @@ class CircuitRelayTransport implements Transport {
       return
     }
 
-    this.#log.trace('sending success response to %p', connection.remotePeer)
+    this.log.trace('sending success response to %p', connection.remotePeer)
     await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.OK }, {
       signal
     })
@@ -379,14 +380,15 @@ class CircuitRelayTransport implements Transport {
     const maConn = streamToMaConnection({
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
-      localAddr
+      localAddr,
+      logger: this.logger
     })
 
-    this.#log('new inbound transient connection %a', maConn.remoteAddr)
+    this.log('new inbound transient connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
       transient: true
     })
-    this.#log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
+    this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }
 }
 

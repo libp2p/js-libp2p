@@ -1,12 +1,9 @@
-import { logger } from '@libp2p/logger'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import xsalsa20 from 'xsalsa20'
 import * as Errors from './errors.js'
 import { KEY_LENGTH } from './key-generator.js'
 import type { Source } from 'it-stream-types'
-
-const log = logger('libp2p:pnet')
 
 /**
  * Creates a stream iterable to encrypt messages in a private network
@@ -27,7 +24,6 @@ export function createBoxStream (nonce: Uint8Array, psk: Uint8Array): (source: S
 export function createUnboxStream (nonce: Uint8Array, psk: Uint8Array) {
   return (source: Source<Uint8Array>) => (async function * () {
     const xor = xsalsa20(nonce, psk)
-    log.trace('Decryption enabled')
 
     for await (const chunk of source) {
       yield Uint8Array.from(xor.update(chunk.slice()))
@@ -61,7 +57,6 @@ export function decodeV1PSK (pskBuffer: Uint8Array): { tag: string | undefined, 
       psk
     }
   } catch (err: any) {
-    log.error(err)
     throw new Error(Errors.INVALID_PSK)
   }
 }

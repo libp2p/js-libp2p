@@ -1,9 +1,7 @@
-import { logger } from '@libp2p/logger'
 import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
-
-const log = logger('libp2p:webrtc:utils')
+import type { LoggerOptions } from '@libp2p/interface'
 
 const browser = detect()
 export const isFirefox = ((browser != null) && browser.name === 'firefox')
@@ -14,7 +12,7 @@ export const nopSink = async (_: any): Promise<void> => {}
 
 export const DATA_CHANNEL_DRAIN_TIMEOUT = 30 * 1000
 
-export function drainAndClose (channel: RTCDataChannel, direction: string, drainTimeout: number = DATA_CHANNEL_DRAIN_TIMEOUT): void {
+export function drainAndClose (channel: RTCDataChannel, direction: string, drainTimeout: number = DATA_CHANNEL_DRAIN_TIMEOUT, options: LoggerOptions): void {
   if (channel.readyState !== 'open') {
     return
   }
@@ -23,7 +21,7 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
     .then(async () => {
       // wait for bufferedAmount to become zero
       if (channel.bufferedAmount > 0) {
-        log('%s drain channel with %d buffered bytes', direction, channel.bufferedAmount)
+        options.log('%s drain channel with %d buffered bytes', direction, channel.bufferedAmount)
         const deferred = pDefer()
         let drained = false
 
@@ -31,7 +29,7 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
 
         const closeListener = (): void => {
           if (!drained) {
-            log('%s drain channel closed before drain', direction)
+            options.log('%s drain channel closed before drain', direction)
             deferred.resolve()
           }
         }
@@ -58,7 +56,7 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
       }
     })
     .catch(err => {
-      log.error('error closing outbound stream', err)
+      options.log.error('error closing outbound stream', err)
     })
 }
 

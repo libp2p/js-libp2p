@@ -8,9 +8,9 @@ import { queueToGenerator } from './utils.js'
 import type { CleanUpEvents } from './manager.js'
 import type { QueryEvent, QueryOptions } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
+import type { Logger } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Logger } from '@libp2p/logger'
 import type { PeerSet } from '@libp2p/peer-collections'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')

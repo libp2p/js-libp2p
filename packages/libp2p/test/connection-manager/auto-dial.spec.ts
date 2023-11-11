@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -34,7 +35,8 @@ describe('auto-dial', () => {
     peerStore = new PersistentPeerStore({
       datastore: new MemoryDatastore(),
       events,
-      peerId
+      peerId,
+      logger: defaultLogger()
     })
   })
 

@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
@@ -19,7 +20,9 @@ describe('rpc - handlers - Ping', () => {
   })
 
   beforeEach(async () => {
-    handler = new PingHandler()
+    handler = new PingHandler({
+      logger: defaultLogger()
+    })
   })
 
   it('replies with the same message', async () => {

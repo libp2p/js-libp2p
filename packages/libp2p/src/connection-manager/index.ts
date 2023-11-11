@@ -186,7 +186,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly peerStore: PeerStore
   private readonly metrics?: Metrics
   private readonly events: TypedEventTarget<Libp2pEvents>
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
@@ -205,7 +205,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.peerStore = components.peerStore
     this.metrics = components.metrics
     this.events = components.events
-    this.#log = components.logger.forComponent('libp2p:connection-manager')
+    this.log = components.logger.forComponent('libp2p:connection-manager')
 
     this.onConnect = this.onConnect.bind(this)
     this.onDisconnect = this.onDisconnect.bind(this)
@@ -359,7 +359,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.autoDial.start()
 
     this.started = true
-    this.#log('started')
+    this.log('started')
   }
 
   async afterStart (): Promise<void> {
@@ -376,13 +376,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           keepAlivePeers.map(async peer => {
             await this.openConnection(peer.id)
               .catch(err => {
-                this.#log.error(err)
+                this.log.error(err)
               })
           })
         )
       })
       .catch(err => {
-        this.#log.error(err)
+        this.log.error(err)
       })
 
     this.autoDial.afterStart()
@@ -403,22 +403,22 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           try {
             await connection.close()
           } catch (err) {
-            this.#log.error(err)
+            this.log.error(err)
           }
         })())
       }
     }
 
-    this.#log('closing %d connections', tasks.length)
+    this.log('closing %d connections', tasks.length)
     await Promise.all(tasks)
     this.connections.clear()
 
-    this.#log('stopped')
+    this.log('stopped')
   }
 
   onConnect (evt: CustomEvent<Connection>): void {
     void this._onConnect(evt).catch(err => {
-      this.#log.error(err)
+      this.log.error(err)
     })
   }
 
@@ -508,12 +508,12 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null && options.force !== true) {
-      this.#log('dial %p', peerId)
+      this.log('dial %p', peerId)
       const existingConnection = this.getConnections(peerId)
         .find(conn => !conn.transient)
 
       if (existingConnection != null) {
-        this.#log('had an existing non-transient connection to %p', peerId)
+        this.log('had an existing non-transient connection to %p', peerId)
 
         return existingConnection
       }
@@ -569,7 +569,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     })
 
     if (denyConnection) {
-      this.#log('connection from %a refused - connection remote address was in deny list', maConn.remoteAddr)
+      this.log('connection from %a refused - connection remote address was in deny list', maConn.remoteAddr)
       return false
     }
 
@@ -586,7 +586,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     // check pending connections
     if (this.incomingPendingConnections === this.maxIncomingPendingConnections) {
-      this.#log('connection from %a refused - incomingPendingConnections exceeded by host', maConn.remoteAddr)
+      this.log('connection from %a refused - incomingPendingConnections exceeded by host', maConn.remoteAddr)
       return false
     }
 
@@ -596,7 +596,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       try {
         await this.inboundConnectionRateLimiter.consume(host, 1)
       } catch {
-        this.#log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, host)
+        this.log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, host)
         return false
       }
     }
@@ -607,7 +607,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       return true
     }
 
-    this.#log('connection from %a refused - maxConnections exceeded', maConn.remoteAddr)
+    this.log('connection from %a refused - maxConnections exceeded', maConn.remoteAddr)
     return false
   }
 

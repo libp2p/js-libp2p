@@ -1,14 +1,12 @@
-import { logger } from '@libp2p/logger'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { MultiaddrConnection, Stream } from '@libp2p/interface/connection'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:stream:converter')
 
 export interface StreamProperties {
   stream: Stream
   remoteAddr: Multiaddr
   localAddr: Multiaddr
+  logger: ComponentLogger
 }
 
 /**
@@ -16,8 +14,9 @@ export interface StreamProperties {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export function streamToMaConnection (props: StreamProperties): MultiaddrConnection {
-  const { stream, remoteAddr } = props
+  const { stream, remoteAddr, logger } = props
   const { sink, source } = stream
+  const log = logger.forComponent('libp2p:stream:converter')
 
   const mapSource = (async function * () {
     for await (const list of source) {

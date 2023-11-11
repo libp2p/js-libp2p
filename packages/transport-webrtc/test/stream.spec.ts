@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import length from 'it-length'
 import * as lengthPrefixed from 'it-length-prefixed'
@@ -27,7 +28,8 @@ describe('Max message size', () => {
     const webrtcStream = createStream({
       channel,
       direction: 'outbound',
-      closeTimeout: 1
+      closeTimeout: 1,
+      logger: defaultLogger()
     })
 
     p.push(data)
@@ -58,7 +60,8 @@ describe('Max message size', () => {
 
     const webrtcStream = createStream({
       channel,
-      direction: 'outbound'
+      direction: 'outbound',
+      logger: defaultLogger()
     })
 
     p.push(data)
@@ -89,7 +92,8 @@ describe('Max message size', () => {
       direction: 'outbound',
       onEnd: () => {
         closed.resolve()
-      }
+      },
+      logger: defaultLogger()
     })
 
     const t0 = Date.now()

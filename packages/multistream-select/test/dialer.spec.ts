@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
+import { logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
@@ -20,7 +21,8 @@ describe('Dialer', () => {
       const duplex = pair<Uint8Array>()
 
       const selection = await mss.select(duplex, protocol, {
-        writeBytes: true
+        writeBytes: true,
+        log: logger('test')
       })
       expect(selection.protocol).to.equal(protocol)
 
@@ -36,13 +38,15 @@ describe('Dialer', () => {
       const duplex = pair<Uint8Array>()
 
       const selection = await mss.select(duplex, protocol, {
-        writeBytes: true
+        writeBytes: true,
+        log: logger('test')
       })
       expect(selection.protocol).to.equal(protocol)
 
       // A second select will timeout
       await pTimeout(mss.select(duplex, protocol2, {
-        writeBytes: true
+        writeBytes: true,
+        log: logger('test')
       }), {
         milliseconds: 1e3
       })

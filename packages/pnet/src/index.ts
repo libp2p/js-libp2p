@@ -58,7 +58,6 @@
 
 import { randomBytes } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
@@ -70,9 +69,8 @@ import {
 } from './crypto.js'
 import * as Errors from './errors.js'
 import { NONCE_LENGTH } from './key-generator.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface/connection'
-
-const log = logger('libp2p:pnet')
 
 export { generateKey } from './key-generator.js'
 
@@ -81,8 +79,13 @@ export interface ProtectorInit {
   psk: Uint8Array
 }
 
+export interface ProtectorComponents {
+  logger: ComponentLogger
+}
+
 class PreSharedKeyConnectionProtector implements ConnectionProtector {
   public tag: string
+  private readonly log: Logger
   private readonly psk: Uint8Array
   private readonly enabled: boolean
 
@@ -90,7 +93,8 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    * Takes a Private Shared Key (psk) and provides a `protect` method
    * for wrapping existing connections in a private encryption stream.
    */
-  constructor (init: ProtectorInit) {
+  constructor (components: ProtectorComponents, init: ProtectorInit) {
+    this.log = components.logger.forComponent('libp2p:pnet')
     this.enabled = init.enabled !== false
 
     if (this.enabled) {
@@ -118,7 +122,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     }
 
     // Exchange nonces
-    log('protecting the connection')
+    this.log('protecting the connection')
     const localNonce = randomBytes(NONCE_LENGTH)
 
     const shake = handshake(connection)
@@ -134,7 +138,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     shake.rest()
 
     // Create the boxing/unboxing pipe
-    log('exchanged nonces')
+    this.log('exchanged nonces')
     const [internal, external] = duplexPair<Uint8Array>()
     pipe(
       external,
@@ -145,7 +149,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
       external
-    ).catch(log.error)
+    ).catch(this.log.error)
 
     return {
       ...connection,
@@ -154,6 +158,6 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
   }
 }
 
-export function preSharedKey (init: ProtectorInit): () => ConnectionProtector {
-  return () => new PreSharedKeyConnectionProtector(init)
+export function preSharedKey (init: ProtectorInit): (components: ProtectorComponents) => ConnectionProtector {
+  return (components) => new PreSharedKeyConnectionProtector(components, init)
 }

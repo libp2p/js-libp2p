@@ -9,6 +9,7 @@ import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -73,7 +74,9 @@ describe('dialing (direct, TCP)', () => {
       ]
     })
     remoteTM = remoteComponents.transportManager = new DefaultTransportManager(remoteComponents)
-    remoteTM.add(tcp()())
+    remoteTM.add(tcp()({
+      logger: defaultLogger()
+    }))
 
     const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
@@ -92,7 +95,9 @@ describe('dialing (direct, TCP)', () => {
     })
     localComponents.addressManager = new DefaultAddressManager(localComponents)
     localTM = localComponents.transportManager = new DefaultTransportManager(localComponents)
-    localTM.add(tcp()())
+    localTM.add(tcp()({
+      logger: defaultLogger()
+    }))
 
     await start(localComponents)
     await start(remoteComponents)

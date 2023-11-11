@@ -1,5 +1,4 @@
 import { setMaxListeners } from '@libp2p/interface/events'
-import { logger, type Logger } from '@libp2p/logger'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
 import { pipe } from 'it-pipe'
@@ -9,6 +8,7 @@ import { pEvent } from 'p-event'
 import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K, QUERY_SELF_INITIAL_INTERVAL } from './constants.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { RoutingTable } from './routing-table/index.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Startable } from '@libp2p/interface/startable'
 import type { DeferredPromise } from 'p-defer'
@@ -26,6 +26,7 @@ export interface QuerySelfInit {
 
 export interface QuerySelfComponents {
   peerId: PeerId
+  logger: ComponentLogger
 }
 
 /**
@@ -33,7 +34,7 @@ export interface QuerySelfComponents {
  */
 export class QuerySelf implements Startable {
   private readonly log: Logger
-  private readonly components: QuerySelfComponents
+  private readonly peerId: PeerId
   private readonly peerRouting: PeerRouting
   private readonly routingTable: RoutingTable
   private readonly count: number
@@ -49,8 +50,8 @@ export class QuerySelf implements Startable {
   constructor (components: QuerySelfComponents, init: QuerySelfInit) {
     const { peerRouting, lan, count, interval, queryTimeout, routingTable } = init
 
-    this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:query-self`)
+    this.peerId = components.peerId
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:query-self`)
     this.started = false
     this.peerRouting = peerRouting
     this.routingTable = routingTable
@@ -125,7 +126,7 @@ export class QuerySelf implements Startable {
         const start = Date.now()
 
         const found = await pipe(
-          this.peerRouting.getClosestPeers(this.components.peerId.toBytes(), {
+          this.peerRouting.getClosestPeers(this.peerId.toBytes(), {
             signal,
             isSelfQuery: true
           }),

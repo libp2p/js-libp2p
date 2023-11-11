@@ -5,6 +5,7 @@ import { type Identify, identify } from '@libp2p/identify'
 import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -64,7 +65,9 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     localTM = new DefaultTransportManager(localComponents)
-    localTM.add(webSockets({ filter: filters.all })())
+    localTM.add(webSockets({ filter: filters.all })({
+      logger: defaultLogger()
+    }))
     localComponents.transportManager = localTM
 
     // this peer is spun up in .aegir.cjs

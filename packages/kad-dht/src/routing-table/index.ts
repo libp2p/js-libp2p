@@ -1,15 +1,14 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import Queue from 'p-queue'
 import * as utils from '../utils.js'
 import { KBucket, type PingEventDetails } from './k-bucket.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Metric, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Logger } from '@libp2p/logger'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
@@ -32,6 +31,7 @@ export interface RoutingTableComponents {
   peerStore: PeerStore
   connectionManager: ConnectionManager
   metrics?: Metrics
+  logger: ComponentLogger
 }
 
 export interface RoutingTableEvents {
@@ -69,7 +69,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     const { kBucketSize, pingTimeout, lan, pingConcurrency, protocol, tagName, tagValue } = init
 
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table`)
     this.kBucketSize = kBucketSize ?? KBUCKET_SIZE
     this.pingTimeout = pingTimeout ?? PING_TIMEOUT
     this.pingConcurrency = pingConcurrency ?? PING_CONCURRENCY

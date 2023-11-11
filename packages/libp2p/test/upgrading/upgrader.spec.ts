@@ -78,9 +78,9 @@ describe('Upgrader', () => {
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
-    localMuxerFactory = mplex()()
+    localMuxerFactory = mplex()(localComponents)
     localYamuxerFactory = yamux()()
-    localConnectionEncrypter = plaintext()()
+    localConnectionEncrypter = plaintext()(localComponents)
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
         localConnectionEncrypter
@@ -105,9 +105,9 @@ describe('Upgrader', () => {
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
-    remoteMuxerFactory = mplex()()
+    remoteMuxerFactory = mplex()(remoteComponents)
     remoteYamuxerFactory = yamux()()
-    remoteConnectionEncrypter = plaintext()()
+    remoteConnectionEncrypter = plaintext()(remoteComponents)
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
         remoteConnectionEncrypter
@@ -171,14 +171,14 @@ describe('Upgrader', () => {
     // No available muxers
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [],
       inboundUpgradeTimeout: 1000
@@ -285,7 +285,7 @@ describe('Upgrader', () => {
 
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         yamux()()
@@ -294,7 +294,7 @@ describe('Upgrader', () => {
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         yamux()()
@@ -347,7 +347,7 @@ describe('Upgrader', () => {
 
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         new OtherMuxerFactory()
@@ -356,11 +356,11 @@ describe('Upgrader', () => {
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         yamux()(),
-        mplex()()
+        mplex()(localComponents)
       ],
       inboundUpgradeTimeout: 1000
     })

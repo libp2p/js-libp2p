@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { start, stop } from '@libp2p/interface/startable'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -17,7 +18,10 @@ function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSCo
   const addressManager = stubInterface<AddressManager>()
   addressManager.getAddresses.returns(multiaddrs.map(ma => ma.encapsulate(`/p2p/${peerId.toString()}`)))
 
-  return { addressManager }
+  return {
+    addressManager,
+    logger: defaultLogger()
+  }
 }
 
 describe('MulticastDNS', () => {

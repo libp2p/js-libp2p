@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import sinon from 'sinon'
@@ -53,7 +54,8 @@ describe('pubsub base lifecycle', () => {
 
       pubsub = new PubsubProtocol({
         peerId,
-        registrar: sinonMockRegistrar
+        registrar: sinonMockRegistrar,
+        logger: defaultLogger()
       }, {
         multicodecs: ['/pubsub/1.0.0']
       })
@@ -112,13 +114,15 @@ describe('pubsub base lifecycle', () => {
 
       pubsubA = new PubsubImplementation({
         peerId: peerIdA,
-        registrar: registrarA
+        registrar: registrarA,
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol]
       })
       pubsubB = new PubsubImplementation({
         peerId: peerIdB,
-        registrar: registrarB
+        registrar: registrarB,
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol]
       })

@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { CustomEvent } from '@libp2p/interface/events'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
@@ -26,7 +27,8 @@ describe('Query Self', () => {
     peerRouting = stubInterface<PeerRouting>()
 
     const components = {
-      peerId
+      peerId,
+      logger: defaultLogger()
     }
 
     const init = {

@@ -20,11 +20,11 @@ export class PingService implements Startable, PingServiceInterface {
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
   private readonly runOnTransientConnection: boolean
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: PingServiceComponents, init: PingServiceInit = {}) {
     this.components = components
-    this.#log = components.logger.forComponent('libp2p:ping')
+    this.log = components.logger.forComponent('libp2p:ping')
     this.started = false
     this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.timeout = init.timeout ?? TIMEOUT
@@ -57,19 +57,19 @@ export class PingService implements Startable, PingServiceInterface {
    * A handler to register with Libp2p to process ping messages
    */
   handleMessage (data: IncomingStreamData): void {
-    this.#log('incoming ping from %p', data.connection.remotePeer)
+    this.log('incoming ping from %p', data.connection.remotePeer)
 
     const { stream } = data
     const start = Date.now()
 
     void pipe(stream, stream)
       .catch(err => {
-        this.#log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
+        this.log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
       })
       .finally(() => {
         const ms = Date.now() - start
 
-        this.#log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
+        this.log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
       })
   }
 
@@ -77,7 +77,7 @@ export class PingService implements Startable, PingServiceInterface {
    * Ping a given peer and wait for its response, getting the operation latency.
    */
   async ping (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<number> {
-    this.#log('pinging %p', peer)
+    this.log('pinging %p', peer)
 
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
@@ -123,11 +123,11 @@ export class PingService implements Startable, PingServiceInterface {
         throw new CodeError(`Received wrong ping ack after ${ms}ms`, ERR_WRONG_PING_ACK)
       }
 
-      this.#log('ping %p complete in %dms', connection.remotePeer, ms)
+      this.log('ping %p complete in %dms', connection.remotePeer, ms)
 
       return ms
     } catch (err: any) {
-      this.#log.error('error while pinging %p', connection.remotePeer, err)
+      this.log.error('error while pinging %p', connection.remotePeer, err)
 
       stream?.abort(err)
 

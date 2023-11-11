@@ -1,6 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
-import { logger } from '@libp2p/logger'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
 import pDefer from 'p-defer'
@@ -10,7 +9,7 @@ import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { DataChannelOptions } from './index.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Direction } from '@libp2p/interface/connection'
 import type { DeferredPromise } from 'p-defer'
 
@@ -22,6 +21,8 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
    */
   channel: RTCDataChannel
+
+  logger: ComponentLogger
 }
 
 /**
@@ -379,6 +380,8 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    * A callback invoked when the channel ends
    */
   onEnd?(err?: Error | undefined): void
+
+  logger: ComponentLogger
 }
 
 export function createStream (options: WebRTCStreamOptions): WebRTCStream {
@@ -386,7 +389,7 @@ export function createStream (options: WebRTCStreamOptions): WebRTCStream {
 
   return new WebRTCStream({
     id: direction === 'inbound' ? (`i${channel.id}`) : `r${channel.id}`,
-    log: logger(`libp2p:webrtc:stream:${direction}:${channel.id}`),
+    log: options.logger.forComponent(`libp2p:webrtc:stream:${direction}:${channel.id}`),
     ...options
   })
 }

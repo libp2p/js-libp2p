@@ -2,8 +2,8 @@ import { CodeError } from '@libp2p/interface/errors'
 import { pushable } from 'it-pushable'
 import type { CleanUpEvents } from './manager.js'
 import type { QueryEvent } from '../index.js'
+import type { Logger } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { Logger } from '@libp2p/logger'
 import type Queue from 'p-queue'
 
 export async function * queueToGenerator (queue: Queue, signal: AbortSignal, cleanUp: TypedEventTarget<CleanUpEvents>, log: Logger): AsyncGenerator<QueryEvent, void, undefined> {

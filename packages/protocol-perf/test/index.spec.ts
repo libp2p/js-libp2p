@@ -2,12 +2,14 @@
 
 import { start, stop } from '@libp2p/interface/startable'
 import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
 import { duplexPair } from 'it-pair/duplex'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Perf } from '../src/perf-service.js'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
@@ -15,12 +17,14 @@ import type { Registrar } from '@libp2p/interface-internal/registrar'
 interface StubbedPerfComponents {
   registrar: StubbedInstance<Registrar>
   connectionManager: StubbedInstance<ConnectionManager>
+  logger: ComponentLogger
 }
 
 export function createComponents (): StubbedPerfComponents {
   return {
     registrar: stubInterface<Registrar>(),
-    connectionManager: stubInterface<ConnectionManager>()
+    connectionManager: stubInterface<ConnectionManager>(),
+    logger: defaultLogger()
   }
 }
 

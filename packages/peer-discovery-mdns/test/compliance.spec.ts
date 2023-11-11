@@ -2,6 +2,7 @@
 
 import { CustomEvent } from '@libp2p/interface/events'
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'ts-sinon'
@@ -24,7 +25,8 @@ describe('compliance tests', () => {
       ])
 
       discovery = new MulticastDNS({
-        addressManager
+        addressManager,
+        logger: defaultLogger()
       }, {
         broadcast: false,
         port: 50001

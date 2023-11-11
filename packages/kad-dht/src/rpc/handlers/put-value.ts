@@ -1,10 +1,10 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { type Logger, logger } from '@libp2p/logger'
 import { verifyRecord } from '../../record/validators.js'
 import { bufferToRecordKey } from '../../utils.js'
 import type { Validators } from '../../index.js'
 import type { Message } from '../../message/index.js'
 import type { DHTMessageHandler } from '../index.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Datastore } from 'interface-datastore'
 
@@ -14,18 +14,19 @@ export interface PutValueHandlerInit {
 
 export interface PutValueHandlerComponents {
   datastore: Datastore
+  logger: ComponentLogger
 }
 
 export class PutValueHandler implements DHTMessageHandler {
-  private readonly log: Logger
   private readonly components: PutValueHandlerComponents
   private readonly validators: Validators
+  private readonly log: Logger
 
   constructor (components: PutValueHandlerComponents, init: PutValueHandlerInit) {
     const { validators } = init
 
     this.components = components
-    this.log = logger('libp2p:kad-dht:rpc:handlers:put-value')
+    this.log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:put-value')
     this.validators = validators
   }
 

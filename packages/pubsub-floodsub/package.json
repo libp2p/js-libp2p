@@ -56,7 +56,6 @@
   },
   "dependencies": {
     "@libp2p/interface": "^0.1.6",
-    "@libp2p/logger": "^3.1.0",
     "@libp2p/pubsub": "^8.0.10",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
@@ -64,6 +63,7 @@
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.1.5",
+    "@libp2p/logger": "^3.1.0",
     "@libp2p/peer-collections": "^4.0.8",
     "@libp2p/peer-id-factory": "^3.0.8",
     "@multiformats/multiaddr": "^12.1.10",

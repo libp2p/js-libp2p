@@ -1,6 +1,6 @@
 import { DefaultDualKadDHT } from './dual-kad-dht.js'
 import type { ProvidersInit } from './providers.js'
-import type { Libp2pEvents, AbortOptions } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -315,6 +315,7 @@ export interface KadDHTComponents {
   connectionManager: ConnectionManager
   datastore: Datastore
   events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
 }
 
 export function kadDHT (init?: KadDHTInit): (components: KadDHTComponents) => DualKadDHT {

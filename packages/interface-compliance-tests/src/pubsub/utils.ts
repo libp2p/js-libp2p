@@ -1,4 +1,5 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
@@ -19,7 +20,8 @@ export async function createComponents (): Promise<MockNetworkComponents> {
   const components: any = {
     peerId: await createEd25519PeerId(),
     registrar: mockRegistrar(),
-    events: new TypedEventEmitter()
+    events: new TypedEventEmitter(),
+    logger: defaultLogger()
   }
   components.connectionManager = mockConnectionManager(components)
 

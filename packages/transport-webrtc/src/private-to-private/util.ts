@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { abortableSource } from 'abortable-iterator'
 import { anySignal } from 'any-signal'
 import * as lp from 'it-length-prefixed'
@@ -7,13 +6,12 @@ import { AbortError, raceSignal } from 'race-signal'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
+import type { LoggerOptions } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { AbortOptions, MessageStream } from 'it-protobuf-stream'
 import type { DeferredPromise } from 'p-defer'
 
-const log = logger('libp2p:webrtc:peer:util')
-
-export interface ReadCandidatesOptions extends AbortOptions {
+export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions {
   direction: string
 }
 
@@ -47,7 +45,7 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
       let candidateInit = JSON.parse(message.data ?? 'null')
 
       if (candidateInit === '') {
-        log.trace('end-of-candidates for this generation received')
+        options.log.trace('end-of-candidates for this generation received')
         candidateInit = {
           candidate: '',
           sdpMid: '0',
@@ -56,7 +54,7 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
       }
 
       if (candidateInit === null) {
-        log.trace('end-of-candidates received')
+        options.log.trace('end-of-candidates received')
         candidateInit = {
           candidate: null,
           sdpMid: '0',
@@ -68,16 +66,16 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
       const candidate = new RTCIceCandidate(candidateInit)
 
-      log.trace('%s received new ICE candidate', options.direction, candidate)
+      options.log.trace('%s received new ICE candidate', options.direction, candidate)
 
       try {
         await pc.addIceCandidate(candidate)
       } catch (err) {
-        log.error('%s bad candidate received', options.direction, err)
+        options.log.error('%s bad candidate received', options.direction, err)
       }
     }
   } catch (err) {
-    log.error('%s error parsing ICE candidate', options.direction, err)
+    options.log.error('%s error parsing ICE candidate', options.direction, err)
   } finally {
     signal.clear()
   }
@@ -95,7 +93,6 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
 
 export function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
   pc[isFirefox ? 'oniceconnectionstatechange' : 'onconnectionstatechange'] = (_) => {
-    log.trace('receiver peerConnectionState state change: %s', pc.connectionState)
     switch (isFirefox ? pc.iceConnectionState : pc.connectionState) {
       case 'connected':
         promise.resolve()
