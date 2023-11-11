@@ -184,7 +184,7 @@ describe('PersistentPeerStore', () => {
         multiaddr: multiaddr.toString()
       }))).to.deep.equal([{
         isCertified: true,
-        multiaddr: '/ip4/127.0.0.1/tcp/1234'
+        multiaddr: `/ip4/127.0.0.1/tcp/1234/p2p/${peerId}`
       }])
     })
 
@@ -213,7 +213,7 @@ describe('PersistentPeerStore', () => {
         multiaddr: multiaddr.toString()
       }))).to.deep.equal([{
         isCertified: true,
-        multiaddr: '/ip4/127.0.0.1/tcp/4567'
+        multiaddr: `/ip4/127.0.0.1/tcp/4567/p2p/${peerId}`
       }])
     })
 
@@ -243,7 +243,7 @@ describe('PersistentPeerStore', () => {
         multiaddr: multiaddr.toString()
       }))).to.deep.equal([{
         isCertified: true,
-        multiaddr: '/ip4/127.0.0.1/tcp/4567'
+        multiaddr: `/ip4/127.0.0.1/tcp/4567/p2p/${peerId}`
       }])
     })
 

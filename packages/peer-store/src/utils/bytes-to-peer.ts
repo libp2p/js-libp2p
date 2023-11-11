@@ -1,6 +1,6 @@
 import { peerIdFromPeerId } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
 import { Peer as PeerPB } from '../pb/peer.js'
+import { addressesWithPeerIds } from './addresses-with-peer-ids.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Peer, Tag } from '@libp2p/interface/peer-store'
 
@@ -30,12 +30,7 @@ export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
   return {
     ...peer,
     id: peerId,
-    addresses: peer.addresses.map(({ multiaddr: ma, isCertified }) => {
-      return {
-        multiaddr: multiaddr(ma),
-        isCertified: isCertified ?? false
-      }
-    }),
+    addresses: addressesWithPeerIds(peerId, peer.addresses),
     metadata: peer.metadata,
     peerRecordEnvelope: peer.peerRecordEnvelope ?? undefined,
     tags

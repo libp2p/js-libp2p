@@ -6,12 +6,14 @@ import { base32 } from 'multiformats/bases/base32'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { codes } from './errors.js'
 import { Peer as PeerPB } from './pb/peer.js'
+import { bytesToPeerInfo } from './utils/bytes-to-peer-info.js'
 import { bytesToPeer } from './utils/bytes-to-peer.js'
 import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datastore-key.js'
 import { toPeerPB } from './utils/to-peer-pb.js'
 import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
 import type { PeerUpdate as PeerUpdateExternal } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Peer, PeerData, PeerQuery } from '@libp2p/interface/peer-store'
 import type { Datastore, Key, Query } from 'interface-datastore'
 
@@ -89,6 +91,12 @@ export class PersistentStore {
     const buf = await this.datastore.get(peerIdToDatastoreKey(peerId))
 
     return bytesToPeer(peerId, buf)
+  }
+
+  async loadPeerInfo (peerId: PeerId): Promise<PeerInfo> {
+    const buf = await this.datastore.get(peerIdToDatastoreKey(peerId))
+
+    return bytesToPeerInfo(peerId, buf)
   }
 
   async save (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
