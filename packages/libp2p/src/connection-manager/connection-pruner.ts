@@ -32,7 +32,7 @@ export class ConnectionPruner {
   private readonly peerStore: PeerStore
   private readonly allow: Multiaddr[]
   private readonly events: TypedEventTarget<Libp2pEvents>
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
@@ -40,13 +40,13 @@ export class ConnectionPruner {
     this.connectionManager = components.connectionManager
     this.peerStore = components.peerStore
     this.events = components.events
-    this.#log = components.logger.forComponent('libp2p:connection-manager:connection-pruner')
+    this.log = components.logger.forComponent('libp2p:connection-manager:connection-pruner')
 
     // check the max connection limit whenever a peer connects
     components.events.addEventListener('connection:open', () => {
       this.maybePruneConnections()
         .catch(err => {
-          this.#log.error(err)
+          this.log.error(err)
         })
     })
   }
@@ -60,12 +60,12 @@ export class ConnectionPruner {
     const numConnections = connections.length
     const toPrune = Math.max(numConnections - this.maxConnections, 0)
 
-    this.#log('checking max connections limit %d/%d', numConnections, this.maxConnections)
+    this.log('checking max connections limit %d/%d', numConnections, this.maxConnections)
     if (numConnections <= this.maxConnections) {
       return
     }
 
-    this.#log('max connections limit exceeded %d/%d, pruning %d connection(s)', numConnections, this.maxConnections, toPrune)
+    this.log('max connections limit exceeded %d/%d, pruning %d connection(s)', numConnections, this.maxConnections, toPrune)
     const peerValues = new PeerMap<number>()
 
     // work out peer values
@@ -87,7 +87,7 @@ export class ConnectionPruner {
         }, 0))
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
-          this.#log.error('error loading peer tags', err)
+          this.log.error('error loading peer tags', err)
         }
       }
     }
@@ -124,7 +124,7 @@ export class ConnectionPruner {
     const toClose = []
 
     for (const connection of sortedConnections) {
-      this.#log('too many connections open - closing a connection to %p', connection.remotePeer)
+      this.log('too many connections open - closing a connection to %p', connection.remotePeer)
       // check allow list
       const connectionInAllowList = this.allow.some((ma) => {
         return connection.remoteAddr.toString().startsWith(ma.toString())
@@ -146,7 +146,7 @@ export class ConnectionPruner {
         try {
           await connection.close()
         } catch (err) {
-          this.#log.error(err)
+          this.log.error(err)
         }
       })
     )

@@ -1,4 +1,3 @@
-import { logger } from '@libp2p/logger'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -16,8 +15,8 @@ import type { Providers } from '../providers.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
+import type { Logger } from '@libp2p/interface'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { Logger } from '@libp2p/logger'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 
@@ -43,7 +42,7 @@ export class ContentRouting {
     const { network, peerRouting, queryManager, routingTable, providers, lan } = init
 
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
     this.network = network
     this.peerRouting = peerRouting
     this.queryManager = queryManager

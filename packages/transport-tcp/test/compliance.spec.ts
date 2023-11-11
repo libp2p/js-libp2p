@@ -1,5 +1,6 @@
 import net from 'net'
 import tests from '@libp2p/interface-compliance-tests/transport'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import sinon from 'sinon'
 import { tcp } from '../src/index.js'
@@ -7,7 +8,9 @@ import { tcp } from '../src/index.js'
 describe('interface-transport compliance', () => {
   tests({
     async setup () {
-      const transport = tcp()()
+      const transport = tcp()({
+        logger: defaultLogger()
+      })
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9091'),
         multiaddr('/ip4/127.0.0.1/tcp/9092'),

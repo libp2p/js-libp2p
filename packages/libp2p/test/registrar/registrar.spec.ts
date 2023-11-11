@@ -3,6 +3,7 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
 import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -91,7 +92,8 @@ describe('registrar', () => {
         peerId,
         connectionManager,
         peerStore,
-        events
+        events,
+        logger: defaultLogger()
       })
     })
 

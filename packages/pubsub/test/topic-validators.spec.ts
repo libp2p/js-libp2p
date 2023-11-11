@@ -1,4 +1,5 @@
 import { type PubSubRPC, TopicValidatorResult } from '@libp2p/interface/pubsub'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
@@ -25,7 +26,8 @@ describe('topic validators', () => {
 
     pubsub = new PubsubImplementation({
       peerId,
-      registrar: new MockRegistrar()
+      registrar: new MockRegistrar(),
+      logger: defaultLogger()
     }, {
       multicodecs: [protocol],
       globalSignaturePolicy: 'StrictNoSign'
@@ -44,7 +46,9 @@ describe('topic validators', () => {
     // @ts-expect-error not all fields are implemented in return value
     sinon.stub(pubsub.peers, 'get').returns({})
     const filteredTopic = 't'
-    const peer = new PeerStreams({ id: otherPeerId, protocol: 'a-protocol' })
+    const peer = new PeerStreams({
+      logger: defaultLogger()
+    }, { id: otherPeerId, protocol: 'a-protocol' })
 
     // Set a trivial topic validator
     pubsub.topicValidators.set(filteredTopic, async (_otherPeerId, message) => {

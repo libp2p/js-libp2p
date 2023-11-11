@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
+import { logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { pushable } from 'it-pushable'
@@ -125,7 +126,8 @@ describe('Multistream', () => {
       controller.abort()
 
       await expect(Multistream.read(source, {
-        signal: controller.signal
+        signal: controller.signal,
+        log: logger('test')
       })).to.eventually.be.rejected().with.property('code', 'ABORT_ERR')
     })
   })

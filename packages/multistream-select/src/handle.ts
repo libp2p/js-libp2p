@@ -1,4 +1,3 @@
-import { logger } from '@libp2p/logger'
 import { handshake } from 'it-handshake'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -6,8 +5,6 @@ import { PROTOCOL_ID } from './constants.js'
 import * as multistream from './multistream.js'
 import type { ByteArrayInit, ByteListInit, MultistreamSelectInit, ProtocolStream } from './index.js'
 import type { Duplex, Source } from 'it-stream-types'
-
-const log = logger('libp2p:mss:handle')
 
 /**
  * Handle multistream protocol selections for the given list of protocols.
@@ -63,17 +60,17 @@ export async function handle (stream: any, protocols: string | string[], options
 
   while (true) {
     const protocol = await multistream.readString(reader, options)
-    log.trace('read "%s"', protocol)
+    options?.log.trace('read "%s"', protocol)
 
     if (protocol === PROTOCOL_ID) {
-      log.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol)
+      options?.log.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol)
       multistream.write(writer, uint8ArrayFromString(PROTOCOL_ID), options)
       continue
     }
 
     if (protocols.includes(protocol)) {
       multistream.write(writer, uint8ArrayFromString(protocol), options)
-      log.trace('respond with "%s" for "%s"', protocol, protocol)
+      options?.log.trace('respond with "%s" for "%s"', protocol, protocol)
       rest()
       return { stream: shakeStream, protocol }
     }
@@ -82,11 +79,11 @@ export async function handle (stream: any, protocols: string | string[], options
       // <varint-msg-len><varint-proto-name-len><proto-name>\n<varint-proto-name-len><proto-name>\n\n
       multistream.write(writer, new Uint8ArrayList(...protocols.map(p => multistream.encode(uint8ArrayFromString(p)))), options)
       // multistream.writeAll(writer, protocols.map(p => uint8ArrayFromString(p)))
-      log.trace('respond with "%s" for %s', protocols, protocol)
+      options?.log.trace('respond with "%s" for %s', protocols, protocol)
       continue
     }
 
     multistream.write(writer, uint8ArrayFromString('na'), options)
-    log('respond with "na" for "%s"', protocol)
+    options?.log('respond with "na" for "%s"', protocol)
   }
 }

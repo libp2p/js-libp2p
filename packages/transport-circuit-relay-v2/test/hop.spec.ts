@@ -15,7 +15,7 @@ import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODE
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../src/index.js'
 import { HopMessage, Status } from '../src/pb/index.js'
 import type { CircuitRelayServerInit } from '../src/server/index.js'
-import type { Libp2pEvents } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
@@ -42,6 +42,7 @@ interface Node {
   circuitRelayTransport: Transport
   connectionGater: ConnectionGater
   events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
 }
 
 let peerIndex = 0
@@ -135,7 +136,8 @@ describe('circuit-relay hop protocol', function () {
       connectionManager,
       circuitRelayTransport: transport,
       connectionGater,
-      events
+      events,
+      logger: defaultLogger()
     }
 
     mockNetwork.addNode(node)

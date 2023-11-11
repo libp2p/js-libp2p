@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { TypedEventEmitter } from '@libp2p/interface/events'
+import { defaultLogger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -43,11 +44,13 @@ describe('rpc - handlers - GetProviders', () => {
     peerStore = new PersistentPeerStore({
       peerId,
       datastore: new MemoryDatastore(),
-      events: new TypedEventEmitter<Libp2pEvents>()
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      logger: defaultLogger()
     })
 
     const components: GetProvidersHandlerComponents = {
-      peerStore
+      peerStore,
+      logger: defaultLogger()
     }
 
     handler = new GetProvidersHandler(components, {

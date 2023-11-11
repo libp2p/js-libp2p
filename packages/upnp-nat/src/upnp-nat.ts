@@ -24,12 +24,12 @@ export class UPnPNAT implements Startable {
   private readonly gateway?: string
   private started: boolean
   private client?: NatAPI
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
     this.components = components
 
-    this.#log = components.logger.forComponent('libp2p:upnp-nat')
+    this.log = components.logger.forComponent('libp2p:upnp-nat')
     this.started = false
     this.externalAddress = init.externalAddress
     this.localAddress = init.localAddress
@@ -66,7 +66,7 @@ export class UPnPNAT implements Startable {
     // done async to not slow down startup
     void this.mapIpAddresses().catch((err) => {
       // hole punching errors are non-fatal
-      this.#log.error(err)
+      this.log.error(err)
     })
   }
 
@@ -108,7 +108,7 @@ export class UPnPNAT implements Startable {
 
       const publicPort = highPort()
 
-      this.#log(`opening uPnP connection from ${publicIp}:${publicPort} to ${host}:${port}`)
+      this.log(`opening uPnP connection from ${publicIp}:${publicPort} to ${host}:${port}`)
 
       await client.map({
         publicPort,
@@ -152,7 +152,7 @@ export class UPnPNAT implements Startable {
       await this.client.close()
       this.client = undefined
     } catch (err: any) {
-      this.#log.error(err)
+      this.log.error(err)
     }
   }
 }

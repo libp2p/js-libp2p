@@ -69,7 +69,7 @@ export class Identify implements Startable, IdentifyInterface {
   private readonly maxObservedAddresses: number
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
     this.started = false
@@ -79,7 +79,7 @@ export class Identify implements Startable, IdentifyInterface {
     this.addressManager = components.addressManager
     this.connectionManager = components.connectionManager
     this.events = components.events
-    this.#log = components.logger.forComponent('libp2p:identify')
+    this.log = components.logger.forComponent('libp2p:identify')
 
     this.identifyProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
     this.identifyPushProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
@@ -102,13 +102,13 @@ export class Identify implements Startable, IdentifyInterface {
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
-        this.identify(connection).catch(err => { this.#log.error('error during identify trigged by connection:open', err) })
+        this.identify(connection).catch(err => { this.log.error('error during identify trigged by connection:open', err) })
       })
     }
 
     // When self peer record changes, trigger identify-push
     components.events.addEventListener('self:peer:update', (evt) => {
-      void this.push().catch(err => { this.#log.error(err) })
+      void this.push().catch(err => { this.log.error(err) })
     })
 
     // Append user agent version to default AGENT_VERSION depending on the environment
@@ -139,7 +139,7 @@ export class Identify implements Startable, IdentifyInterface {
 
     await this.registrar.handle(this.identifyProtocolStr, (data) => {
       void this._handleIdentify(data).catch(err => {
-        this.#log.error(err)
+        this.log.error(err)
       })
     }, {
       maxInboundStreams: this.maxInboundStreams,
@@ -148,7 +148,7 @@ export class Identify implements Startable, IdentifyInterface {
     })
     await this.registrar.handle(this.identifyPushProtocolStr, (data) => {
       void this._handlePush(data).catch(err => {
-        this.#log.error(err)
+        this.log.error(err)
       })
     }, {
       maxInboundStreams: this.maxPushIncomingStreams,
@@ -212,7 +212,7 @@ export class Identify implements Startable, IdentifyInterface {
         })
       } catch (err: any) {
         // Just log errors
-        this.#log.error('could not push identify update to peer', err)
+        this.log.error('could not push identify update to peer', err)
         stream?.abort(err)
       }
     })
@@ -281,7 +281,7 @@ export class Identify implements Startable, IdentifyInterface {
 
       return message
     } catch (err: any) {
-      this.#log.error('error while reading identify message', err)
+      this.log.error('error while reading identify message', err)
       stream?.abort(err)
       throw err
     }
@@ -312,12 +312,12 @@ export class Identify implements Startable, IdentifyInterface {
     // Get the observedAddr if there is one
     const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
-    this.#log('identify completed for peer %p and protocols %o', id, protocols)
-    this.#log('our observed address is %a', cleanObservedAddr)
+    this.log('identify completed for peer %p and protocols %o', id, protocols)
+    this.log('our observed address is %a', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
         this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
-      this.#log('storing our observed address %a', cleanObservedAddr)
+      this.log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
 
@@ -375,7 +375,7 @@ export class Identify implements Startable, IdentifyInterface {
         signal
       })
     } catch (err: any) {
-      this.#log.error('could not respond to identify request', err)
+      this.log.error('could not respond to identify request', err)
       stream.abort(err)
     }
   }
@@ -404,16 +404,16 @@ export class Identify implements Startable, IdentifyInterface {
 
       await this.#consumeIdentifyMessage(connection, message)
     } catch (err: any) {
-      this.#log.error('received invalid message', err)
+      this.log.error('received invalid message', err)
       stream.abort(err)
       return
     }
 
-    this.#log('handled push from %p', connection.remotePeer)
+    this.log('handled push from %p', connection.remotePeer)
   }
 
   async #consumeIdentifyMessage (connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
-    this.#log('received identify from %p', connection.remotePeer)
+    this.log('received identify from %p', connection.remotePeer)
 
     if (message == null) {
       throw new CodeError('message was null or undefined', 'ERR_INVALID_MESSAGE')
@@ -446,7 +446,7 @@ export class Identify implements Startable, IdentifyInterface {
 
     // if the peer record has been sent, prefer the addresses in the record as they are signed by the remote peer
     if (message.signedPeerRecord != null) {
-      this.#log('received signedPeerRecord from %p', connection.remotePeer)
+      this.log('received signedPeerRecord from %p', connection.remotePeer)
 
       let peerRecordEnvelope = message.signedPeerRecord
       const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
@@ -483,7 +483,7 @@ export class Identify implements Startable, IdentifyInterface {
 
           // ensure seq is greater than, or equal to, the last received
           if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-            this.#log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
+            this.log('sequence number was lower or equal to existing sequence number - stored: %d received: %d', storedRecord.seqNumber, peerRecord.seqNumber)
             peerRecord = storedRecord
             peerRecordEnvelope = existingPeer.peerRecordEnvelope
           }
@@ -504,10 +504,10 @@ export class Identify implements Startable, IdentifyInterface {
         addresses: peerRecord.multiaddrs
       }
     } else {
-      this.#log('%p did not send a signed peer record', connection.remotePeer)
+      this.log('%p did not send a signed peer record', connection.remotePeer)
     }
 
-    this.#log('patching %p with', connection.remotePeer, peer)
+    this.log('patching %p with', connection.remotePeer, peer)
     await this.peerStore.patch(connection.remotePeer, peer)
 
     if (message.agentVersion != null || message.protocolVersion != null) {
@@ -521,7 +521,7 @@ export class Identify implements Startable, IdentifyInterface {
         metadata.ProtocolVersion = uint8ArrayFromString(message.protocolVersion)
       }
 
-      this.#log('merging %p metadata', connection.remotePeer, metadata)
+      this.log('merging %p metadata', connection.remotePeer, metadata)
       await this.peerStore.merge(connection.remotePeer, {
         metadata
       })

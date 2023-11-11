@@ -44,13 +44,13 @@
   },
   "dependencies": {
     "@libp2p/interface": "^0.1.6",
-    "@libp2p/logger": "^3.1.0",
     "it-foreach": "^2.0.3",
     "it-stream-types": "^2.0.1",
     "prom-client": "^15.0.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.1.5",
+    "@libp2p/logger": "^3.1.0",
     "@libp2p/peer-id-factory": "^3.0.8",
     "@multiformats/multiaddr": "^12.1.10",
     "aegir": "^41.0.2",

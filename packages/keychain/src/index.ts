@@ -51,6 +51,7 @@
  */
 
 import { DefaultKeychain } from './keychain.js'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { KeyType } from '@libp2p/interface/keys'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Datastore } from 'interface-datastore'
@@ -70,6 +71,7 @@ export interface KeychainInit {
 
 export interface KeychainComponents {
   datastore: Datastore
+  logger: ComponentLogger
 }
 
 export interface KeyInfo {

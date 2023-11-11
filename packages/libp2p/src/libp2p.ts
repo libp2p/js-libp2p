@@ -47,7 +47,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
   public components: Components
   #started: boolean
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (init: Libp2pInit<T>) {
     super()
@@ -71,7 +71,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.#started = false
     this.peerId = init.peerId
     this.logger = init.logger ?? defaultLogger()
-    this.#log = this.logger.forComponent('libp2p')
+    this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
     const components = this.components = defaultComponents({
@@ -165,7 +165,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         const service: any = createService(this.components)
 
         if (service == null) {
-          this.#log.error('service factory %s returned null or undefined instance', name)
+          this.log.error('service factory %s returned null or undefined instance', name)
           continue
         }
 
@@ -173,17 +173,17 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         this.configureComponent(name, service)
 
         if (service[contentRouting] != null) {
-          this.#log('registering service %s for content routing', name)
+          this.log('registering service %s for content routing', name)
           contentRouters.push(service[contentRouting])
         }
 
         if (service[peerRouting] != null) {
-          this.#log('registering service %s for peer routing', name)
+          this.log('registering service %s for peer routing', name)
           peerRouters.push(service[peerRouting])
         }
 
         if (service[peerDiscovery] != null) {
-          this.#log('registering service %s for peer discovery', name)
+          this.log('registering service %s for peer discovery', name)
           service[peerDiscovery].addEventListener('peer', (evt: CustomEvent<PeerInfo>) => {
             this.#onDiscoveryPeer(evt)
           })
@@ -194,7 +194,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
   private configureComponent <T> (name: string, component: T): T {
     if (component == null) {
-      this.#log.error('component %s was null or undefined', name)
+      this.log.error('component %s was null or undefined', name)
     }
 
     this.components[name] = component
@@ -212,7 +212,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     this.#started = true
 
-    this.#log('libp2p is starting')
+    this.log('libp2p is starting')
 
     try {
       await this.components.beforeStart?.()
@@ -220,9 +220,9 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       await this.components.afterStart?.()
 
       this.safeDispatchEvent('start', { detail: this })
-      this.#log('libp2p has started')
+      this.log('libp2p has started')
     } catch (err: any) {
-      this.#log.error('An error occurred starting libp2p', err)
+      this.log.error('An error occurred starting libp2p', err)
       await this.stop()
       throw err
     }
@@ -236,7 +236,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       return
     }
 
-    this.#log('libp2p is stopping')
+    this.log('libp2p is stopping')
 
     this.#started = false
 
@@ -245,7 +245,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     await this.components.afterStop?.()
 
     this.safeDispatchEvent('stop', { detail: this })
-    this.#log('libp2p has stopped')
+    this.log('libp2p has stopped')
   }
 
   isStarted (): boolean {
@@ -310,7 +310,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
    * Get the public key for the given peer id
    */
   async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<Uint8Array> {
-    this.#log('getPublicKey %p', peer)
+    this.log('getPublicKey %p', peer)
 
     if (peer.publicKey != null) {
       return peer.publicKey
@@ -379,14 +379,14 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     const { detail: peer } = evt
 
     if (peer.id.toString() === this.peerId.toString()) {
-      this.#log.error(new Error(codes.ERR_DISCOVERED_SELF))
+      this.log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
 
     void this.components.peerStore.merge(peer.id, {
       multiaddrs: peer.multiaddrs
     })
-      .catch(err => { this.#log.error(err) })
+      .catch(err => { this.log.error(err) })
   }
 }
 

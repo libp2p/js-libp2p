@@ -3,7 +3,6 @@
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { Key } from 'interface-datastore/key'
 import mergeOptions from 'merge-options'
@@ -12,10 +11,9 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { codes } from './errors.js'
 import type { KeychainComponents, KeychainInit, Keychain, KeyInfo } from './index.js'
+import type { Logger } from '@libp2p/interface'
 import type { KeyType } from '@libp2p/interface/keys'
 import type { PeerId } from '@libp2p/interface/peer-id'
-
-const log = logger('libp2p:keychain')
 
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
@@ -87,12 +85,14 @@ function DsInfoName (name: string): Key {
 export class DefaultKeychain implements Keychain {
   private readonly components: KeychainComponents
   private readonly init: KeychainInit
+  private readonly log: Logger
 
   /**
    * Creates a new instance of a key chain
    */
   constructor (components: KeychainComponents, init: KeychainInit) {
     this.components = components
+    this.log = components.logger.forComponent('libp2p:keychain')
     this.init = mergeOptions(defaultOptions, init)
 
     // Enforce NIST SP 800-132
@@ -263,7 +263,7 @@ export class DefaultKeychain implements Keychain {
       return JSON.parse(uint8ArrayToString(res))
     } catch (err: any) {
       await randomDelay()
-      log.error(err)
+      this.log.error(err)
       throw new CodeError(`Key '${name}' does not exist.`, codes.ERR_KEY_NOT_FOUND)
     }
   }
@@ -501,7 +501,7 @@ export class DefaultKeychain implements Keychain {
       return uint8ArrayToString(res)
     } catch (err: any) {
       await randomDelay()
-      log.error(err)
+      this.log.error(err)
       throw new CodeError(`Key '${name}' does not exist.`, codes.ERR_KEY_NOT_FOUND)
     }
   }
@@ -522,7 +522,7 @@ export class DefaultKeychain implements Keychain {
       await randomDelay()
       throw new CodeError(`Invalid pass length ${newPass.length}`, codes.ERR_INVALID_PASS_LENGTH)
     }
-    log('recreating keychain')
+    this.log('recreating keychain')
     const cached = privates.get(this)
 
     if (cached == null) {
@@ -558,6 +558,6 @@ export class DefaultKeychain implements Keychain {
       batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
       await batch.commit()
     }
-    log('keychain reconstructed')
+    this.log('keychain reconstructed')
   }
 }

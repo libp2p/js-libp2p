@@ -38,11 +38,11 @@ export class AutoNATService implements Startable {
   private readonly maxOutboundStreams: number
   private verifyAddressTimeout?: ReturnType<typeof setTimeout>
   private started: boolean
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
     this.components = components
-    this.#log = components.logger.forComponent('libp2p:autonat')
+    this.log = components.logger.forComponent('libp2p:autonat')
     this.started = false
     this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.timeout = init.timeout ?? TIMEOUT
@@ -65,7 +65,7 @@ export class AutoNATService implements Startable {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleIncomingAutonatStream(data)
         .catch(err => {
-          this.#log.error('error handling incoming autonat stream', err)
+          this.log.error('error handling incoming autonat stream', err)
         })
     }, {
       maxInboundStreams: this.maxInboundStreams,
@@ -113,7 +113,7 @@ export class AutoNATService implements Startable {
           const buf = await first(stream)
 
           if (buf == null) {
-            self.#log('no message received')
+            self.log('no message received')
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
               dialResponse: {
@@ -130,7 +130,7 @@ export class AutoNATService implements Startable {
           try {
             request = Message.decode(buf)
           } catch (err) {
-            self.#log.error('could not decode message', err)
+            self.log.error('could not decode message', err)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -146,7 +146,7 @@ export class AutoNATService implements Startable {
           const dialRequest = request.dial
 
           if (dialRequest == null) {
-            self.#log.error('dial was missing from message')
+            self.log.error('dial was missing from message')
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -163,7 +163,7 @@ export class AutoNATService implements Startable {
           const peer = dialRequest.peer
 
           if (peer == null || peer.id == null) {
-            self.#log.error('PeerId missing from message')
+            self.log.error('PeerId missing from message')
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -179,7 +179,7 @@ export class AutoNATService implements Startable {
           try {
             peerId = peerIdFromBytes(peer.id)
           } catch (err) {
-            self.#log.error('invalid PeerId', err)
+            self.log.error('invalid PeerId', err)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -192,11 +192,11 @@ export class AutoNATService implements Startable {
             return
           }
 
-          self.#log('incoming request from %p', peerId)
+          self.log('incoming request from %p', peerId)
 
           // reject any dial requests that arrive via relays
           if (!data.connection.remotePeer.equals(peerId)) {
-            self.#log('target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
+            self.log('target peer %p did not equal sending peer %p', peerId, data.connection.remotePeer)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -215,7 +215,7 @@ export class AutoNATService implements Startable {
             .filter(ma => {
               const isFromSameHost = ma.toOptions().host === data.connection.remoteAddr.toOptions().host
 
-              self.#log.trace('request to dial %a was sent from %a is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
+              self.log.trace('request to dial %a was sent from %a is same host %s', ma, data.connection.remoteAddr, isFromSameHost)
               // skip any Multiaddrs where the target node's IP does not match the sending node's IP
               return isFromSameHost
             })
@@ -223,7 +223,7 @@ export class AutoNATService implements Startable {
               const host = ma.toOptions().host
               const isPublicIp = !(isPrivateIp(host) ?? false)
 
-              self.#log.trace('host %s was public %s', host, isPublicIp)
+              self.log.trace('host %s was public %s', host, isPublicIp)
               // don't try to dial private addresses
               return isPublicIp
             })
@@ -231,14 +231,14 @@ export class AutoNATService implements Startable {
               const host = ma.toOptions().host
               const isNotOurHost = !ourHosts.includes(host)
 
-              self.#log.trace('host %s was not our host %s', host, isNotOurHost)
+              self.log.trace('host %s was not our host %s', host, isNotOurHost)
               // don't try to dial nodes on the same host as us
               return isNotOurHost
             })
             .filter(ma => {
               const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
 
-              self.#log.trace('transport for %a is supported %s', ma, isSupportedTransport)
+              self.log.trace('transport for %a is supported %s', ma, isSupportedTransport)
               // skip any Multiaddrs that have transports we do not support
               return isSupportedTransport
             })
@@ -253,7 +253,7 @@ export class AutoNATService implements Startable {
 
           // make sure we have something to dial
           if (multiaddrs.length === 0) {
-            self.#log('no valid multiaddrs for %p in message', peerId)
+            self.log('no valid multiaddrs for %p in message', peerId)
 
             yield Message.encode({
               type: Message.MessageType.DIAL_RESPONSE,
@@ -266,7 +266,7 @@ export class AutoNATService implements Startable {
             return
           }
 
-          self.#log('dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
+          self.log('dial multiaddrs %s for peer %p', multiaddrs.map(ma => ma.toString()).join(', '), peerId)
 
           let errorMessage = ''
           let lastMultiaddr = multiaddrs[0]
@@ -281,11 +281,11 @@ export class AutoNATService implements Startable {
               })
 
               if (!connection.remoteAddr.equals(multiaddr)) {
-                self.#log.error('tried to dial %a but dialed %a', multiaddr, connection.remoteAddr)
+                self.log.error('tried to dial %a but dialed %a', multiaddr, connection.remoteAddr)
                 throw new Error('Unexpected remote address')
               }
 
-              self.#log('Success %p', peerId)
+              self.log('Success %p', peerId)
 
               yield Message.encode({
                 type: Message.MessageType.DIAL_RESPONSE,
@@ -297,7 +297,7 @@ export class AutoNATService implements Startable {
 
               return
             } catch (err: any) {
-              self.#log('could not dial %p', peerId, err)
+              self.log('could not dial %p', peerId, err)
               errorMessage = err.message
             } finally {
               if (connection != null) {
@@ -319,7 +319,7 @@ export class AutoNATService implements Startable {
         data.stream
       )
     } catch (err) {
-      this.#log.error('error handling incoming autonat stream', err)
+      this.log.error('error handling incoming autonat stream', err)
     } finally {
       signal.removeEventListener('abort', onAbort)
     }
@@ -328,7 +328,7 @@ export class AutoNATService implements Startable {
   _verifyExternalAddresses (): void {
     void this.verifyExternalAddresses()
       .catch(err => {
-        this.#log.error('error verifying external address', err)
+        this.log.error('error verifying external address', err)
       })
   }
 
@@ -353,7 +353,7 @@ export class AutoNATService implements Startable {
       })
 
     if (multiaddrs.length === 0) {
-      this.#log('no public addresses found, not requesting verification')
+      this.log('no public addresses found, not requesting verification')
       this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
 
       return
@@ -368,7 +368,7 @@ export class AutoNATService implements Startable {
     const self = this
 
     try {
-      this.#log('verify multiaddrs %s', multiaddrs.map(ma => ma.toString()).join(', '))
+      this.log('verify multiaddrs %s', multiaddrs.map(ma => ma.toString()).join(', '))
 
       const request = Message.encode({
         type: Message.MessageType.DIAL,
@@ -390,7 +390,7 @@ export class AutoNATService implements Startable {
         let onAbort = (): void => {}
 
         try {
-          this.#log('asking %p to verify multiaddr', peer.id)
+          this.log('asking %p to verify multiaddr', peer.id)
 
           const connection = await self.components.connectionManager.openConnection(peer.id, {
             signal
@@ -412,13 +412,13 @@ export class AutoNATService implements Startable {
             async (stream) => first(stream)
           )
           if (buf == null) {
-            this.#log('no response received from %p', connection.remotePeer)
+            this.log('no response received from %p', connection.remotePeer)
             return undefined
           }
           const response = Message.decode(buf)
 
           if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
-            this.#log('invalid autonat response from %p', connection.remotePeer)
+            this.log('invalid autonat response from %p', connection.remotePeer)
             return undefined
           }
 
@@ -434,12 +434,12 @@ export class AutoNATService implements Startable {
               const octets = options.host.split(':')
               segment = octets[0]
             } else {
-              this.#log('remote address "%s" was not IP4 or IP6?', options.host)
+              this.log('remote address "%s" was not IP4 or IP6?', options.host)
               return undefined
             }
 
             if (networkSegments.includes(segment)) {
-              this.#log('already have response from network segment %d - %s', segment, options.host)
+              this.log('already have response from network segment %d - %s', segment, options.host)
               return undefined
             }
 
@@ -448,7 +448,7 @@ export class AutoNATService implements Startable {
 
           return response.dialResponse
         } catch (err) {
-          this.#log.error('error asking remote to verify multiaddr', err)
+          this.log.error('error asking remote to verify multiaddr', err)
         } finally {
           signal.removeEventListener('abort', onAbort)
         }
@@ -467,7 +467,7 @@ export class AutoNATService implements Startable {
           // they either told us which address worked/didn't work, or we only sent them one address
           const addr = dialResponse.addr == null ? multiaddrs[0] : multiaddr(dialResponse.addr)
 
-          this.#log('autonat response for %a is %s', addr, dialResponse.status)
+          this.log('autonat response for %a is %s', addr, dialResponse.status)
 
           if (dialResponse.status === Message.ResponseStatus.E_BAD_REQUEST) {
             // the remote could not parse our request
@@ -485,7 +485,7 @@ export class AutoNATService implements Startable {
           }
 
           if (!multiaddrs.some(ma => ma.equals(addr))) {
-            this.#log('peer reported %a as %s but it was not in our observed address list', addr, dialResponse.status)
+            this.log('peer reported %a as %s but it was not in our observed address list', addr, dialResponse.status)
             continue
           }
 
@@ -503,19 +503,19 @@ export class AutoNATService implements Startable {
 
           if (results[addrStr].success === REQUIRED_SUCCESSFUL_DIALS) {
             // we are now convinced
-            this.#log('%a is externally dialable', addr)
+            this.log('%a is externally dialable', addr)
             addressManager.confirmObservedAddr(addr)
             return
           }
 
           if (results[addrStr].failure === REQUIRED_SUCCESSFUL_DIALS) {
             // we are now unconvinced
-            this.#log('%a is not externally dialable', addr)
+            this.log('%a is not externally dialable', addr)
             addressManager.removeObservedAddr(addr)
             return
           }
         } catch (err) {
-          this.#log.error('could not verify external address', err)
+          this.log.error('could not verify external address', err)
         }
       }
     } finally {

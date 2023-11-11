@@ -1,15 +1,13 @@
 import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
-import { logger } from '@libp2p/logger'
 import multicastDNS from 'multicast-dns'
 import * as query from './query.js'
 import { stringGen } from './utils.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Startable } from '@libp2p/interface/src/startable.js'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-
-const log = logger('libp2p:mdns')
 
 export interface MulticastDNSInit {
   broadcast?: boolean
@@ -22,11 +20,13 @@ export interface MulticastDNSInit {
 
 export interface MulticastDNSComponents {
   addressManager: AddressManager
+  logger: ComponentLogger
 }
 
 export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   public mdns?: multicastDNS.MulticastDNS
 
+  private readonly log: Logger
   private readonly broadcast: boolean
   private readonly interval: number
   private readonly serviceTag: string
@@ -39,6 +39,7 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
   constructor (components: MulticastDNSComponents, init: MulticastDNSInit = {}) {
     super()
 
+    this.log = components.logger.forComponent('libp2p:mdns')
     this.broadcast = init.broadcast !== false
     this.interval = init.interval ?? (1e3 * 10)
     this.serviceTag = init.serviceTag ?? '_p2p._udp.local'
@@ -81,7 +82,9 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
     this.mdns.on('warning', this._onMdnsWarning)
     this.mdns.on('error', this._onMdnsError)
 
-    this._queryInterval = query.queryLAN(this.mdns, this.serviceTag, this.interval)
+    this._queryInterval = query.queryLAN(this.mdns, this.serviceTag, this.interval, {
+      log: this.log
+    })
   }
 
   _onMdnsQuery (event: multicastDNS.QueryPacket): void {
@@ -89,40 +92,45 @@ export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements P
       return
     }
 
-    log.trace('received incoming mDNS query')
+    this.log.trace('received incoming mDNS query')
     query.gotQuery(
       event,
       this.mdns,
       this.peerName,
       this.components.addressManager.getAddresses(),
       this.serviceTag,
-      this.broadcast)
+      this.broadcast, {
+        log: this.log
+      }
+    )
   }
 
   _onMdnsResponse (event: multicastDNS.ResponsePacket): void {
-    log.trace('received mDNS query response')
+    this.log.trace('received mDNS query response')
 
     try {
-      const foundPeer = query.gotResponse(event, this.peerName, this.serviceTag)
+      const foundPeer = query.gotResponse(event, this.peerName, this.serviceTag, {
+        log: this.log
+      })
 
       if (foundPeer != null) {
-        log('discovered peer in mDNS query response %p', foundPeer.id)
+        this.log('discovered peer in mDNS query response %p', foundPeer.id)
 
         this.dispatchEvent(new CustomEvent<PeerInfo>('peer', {
           detail: foundPeer
         }))
       }
     } catch (err) {
-      log.error('Error processing peer response', err)
+      this.log.error('Error processing peer response', err)
     }
   }
 
   _onMdnsWarning (err: Error): void {
-    log.error('mdns warning', err)
+    this.log.error('mdns warning', err)
   }
 
   _onMdnsError (err: Error): void {
-    log.error('mdns error', err)
+    this.log.error('mdns error', err)
   }
 
   /**

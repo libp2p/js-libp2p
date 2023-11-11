@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
@@ -28,7 +29,8 @@ describe('rpc - handlers - PutValue', () => {
     validators = {}
 
     const components = {
-      datastore
+      datastore,
+      logger: defaultLogger()
     }
 
     handler = new PutValueHandler(components, {

@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import filter from 'it-filter'
 import first from 'it-first'
 import merge from 'it-merge'
@@ -10,13 +9,12 @@ import {
   requirePeers
 } from './content-routing/utils.js'
 import { codes, messages } from './errors.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { PeerRouting } from '@libp2p/interface/peer-routing'
 import type { PeerStore } from '@libp2p/interface/peer-store'
-
-const log = logger('libp2p:peer-routing')
+import type { ComponentLogger } from '@libp2p/logger'
 
 export interface PeerRoutingInit {
   routers?: PeerRouting[]
@@ -25,14 +23,19 @@ export interface PeerRoutingInit {
 export interface DefaultPeerRoutingComponents {
   peerId: PeerId
   peerStore: PeerStore
+  logger: ComponentLogger
 }
 
 export class DefaultPeerRouting implements PeerRouting {
-  private readonly components: DefaultPeerRoutingComponents
+  private readonly log: Logger
+  private readonly peerId: PeerId
+  private readonly peerStore: PeerStore
   private readonly routers: PeerRouting[]
 
   constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit) {
-    this.components = components
+    this.log = components.logger.forComponent('libp2p:peer-routing')
+    this.peerId = components.peerId
+    this.peerStore = components.peerStore
     this.routers = init.routers ?? []
   }
 
@@ -44,9 +47,11 @@ export class DefaultPeerRouting implements PeerRouting {
       throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
-    if (id.toString() === this.components.peerId.toString()) {
+    if (id.toString() === this.peerId.toString()) {
       throw new CodeError('Should not try to find self', codes.ERR_FIND_SELF)
     }
+
+    const self = this
 
     const output = await pipe(
       merge(
@@ -54,12 +59,12 @@ export class DefaultPeerRouting implements PeerRouting {
           try {
             yield await router.findPeer(id, options)
           } catch (err) {
-            log.error(err)
+            self.log.error(err)
           }
         })())
       ),
       (source) => filter(source, Boolean),
-      (source) => storeAddresses(source, this.components.peerStore),
+      (source) => storeAddresses(source, this.peerStore),
       async (source) => first(source)
     )
 
@@ -82,7 +87,7 @@ export class DefaultPeerRouting implements PeerRouting {
       merge(
         ...this.routers.map(router => router.getClosestPeers(key, options))
       ),
-      (source) => storeAddresses(source, this.components.peerStore),
+      (source) => storeAddresses(source, this.peerStore),
       (source) => uniquePeers(source),
       (source) => requirePeers(source)
     )

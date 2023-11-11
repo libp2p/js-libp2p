@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon, { type SinonStubbedInstance } from 'sinon'
@@ -32,7 +33,8 @@ describe('rpc - handlers - FindNode', () => {
 
     handler = new FindNodeHandler({
       peerId,
-      addressManager
+      addressManager,
+      logger: defaultLogger()
     }, {
       peerRouting,
       lan: false
@@ -113,7 +115,8 @@ describe('rpc - handlers - FindNode', () => {
 
     handler = new FindNodeHandler({
       peerId,
-      addressManager
+      addressManager,
+      logger: defaultLogger()
     }, {
       peerRouting,
       lan: true

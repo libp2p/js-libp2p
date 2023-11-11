@@ -19,12 +19,12 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
   private readonly connectionManager: ConnectionManager
   private readonly relayStore: ReservationStore
   private readonly listeningAddrs: PeerMap<Multiaddr[]>
-  readonly #log: Logger
+  private readonly log: Logger
 
   constructor (components: CircuitRelayTransportListenerComponents) {
     super()
 
-    this.#log = components.logger.forComponent('libp2p:circuit-relay:transport:listener')
+    this.log = components.logger.forComponent('libp2p:circuit-relay:transport:listener')
     this.connectionManager = components.connectionManager
     this.relayStore = components.relayStore
     this.listeningAddrs = new PeerMap()
@@ -38,7 +38,7 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
   }
 
   async listen (addr: Multiaddr): Promise<void> {
-    this.#log('listen on %a', addr)
+    this.log('listen on %a', addr)
 
     // remove the circuit part to get the peer id of the relay
     const relayAddr = addr.decapsulate('/p2p-circuit')
@@ -57,7 +57,7 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     }
 
     if (this.listeningAddrs.has(relayConn.remotePeer)) {
-      this.#log('already listening on relay %p', relayConn.remotePeer)
+      this.log('already listening on relay %p', relayConn.remotePeer)
       return
     }
 
@@ -80,12 +80,12 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
   #removeRelayPeer (peerId: PeerId): void {
     const had = this.listeningAddrs.has(peerId)
 
-    this.#log('relay peer removed %p - had reservation', peerId, had)
+    this.log('relay peer removed %p - had reservation', peerId, had)
 
     this.listeningAddrs.delete(peerId)
 
     if (had) {
-      this.#log.trace('removing relay event listener for peer %p', peerId)
+      this.log.trace('removing relay event listener for peer %p', peerId)
       this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
       // Announce listen addresses change
       this.safeDispatchEvent('close', {})

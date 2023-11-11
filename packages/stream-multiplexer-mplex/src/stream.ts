@@ -1,10 +1,10 @@
 import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
-import { logger } from '@libp2p/logger'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_MSG_SIZE } from './decode.js'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
 import type { Message } from './message-types.js'
+import type { ComponentLogger } from '@libp2p/interface'
 
 export interface Options {
   id: number
@@ -13,6 +13,7 @@ export interface Options {
   onEnd?(err?: Error): void
   type?: 'initiator' | 'receiver'
   maxMsgSize?: number
+  logger: ComponentLogger
 }
 
 interface MplexStreamInit extends AbstractStreamInit {
@@ -87,6 +88,6 @@ export function createStream (options: Options): MplexStream {
     maxDataSize: maxMsgSize,
     onEnd,
     send,
-    log: logger(`libp2p:mplex:stream:${type}:${id}`)
+    log: options.logger.forComponent(`libp2p:mplex:stream:${type}:${id}`)
   })
 }

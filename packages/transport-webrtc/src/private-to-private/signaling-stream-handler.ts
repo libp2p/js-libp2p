@@ -1,21 +1,20 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
+import type { Logger } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
-
-const log = logger('libp2p:webrtc:signaling-stream-handler')
 
 export interface IncomingStreamOpts extends IncomingStreamData {
   peerConnection: RTCPeerConnection
   signal: AbortSignal
+  log: Logger
 }
 
-export async function handleIncomingStream ({ peerConnection, stream, signal, connection }: IncomingStreamOpts): Promise<{ remoteAddress: Multiaddr }> {
+export async function handleIncomingStream ({ peerConnection, stream, signal, connection, log }: IncomingStreamOpts): Promise<{ remoteAddress: Multiaddr }> {
   log.trace('new inbound signaling stream')
 
   const messageStream = pbStream(stream).pb(Message)
@@ -104,7 +103,8 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     // wait until candidates are connected
     await readCandidatesUntilConnected(connectedPromise, peerConnection, messageStream, {
       direction: 'recipient',
-      signal
+      signal,
+      log
     })
 
     log.trace('recipient connected, closing signaling stream')
