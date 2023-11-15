@@ -13,7 +13,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { MessageTypes, MessageTypeNames } from '../src/message-types.js'
 import { createStream } from '../src/stream.js'
-import { messageWithBytes } from './fixtures/utils.js'
+import { arrayToGenerator, messageWithBytes } from './fixtures/utils.js'
 import type { Message } from '../src/message-types.js'
 import type { MplexStream } from '../src/stream.js'
 
@@ -95,7 +95,7 @@ async function streamPair (n: number, onInitiatorMessage?: onMessage, onReceiver
 
   try {
     await pipe(
-      input,
+      arrayToGenerator(input),
       initiator,
       (source) => map(source, buf => {
         const msg: Message = bufferToMessage(buf)
@@ -392,7 +392,6 @@ describe('stream', () => {
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
-      MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR
     ])
 
@@ -453,7 +452,6 @@ describe('stream', () => {
     // All messages sent to recipient
     expect(initiatorSentMessages.map(m => m.type)).to.deep.equal([
       MessageTypes.NEW_STREAM,
-      MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
