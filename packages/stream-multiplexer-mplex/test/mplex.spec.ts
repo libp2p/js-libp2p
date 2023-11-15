@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -20,7 +21,9 @@ describe('mplex', () => {
     const maxOutboundStreams = 10
     const factory = mplex({
       maxOutboundStreams
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const muxer = factory.createStreamMuxer()
 
     // max out the streams for this connection
@@ -40,7 +43,9 @@ describe('mplex', () => {
     const factory = mplex({
       maxInboundStreams,
       disconnectThreshold: Infinity
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const muxer = factory.createStreamMuxer()
     const stream = pushable()
 
@@ -130,7 +135,9 @@ describe('mplex', () => {
     // create the muxer
     const factory = mplex({
       maxStreamBufferSize
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const muxer = factory.createStreamMuxer({
       onIncomingStream () {
         // do nothing with the stream so the buffer fills up
@@ -187,7 +194,9 @@ describe('mplex', () => {
     // create the muxer
     const factory = mplex({
       minSendBytes
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const muxer = factory.createStreamMuxer({})
 
     // collect outgoing mplex messages

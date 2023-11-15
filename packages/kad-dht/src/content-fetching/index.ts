@@ -1,5 +1,4 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -21,8 +20,7 @@ import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Logger } from '@libp2p/logger'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 
 export interface ContentFetchingInit {
   validators: Validators
@@ -46,7 +44,7 @@ export class ContentFetching {
     const { validators, selectors, peerRouting, queryManager, network, lan } = init
 
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
     this.validators = validators
     this.selectors = selectors
     this.peerRouting = peerRouting

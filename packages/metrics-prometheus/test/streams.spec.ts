@@ -1,4 +1,5 @@
 import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -40,7 +41,9 @@ describe('streams', () => {
       deferred.resolve()
     })
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     // track outgoing stream
     metrics.trackMultiaddrConnection(outbound)
@@ -70,7 +73,9 @@ describe('streams', () => {
       remotePeer
     })
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     // track incoming stream
     metrics.trackMultiaddrConnection(inbound)
@@ -110,7 +115,9 @@ describe('streams', () => {
     ;[connectionA, connectionB] = connectionPair(peerA, peerB)
     const aToB = await connectionA.newStream(protocol)
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     // track outgoing stream
     metrics.trackProtocolStream(aToB, connectionA)
@@ -146,7 +153,9 @@ describe('streams', () => {
       registrar: mockRegistrar()
     }
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     ;[connectionA, connectionB] = connectionPair(peerA, peerB)
 

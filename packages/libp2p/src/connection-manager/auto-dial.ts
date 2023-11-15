@@ -1,6 +1,6 @@
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
+import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { PeerJobQueue } from '../utils/peer-job-queue.js'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
 import type { Libp2pEvents, Logger, ComponentLogger } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
@@ -48,7 +48,7 @@ export class AutoDial implements Startable {
   private autoDialInterval?: ReturnType<typeof setInterval>
   private started: boolean
   private running: boolean
-  readonly #log: Logger
+  private readonly log: Logger
 
   /**
    * Proactively tries to connect to known peers stored in the PeerStore.
@@ -64,21 +64,21 @@ export class AutoDial implements Startable {
     this.autoDialMaxQueueLength = init.maxQueueLength ?? defaultOptions.maxQueueLength
     this.autoDialPeerRetryThresholdMs = init.autoDialPeerRetryThreshold ?? defaultOptions.autoDialPeerRetryThreshold
     this.autoDialDiscoveredPeersDebounce = init.autoDialDiscoveredPeersDebounce ?? defaultOptions.autoDialDiscoveredPeersDebounce
-    this.#log = components.logger.forComponent('libp2p:connection-manager:auto-dial')
+    this.log = components.logger.forComponent('libp2p:connection-manager:auto-dial')
     this.started = false
     this.running = false
     this.queue = new PeerJobQueue({
       concurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency
     })
     this.queue.addListener('error', (err) => {
-      this.#log.error('error during auto-dial', err)
+      this.log.error('error during auto-dial', err)
     })
 
     // check the min connection limit whenever a peer disconnects
     components.events.addEventListener('connection:close', () => {
       this.autoDial()
         .catch(err => {
-          this.#log.error(err)
+          this.log.error(err)
         })
     })
 
@@ -93,7 +93,7 @@ export class AutoDial implements Startable {
       debounce = setTimeout(() => {
         this.autoDial()
           .catch(err => {
-            this.#log.error(err)
+            this.log.error(err)
           })
       }, this.autoDialDiscoveredPeersDebounce)
     })
@@ -107,7 +107,7 @@ export class AutoDial implements Startable {
     this.autoDialInterval = setTimeout(() => {
       this.autoDial()
         .catch(err => {
-          this.#log.error('error while autodialing', err)
+          this.log.error('error while autodialing', err)
         })
     }, this.autoDialIntervalMs)
     this.started = true
@@ -116,7 +116,7 @@ export class AutoDial implements Startable {
   afterStart (): void {
     this.autoDial()
       .catch(err => {
-        this.#log.error('error while autodialing', err)
+        this.log.error('error while autodialing', err)
       })
   }
 
@@ -139,24 +139,24 @@ export class AutoDial implements Startable {
     // Already has enough connections
     if (numConnections >= this.minConnections) {
       if (this.minConnections > 0) {
-        this.#log.trace('have enough connections %d/%d', numConnections, this.minConnections)
+        this.log.trace('have enough connections %d/%d', numConnections, this.minConnections)
       }
       return
     }
 
     if (this.queue.size > this.autoDialMaxQueueLength) {
-      this.#log('not enough connections %d/%d but auto dial queue is full', numConnections, this.minConnections)
+      this.log('not enough connections %d/%d but auto dial queue is full', numConnections, this.minConnections)
       return
     }
 
     if (this.running) {
-      this.#log('not enough connections %d/%d - but skipping autodial as it is already running', numConnections, this.minConnections)
+      this.log('not enough connections %d/%d - but skipping autodial as it is already running', numConnections, this.minConnections)
       return
     }
 
     this.running = true
 
-    this.#log('not enough connections %d/%d - will dial peers to increase the number of connections', numConnections, this.minConnections)
+    this.log('not enough connections %d/%d - will dial peers to increase the number of connections', numConnections, this.minConnections)
 
     const dialQueue = new PeerSet(
       // @ts-expect-error boolean filter removes falsy peer IDs
@@ -172,25 +172,25 @@ export class AutoDial implements Startable {
         (peer) => {
           // Remove peers without addresses
           if (peer.addresses.length === 0) {
-            this.#log.trace('not autodialing %p because they have no addresses', peer.id)
+            this.log.trace('not autodialing %p because they have no addresses', peer.id)
             return false
           }
 
           // remove peers we are already connected to
           if (connections.has(peer.id)) {
-            this.#log.trace('not autodialing %p because they are already connected', peer.id)
+            this.log.trace('not autodialing %p because they are already connected', peer.id)
             return false
           }
 
           // remove peers we are already dialling
           if (dialQueue.has(peer.id)) {
-            this.#log.trace('not autodialing %p because they are already being dialed', peer.id)
+            this.log.trace('not autodialing %p because they are already being dialed', peer.id)
             return false
           }
 
           // remove peers already in the autodial queue
           if (this.queue.hasJob(peer.id)) {
-            this.#log.trace('not autodialing %p because they are already being autodialed', peer.id)
+            this.log.trace('not autodialing %p because they are already being autodialed', peer.id)
             return false
           }
 
@@ -249,7 +249,7 @@ export class AutoDial implements Startable {
       return Date.now() - lastDialFailureTimestamp > this.autoDialPeerRetryThresholdMs
     })
 
-    this.#log('selected %d/%d peers to dial', peersThatHaveNotFailed.length, peers.length)
+    this.log('selected %d/%d peers to dial', peersThatHaveNotFailed.length, peers.length)
 
     for (const peer of peersThatHaveNotFailed) {
       this.queue.add(async () => {
@@ -257,19 +257,19 @@ export class AutoDial implements Startable {
 
         // Check to see if we still need to auto dial
         if (numConnections >= this.minConnections) {
-          this.#log('got enough connections now %d/%d', numConnections, this.minConnections)
+          this.log('got enough connections now %d/%d', numConnections, this.minConnections)
           this.queue.clear()
           return
         }
 
-        this.#log('connecting to a peerStore stored peer %p', peer.id)
+        this.log('connecting to a peerStore stored peer %p', peer.id)
         await this.connectionManager.openConnection(peer.id, {
           priority: this.autoDialPriority
         })
       }, {
         peerId: peer.id
       }).catch(err => {
-        this.#log.error('could not connect to peerStore stored peer', err)
+        this.log.error('could not connect to peerStore stored peer', err)
       })
     }
 
@@ -279,7 +279,7 @@ export class AutoDial implements Startable {
       this.autoDialInterval = setTimeout(() => {
         this.autoDial()
           .catch(err => {
-            this.#log.error('error while autodialing', err)
+            this.log.error('error while autodialing', err)
           })
       }, this.autoDialIntervalMs)
     }

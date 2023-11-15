@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import * as lengthPrefixed from 'it-length-prefixed'
@@ -12,7 +13,7 @@ const TEST_MESSAGE = 'test_message'
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1 })
+  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1, logger: defaultLogger() })
 
   return { peerConnection, dataChannel, stream }
 }

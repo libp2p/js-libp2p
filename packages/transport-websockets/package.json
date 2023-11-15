@@ -70,10 +70,9 @@
   },
   "dependencies": {
     "@libp2p/interface": "^0.1.6",
-    "@libp2p/logger": "^3.1.0",
     "@libp2p/utils": "^4.0.7",
-    "@multiformats/mafmt": "^12.1.2",
-    "@multiformats/multiaddr": "^12.1.5",
+    "@multiformats/mafmt": "^12.1.6",
+    "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-to-uri": "^9.0.2",
     "@types/ws": "^8.5.4",
     "abortable-iterator": "^5.0.1",
@@ -84,16 +83,17 @@
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.1.5",
+    "@libp2p/logger": "^3.1.0",
     "aegir": "^41.0.2",
     "is-loopback-addr": "^2.0.1",
-    "it-all": "^3.0.1",
-    "it-drain": "^3.0.2",
+    "it-all": "^3.0.3",
+    "it-drain": "^3.0.3",
     "it-goodbye": "^4.0.1",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "p-wait-for": "^5.0.2",
-    "uint8arraylist": "^2.3.2",
-    "uint8arrays": "^4.0.4"
+    "uint8arraylist": "^2.4.3",
+    "uint8arrays": "^4.0.6"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"

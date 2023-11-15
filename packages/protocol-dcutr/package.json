@@ -1,0 +1,66 @@
+{
+  "name": "@libp2p/dcutr",
+  "version": "0.0.0",
+  "description": "Implementation of the DCUtR Protocol",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/protocol-dcutr#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "start": "node dist/src/main.js",
+    "build": "aegir build",
+    "test": "aegir test",
+    "clean": "aegir clean",
+    "generate": "protons ./src/pb/index.proto",
+    "lint": "aegir lint",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "dep-check": "aegir dep-check"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^0.1.2",
+    "@libp2p/interface-internal": "^0.1.5",
+    "@multiformats/multiaddr": "^12.1.10",
+    "@multiformats/multiaddr-matcher": "^1.1.0",
+    "delay": "^6.0.0",
+    "it-protobuf-stream": "^1.0.2",
+    "private-ip": "^3.0.1",
+    "protons-runtime": "^5.0.0",
+    "uint8arraylist": "^2.4.3"
+  },
+  "devDependencies": {
+    "aegir": "^41.0.2",
+    "protons": "^7.3.0",
+    "sinon": "^17.0.0",
+    "sinon-ts": "^2.0.0"
+  }
+}

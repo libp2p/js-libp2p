@@ -319,7 +319,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
 import { SignaturePolicy } from '@libp2p/interface/pubsub'
-import { identifyService } from 'libp2p/identify'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
     transports: [
@@ -333,7 +333,7 @@ const node = await createLibp2p({
       noise()
     ],
     services: {
-      identify: identifyService(),
+      identify: identify(),
       pubsub: gossipsub({
         emitSelf: false,                                  // whether the node should emit to self on publish
         globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
@@ -356,7 +356,7 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { kadDHT } from '@libp2p/kad-dht'
-import { identifyService } from 'libp2p-identify'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
   transports: [
@@ -370,7 +370,7 @@ const node = await createLibp2p({
     noise()
   ],
   services: {
-    identify: identifyService(),
+    identify: identify(),
     dht: kadDHT({
       kBucketSize: 20,
       clientMode: false           // Whether to run the WAN DHT in client or server mode (default: client mode)
@@ -443,8 +443,8 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { circuitRelayTransport, circuitRelayServer } from 'libp2p/circuit-relay'
-import { identifyService } from 'libp2p-identify'
+import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 
 
 const node = await createLibp2p({
@@ -473,7 +473,7 @@ const node = await createLibp2p({
     denyInboundRelayedConnection: (relay: PeerId, remotePeer: PeerId) => Promise<boolean>
   },
   services: {
-    identify: identifyService(),
+    identify: identify(),
     relay: circuitRelayServer({ // makes the node function as a relay server
       hopTimeout: 30 * 1000, // incoming relay requests must be resolved within this time limit
       advertise: true,
@@ -501,7 +501,7 @@ import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
   transports: [
@@ -529,7 +529,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
   transports: [
@@ -930,7 +930,7 @@ For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-au
 
 ```ts
 import { createLibp2p } from 'libp2p'
-import { autoNATService } from 'libp2p/autonat'
+import { autoNATService } from '@libp2p/autonat'
 
 const node = await createLibp2p({
   services: {
@@ -954,7 +954,7 @@ If your router supports this, libp2p can be configured to use it as follows:
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { uPnPNATService } from 'libp2p/upnp-nat'
+import { uPnPNATService } from '@libp2p/upnp-nat'
 
 const node = await createLibp2p({
   services: {
@@ -986,15 +986,15 @@ Changing the protocol name prefix can isolate default public network (IPFS) for 
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { identifyService } from 'libp2p/identify'
-import { pingService } from 'libp2p/ping'
+import { identify } from '@libp2p/identify'
+import { ping } from 'libp2p/@ping'
 
 const node = await createLibp2p({
   services: {
-    identify: identifyService({
+    identify: identify({
       protocolPrefix: 'ipfs' // default
     }),
-    ping: pingService({
+    ping: ping({
       protocolPrefix: 'ipfs' // default
     })
   }
@@ -1003,7 +1003,7 @@ const node = await createLibp2p({
 protocols: [
   "/ipfs/id/1.0.0", // identify service protocol (if we have multiplexers)
   "/ipfs/id/push/1.0.0", // identify service push protocol (if we have multiplexers)
-  "/ipfs/ping/1.0.0", // built-in ping protocol
+  "/ipfs/ping/1.0.0", // ping protocol
 ]
 */
 ```

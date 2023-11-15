@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { TypedEventEmitter } from '@libp2p/interface/events'
+import { defaultLogger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -43,11 +44,13 @@ describe('rpc - handlers - GetProviders', () => {
     peerStore = new PersistentPeerStore({
       peerId,
       datastore: new MemoryDatastore(),
-      events: new TypedEventEmitter<Libp2pEvents>()
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      logger: defaultLogger()
     })
 
     const components: GetProvidersHandlerComponents = {
-      peerStore
+      peerStore,
+      logger: defaultLogger()
     }
 
     handler = new GetProvidersHandler(components, {
@@ -73,8 +76,7 @@ describe('rpc - handlers - GetProviders', () => {
         multiaddr('/ip4/127.0.0.1/tcp/4002'),
         multiaddr('/ip4/192.168.2.6/tcp/4002'),
         multiaddr('/ip4/21.31.57.23/tcp/4002')
-      ],
-      protocols: []
+      ]
     }]
 
     const provider: PeerInfo[] = [{
@@ -83,8 +85,7 @@ describe('rpc - handlers - GetProviders', () => {
         multiaddr('/ip4/127.0.0.1/tcp/4002'),
         multiaddr('/ip4/192.168.1.5/tcp/4002'),
         multiaddr('/ip4/135.4.67.0/tcp/4002')
-      ],
-      protocols: []
+      ]
     }]
 
     providers.getProviders.withArgs(v.cid).resolves([providerPeer])

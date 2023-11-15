@@ -34,11 +34,14 @@ jobs:
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
-          - name: js-libp2p-example-circuit-relay
-            repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
-            deps:
-              - '@libp2p/websockets@$PWD/packages/transport-websockets'
-              - 'libp2p@$PWD/packages/libp2p'
+          # disabled until @libp2p/identify and @libp2p/circuit-relay are published
+          # - name: js-libp2p-example-circuit-relay
+          #   repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
+          #   deps:
+          #     - '@libp2p/circuit-relay@$PWD/packages/transport-circuit-relay'
+          #     - '@libp2p/identify@$PWD/packages/protocol-identify'
+          #     - '@libp2p/websockets@$PWD/packages/transport-websockets'
+          #     - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-connection-encryption
             repo: https://github.com/libp2p/js-libp2p-example-connection-encryption.git
             deps:

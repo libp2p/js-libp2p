@@ -31,7 +31,7 @@
  * ```
  */
 
-import { MplexStreamMuxer } from './mplex.js'
+import { MplexStreamMuxer, type MplexComponents } from './mplex.js'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
 
 export interface MplexInit {
@@ -96,19 +96,21 @@ export interface MplexInit {
 class Mplex implements StreamMuxerFactory {
   public protocol = '/mplex/6.7.0'
   private readonly _init: MplexInit
+  private readonly components: MplexComponents
 
-  constructor (init: MplexInit = {}) {
+  constructor (components: MplexComponents, init: MplexInit = {}) {
+    this.components = components
     this._init = init
   }
 
   createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
-    return new MplexStreamMuxer({
+    return new MplexStreamMuxer(this.components, {
       ...init,
       ...this._init
     })
   }
 }
 
-export function mplex (init: MplexInit = {}): () => StreamMuxerFactory {
-  return () => new Mplex(init)
+export function mplex (init: MplexInit = {}): (components: MplexComponents) => StreamMuxerFactory {
+  return (components) => new Mplex(components, init)
 }

@@ -1,10 +1,10 @@
 import os from 'os'
 import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { createServer } from 'it-ws/server'
 import { socketToMaConn } from './socket-to-conn.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { Listener, ListenerEvents, CreateListenerOptions } from '@libp2p/interface/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -12,16 +12,24 @@ import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 import type { WebSocketServer } from 'it-ws/server'
 
-const log = logger('libp2p:websockets:listener')
+export interface WebSocketListenerComponents {
+  logger: ComponentLogger
+}
+
+export interface WebSocketListenerInit extends CreateListenerOptions {
+  server?: Server
+}
 
 class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly connections: Set<DuplexWebSocket>
   private listeningMultiaddr?: Multiaddr
   private readonly server: WebSocketServer
+  private readonly log: Logger
 
-  constructor (init: WebSocketListenerInit) {
+  constructor (components: WebSocketListenerComponents, init: WebSocketListenerInit) {
     super()
 
+    this.log = components.logger.forComponent('libp2p:websockets:listener')
     // Keep track of open connections to destroy when the listener is closed
     this.connections = new Set<DuplexWebSocket>()
 
@@ -30,8 +38,10 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
     this.server = createServer({
       ...init,
       onConnection: (stream: DuplexWebSocket) => {
-        const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0))
-        log('new inbound connection %s', maConn.remoteAddr)
+        const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
+          logger: components.logger
+        })
+        this.log('new inbound connection %s', maConn.remoteAddr)
 
         this.connections.add(stream)
 
@@ -42,7 +52,7 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
         try {
           void init.upgrader.upgradeInbound(maConn)
             .then((conn) => {
-              log('inbound connection %s upgraded', maConn.remoteAddr)
+              this.log('inbound connection %s upgraded', maConn.remoteAddr)
 
               if (init?.handler != null) {
                 init?.handler(conn)
@@ -53,16 +63,16 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
               }))
             })
             .catch(async err => {
-              log.error('inbound connection failed to upgrade', err)
+              this.log.error('inbound connection failed to upgrade', err)
 
               await maConn.close().catch(err => {
-                log.error('inbound connection failed to close after upgrade failed', err)
+                this.log.error('inbound connection failed to close after upgrade failed', err)
               })
             })
         } catch (err) {
-          log.error('inbound connection failed to upgrade', err)
+          this.log.error('inbound connection failed to upgrade', err)
           maConn.close().catch(err => {
-            log.error('inbound connection failed to close after upgrade failed', err)
+            this.log.error('inbound connection failed to close after upgrade failed', err)
           })
         }
       }
@@ -151,10 +161,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
   }
 }
 
-export interface WebSocketListenerInit extends CreateListenerOptions {
-  server?: Server
-}
-
-export function createListener (init: WebSocketListenerInit): Listener {
-  return new WebSocketListener(init)
+export function createListener (components: WebSocketListenerComponents, init: WebSocketListenerInit): Listener {
+  return new WebSocketListener(components, init)
 }

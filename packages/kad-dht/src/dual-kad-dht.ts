@@ -3,19 +3,17 @@ import { CodeError } from '@libp2p/interface/errors'
 import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PeerDiscovery, peerDiscovery, type PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
-import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import merge from 'it-merge'
 import isPrivate from 'private-ip'
 import { DefaultKadDHT } from './kad-dht.js'
 import { queryErrorEvent } from './query/events.js'
 import type { DualKadDHT, KadDHT, KadDHTComponents, KadDHTInit, QueryEvent, QueryOptions } from './index.js'
+import type { Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
-
-const log = logger('libp2p:kad-dht')
 
 /**
  * Wrapper class to convert events into returned values
@@ -127,11 +125,13 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
   public readonly components: KadDHTComponents
   private readonly contentRouting: ContentRouting
   private readonly peerRouting: PeerRouting
+  private readonly log: Logger
 
   constructor (components: KadDHTComponents, init: KadDHTInit = {}) {
     super()
 
     this.components = components
+    this.log = components.logger.forComponent('libp2p:kad-dht')
 
     this.wan = new DefaultKadDHT(components, {
       protocolPrefix: '/ipfs',
@@ -164,7 +164,7 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
     // mode when the node's peer data is updated with publicly dialable addresses
     if (init.clientMode == null) {
       components.events.addEventListener('self:peer:update', (evt) => {
-        log('received update of self-peer info')
+        this.log('received update of self-peer info')
         const hasPublicAddress = evt.detail.peer.addresses
           .some(({ multiaddr }) => multiaddrIsPublic(multiaddr))
 
@@ -177,7 +177,7 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
             }
           })
           .catch(err => {
-            log.error('error setting dht server mode', err)
+            this.log.error('error setting dht server mode', err)
           })
       })
     }
@@ -322,7 +322,7 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
       }
 
       if (event.name === 'PEER_RESPONSE' && event.messageName === 'ADD_PROVIDER') {
-        log('sent provider record for %s to %p', key, event.from)
+        this.log('sent provider record for %s to %p', key, event.from)
         success++
       }
     }

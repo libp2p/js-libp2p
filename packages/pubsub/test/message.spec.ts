@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -19,7 +20,8 @@ describe('pubsub base messages', () => {
     peerId = await createPeerId()
     pubsub = new PubsubImplementation({
       peerId,
-      registrar: new MockRegistrar()
+      registrar: new MockRegistrar(),
+      logger: defaultLogger()
     }, {
       multicodecs: ['/pubsub/1.0.0']
     })

@@ -1,5 +1,6 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
@@ -11,7 +12,9 @@ describe('valid localAddr and remoteAddr', () => {
   let upgrader: Upgrader
 
   beforeEach(() => {
-    transport = tcp()()
+    transport = tcp()({
+      logger: defaultLogger()
+    })
     upgrader = mockUpgrader({
       events: new TypedEventEmitter()
     })

@@ -42,23 +42,21 @@
  * const libp2p = await createLibp2p(options)
  *
  * libp2p.on('peer:discovery', function (peerId) {
- *   console.log('found peer: ', peerId.toB58String())
+ *   console.this.log('found peer: ', peerId.toB58String())
  * })
  * ```
  */
 
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
-import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { Startable } from '@libp2p/interface/startable'
-
-const log = logger('libp2p:bootstrap')
 
 const DEFAULT_BOOTSTRAP_TAG_NAME = 'bootstrap'
 const DEFAULT_BOOTSTRAP_TAG_VALUE = 50
@@ -94,6 +92,7 @@ export interface BootstrapInit {
 
 export interface BootstrapComponents {
   peerStore: PeerStore
+  logger: ComponentLogger
 }
 
 /**
@@ -102,6 +101,7 @@ export interface BootstrapComponents {
 class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   static tag = 'bootstrap'
 
+  private readonly log: Logger
   private timer?: ReturnType<typeof setTimeout>
   private readonly list: PeerInfo[]
   private readonly timeout: number
@@ -115,12 +115,13 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     super()
 
     this.components = components
+    this.log = components.logger.forComponent('libp2p:bootstrap')
     this.timeout = options.timeout ?? DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT
     this.list = []
 
     for (const candidate of options.list) {
       if (!P2P.matches(candidate)) {
-        log.error('Invalid multiaddr')
+        this.log.error('Invalid multiaddr')
         continue
       }
 
@@ -128,14 +129,13 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       const peerIdStr = ma.getPeerId()
 
       if (peerIdStr == null) {
-        log.error('Invalid bootstrap multiaddr without peer id')
+        this.log.error('Invalid bootstrap multiaddr without peer id')
         continue
       }
 
       const peerData: PeerInfo = {
         id: peerIdFromString(peerIdStr),
-        multiaddrs: [ma],
-        protocols: []
+        multiaddrs: [ma]
       }
 
       this.list.push(peerData)
@@ -160,11 +160,11 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       return
     }
 
-    log('Starting bootstrap node discovery, discovering peers after %s ms', this.timeout)
+    this.log('Starting bootstrap node discovery, discovering peers after %s ms', this.timeout)
     this.timer = setTimeout(() => {
       void this._discoverBootstrapPeers()
         .catch(err => {
-          log.error(err)
+          this.log.error(err)
         })
     }, this.timeout)
   }

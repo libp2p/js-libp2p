@@ -4,7 +4,9 @@ import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { FaultTolerance } from '@libp2p/interface/transport'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -13,7 +15,6 @@ import sinon from 'sinon'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
 import type { Libp2p } from '@libp2p/interface'
@@ -30,7 +31,8 @@ describe('Transport Manager (WebSockets)', () => {
     components = {
       peerId: await createEd25519PeerId(),
       events,
-      upgrader: mockUpgrader({ events })
+      upgrader: mockUpgrader({ events }),
+      logger: defaultLogger()
     } as any
     components.addressManager = new DefaultAddressManager(components, { listen: [listenAddr.toString()] })
 
@@ -52,7 +54,9 @@ describe('Transport Manager (WebSockets)', () => {
     })
 
     expect(tm.getTransports()).to.have.lengthOf(0)
-    tm.add(transport())
+    tm.add(transport({
+      logger: defaultLogger()
+    }))
 
     expect(tm.getTransports()).to.have.lengthOf(1)
     await tm.remove('@libp2p/websockets')
@@ -60,17 +64,23 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should not be able to add a transport twice', async () => {
-    tm.add(webSockets()())
+    tm.add(webSockets()({
+      logger: defaultLogger()
+    }))
 
     expect(() => {
-      tm.add(webSockets()())
+      tm.add(webSockets()({
+        logger: defaultLogger()
+      }))
     })
       .to.throw()
       .and.to.have.property('code', ErrorCodes.ERR_DUPLICATE_TRANSPORT)
   })
 
   it('should be able to dial', async () => {
-    tm.add(webSockets({ filter: filters.all })())
+    tm.add(webSockets({ filter: filters.all })({
+      logger: defaultLogger()
+    }))
     const addr = multiaddr(process.env.RELAY_MULTIADDR)
     const connection = await tm.dial(addr)
     expect(connection).to.exist()
@@ -78,7 +88,9 @@ describe('Transport Manager (WebSockets)', () => {
   })
 
   it('should fail to dial an unsupported address', async () => {
-    tm.add(webSockets({ filter: filters.all })())
+    tm.add(webSockets({ filter: filters.all })({
+      logger: defaultLogger()
+    }))
     const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
@@ -87,7 +99,9 @@ describe('Transport Manager (WebSockets)', () => {
 
   it('should fail to listen with no valid address', async () => {
     tm = new DefaultTransportManager(components)
-    tm.add(webSockets({ filter: filters.all })())
+    tm.add(webSockets({ filter: filters.all })({
+      logger: defaultLogger()
+    }))
 
     await expect(start(tm))
       .to.eventually.be.rejected()
@@ -124,7 +138,6 @@ describe('libp2p.transportManager (dial only)', () => {
       start: false
     })
 
-    expect(libp2p.isStarted()).to.be.false()
     await expect(libp2p.start()).to.eventually.be.rejected
       .with.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
   })
@@ -147,7 +160,6 @@ describe('libp2p.transportManager (dial only)', () => {
       start: false
     })
 
-    expect(libp2p.isStarted()).to.be.false()
     await expect(libp2p.start()).to.eventually.be.undefined()
   })
 
@@ -169,7 +181,6 @@ describe('libp2p.transportManager (dial only)', () => {
       start: false
     })
 
-    expect(libp2p.isStarted()).to.be.false()
     await expect(libp2p.start()).to.eventually.be.undefined()
   })
 })

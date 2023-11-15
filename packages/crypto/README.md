@@ -19,14 +19,6 @@ Loading this module through a script tag will make it's exports available as `Li
 <script src="https://unpkg.com/@libp2p/crypto/dist/index.min.js"></script>
 ```
 
-# Contribute
-
-Feel free to join in. All welcome. Open an [issue](https://github.com/libp2p/js-libp2p-crypto/issues)!
-
-This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
-
-[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/contributing.md)
-
 # API Docs
 
 - <https://libp2p.github.io/js-libp2p/modules/_libp2p_crypto.html>

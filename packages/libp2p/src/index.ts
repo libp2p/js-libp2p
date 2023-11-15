@@ -19,7 +19,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
-import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger } from '@libp2p/interface'
+import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo } from '@libp2p/interface'
 import type { ConnectionProtector } from '@libp2p/interface/connection'
 import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
@@ -30,7 +30,6 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerRouting } from '@libp2p/interface/peer-routing'
 import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
 import type { Transport } from '@libp2p/interface/transport'
-import type { KeyChainInit } from '@libp2p/keychain'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { Datastore } from 'interface-datastore'
 
@@ -46,6 +45,11 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * peerId instance (it will be created if not provided)
    */
   peerId: PeerId
+
+  /**
+   * Metadata about the node - implementation name, version number, etc
+   */
+  nodeInfo: NodeInfo
 
   /**
    * Addresses for transport listening and to advertise to the network
@@ -78,11 +82,6 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * libp2p PeerStore configuration
    */
   peerStore: PersistentPeerStoreInit
-
-  /**
-   * keychain configuration
-   */
-  keychain: KeyChainInit
 
   /**
    * An array that must include at least 1 compliant transport

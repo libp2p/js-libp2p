@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
@@ -11,7 +12,9 @@ describe('filter addrs', () => {
   let transport: Transport
 
   before(() => {
-    transport = tcp()()
+    transport = tcp()({
+      logger: defaultLogger()
+    })
   })
 
   it('filter valid addrs for this transport', () => {

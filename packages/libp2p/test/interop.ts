@@ -2,10 +2,12 @@ import fs from 'fs'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
+import { identify } from '@libp2p/identify'
 import { contentRouting } from '@libp2p/interface/content-routing'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { peerRouting } from '@libp2p/interface/peer-routing'
@@ -19,8 +21,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
 import pDefer from 'p-defer'
-import { circuitRelayServer, circuitRelayTransport } from '../src/circuit-relay/index.js'
-import { identifyService } from '../src/identify/index.js'
 import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from '../src/index.js'
 import type { ServiceMap } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -136,7 +136,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 
   const services: ServiceFactoryMap = {
-    identify: identifyService()
+    identify: identify()
   }
 
   if (options.muxer === 'mplex') {

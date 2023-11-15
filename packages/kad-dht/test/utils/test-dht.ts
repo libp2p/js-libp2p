@@ -1,7 +1,7 @@
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
-import { logger } from '@libp2p/logger'
+import { defaultLogger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -18,8 +18,6 @@ import type { PeerStore } from '@libp2p/interface/peer-store'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
-
-const log = logger('libp2p:kad-dht:test-dht')
 
 export class TestDHT {
   private readonly peers: Map<string, { dht: DualKadDHT, registrar: Registrar }>
@@ -38,7 +36,8 @@ export class TestDHT {
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
-      events
+      events,
+      logger: defaultLogger()
     }
     components.connectionManager = mockConnectionManager({
       ...components,
@@ -93,11 +92,9 @@ export class TestDHT {
         return
       }
 
-      components.peerStore.merge(peerData.id, {
-        multiaddrs: peerData.multiaddrs,
-        protocols: peerData.protocols
+      void components.peerStore.merge(peerData.id, {
+        multiaddrs: peerData.multiaddrs
       })
-        .catch(err => { log.error(err) })
     })
 
     if (autoStart) {

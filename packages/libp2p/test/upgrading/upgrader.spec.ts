@@ -1,11 +1,13 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -21,15 +23,11 @@ import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { type Components, defaultComponents } from '../../src/components.js'
 import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
-import { preSharedKey } from '../../src/pnet/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
-import swarmKey from '../fixtures/swarm.key.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface/connection'
 import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
@@ -80,9 +78,9 @@ describe('Upgrader', () => {
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
-    localMuxerFactory = mplex()()
+    localMuxerFactory = mplex()(localComponents)
     localYamuxerFactory = yamux()()
-    localConnectionEncrypter = plaintext()()
+    localConnectionEncrypter = plaintext()(localComponents)
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
         localConnectionEncrypter
@@ -107,9 +105,9 @@ describe('Upgrader', () => {
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
-    remoteMuxerFactory = mplex()()
+    remoteMuxerFactory = mplex()(remoteComponents)
     remoteYamuxerFactory = yamux()()
-    remoteConnectionEncrypter = plaintext()()
+    remoteConnectionEncrypter = plaintext()(remoteComponents)
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
         remoteConnectionEncrypter
@@ -173,14 +171,14 @@ describe('Upgrader', () => {
     // No available muxers
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [],
       inboundUpgradeTimeout: 1000
@@ -206,9 +204,12 @@ describe('Upgrader', () => {
   it('should use a private connection protector when provided', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
-    const protector = preSharedKey({
-      psk: uint8ArrayFromString(swarmKey)
-    })()
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
+
     const protectorProtectSpy = sinon.spy(protector, 'protect')
 
     localComponents.connectionProtector = protector
@@ -284,7 +285,7 @@ describe('Upgrader', () => {
 
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         yamux()()
@@ -293,7 +294,7 @@ describe('Upgrader', () => {
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         yamux()()
@@ -346,7 +347,7 @@ describe('Upgrader', () => {
 
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         new OtherMuxerFactory()
@@ -355,11 +356,11 @@ describe('Upgrader', () => {
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
         yamux()(),
-        mplex()()
+        mplex()(localComponents)
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -615,6 +616,12 @@ describe('libp2p.upgrader', () => {
   it('should create an Upgrader', async () => {
     const deferred = pDefer<Components>()
 
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
+
     libp2p = await createLibp2p({
       peerId: peers[0],
       transports: [
@@ -627,9 +634,7 @@ describe('libp2p.upgrader', () => {
       connectionEncryption: [
         plaintext()
       ],
-      connectionProtector: preSharedKey({
-        psk: uint8ArrayFromString(swarmKey)
-      }),
+      connectionProtector: () => protector,
       services: {
         test: (components: any) => {
           deferred.resolve(components)

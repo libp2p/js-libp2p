@@ -1,4 +1,5 @@
 import { mockRegistrar, mockUpgrader, streamPair } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger, logger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -12,6 +13,7 @@ import { Message } from '../src/private-to-private/pb/message.js'
 import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
 import { SIGNALING_PROTO_ID, WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
+import type { Logger } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
@@ -26,6 +28,7 @@ interface PrivateToPrivateComponents {
     transportManager: StubbedInstance<TransportManager>
     connection: StubbedInstance<Connection>
     stream: Stream
+    log: Logger
   }
   recipient: {
     peerConnection: RTCPeerConnection
@@ -33,6 +36,7 @@ interface PrivateToPrivateComponents {
     abortController: AbortController
     signal: AbortSignal
     stream: Stream
+    log: Logger
   }
 }
 
@@ -63,7 +67,8 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
       connectionManager: stubInterface<ConnectionManager>(),
       transportManager: stubInterface<TransportManager>(),
       connection: stubInterface<Connection>(),
-      stream: initiatorStream
+      stream: initiatorStream,
+      log: logger('test')
     },
     recipient: {
       peerConnection: new RTCPeerConnection(),
@@ -72,7 +77,8 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
       }),
       abortController: recipientAbortController,
       signal: recipientAbortController.signal,
-      stream: receiverStream
+      stream: receiverStream,
+      log: logger('test')
     }
   }
 }
@@ -186,8 +192,9 @@ describe('webrtc filter', () => {
       connectionManager: stubInterface<ConnectionManager>(),
       peerId: Sinon.stub() as any,
       registrar: mockRegistrar(),
-      upgrader: mockUpgrader({})
-    }, {})
+      upgrader: mockUpgrader({}),
+      logger: defaultLogger()
+    })
 
     const valid = [
       multiaddr('/ip4/127.0.0.1/tcp/1234/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/webrtc/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')

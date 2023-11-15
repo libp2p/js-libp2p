@@ -11,14 +11,14 @@
  * import { mplex } from '@libp2p/mplex'
  * import { tcp } from '@libp2p/tcp'
  * import { createLibp2p, type Libp2p } from 'libp2p'
- * import { plaintext } from 'libp2p/insecure'
- * import { perfService, type PerfService } from '@libp2p/perf'
+ * import { plaintext } from '@libp2p/plaintext'
+ * import { perf, type Perf } from '@libp2p/perf'
  *
  * const ONE_MEG = 1024 * 1024
  * const UPLOAD_BYTES = ONE_MEG * 1024
  * const DOWNLOAD_BYTES = ONE_MEG * 1024
  *
- * async function createNode (): Promise<Libp2p<{ perf: PerfService }>> {
+ * async function createNode (): Promise<Libp2p<{ perf: Perf }>> {
  *   return createLibp2p({
  *     addresses: {
  *       listen: [
@@ -35,7 +35,7 @@
  *       yamux(), mplex()
  *     ],
  *     services: {
- *       perf: perfService()
+ *       perf: perf()
  *     }
  *   })
  * }
@@ -52,8 +52,8 @@
  * ```
  */
 
-import { PerfService as PerfServiceClass } from './perf-service.js'
-import type { AbortOptions } from '@libp2p/interface'
+import { Perf as PerfClass } from './perf-service.js'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -69,18 +69,18 @@ export interface PerfOptions extends AbortOptions {
   reuseExistingConnection?: boolean
 }
 
-export interface PerfService {
+export interface Perf {
   measurePerformance(multiaddr: Multiaddr, sendBytes: number, recvBytes: number, options?: PerfOptions): AsyncGenerator<PerfOutput>
 }
 
 export interface PerfOutput {
-  type: 'intermediary' | 'final'
+  type: 'connection' | 'stream' | 'intermediary' | 'final'
   timeSeconds: number
   uploadBytes: number
   downloadBytes: number
 }
 
-export interface PerfServiceInit {
+export interface PerfInit {
   protocolName?: string
   maxInboundStreams?: number
   maxOutboundStreams?: number
@@ -92,11 +92,12 @@ export interface PerfServiceInit {
   writeBlockSize?: number
 }
 
-export interface PerfServiceComponents {
+export interface PerfComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
+  logger: ComponentLogger
 }
 
-export function perfService (init: PerfServiceInit = {}): (components: PerfServiceComponents) => PerfService {
-  return (components) => new PerfServiceClass(components, init)
+export function perf (init: PerfInit = {}): (components: PerfComponents) => Perf {
+  return (components) => new PerfClass(components, init)
 }

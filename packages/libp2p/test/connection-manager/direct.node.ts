@@ -5,14 +5,16 @@ import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { type Connection, type ConnectionProtector, isConnection } from '@libp2p/interface/connection'
-import { AbortError } from '@libp2p/interface/errors'
+import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -30,16 +32,12 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import { preSharedKey } from '../../src/pnet/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import swarmKey from '../fixtures/swarm.key.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-const swarmKeyBuffer = uint8ArrayFromString(swarmKey)
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999/ws/p2p/QmckxVrJw1Yo8LqvmDJNUmdAsKtSbiKWmrXJFyKmUraBoN')
 
@@ -76,7 +74,9 @@ describe('dialing (direct, TCP)', () => {
       ]
     })
     remoteTM = remoteComponents.transportManager = new DefaultTransportManager(remoteComponents)
-    remoteTM.add(tcp()())
+    remoteTM.add(tcp()({
+      logger: defaultLogger()
+    }))
 
     const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
@@ -95,7 +95,9 @@ describe('dialing (direct, TCP)', () => {
     })
     localComponents.addressManager = new DefaultAddressManager(localComponents)
     localTM = localComponents.transportManager = new DefaultTransportManager(localComponents)
-    localTM.add(tcp()())
+    localTM.add(tcp()({
+      logger: defaultLogger()
+    }))
 
     await start(localComponents)
     await start(remoteComponents)
@@ -218,7 +220,7 @@ describe('dialing (direct, TCP)', () => {
 
     await expect(dialer.dial(remoteAddr))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
+      .and.to.have.property('code', ERR_TIMEOUT)
   })
 
   it('should dial to the max concurrency', async () => {
@@ -496,9 +498,11 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should use the protectors when provided for connecting', async () => {
-    const protector: ConnectionProtector = preSharedKey({
-      psk: swarmKeyBuffer
-    })()
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
 
     libp2p = await createLibp2pNode({
       peerId,
@@ -516,8 +520,6 @@ describe('libp2p.dialer (direct, TCP)', () => {
     })
 
     const protectorProtectSpy = Sinon.spy(protector, 'protect')
-
-    remoteLibp2p.components.connectionProtector = preSharedKey({ psk: swarmKeyBuffer })()
 
     await libp2p.start()
 

@@ -17,14 +17,14 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { createLibp2p, type Libp2p } from 'libp2p'
-import { plaintext } from 'libp2p/insecure'
-import { perfService, type PerfService } from '@libp2p/perf'
+import { plaintext } from '@libp2p/plaintext'
+import { perf, type Perf } from '@libp2p/perf'
 
 const ONE_MEG = 1024 * 1024
 const UPLOAD_BYTES = ONE_MEG * 1024
 const DOWNLOAD_BYTES = ONE_MEG * 1024
 
-async function createNode (): Promise<Libp2p<{ perf: PerfService }>> {
+async function createNode (): Promise<Libp2p<{ perf: Perf }>> {
   return createLibp2p({
     addresses: {
       listen: [
@@ -41,7 +41,7 @@ async function createNode (): Promise<Libp2p<{ perf: PerfService }>> {
       yamux(), mplex()
     ],
     services: {
-      perf: perfService()
+      perf: perf()
     }
   })
 }
@@ -55,6 +55,20 @@ for await (const output of libp2p1.services.perf.measurePerformance(libp2p2.getM
 
 await libp2p1.stop()
 await libp2p2.stop()
+```
+
+# Install
+
+```console
+$ npm i @libp2p/perf
+```
+
+## Browser `<script>` tag
+
+Loading this module through a script tag will make it's exports available as `Libp2pPerf` in the global namespace.
+
+```html
+<script src="https://unpkg.com/@libp2p/perf/dist/index.min.js"></script>
 ```
 
 # API Docs

@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon, { type SinonStubbedInstance } from 'sinon'
@@ -32,7 +33,8 @@ describe('rpc - handlers - FindNode', () => {
 
     handler = new FindNodeHandler({
       peerId,
-      addressManager
+      addressManager,
+      logger: defaultLogger()
     }, {
       peerRouting,
       lan: false
@@ -71,8 +73,7 @@ describe('rpc - handlers - FindNode', () => {
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
           multiaddr('/ip4/221.4.67.0/tcp/4002')
-        ],
-        protocols: []
+        ]
       }])
 
     const response = await handler.handle(sourcePeer, msg)
@@ -109,13 +110,13 @@ describe('rpc - handlers - FindNode', () => {
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
           multiaddr('/ip4/221.4.67.0/tcp/4002')
-        ],
-        protocols: []
+        ]
       }])
 
     handler = new FindNodeHandler({
       peerId,
-      addressManager
+      addressManager,
+      logger: defaultLogger()
     }, {
       peerRouting,
       lan: true
@@ -146,8 +147,7 @@ describe('rpc - handlers - FindNode', () => {
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
           multiaddr('/ip4/221.4.67.0/tcp/4002')
-        ],
-        protocols: []
+        ]
       }])
 
     const response = await handler.handle(sourcePeer, msg)
