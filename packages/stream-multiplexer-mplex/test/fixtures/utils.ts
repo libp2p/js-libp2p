@@ -16,3 +16,55 @@ export function messageWithBytes (msg: Message): Message | MessageWithBytes {
 
   return msg
 }
+
+export function arrayToGenerator <T> (data: T[]): AsyncGenerator<T, void, unknown> {
+  let done: Error | boolean = false
+  let index = -1
+
+  const generator: AsyncGenerator<T, void, unknown> = {
+    [Symbol.asyncIterator]: () => {
+      return generator
+    },
+    async next () {
+      if (done instanceof Error) {
+        throw done
+      }
+
+      index++
+
+      if (index === data.length) {
+        done = true
+      }
+
+      if (done) {
+        return {
+          done: true,
+          value: undefined
+        }
+      }
+
+      return {
+        done: false,
+        value: data[index]
+      }
+    },
+    async return (): Promise<IteratorReturnResult<void>> {
+      done = true
+
+      return {
+        done: true,
+        value: undefined
+      }
+    },
+    async throw (err: Error): Promise<IteratorReturnResult<void>> {
+      done = err
+
+      return {
+        done: true,
+        value: undefined
+      }
+    }
+  }
+
+  return generator
+}
