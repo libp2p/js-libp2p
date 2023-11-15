@@ -13,7 +13,17 @@ export interface Address {
   /**
    * Obtained from a signed peer record
    */
-  isCertified: boolean
+  isCertified?: true
+
+  /**
+   * A timestamp of the last successful dial of this multiaddr
+   */
+  lastSuccess?: number
+
+  /**
+   * A timestamp of the last unsuccessful dial of this multiaddr
+   */
+  lastFailure?: number
 }
 
 /**

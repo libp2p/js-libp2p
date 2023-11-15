@@ -269,7 +269,6 @@ describe('content-routing', () => {
       await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
       await expect(node.peerStore.get(providerPeerId)).to.eventually.have.property('addresses').that.deep.include({
-        isCertified: false,
         multiaddr: result.multiaddrs[0]
       })
     })
@@ -376,10 +375,8 @@ describe('content-routing', () => {
       await drain(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
 
       await expect(node.peerStore.get(providerPeerId)).to.eventually.have.property('addresses').that.deep.include({
-        isCertified: false,
         multiaddr: result1.multiaddrs[0]
       }).and.to.deep.include({
-        isCertified: false,
         multiaddr: result2.multiaddrs[0]
       })
     })

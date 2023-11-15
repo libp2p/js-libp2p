@@ -449,7 +449,6 @@ describe('identify', () => {
     expect(peer.metadata.get('ProtocolVersion')).to.equalBytes(uint8ArrayFromString(message.protocolVersion))
     expect(peer.protocols).to.deep.equal(message.protocols)
     expect(peer.addresses).to.deep.equal([{
-      isCertified: false,
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
     }])
     expect(peer.id.publicKey).to.equalBytes(remoteComponents.peerId.publicKey)

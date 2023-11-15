@@ -1,29 +1,30 @@
 # API
 
-* [addressSort.publicAddressesFirst(addresses)](#addresssortpublicaddressesfirstaddresses)
-    * [Parameters](#parameters)
-    * [Returns](#returns)
-    * [Example](#example)
-* [arrayEquals(a, b)](#arrayequalsa-b)
-    * [Parameters](#parameters)
-    * [Returns](#returns)
-    * [Example](#example)
-* [multiaddr .isLoopback(ma)](#multiaddr-isloopbackma)
-    * [Parameters](#parameters-1)
-    * [Returns](#returns-1)
-    * [Example](#example-1)
-* [multiaddr .isPrivate(ma)](#multiaddr-isprivatema)
-    * [Parameters](#parameters-2)
-    * [Returns](#returns-2)
-    * [Example](#example-2)
-* [ipPortToMultiaddr(ip, port)](#ipporttomultiaddrip-port)
-    * [Parameters](#parameters-3)
-    * [Returns](#returns-3)
-    * [Example](#example-3)
-* [streamToMaConnection(streamProperties, options)](#streamtomaconnectionstreamproperties-options)
-    * [Parameters](#parameters-4)
-    * [Returns](#returns-4)
-    * [Example](#example-4)
+- [API](#api)
+  - [addressSort.publicAddressesFirst(addresses)](#addresssortpublicaddressesfirstaddresses)
+    - [Parameters](#parameters)
+    - [Returns](#returns)
+    - [Example](#example)
+  - [arrayEquals(a, b)](#arrayequalsa-b)
+    - [Parameters](#parameters-1)
+    - [Returns](#returns-1)
+    - [Example](#example-1)
+  - [multiaddr `.isLoopback(ma)`](#multiaddr-isloopbackma)
+    - [Parameters](#parameters-2)
+    - [Returns](#returns-2)
+    - [Example](#example-2)
+  - [multiaddr `.isPrivate(ma)`](#multiaddr-isprivatema)
+    - [Parameters](#parameters-3)
+    - [Returns](#returns-3)
+    - [Example](#example-3)
+  - [ipPortToMultiaddr(ip, port)](#ipporttomultiaddrip-port)
+    - [Parameters](#parameters-4)
+    - [Returns](#returns-4)
+    - [Example](#example-4)
+  - [streamToMaConnection(streamProperties, options)](#streamtomaconnectionstreamproperties-options)
+    - [Parameters](#parameters-5)
+    - [Returns](#returns-5)
+    - [Example](#example-5)
 
 ## addressSort.publicAddressesFirst(addresses)
 
@@ -49,12 +50,10 @@ const { publicAddressesFirst } = require('libp2p-utils/src/address-sort')
 
 const addresses = [
     {
-        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4000')
     },
     {
-        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000'),
-        isCertified: false
+        multiaddr: multiaddr('/ip4/30.0.0.1/tcp/4000')
     }
 ]
 

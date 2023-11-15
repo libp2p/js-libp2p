@@ -40,7 +40,6 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
 
       if (data.multiaddrs != null) {
         addresses.push(...data.multiaddrs.map(multiaddr => ({
-          isCertified: false,
           multiaddr
         })))
       }
@@ -80,7 +79,6 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
   if (strategy === 'merge') {
     if (data.multiaddrs != null) {
       addresses.push(...data.multiaddrs.map(multiaddr => ({
-        isCertified: false,
         multiaddr
       })))
     }

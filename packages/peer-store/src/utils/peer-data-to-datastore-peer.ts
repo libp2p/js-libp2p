@@ -20,7 +20,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
 
   const output: PeerPB = {
     addresses: (data.addresses ?? [])
-      .concat((data.multiaddrs ?? []).map(multiaddr => ({ multiaddr, isCertified: false })))
+      .concat((data.multiaddrs ?? []).map(multiaddr => ({ multiaddr })))
       .filter(address => {
         if (!isMultiaddr(address.multiaddr)) {
           throw new CodeError('Invalid mulitaddr', codes.ERR_INVALID_PARAMETERS)
@@ -36,9 +36,11 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
       .sort((a, b) => {
         return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
       })
-      .map(({ multiaddr, isCertified }) => ({
+      .map(({ multiaddr, isCertified, lastFailure, lastSuccess }) => ({
         multiaddr: multiaddr.bytes,
-        isCertified
+        isCertified,
+        lastFailure: lastFailure != null ? BigInt(lastFailure) : undefined,
+        lastSuccess: lastSuccess != null ? BigInt(lastSuccess) : undefined
       })),
     protocols: (data.protocols ?? []).sort(),
     metadata: new Map(),

@@ -172,8 +172,7 @@ export class DialQueue {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
     const addrs: Address[] = multiaddrs.map(multiaddr => ({
-      multiaddr,
-      isCertified: false
+      multiaddr
     }))
 
     // create abort conditions - need to do this before `calculateMultiaddrs` as we may be about to
@@ -360,8 +359,7 @@ export class DialQueue {
         }
 
         return result.map(multiaddr => ({
-          multiaddr,
-          isCertified: false
+          multiaddr
         }))
       })
     ))
@@ -412,12 +410,6 @@ export class DialQueue {
 
     for (const addr of filteredAddrs) {
       const maStr = addr.multiaddr.toString()
-      const existing = dedupedAddrs.get(maStr)
-
-      if (existing != null) {
-        existing.isCertified = existing.isCertified || addr.isCertified || false
-        continue
-      }
 
       dedupedAddrs.set(maStr, addr)
     }
@@ -506,10 +498,25 @@ export class DialQueue {
               // update dial status
               pendingDial.status = 'active'
 
-              const conn = await this.transportManager.dial(addr, {
-                ...options,
-                signal
-              })
+              let conn: Connection
+
+              try {
+                conn = await this.transportManager.dial(addr, {
+                  ...options,
+                  signal
+                })
+
+                // mark multiaddr dial as successful
+                await this._updateAddressStatus(conn.remotePeer, addr, true)
+              } catch (err: any) {
+                if (pendingDial.peerId != null) {
+                  // mark multiaddr dial as failure
+                  await this._updateAddressStatus(pendingDial.peerId, addr, false)
+                }
+
+                // rethrow error
+                throw err
+              }
 
               if (controller.signal.aborted) {
                 // another dial succeeded faster than this one
@@ -556,7 +563,9 @@ export class DialQueue {
           signal.clear()
         })
 
-        return deferred.promise
+        const connection = await deferred.promise
+
+        return connection
       }))
 
       // dial succeeded or failed
@@ -578,6 +587,25 @@ export class DialQueue {
 
       throw err
     }
+  }
+
+  /**
+   * Record the last dial success/failure status of the passed multiaddr
+   */
+  private async _updateAddressStatus (peerId: PeerId, multiaddr: Multiaddr, success: boolean): Promise<void> {
+    const addr: Address = {
+      multiaddr
+    }
+
+    if (success) {
+      addr.lastSuccess = Date.now()
+    } else {
+      addr.lastFailure = Date.now()
+    }
+
+    await this.peerStore.merge(peerId, {
+      addresses: [addr]
+    })
   }
 }
 

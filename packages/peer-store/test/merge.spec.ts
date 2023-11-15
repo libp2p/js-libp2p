@@ -75,14 +75,11 @@ describe('merge', () => {
     })
 
     expect(updated).to.have.property('addresses').that.deep.equals([{
-      multiaddr: addr1,
-      isCertified: false
+      multiaddr: addr1
     }, {
-      multiaddr: addr3,
-      isCertified: false
+      multiaddr: addr3
     }, {
-      multiaddr: addr2,
-      isCertified: false
+      multiaddr: addr2
     }])
 
     // other fields should be untouched
@@ -243,5 +240,54 @@ describe('merge', () => {
     expect(updated).to.have.property('metadata').that.deep.equals(original.metadata)
     expect(updated).to.have.property('tags').that.deep.equals(original.tags)
     expect(updated).to.have.property('protocols').that.deep.equals(original.protocols)
+  })
+
+  it('merges addresses', async () => {
+    const peer: PeerData = {
+      addresses: [{
+        multiaddr: addr1,
+        isCertified: true
+      }, {
+        multiaddr: addr2,
+        lastFailure: 5
+      }],
+      metadata: {
+        foo: Uint8Array.from([0, 1, 2])
+      },
+      tags: {
+        tag1: { value: 10 }
+      },
+      protocols: [
+        '/foo/bar'
+      ],
+      peerRecordEnvelope: Uint8Array.from([3, 4, 5])
+    }
+
+    const original = await peerStore.save(otherPeerId, peer)
+    const updated = await peerStore.merge(otherPeerId, {
+      addresses: [{
+        multiaddr: addr1,
+        lastFailure: 10
+      }, {
+        multiaddr: addr2,
+        lastSuccess: 10
+      }]
+    })
+
+    expect(updated).to.have.property('addresses').that.deep.equals([{
+      multiaddr: addr1,
+      isCertified: true,
+      lastFailure: 10
+    }, {
+      multiaddr: addr2,
+      lastFailure: 5,
+      lastSuccess: 10
+    }])
+
+    // other fields should be untouched
+    expect(updated).to.have.property('metadata').that.deep.equals(original.metadata)
+    expect(updated).to.have.property('tags').that.deep.equals(original.tags)
+    expect(updated).to.have.property('protocols').that.deep.equals(original.protocols)
+    expect(updated).to.have.property('peerRecordEnvelope').that.deep.equals(original.peerRecordEnvelope)
   })
 })

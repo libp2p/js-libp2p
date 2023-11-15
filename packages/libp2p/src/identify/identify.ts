@@ -425,7 +425,6 @@ export class DefaultIdentifyService implements Startable, IdentifyService {
 
     if (message.listenAddrs.length > 0) {
       peer.addresses = message.listenAddrs.map(buf => ({
-        isCertified: false,
         multiaddr: multiaddr(buf)
       }))
     }

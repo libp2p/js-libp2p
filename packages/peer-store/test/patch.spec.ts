@@ -76,8 +76,7 @@ describe('patch', () => {
 
     // upated field
     expect(updated).to.have.property('addresses').that.deep.equals([{
-      multiaddr: addr3,
-      isCertified: false
+      multiaddr: addr3
     }])
 
     // other fields should be untouched

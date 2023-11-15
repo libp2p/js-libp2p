@@ -212,7 +212,7 @@ describe('dialing (direct, WebSockets)', () => {
     await connectionManager.openConnection(remoteComponents.peerId)
 
     const sortedAddresses = peerMultiaddrs
-      .map((m) => ({ multiaddr: m, isCertified: false }))
+      .map((m) => ({ multiaddr: m }))
       .sort(defaultAddressSort)
 
     expect(localTMDialStub.getCall(0).args[0].equals(sortedAddresses[0].multiaddr))

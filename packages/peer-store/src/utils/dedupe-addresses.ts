@@ -26,17 +26,27 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
       continue
     }
 
-    const isCertified = addr.isCertified ?? false
     const maStr = addr.multiaddr.toString()
-    const existingAddr = addressMap.get(maStr)
+    let existingAddr = addressMap.get(maStr)
 
-    if (existingAddr != null) {
-      addr.isCertified = existingAddr.isCertified || isCertified
-    } else {
-      addressMap.set(maStr, {
-        multiaddr: addr.multiaddr,
-        isCertified
-      })
+    if (existingAddr == null) {
+      existingAddr = {
+        multiaddr: addr.multiaddr
+      }
+
+      addressMap.set(maStr, existingAddr)
+    }
+
+    if (addr.isCertified === true) {
+      existingAddr.isCertified = true
+    }
+
+    if (addr.lastFailure != null) {
+      existingAddr.lastFailure = Number(addr.lastFailure)
+    }
+
+    if (addr.lastSuccess != null) {
+      existingAddr.lastSuccess = Number(addr.lastSuccess)
     }
   }
 
@@ -44,8 +54,23 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     .sort((a, b) => {
       return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
     })
-    .map(({ isCertified, multiaddr }) => ({
-      isCertified,
-      multiaddr: multiaddr.bytes
-    }))
+    .map(({ isCertified, multiaddr, lastFailure, lastSuccess }) => {
+      const addr: AddressPB = {
+        multiaddr: multiaddr.bytes
+      }
+
+      if (isCertified) {
+        addr.isCertified = true
+      }
+
+      if (lastFailure != null) {
+        addr.lastFailure = BigInt(lastFailure)
+      }
+
+      if (lastSuccess != null) {
+        addr.lastSuccess = BigInt(lastSuccess)
+      }
+
+      return addr
+    })
 }
