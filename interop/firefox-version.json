@@ -3,6 +3,11 @@
   "containerImageID": "firefox-js-libp2p-head",
   "transports": [
     {
+      "name": "webrtc-direct",
+      "onlyDial": true
+    },
+    "webrtc",
+    {
       "name": "wss",
       "onlyDial": true
     }
