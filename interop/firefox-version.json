@@ -1,11 +1,7 @@
 {
-  "id": "chromium-js-libp2p-head",
-  "containerImageID": "chromium-js-libp2p-head",
+  "id": "firefox-js-libp2p-head",
+  "containerImageID": "firefox-js-libp2p-head",
   "transports": [
-    {
-      "name": "webtransport",
-      "onlyDial": true
-    },
     {
       "name": "webrtc-direct",
       "onlyDial": true
