@@ -5,8 +5,8 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { webSockets } from '@libp2p/websockets'
 import * as filter from '@libp2p/websockets/filters'
-import { WebRTC } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import map from 'it-map'
@@ -60,7 +60,7 @@ describe('basics', () => {
 
   async function connectNodes (): Promise<Connection> {
     const remoteAddr = remoteNode.getMultiaddrs()
-      .filter(ma => WebRTC.matches(ma)).pop()
+      .filter(ma => WebRTC.exactMatch(ma)).pop()
 
     if (remoteAddr == null) {
       throw new Error('Remote peer could not listen on relay')
@@ -127,8 +127,8 @@ describe('basics', () => {
     expect(initatorConnection.remoteAddr.toString()).to.equal(`${process.env.RELAY_MULTIADDR}/p2p-circuit/webrtc/p2p/${remoteNode.peerId}`)
 
     const receiverConnections = remoteNode.getConnections(localNode.peerId)
+      .filter(conn => conn.remoteAddr.toString() === `/webrtc/p2p/${localNode.peerId}`)
     expect(receiverConnections).to.have.lengthOf(1)
-    expect(receiverConnections[0].remoteAddr.toString()).to.equal(`/webrtc/p2p/${localNode.peerId}`)
   })
 
   it('can send a large file', async () => {

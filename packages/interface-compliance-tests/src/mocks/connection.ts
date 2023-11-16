@@ -1,7 +1,8 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { defaultLogger } from '@libp2p/logger'
+import { defaultLogger, logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { closeSource } from '@libp2p/utils/close-source'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -187,10 +188,12 @@ export interface StreamInit {
 }
 
 export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}): Stream {
-  const originalSource = stream.source
+  const id = `stream-${Date.now()}`
+  const log = logger(`libp2p:mock-stream:${id}`)
 
   // ensure stream output is `Uint8ArrayList` as it would be from an actual
   // Stream where everything is length-varint encoded
+  const originalSource = stream.source
   stream.source = (async function * (): AsyncGenerator<Uint8ArrayList, any, unknown> {
     for await (const buf of originalSource) {
       if (buf instanceof Uint8Array) {
@@ -201,12 +204,44 @@ export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Sourc
     }
   })()
 
-  return {
+  const abortSinkController = new AbortController()
+  const originalSink = stream.sink.bind(stream)
+  stream.sink = async (source) => {
+    abortSinkController.signal.addEventListener('abort', () => {
+      closeSource(source, log)
+    })
+
+    await originalSink(source)
+  }
+
+  const mockStream: Stream = {
     ...stream,
-    close: async () => {},
-    closeRead: async () => {},
-    closeWrite: async () => {},
-    abort: () => {},
+    close: async (options) => {
+      await mockStream.closeRead(options)
+      await mockStream.closeWrite(options)
+    },
+    closeRead: async () => {
+      closeSource(originalSource, log)
+      mockStream.timeline.closeRead = Date.now()
+
+      if (mockStream.timeline.closeWrite != null) {
+        mockStream.timeline.close = Date.now()
+      }
+    },
+    closeWrite: async () => {
+      abortSinkController.abort()
+      mockStream.timeline.closeWrite = Date.now()
+
+      if (mockStream.timeline.closeRead != null) {
+        mockStream.timeline.close = Date.now()
+      }
+    },
+    abort: () => {
+      closeSource(originalSource, log)
+      mockStream.timeline.closeWrite = Date.now()
+      mockStream.timeline.closeRead = Date.now()
+      mockStream.timeline.close = Date.now()
+    },
     direction: 'outbound',
     protocol: '/foo/1.0.0',
     timeline: {
@@ -219,6 +254,8 @@ export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Sourc
     writeStatus: 'ready',
     ...init
   }
+
+  return mockStream
 }
 
 export interface StreamPairInit {
