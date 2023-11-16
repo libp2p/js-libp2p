@@ -132,6 +132,7 @@ export class WebRTCStream extends AbstractStream {
     // set up initial state
     switch (this.channel.readyState) {
       case 'open':
+        this.timeline.open = new Date().getTime()
         this.channelOpen.resolve()
         break
 

@@ -424,7 +424,7 @@ export class DefaultUpgrader implements Upgrader {
               this._onStream({ connection, stream: muxedStream, protocol })
             })
             .catch(async err => {
-              this.log.error(err)
+              this.log.error('error handling incoming stream id %d', muxedStream.id, err.message, err.code, err.stack)
 
               if (muxedStream.timeline.close == null) {
                 await muxedStream.close()
